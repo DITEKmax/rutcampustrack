@@ -17,8 +17,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "DLQ {{ $labels.queue }} > 10 сообщений"
-          description: "{{ $value }} сообщений в DLQ {{ $labels.queue }}. Consumer постоянно падает — проверь handler exceptions в Loki ({service=~\"rct-.*\"} |= \"DLQ\")."
+          summary: 'DLQ {{ $labels.queue }} > 10 сообщений'
+          description: '{{ $value }} сообщений в DLQ {{ $labels.queue }}. Consumer постоянно падает — проверь handler exceptions в Loki ({service=~"rct-.*"} |= "DLQ").'
 
       # Non-DLQ очереди — нормально иметь pending messages, но если
       # > 1000 сообщений висит 5 мин, consumer не справляется (slow
@@ -29,8 +29,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Очередь {{ $labels.queue }} > 1000 pending"
-          description: "{{ $value }} pending messages в {{ $labels.queue }} > 5 мин. Consumer отстаёт — проверь thread pool / DB latency / external calls."
+          summary: 'Очередь {{ $labels.queue }} > 1000 pending'
+          description: '{{ $value }} pending messages в {{ $labels.queue }} > 5 мин. Consumer отстаёт — проверь thread pool / DB latency / external calls.'
 
       # Consumer'ы отвалились — connection count = 0 значит ни один
       # сервис не подключён к Rabbit. Catastrophic для асинхронного
@@ -41,5 +41,5 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "RabbitMQ без активных подключений"
+          summary: 'RabbitMQ без активных подключений'
           description: "Ни один сервис не подключён к RabbitMQ. Все consumer'ы отвалились или RabbitMQ перезапустился без graceful reconnect. Проверь network + service logs."

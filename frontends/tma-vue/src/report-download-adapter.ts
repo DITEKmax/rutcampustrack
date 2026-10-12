@@ -49,16 +49,18 @@ export function createTelegramReportDownloadPort(
       tickets.assertCurrent()
       if (!isCurrent()) return 'stale'
 
-      const result = await new Promise<'accepted' | 'cancelled' | 'unsupported'>((resolve, reject) => {
-        try {
-          const submitted = host.requestFileDownload(params, (accepted) => {
-            resolve(accepted ? 'accepted' : 'cancelled')
-          })
-          if (!submitted) resolve('unsupported')
-        } catch {
-          reject(new TelegramReportDownloadHostError())
-        }
-      })
+      const result = await new Promise<'accepted' | 'cancelled' | 'unsupported'>(
+        (resolve, reject) => {
+          try {
+            const submitted = host.requestFileDownload(params, (accepted) => {
+              resolve(accepted ? 'accepted' : 'cancelled')
+            })
+            if (!submitted) resolve('unsupported')
+          } catch {
+            reject(new TelegramReportDownloadHostError())
+          }
+        },
+      )
 
       tickets.assertCurrent()
       return isCurrent() ? result : 'stale'
@@ -67,7 +69,10 @@ export function createTelegramReportDownloadPort(
 }
 
 export function buildTrustedHttpsDownloadUrl(origin: string, downloadPath: string): string {
-  if (typeof origin !== 'string' || !/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(downloadPath)) {
+  if (
+    typeof origin !== 'string' ||
+    !/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(downloadPath)
+  ) {
     throw new ReportDownloadResponseError()
   }
   let trusted: URL
@@ -76,8 +81,15 @@ export function buildTrustedHttpsDownloadUrl(origin: string, downloadPath: strin
   } catch {
     throw new ReportDownloadResponseError()
   }
-  if (trusted.protocol !== 'https:' || trusted.origin !== origin || trusted.username || trusted.password
-    || trusted.pathname !== '/' || trusted.search || trusted.hash) {
+  if (
+    trusted.protocol !== 'https:' ||
+    trusted.origin !== origin ||
+    trusted.username ||
+    trusted.password ||
+    trusted.pathname !== '/' ||
+    trusted.search ||
+    trusted.hash
+  ) {
     throw new ReportDownloadResponseError()
   }
   const url = new URL(downloadPath, trusted.origin)
@@ -92,7 +104,8 @@ export function validateSuggestedFilename(
   request: ReportDownloadTicketRequest,
 ): string {
   const format = reportFormat(request)
-  const extension = request.kind === 'HEADMAN_STATS_TREND' ? format : format === 'png' ? 'zip' : format
+  const extension =
+    request.kind === 'HEADMAN_STATS_TREND' ? format : format === 'png' ? 'zip' : format
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(filename) || !filename.endsWith(`.${extension}`)) {
     throw new ReportDownloadResponseError()
   }

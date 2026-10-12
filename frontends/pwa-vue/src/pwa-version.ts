@@ -25,7 +25,8 @@ export interface PwaUpdateRequiredDetail {
 }
 
 export function createPwaFetcher(baseFetcher?: typeof fetch): typeof fetch {
-  const fetcher = baseFetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const fetcher =
+    baseFetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   return async (input, init) => {
     const headers = new Headers(input instanceof Request ? input.headers : undefined)
     new Headers(init?.headers).forEach((value, key) => headers.set(key, value))
@@ -47,17 +48,20 @@ async function notifyUpdateRequired(response: Response): Promise<void> {
 
   const detail: PwaUpdateRequiredDetail = {
     reason: 'api',
-    ...(response.headers.get('X-PWA-Latest-Version') ? { latest: response.headers.get('X-PWA-Latest-Version')! } : {}),
+    ...(response.headers.get('X-PWA-Latest-Version')
+      ? { latest: response.headers.get('X-PWA-Latest-Version')! }
+      : {}),
     ...(response.headers.get('X-PWA-Minimum-Supported-Version')
       ? { minimumSupported: response.headers.get('X-PWA-Minimum-Supported-Version')! }
       : {}),
   }
   try {
-    const body = await response.clone().json() as unknown
+    const body = (await response.clone().json()) as unknown
     if (isRecord(body)) {
       const extras = isRecord(body.extras) ? body.extras : null
       const latest = stringValue(body.latest) ?? stringValue(extras?.latest)
-      const minimumSupported = stringValue(body.minimumSupported) ?? stringValue(extras?.minimumSupported)
+      const minimumSupported =
+        stringValue(body.minimumSupported) ?? stringValue(extras?.minimumSupported)
       const message = stringValue(body.detail)
       if (latest) detail.latest = latest
       if (minimumSupported) detail.minimumSupported = minimumSupported
@@ -66,7 +70,9 @@ async function notifyUpdateRequired(response: Response): Promise<void> {
   } catch {
     // The status and headers are sufficient to hard-block the old client.
   }
-  window.dispatchEvent(new CustomEvent<PwaUpdateRequiredDetail>(APP_UPDATE_REQUIRED_EVENT, { detail }))
+  window.dispatchEvent(
+    new CustomEvent<PwaUpdateRequiredDetail>(APP_UPDATE_REQUIRED_EVENT, { detail }),
+  )
 }
 
 function compareVersions(left: string, right: string): number {

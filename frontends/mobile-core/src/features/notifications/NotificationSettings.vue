@@ -1,77 +1,120 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useId, watch } from 'vue'
-import AdminCheckbox from '../../shared/components/AdminCheckbox.vue'
-import { notificationCatalogMatchesPreferences, notificationTypeSetsMatch } from './notifications-v2-models'
-import type { NotificationCatalog, NotificationPreferencesV2, NotificationPreferencesV2Update, NotificationTypeId } from './notifications-v2-models'
-import { changeNotificationChannelMode, changeNotificationDelivery, notificationPreferencesUpdate, type NotificationDeliveryChannel } from './notification-preferences-draft'
-import './notification-settings.pcss'
+import { computed, nextTick, ref, useId, watch } from 'vue';
+import AdminCheckbox from '../../shared/components/AdminCheckbox.vue';
+import {
+  notificationCatalogMatchesPreferences,
+  notificationTypeSetsMatch,
+} from './notifications-v2-models';
+import type {
+  NotificationCatalog,
+  NotificationPreferencesV2,
+  NotificationPreferencesV2Update,
+  NotificationTypeId,
+} from './notifications-v2-models';
+import {
+  changeNotificationChannelMode,
+  changeNotificationDelivery,
+  notificationPreferencesUpdate,
+  type NotificationDeliveryChannel,
+} from './notification-preferences-draft';
+import './notification-settings.pcss';
 
 const props = defineProps<{
-  catalog: NotificationCatalog
-  preferences: NotificationPreferencesV2
-  draft: NotificationPreferencesV2 | null
-  blocked?: boolean
-  busy?: boolean
-  error?: string | null
-  errorTone?: 'warning' | 'error'
-  conflict?: NotificationPreferencesV2 | null
-  offline?: boolean
-  appPushAvailable?: boolean
-}>()
+  catalog: NotificationCatalog;
+  preferences: NotificationPreferencesV2;
+  draft: NotificationPreferencesV2 | null;
+  blocked?: boolean;
+  busy?: boolean;
+  error?: string | null;
+  errorTone?: 'warning' | 'error';
+  conflict?: NotificationPreferencesV2 | null;
+  offline?: boolean;
+  appPushAvailable?: boolean;
+}>();
 const emit = defineEmits<{
-  'update:draft': [value: NotificationPreferencesV2]
-  save: [value: NotificationPreferencesV2Update]
-  reload: []
-  reapply: []
-  colors: []
-}>()
-const value = computed(() => props.draft ?? props.preferences)
-const compatible = computed(() => notificationCatalogMatchesPreferences(props.catalog, props.preferences)
-  && notificationCatalogMatchesPreferences(props.catalog, value.value))
-const catalogChanged = computed(() => !!props.blocked || !!props.conflict && !notificationTypeSetsMatch(Object.keys(value.value.types), Object.keys(props.conflict.types)))
-const disabled = computed(() => Boolean(props.busy || props.offline || props.conflict || props.blocked || !compatible.value))
-const groups = computed(() => compatible.value ? props.catalog.groups.map((group) => ({
-  ...group, types: props.catalog.types.filter((type) => type.groupId === group.id)
-    .map(type => ({ ...type, preferences: value.value.types[type.id]! })),
-})).filter((group) => group.types.length) : [])
-const choiceOpen = ref(false)
-const switchButton = ref<HTMLButtonElement | null>(null)
-const choiceElement = ref<HTMLElement | null>(null)
-const choiceId = useId()
-watch(() => props.preferences.revision, () => { choiceOpen.value = false })
+  'update:draft': [value: NotificationPreferencesV2];
+  save: [value: NotificationPreferencesV2Update];
+  reload: [];
+  reapply: [];
+  colors: [];
+}>();
+const value = computed(() => props.draft ?? props.preferences);
+const compatible = computed(
+  () =>
+    notificationCatalogMatchesPreferences(props.catalog, props.preferences) &&
+    notificationCatalogMatchesPreferences(props.catalog, value.value),
+);
+const catalogChanged = computed(
+  () =>
+    !!props.blocked ||
+    (!!props.conflict &&
+      !notificationTypeSetsMatch(
+        Object.keys(value.value.types),
+        Object.keys(props.conflict.types),
+      )),
+);
+const disabled = computed(() =>
+  Boolean(props.busy || props.offline || props.conflict || props.blocked || !compatible.value),
+);
+const groups = computed(() =>
+  compatible.value
+    ? props.catalog.groups
+        .map((group) => ({
+          ...group,
+          types: props.catalog.types
+            .filter((type) => type.groupId === group.id)
+            .map((type) => ({ ...type, preferences: value.value.types[type.id]! })),
+        }))
+        .filter((group) => group.types.length)
+    : [],
+);
+const choiceOpen = ref(false);
+const switchButton = ref<HTMLButtonElement | null>(null);
+const choiceElement = ref<HTMLElement | null>(null);
+const choiceId = useId();
+watch(
+  () => props.preferences.revision,
+  () => {
+    choiceOpen.value = false;
+  },
+);
 
 function save(next = value.value): void {
-  if (disabled.value || choiceOpen.value) return
-  emit('save', notificationPreferencesUpdate(next, props.preferences.revision))
+  if (disabled.value || choiceOpen.value) return;
+  emit('save', notificationPreferencesUpdate(next, props.preferences.revision));
 }
 function commitMode(next: NotificationPreferencesV2): void {
-  choiceOpen.value = false
-  emit('update:draft', next)
-  save(next)
+  choiceOpen.value = false;
+  emit('update:draft', next);
+  save(next);
 }
 async function switchMode(): Promise<void> {
-  if (disabled.value || choiceOpen.value) return
-  const next = changeNotificationChannelMode(value.value, !value.value.splitChannels)
-  if (next) commitMode(next)
+  if (disabled.value || choiceOpen.value) return;
+  const next = changeNotificationChannelMode(value.value, !value.value.splitChannels);
+  if (next) commitMode(next);
   else {
-    choiceOpen.value = true
-    await nextTick()
-    choiceElement.value?.querySelector<HTMLButtonElement>('button')?.focus()
+    choiceOpen.value = true;
+    await nextTick();
+    choiceElement.value?.querySelector<HTMLButtonElement>('button')?.focus();
   }
 }
 function chooseColumn(channel: NotificationDeliveryChannel): void {
-  if (disabled.value) return
-  const next = changeNotificationChannelMode(value.value, false, channel)
-  if (next) commitMode(next)
-  void nextTick(() => switchButton.value?.focus())
+  if (disabled.value) return;
+  const next = changeNotificationChannelMode(value.value, false, channel);
+  if (next) commitMode(next);
+  void nextTick(() => switchButton.value?.focus());
 }
 function cancelChoice(): void {
-  choiceOpen.value = false
-  void nextTick(() => switchButton.value?.focus())
+  choiceOpen.value = false;
+  void nextTick(() => switchButton.value?.focus());
 }
-function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChannel, enabled: boolean): void {
-  if (disabled.value || choiceOpen.value) return
-  emit('update:draft', changeNotificationDelivery(value.value, id, channel, enabled))
+function setDelivery(
+  id: NotificationTypeId,
+  channel: NotificationDeliveryChannel,
+  enabled: boolean,
+): void {
+  if (disabled.value || choiceOpen.value) return;
+  emit('update:draft', changeNotificationDelivery(value.value, id, channel, enabled));
 }
 </script>
 
@@ -91,11 +134,16 @@ function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChanne
       :disabled="disabled || choiceOpen"
       @click="switchMode"
     >
-      <span class="notification-settings__mode-label">Раздельные настройки<span class="notification-settings__mode-state">{{ value.splitChannels ? 'Включены' : 'Выключены' }}</span></span>
+      <span class="notification-settings__mode-label"
+        >Раздельные настройки<span class="notification-settings__mode-state">{{
+          value.splitChannels ? 'Включены' : 'Выключены'
+        }}</span></span
+      >
       <span
         class="notification-settings__slider"
         aria-hidden="true"
-      ><span /></span>
+        ><span
+      /></span>
     </button>
     <div
       v-if="choiceOpen"
@@ -133,7 +181,11 @@ function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChanne
       class="notification-settings__notice"
       role="alert"
     >
-      <p>{{ catalogChanged ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.' : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.' }}</p>
+      <p>{{
+        catalogChanged
+          ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.'
+          : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.'
+      }}</p>
       <button
         type="button"
         :disabled="busy || offline"
@@ -178,12 +230,8 @@ function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChanne
       class="notification-settings__capability"
       role="status"
     >
-      <p v-if="appPushAvailable === false">
-        Web Push недоступен на этом устройстве
-      </p>
-      <p v-if="!preferences.telegramLinked">
-        Telegram не привязан
-      </p>
+      <p v-if="appPushAvailable === false"> Web Push недоступен на этом устройстве </p>
+      <p v-if="!preferences.telegramLinked"> Telegram не привязан </p>
     </div>
     <slot name="capability" />
     <form @submit.prevent="save()">
@@ -191,22 +239,18 @@ function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChanne
         class="notification-settings__matrix"
         :data-split="value.splitChannels"
       >
-        <caption class="notification-settings__sr">
-          Доставка по типам уведомлений
-        </caption>
+        <caption class="notification-settings__sr"> Доставка по типам уведомлений </caption>
         <colgroup>
-          <col><col class="notification-settings__channel-col"><col
+          <col /><col class="notification-settings__channel-col" /><col
             v-if="value.splitChannels"
             class="notification-settings__channel-col"
-          >
+          />
         </colgroup>
         <thead>
           <tr>
-            <th scope="col">
-              Уведомления
-            </th><th scope="col">
-              {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }}
-            </th><th
+            <th scope="col"> Уведомления </th
+            ><th scope="col"> {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }} </th
+            ><th
               v-if="value.splitChannels"
               scope="col"
             >

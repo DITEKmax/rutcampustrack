@@ -1,4 +1,9 @@
-import { normalizeAdminDashboardActivity, type AdminDashboardActivity, type AdminActivityPeriod, type AdminActivityBucket } from './admin-dashboard-activity'
+import {
+  normalizeAdminDashboardActivity,
+  type AdminDashboardActivity,
+  type AdminActivityPeriod,
+  type AdminActivityBucket,
+} from './admin-dashboard-activity'
 export type * from './admin-dashboard-activity'
 import type { MobileProblemDetails } from '../../api/types'
 
@@ -37,30 +42,46 @@ export class AdminDashboardClient {
   }
 
   getStats(signal?: AbortSignal): Promise<AdminDashboardStats> {
-    return this.request<unknown>(AdminDashboardClient.path, signal ? { signal } : undefined)
-      .then(normalizeDashboardStats)
+    return this.request<unknown>(AdminDashboardClient.path, signal ? { signal } : undefined).then(
+      normalizeDashboardStats,
+    )
   }
 
-  getActivity(period: AdminActivityPeriod, bucket: AdminActivityBucket, signal?: AbortSignal): Promise<AdminDashboardActivity> {
+  getActivity(
+    period: AdminActivityPeriod,
+    bucket: AdminActivityBucket,
+    signal?: AbortSignal,
+  ): Promise<AdminDashboardActivity> {
     const query = new URLSearchParams({ period, bucket })
-    return this.request<unknown>(`/api/academic/dashboard/activity?${query}`, signal ? { signal } : undefined)
-      .then(value => normalizeAdminDashboardActivity(value, period, bucket))
+    return this.request<unknown>(
+      `/api/academic/dashboard/activity?${query}`,
+      signal ? { signal } : undefined,
+    ).then((value) => normalizeAdminDashboardActivity(value, period, bucket))
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.requestResponse(path, init, retried)
-    const value = await response.json() as T
+    const value = (await response.json()) as T
     this.options.assertCurrent?.()
     return value
   }
 
-  private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+  private async requestResponse(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+  ): Promise<Response> {
     this.options.assertCurrent?.()
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
-    const response = await this.fetcher(path, { ...init, cache: 'no-store', headers, credentials: 'include' })
+    const response = await this.fetcher(path, {
+      ...init,
+      cache: 'no-store',
+      headers,
+      credentials: 'include',
+    })
     this.options.assertCurrent?.()
     if (response.ok) return response
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
@@ -69,7 +90,7 @@ export class AdminDashboardClient {
     }
     let problem: MobileProblemDetails | null = null
     try {
-      problem = await response.json() as MobileProblemDetails
+      problem = (await response.json()) as MobileProblemDetails
     } catch {
       // Keep the HTTP status when the gateway cannot return Problem Details.
     }
@@ -96,9 +117,10 @@ function normalizeDashboardStats(value: unknown): AdminDashboardStats {
     totalTeachers: nonNegativeInteger(record.totalTeachers, 'totalTeachers'),
     totalGroups,
     activeGroups,
-    activeSemesterName: typeof activeSemesterName === 'string' && activeSemesterName.trim() !== ''
-      ? activeSemesterName
-      : null,
+    activeSemesterName:
+      typeof activeSemesterName === 'string' && activeSemesterName.trim() !== ''
+        ? activeSemesterName
+        : null,
   }
 }
 

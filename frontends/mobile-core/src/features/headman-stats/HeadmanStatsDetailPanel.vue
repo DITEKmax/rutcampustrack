@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import { computed, ref } from 'vue'
-import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import { computed, ref } from 'vue';
+import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue';
 import type {
   HeadmanStatsExcuseEntry,
   HeadmanStatsLateCheckinEntry,
@@ -9,70 +9,89 @@ import type {
   HeadmanStatsStudentDetailResponse,
   HeadmanStatsTicketPage,
   HeadmanStatsTrendPoint,
-} from './headman-stats-client'
-import './headman-stats-detail-panel.pcss'
+} from './headman-stats-client';
+import './headman-stats-detail-panel.pcss';
 
 const props = defineProps<{
-  studentId: number
-  detail: HeadmanStatsStudentDetailResponse | null
-  loading: boolean
-  error: string | null
-  offline: boolean
-}>()
+  studentId: number;
+  detail: HeadmanStatsStudentDetailResponse | null;
+  loading: boolean;
+  error: string | null;
+  offline: boolean;
+}>();
 
 const emit = defineEmits<{
-  close: []
-  retry: []
-  page: [kind: 'late' | 'excuse', page: number]
-}>()
+  close: [];
+  retry: [];
+  page: [kind: 'late' | 'excuse', page: number];
+}>();
 
-const panel = ref<HTMLElement | null>(null)
-const visibleLateCheckins = computed(() => props.detail?.lateCheckins.items ?? [])
-const visibleExcuses = computed(() => props.detail?.excuses.items.filter((entry) => entry.status !== 'DRAFT') ?? [])
+const panel = ref<HTMLElement | null>(null);
+const visibleLateCheckins = computed(() => props.detail?.lateCheckins.items ?? []);
+const visibleExcuses = computed(
+  () => props.detail?.excuses.items.filter((entry) => entry.status !== 'DRAFT') ?? [],
+);
 
 function focus(): void {
-  panel.value?.focus()
+  panel.value?.focus();
 }
 
 function metricText(metric: HeadmanStatsPersonalMetric): string {
-  const percent = metric.percent === null ? 'Нет данных' : `${metric.percent.toFixed(1)}%`
-  return `${metric.numerator} из ${metric.denominator} · ${percent}`
+  const percent = metric.percent === null ? 'Нет данных' : `${metric.percent.toFixed(1)}%`;
+  return `${metric.numerator} из ${metric.denominator} · ${percent}`;
 }
 
 function dateText(value: string): string {
-  const date = new Date(`${value}T12:00:00.000Z`)
-  return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium', timeZone: 'UTC' }).format(date)
+  const date = new Date(`${value}T12:00:00.000Z`);
+  return Number.isNaN(date.valueOf())
+    ? value
+    : new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium', timeZone: 'UTC' }).format(date);
 }
 
 function instantText(value: string | null): string {
-  if (value === null) return 'Не решена'
-  const date = new Date(value)
-  return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat('ru-RU', {
-    dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Moscow',
-  }).format(date)
+  if (value === null) return 'Не решена';
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf())
+    ? value
+    : new Intl.DateTimeFormat('ru-RU', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+        timeZone: 'Europe/Moscow',
+      }).format(date);
 }
 
 function statusText(status: string): string {
   switch (status) {
-    case 'PENDING': return 'На рассмотрении'
-    case 'DRAFT': return 'Черновик'
-    case 'SUBMITTED': return 'Отправлена'
-    case 'APPROVED': return 'Одобрена'
-    case 'REJECTED': return 'Отклонена'
-    case 'CANCELLED': return 'Отменена'
-    default: return status
+    case 'PENDING':
+      return 'На рассмотрении';
+    case 'DRAFT':
+      return 'Черновик';
+    case 'SUBMITTED':
+      return 'Отправлена';
+    case 'APPROVED':
+      return 'Одобрена';
+    case 'REJECTED':
+      return 'Отклонена';
+    case 'CANCELLED':
+      return 'Отменена';
+    default:
+      return status;
   }
 }
 
 function originText(origin: HeadmanStatsLateCheckinEntry['origin']): string {
-  return origin === 'AUTO_GEO_FAILURE' ? 'Автоматически после сбоя геолокации' : 'По обращению студента'
+  return origin === 'AUTO_GEO_FAILURE'
+    ? 'Автоматически после сбоя геолокации'
+    : 'По обращению студента';
 }
 
 function ticketPageLabel(page: HeadmanStatsTicketPage<unknown>): string {
-  return page.totalPages === 0 ? 'Нет страниц' : `Страница ${page.page + 1} из ${page.totalPages}`
+  return page.totalPages === 0 ? 'Нет страниц' : `Страница ${page.page + 1} из ${page.totalPages}`;
 }
 
-function toTrendPoints(detail: HeadmanStatsStudentDetailResponse): readonly HeadmanStatsTrendPoint[] {
+function toTrendPoints(
+  detail: HeadmanStatsStudentDetailResponse,
+): readonly HeadmanStatsTrendPoint[] {
   return detail.weeks.map((week) => ({
     key: week.weekStart,
     label: dateText(week.weekStart),
@@ -80,23 +99,36 @@ function toTrendPoints(detail: HeadmanStatsStudentDetailResponse): readonly Head
     to: week.to,
     present: week.present,
     presentOrExcused: week.presentOrExcused,
-  }))
+  }));
 }
 
 function lateHeading(entry: HeadmanStatsLateCheckinEntry): string {
-  const lesson = [entry.subjectName, entry.lessonType, entry.lessonNumber === null ? null : `пара ${entry.lessonNumber}`]
-    .filter(Boolean).join(' · ')
-  return lesson || 'Занятие без описания'
+  const lesson = [
+    entry.subjectName,
+    entry.lessonType,
+    entry.lessonNumber === null ? null : `пара ${entry.lessonNumber}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  return lesson || 'Занятие без описания';
 }
 
 function excuseLessons(entry: HeadmanStatsExcuseEntry): string {
-  return entry.lessons.map((lesson) => [
-    dateText(lesson.lessonDate), lesson.subjectName, lesson.lessonType,
-    lesson.lessonNumber === null ? null : `пара ${lesson.lessonNumber}`,
-  ].filter(Boolean).join(' · ')).join('; ')
+  return entry.lessons
+    .map((lesson) =>
+      [
+        dateText(lesson.lessonDate),
+        lesson.subjectName,
+        lesson.lessonType,
+        lesson.lessonNumber === null ? null : `пара ${lesson.lessonNumber}`,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    )
+    .join('; ');
 }
 
-defineExpose({ focus })
+defineExpose({ focus });
 </script>
 
 <template>
@@ -109,9 +141,7 @@ defineExpose({ focus })
   >
     <header class="headman-stats-detail__header">
       <div>
-        <p class="headman-stats-detail__eyebrow">
-          Личные подробности · ID {{ studentId }}
-        </p>
+        <p class="headman-stats-detail__eyebrow"> Личные подробности · ID {{ studentId }} </p>
         <h2 :id="`headman-stats-detail-title-${studentId}`">
           {{ detail?.student.displayName || `Студент ${studentId}` }}
         </h2>
@@ -167,10 +197,20 @@ defineExpose({ focus })
       >
         <h3>Посещаемость за семестр</h3>
         <dl class="headman-stats-detail__metrics">
-          <div><dt>«+» · присутствовал</dt><dd>{{ metricText(detail.metrics.present) }}</dd></div>
-          <div><dt>«+ и у» · присутствовал или уважительно</dt><dd>{{ metricText(detail.metrics.presentOrExcused) }}</dd></div>
-          <div><dt>«у» · уважительная причина</dt><dd>{{ metricText(detail.metrics.excused) }}</dd></div>
-          <div><dt>«н» · отсутствие</dt><dd>{{ metricText(detail.metrics.absent) }}</dd></div>
+          <div
+            ><dt>«+» · присутствовал</dt><dd>{{ metricText(detail.metrics.present) }}</dd></div
+          >
+          <div
+            ><dt>«+ и у» · присутствовал или уважительно</dt
+            ><dd>{{ metricText(detail.metrics.presentOrExcused) }}</dd></div
+          >
+          <div
+            ><dt>«у» · уважительная причина</dt
+            ><dd>{{ metricText(detail.metrics.excused) }}</dd></div
+          >
+          <div
+            ><dt>«н» · отсутствие</dt><dd>{{ metricText(detail.metrics.absent) }}</dd></div
+          >
         </dl>
       </section>
 
@@ -187,21 +227,11 @@ defineExpose({ focus })
           <table>
             <thead>
               <tr>
-                <th scope="col">
-                  Предмет / тип
-                </th>
-                <th scope="col">
-                  «+»
-                </th>
-                <th scope="col">
-                  «+ и у»
-                </th>
-                <th scope="col">
-                  «у»
-                </th>
-                <th scope="col">
-                  «н»
-                </th>
+                <th scope="col"> Предмет / тип </th>
+                <th scope="col"> «+» </th>
+                <th scope="col"> «+ и у» </th>
+                <th scope="col"> «у» </th>
+                <th scope="col"> «н» </th>
               </tr>
             </thead>
             <tbody>
@@ -235,9 +265,7 @@ defineExpose({ focus })
                 </tr>
               </template>
               <tr v-if="detail.subjects.length === 0">
-                <td colspan="5">
-                  Нет данных по предметам.
-                </td>
+                <td colspan="5"> Нет данных по предметам. </td>
               </tr>
             </tbody>
           </table>
@@ -260,9 +288,7 @@ defineExpose({ focus })
         class="headman-stats-detail__section"
         aria-labelledby="headman-stats-detail-late-title"
       >
-        <h3 id="headman-stats-detail-late-title">
-          Опоздания и поздние отметки
-        </h3>
+        <h3 id="headman-stats-detail-late-title"> Опоздания и поздние отметки </h3>
         <ul
           v-if="visibleLateCheckins.length"
           class="headman-stats-detail__tickets"
@@ -273,7 +299,10 @@ defineExpose({ focus })
           >
             <strong>{{ dateText(entry.lessonDate) }} · {{ lateHeading(entry) }}</strong>
             <span>Статус: {{ statusText(entry.status) }} · {{ originText(entry.origin) }}</span>
-            <span>Создано: {{ instantText(entry.submittedAt) }} · Решение: {{ instantText(entry.decidedAt) }}</span>
+            <span
+              >Создано: {{ instantText(entry.submittedAt) }} · Решение:
+              {{ instantText(entry.decidedAt) }}</span
+            >
           </li>
         </ul>
         <p
@@ -311,9 +340,7 @@ defineExpose({ focus })
         class="headman-stats-detail__section"
         aria-labelledby="headman-stats-detail-excuse-title"
       >
-        <h3 id="headman-stats-detail-excuse-title">
-          Заявления об уважительной причине
-        </h3>
+        <h3 id="headman-stats-detail-excuse-title"> Заявления об уважительной причине </h3>
         <ul
           v-if="visibleExcuses.length"
           class="headman-stats-detail__tickets"
@@ -324,7 +351,10 @@ defineExpose({ focus })
           >
             <strong>Заявление · {{ statusText(entry.status) }}</strong>
             <span>Занятия: {{ excuseLessons(entry) || 'Не указаны' }}</span>
-            <span>Создано: {{ instantText(entry.submittedAt) }} · Решение: {{ instantText(entry.decidedAt) }}</span>
+            <span
+              >Создано: {{ instantText(entry.submittedAt) }} · Решение:
+              {{ instantText(entry.decidedAt) }}</span
+            >
           </li>
         </ul>
         <p

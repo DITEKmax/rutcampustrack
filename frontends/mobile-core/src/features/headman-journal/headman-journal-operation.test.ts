@@ -18,7 +18,9 @@ describe('journal destructive confirmation and late ACK ownership', () => {
   it('does not publish a late destructive ACK into the newly selected lesson', async () => {
     let current: JournalMutationScope | null = { ...scope }
     let finish!: () => void
-    const ack = new Promise<void>((resolve) => { finish = resolve })
+    const ack = new Promise<void>((resolve) => {
+      finish = resolve
+    })
     let visibleMark = 'EXCUSED'
     const run = async () => {
       await ack

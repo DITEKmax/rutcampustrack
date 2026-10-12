@@ -1,123 +1,125 @@
 <script setup lang="ts">
-import './mobile-action-semantics.pcss'
-import './mobile-upload.pcss'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import MobileBottomNav from './MobileBottomNav.vue'
-import type { MobileHostAdapter } from '../host'
+import './mobile-action-semantics.pcss';
+import './mobile-upload.pcss';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import MobileBottomNav from './MobileBottomNav.vue';
+import type { MobileHostAdapter } from '../host';
 import {
   rootRoute,
   type MobileBottomNavItems,
   type MobileNavigationStack,
   type MobileRootRouteId,
   type MobileRoute,
-} from '../navigation'
-import { shouldShowHostBack, shouldShowMobileDock, shouldShowProductBack } from '../shell-contract'
-import './mobile-shell.pcss'
+} from '../navigation';
+import { shouldShowHostBack, shouldShowMobileDock, shouldShowProductBack } from '../shell-contract';
+import './mobile-shell.pcss';
 
-const props = withDefaults(defineProps<{
-  route?: MobileRoute | null
-  navigation?: MobileNavigationStack | null
-  navItems: MobileBottomNavItems
-  activeId?: MobileRootRouteId | null
-  keyboardVisible?: boolean
-  host?: MobileHostAdapter | null
-  backLabel?: string
-  customBack?: boolean
-}>(), {
-  route: null,
-  navigation: null,
-  activeId: null,
-  // An absent Boolean prop otherwise casts to false and masks host keyboard state.
-  keyboardVisible: undefined as never,
-  backLabel: 'Назад',
-  customBack: false,
-  host: null,
-})
+const props = withDefaults(
+  defineProps<{
+    route?: MobileRoute | null;
+    navigation?: MobileNavigationStack | null;
+    navItems: MobileBottomNavItems;
+    activeId?: MobileRootRouteId | null;
+    keyboardVisible?: boolean;
+    host?: MobileHostAdapter | null;
+    backLabel?: string;
+    customBack?: boolean;
+  }>(),
+  {
+    route: null,
+    navigation: null,
+    activeId: null,
+    // An absent Boolean prop otherwise casts to false and masks host keyboard state.
+    keyboardVisible: undefined as never,
+    backLabel: 'Назад',
+    customBack: false,
+    host: null,
+  },
+);
 
 const emit = defineEmits<{
-  navigate: [route: MobileRootRouteId]
-  back: [route: MobileRoute | null]
-}>()
+  navigate: [route: MobileRootRouteId];
+  back: [route: MobileRoute | null];
+}>();
 
-const hostKeyboardVisible = ref(false)
-const stackRevision = ref(0)
-let stopNavigationSubscription: (() => void) | undefined
-let stopKeyboardSubscription: (() => void) | undefined
-let stopBackSubscription: (() => void) | undefined
+const hostKeyboardVisible = ref(false);
+const stackRevision = ref(0);
+let stopNavigationSubscription: (() => void) | undefined;
+let stopKeyboardSubscription: (() => void) | undefined;
+let stopBackSubscription: (() => void) | undefined;
 
 const currentRoute = computed<MobileRoute>(() => {
   // The revision makes an owned stack reactive after shell actions. Consumers
   // that own a route prop remain fully controlled and take precedence.
-  void stackRevision.value
-  return props.route ?? props.navigation?.current ?? rootRoute('today')
-})
+  void stackRevision.value;
+  return props.route ?? props.navigation?.current ?? rootRoute('today');
+});
 
-const activeId = computed(() => props.activeId ?? currentRoute.value.root)
-const keyboardVisible = computed(() => props.keyboardVisible ?? hostKeyboardVisible.value)
-const dockVisible = computed(() => shouldShowMobileDock(currentRoute.value, keyboardVisible.value))
-const productBackVisible = computed(() => !props.customBack && shouldShowProductBack(currentRoute.value, props.host?.backOwner ?? 'product'))
-const hostBackVisible = computed(() => !props.customBack && shouldShowHostBack(currentRoute.value, props.host?.backOwner ?? 'none'))
+const activeId = computed(() => props.activeId ?? currentRoute.value.root);
+const keyboardVisible = computed(() => props.keyboardVisible ?? hostKeyboardVisible.value);
+const dockVisible = computed(() => shouldShowMobileDock(currentRoute.value, keyboardVisible.value));
+const productBackVisible = computed(
+  () =>
+    !props.customBack &&
+    shouldShowProductBack(currentRoute.value, props.host?.backOwner ?? 'product'),
+);
+const hostBackVisible = computed(
+  () =>
+    !props.customBack && shouldShowHostBack(currentRoute.value, props.host?.backOwner ?? 'none'),
+);
 
 function navigate(route: MobileRootRouteId): void {
-  props.navigation?.goRoot(route)
-  emit('navigate', route)
+  props.navigation?.goRoot(route);
+  emit('navigate', route);
 }
 
 function goBack(): void {
-  const current = props.navigation?.current
-  const previous = props.navigation?.back() ?? null
-  if (current && previous === current) return
-  emit('back', previous)
+  const current = props.navigation?.current;
+  const previous = props.navigation?.back() ?? null;
+  if (current && previous === current) return;
+  emit('back', previous);
 }
 
 function subscribeNavigation(navigation: MobileNavigationStack | null): void {
-  stopNavigationSubscription?.()
+  stopNavigationSubscription?.();
   stopNavigationSubscription = navigation?.subscribe(() => {
-    stackRevision.value += 1
-  })
+    stackRevision.value += 1;
+  });
 }
 
-watch(
-  () => props.navigation,
-  subscribeNavigation,
-  { immediate: true },
-)
+watch(() => props.navigation, subscribeNavigation, { immediate: true });
 
 function subscribeHost(host: MobileHostAdapter | null): void {
-  stopKeyboardSubscription?.()
-  stopBackSubscription?.()
-  stopKeyboardSubscription = undefined
-  stopBackSubscription = undefined
+  stopKeyboardSubscription?.();
+  stopBackSubscription?.();
+  stopKeyboardSubscription = undefined;
+  stopBackSubscription = undefined;
 
-  hostKeyboardVisible.value = false
+  hostKeyboardVisible.value = false;
   stopKeyboardSubscription = host?.subscribeKeyboard?.((visible) => {
-    hostKeyboardVisible.value = visible
-  })
-  stopBackSubscription = host?.subscribeBack?.(goBack)
+    hostKeyboardVisible.value = visible;
+  });
+  stopBackSubscription = host?.subscribeBack?.(goBack);
 }
 
-watch(
-  () => props.host,
-  subscribeHost,
-  { immediate: true },
-)
+watch(() => props.host, subscribeHost, { immediate: true });
 
 watch(
   () => [props.host, hostBackVisible.value] as const,
   ([host, visible], previous) => {
-    const previousHost = previous?.[0]
-    if (previousHost && previousHost !== host) previousHost.setBackVisible?.(false)
-    host?.setBackVisible?.(visible)
+    const previousHost = previous?.[0];
+    if (previousHost && previousHost !== host) previousHost.setBackVisible?.(false);
+    host?.setBackVisible?.(visible);
   },
   { immediate: true },
-)
+);
 
 onBeforeUnmount(() => {
-  stopNavigationSubscription?.()
-  stopKeyboardSubscription?.()
-  stopBackSubscription?.()
-  props.host?.setBackVisible?.(false)
-})
+  stopNavigationSubscription?.();
+  stopKeyboardSubscription?.();
+  stopBackSubscription?.();
+  props.host?.setBackVisible?.(false);
+});
 </script>
 
 <template>

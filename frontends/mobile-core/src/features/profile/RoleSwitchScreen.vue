@@ -1,40 +1,50 @@
 <script setup lang="ts">
-import type { ProfileRequestError, ProfileResolvedTheme, ProfileRole, ProfileSnapshot } from './profile-types'
-import { roleInitial, roleLabel, statusLabel } from './profile-types'
-import currentCheck from '../../assets/admin/check.svg'
-import rolePrevious from './assets/role-previous.svg'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import './profile-screen.pcss'
+import type {
+  ProfileRequestError,
+  ProfileResolvedTheme,
+  ProfileRole,
+  ProfileSnapshot,
+} from './profile-types';
+import { roleInitial, roleLabel, statusLabel } from './profile-types';
+import currentCheck from '../../assets/admin/check.svg';
+import rolePrevious from './assets/role-previous.svg';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  snapshot: ProfileSnapshot | null
-  pendingRole?: ProfileRole | null
-  error?: ProfileRequestError | null
-  loading?: boolean
-  offline?: boolean
-  showRolesOnError?: boolean
-  onBack?: (() => void | Promise<void>) | undefined
-  onSelectRole?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
-  compact?: boolean
-  theme?: ProfileResolvedTheme
-}>(), {
-  pendingRole: null,
-  error: null,
-  loading: false,
-  offline: false,
-  showRolesOnError: false,
-  onBack: undefined,
-  onSelectRole: undefined,
-  compact: false,
-  theme: 'dark',
-})
+const props = withDefaults(
+  defineProps<{
+    snapshot: ProfileSnapshot | null;
+    pendingRole?: ProfileRole | null;
+    error?: ProfileRequestError | null;
+    loading?: boolean;
+    offline?: boolean;
+    showRolesOnError?: boolean;
+    onBack?: (() => void | Promise<void>) | undefined;
+    onSelectRole?:
+      | ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>)
+      | undefined;
+    compact?: boolean;
+    theme?: ProfileResolvedTheme;
+  }>(),
+  {
+    pendingRole: null,
+    error: null,
+    loading: false,
+    offline: false,
+    showRolesOnError: false,
+    onBack: undefined,
+    onSelectRole: undefined,
+    compact: false,
+    theme: 'dark',
+  },
+);
 
 async function selectRole(role: ProfileRole): Promise<void> {
-  if (props.offline || !props.snapshot || props.pendingRole !== null) return
-  const grant = props.snapshot.roles.find((candidate) => candidate.role === role)
-  if (!grant?.selectable) return
+  if (props.offline || !props.snapshot || props.pendingRole !== null) return;
+  const grant = props.snapshot.roles.find((candidate) => candidate.role === role);
+  if (!grant?.selectable) return;
   try {
-    await props.onSelectRole?.(role, props.snapshot.sessionVersion)
+    await props.onSelectRole?.(role, props.snapshot.sessionVersion);
   } catch {
     // The owner publishes the failure through the error prop; never leave an
     // event-handler rejection unobserved.
@@ -61,7 +71,7 @@ async function selectRole(role: ProfileRole): Promise<void> {
             :src="rolePrevious"
             alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-role-title"
@@ -116,29 +126,40 @@ async function selectRole(role: ProfileRole): Promise<void> {
             v-if="!compact"
             class="profile-role-card__avatar"
             aria-hidden="true"
-          >{{ roleInitial(grant.role) }}</span>
+            >{{ roleInitial(grant.role) }}</span
+          >
           <span class="profile-role-card__copy">
             <span class="profile-role-card__title">{{ roleLabel(grant.role) }}</span>
             <span
               v-if="!compact && grant.contextLabel"
               class="profile-role-card__meta"
-            >{{ grant.contextLabel }}</span>
+              >{{ grant.contextLabel }}</span
+            >
             <span
               v-if="grant.status !== 'ACTIVE' || grant.readOnly"
               class="profile-role-card__meta"
-            >{{ grant.status !== 'ACTIVE' ? statusLabel(grant.status) : '' }}{{ grant.readOnly ? (grant.status !== 'ACTIVE' ? ' · только чтение' : 'Только чтение') : '' }}</span>
+              >{{ grant.status !== 'ACTIVE' ? statusLabel(grant.status) : ''
+              }}{{
+                grant.readOnly
+                  ? grant.status !== 'ACTIVE'
+                    ? ' · только чтение'
+                    : 'Только чтение'
+                  : ''
+              }}</span
+            >
           </span>
           <img
             v-if="compact && snapshot.activeRole === grant.role && pendingRole === null"
             class="profile-role-card__check"
             :src="currentCheck"
             alt="Текущая роль"
-          >
+          />
           <span
             v-if="pendingRole === grant.role"
             class="profile-role-card__status"
             role="status"
-          >Сохраняем…</span>
+            >Сохраняем…</span
+          >
         </button>
         <p
           v-if="snapshot.roles.length === 0"

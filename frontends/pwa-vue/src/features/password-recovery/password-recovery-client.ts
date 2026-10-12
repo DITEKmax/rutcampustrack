@@ -11,7 +11,10 @@ export type PasswordRecoveryVerification = {
 
 export interface PasswordRecoveryClient {
   request(login: string, signal?: AbortSignal): Promise<PasswordRecoveryChallenge>
-  verify(input: { challengeId: string; code: string }, signal?: AbortSignal): Promise<PasswordRecoveryVerification>
+  verify(
+    input: { challengeId: string; code: string },
+    signal?: AbortSignal,
+  ): Promise<PasswordRecoveryVerification>
   complete(input: { resetTicket: string; newPassword: string }, signal?: AbortSignal): Promise<void>
 }
 
@@ -29,7 +32,11 @@ export class PasswordRecoveryApiError extends Error {
   constructor(
     status: number,
     code: string | null,
-    problem: PasswordRecoveryProblem = { attemptsRemaining: null, retryAfterSeconds: null, detail: null },
+    problem: PasswordRecoveryProblem = {
+      attemptsRemaining: null,
+      retryAfterSeconds: null,
+      detail: null,
+    },
   ) {
     super('Password recovery request failed')
     this.name = 'PasswordRecoveryApiError'
@@ -41,7 +48,9 @@ export class PasswordRecoveryApiError extends Error {
 
 type UnknownRecord = Record<string, unknown>
 
-export function createPasswordRecoveryClient(fetcher: typeof fetch = globalThis.fetch): PasswordRecoveryClient {
+export function createPasswordRecoveryClient(
+  fetcher: typeof fetch = globalThis.fetch,
+): PasswordRecoveryClient {
   return {
     request: async (login, signal) => {
       const response = await send(fetcher, '/api/auth/password-reset/request', { login }, signal)
@@ -50,22 +59,33 @@ export function createPasswordRecoveryClient(fetcher: typeof fetch = globalThis.
         throw new PasswordRecoveryApiError(response.status, 'PROTOCOL_ERROR')
       }
       const value = await readJson(response)
-      if (!isRecord(value) || !isNonEmptyString(value.challengeId) || !isPositiveInteger(value.ttlSeconds)) {
+      if (
+        !isRecord(value) ||
+        !isNonEmptyString(value.challengeId) ||
+        !isPositiveInteger(value.ttlSeconds)
+      ) {
         throw new PasswordRecoveryApiError(502, 'PROTOCOL_ERROR')
       }
       return { challengeId: value.challengeId, ttlSeconds: value.ttlSeconds }
     },
     verify: async (input, signal) => {
-      const response = await send(fetcher, '/api/auth/password-reset/verify', {
-        challengeId: input.challengeId,
-        code: input.code,
-      }, signal)
+      const response = await send(
+        fetcher,
+        '/api/auth/password-reset/verify',
+        {
+          challengeId: input.challengeId,
+          code: input.code,
+        },
+        signal,
+      )
       if (!response.ok) throw await responseError(response)
       const value = await readJson(response)
-      if (!isRecord(value)
-        || !isNonEmptyString(value.resetTicket)
-        || !isPositiveInteger(value.expiresInSeconds)
-        || !isNonNegativeInteger(value.attemptsRemaining)) {
+      if (
+        !isRecord(value) ||
+        !isNonEmptyString(value.resetTicket) ||
+        !isPositiveInteger(value.expiresInSeconds) ||
+        !isNonNegativeInteger(value.attemptsRemaining)
+      ) {
         throw new PasswordRecoveryApiError(502, 'PROTOCOL_ERROR')
       }
       return {
@@ -75,12 +95,18 @@ export function createPasswordRecoveryClient(fetcher: typeof fetch = globalThis.
       }
     },
     complete: async (input, signal) => {
-      const response = await send(fetcher, '/api/auth/password-reset/complete', {
-        resetTicket: input.resetTicket,
-        newPassword: input.newPassword,
-      }, signal)
+      const response = await send(
+        fetcher,
+        '/api/auth/password-reset/complete',
+        {
+          resetTicket: input.resetTicket,
+          newPassword: input.newPassword,
+        },
+        signal,
+      )
       if (!response.ok) throw await responseError(response)
-      if (response.status !== 204) throw new PasswordRecoveryApiError(response.status, 'PROTOCOL_ERROR')
+      if (response.status !== 204)
+        throw new PasswordRecoveryApiError(response.status, 'PROTOCOL_ERROR')
     },
   }
 }
@@ -114,7 +140,7 @@ async function send(
 async function responseError(response: Response): Promise<PasswordRecoveryApiError> {
   let value: unknown = null
   try {
-    value = await response.json() as unknown
+    value = (await response.json()) as unknown
   } catch {
     // An empty or malformed problem response still maps to a generic UI state.
   }
@@ -123,8 +149,12 @@ async function responseError(response: Response): Promise<PasswordRecoveryApiErr
   const extras = root && isRecord(root.extras) ? root.extras : null
   const codeValue = extras?.code ?? root?.code
   const code = isNonEmptyString(codeValue) ? codeValue : null
-  const attemptsRemaining = nonNegativeIntegerOrNull(extras?.attemptsRemaining ?? root?.attemptsRemaining)
-  const retryAfterSeconds = nonNegativeIntegerOrNull(extras?.retryAfterSeconds ?? root?.retryAfterSeconds)
+  const attemptsRemaining = nonNegativeIntegerOrNull(
+    extras?.attemptsRemaining ?? root?.attemptsRemaining,
+  )
+  const retryAfterSeconds = nonNegativeIntegerOrNull(
+    extras?.retryAfterSeconds ?? root?.retryAfterSeconds,
+  )
   const detail = root && typeof root.detail === 'string' ? root.detail : null
   return new PasswordRecoveryApiError(response.status, code, {
     attemptsRemaining,
@@ -135,7 +165,7 @@ async function responseError(response: Response): Promise<PasswordRecoveryApiErr
 
 async function readJson(response: Response): Promise<unknown> {
   try {
-    return await response.json() as unknown
+    return (await response.json()) as unknown
   } catch {
     throw new PasswordRecoveryApiError(502, 'PROTOCOL_ERROR')
   }

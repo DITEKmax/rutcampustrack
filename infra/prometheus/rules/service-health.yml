@@ -16,8 +16,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Сервис {{ $labels.job }} недоступен"
-          description: "Prometheus не может scrape {{ $labels.instance }} более 1 мин. {{ $labels.job }} либо упал, либо сеть сломана."
+          summary: 'Сервис {{ $labels.job }} недоступен'
+          description: 'Prometheus не может scrape {{ $labels.instance }} более 1 мин. {{ $labels.job }} либо упал, либо сеть сломана.'
 
       # Liveness probe: actuator/health сам говорит DOWN (M04 G4 добавил
       # show-details:always + per-dep indicators). Полезно для: RabbitMQ
@@ -29,8 +29,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.instance }} health={{ $labels.status }}"
-          description: "Actuator health endpoint возвращает {{ $labels.status }} более 2 мин. Проверь /actuator/health."
+          summary: '{{ $labels.instance }} health={{ $labels.status }}'
+          description: 'Actuator health endpoint возвращает {{ $labels.status }} более 2 мин. Проверь /actuator/health.'
 
   - name: outbox-eventing
     rules:
@@ -43,8 +43,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Outbox lag {{ $value | humanizeDuration }} в {{ $labels.job }}"
-          description: "Старейшее pending-событие висит > 5 мин. Проверь RabbitMQ + publisher job logs. Событие: {{ $labels.instance }}."
+          summary: 'Outbox lag {{ $value | humanizeDuration }} в {{ $labels.job }}'
+          description: 'Старейшее pending-событие висит > 5 мин. Проверь RabbitMQ + publisher job logs. Событие: {{ $labels.instance }}.'
 
       # DLQBacklog перенесён в rabbitmq.yml (M13 G19) — был silent
       # dangling до image switch на management-alpine.
@@ -63,8 +63,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "HTTP 5xx rate > 1 req/s в {{ $labels.job }}"
-          description: "{{ $labels.job }} возвращает {{ $value | printf \"%.2f\" }} req/sec ошибок 5xx за последние 5 мин. Проверь логи + последние deploy'и."
+          summary: 'HTTP 5xx rate > 1 req/s в {{ $labels.job }}'
+          description: '{{ $labels.job }} возвращает {{ $value | printf "%.2f" }} req/sec ошибок 5xx за последние 5 мин. Проверь логи + последние deploy''и.'
 
       # p95 latency > 2 сек — аномалия для всех endpoint'ов кроме
       # batch upload'ов. Использует _bucket метрику для quantile().
@@ -79,8 +79,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "p95 latency > 2s в {{ $labels.job }}"
-          description: "{{ $labels.job }} p95={{ $value | printf \"%.2f\" }}s за последние 10 мин. Проверь HikariPoolExhaustion + downstream latency + slow queries."
+          summary: 'p95 latency > 2s в {{ $labels.job }}'
+          description: '{{ $labels.job }} p95={{ $value | printf "%.2f" }}s за последние 10 мин. Проверь HikariPoolExhaustion + downstream latency + slow queries.'
 
   - name: infra
     rules:
@@ -93,8 +93,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Disk {{ $labels.device }} > 80%"
-          description: "{{ $value | humanizePercentage }} использования на {{ $labels.instance }}. Почисти docker volumes / старые бэкапы."
+          summary: 'Disk {{ $labels.device }} > 80%'
+          description: '{{ $value | humanizePercentage }} использования на {{ $labels.instance }}. Почисти docker volumes / старые бэкапы.'
 
       # Heap — утечка памяти в Java-сервисах. G max JVM / heap_used
       # уже имеется через Micrometer JVM metrics.
@@ -104,8 +104,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "JVM heap > 90% в {{ $labels.application }}"
-          description: "{{ $labels.application }} heap={{ $value | humanizePercentage }}. Возможна утечка — сними heap dump."
+          summary: 'JVM heap > 90% в {{ $labels.application }}'
+          description: '{{ $labels.application }} heap={{ $value | humanizePercentage }}. Возможна утечка — сними heap dump.'
 
       # M05 Группа 6 / P2-10/6 — HikariCP pool exhaustion. Если >80% pool
       # занято 5 минут — concurrent-queries растут быстрее чем pool
@@ -119,8 +119,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "HikariCP pool > 80% в {{ $labels.application }}"
-          description: "{{ $labels.application }} pool={{ $value | humanizePercentage }} занято. Риск connection-timeout. Подними maximum-pool-size или ищи долгие транзакции (leak-detection-threshold=60s)."
+          summary: 'HikariCP pool > 80% в {{ $labels.application }}'
+          description: '{{ $labels.application }} pool={{ $value | humanizePercentage }} занято. Риск connection-timeout. Подними maximum-pool-size или ищи долгие транзакции (leak-detection-threshold=60s).'
 
   - name: business-anomaly
     rules:
@@ -145,8 +145,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Нет гео-отметок 10 минут подряд в рабочее время"
-          description: "rate(attendance.checkin)=0 уже 10 мин. Проверь Gateway + attendance-service. Если целенаправленно сервис выкачен — silence alert."
+          summary: 'Нет гео-отметок 10 минут подряд в рабочее время'
+          description: 'rate(attendance.checkin)=0 уже 10 мин. Проверь Gateway + attendance-service. Если целенаправленно сервис выкачен — silence alert.'
 
       # KI-2 silent fallback — индикатор того, что какой-то service-to-
       # service вызов до сих пор не несёт internal JWT. Не critical,
@@ -158,8 +158,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "KI-2 fallback rate={{ $value }}/s в {{ $labels.job }}"
-          description: "Silent fallback на legacy X-User-* headers. В M03a+ все service-calls обязаны нести X-Internal-Token. Проверь источник: `{{ $labels.from }}` → `{{ $labels.to }}`."
+          summary: 'KI-2 fallback rate={{ $value }}/s в {{ $labels.job }}'
+          description: 'Silent fallback на legacy X-User-* headers. В M03a+ все service-calls обязаны нести X-Internal-Token. Проверь источник: `{{ $labels.from }}` → `{{ $labels.to }}`.'
 
       # M16 G3 — brute-force на /otp/verify-by-code. Endpoint защищён
       # per-IP counter'ом (otp_verify_by_code_miss:<ip>, лимит 20/5min).
@@ -172,5 +172,5 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "OTP brute-force suspect rate={{ $value | printf \"%.2f\" }}/s в {{ $labels.job }}"
-          description: "Mismatch rate > 10/s на /otp/verify-by-code за 5 мин. Per-IP counter уже throttle'ит после 20 mismatch'ей, но широкий botnet может распределять. Проверь Loki ({service=\"rct-auth-service\"} |= \"verify-by-code\") + Gateway IP-distribution."
+          summary: 'OTP brute-force suspect rate={{ $value | printf "%.2f" }}/s в {{ $labels.job }}'
+          description: 'Mismatch rate > 10/s на /otp/verify-by-code за 5 мин. Per-IP counter уже throttle''ит после 20 mismatch''ей, но широкий botnet может распределять. Проверь Loki ({service="rct-auth-service"} |= "verify-by-code") + Gateway IP-distribution.'

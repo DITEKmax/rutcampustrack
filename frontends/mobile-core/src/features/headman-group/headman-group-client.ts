@@ -1,5 +1,8 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import { isReportDownloadFormat, type ReportDownloadFormat } from '../../shared/report-download-client'
+import {
+  isReportDownloadFormat,
+  type ReportDownloadFormat,
+} from '../../shared/report-download-client'
 
 export interface HeadmanRosterFormat {
   readonly code: ReportDownloadFormat
@@ -34,7 +37,9 @@ export interface HeadmanGroupMember {
   readonly login: string
   readonly status: string
   readonly groupId: number | null
-  readonly roles?: readonly { readonly role: string; readonly status: string; readonly groupId: number | null }[] | null
+  readonly roles?:
+    | readonly { readonly role: string; readonly status: string; readonly groupId: number | null }[]
+    | null
 }
 
 export interface HeadmanAssistant {
@@ -105,16 +110,28 @@ export class HeadmanGroupApi {
   }
 
   async listRosterFormats(): Promise<readonly HeadmanRosterFormat[]> {
-    const value = await this.request<unknown>('/api/attendance/reports/headman/group-composition/formats')
+    const value = await this.request<unknown>(
+      '/api/attendance/reports/headman/group-composition/formats',
+    )
     if (!isRecord(value) || !Array.isArray(value.formats)) {
       throw new Error('Сервер вернул некорректный список форматов состава группы.')
     }
     const formats = value.formats.map((item): HeadmanRosterFormat => {
-      if (!isRecord(item) || !isReportDownloadFormat(item.code) || !isText(item.label)
-        || typeof item.contentType !== 'string' || typeof item.extension !== 'string') {
+      if (
+        !isRecord(item) ||
+        !isReportDownloadFormat(item.code) ||
+        !isText(item.label) ||
+        typeof item.contentType !== 'string' ||
+        typeof item.extension !== 'string'
+      ) {
         throw new Error('Сервер вернул некорректный формат состава группы.')
       }
-      const format = { code: item.code, label: item.label, contentType: item.contentType, extension: item.extension }
+      const format = {
+        code: item.code,
+        label: item.label,
+        contentType: item.contentType,
+        extension: item.extension,
+      }
       validateRosterFormat(format)
       return format
     })
@@ -124,12 +141,18 @@ export class HeadmanGroupApi {
     return formats
   }
 
-  async downloadRoster(format: HeadmanRosterFormat, signal?: AbortSignal): Promise<HeadmanRosterDownload> {
+  async downloadRoster(
+    format: HeadmanRosterFormat,
+    signal?: AbortSignal,
+  ): Promise<HeadmanRosterDownload> {
     validateRosterFormat(format)
-    const response = await this.response(`/api/attendance/reports/headman/group-composition/export?format=${format.code}`, {
-      headers: { Accept: '*/*' },
-      ...(signal ? { signal } : {}),
-    })
+    const response = await this.response(
+      `/api/attendance/reports/headman/group-composition/export?format=${format.code}`,
+      {
+        headers: { Accept: '*/*' },
+        ...(signal ? { signal } : {}),
+      },
+    )
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
     this.options.assertCurrent?.()
@@ -141,11 +164,22 @@ export class HeadmanGroupApi {
     let filename: string | null = null
     try {
       filename = extended ? decodeURIComponent(extended) : quoted || plain || null
-    } catch { /* Invalid encoding is rejected with the other response metadata. */ }
-    if (blob.size === 0 || contentType !== ROSTER_CONTENT_TYPES[format.code] || !filename
-      || [...filename].some((character) => character === '/' || character === '\\'
-        || (character.codePointAt(0) ?? 0) <= 0x1f || character.codePointAt(0) === 0x7f)
-      || !filename.toLowerCase().endsWith(`.${format.extension}`)) {
+    } catch {
+      /* Invalid encoding is rejected with the other response metadata. */
+    }
+    if (
+      blob.size === 0 ||
+      contentType !== ROSTER_CONTENT_TYPES[format.code] ||
+      !filename ||
+      [...filename].some(
+        (character) =>
+          character === '/' ||
+          character === '\\' ||
+          (character.codePointAt(0) ?? 0) <= 0x1f ||
+          character.codePointAt(0) === 0x7f,
+      ) ||
+      !filename.toLowerCase().endsWith(`.${format.extension}`)
+    ) {
       throw new Error('Сервер вернул некорректный файл состава группы.')
     }
     return { blob, filename }
@@ -160,10 +194,12 @@ export class HeadmanGroupApi {
     assertPositiveInteger(studentId, 'studentId')
     const normalized = normalizePermissions(permissions)
     if (normalized.length === 0) throw new RangeError('permissions must not be empty')
-    return normalizeAssistant(await this.request<unknown>('/api/academic/assistants', {
-      method: 'POST',
-      body: JSON.stringify({ groupId, studentId, permissions: normalized }),
-    }))
+    return normalizeAssistant(
+      await this.request<unknown>('/api/academic/assistants', {
+        method: 'POST',
+        body: JSON.stringify({ groupId, studentId, permissions: normalized }),
+      }),
+    )
   }
 
   async updatePermissions(
@@ -173,10 +209,12 @@ export class HeadmanGroupApi {
     assertPositiveInteger(assistantId, 'assistantId')
     const normalized = normalizePermissions(permissions)
     if (normalized.length === 0) throw new RangeError('permissions must not be empty')
-    return normalizeAssistant(await this.request<unknown>(`/api/academic/assistants/${assistantId}/permissions`, {
-      method: 'PATCH',
-      body: JSON.stringify({ permissions: normalized }),
-    }))
+    return normalizeAssistant(
+      await this.request<unknown>(`/api/academic/assistants/${assistantId}/permissions`, {
+        method: 'PATCH',
+        body: JSON.stringify({ permissions: normalized }),
+      }),
+    )
   }
 
   async revokeAssistant(assistantId: number): Promise<void> {
@@ -219,7 +257,7 @@ export class HeadmanGroupApi {
         this.options.assertCurrent?.()
         return undefined as T
       }
-      const value = await response.json() as T
+      const value = (await response.json()) as T
       this.options.assertCurrent?.()
       return value
     }
@@ -231,7 +269,8 @@ export class HeadmanGroupApi {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
@@ -292,15 +331,25 @@ const PERMISSION_CODES: readonly HeadmanAssistantPermission[] = [
   'VIEW_STATS',
 ]
 
-function normalizePermissions(value: readonly HeadmanAssistantPermission[]): HeadmanAssistantPermission[] {
-  return [...new Set(value)].filter((permission): permission is HeadmanAssistantPermission => PERMISSION_CODES.includes(permission))
+function normalizePermissions(
+  value: readonly HeadmanAssistantPermission[],
+): HeadmanAssistantPermission[] {
+  return [...new Set(value)].filter((permission): permission is HeadmanAssistantPermission =>
+    PERMISSION_CODES.includes(permission),
+  )
 }
 
 function normalizePermissionOptions(value: unknown): readonly HeadmanPermissionOption[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((item) => {
-    if (!isRecord(item) || typeof item.code !== 'string' || !PERMISSION_CODES.includes(item.code as HeadmanAssistantPermission)
-      || typeof item.label !== 'string' || item.label.trim() === '') return []
+    if (
+      !isRecord(item) ||
+      typeof item.code !== 'string' ||
+      !PERMISSION_CODES.includes(item.code as HeadmanAssistantPermission) ||
+      typeof item.label !== 'string' ||
+      item.label.trim() === ''
+    )
+      return []
     return [{ code: item.code as HeadmanAssistantPermission, label: item.label.trim() }]
   })
 }
@@ -308,21 +357,24 @@ function normalizePermissionOptions(value: unknown): readonly HeadmanPermissionO
 function normalizeMember(value: Record<string, unknown>): HeadmanGroupMember {
   const id = positiveNumber(value.id)
   if (id === null) throw new Error('Сервер вернул студента без корректного id')
-  const fullName = firstText(value.fullName, value.displayName)
-    ?? ([value.lastName, value.firstName, value.middleName].filter(isText).join(' ').trim()
-      || firstText(value.login)
-      || `Студент #${id}`)
+  const fullName =
+    firstText(value.fullName, value.displayName) ??
+    ([value.lastName, value.firstName, value.middleName].filter(isText).join(' ').trim() ||
+      firstText(value.login) ||
+      `Студент #${id}`)
   return {
     id,
     fullName,
     login: firstText(value.login) ?? '',
     status: firstText(value.status)?.toUpperCase() ?? 'ACTIVE',
     groupId: positiveNumber(value.groupId),
-    roles: Array.isArray(value.roles) ? value.roles.filter(isRecord).map((grant) => ({
-      role: firstText(grant.role)?.toUpperCase() ?? '',
-      status: firstText(grant.status)?.toUpperCase() ?? '',
-      groupId: positiveNumber(grant.groupId),
-    })) : null,
+    roles: Array.isArray(value.roles)
+      ? value.roles.filter(isRecord).map((grant) => ({
+          role: firstText(grant.role)?.toUpperCase() ?? '',
+          status: firstText(grant.status)?.toUpperCase() ?? '',
+          groupId: positiveNumber(grant.groupId),
+        }))
+      : null,
   }
 }
 
@@ -335,12 +387,17 @@ function normalizeAssistant(value: unknown): HeadmanAssistant {
     throw new Error('Сервер вернул неполную запись помощника')
   }
   const permissions = Array.isArray(source.permissions)
-    ? normalizePermissions(source.permissions.filter((item): item is HeadmanAssistantPermission => typeof item === 'string') as HeadmanAssistantPermission[])
+    ? normalizePermissions(
+        source.permissions.filter(
+          (item): item is HeadmanAssistantPermission => typeof item === 'string',
+        ) as HeadmanAssistantPermission[],
+      )
     : []
   return {
     id,
     studentId,
-    studentName: firstText(source.studentName, source.fullName, source.login) ?? `Студент #${studentId}`,
+    studentName:
+      firstText(source.studentName, source.fullName, source.login) ?? `Студент #${studentId}`,
     login: firstText(source.login) ?? '',
     groupId,
     permissions,
@@ -399,7 +456,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function assertPositiveInteger(value: number, name: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} must be a positive integer`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${name} must be a positive integer`)
 }
 
 function problemDetail(value: unknown): string | null {
@@ -409,8 +467,11 @@ function problemDetail(value: unknown): string | null {
 
 function validateRosterFormat(format: HeadmanRosterFormat): void {
   const expectedExtension = format.code === 'png' ? 'zip' : format.code
-  if (!isReportDownloadFormat(format.code) || format.extension !== expectedExtension
-    || format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== ROSTER_CONTENT_TYPES[format.code]) {
+  if (
+    !isReportDownloadFormat(format.code) ||
+    format.extension !== expectedExtension ||
+    format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== ROSTER_CONTENT_TYPES[format.code]
+  ) {
     throw new RangeError('Выбран неподдерживаемый формат состава группы.')
   }
 }

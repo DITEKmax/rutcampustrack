@@ -22,7 +22,10 @@ import type {
 export class StudentApiError extends Error {
   readonly problem: MobileProblemDetails | null
 
-  constructor(readonly response: Response, problem: MobileProblemDetails | null) {
+  constructor(
+    readonly response: Response,
+    problem: MobileProblemDetails | null,
+  ) {
     super(problem?.detail || problem?.title || `HTTP ${response.status}`)
     this.name = 'StudentApiError'
     this.problem = problem
@@ -58,30 +61,44 @@ export class StudentApi {
     return this.request('/api/v1/student/today')
   }
 
-  getSemesterSchedule(semesterId: string, etag?: string): Promise<{ data: StudentSemesterSchedule | null; etag: string | null }> {
+  getSemesterSchedule(
+    semesterId: string,
+    etag?: string,
+  ): Promise<{ data: StudentSemesterSchedule | null; etag: string | null }> {
     const init: RequestInit = etag ? { headers: { 'If-None-Match': etag } } : {}
-    return this.requestResponse(`/api/v1/student/schedule?semesterId=${encodeURIComponent(semesterId)}`, init)
-      .then(async (response) => {
-        if (response.status === 304) {
-          await response.arrayBuffer()
-          return { data: null, etag: response.headers.get('ETag') }
-        }
+    return this.requestResponse(
+      `/api/v1/student/schedule?semesterId=${encodeURIComponent(semesterId)}`,
+      init,
+    ).then(async (response) => {
+      if (response.status === 304) {
+        await response.arrayBuffer()
+        return { data: null, etag: response.headers.get('ETag') }
+      }
 
-        return {
-          data: await this.json<StudentSemesterSchedule>(response),
-          etag: response.headers.get('ETag'),
-        }
-      })
+      return {
+        data: await this.json<StudentSemesterSchedule>(response),
+        etag: response.headers.get('ETag'),
+      }
+    })
   }
 
   getAttendance(semesterId: string, signal?: AbortSignal): Promise<StudentAttendanceResponse> {
     const params = new URLSearchParams({ semesterId })
-    return this.request(`/api/v1/student/attendance?${params.toString()}`, signal ? { signal } : undefined)
+    return this.request(
+      `/api/v1/student/attendance?${params.toString()}`,
+      signal ? { signal } : undefined,
+    )
   }
 
-  getStatistics(semesterId: string, signal?: AbortSignal): Promise<StudentStatisticsOverviewResponse> {
+  getStatistics(
+    semesterId: string,
+    signal?: AbortSignal,
+  ): Promise<StudentStatisticsOverviewResponse> {
     const params = new URLSearchParams({ semesterId })
-    return this.request(`/api/v1/student/statistics?${params.toString()}`, signal ? { signal } : undefined)
+    return this.request(
+      `/api/v1/student/statistics?${params.toString()}`,
+      signal ? { signal } : undefined,
+    )
   }
 
   getStatisticsSubject(
@@ -107,14 +124,21 @@ export class StudentApi {
     return this.request(`/api/v1/student/homework${query ? `?${query}` : ''}`)
   }
 
-  setHomeworkCompletion(id: string, command: StudentHomeworkCompletionCommand): Promise<StudentHomeworkCompletion> {
+  setHomeworkCompletion(
+    id: string,
+    command: StudentHomeworkCompletionCommand,
+  ): Promise<StudentHomeworkCompletion> {
     return this.request(`/api/v1/student/homework/${encodeURIComponent(id)}/completion`, {
       method: 'PUT',
       body: JSON.stringify(command),
     })
   }
 
-  checkin(lessonId: string, command: StudentCheckinCommand, idempotencyKey: string): Promise<StudentCheckinAck> {
+  checkin(
+    lessonId: string,
+    command: StudentCheckinCommand,
+    idempotencyKey: string,
+  ): Promise<StudentCheckinAck> {
     return this.request(`/api/v1/student/lessons/${encodeURIComponent(lessonId)}/checkin`, {
       method: 'POST',
       headers: { 'Idempotency-Key': idempotencyKey },
@@ -123,7 +147,8 @@ export class StudentApi {
   }
 
   listRequests(bucket: StudentRequestBucket = 'OPEN', page = 0): Promise<StudentRequestPage> {
-    if (!Number.isInteger(page) || page < 0) throw new RangeError('Requests page must be a non-negative integer')
+    if (!Number.isInteger(page) || page < 0)
+      throw new RangeError('Requests page must be a non-negative integer')
     const params = new URLSearchParams({ bucket, page: String(page), size: '10' })
     return this.request(`/api/v1/student/requests?${params.toString()}`)
   }
@@ -140,7 +165,11 @@ export class StudentApi {
     return this.request(`/api/v1/student/requests/${encodeURIComponent(id)}`)
   }
 
-  submitExcuse(command: StudentExcuseRequest, files: readonly File[], idempotencyKey: string): Promise<StudentRequestDetail> {
+  submitExcuse(
+    command: StudentExcuseRequest,
+    files: readonly File[],
+    idempotencyKey: string,
+  ): Promise<StudentRequestDetail> {
     validateIdempotencyKey(idempotencyKey)
     const body = new FormData()
     body.append('request', new Blob([JSON.stringify(command)], { type: 'application/json' }))
@@ -152,7 +181,10 @@ export class StudentApi {
     })
   }
 
-  submitLateCheckin(command: StudentLateCheckinRequest, idempotencyKey: string): Promise<StudentRequestDetail> {
+  submitLateCheckin(
+    command: StudentLateCheckinRequest,
+    idempotencyKey: string,
+  ): Promise<StudentRequestDetail> {
     validateIdempotencyKey(idempotencyKey)
     return this.request('/api/v1/student/requests/late-checkin', {
       method: 'POST',
@@ -162,7 +194,9 @@ export class StudentApi {
   }
 
   cancelRequest(id: string): Promise<StudentRequestDetail> {
-    return this.request(`/api/v1/student/requests/${encodeURIComponent(id)}/cancel`, { method: 'POST' })
+    return this.request(`/api/v1/student/requests/${encodeURIComponent(id)}/cancel`, {
+      method: 'POST',
+    })
   }
 
   async downloadRequestAttachment(id: string, attachmentId: string): Promise<Blob> {
@@ -178,11 +212,16 @@ export class StudentApi {
     return this.json<T>(response)
   }
 
-  private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+  private async requestResponse(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+  ): Promise<Response> {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     if (response.ok || response.status === 304) return response
@@ -193,7 +232,7 @@ export class StudentApi {
 
     let problem: MobileProblemDetails | null = null
     try {
-      problem = await response.json() as MobileProblemDetails
+      problem = (await response.json()) as MobileProblemDetails
     } catch {
       // A gateway/network response without Problem Details keeps its HTTP context.
     }

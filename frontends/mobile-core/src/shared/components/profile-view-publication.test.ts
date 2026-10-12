@@ -11,7 +11,11 @@ import {
 } from '../../features/profile/profile-types'
 import { createProfileViewPublication } from './profile-view-publication'
 
-function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void; reject: (reason?: unknown) => void } {
+function deferred<T>(): {
+  promise: Promise<T>
+  resolve: (value: T) => void
+  reject: (reason?: unknown) => void
+} {
   let resolvePromise: (value: T) => void = () => undefined
   let rejectPromise: (reason?: unknown) => void = () => undefined
   const promise = new Promise<T>((resolve, reject) => {
@@ -29,15 +33,17 @@ const snapshot = (): ProfileSnapshot => ({
   sessionVersion: '7',
   rolesVersion: '4',
   activeRole: 'STUDENT',
-  roles: [{
-    grantId: 'grant-1',
-    role: 'STUDENT',
-    status: 'ACTIVE',
-    groupId: 'group-1',
-    contextLabel: 'ИКБО-01-24',
-    selectable: true,
-    readOnly: false,
-  }],
+  roles: [
+    {
+      grantId: 'grant-1',
+      role: 'STUDENT',
+      status: 'ACTIVE',
+      groupId: 'group-1',
+      contextLabel: 'ИКБО-01-24',
+      selectable: true,
+      readOnly: false,
+    },
+  ],
   readOnly: false,
   passwordPolicy: DEFAULT_PASSWORD_POLICY,
 })
@@ -91,10 +97,12 @@ describe('createProfileViewPublication', () => {
   it('publishes sessions/history arrays, loading, ready, and error transitions', async () => {
     const sessionsRequest = deferred<ProfileSessionsPage>()
     const historyRequest = deferred<ProfileHistoryPage>()
-    const state = new ProfileState(port({
-      listSessions: async () => sessionsRequest.promise,
-      listHistory: async () => historyRequest.promise,
-    }))
+    const state = new ProfileState(
+      port({
+        listSessions: async () => sessionsRequest.promise,
+        listHistory: async () => historyRequest.promise,
+      }),
+    )
     const publication = createProfileViewPublication(() => state.view)
     await state.loadSnapshot()
     publication.publish()
@@ -144,7 +152,10 @@ describe('createProfileViewPublication', () => {
     await state.loadSnapshot()
     publication.publish()
 
-    const changePassword = state.changePassword({ currentPassword: 'old', newPassword: 'NewPassword1!' })
+    const changePassword = state.changePassword({
+      currentPassword: 'old',
+      newPassword: 'NewPassword1!',
+    })
     publication.publish()
     await settleVue()
     expect(publication.view.value.mutationBusy).toBe('password')
@@ -164,19 +175,23 @@ describe('createProfileViewPublication', () => {
     const initialRequest = deferred<ProfileSnapshot>()
     const retryRequest = deferred<ProfileSnapshot>()
     let snapshotCalls = 0
-    const state = new ProfileState(port({
-      getSnapshot: async () => {
-        snapshotCalls += 1
-        return snapshotCalls === 1 ? initialRequest.promise : retryRequest.promise
-      },
-    }))
+    const state = new ProfileState(
+      port({
+        getSnapshot: async () => {
+          snapshotCalls += 1
+          return snapshotCalls === 1 ? initialRequest.promise : retryRequest.promise
+        },
+      }),
+    )
     const publication = createProfileViewPublication(() => state.view)
 
     const load = state.loadSnapshot()
     publication.publish()
     expect(publication.view.value.snapshotStatus).toBe('loading')
 
-    initialRequest.reject(new ProfileRequestError('SESSION_STATE_STALE', 'Состояние сессии устарело', 409))
+    initialRequest.reject(
+      new ProfileRequestError('SESSION_STATE_STALE', 'Состояние сессии устарело', 409),
+    )
     await expect(load).rejects.toMatchObject({ code: 'SESSION_STATE_STALE' })
     expect(snapshotCalls).toBe(2)
     publication.publish()
@@ -194,17 +209,25 @@ describe('createProfileViewPublication', () => {
     const initialRequest = deferred<ProfileSnapshot>()
     const retryRequest = deferred<ProfileSnapshot>()
     let snapshotCalls = 0
-    const retryError = new ProfileRequestError('AUTHORITY_UNAVAILABLE', 'Профиль временно недоступен', 503)
-    const state = new ProfileState(port({
-      getSnapshot: async () => {
-        snapshotCalls += 1
-        return snapshotCalls === 1 ? initialRequest.promise : retryRequest.promise
-      },
-    }))
+    const retryError = new ProfileRequestError(
+      'AUTHORITY_UNAVAILABLE',
+      'Профиль временно недоступен',
+      503,
+    )
+    const state = new ProfileState(
+      port({
+        getSnapshot: async () => {
+          snapshotCalls += 1
+          return snapshotCalls === 1 ? initialRequest.promise : retryRequest.promise
+        },
+      }),
+    )
     const publication = createProfileViewPublication(() => state.view)
 
     const load = state.loadSnapshot()
-    initialRequest.reject(new ProfileRequestError('SESSION_STATE_STALE', 'Состояние сессии устарело', 409))
+    initialRequest.reject(
+      new ProfileRequestError('SESSION_STATE_STALE', 'Состояние сессии устарело', 409),
+    )
     await expect(load).rejects.toMatchObject({ code: 'SESSION_STATE_STALE' })
     expect(snapshotCalls).toBe(2)
     publication.publish()
@@ -222,11 +245,13 @@ describe('createProfileViewPublication', () => {
     const snapshotRequest = deferred<ProfileSnapshot>()
     const sessionsRequest = deferred<ProfileSessionsPage>()
     const historyRequest = deferred<ProfileHistoryPage>()
-    const state = new ProfileState(port({
-      getSnapshot: async () => snapshotRequest.promise,
-      listSessions: async () => sessionsRequest.promise,
-      listHistory: async () => historyRequest.promise,
-    }))
+    const state = new ProfileState(
+      port({
+        getSnapshot: async () => snapshotRequest.promise,
+        listSessions: async () => sessionsRequest.promise,
+        listHistory: async () => historyRequest.promise,
+      }),
+    )
     const publication = createProfileViewPublication(() => state.view)
 
     const loadSnapshot = state.loadSnapshot()
@@ -258,7 +283,10 @@ describe('createProfileViewPublication', () => {
     const request = deferred<ProfileSnapshot>()
     let disposed = false
     const state = new ProfileState(port({ getSnapshot: async () => request.promise }))
-    const publication = createProfileViewPublication(() => state.view, () => disposed)
+    const publication = createProfileViewPublication(
+      () => state.view,
+      () => disposed,
+    )
 
     const load = state.loadSnapshot()
     publication.publish()

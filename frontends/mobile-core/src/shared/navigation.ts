@@ -1,8 +1,22 @@
 export const mobileRootRouteIds = [
-  'admin-home', 'admin-users', 'admin-groups', 'admin-more',
-  'today', 'homework', 'attendance', 'more', 'profile',
-  'teacher-home', 'teacher-attendance', 'teacher-stats', 'teacher-map',
-  'headman-today', 'headman-attendance', 'headman-requests', 'headman-more', 'headman-map',
+  'admin-home',
+  'admin-users',
+  'admin-groups',
+  'admin-more',
+  'today',
+  'homework',
+  'attendance',
+  'more',
+  'profile',
+  'teacher-home',
+  'teacher-attendance',
+  'teacher-stats',
+  'teacher-map',
+  'headman-today',
+  'headman-attendance',
+  'headman-requests',
+  'headman-more',
+  'headman-map',
 ] as const
 
 export type MobileRootRouteId = (typeof mobileRootRouteIds)[number]
@@ -46,7 +60,13 @@ export interface MobileBottomNavItem {
 export type MobileBottomNavItems =
   | readonly [MobileBottomNavItem, MobileBottomNavItem, MobileBottomNavItem]
   | readonly [MobileBottomNavItem, MobileBottomNavItem, MobileBottomNavItem, MobileBottomNavItem]
-  | readonly [MobileBottomNavItem, MobileBottomNavItem, MobileBottomNavItem, MobileBottomNavItem, MobileBottomNavItem]
+  | readonly [
+      MobileBottomNavItem,
+      MobileBottomNavItem,
+      MobileBottomNavItem,
+      MobileBottomNavItem,
+      MobileBottomNavItem,
+    ]
 
 export function rootRoute(id: MobileRootRouteId): MobileRootRoute {
   return { kind: 'root', id, root: id, surface: 'root' }
@@ -79,10 +99,11 @@ export interface MobileNavigationStack {
  * Components decide when to expose a route; this object only owns stack
  * semantics and never claims that a route has an implementation.
  */
-export function createMobileNavigationStack(initial: MobileRoute = rootRoute('today')): MobileNavigationStack {
-  const entries: MobileRoute[] = initial.kind === 'nested'
-    ? [rootRoute(initial.root), initial]
-    : [initial]
+export function createMobileNavigationStack(
+  initial: MobileRoute = rootRoute('today'),
+): MobileNavigationStack {
+  const entries: MobileRoute[] =
+    initial.kind === 'nested' ? [rootRoute(initial.root), initial] : [initial]
   const listeners = new Set<() => void>()
   const backGuards = new Set<(route: MobileRoute) => boolean>()
 
@@ -159,5 +180,8 @@ export function isRootLikeRoute(route: MobileRoute): boolean {
 }
 
 export function isTaskLikeRoute(route: MobileRoute): boolean {
-  return route.kind === 'nested' && (route.surface === 'task' || route.surface === 'detail' || route.surface === 'editor')
+  return (
+    route.kind === 'nested' &&
+    (route.surface === 'task' || route.surface === 'detail' || route.surface === 'editor')
+  )
 }

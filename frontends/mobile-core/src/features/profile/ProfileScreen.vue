@@ -1,37 +1,45 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ProfileRequestError, ProfileResolvedTheme, ProfileRoute, ProfileSnapshot } from './profile-types'
-import { displayInitials, roleLabel } from './profile-types'
-import profileAppearance from './assets/profile-appearance.svg'
-import profileHistory from './assets/profile-history.svg'
-import profileRoleSwitch from './assets/profile-role-switch.svg'
-import profileSecurity from './assets/profile-security.svg'
-import profileSessions from './assets/profile-sessions.svg'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import './profile-screen.pcss'
+import { computed } from 'vue';
+import type {
+  ProfileRequestError,
+  ProfileResolvedTheme,
+  ProfileRoute,
+  ProfileSnapshot,
+} from './profile-types';
+import { displayInitials, roleLabel } from './profile-types';
+import profileAppearance from './assets/profile-appearance.svg';
+import profileHistory from './assets/profile-history.svg';
+import profileRoleSwitch from './assets/profile-role-switch.svg';
+import profileSecurity from './assets/profile-security.svg';
+import profileSessions from './assets/profile-sessions.svg';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  snapshot: ProfileSnapshot | null
-  loading?: boolean
-  error?: ProfileRequestError | null
-  onRetry?: (() => void | Promise<void>) | undefined
-  onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined
-  onLogout?: (() => void | Promise<void>) | undefined
-  logoutBusy?: boolean
-  showActiveRole?: boolean
-  showRoleSwitch?: boolean
-  theme?: ProfileResolvedTheme
-}>(), {
-  loading: false,
-  error: null,
-  onRetry: undefined,
-  onNavigate: undefined,
-  onLogout: undefined,
-  logoutBusy: false,
-  showActiveRole: true,
-  showRoleSwitch: true,
-  theme: 'dark',
-})
+const props = withDefaults(
+  defineProps<{
+    snapshot: ProfileSnapshot | null;
+    loading?: boolean;
+    error?: ProfileRequestError | null;
+    onRetry?: (() => void | Promise<void>) | undefined;
+    onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined;
+    onLogout?: (() => void | Promise<void>) | undefined;
+    logoutBusy?: boolean;
+    showActiveRole?: boolean;
+    showRoleSwitch?: boolean;
+    theme?: ProfileResolvedTheme;
+  }>(),
+  {
+    loading: false,
+    error: null,
+    onRetry: undefined,
+    onNavigate: undefined,
+    onLogout: undefined,
+    logoutBusy: false,
+    showActiveRole: true,
+    showRoleSwitch: true,
+    theme: 'dark',
+  },
+);
 
 const rows = [
   { route: 'role-switch', label: 'Сменить роль', icon: profileRoleSwitch },
@@ -39,20 +47,26 @@ const rows = [
   { route: 'security', label: 'Безопасность', icon: profileSecurity },
   { route: 'sessions', label: 'Активные сеансы', icon: profileSessions },
   { route: 'history', label: 'История аккаунта', icon: profileHistory },
-] as const satisfies readonly { route: Extract<ProfileRoute, 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'>; label: string; icon: string }[]
-const visibleRows = computed(() => props.showRoleSwitch ? rows : rows.filter((item) => item.route !== 'role-switch'))
+] as const satisfies readonly {
+  route: Extract<ProfileRoute, 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'>;
+  label: string;
+  icon: string;
+}[];
+const visibleRows = computed(() =>
+  props.showRoleSwitch ? rows : rows.filter((item) => item.route !== 'role-switch'),
+);
 
 function navigate(route: ProfileRoute): void {
-  void props.onNavigate?.(route)
+  void props.onNavigate?.(route);
 }
 
 function isBootstrapUnavailable(route: ProfileRoute): boolean {
-  return !props.snapshot?.activeRole && (route === 'security' || route === 'history')
+  return !props.snapshot?.activeRole && (route === 'security' || route === 'history');
 }
 
 function logout(): void {
-  if (props.logoutBusy) return
-  void props.onLogout?.()
+  if (props.logoutBusy) return;
+  void props.onLogout?.();
 }
 </script>
 
@@ -105,8 +119,12 @@ function logout(): void {
               class="profile-card__meta"
             >
               <template v-if="showActiveRole">
-                {{ snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана' }}
-              </template><span v-if="snapshot.groupLabel">{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span>
+                {{
+                  snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана'
+                }} </template
+              ><span v-if="snapshot.groupLabel"
+                >{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span
+              >
             </p>
           </div>
         </section>
@@ -127,7 +145,7 @@ function logout(): void {
                 :src="item.icon"
                 alt=""
                 aria-hidden="true"
-              >
+              />
               <span>{{ item.label }}</span>
             </button>
           </div>

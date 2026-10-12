@@ -28,7 +28,9 @@ function mediaQuery(matches = false): FakeMediaQuery {
     removeEventListener: (_type, listener) => listeners.delete(listener),
     addListener: (listener) => listeners.add(listener),
     removeListener: (listener) => listeners.delete(listener),
-    emit() { for (const listener of [...listeners]) listener() },
+    emit() {
+      for (const listener of [...listeners]) listener()
+    },
   }
 }
 
@@ -38,9 +40,15 @@ function target(query: FakeMediaQuery): FakeTarget {
     attributes,
     style: { colorScheme: '' },
     ownerDocument: { defaultView: { matchMedia: () => query as unknown as MediaQueryList } },
-    getAttribute(name) { return attributes.get(name) ?? null },
-    setAttribute(name, attributeValue) { attributes.set(name, attributeValue) },
-    removeAttribute(name) { attributes.delete(name) },
+    getAttribute(name) {
+      return attributes.get(name) ?? null
+    },
+    setAttribute(name, attributeValue) {
+      attributes.set(name, attributeValue)
+    },
+    removeAttribute(name) {
+      attributes.delete(name)
+    },
   }
   return value
 }
@@ -57,7 +65,11 @@ describe('createMobileTheme', () => {
   it('retains every chosen mode while keeping locked DOM/resolved appearance dark', () => {
     const query = mediaQuery(false)
     const root = target(query)
-    const controller = createMobileTheme({ target: root as unknown as HTMLElement, mode: 'light', lockedMode: 'dark' })
+    const controller = createMobileTheme({
+      target: root as unknown as HTMLElement,
+      mode: 'light',
+      lockedMode: 'dark',
+    })
     controllers.push(controller)
     const listener = vi.fn()
     controller.subscribe(listener)
@@ -68,7 +80,11 @@ describe('createMobileTheme', () => {
       expect(controller.resolvedMode).toBe('dark')
     }
     query.emit()
-    expect(listener.mock.calls.map(([snapshot]) => snapshot.mode)).toEqual(['system', 'dark', 'light'])
+    expect(listener.mock.calls.map(([snapshot]) => snapshot.mode)).toEqual([
+      'system',
+      'dark',
+      'light',
+    ])
     expect(controller.mode).toBe('light')
     expect(controller.resolvedMode).toBe('dark')
     expect(root.style.colorScheme).toBe('dark')
@@ -110,8 +126,9 @@ describe('createMobileTheme', () => {
     const controller = createMobileTheme({ target: root as unknown as HTMLElement, mode: 'dark' })
     controllers.push(controller)
 
-    expect(() => createMobileTheme({ target: root as unknown as HTMLElement, mode: 'light' }))
-      .toThrow(MobileThemeOwnershipError)
+    expect(() =>
+      createMobileTheme({ target: root as unknown as HTMLElement, mode: 'light' }),
+    ).toThrow(MobileThemeOwnershipError)
     expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
     expect(root.style.colorScheme).toBe('dark')
 
@@ -139,24 +156,39 @@ describe('createMobileTheme', () => {
   })
 })
 
-
 describe('caller-owned mobile theme preference', () => {
   it('persists only the chosen theme key across owners while applied appearance remains locked dark', () => {
     const values = new Map<string, string>([['unrelated-account', 'untouched']])
-    const reads: string[] = [], writes: string[] = []
+    const reads: string[] = [],
+      writes: string[] = []
     const preference = createMobileThemePreference(() => ({
-      getItem(key) { reads.push(key); return values.get(key) ?? null },
-      setItem(key, value) { writes.push(key); values.set(key, value) },
+      getItem(key) {
+        reads.push(key)
+        return values.get(key) ?? null
+      },
+      setItem(key, value) {
+        writes.push(key)
+        values.set(key, value)
+      },
     }))
     expect(preference.read()).toBeNull()
     const root = target(mediaQuery(false))
-    const first = createMobileTheme({ target: root as unknown as HTMLElement, mode: preference.read() ?? 'dark', lockedMode: 'dark' })
+    const first = createMobileTheme({
+      target: root as unknown as HTMLElement,
+      mode: preference.read() ?? 'dark',
+      lockedMode: 'dark',
+    })
     const stop = first.subscribe(({ mode }) => preference.write(mode))
     first.setMode('light')
     expect(first.mode).toBe('light')
     expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
-    stop(); first.dispose()
-    const second = createMobileTheme({ target: root as unknown as HTMLElement, mode: preference.read() ?? 'dark', lockedMode: 'dark' })
+    stop()
+    first.dispose()
+    const second = createMobileTheme({
+      target: root as unknown as HTMLElement,
+      mode: preference.read() ?? 'dark',
+      lockedMode: 'dark',
+    })
     controllers.push(second)
     expect(second.mode).toBe('light')
     expect(second.resolvedMode).toBe('dark')
@@ -165,10 +197,17 @@ describe('caller-owned mobile theme preference', () => {
     expect(new Set([...reads, ...writes])).toEqual(new Set([MOBILE_THEME_PREFERENCE_KEY]))
   })
   it('ignores invalid stored choices and unavailable storage without affecting the controller', () => {
-    const invalid = createMobileThemePreference(() => ({ getItem: () => '{invalid-mode}', setItem: () => { throw new Error('blocked write') } }))
+    const invalid = createMobileThemePreference(() => ({
+      getItem: () => '{invalid-mode}',
+      setItem: () => {
+        throw new Error('blocked write')
+      },
+    }))
     expect(invalid.read()).toBeNull()
     expect(() => invalid.write('system')).not.toThrow()
-    const blocked = createMobileThemePreference(() => { throw new Error('blocked storage') })
+    const blocked = createMobileThemePreference(() => {
+      throw new Error('blocked storage')
+    })
     expect(blocked.read()).toBeNull()
     expect(() => blocked.write('light')).not.toThrow()
     const absent = createMobileThemePreference(() => null)

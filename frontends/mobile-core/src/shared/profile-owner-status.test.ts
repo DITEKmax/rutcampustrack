@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { nestedRoute, rootRoute } from './navigation'
-import { canRunProfileNetworkAction, isProfileStaleRoute, profileOwnerStaleMessage } from './profile-owner-status'
+import {
+  canRunProfileNetworkAction,
+  isProfileStaleRoute,
+  profileOwnerStaleMessage,
+} from './profile-owner-status'
 
 describe('profile owner offline status', () => {
   it.each([

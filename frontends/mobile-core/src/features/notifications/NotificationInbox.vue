@@ -1,36 +1,46 @@
 <script setup lang="ts">
-import NotificationInboxCard from './NotificationInboxCard.vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import type { NotificationItem, NotificationPreferencesV2 } from './notifications-v2-models'
-import './notification-inbox.pcss'
+import NotificationInboxCard from './NotificationInboxCard.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import type { NotificationItem, NotificationPreferencesV2 } from './notifications-v2-models';
+import './notification-inbox.pcss';
 
-withDefaults(defineProps<{
-  items: readonly NotificationItem[]
-  preferences: NotificationPreferencesV2 | null
-  contextKey: string
-  loading?: boolean
-  loadingMore?: boolean
-  error?: { message: string; tone: 'warning' | 'error' } | null
-  pendingIds?: ReadonlySet<string>
-  offline?: boolean
-  nextCursor?: string | null
-  unreadOnly?: boolean
-  canMarkAllRead?: boolean
-  markAllPending?: boolean
-  canOpenAction?: boolean
-}>(), {
-  loading: false, loadingMore: false, error: null, pendingIds: () => new Set<string>(),
-  offline: false, nextCursor: null, unreadOnly: false, canMarkAllRead: false,
-  markAllPending: false, canOpenAction: true,
-})
+withDefaults(
+  defineProps<{
+    items: readonly NotificationItem[];
+    preferences: NotificationPreferencesV2 | null;
+    contextKey: string;
+    loading?: boolean;
+    loadingMore?: boolean;
+    error?: { message: string; tone: 'warning' | 'error' } | null;
+    pendingIds?: ReadonlySet<string>;
+    offline?: boolean;
+    nextCursor?: string | null;
+    unreadOnly?: boolean;
+    canMarkAllRead?: boolean;
+    markAllPending?: boolean;
+    canOpenAction?: boolean;
+  }>(),
+  {
+    loading: false,
+    loadingMore: false,
+    error: null,
+    pendingIds: () => new Set<string>(),
+    offline: false,
+    nextCursor: null,
+    unreadOnly: false,
+    canMarkAllRead: false,
+    markAllPending: false,
+    canOpenAction: true,
+  },
+);
 const emit = defineEmits<{
-  'read-state': [item: NotificationItem, read: boolean]
-  'open-item': [item: NotificationItem]
-  reload: []
-  'load-more': []
-  'mark-all-read': []
-  filter: [unreadOnly: boolean]
-}>()
+  'read-state': [item: NotificationItem, read: boolean];
+  'open-item': [item: NotificationItem];
+  reload: [];
+  'load-more': [];
+  'mark-all-read': [];
+  filter: [unreadOnly: boolean];
+}>();
 </script>
 
 <template>

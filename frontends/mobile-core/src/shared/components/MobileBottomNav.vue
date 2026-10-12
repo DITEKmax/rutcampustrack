@@ -1,36 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { MobileBottomNavItem, MobileBottomNavItems, MobileRootRouteId } from '../navigation'
-import './mobile-bottom-nav.pcss'
+import { computed } from 'vue';
+import type { MobileBottomNavItem, MobileBottomNavItems, MobileRootRouteId } from '../navigation';
+import './mobile-bottom-nav.pcss';
 
-const props = withDefaults(defineProps<{
-  items: MobileBottomNavItems
-  activeId: MobileRootRouteId
-  ariaLabel?: string
-}>(), {
-  ariaLabel: 'Основная навигация',
-})
+const props = withDefaults(
+  defineProps<{
+    items: MobileBottomNavItems;
+    activeId: MobileRootRouteId;
+    ariaLabel?: string;
+  }>(),
+  {
+    ariaLabel: 'Основная навигация',
+  },
+);
 
-const emit = defineEmits<{ navigate: [route: MobileRootRouteId] }>()
+const emit = defineEmits<{ navigate: [route: MobileRootRouteId] }>();
 
-const slots = computed(() => props.items.length)
-const slotsClass = computed(() => `mobile-bottom-nav--slots-${slots.value}`)
+const slots = computed(() => props.items.length);
+const slotsClass = computed(() => `mobile-bottom-nav--slots-${slots.value}`);
 
 function isActive(item: MobileBottomNavItem): boolean {
-  return item.id === props.activeId
+  return item.id === props.activeId;
 }
 
 function itemLabel(item: MobileBottomNavItem): string | undefined {
-  const label = item.accessibleLabel ?? item.label
-  return item.disabledReason ? `${label}. ${item.disabledReason}` : item.accessibleLabel
+  const label = item.accessibleLabel ?? item.label;
+  return item.disabledReason ? `${label}. ${item.disabledReason}` : item.accessibleLabel;
 }
 
 function iconStyle(icon: string): Record<string, string> {
-  return { '--rct-icon-mask': `url("${icon}")` }
+  return { '--rct-icon-mask': `url("${icon}")` };
 }
 
 function navigate(item: MobileBottomNavItem): void {
-  if (!item.disabled) emit('navigate', item.route)
+  if (!item.disabled) emit('navigate', item.route);
 }
 </script>
 
@@ -62,7 +65,8 @@ function navigate(item: MobileBottomNavItem): void {
         v-if="item.badge !== undefined"
         class="mobile-bottom-nav__badge"
         aria-hidden="true"
-      >{{ item.badge }}</span>
+        >{{ item.badge }}</span
+      >
     </button>
   </nav>
 </template>

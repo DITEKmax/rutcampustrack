@@ -14,45 +14,36 @@ test('all committed examples conform to the exported OpenAPI contract', async ()
 
 test('generated BFF and Auth hashes identify canonical LF OpenAPI source', async () => {
   for (const service of ['mobile-bff', 'auth']) {
-    const specText = await readFile(new URL(`../../../docs/openapi/${service}.json`, import.meta.url), 'utf8')
+    const specText = await readFile(
+      new URL(`../../../docs/openapi/${service}.json`, import.meta.url),
+      'utf8',
+    )
     const canonicalHash = createHash('sha256').update(specText.replace(/\r\n/g, '\n')).digest('hex')
-    const generated = await readFile(new URL(`../src/api/generated/${service}.ts`, import.meta.url), 'utf8')
+    const generated = await readFile(
+      new URL(`../src/api/generated/${service}.ts`, import.meta.url),
+      'utf8',
+    )
     assert.match(generated, new RegExp(`SHA-256: ${canonicalHash}(?:\\r?\\n|$)`))
   }
 })
 
 test('coordinates cannot be omitted or replaced by an unavailable sentinel', async () => {
   const fixture = JSON.parse(
-    await readFile(
-      new URL('../fixtures/checkin-coordinates.json', import.meta.url),
-      'utf8',
-    ),
+    await readFile(new URL('../fixtures/checkin-coordinates.json', import.meta.url), 'utf8'),
   )
   delete fixture.geo.latitude
-  assert.match(
-    await validateFixture('StudentCheckinCommand', fixture),
-    /latitude: required/,
-  )
+  assert.match(await validateFixture('StudentCheckinCommand', fixture), /latitude: required/)
 
   fixture.geo.latitude = null
-  assert.match(
-    await validateFixture('StudentCheckinCommand', fixture),
-    /null is not allowed/,
-  )
+  assert.match(await validateFixture('StudentCheckinCommand', fixture), /null is not allowed/)
 })
 
 test('geo discriminator rejects a payload from the other input shape', async () => {
   const fixture = JSON.parse(
-    await readFile(
-      new URL('../fixtures/checkin-unavailable.json', import.meta.url),
-      'utf8',
-    ),
+    await readFile(new URL('../fixtures/checkin-unavailable.json', import.meta.url), 'utf8'),
   )
   fixture.geo.kind = 'COORDINATES'
-  assert.match(
-    await validateFixture('StudentCheckinCommand', fixture),
-    /latitude: required/,
-  )
+  assert.match(await validateFixture('StudentCheckinCommand', fixture), /latitude: required/)
 })
 
 test('homework timestamps stay required nullable in OpenAPI and generated TypeScript', async () => {
@@ -76,10 +67,7 @@ test('homework timestamps stay required nullable in OpenAPI and generated TypeSc
     const end = generated.indexOf('\n        };', start)
     assert.notEqual(start, -1, `Missing generated schema: ${schemaName}`)
     assert.notEqual(end, -1, `Unterminated generated schema: ${schemaName}`)
-    assert.match(
-      generated.slice(start, end),
-      /completedAt: string \| null;/,
-    )
+    assert.match(generated.slice(start, end), /completedAt: string \| null;/)
   }
 
   assert.equal(

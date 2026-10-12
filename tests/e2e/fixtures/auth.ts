@@ -16,10 +16,9 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   await page.getByRole('textbox', { name: /пароль/i }).fill(user.password);
   await page.getByRole('button', { name: /войти/i }).click();
 
-  await expect(page).toHaveURL(
-    new RegExp(user.expectedLandingPath.replace(/\//g, '\\/')),
-    { timeout: 15_000 }
-  );
+  await expect(page).toHaveURL(new RegExp(user.expectedLandingPath.replace(/\//g, '\\/')), {
+    timeout: 15_000,
+  });
 }
 
 export async function logout(page: Page): Promise<void> {

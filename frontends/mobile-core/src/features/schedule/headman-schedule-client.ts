@@ -1,4 +1,8 @@
-import { academicDate, normalizeAcademicWeekPolicy, type AcademicWeekPolicy } from '../../domain/academic-week'
+import {
+  academicDate,
+  normalizeAcademicWeekPolicy,
+  type AcademicWeekPolicy,
+} from '../../domain/academic-week'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { components as AcademicComponents } from '../../api/generated/academic.types'
 import type { components as ScheduleComponents } from '../../api/generated/schedule.types'
@@ -11,7 +15,9 @@ type PageMetadata = AcademicComponents['schemas']['PageMetadata']
 
 const MAX_PAGE_REQUESTS = 100
 
-export type HeadmanScheduleItem = Omit<ScheduleItem, 'transfers'> & { transfers?: readonly HeadmanRecurringTransfer[] }
+export type HeadmanScheduleItem = Omit<ScheduleItem, 'transfers'> & {
+  transfers?: readonly HeadmanRecurringTransfer[]
+}
 // Feature-local transfer fields are required after response validation.
 export interface HeadmanRecurringTransfer {
   operationId: string
@@ -35,27 +41,62 @@ export interface HeadmanScheduleUpdateInput {
   room: string | null
   expectedRevision: string
 }
-export type HeadmanScheduleAssignment = Assignment & { lessonType?: 'LECTURE' | 'PRACTICE' | 'LAB'; validFrom?: string | null; validUntilExclusive?: string | null }
+export type HeadmanScheduleAssignment = Assignment & {
+  lessonType?: 'LECTURE' | 'PRACTICE' | 'LAB'
+  validFrom?: string | null
+  validUntilExclusive?: string | null
+}
 export type HeadmanScheduleSemester = Semester
 // This feature freezes the times fetched from the slot catalog for exact retries;
 // the shared API also accepts requests without the optional pair of times.
-export type HeadmanScheduleCreateInput = Omit<CreateScheduleItemRequest, 'startTime' | 'endTime'> & {
+export type HeadmanScheduleCreateInput = Omit<
+  CreateScheduleItemRequest,
+  'startTime' | 'endTime'
+> & {
   startTime: string
   endTime: string
 }
 
-export interface HeadmanLessonSlot { readonly lessonNumber: number; readonly startTime: string; readonly endTime: string }
-export interface HeadmanLessonSlotCatalog { readonly timezone: 'Europe/Moscow'; readonly slots: readonly HeadmanLessonSlot[] }
+export interface HeadmanLessonSlot {
+  readonly lessonNumber: number
+  readonly startTime: string
+  readonly endTime: string
+}
+export interface HeadmanLessonSlotCatalog {
+  readonly timezone: 'Europe/Moscow'
+  readonly slots: readonly HeadmanLessonSlot[]
+}
 export function normalizeLessonSlotCatalog(value: unknown): HeadmanLessonSlotCatalog {
-  if (!isRecord(value) || value.timezone !== 'Europe/Moscow' || !Array.isArray(value.slots) || value.slots.length !== 8) throw new Error('Сервер не вернул каталог учебных пар.')
-  const slots = value.slots.map((slot): HeadmanLessonSlot => {
-    if (!isRecord(slot) || !Number.isInteger(slot.lessonNumber) || Number(slot.lessonNumber) < 1 || Number(slot.lessonNumber) > 8
-      || typeof slot.startTime !== 'string' || typeof slot.endTime !== 'string'
-      || !/^\d{2}:\d{2}(?::\d{2})?$/.test(slot.startTime) || !/^\d{2}:\d{2}(?::\d{2})?$/.test(slot.endTime)
-      || slot.startTime >= slot.endTime) throw new Error('Каталог учебных пар повреждён.')
-    return Object.freeze({ lessonNumber: Number(slot.lessonNumber), startTime: slot.startTime, endTime: slot.endTime })
-  }).sort((a, b) => a.lessonNumber - b.lessonNumber)
-  if (new Set(slots.map((s) => s.lessonNumber)).size !== 8) throw new Error('Номера пар в каталоге повторяются.')
+  if (
+    !isRecord(value) ||
+    value.timezone !== 'Europe/Moscow' ||
+    !Array.isArray(value.slots) ||
+    value.slots.length !== 8
+  )
+    throw new Error('Сервер не вернул каталог учебных пар.')
+  const slots = value.slots
+    .map((slot): HeadmanLessonSlot => {
+      if (
+        !isRecord(slot) ||
+        !Number.isInteger(slot.lessonNumber) ||
+        Number(slot.lessonNumber) < 1 ||
+        Number(slot.lessonNumber) > 8 ||
+        typeof slot.startTime !== 'string' ||
+        typeof slot.endTime !== 'string' ||
+        !/^\d{2}:\d{2}(?::\d{2})?$/.test(slot.startTime) ||
+        !/^\d{2}:\d{2}(?::\d{2})?$/.test(slot.endTime) ||
+        slot.startTime >= slot.endTime
+      )
+        throw new Error('Каталог учебных пар повреждён.')
+      return Object.freeze({
+        lessonNumber: Number(slot.lessonNumber),
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      })
+    })
+    .sort((a, b) => a.lessonNumber - b.lessonNumber)
+  if (new Set(slots.map((s) => s.lessonNumber)).size !== 8)
+    throw new Error('Номера пар в каталоге повторяются.')
   return Object.freeze({ timezone: 'Europe/Moscow', slots: Object.freeze(slots) })
 }
 
@@ -87,39 +128,74 @@ export interface HeadmanOneOffIntent {
   input: Readonly<HeadmanOneOffCreateInput>
 }
 
-export function readOneOffIntent(storage: Pick<Storage, 'getItem'>, scope: string): HeadmanOneOffIntent | null {
+export function readOneOffIntent(
+  storage: Pick<Storage, 'getItem'>,
+  scope: string,
+): HeadmanOneOffIntent | null {
   const raw = storage.getItem(scope)
   if (!raw) return null
   const value: unknown = JSON.parse(raw)
-  if (!isRecord(value) || typeof value.key !== 'string' || !isRecord(value.input)) throw new Error('Не удалось прочитать сохранённый запрос разовой пары.')
+  if (!isRecord(value) || typeof value.key !== 'string' || !isRecord(value.input))
+    throw new Error('Не удалось прочитать сохранённый запрос разовой пары.')
   validateHeadmanIdempotencyKey(value.key)
   validateOneOffKey(value.key)
   const input = value.input
-  for (const field of ['groupId', 'subjectId', 'assignmentId', 'lessonNumber'] as const) assertNumericId(input[field] as number, field)
-  if (typeof input.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(input.date)
-    || typeof input.startTime !== 'string' || typeof input.endTime !== 'string'
-    || (input.classroom !== undefined && typeof input.classroom !== 'string')) throw new Error('Сохранённый запрос разовой пары повреждён.')
-  return { key: value.key, input: Object.freeze({ ...input }) as unknown as HeadmanOneOffCreateInput }
+  for (const field of ['groupId', 'subjectId', 'assignmentId', 'lessonNumber'] as const)
+    assertNumericId(input[field] as number, field)
+  if (
+    typeof input.date !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(input.date) ||
+    typeof input.startTime !== 'string' ||
+    typeof input.endTime !== 'string' ||
+    (input.classroom !== undefined && typeof input.classroom !== 'string')
+  )
+    throw new Error('Сохранённый запрос разовой пары повреждён.')
+  return {
+    key: value.key,
+    input: Object.freeze({ ...input }) as unknown as HeadmanOneOffCreateInput,
+  }
 }
 
-export function persistOneOffIntent(storage: Pick<Storage, 'setItem'>, scope: string, intent: HeadmanOneOffIntent): void {
+export function persistOneOffIntent(
+  storage: Pick<Storage, 'setItem'>,
+  scope: string,
+  intent: HeadmanOneOffIntent,
+): void {
   validateHeadmanIdempotencyKey(intent.key)
   validateOneOffKey(intent.key)
   // Must succeed before POST: an unknown outcome must remain recoverable after refresh.
   storage.setItem(scope, JSON.stringify(intent))
 }
 
-export function isOneOffDateWithinSemester(date: string, today: string, from?: string, to?: string): boolean {
+export function isOneOffDateWithinSemester(
+  date: string,
+  today: string,
+  from?: string,
+  to?: string,
+): boolean {
   // Academic/OneOffLessonCoordinator include the semester's final date.
-  return /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= today
-    && (from === undefined || date >= from) && (to === undefined || date <= to)
+  return (
+    /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    date >= today &&
+    (from === undefined || date >= from) &&
+    (to === undefined || date <= to)
+  )
 }
 
 export function canCorrectRejectedOneOff(cause: unknown, firstAttempt: boolean): boolean {
-  if (!firstAttempt || !(cause instanceof HeadmanScheduleApiError) || cause.response.status !== 409 || !isRecord(cause.problem)) return false
+  if (
+    !firstAttempt ||
+    !(cause instanceof HeadmanScheduleApiError) ||
+    cause.response.status !== 409 ||
+    !isRecord(cause.problem)
+  )
+    return false
   const problem = cause.problem
-  return problem.status === 409 && problem.type === 'https://api.rutcampustrack.ru/problems/one-off-create-rejected'
-    && problem.instance === '/schedule/one-off-lessons'
+  return (
+    problem.status === 409 &&
+    problem.type === 'https://api.rutcampustrack.ru/problems/one-off-create-rejected' &&
+    problem.instance === '/schedule/one-off-lessons'
+  )
 }
 
 export interface HeadmanScheduleApiOptions {
@@ -148,7 +224,9 @@ export class HeadmanScheduleApi {
 
   async academicWeekPolicy(date: string): Promise<AcademicWeekPolicy> {
     if (academicDate(date) === null) throw new RangeError('Некорректная дата недели.')
-    const value = await this.request<unknown>('/api/schedule/academic-week-policy?' + new URLSearchParams({ date }))
+    const value = await this.request<unknown>(
+      '/api/schedule/academic-week-policy?' + new URLSearchParams({ date }),
+    )
     return normalizeAcademicWeekPolicy(value, date)
   }
 
@@ -159,25 +237,32 @@ export class HeadmanScheduleApi {
   listScheduleItems(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleItem[]> {
     assertNumericId(groupId, 'groupId')
     assertNumericId(semesterId, 'semesterId')
-    return this.requestPaged<unknown>(
-      (page) => {
-        const query = new URLSearchParams({ groupId: String(groupId), semesterId: String(semesterId), page: String(page), size: '100' })
-        return `/api/schedule/items?${query.toString()}`
-      },
-      'scheduleItemResponseList',
-    ).then((items) => items.map(scheduleItem))
+    return this.requestPaged<unknown>((page) => {
+      const query = new URLSearchParams({
+        groupId: String(groupId),
+        semesterId: String(semesterId),
+        page: String(page),
+        size: '100',
+      })
+      return `/api/schedule/items?${query.toString()}`
+    }, 'scheduleItemResponseList').then((items) => items.map(scheduleItem))
   }
 
-  listAssignments(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleAssignment[]> {
+  listAssignments(
+    groupId: number,
+    semesterId: number,
+  ): Promise<readonly HeadmanScheduleAssignment[]> {
     assertNumericId(groupId, 'groupId')
     assertNumericId(semesterId, 'semesterId')
-    return this.requestPaged(
-      (page) => {
-        const query = new URLSearchParams({ groupId: String(groupId), semesterId: String(semesterId), page: String(page), size: '100' })
-        return `/api/academic/assignments?${query.toString()}`
-      },
-      'assignmentResponseList',
-    )
+    return this.requestPaged((page) => {
+      const query = new URLSearchParams({
+        groupId: String(groupId),
+        semesterId: String(semesterId),
+        page: String(page),
+        size: '100',
+      })
+      return `/api/academic/assignments?${query.toString()}`
+    }, 'assignmentResponseList')
   }
 
   listSemesters(): Promise<readonly HeadmanScheduleSemester[]> {
@@ -187,12 +272,34 @@ export class HeadmanScheduleApi {
     )
   }
 
-  async createScheduleItem(input: HeadmanScheduleCreateInput, idempotencyKey: string): Promise<HeadmanScheduleItem> {
+  async createScheduleItem(
+    input: HeadmanScheduleCreateInput,
+    idempotencyKey: string,
+  ): Promise<HeadmanScheduleItem> {
     validateOneOffKey(idempotencyKey)
-    const item=scheduleItem(await this.request<unknown>('/api/schedule/items', { method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:JSON.stringify(input) }))
-    if (!item || !Number.isSafeInteger(item.id) || (item.id ?? 0)<1 || item.groupId!==input.groupId || item.semesterId!==input.semesterId || item.subjectId!==input.subjectId
-      || item.assignmentId!==input.assignmentId || item.dayOfWeek!==input.dayOfWeek || item.lessonNumber!==input.lessonNumber || item.weekType!==input.weekType
-      || item.startTime?.slice(0,5)!==input.startTime.slice(0,5) || item.endTime?.slice(0,5)!==input.endTime.slice(0,5) || (item.room ?? null)!==(input.room ?? null)) throw new Error('Сервер не подтвердил исходное создание пары.')
+    const item = scheduleItem(
+      await this.request<unknown>('/api/schedule/items', {
+        method: 'POST',
+        headers: { 'Idempotency-Key': idempotencyKey },
+        body: JSON.stringify(input),
+      }),
+    )
+    if (
+      !item ||
+      !Number.isSafeInteger(item.id) ||
+      (item.id ?? 0) < 1 ||
+      item.groupId !== input.groupId ||
+      item.semesterId !== input.semesterId ||
+      item.subjectId !== input.subjectId ||
+      item.assignmentId !== input.assignmentId ||
+      item.dayOfWeek !== input.dayOfWeek ||
+      item.lessonNumber !== input.lessonNumber ||
+      item.weekType !== input.weekType ||
+      item.startTime?.slice(0, 5) !== input.startTime.slice(0, 5) ||
+      item.endTime?.slice(0, 5) !== input.endTime.slice(0, 5) ||
+      (item.room ?? null) !== (input.room ?? null)
+    )
+      throw new Error('Сервер не подтвердил исходное создание пары.')
     return item
   }
 
@@ -201,24 +308,44 @@ export class HeadmanScheduleApi {
     return this.request<unknown>(`/api/schedule/items/${id}`).then(scheduleItem)
   }
 
-  async previewScheduleItem(id: number, input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null): Promise<HeadmanLifecyclePreview> {
+  async previewScheduleItem(
+    id: number,
+    input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null,
+  ): Promise<HeadmanLifecyclePreview> {
     assertNumericId(id, 'id')
-    const value = await this.request<HeadmanLifecyclePreview>(`/api/schedule/items/${id}/lifecycle-preview?delete=${input === null}`, {
-      method: 'POST', ...(input === null ? {} : { body: JSON.stringify(input) }),
-    })
-    if (!/^[0-9a-f]{64}$/.test(value.revision)
-      || [value.updatedCount, value.removedCount, value.restoredCount, value.createdCount].some((count) => !Number.isSafeInteger(count) || count < 0)) {
+    const value = await this.request<HeadmanLifecyclePreview>(
+      `/api/schedule/items/${id}/lifecycle-preview?delete=${input === null}`,
+      {
+        method: 'POST',
+        ...(input === null ? {} : { body: JSON.stringify(input) }),
+      },
+    )
+    if (
+      !/^[0-9a-f]{64}$/.test(value.revision) ||
+      [value.updatedCount, value.removedCount, value.restoredCount, value.createdCount].some(
+        (count) => !Number.isSafeInteger(count) || count < 0,
+      )
+    ) {
       throw new Error('Сервер не вернул корректный предварительный расчёт.')
     }
     return value
   }
 
-  updateScheduleItem(id: number, input: Readonly<HeadmanScheduleUpdateInput>, key: string): Promise<HeadmanScheduleItem> {
+  updateScheduleItem(
+    id: number,
+    input: Readonly<HeadmanScheduleUpdateInput>,
+    key: string,
+  ): Promise<HeadmanScheduleItem> {
     assertNumericId(id, 'id')
     validateOneOffKey(key)
-    return this.request<unknown>(`/api/schedule/items/${id}`, { method: 'PUT', headers: { 'Idempotency-Key': key }, body: JSON.stringify(input) }).then((value) => {
+    return this.request<unknown>(`/api/schedule/items/${id}`, {
+      method: 'PUT',
+      headers: { 'Idempotency-Key': key },
+      body: JSON.stringify(input),
+    }).then((value) => {
       // An omitted list cannot prove that all related transfers are known.
-      if (!isRecord(value) || !Array.isArray(value.transfers)) throw new Error('Сервер не подтвердил список переносов серии.')
+      if (!isRecord(value) || !Array.isArray(value.transfers))
+        throw new Error('Сервер не подтвердил список переносов серии.')
       return scheduleItem(value)
     })
   }
@@ -227,36 +354,56 @@ export class HeadmanScheduleApi {
     assertNumericId(id, 'id')
     validateOneOffKey(key)
     if (!/^[0-9a-f]{64}$/.test(revision)) throw new Error('Нужен новый предварительный расчёт.')
-    return this.request(`/api/schedule/items/${id}`, { method: 'DELETE', headers: { 'Idempotency-Key': key, 'If-Match': revision } })
+    return this.request(`/api/schedule/items/${id}`, {
+      method: 'DELETE',
+      headers: { 'Idempotency-Key': key, 'If-Match': revision },
+    })
   }
 
   async getRecurringTransfer(operationId: string): Promise<HeadmanRecurringTransfer> {
     validateOneOffKey(operationId)
-    const value = recurringTransfer(await this.request<unknown>(`/api/schedule/lesson-transfers/${operationId}`))
-    if (value.operationId !== operationId) throw new Error('Сервер не подтвердил состояние переноса.')
+    const value = recurringTransfer(
+      await this.request<unknown>(`/api/schedule/lesson-transfers/${operationId}`),
+    )
+    if (value.operationId !== operationId)
+      throw new Error('Сервер не подтвердил состояние переноса.')
     return value
   }
 
-  async createOneOffLesson(input: Readonly<HeadmanOneOffCreateInput>, idempotencyKey: string): Promise<HeadmanOneOffLesson> {
+  async createOneOffLesson(
+    input: Readonly<HeadmanOneOffCreateInput>,
+    idempotencyKey: string,
+  ): Promise<HeadmanOneOffLesson> {
     validateOneOffKey(idempotencyKey)
     const value = await this.request<unknown>('/api/schedule/one-off-lessons', {
-      method: 'POST', headers: { 'Idempotency-Key': idempotencyKey }, body: JSON.stringify(input),
+      method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey },
+      body: JSON.stringify(input),
     })
     const lesson = oneOffLesson(value)
-    if (lesson.groupId !== input.groupId || lesson.subjectId !== input.subjectId) throw new Error('Сервер вернул пару другого предмета или группы.')
+    if (lesson.groupId !== input.groupId || lesson.subjectId !== input.subjectId)
+      throw new Error('Сервер вернул пару другого предмета или группы.')
     return lesson
   }
 
-  async listOneOffLessons(groupId: number, dateFrom: string, dateTo: string): Promise<readonly HeadmanOneOffLesson[]> {
+  async listOneOffLessons(
+    groupId: number,
+    dateFrom: string,
+    dateTo: string,
+  ): Promise<readonly HeadmanOneOffLesson[]> {
     assertNumericId(groupId, 'groupId')
     const query = new URLSearchParams({ groupId: String(groupId), dateFrom, dateTo })
     const value = await this.request<unknown>(`/api/schedule/one-off-lessons?${query}`)
     const lessons = embeddedItems<unknown>(value, 'oneOffLessonResponseList').map(oneOffLesson)
-    if (lessons.some((lesson) => lesson.groupId !== groupId)) throw new Error('Сервер вернул разовые пары другой группы.')
+    if (lessons.some((lesson) => lesson.groupId !== groupId))
+      throw new Error('Сервер вернул разовые пары другой группы.')
     return lessons
   }
 
-  private async requestPaged<T>(path: (page: number) => string, key: string): Promise<readonly T[]> {
+  private async requestPaged<T>(
+    path: (page: number) => string,
+    key: string,
+  ): Promise<readonly T[]> {
     const items: T[] = []
     let nextPath = path(0)
     for (let page = 0; page < MAX_PAGE_REQUESTS; page += 1) {
@@ -281,13 +428,14 @@ export class HeadmanScheduleApi {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
     if (response.ok) {
       if (response.status === 204) return undefined as T
-      const value = await response.json() as T
+      const value = (await response.json()) as T
       this.options.assertCurrent?.()
       return value
     }
@@ -339,31 +487,50 @@ export function createGenerationBoundHeadmanScheduleApi(
 
 function oneOffLesson(value: unknown): HeadmanOneOffLesson {
   if (!isRecord(value)) throw new Error('Сервер не вернул разовую пару.')
-  for (const field of ['id', 'physicalLessonId', 'groupId', 'subjectId', 'semesterId', 'lessonNumber'] as const) assertNumericId(value[field] as number, field)
-  if (typeof value.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.date)) throw new Error('Сервер не вернул дату разовой пары.')
+  for (const field of [
+    'id',
+    'physicalLessonId',
+    'groupId',
+    'subjectId',
+    'semesterId',
+    'lessonNumber',
+  ] as const)
+    assertNumericId(value[field] as number, field)
+  if (typeof value.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.date))
+    throw new Error('Сервер не вернул дату разовой пары.')
   return value as unknown as HeadmanOneOffLesson
 }
 
 function scheduleItem(value: unknown): HeadmanScheduleItem {
   if (!isRecord(value)) throw new Error('Сервер не вернул слот расписания.')
   if (value.transfers === undefined) return value as HeadmanScheduleItem
-  if (!Array.isArray(value.transfers)) throw new Error('Сервер не подтвердил список переносов серии.')
+  if (!Array.isArray(value.transfers))
+    throw new Error('Сервер не подтвердил список переносов серии.')
   return { ...value, transfers: value.transfers.map(recurringTransfer) } as HeadmanScheduleItem
 }
 
 function recurringTransfer(value: unknown): HeadmanRecurringTransfer {
-  if (!isRecord(value) || typeof value.operationId !== 'string'
-    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.operationId)
-    || (value.state !== 'PENDING' && value.state !== 'COMPLETED' && value.state !== 'ERROR')
-    || (value.errorCode !== undefined && value.errorCode !== null && typeof value.errorCode !== 'string')) {
+  if (
+    !isRecord(value) ||
+    typeof value.operationId !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.operationId) ||
+    (value.state !== 'PENDING' && value.state !== 'COMPLETED' && value.state !== 'ERROR') ||
+    (value.errorCode !== undefined &&
+      value.errorCode !== null &&
+      typeof value.errorCode !== 'string')
+  ) {
     throw new Error('Сервер не подтвердил состояние переноса.')
   }
-  return { operationId: value.operationId, state: value.state,
-    ...(value.errorCode === undefined ? {} : { errorCode: value.errorCode }) }
+  return {
+    operationId: value.operationId,
+    state: value.state,
+    ...(value.errorCode === undefined ? {} : { errorCode: value.errorCode }),
+  }
 }
 
 function validateOneOffKey(value: string): void {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) throw new Error('Для разовой пары нужен UUID запроса. Обнови браузер и повтори создание.')
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value))
+    throw new Error('Для разовой пары нужен UUID запроса. Обнови браузер и повтори создание.')
 }
 
 function validateHeadmanIdempotencyKey(value: string): void {
@@ -373,13 +540,14 @@ function validateHeadmanIdempotencyKey(value: string): void {
 }
 
 function assertNumericId(value: number, name: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} must be a positive integer`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${name} must be a positive integer`)
 }
 
 function embeddedItems<T>(value: unknown, key: string): readonly T[] {
   if (!isRecord(value) || !isRecord(value._embedded)) return []
   const items = value._embedded[key]
-  return Array.isArray(items) ? items as T[] : []
+  return Array.isArray(items) ? (items as T[]) : []
 }
 
 function pageMetadata(value: unknown): PageMetadata | null {
@@ -404,5 +572,7 @@ function problemDetail(value: unknown): string | null {
   if (!isRecord(value)) return null
   return typeof value.detail === 'string'
     ? value.detail
-    : typeof value.title === 'string' ? value.title : null
+    : typeof value.title === 'string'
+      ? value.title
+      : null
 }

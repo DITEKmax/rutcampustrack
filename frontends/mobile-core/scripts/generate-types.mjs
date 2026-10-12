@@ -27,14 +27,10 @@ if (checkOnly) {
   try {
     current = await readFile(outputUrl, 'utf8')
   } catch {
-    throw new Error(
-      'Generated file is missing: ' + fileURLToPath(outputUrl),
-    )
+    throw new Error('Generated file is missing: ' + fileURLToPath(outputUrl))
   }
   if (current.replace(/\r\n/g, '\n') !== generated.replace(/\r\n/g, '\n')) {
-    throw new Error(
-      'Generated mobile BFF types drifted; run npm run generate:types',
-    )
+    throw new Error('Generated mobile BFF types drifted; run npm run generate:types')
   }
   console.log('OpenAPI types match JS-STUDENT-01-r1 (' + specHash + ')')
 } else {
@@ -42,7 +38,5 @@ if (checkOnly) {
     recursive: true,
   })
   await writeFile(outputUrl, generated, 'utf8')
-  console.log(
-    'Generated ' + fileURLToPath(outputUrl) + ' (' + specHash + ')',
-  )
+  console.log('Generated ' + fileURLToPath(outputUrl) + ' (' + specHash + ')')
 }

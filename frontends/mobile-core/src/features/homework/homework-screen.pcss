@@ -14,7 +14,8 @@
   inline-size: min(calc(100% - 2 * var(--rct-space-4)), var(--rct-mobile-content-width));
   min-block-size: 100dvh;
   margin-inline: auto;
-  padding-block: calc(env(safe-area-inset-top) + var(--rct-space-5)) calc(env(safe-area-inset-bottom) + 6.75rem);
+  padding-block: calc(env(safe-area-inset-top) + var(--rct-space-5))
+    calc(env(safe-area-inset-bottom) + 6.75rem);
   gap: var(--rct-space-3);
 }
 
@@ -188,7 +189,6 @@
   block-size: var(--rct-control-min-touch);
   mask-size: contain;
   -webkit-mask-size: contain;
-
 }
 
 .homework-expand__icon--open {
@@ -243,10 +243,30 @@
   }
 }
 
-
-.homework-screen .student-warning { gap: var(--rct-space-4); }
-.homework-skeleton { display: grid; gap: var(--rct-space-3); }
-.homework-skeleton__card { display: grid; gap: var(--rct-space-3); border-radius: var(--rct-radius-2xl); padding: var(--rct-space-4); background: var(--rct-color-surface-raised); }
-.homework-skeleton__line { block-size: var(--rct-space-4); border-radius: var(--rct-radius-full); background: var(--rct-color-surface-float); }
-.homework-skeleton__line:first-child { inline-size: 70%; }
-.homework-skeleton__track { block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1)); border-radius: var(--rct-radius-full); background: var(--rct-color-surface-float); }
+.homework-screen .student-warning {
+  gap: var(--rct-space-4);
+}
+.homework-skeleton {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+.homework-skeleton__card {
+  display: grid;
+  gap: var(--rct-space-3);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+.homework-skeleton__line {
+  block-size: var(--rct-space-4);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}
+.homework-skeleton__line:first-child {
+  inline-size: 70%;
+}
+.homework-skeleton__track {
+  block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1));
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}

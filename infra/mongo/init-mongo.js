@@ -16,22 +16,22 @@
 //   MONGO_USER              — readWrite + dbAdmin на attendance_db
 //   MONGO_NOTIFICATION_USER — readWrite + dbAdmin на notification_db
 
-db = db.getSiblingDB('admin');
+db = db.getSiblingDB('admin')
 
 db.createUser({
   user: process.env.MONGO_USER,
   pwd: process.env.MONGO_PASSWORD,
   roles: [
     { role: 'readWrite', db: 'attendance_db' },
-    { role: 'dbAdmin', db: 'attendance_db' }
-  ]
-});
+    { role: 'dbAdmin', db: 'attendance_db' },
+  ],
+})
 
 db.createUser({
   user: process.env.MONGO_NOTIFICATION_USER,
   pwd: process.env.MONGO_NOTIFICATION_PASSWORD,
   roles: [
     { role: 'readWrite', db: 'notification_db' },
-    { role: 'dbAdmin', db: 'notification_db' }
-  ]
-});
+    { role: 'dbAdmin', db: 'notification_db' },
+  ],
+})

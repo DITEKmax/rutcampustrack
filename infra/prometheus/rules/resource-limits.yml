@@ -25,7 +25,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Контейнер {{ $labels.name }} > 90% memory"
+          summary: 'Контейнер {{ $labels.name }} > 90% memory'
           description: |
             {{ $labels.name }} использует более 90% своего mem_limit уже 5 минут.
             Возможна утечка, cache overgrowth или недооценённый budget —
@@ -41,7 +41,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Контейнер {{ $labels.name }} без mem_limit"
+          summary: 'Контейнер {{ $labels.name }} без mem_limit'
           description: |
             {{ $labels.name }} запущен без mem_limit — может занять всю RAM
             VPS при утечке. Добавить лимит в docker-compose.prod.yml

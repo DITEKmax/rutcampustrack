@@ -36,7 +36,9 @@ describe('offline Today current Moscow day', () => {
         return 7
       },
       clearInterval: clearTimer,
-      addVisibilityListener: (callback) => { callbacks.visibility = callback },
+      addVisibilityListener: (callback) => {
+        callbacks.visibility = callback
+      },
       removeVisibilityListener,
       isVisible: () => visible,
     })

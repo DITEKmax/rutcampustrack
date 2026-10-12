@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import MobileIcon from './MobileIcon.vue'
-import './student-warning-block.pcss'
+import MobileIcon from './MobileIcon.vue';
+import './student-warning-block.pcss';
 
-withDefaults(defineProps<{
-  title: string
-  message: string
-  actionLabel?: string
-  actionDisabled?: boolean
-  severity?: 'warning' | 'error'
-}>(), { actionLabel: '', actionDisabled: false, severity: 'warning' })
-const emit = defineEmits<{ action: [] }>()
+withDefaults(
+  defineProps<{
+    title: string;
+    message: string;
+    actionLabel?: string;
+    actionDisabled?: boolean;
+    severity?: 'warning' | 'error';
+  }>(),
+  { actionLabel: '', actionDisabled: false, severity: 'warning' },
+);
+const emit = defineEmits<{ action: [] }>();
 </script>
 
 <template>

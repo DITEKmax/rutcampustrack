@@ -32,15 +32,17 @@ const fixtureAuthSnapshot: ProfileSnapshot = {
   sessionVersion: fixtureSession.sessionVersion,
   rolesVersion: fixtureSession.rolesVersion,
   activeRole: 'STUDENT',
-  roles: [{
-    grantId: '1',
-    role: 'STUDENT',
-    status: 'ACTIVE',
-    groupId: fixtureSession.group?.id ?? null,
-    contextLabel: fixtureSession.group?.name ?? null,
-    selectable: true,
-    readOnly: fixtureSession.readOnly,
-  }],
+  roles: [
+    {
+      grantId: '1',
+      role: 'STUDENT',
+      status: 'ACTIVE',
+      groupId: fixtureSession.group?.id ?? null,
+      contextLabel: fixtureSession.group?.name ?? null,
+      selectable: true,
+      readOnly: fixtureSession.readOnly,
+    },
+  ],
   readOnly: fixtureSession.readOnly,
   passwordPolicy: {
     minCodePoints: 12,
@@ -73,36 +75,49 @@ export function createFixtureTransport(): typeof fetch {
     const endpoint = url.split('?', 1)[0] ?? url
     const method = init?.method ?? 'GET'
     const apiState = selectedApiState()
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new TypeError('Fixture network unavailable')
+    if (typeof navigator !== 'undefined' && navigator.onLine === false)
+      throw new TypeError('Fixture network unavailable')
     if (apiState === 'network') throw new TypeError('Fixture network unavailable')
     if (apiState === 'unauthorized') return new Response(null, { status: 401 })
     if (apiState === 'forbidden') return new Response(null, { status: 403 })
-    if (url.endsWith('/auth/login') && method === 'POST') return json({ accessToken: 'fixture-access-token', expiresIn: 3600 })
+    if (url.endsWith('/auth/login') && method === 'POST')
+      return json({ accessToken: 'fixture-access-token', expiresIn: 3600 })
     if (url.endsWith('/auth/session/active-role') && method === 'PUT') {
       const body = JSON.parse(String(init?.body ?? '{}')) as { role?: string }
       if (body.role !== 'STUDENT') return new Response(null, { status: 403 })
-      return json({ accessToken: 'fixture-student-role-token', expiresIn: 3600, session: fixtureAuthSnapshot })
+      return json({
+        accessToken: 'fixture-student-role-token',
+        expiresIn: 3600,
+        session: fixtureAuthSnapshot,
+      })
     }
     if (url.endsWith('/auth/session') && method === 'GET') return json(fixtureAuthSnapshot)
     if (endpoint.endsWith('/auth/sessions') && method === 'GET') {
       return json({
-        items: [{
-          sessionId: fixtureSession.sessionId,
-          authMethod: 'PASSWORD',
-          clientLabel: 'Fixture browser',
-          locationLabel: null,
-          createdAt: fixtureSession.serverNow,
-          lastSeenAt: fixtureSession.serverNow,
-          current: true,
-        }],
+        items: [
+          {
+            sessionId: fixtureSession.sessionId,
+            authMethod: 'PASSWORD',
+            clientLabel: 'Fixture browser',
+            locationLabel: null,
+            createdAt: fixtureSession.serverNow,
+            lastSeenAt: fixtureSession.serverNow,
+            current: true,
+          },
+        ],
         nextCursor: null,
       })
     }
-    if (endpoint.endsWith('/auth/account-history') && method === 'GET') return json({ items: [], nextCursor: null })
-    if (endpoint.endsWith('/auth/change-password') && method === 'POST') return new Response(null, { status: 204 })
-    if (endpoint.endsWith('/auth/logout-all') && method === 'POST') return new Response(null, { status: 204 })
-    if (url.endsWith('/auth/logout') && method === 'POST') return new Response(null, { status: 204 })
-    if (url.endsWith('/auth/refresh') && method === 'POST') return json({ accessToken: 'fixture-access-token', expiresIn: 3600 })
+    if (endpoint.endsWith('/auth/account-history') && method === 'GET')
+      return json({ items: [], nextCursor: null })
+    if (endpoint.endsWith('/auth/change-password') && method === 'POST')
+      return new Response(null, { status: 204 })
+    if (endpoint.endsWith('/auth/logout-all') && method === 'POST')
+      return new Response(null, { status: 204 })
+    if (url.endsWith('/auth/logout') && method === 'POST')
+      return new Response(null, { status: 204 })
+    if (url.endsWith('/auth/refresh') && method === 'POST')
+      return json({ accessToken: 'fixture-access-token', expiresIn: 3600 })
     if (url.includes('/v1/student/session')) return json(fixtureSession)
     if (url.includes('/schedule')) return json(fixtureSchedule, { ETag: '"fixture-semester-v1"' })
     if (url.includes('/today')) return json(todayProjection(todayState))
@@ -111,18 +126,25 @@ export function createFixtureTransport(): typeof fetch {
       const id = match ? decodeURIComponent(match[1] ?? '') : ''
       const command = JSON.parse(String(init?.body ?? '{}')) as StudentHomeworkCompletionCommand
       const item = homeworkState.items.find((candidate) => candidate.id === id)
-      if (!item || typeof command.completed !== 'boolean') return new Response(null, { status: 404 })
+      if (!item || typeof command.completed !== 'boolean')
+        return new Response(null, { status: 404 })
       // Keep the fixture receipt on the same server clock as the feed. Using
       // the host clock here can move a just-completed item out of
       // `Выполнено сегодня` when the fixture is run on another date.
       const completedAt = command.completed ? homeworkState.serverNow : null
       homeworkState = {
         ...homeworkState,
-        items: homeworkState.items.map((candidate) => candidate.id === id
-          ? { ...candidate, completed: command.completed, completedAt }
-          : candidate),
+        items: homeworkState.items.map((candidate) =>
+          candidate.id === id
+            ? { ...candidate, completed: command.completed, completedAt }
+            : candidate,
+        ),
       }
-      const completion: StudentHomeworkCompletion = { id, completed: command.completed, completedAt }
+      const completion: StudentHomeworkCompletion = {
+        id,
+        completed: command.completed,
+        completedAt,
+      }
       return json(completion)
     }
     if (url.includes('/homework')) return json(homeworkState)
@@ -166,7 +188,12 @@ function fixtureScheduleProjection(): StudentSemesterSchedule {
         startsAt: '09:00:00',
         endsAt: '10:30:00',
         status: 'PLANNED',
-        subject: { ...first.subject, id: 'fixture-discrete', name: 'Дискретная математика', type: 'PRACTICE' },
+        subject: {
+          ...first.subject,
+          id: 'fixture-discrete',
+          name: 'Дискретная математика',
+          type: 'PRACTICE',
+        },
         room: { current: 'Б-218', previous: null, changeState: 'UNCHANGED' },
       },
     ],
@@ -234,9 +261,10 @@ function pendingProjection(): StudentToday {
       ...lesson,
       attendance: lesson.schedule.id === '77' ? null : lesson.attendance,
       request: lesson.schedule.id === '77' ? canonicalFixtureLesson().request : lesson.request,
-      checkinEligibility: lesson.schedule.id === '77'
-        ? { allowed: false, reason: 'PENDING_CONFIRMATION', retryAt }
-        : lesson.checkinEligibility,
+      checkinEligibility:
+        lesson.schedule.id === '77'
+          ? { allowed: false, reason: 'PENDING_CONFIRMATION', retryAt }
+          : lesson.checkinEligibility,
     })),
   }
 }
@@ -248,13 +276,15 @@ function confirmedProjection(): StudentToday {
     serverNow: serverNow.toISOString(),
     lessons: defaultProjection().lessons.map((lesson) => ({
       ...lesson,
-      attendance: lesson.schedule.id === '77'
-        ? { status: 'PRESENT', source: 'STUDENT_GEO', markedAt: serverNow.toISOString() }
-        : lesson.attendance,
+      attendance:
+        lesson.schedule.id === '77'
+          ? { status: 'PRESENT', source: 'STUDENT_GEO', markedAt: serverNow.toISOString() }
+          : lesson.attendance,
       request: lesson.schedule.id === '77' ? null : lesson.request,
-      checkinEligibility: lesson.schedule.id === '77'
-        ? { allowed: false, reason: 'ALREADY_PRESENT', retryAt: null }
-        : lesson.checkinEligibility,
+      checkinEligibility:
+        lesson.schedule.id === '77'
+          ? { allowed: false, reason: 'ALREADY_PRESENT', retryAt: null }
+          : lesson.checkinEligibility,
     })),
   }
 }
@@ -302,7 +332,11 @@ function canonicalFixtureLesson(): TodayLesson {
 
 function pendingAckProjection(): StudentCheckinAck {
   const serverNow = new Date()
-  return { ...fixturePendingAck, serverNow: serverNow.toISOString(), retryAt: new Date(serverNow.getTime() + 300_000).toISOString() }
+  return {
+    ...fixturePendingAck,
+    serverNow: serverNow.toISOString(),
+    retryAt: new Date(serverNow.getTime() + 300_000).toISOString(),
+  }
 }
 
 function presentAckProjection(): StudentCheckinAck {
@@ -310,5 +344,7 @@ function presentAckProjection(): StudentCheckinAck {
 }
 
 function json(body: unknown, headers?: HeadersInit): Response {
-  return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json', ...headers } })
+  return new Response(JSON.stringify(body), {
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
 }

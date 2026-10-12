@@ -1,212 +1,233 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
-import AppearanceScreen from '../../features/profile/AppearanceScreen.vue'
-import ProfileScreen from '../../features/profile/ProfileScreen.vue'
-import { ProfileState } from '../../features/profile/profile-state'
-import SecurityScreen from '../../features/profile/SecurityScreen.vue'
-import SessionsScreen from '../../features/profile/SessionsScreen.vue'
-import { DEFAULT_PASSWORD_POLICY } from '../../features/profile/profile-types'
-import type { ProfilePort, ProfileRoute, ProfileTheme } from '../../features/profile/profile-types'
-import { profileOwnerStaleMessage } from '../profile-owner-status'
-import { createMobileNavigationStack, nestedRoute, rootRoute } from '../navigation'
-import type { MobileNavigationStack, MobileRoute } from '../navigation'
-import type { MobileThemeController, MobileThemeResolvedMode } from '../theme'
-import { createProfileViewPublication } from './profile-view-publication'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
+import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
+import ProfileScreen from '../../features/profile/ProfileScreen.vue';
+import { ProfileState } from '../../features/profile/profile-state';
+import SecurityScreen from '../../features/profile/SecurityScreen.vue';
+import SessionsScreen from '../../features/profile/SessionsScreen.vue';
+import { DEFAULT_PASSWORD_POLICY } from '../../features/profile/profile-types';
+import type { ProfilePort, ProfileRoute, ProfileTheme } from '../../features/profile/profile-types';
+import { profileOwnerStaleMessage } from '../profile-owner-status';
+import { createMobileNavigationStack, nestedRoute, rootRoute } from '../navigation';
+import type { MobileNavigationStack, MobileRoute } from '../navigation';
+import type { MobileThemeController, MobileThemeResolvedMode } from '../theme';
+import { createProfileViewPublication } from './profile-view-publication';
 
-const emit = defineEmits<{ 'navigation-visibility': [visible: boolean]; 'open-role-switch': [] }>()
+const emit = defineEmits<{ 'navigation-visibility': [visible: boolean]; 'open-role-switch': [] }>();
 
-const props = withDefaults(defineProps<{
-  profilePort: ProfilePort | null
-  themeController?: MobileThemeController | null
-  offline?: boolean
-  onLogout?: (() => void | Promise<void>) | undefined
-}>(), {
-  themeController: null,
-  offline: false,
-  onLogout: undefined,
-})
+const props = withDefaults(
+  defineProps<{
+    profilePort: ProfilePort | null;
+    themeController?: MobileThemeController | null;
+    offline?: boolean;
+    onLogout?: (() => void | Promise<void>) | undefined;
+  }>(),
+  {
+    themeController: null,
+    offline: false,
+    onLogout: undefined,
+  },
+);
 
-type ProfileArea = 'sessions' | 'history'
-type ProfileAccountRoute = Extract<ProfileRoute, 'appearance' | 'security' | 'sessions' | 'history'>
+type ProfileArea = 'sessions' | 'history';
+type ProfileAccountRoute = Extract<
+  ProfileRoute,
+  'appearance' | 'security' | 'sessions' | 'history'
+>;
 
-const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('profile'))
-const route = ref<MobileRoute>(navigation.current)
-const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null)
-const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system')
-const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark')
-const logoutBusy = ref(false)
-let disposed = false
-let stopTheme = (): void => undefined
+const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('profile'));
+const route = ref<MobileRoute>(navigation.current);
+const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null);
+const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system');
+const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark');
+const logoutBusy = ref(false);
+let disposed = false;
+let stopTheme = (): void => undefined;
 
 const profilePublication = createProfileViewPublication(
   () => profileState.value?.view ?? null,
   () => disposed,
-)
-const profileView = profilePublication.view
-const publishProfileView = profilePublication.publish
-const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
+);
+const profileView = profilePublication.view;
+const publishProfileView = profilePublication.publish;
+const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline));
 
-watch(() => route.value.kind, (kind) => emit('navigation-visibility', kind === 'root'), { immediate: true })
-defineExpose({ back: backRoute })
+watch(
+  () => route.value.kind,
+  (kind) => emit('navigation-visibility', kind === 'root'),
+  { immediate: true },
+);
+defineExpose({ back: backRoute });
 
 const stopNavigation = navigation.subscribe(() => {
-  route.value = navigation.current
-  ensureProfileRoute(route.value)
-})
+  route.value = navigation.current;
+  ensureProfileRoute(route.value);
+});
 
 watch(
   () => props.profilePort,
   (profilePort) => {
-    profileState.value = profilePort ? new ProfileState(profilePort) : null
-    publishProfileView()
-    navigation.goRoot('profile')
+    profileState.value = profilePort ? new ProfileState(profilePort) : null;
+    publishProfileView();
+    navigation.goRoot('profile');
   },
-)
+);
 
 function bindTheme(controller: MobileThemeController | null): void {
-  stopTheme()
-  stopTheme = (): void => undefined
+  stopTheme();
+  stopTheme = (): void => undefined;
   if (!controller) {
-    themeMode.value = 'system'
-    resolvedTheme.value = 'dark'
-    return
+    themeMode.value = 'system';
+    resolvedTheme.value = 'dark';
+    return;
   }
-  themeMode.value = controller.mode
-  resolvedTheme.value = controller.resolvedMode
+  themeMode.value = controller.mode;
+  resolvedTheme.value = controller.resolvedMode;
   stopTheme = controller.subscribe((snapshot) => {
-    themeMode.value = snapshot.mode
-    resolvedTheme.value = snapshot.resolvedMode
-  })
+    themeMode.value = snapshot.mode;
+    resolvedTheme.value = snapshot.resolvedMode;
+  });
 }
 
-watch(() => props.themeController, bindTheme, { immediate: true })
+watch(() => props.themeController, bindTheme, { immediate: true });
 
 async function runProfile<T>(
   request: (state: ProfileState) => Promise<T>,
   options: { rethrow?: boolean } = {},
 ): Promise<T | undefined> {
-  const state = profileState.value
-  if (!state || disposed) return undefined
-  let pending: Promise<T>
+  const state = profileState.value;
+  if (!state || disposed) return undefined;
+  let pending: Promise<T>;
   try {
-    pending = request(state)
-    publishProfileView()
+    pending = request(state);
+    publishProfileView();
   } catch {
-    publishProfileView()
-    return undefined
+    publishProfileView();
+    return undefined;
   }
   try {
-    return await pending
+    return await pending;
   } catch (cause) {
-    if (options.rethrow) throw cause
-    return undefined
+    if (options.rethrow) throw cause;
+    return undefined;
   } finally {
-    publishProfileView()
-    await state.waitForAutomaticStaleReload()
-    publishProfileView()
+    publishProfileView();
+    await state.waitForAutomaticStaleReload();
+    publishProfileView();
   }
 }
 
 async function loadProfileSnapshot(): Promise<void> {
-  await runProfile((state) => state.loadSnapshot())
+  await runProfile((state) => state.loadSnapshot());
 }
 
 async function openProfileArea(area: ProfileArea): Promise<void> {
-  const state = profileState.value
-  if (!state || disposed) return
+  const state = profileState.value;
+  if (!state || disposed) return;
   if (!state.view.snapshot) {
-    await runProfile((current) => current.loadSnapshot())
-    if (disposed || !state.view.snapshot) return
+    await runProfile((current) => current.loadSnapshot());
+    if (disposed || !state.view.snapshot) return;
   }
-  if (area === 'sessions') await runProfile((current) => current.loadAllSessions(publishProfileView))
-  else await runProfile((current) => current.loadHistory())
+  if (area === 'sessions')
+    await runProfile((current) => current.loadAllSessions(publishProfileView));
+  else await runProfile((current) => current.loadHistory());
 }
 
 function retryProfileSnapshot(): void {
-  void loadProfileSnapshot()
+  void loadProfileSnapshot();
 }
 
 function retryProfileArea(area: ProfileArea): void {
-  void openProfileArea(area)
+  void openProfileArea(area);
 }
 
 async function loadMoreProfile(area: ProfileArea, cursor: string): Promise<void> {
-  if (area === 'sessions') await runProfile((state) => state.loadSessions({ cursor }))
-  else await runProfile((state) => state.loadHistory({ cursor }))
+  if (area === 'sessions') await runProfile((state) => state.loadSessions({ cursor }));
+  else await runProfile((state) => state.loadHistory({ cursor }));
 }
 
 function backRoute(): void {
-  navigation.back()
+  navigation.back();
 }
 
 function navigateProfile(routeName: ProfileRoute): void {
-  if (routeName === 'role-switch') { emit('open-role-switch'); return }
+  if (routeName === 'role-switch') {
+    emit('open-role-switch');
+    return;
+  }
   const routes: Record<ProfileAccountRoute, `profile/${string}`> = {
     appearance: 'profile/appearance',
     security: 'profile/security',
     sessions: 'profile/sessions',
     history: 'profile/history',
-  }
+  };
   if (routeName === 'profile') {
-    navigation.goRoot('profile')
-    return
+    navigation.goRoot('profile');
+    return;
   }
-  if (!(routeName in routes)) return
-  navigation.push(nestedRoute('profile', routes[routeName as ProfileAccountRoute], 'detail'))
+  if (!(routeName in routes)) return;
+  navigation.push(nestedRoute('profile', routes[routeName as ProfileAccountRoute], 'detail'));
 }
 
 function changeProfileTheme(mode: ProfileTheme): void {
-  props.themeController?.setMode(mode)
+  props.themeController?.setMode(mode);
 }
 
-async function changeProfilePassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
-  if (!profileState.value || disposed) return
-  await runProfile((state) => state.changePassword(input), { rethrow: true })
+async function changeProfilePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  if (!profileState.value || disposed) return;
+  await runProfile((state) => state.changePassword(input), { rethrow: true });
 }
 
 async function terminateProfileSession(sessionId: string): Promise<void> {
-  await runProfile(state => state.terminateSession(sessionId), { rethrow: true })
+  await runProfile((state) => state.terminateSession(sessionId), { rethrow: true });
 }
 
 async function logoutProfileAll(): Promise<void> {
-  if (!profileState.value || disposed) return
-  await runProfile((state) => state.logoutAll(), { rethrow: true })
+  if (!profileState.value || disposed) return;
+  await runProfile((state) => state.logoutAll(), { rethrow: true });
 }
 
 async function logout(): Promise<void> {
-  if (!props.onLogout || logoutBusy.value || disposed) return
-  logoutBusy.value = true
+  if (!props.onLogout || logoutBusy.value || disposed) return;
+  logoutBusy.value = true;
   try {
-    await props.onLogout()
+    await props.onLogout();
   } finally {
-    if (!disposed) logoutBusy.value = false
+    if (!disposed) logoutBusy.value = false;
   }
 }
 
 function ensureProfileRoute(routeValue: MobileRoute): void {
-  const state = profileState.value
-  if (routeValue.root !== 'profile' || !state || disposed) return
+  const state = profileState.value;
+  if (routeValue.root !== 'profile' || !state || disposed) return;
   if (!state.view.snapshot) {
-    if (state.view.snapshotStatus === 'loading') return
+    if (state.view.snapshotStatus === 'loading') return;
     if (routeValue.id === 'profile/sessions' || routeValue.id === 'profile/history') {
-      void openProfileArea(routeValue.id === 'profile/sessions' ? 'sessions' : 'history')
+      void openProfileArea(routeValue.id === 'profile/sessions' ? 'sessions' : 'history');
     } else {
-      void loadProfileSnapshot()
+      void loadProfileSnapshot();
     }
-    return
+    return;
   }
-  if (routeValue.id === 'profile/sessions' && state.view.sessionsStatus === 'idle') void openProfileArea('sessions')
-  if (routeValue.id === 'profile/history' && state.view.historyStatus === 'idle') void openProfileArea('history')
+  if (routeValue.id === 'profile/sessions' && state.view.sessionsStatus === 'idle')
+    void openProfileArea('sessions');
+  if (routeValue.id === 'profile/history' && state.view.historyStatus === 'idle')
+    void openProfileArea('history');
 }
 
-onMounted(() => { void loadProfileSnapshot() })
+onMounted(() => {
+  void loadProfileSnapshot();
+});
 
 onBeforeUnmount(() => {
-  disposed = true
-  stopNavigation()
-  stopTheme()
-})
+  disposed = true;
+  stopNavigation();
+  stopTheme();
+});
 </script>
 
 <template>

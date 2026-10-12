@@ -16,33 +16,48 @@ describe('PWA cold bootstrap recovery policy', () => {
     expect(isOfflineBootstrapRecoveryError(error)).toBe(true)
   })
 
-  it.each(['INVALID_SESSION', 'SESSION_REVOKED', 'ACCOUNT_INVALIDATED', 'REFRESH_REJECTED'] as const)(
-    'keeps %s fail closed',
-    (code) => {
-      const error = new AuthRequestError('refresh', undefined, { code })
+  it.each([
+    'INVALID_SESSION',
+    'SESSION_REVOKED',
+    'ACCOUNT_INVALIDATED',
+    'REFRESH_REJECTED',
+  ] as const)('keeps %s fail closed', (code) => {
+    const error = new AuthRequestError('refresh', undefined, { code })
 
-      expect(isOfflineBootstrapRecoveryError(error)).toBe(false)
-    },
-  )
+    expect(isOfflineBootstrapRecoveryError(error)).toBe(false)
+  })
 
   it.each([401, 403, 409, 503] as const)(
     'keeps HTTP %s with a NETWORK problem code fail closed',
     (status) => {
-      expect(isOfflineBootstrapRecoveryError(new AuthRequestError('session', status, { code: 'NETWORK' }))).toBe(false)
+      expect(
+        isOfflineBootstrapRecoveryError(
+          new AuthRequestError('session', status, { code: 'NETWORK' }),
+        ),
+      ).toBe(false)
     },
   )
 
   it('keeps stale-session and protocol errors fail closed', () => {
-    expect(isOfflineBootstrapRecoveryError(new ProfileRequestError('SESSION_STATE_STALE', 'stale'))).toBe(false)
-    expect(isOfflineBootstrapRecoveryError(new AuthProtocolError('refresh', 502, 'malformed response'))).toBe(false)
+    expect(
+      isOfflineBootstrapRecoveryError(new ProfileRequestError('SESSION_STATE_STALE', 'stale')),
+    ).toBe(false)
+    expect(
+      isOfflineBootstrapRecoveryError(new AuthProtocolError('refresh', 502, 'malformed response')),
+    ).toBe(false)
   })
 
   it('does not treat an untyped profile NETWORK error as auth transport loss', () => {
-    expect(isOfflineBootstrapRecoveryError(new ProfileRequestError('NETWORK', 'network'))).toBe(false)
+    expect(isOfflineBootstrapRecoveryError(new ProfileRequestError('NETWORK', 'network'))).toBe(
+      false,
+    )
   })
 
   it('keeps StudentApi-like and unknown bootstrap failures outside recovery', () => {
-    const studentApiLike = Object.assign(new Error('BFF HTTP 403'), { status: 403, code: 'UNKNOWN' })
+    const studentApiLike = Object.assign(new Error('BFF HTTP 403'), {
+      status: 403,
+      code: 'UNKNOWN',
+    })
 
     expect(isOfflineBootstrapRecoveryError(studentApiLike)).toBe(false)
     expect(isOfflineBootstrapRecoveryError(new Error('malformed bootstrap response'))).toBe(false)
@@ -56,7 +71,9 @@ describe('PWA cold bootstrap recovery policy', () => {
     const catchBody = source.slice(catchStart, finallyStart)
     const recoveryCall = 'const recovered = await loadOfflineSnapshot()'
     const recoveryCallCount = catchBody.split(recoveryCall).length - 1
-    const guardIndex = catchBody.indexOf("!featureVisible.value && authView.value !== 'headman' && isOfflineBootstrapRecoveryError(error)")
+    const guardIndex = catchBody.indexOf(
+      "!featureVisible.value && authView.value !== 'headman' && isOfflineBootstrapRecoveryError(error)",
+    )
     const recoveryIndex = catchBody.indexOf(recoveryCall)
 
     expect(recoveryCallCount).toBe(1)

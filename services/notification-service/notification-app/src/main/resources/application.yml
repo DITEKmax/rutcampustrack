@@ -83,7 +83,7 @@ vapid:
 rutcampustrack.push.cleanup:
   retention-days: 90
   # Воскресенье 03:00 UTC. @SchedulerLock защищает от параллельных запусков.
-  cron: "0 0 3 * * SUN"
+  cron: '0 0 3 * * SUN'
 
 management:
   endpoints:

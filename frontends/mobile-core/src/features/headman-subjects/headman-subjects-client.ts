@@ -12,14 +12,33 @@ export interface HeadmanSubjectAssignment {
 }
 
 export interface HeadmanPendingAdoption {
-  readonly targetAssignmentId: number; readonly adoptionOperationId: string; readonly state?: string
+  readonly targetAssignmentId: number
+  readonly adoptionOperationId: string
+  readonly state?: string
 }
-export interface HeadmanSubjectPendingAdoption extends HeadmanPendingAdoption, HeadmanSubjectInitialAssignment { readonly subjectId: number; readonly groupId: number; readonly state: string; readonly validUntilExclusive: string | null }
+export interface HeadmanSubjectPendingAdoption
+  extends HeadmanPendingAdoption,
+    HeadmanSubjectInitialAssignment {
+  readonly subjectId: number
+  readonly groupId: number
+  readonly state: string
+  readonly validUntilExclusive: string | null
+}
 export interface HeadmanPendingClosure {
-  readonly operationId: string; readonly assignmentId: number; readonly requestKey: string; readonly validUntilExclusive: string
-  readonly teacherId: number; readonly subjectId: number; readonly groupId: number; readonly semesterId: number; readonly lessonType: HeadmanSubjectType
+  readonly operationId: string
+  readonly assignmentId: number
+  readonly requestKey: string
+  readonly validUntilExclusive: string
+  readonly teacherId: number
+  readonly subjectId: number
+  readonly groupId: number
+  readonly semesterId: number
+  readonly lessonType: HeadmanSubjectType
 }
-export interface HeadmanAdoptionAssignment extends HeadmanSubjectAssignment { readonly subjectId: number; readonly groupId: number }
+export interface HeadmanAdoptionAssignment extends HeadmanSubjectAssignment {
+  readonly subjectId: number
+  readonly groupId: number
+}
 export interface HeadmanSubject {
   readonly id: number
   readonly name: string
@@ -128,7 +147,10 @@ export class HeadmanSubjectsApi {
   }
 
   getSubject(subjectId: number): Promise<HeadmanSubject> {
-    return this.request<unknown>(`/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}`, { cache: 'no-store' }).then((value) => normalizeSubject(readModel(value)))
+    return this.request<unknown>(
+      `/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}`,
+      { cache: 'no-store' },
+    ).then((value) => normalizeSubject(readModel(value)))
   }
 
   listSemesters(): Promise<readonly HeadmanSemester[]> {
@@ -140,10 +162,13 @@ export class HeadmanSubjectsApi {
   }
 
   async searchTeachers(search: string, page = 0): Promise<HeadmanTeacherPage> {
-    if (!Number.isSafeInteger(page) || page < 0) throw new RangeError('page must be a non-negative integer')
+    if (!Number.isSafeInteger(page) || page < 0)
+      throw new RangeError('page must be a non-negative integer')
     const query = new URLSearchParams({ page: String(page), size: '20' })
     if (search.trim()) query.set('search', search.trim())
-    return normalizeTeacherPage(await this.request<unknown>(`/api/academic/users/teachers/search?${query.toString()}`))
+    return normalizeTeacherPage(
+      await this.request<unknown>(`/api/academic/users/teachers/search?${query.toString()}`),
+    )
   }
 
   async resolveTeachers(ids: readonly number[]): Promise<readonly HeadmanTeacher[]> {
@@ -156,7 +181,10 @@ export class HeadmanSubjectsApi {
     return embeddedItems(value, 'userSummaryResponseList').map(normalizeSummaryTeacher)
   }
 
-  replaceAssignment(assignmentId: number, input: AssignmentReplacementInput): Promise<AssignmentReplacementResponse> {
+  replaceAssignment(
+    assignmentId: number,
+    input: AssignmentReplacementInput,
+  ): Promise<AssignmentReplacementResponse> {
     assertPositiveInteger(assignmentId, 'assignmentId')
     const payload = normalizeReplacementInput(input)
     return this.request<unknown>(`/api/academic/assignments/${assignmentId}/replace`, {
@@ -167,26 +195,42 @@ export class HeadmanSubjectsApi {
 
   getReplacementStatus(operationId: string): Promise<AssignmentReplacementResponse> {
     const id = uuid(operationId, 'operationId')
-    return this.request<unknown>(`/api/academic/assignments/replacements/${encodeURIComponent(id)}`)
-      .then(normalizeAssignmentReplacement)
+    return this.request<unknown>(
+      `/api/academic/assignments/replacements/${encodeURIComponent(id)}`,
+    ).then(normalizeAssignmentReplacement)
   }
 
   createSubject(input: CreateHeadmanSubjectInput): Promise<HeadmanSubject> {
     const payload = normalizeCreateInput(input)
-    return this.request<unknown>('/api/academic/subjects', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }, false, 201).then((value) => normalizeSubject(readModel(value)))
+    return this.request<unknown>(
+      '/api/academic/subjects',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      false,
+      201,
+    ).then((value) => normalizeSubject(readModel(value)))
   }
 
-  updateSubject(subjectId: number, input: Omit<CreateHeadmanSubjectInput, 'initialAssignments'>): Promise<HeadmanSubject> {
+  updateSubject(
+    subjectId: number,
+    input: Omit<CreateHeadmanSubjectInput, 'initialAssignments'>,
+  ): Promise<HeadmanSubject> {
     const name = requiredText(input.name, 'name')
     const type = subjectType(input.type, 'type')
-    const lessonTypes = [...new Set(input.lessonTypes.map((value) => subjectType(value, 'lessonTypes')))]
-    if (!lessonTypes.length || !lessonTypes.includes(type)) throw new RangeError('lessonTypes must include type')
-    return this.request<unknown>(`/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}`, {
-      method: 'PUT', body: JSON.stringify({ name, type, lessonTypes }),
-    }).then((value) => normalizeSubject(readModel(value)))
+    const lessonTypes = [
+      ...new Set(input.lessonTypes.map((value) => subjectType(value, 'lessonTypes'))),
+    ]
+    if (!lessonTypes.length || !lessonTypes.includes(type))
+      throw new RangeError('lessonTypes must include type')
+    return this.request<unknown>(
+      `/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ name, type, lessonTypes }),
+      },
+    ).then((value) => normalizeSubject(readModel(value)))
   }
 
   addTeacher(
@@ -197,24 +241,59 @@ export class HeadmanSubjectsApi {
     assertPositiveInteger(subjectId, 'subjectId')
     assertPositiveInteger(teacherId, 'teacherId')
     const payload = normalizeAddInput(input)
-    return this.request<unknown>(`/api/academic/subjects/${subjectId}/teachers/${teacherId}`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }, false, 201).then(() => undefined)
+    return this.request<unknown>(
+      `/api/academic/subjects/${subjectId}/teachers/${teacherId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      false,
+      201,
+    ).then(() => undefined)
   }
 
-  removeTeacher(subjectId: number, teacherId: number, assignmentId: number, validUntilExclusive: string, requestKey: string): Promise<void> {
-    const query = new URLSearchParams({ assignmentId: String(positiveInteger(assignmentId, 'assignmentId')), validUntilExclusive: requiredDate(validUntilExclusive, 'validUntilExclusive') })
-    return this.request<void>(`/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}/teachers/${positiveInteger(teacherId, 'teacherId')}?${query}`, {
-      method: 'DELETE', headers: { 'Idempotency-Key': uuid(requestKey, 'requestKey') },
-    }, false, 204)
+  removeTeacher(
+    subjectId: number,
+    teacherId: number,
+    assignmentId: number,
+    validUntilExclusive: string,
+    requestKey: string,
+  ): Promise<void> {
+    const query = new URLSearchParams({
+      assignmentId: String(positiveInteger(assignmentId, 'assignmentId')),
+      validUntilExclusive: requiredDate(validUntilExclusive, 'validUntilExclusive'),
+    })
+    return this.request<void>(
+      `/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}/teachers/${positiveInteger(teacherId, 'teacherId')}?${query}`,
+      {
+        method: 'DELETE',
+        headers: { 'Idempotency-Key': uuid(requestKey, 'requestKey') },
+      },
+      false,
+      204,
+    )
   }
 
-  resumeAdoption(assignmentId: number, operationId: string | null = null): Promise<HeadmanAdoptionAssignment> {
-    const query = operationId === null ? '' : `?operationId=${encodeURIComponent(uuid(operationId, 'operationId'))}`
-    return this.request<unknown>(`/api/academic/assignments/${positiveInteger(assignmentId, 'assignmentId')}/resume-adoption${query}`, { method: 'POST' }, false, 200).then((value) => {
+  resumeAdoption(
+    assignmentId: number,
+    operationId: string | null = null,
+  ): Promise<HeadmanAdoptionAssignment> {
+    const query =
+      operationId === null
+        ? ''
+        : `?operationId=${encodeURIComponent(uuid(operationId, 'operationId'))}`
+    return this.request<unknown>(
+      `/api/academic/assignments/${positiveInteger(assignmentId, 'assignmentId')}/resume-adoption${query}`,
+      { method: 'POST' },
+      false,
+      200,
+    ).then((value) => {
       const source = requiredRecord(readModel(value), 'adoption assignment')
-      return { ...normalizeAssignment(source), subjectId: positiveInteger(source.subjectId, 'subjectId'), groupId: positiveInteger(source.groupId, 'groupId') }
+      return {
+        ...normalizeAssignment(source),
+        subjectId: positiveInteger(source.subjectId, 'subjectId'),
+        groupId: positiveInteger(source.groupId, 'groupId'),
+      }
     })
   }
 
@@ -245,19 +324,28 @@ export class HeadmanSubjectsApi {
     throw new Error('Сервер вернул слишком много страниц.')
   }
 
-  private async request<T>(path: string, init?: RequestInit, retried = false, expectedStatus?: number): Promise<T> {
+  private async request<T>(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+    expectedStatus?: number,
+  ): Promise<T> {
     this.options.assertCurrent?.()
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
     if (response.ok) {
-      if (expectedStatus !== undefined && response.status !== expectedStatus) throw new HeadmanSubjectsApiError(response, { detail: 'Ответ сервера не подтверждает завершение операции.' })
+      if (expectedStatus !== undefined && response.status !== expectedStatus)
+        throw new HeadmanSubjectsApiError(response, {
+          detail: 'Ответ сервера не подтверждает завершение операции.',
+        })
       if (response.status === 204) return undefined as T
-      const value = await response.json() as T
+      const value = (await response.json()) as T
       this.options.assertCurrent?.()
       return value
     }
@@ -313,10 +401,14 @@ export function createGenerationBoundHeadmanSubjectsApi(
   return new HeadmanSubjectsApi(options)
 }
 
-function normalizeCreateInput(input: CreateHeadmanSubjectInput): CreateHeadmanSubjectInput & { teacherIds: null } {
+function normalizeCreateInput(
+  input: CreateHeadmanSubjectInput,
+): CreateHeadmanSubjectInput & { teacherIds: null } {
   const name = requiredText(input.name, 'name')
   const type = subjectType(input.type, 'type')
-  const lessonTypes = [...new Set(input.lessonTypes.map((value) => subjectType(value, 'lessonTypes')))]
+  const lessonTypes = [
+    ...new Set(input.lessonTypes.map((value) => subjectType(value, 'lessonTypes'))),
+  ]
   if (lessonTypes.length === 0 || lessonTypes.length > 3 || !lessonTypes.includes(type)) {
     throw new RangeError('lessonTypes must contain 1–3 unique values including type')
   }
@@ -328,8 +420,12 @@ function normalizeCreateInput(input: CreateHeadmanSubjectInput): CreateHeadmanSu
     validUntilExclusive: nullableDate(assignment.validUntilExclusive),
   }))
   initialAssignments.forEach((assignment) => {
-    if (!lessonTypes.includes(assignment.lessonType)) throw new RangeError('assignment lessonType must be selected')
-    if (assignment.validUntilExclusive !== null && assignment.validUntilExclusive <= assignment.validFrom) {
+    if (!lessonTypes.includes(assignment.lessonType))
+      throw new RangeError('assignment lessonType must be selected')
+    if (
+      assignment.validUntilExclusive !== null &&
+      assignment.validUntilExclusive <= assignment.validFrom
+    ) {
       throw new RangeError('validUntilExclusive must be after validFrom')
     }
   })
@@ -365,8 +461,14 @@ function normalizeAssignmentReplacement(value: unknown): AssignmentReplacementRe
   const record = requiredRecord(value, 'assignment replacement')
   return {
     operationId: uuid(record.operationId, 'replacement.operationId'),
-    sourceAssignmentId: positiveInteger(record.sourceAssignmentId, 'replacement.sourceAssignmentId'),
-    targetAssignmentId: positiveInteger(record.targetAssignmentId, 'replacement.targetAssignmentId'),
+    sourceAssignmentId: positiveInteger(
+      record.sourceAssignmentId,
+      'replacement.sourceAssignmentId',
+    ),
+    targetAssignmentId: positiveInteger(
+      record.targetAssignmentId,
+      'replacement.targetAssignmentId',
+    ),
     sourceTeacherId: positiveInteger(record.sourceTeacherId, 'replacement.sourceTeacherId'),
     targetTeacherId: positiveInteger(record.targetTeacherId, 'replacement.targetTeacherId'),
     subjectId: positiveInteger(record.subjectId, 'replacement.subjectId'),
@@ -386,7 +488,9 @@ function normalizeAssignmentReplacement(value: unknown): AssignmentReplacementRe
 
 function normalizeSubject(value: unknown): HeadmanSubject {
   const record = requiredRecord(value, 'subject')
-  const lessonTypes = arrayOf(record.lessonTypes).map((item) => subjectType(item, 'subject.lessonTypes'))
+  const lessonTypes = arrayOf(record.lessonTypes).map((item) =>
+    subjectType(item, 'subject.lessonTypes'),
+  )
   const assignments = arrayOf(record.assignments).map(normalizeAssignment)
   return {
     id: positiveInteger(record.id, 'subject.id'),
@@ -430,9 +534,10 @@ function normalizeTeacherPage(value: unknown): HeadmanTeacherPage {
   return {
     items: embeddedItems(value, 'teacherLookupResponseList').map(normalizeTeacher),
     page: nonNegativeInteger(page.number ?? 0, 'teacher page.number'),
-    totalPages: page.totalPages === undefined || page.totalPages === null
-      ? null
-      : nonNegativeInteger(page.totalPages, 'teacher page.totalPages'),
+    totalPages:
+      page.totalPages === undefined || page.totalPages === null
+        ? null
+        : nonNegativeInteger(page.totalPages, 'teacher page.totalPages'),
   }
 }
 
@@ -468,7 +573,9 @@ function embeddedItems(value: unknown, key: string): readonly unknown[] {
 function pageTotalPages(value: unknown): number | null {
   if (!isRecord(value) || !isRecord(value.page)) return null
   const totalPages = value.page.totalPages
-  return typeof totalPages === 'number' && Number.isSafeInteger(totalPages) && totalPages >= 0 ? totalPages : null
+  return typeof totalPages === 'number' && Number.isSafeInteger(totalPages) && totalPages >= 0
+    ? totalPages
+    : null
 }
 
 function nextPageHref(value: unknown): string | null {
@@ -478,8 +585,9 @@ function nextPageHref(value: unknown): string | null {
 }
 
 function displayName(record: Record<string, unknown>): string | null {
-  const parts = [record.lastName, record.firstName, record.middleName]
-    .filter((part): part is string => typeof part === 'string' && part.trim() !== '')
+  const parts = [record.lastName, record.firstName, record.middleName].filter(
+    (part): part is string => typeof part === 'string' && part.trim() !== '',
+  )
   return parts.length > 0 ? parts.join(' ') : null
 }
 
@@ -498,7 +606,8 @@ function arrayOf(value: unknown): readonly unknown[] {
 }
 
 function requiredText(value: unknown, field: string): string {
-  if (typeof value !== 'string' || value.trim() === '') throw new Error(`Сервер вернул пустое поле ${field}.`)
+  if (typeof value !== 'string' || value.trim() === '')
+    throw new Error(`Сервер вернул пустое поле ${field}.`)
   return value.trim()
 }
 
@@ -508,7 +617,8 @@ function nullableText(value: unknown): string | null {
 
 function requiredDate(value: unknown, field: string): string {
   const text = requiredText(value, field)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) throw new Error(`Сервер вернул некорректную дату ${field}.`)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text))
+    throw new Error(`Сервер вернул некорректную дату ${field}.`)
   return text
 }
 
@@ -525,12 +635,14 @@ function positiveInteger(value: unknown, field: string): number {
 }
 
 function nonNegativeInteger(value: unknown, field: string): number {
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) throw new Error(`Сервер вернул некорректное поле ${field}.`)
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0)
+    throw new Error(`Сервер вернул некорректное поле ${field}.`)
   return value
 }
 
 function assertPositiveInteger(value: number, field: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${field} must be a positive integer`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${field} must be a positive integer`)
 }
 
 function uuid(value: unknown, field: string): string {
@@ -549,35 +661,80 @@ function problemDetail(value: unknown): string | null {
   if (!isRecord(value)) return null
   return typeof value.detail === 'string'
     ? value.detail
-    : typeof value.title === 'string' ? value.title : null
+    : typeof value.title === 'string'
+      ? value.title
+      : null
 }
 
 function normalizePendingAdoption(value: unknown): HeadmanPendingAdoption {
   const source = requiredRecord(value, 'pending adoption')
-  return { targetAssignmentId: positiveInteger(source.targetAssignmentId, 'targetAssignmentId'), adoptionOperationId: uuid(source.adoptionOperationId, 'adoptionOperationId'), ...(typeof source.state === 'string' ? { state: source.state } : {}) }
+  return {
+    targetAssignmentId: positiveInteger(source.targetAssignmentId, 'targetAssignmentId'),
+    adoptionOperationId: uuid(source.adoptionOperationId, 'adoptionOperationId'),
+    ...(typeof source.state === 'string' ? { state: source.state } : {}),
+  }
 }
 function normalizePendingClosure(value: unknown): HeadmanPendingClosure {
   const source = requiredRecord(value, 'pending closure')
-  return { operationId: uuid(source.operationId, 'closure.operationId'), assignmentId: positiveInteger(source.assignmentId, 'closure.assignmentId'), requestKey: uuid(source.requestKey, 'closure.requestKey'), validUntilExclusive: requiredDate(source.validUntilExclusive, 'closure.validUntilExclusive'),
-    teacherId: positiveInteger(source.teacherId, 'closure.teacherId'), subjectId: positiveInteger(source.subjectId, 'closure.subjectId'), groupId: positiveInteger(source.groupId, 'closure.groupId'), semesterId: positiveInteger(source.semesterId, 'closure.semesterId'), lessonType: subjectType(source.lessonType, 'closure.lessonType') }
+  return {
+    operationId: uuid(source.operationId, 'closure.operationId'),
+    assignmentId: positiveInteger(source.assignmentId, 'closure.assignmentId'),
+    requestKey: uuid(source.requestKey, 'closure.requestKey'),
+    validUntilExclusive: requiredDate(source.validUntilExclusive, 'closure.validUntilExclusive'),
+    teacherId: positiveInteger(source.teacherId, 'closure.teacherId'),
+    subjectId: positiveInteger(source.subjectId, 'closure.subjectId'),
+    groupId: positiveInteger(source.groupId, 'closure.groupId'),
+    semesterId: positiveInteger(source.semesterId, 'closure.semesterId'),
+    lessonType: subjectType(source.lessonType, 'closure.lessonType'),
+  }
 }
 function normalizeSubjectPendingAdoption(value: unknown): HeadmanSubjectPendingAdoption {
-  const source = requiredRecord(value, 'subject pending adoption'), handle = normalizePendingAdoption(source)
-  if (!Object.prototype.hasOwnProperty.call(source, 'validUntilExclusive')) throw new Error('Сервер не вернул исходную границу назначения.')
+  const source = requiredRecord(value, 'subject pending adoption'),
+    handle = normalizePendingAdoption(source)
+  if (!Object.prototype.hasOwnProperty.call(source, 'validUntilExclusive'))
+    throw new Error('Сервер не вернул исходную границу назначения.')
   const tuple = normalizeAssignment({ ...source, id: handle.targetAssignmentId })
-  return { ...handle, teacherId: tuple.teacherId, semesterId: tuple.semesterId, lessonType: tuple.lessonType, validFrom: tuple.validFrom, validUntilExclusive: tuple.validUntilExclusive,
-    subjectId: positiveInteger(source.subjectId, 'pending.subjectId'), groupId: positiveInteger(source.groupId, 'pending.groupId'), state: requiredText(source.state, 'pending.state') }
+  return {
+    ...handle,
+    teacherId: tuple.teacherId,
+    semesterId: tuple.semesterId,
+    lessonType: tuple.lessonType,
+    validFrom: tuple.validFrom,
+    validUntilExclusive: tuple.validUntilExclusive,
+    subjectId: positiveInteger(source.subjectId, 'pending.subjectId'),
+    groupId: positiveInteger(source.groupId, 'pending.groupId'),
+    state: requiredText(source.state, 'pending.state'),
+  }
 }
-export function headmanAdoptionPending(cause: unknown): { subjectId: number; pendingAdoptions: readonly HeadmanPendingAdoption[] } | null {
-  if (!(cause instanceof HeadmanSubjectsApiError) || cause.response.status !== 503 || !isRecord(cause.problem)
-    || typeof cause.problem.type !== 'string' || !cause.problem.type.endsWith('assignment-adoption-pending') || !isRecord(cause.problem.extras)) return null
+export function headmanAdoptionPending(
+  cause: unknown,
+): { subjectId: number; pendingAdoptions: readonly HeadmanPendingAdoption[] } | null {
+  if (
+    !(cause instanceof HeadmanSubjectsApiError) ||
+    cause.response.status !== 503 ||
+    !isRecord(cause.problem) ||
+    typeof cause.problem.type !== 'string' ||
+    !cause.problem.type.endsWith('assignment-adoption-pending') ||
+    !isRecord(cause.problem.extras)
+  )
+    return null
   try {
     const source = cause.problem.extras
     if (!Array.isArray(source.pendingAdoptions) || !source.pendingAdoptions.length) return null
-    return { subjectId: positiveInteger(source.subjectId, 'subjectId'), pendingAdoptions: source.pendingAdoptions.map(normalizePendingAdoption) }
-  } catch { return null }
+    return {
+      subjectId: positiveInteger(source.subjectId, 'subjectId'),
+      pendingAdoptions: source.pendingAdoptions.map(normalizePendingAdoption),
+    }
+  } catch {
+    return null
+  }
 }
 export function headmanIdempotencyMismatch(cause: unknown): boolean {
-  return cause instanceof HeadmanSubjectsApiError && cause.response.status === 409 && isRecord(cause.problem)
-    && isRecord(cause.problem.extras) && cause.problem.extras.code === 'IDEMPOTENCY_PAYLOAD_MISMATCH'
+  return (
+    cause instanceof HeadmanSubjectsApiError &&
+    cause.response.status === 409 &&
+    isRecord(cause.problem) &&
+    isRecord(cause.problem.extras) &&
+    cause.problem.extras.code === 'IDEMPOTENCY_PAYLOAD_MISMATCH'
+  )
 }

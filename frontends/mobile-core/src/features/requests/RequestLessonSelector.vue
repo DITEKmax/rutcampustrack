@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { computed, ref } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import {
   canRequestLesson,
   formatLessonDate,
@@ -9,129 +9,157 @@ import {
   pendingReason,
   removeSelectedLessonId,
   updateSelectedLessonIds,
-} from './state'
-import type { RequestLesson, RequestLessonOption } from './types'
+} from './state';
+import type { RequestLesson, RequestLessonOption } from './types';
 
-const props = withDefaults(defineProps<{
-  mode: 'excuse' | 'late'
-  options: readonly RequestLessonOption[]
-  modelValue: readonly string[] | string | null
-  disabled?: boolean
-  grouped?: boolean
-  announceSelection?: boolean
-  optionsResolved?: boolean
-  recoveryDisabled?: boolean | null
-}>(), {
-  disabled: false,
-  grouped: false,
-  announceSelection: true,
-  optionsResolved: true,
-  recoveryDisabled: null,
-})
+const props = withDefaults(
+  defineProps<{
+    mode: 'excuse' | 'late';
+    options: readonly RequestLessonOption[];
+    modelValue: readonly string[] | string | null;
+    disabled?: boolean;
+    grouped?: boolean;
+    announceSelection?: boolean;
+    optionsResolved?: boolean;
+    recoveryDisabled?: boolean | null;
+  }>(),
+  {
+    disabled: false,
+    grouped: false,
+    announceSelection: true,
+    optionsResolved: true,
+    recoveryDisabled: null,
+  },
+);
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string[] | string | null]
-}>()
+  'update:modelValue': [value: string[] | string | null];
+}>();
 
 interface LessonGroup {
-  key: string
-  label: string
-  options: RequestLessonOption[]
+  key: string;
+  label: string;
+  options: RequestLessonOption[];
 }
 
-const selectionStatus = ref('')
-const recoveryDisabled = computed(() => props.recoveryDisabled ?? props.disabled)
+const selectionStatus = ref('');
+const recoveryDisabled = computed(() => props.recoveryDisabled ?? props.disabled);
 
 const groups = computed<LessonGroup[]>(() => {
-  const byDate = new Map<string, RequestLessonOption[]>()
+  const byDate = new Map<string, RequestLessonOption[]>();
   for (const option of props.options) {
-    const lesson = option.lesson
-    if (!lesson || !lesson.id) continue
-    const key = lesson.date || ''
-    const current = byDate.get(key)
-    if (current) current.push(option)
-    else byDate.set(key, [option])
+    const lesson = option.lesson;
+    if (!lesson || !lesson.id) continue;
+    const key = lesson.date || '';
+    const current = byDate.get(key);
+    if (current) current.push(option);
+    else byDate.set(key, [option]);
   }
   return [...byDate.entries()].map(([key, options]) => ({
     key: key || 'unknown-date',
     label: formatLessonDate(key || null),
     options: props.grouped
-      ? [...options].sort((a, b) => (a.lesson?.startsAt || '99:99').localeCompare(b.lesson?.startsAt || '99:99') || (a.lesson?.lessonNumber ?? 0) - (b.lesson?.lessonNumber ?? 0))
+      ? [...options].sort(
+          (a, b) =>
+            (a.lesson?.startsAt || '99:99').localeCompare(b.lesson?.startsAt || '99:99') ||
+            (a.lesson?.lessonNumber ?? 0) - (b.lesson?.lessonNumber ?? 0),
+        )
       : options,
-  }))
-})
+  }));
+});
 
 const selectedIds = computed(() => {
-  if (Array.isArray(props.modelValue)) return [...props.modelValue]
-  return props.modelValue ? [props.modelValue] : []
-})
+  if (Array.isArray(props.modelValue)) return [...props.modelValue];
+  return props.modelValue ? [props.modelValue] : [];
+});
 
-const missingSelectedIds = computed(() => selectedIds.value.filter((id) => !props.options.some((option) => option.lesson?.id === id)))
+const missingSelectedIds = computed(() =>
+  selectedIds.value.filter((id) => !props.options.some((option) => option.lesson?.id === id)),
+);
 
 function lessonFor(option: RequestLessonOption): RequestLesson | null {
-  return option.lesson
+  return option.lesson;
 }
 
 function lessonId(option: RequestLessonOption): string {
-  return option.lesson?.id || ''
+  return option.lesson?.id || '';
 }
 
 function lessonTimeFor(option: RequestLessonOption): string {
-  return option.lesson ? formatLessonTime(option.lesson) : 'Время не указано'
+  return option.lesson ? formatLessonTime(option.lesson) : 'Время не указано';
 }
 
 function optionId(option: RequestLessonOption, index: number): string {
-  return 'request-lesson-' + props.mode + '-' + index + '-' + encodeURIComponent(lessonId(option))
+  return 'request-lesson-' + props.mode + '-' + index + '-' + encodeURIComponent(lessonId(option));
 }
 
 function isSelected(option: RequestLessonOption): boolean {
-  return selectedIds.value.includes(lessonId(option))
+  return selectedIds.value.includes(lessonId(option));
 }
 
 function isEligible(option: RequestLessonOption): boolean {
-  return canRequestLesson(option, props.mode === 'excuse' ? 'EXCUSE' : 'LATE_CHECKIN')
+  return canRequestLesson(option, props.mode === 'excuse' ? 'EXCUSE' : 'LATE_CHECKIN');
 }
 
 function isAbsent(option: RequestLessonOption): boolean {
-  return option.lateCheckinEligible === true || (option.lesson?.status === 'CLOSED' && option.excuseEligible === true)
+  return (
+    option.lateCheckinEligible === true ||
+    (option.lesson?.status === 'CLOSED' && option.excuseEligible === true)
+  );
 }
 
 function lifecycleLabel(option: RequestLessonOption): string | null {
-  return option.lesson?.status === 'PLANNED' ? 'Запланирована' : option.lesson?.status === 'ACTIVE' ? 'Идёт' : null
+  return option.lesson?.status === 'PLANNED'
+    ? 'Запланирована'
+    : option.lesson?.status === 'ACTIVE'
+      ? 'Идёт'
+      : null;
 }
 
 function unavailableText(option: RequestLessonOption): string {
-  return option.unavailableReason || pendingReason(option.pendingRequests) || 'Эта пара недоступна для такой заявки.'
+  return (
+    option.unavailableReason ||
+    pendingReason(option.pendingRequests) ||
+    'Эта пара недоступна для такой заявки.'
+  );
 }
 
 function selectedCountLabel(count: number): string {
-  if (count % 10 === 1 && count % 100 !== 11) return count + ' пара'
-  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return count + ' пары'
-  return count + ' пар'
+  if (count % 10 === 1 && count % 100 !== 11) return count + ' пара';
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20))
+    return count + ' пары';
+  return count + ' пар';
 }
 
 function missingLessonLabel(index: number): string {
-  if (!props.optionsResolved) return 'Сохранённая пара №' + (index + 1) + ' пока не загружена'
-  return index === 0 ? 'Сохранённая пара больше недоступна' : 'Сохранённая пара №' + (index + 1) + ' больше недоступна'
+  if (!props.optionsResolved) return 'Сохранённая пара №' + (index + 1) + ' пока не загружена';
+  return index === 0
+    ? 'Сохранённая пара больше недоступна'
+    : 'Сохранённая пара №' + (index + 1) + ' больше недоступна';
 }
 
 function removeLesson(id: string): void {
-  const next = removeSelectedLessonId(selectedIds.value, id)
-  selectionStatus.value = 'Пара убрана из заявки. Выбрано ' + selectedCountLabel(next.length)
-  emit('update:modelValue', props.mode === 'late' ? next[0] ?? null : next)
+  const next = removeSelectedLessonId(selectedIds.value, id);
+  selectionStatus.value = 'Пара убрана из заявки. Выбрано ' + selectedCountLabel(next.length);
+  emit('update:modelValue', props.mode === 'late' ? (next[0] ?? null) : next);
 }
 
 function onExcuseChange(event: Event, id: string): void {
-  const checked = (event.target as HTMLInputElement).checked
-  const value = props.mode === 'late' ? checked ? [id] : [] : updateSelectedLessonIds(selectedIds.value, id, checked)
-  selectionStatus.value = 'Выбрано ' + selectedCountLabel(value.length)
-  emit('update:modelValue', value)
+  const checked = (event.target as HTMLInputElement).checked;
+  const value =
+    props.mode === 'late'
+      ? checked
+        ? [id]
+        : []
+      : updateSelectedLessonIds(selectedIds.value, id, checked);
+  selectionStatus.value = 'Выбрано ' + selectedCountLabel(value.length);
+  emit('update:modelValue', value);
 }
 
 function onLateChange(event: Event): void {
-  const value = (event.target as HTMLSelectElement).value || null
-  selectionStatus.value = value ? 'Пара выбрана' : 'Пара не выбрана'
-  emit('update:modelValue', value)
+  const value = (event.target as HTMLSelectElement).value || null;
+  selectionStatus.value = value ? 'Пара выбрана' : 'Пара не выбрана';
+  emit('update:modelValue', value);
 }
 </script>
 
@@ -150,7 +178,12 @@ function onLateChange(event: Event): void {
         aria-label="Сохранённые недоступные пары"
       >
         <p class="request-lesson-retained__help">
-          {{ props.optionsResolved ? 'Есть недоступные выбранные пары. ' : '' }}Твой выбор сохранён. {{ props.optionsResolved ? 'Убери недоступные пары, чтобы продолжить.' : 'Дождись загрузки или убери пару из черновика.' }}
+          {{ props.optionsResolved ? 'Есть недоступные выбранные пары. ' : '' }}Твой выбор сохранён.
+          {{
+            props.optionsResolved
+              ? 'Убери недоступные пары, чтобы продолжить.'
+              : 'Дождись загрузки или убери пару из черновика.'
+          }}
         </p>
         <div
           v-for="(id, index) in missingSelectedIds"
@@ -185,7 +218,10 @@ function onLateChange(event: Event): void {
           >
             <label
               class="request-lesson-option"
-              :class="{ 'request-lesson-option--selected': isSelected(option), 'request-lesson-option--disabled': !isEligible(option) }"
+              :class="{
+                'request-lesson-option--selected': isSelected(option),
+                'request-lesson-option--disabled': !isEligible(option),
+              }"
             >
               <input
                 :id="optionId(option, index)"
@@ -193,11 +229,15 @@ function onLateChange(event: Event): void {
                 :value="lessonId(option)"
                 :checked="isSelected(option)"
                 :disabled="props.disabled || !isEligible(option)"
-                :aria-describedby="!isEligible(option) ? optionId(option, index) + '-reason' : undefined"
+                :aria-describedby="
+                  !isEligible(option) ? optionId(option, index) + '-reason' : undefined
+                "
                 @change="onExcuseChange($event, lessonId(option))"
-              >
+              />
               <span class="request-lesson-option__copy">
-                <span class="request-lesson-option__subject">{{ lessonFor(option)?.subjectName || 'Предмет не указан' }}</span>
+                <span class="request-lesson-option__subject">{{
+                  lessonFor(option)?.subjectName || 'Предмет не указан'
+                }}</span>
                 <span class="request-lesson-option__meta">
                   <span v-if="!props.grouped">
                     <MobileIcon name="calendar" />
@@ -225,18 +265,22 @@ function onLateChange(event: Event): void {
                 class="request-lesson-option__absence"
                 role="img"
                 aria-label="Не был"
-              >н</span>
+                >н</span
+              >
               <span
                 v-else-if="props.grouped && lifecycleLabel(option)"
                 class="request-lesson-option__lifecycle"
-              >{{ lifecycleLabel(option) }}</span>
+                >{{ lifecycleLabel(option) }}</span
+              >
             </label>
             <button
               v-if="isSelected(option) && !isEligible(option)"
               class="request-lesson-recovery-action"
               type="button"
               :disabled="recoveryDisabled"
-              :aria-label="'Убрать из заявки: ' + (lessonFor(option)?.subjectName || 'недоступная пара')"
+              :aria-label="
+                'Убрать из заявки: ' + (lessonFor(option)?.subjectName || 'недоступная пара')
+              "
               @click="removeLesson(lessonId(option))"
             >
               Убрать из заявки
@@ -267,7 +311,8 @@ function onLateChange(event: Event): void {
               :value="lessonId(option)"
               :disabled="!isEligible(option)"
             >
-              {{ lessonFor(option)?.subjectName || 'Предмет не указан' }} · {{ formatLessonDate(lessonFor(option)?.date) }} · {{ lessonTimeFor(option) }}
+              {{ lessonFor(option)?.subjectName || 'Предмет не указан' }} ·
+              {{ formatLessonDate(lessonFor(option)?.date) }} · {{ lessonTimeFor(option) }}
             </option>
           </select>
           <svg

@@ -23,7 +23,9 @@ describe('request attachment validation', () => {
     ['NARROW NO-BREAK SPACE', '\u202f'],
     ['ZERO WIDTH NO-BREAK SPACE', '\ufeff'],
   ])('preserves server rejection for a trailing %s in the filename', (_label, suffix) => {
-    expect(acceptsRequestFile({ name: 'proof.pdf' + suffix, type: 'application/pdf' }, limits)).toBe(false)
+    expect(
+      acceptsRequestFile({ name: 'proof.pdf' + suffix, type: 'application/pdf' }, limits),
+    ).toBe(false)
   })
 
   it.each([
@@ -32,7 +34,9 @@ describe('request attachment validation', () => {
     ['NARROW NO-BREAK SPACE', '\u202f'],
     ['ZERO WIDTH NO-BREAK SPACE', '\ufeff'],
   ])('preserves server rejection for a trailing %s in the MIME type', (_label, suffix) => {
-    expect(acceptsRequestFile({ name: 'proof.pdf', type: 'application/pdf' + suffix }, limits)).toBe(false)
+    expect(
+      acceptsRequestFile({ name: 'proof.pdf', type: 'application/pdf' + suffix }, limits),
+    ).toBe(false)
   })
 
   it.each([
@@ -41,10 +45,15 @@ describe('request attachment validation', () => {
     ['Ogham space mark', '\u1680'],
     ['ideographic space', '\u3000'],
   ])('matches Java String.strip for %s around the filename', (_label, whitespace) => {
-    expect(acceptsRequestFile({
-      name: whitespace + 'proof.pdf' + whitespace,
-      type: 'application/pdf',
-    }, limits)).toBe(true)
+    expect(
+      acceptsRequestFile(
+        {
+          name: whitespace + 'proof.pdf' + whitespace,
+          type: 'application/pdf',
+        },
+        limits,
+      ),
+    ).toBe(true)
   })
 
   it.each([
@@ -53,10 +62,15 @@ describe('request attachment validation', () => {
     ['Ogham space mark', '\u1680'],
     ['ideographic space', '\u3000'],
   ])('matches Java String.strip for %s around the MIME type', (_label, whitespace) => {
-    expect(acceptsRequestFile({
-      name: 'proof.pdf',
-      type: whitespace + 'application/pdf' + whitespace,
-    }, limits)).toBe(true)
+    expect(
+      acceptsRequestFile(
+        {
+          name: 'proof.pdf',
+          type: whitespace + 'application/pdf' + whitespace,
+        },
+        limits,
+      ),
+    ).toBe(true)
   })
 
   it('keeps a post-truncation filename suffix exact', () => {
@@ -67,7 +81,9 @@ describe('request attachment validation', () => {
   })
 
   it('describes the concordance rule in the validation feedback', () => {
-    expect(requestAttachmentFormatHint(limits)).toContain('MIME и расширение должны соответствовать')
+    expect(requestAttachmentFormatHint(limits)).toContain(
+      'MIME и расширение должны соответствовать',
+    )
     expect(requestAttachmentFormatHint(limits)).toContain('JPEG — .jpg/.jpeg')
   })
 })

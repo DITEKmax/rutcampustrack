@@ -19,7 +19,9 @@ const lesson = {
   type: 'LECTURE',
   schedule: { startsAt: '10:15:00', endsAt: '11:45:00', room: null },
   status: 'ABSENT',
-  requestOptions: [{ id: 'request.opaque', kind: 'EXCUSE', label: 'Уважительная причина', enabled: true }],
+  requestOptions: [
+    { id: 'request.opaque', kind: 'EXCUSE', label: 'Уважительная причина', enabled: true },
+  ],
 } satisfies AttendanceLesson
 
 const data = {
@@ -34,9 +36,23 @@ const data = {
   days: [{ date: lesson.date, weekday: 'вт', dayNumber: '8', state: 'CURRENT', lessons: [lesson] }],
   subjects: [],
   graph: {
-    days: [{ id: 'day:opaque', label: '8', dateFrom: lesson.date, dateTo: lesson.date, state: 'NO_DATA', metrics: {
-      present: { count: 0, percent: null }, presentOrExcused: { count: 0, percent: null }, excused: { count: 0, percent: null }, absent: { count: 0, percent: null }, held: 0, planned: 1,
-    } }],
+    days: [
+      {
+        id: 'day:opaque',
+        label: '8',
+        dateFrom: lesson.date,
+        dateTo: lesson.date,
+        state: 'NO_DATA',
+        metrics: {
+          present: { count: 0, percent: null },
+          presentOrExcused: { count: 0, percent: null },
+          excused: { count: 0, percent: null },
+          absent: { count: 0, percent: null },
+          held: 0,
+          planned: 1,
+        },
+      },
+    ],
     weeks: [],
   },
 } satisfies AttendanceViewModel

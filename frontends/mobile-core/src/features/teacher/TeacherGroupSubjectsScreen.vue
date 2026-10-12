@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import type { TeacherStatsSubjectOption } from './teacher-client'
-import './teacher-group-subjects-screen.pcss'
-const props = withDefaults(defineProps<{ groupId: number; groupName: string; subjectOptions: readonly TeacherStatsSubjectOption[]; showBack?: boolean }>(), { showBack: true })
-const emit = defineEmits<{ back: []; 'open-subject': [subject: TeacherStatsSubjectOption] }>()
-const subjects = computed(() => props.subjectOptions.filter(option => option.groupId === props.groupId).sort((a,b) => a.subjectName.localeCompare(b.subjectName, 'ru')))
+import { computed } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import type { TeacherStatsSubjectOption } from './teacher-client';
+import './teacher-group-subjects-screen.pcss';
+const props = withDefaults(
+  defineProps<{
+    groupId: number;
+    groupName: string;
+    subjectOptions: readonly TeacherStatsSubjectOption[];
+    showBack?: boolean;
+  }>(),
+  { showBack: true },
+);
+const emit = defineEmits<{ back: []; 'open-subject': [subject: TeacherStatsSubjectOption] }>();
+const subjects = computed(() =>
+  props.subjectOptions
+    .filter((option) => option.groupId === props.groupId)
+    .sort((a, b) => a.subjectName.localeCompare(b.subjectName, 'ru')),
+);
 </script>
 <template>
   <main
@@ -19,8 +31,8 @@ const subjects = computed(() => props.subjectOptions.filter(option => option.gro
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" />
-      </button><h1 id="teacher-subjects-title">
+        <MobileIcon name="back" /> </button
+      ><h1 id="teacher-subjects-title">
         {{ groupName }}
       </h1>
     </header>
@@ -32,7 +44,7 @@ const subjects = computed(() => props.subjectOptions.filter(option => option.gro
       >
         <button
           type="button"
-          @click="emit('open-subject',subject)"
+          @click="emit('open-subject', subject)"
         >
           {{ subject.subjectName }}<MobileIcon name="chevron-down" />
         </button>

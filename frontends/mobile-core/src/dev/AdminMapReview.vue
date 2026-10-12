@@ -1,109 +1,290 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, shallowRef } from 'vue'
-import AdminMapScreen from '../features/admin-map/AdminMapScreen.vue'
-import AdminMoreScreen from '../features/admin-dashboard/AdminMoreScreen.vue'
-import AdminMapStatisticsScreen from '../features/admin-map/AdminMapStatisticsScreen.vue'
-import AdminShell from '../shared/components/AdminShell.vue'
-import type { MobileHostAdapter } from '../shared/host'
-import { createMobileTheme } from '../shared/theme'
-import { adminMapStates, createAdminMapFixtures } from './admin-map-fixtures'
-import './admin-map-review.pcss'
-const query = new URLSearchParams(window.location.search)
-const state = query.get('state') ?? 'full'
-const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa'
-const fixtures = createAdminMapFixtures(state)
-const authority = shallowRef(fixtures.authority)
-const moreRoute = shallowRef('more')
-const theme = createMobileTheme({ mode: 'dark', lockedMode: 'dark' })
-const host: MobileHostAdapter = { backOwner: shell === 'tma' ? 'host' : 'product', primaryActionOwner: 'product', setBackVisible() {}, subscribeBack() { return () => {} } }
-const rootFont = document.documentElement.style.fontSize
-if (query.get('rootFont') === '20') document.documentElement.style.fontSize = '20px'
-let observer: MutationObserver | undefined
-let phase = 0
-let disposed = false
-let fontsReady = false
-let reconciliationRequested = false
-function fill(field: string, value: string): void { const element = document.querySelector<HTMLInputElement>('[data-field="' + field + '"]'); if (element) { element.value = value; element.dispatchEvent(new Event('input', { bubbles: true })) } }
-function click(label: string): boolean { const button = Array.from(document.querySelectorAll<HTMLButtonElement>('main button')).find(item => (item.textContent?.trim() === label || item.getAttribute('aria-label') === label) && !item.disabled); if (!button) return false; button.click(); return true }
-function file(): boolean { const input = document.querySelector<HTMLInputElement>('input[type="file"][aria-label="Выбрать PNG"]'); if (!input || input.disabled) return false; const bytes = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6PCEAAAAASUVORK5CYII='), character => character.charCodeAt(0)); const transfer = new DataTransfer(); transfer.items.add(new File([bytes], 'синтетическая-схема.png', { type: 'image/png' })); input.files = transfer.files; input.dispatchEvent(new Event('change', { bubbles: true })); return true }
-const uploadStates = ['combined-new', 'combined-existing', 'combined-pending', 'partial-failure', 'unknown', 'unknown-building', 'unknown-reconciled', 'replace', 'floating-file', 'target-switch']
+import { nextTick, onMounted, onUnmounted, shallowRef } from 'vue';
+import AdminMapScreen from '../features/admin-map/AdminMapScreen.vue';
+import AdminMoreScreen from '../features/admin-dashboard/AdminMoreScreen.vue';
+import AdminMapStatisticsScreen from '../features/admin-map/AdminMapStatisticsScreen.vue';
+import AdminShell from '../shared/components/AdminShell.vue';
+import type { MobileHostAdapter } from '../shared/host';
+import { createMobileTheme } from '../shared/theme';
+import { adminMapStates, createAdminMapFixtures } from './admin-map-fixtures';
+import './admin-map-review.pcss';
+const query = new URLSearchParams(window.location.search);
+const state = query.get('state') ?? 'full';
+const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa';
+const fixtures = createAdminMapFixtures(state);
+const authority = shallowRef(fixtures.authority);
+const moreRoute = shallowRef('more');
+const theme = createMobileTheme({ mode: 'dark', lockedMode: 'dark' });
+const host: MobileHostAdapter = {
+  backOwner: shell === 'tma' ? 'host' : 'product',
+  primaryActionOwner: 'product',
+  setBackVisible() {},
+  subscribeBack() {
+    return () => {};
+  },
+};
+const rootFont = document.documentElement.style.fontSize;
+if (query.get('rootFont') === '20') document.documentElement.style.fontSize = '20px';
+let observer: MutationObserver | undefined;
+let phase = 0;
+let disposed = false;
+let fontsReady = false;
+let reconciliationRequested = false;
+function fill(field: string, value: string): void {
+  const element = document.querySelector<HTMLInputElement>('[data-field="' + field + '"]');
+  if (element) {
+    element.value = value;
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+function click(label: string): boolean {
+  const button = Array.from(document.querySelectorAll<HTMLButtonElement>('main button')).find(
+    (item) =>
+      (item.textContent?.trim() === label || item.getAttribute('aria-label') === label) &&
+      !item.disabled,
+  );
+  if (!button) return false;
+  button.click();
+  return true;
+}
+function file(): boolean {
+  const input = document.querySelector<HTMLInputElement>(
+    'input[type="file"][aria-label="Выбрать PNG"]',
+  );
+  if (!input || input.disabled) return false;
+  const bytes = Uint8Array.from(
+    atob(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6PCEAAAAASUVORK5CYII=',
+    ),
+    (character) => character.charCodeAt(0),
+  );
+  const transfer = new DataTransfer();
+  transfer.items.add(new File([bytes], 'синтетическая-схема.png', { type: 'image/png' }));
+  input.files = transfer.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  return true;
+}
+const uploadStates = [
+  'combined-new',
+  'combined-existing',
+  'combined-pending',
+  'partial-failure',
+  'unknown',
+  'unknown-building',
+  'unknown-reconciled',
+  'replace',
+  'floating-file',
+  'target-switch',
+];
 function ready(): void {
-  if (disposed || !fontsReady) return
-  const main = document.querySelector('main')
-  if (!main || main.textContent?.includes('Загружаем')) return
-  const statistics = main.classList.contains('admin-map-statistics')
-  const map = main.classList.contains('admin-map-screen') && !statistics
-  if (state.startsWith('statistics') && !statistics) return
+  if (disposed || !fontsReady) return;
+  const main = document.querySelector('main');
+  if (!main || main.textContent?.includes('Загружаем')) return;
+  const statistics = main.classList.contains('admin-map-statistics');
+  const map = main.classList.contains('admin-map-screen') && !statistics;
+  if (state.startsWith('statistics') && !statistics) return;
   if (map && phase === 0) {
-    if (!main.querySelector('[data-field="building-code"]')) return
-    phase = 1
+    if (!main.querySelector('[data-field="building-code"]')) return;
+    phase = 1;
     if (state !== 'target-unselected') {
-      fill('building-code', state === 'target-invalid' ? '01' : ['combined-new', 'combined-pending', 'partial-failure', 'unknown-building', 'unknown-reconciled'].includes(state) ? '9' : '1')
-      fill('floor-code', state === 'target-invalid' ? ' 1' : ['combined-new', 'combined-existing', 'combined-pending', 'partial-failure', 'unknown', 'unknown-building', 'unknown-reconciled'].includes(state) ? '2' : '1')
+      fill(
+        'building-code',
+        state === 'target-invalid'
+          ? '01'
+          : [
+                'combined-new',
+                'combined-pending',
+                'partial-failure',
+                'unknown-building',
+                'unknown-reconciled',
+              ].includes(state)
+            ? '9'
+            : '1',
+      );
+      fill(
+        'floor-code',
+        state === 'target-invalid'
+          ? ' 1'
+          : [
+                'combined-new',
+                'combined-existing',
+                'combined-pending',
+                'partial-failure',
+                'unknown',
+                'unknown-building',
+                'unknown-reconciled',
+              ].includes(state)
+            ? '2'
+            : '1',
+      );
     }
-    void nextTick(ready); return
+    void nextTick(ready);
+    return;
   }
   if (map && !['target-unselected', 'target-invalid'].includes(state) && phase === 1) {
-    if (main.querySelectorAll('.admin-map-format').length !== 2) return
+    if (main.querySelectorAll('.admin-map-format').length !== 2) return;
     if (uploadStates.includes(state)) {
-      if (!file()) return
-      phase = 2; void nextTick(ready); return
+      if (!file()) return;
+      phase = 2;
+      void nextTick(ready);
+      return;
     }
-    if (state === 'delete' || state === 'proof-revoked') { if (!click('Удалить PNG')) return; phase = 3; void nextTick(ready); return }
-    if (state === 'browse') { if (!click('Увеличить SVG схемы: корпус 1, этаж 1')) return; phase = 3; void nextTick(ready); return }
-    phase = 3
+    if (state === 'delete' || state === 'proof-revoked') {
+      if (!click('Удалить PNG')) return;
+      phase = 3;
+      void nextTick(ready);
+      return;
+    }
+    if (state === 'browse') {
+      if (!click('Увеличить SVG схемы: корпус 1, этаж 1')) return;
+      phase = 3;
+      void nextTick(ready);
+      return;
+    }
+    phase = 3;
   }
   if (map && phase === 2) {
-    if (!main.querySelector('[aria-label="Убрать выбранный PNG"]')) return
-    if (state === 'target-switch') { phase = 3; fill('building-code', '2'); fill('floor-code', '1'); void nextTick(ready); return }
-    if (state !== 'floating-file' && !click('Сохранить схему')) return
-    phase = 3; void nextTick(ready); return
+    if (!main.querySelector('[aria-label="Убрать выбранный PNG"]')) return;
+    if (state === 'target-switch') {
+      phase = 3;
+      fill('building-code', '2');
+      fill('floor-code', '1');
+      void nextTick(ready);
+      return;
+    }
+    if (state !== 'floating-file' && !click('Сохранить схему')) return;
+    phase = 3;
+    void nextTick(ready);
+    return;
   }
   if (!map && phase === 0) {
-    if (state === 'statistics-filter') { const select = main.querySelector<HTMLSelectElement>('select'); if (!select) return; select.value = '30'; select.dispatchEvent(new Event('change', { bubbles: true })); void nextTick(ready) }
-    phase = 3
+    if (state === 'statistics-filter') {
+      const select = main.querySelector<HTMLSelectElement>('select');
+      if (!select) return;
+      select.value = '30';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      void nextTick(ready);
+    }
+    phase = 3;
   }
   if (statistics) {
-    if (main.getAttribute('aria-busy') === 'true') return
-    if (state === 'statistics-error') { if (!main.querySelector('[role="alert"]')) return }
-    else if (state === 'statistics-empty') { if (!main.querySelector('.admin-map-empty')) return }
-    else {
-      if (!main.querySelector('.admin-map-statistics__hero')) return
-      if (main.querySelectorAll('.admin-map-demand li').length !== (state === 'statistics-filter' ? 2 : 4)) return
-      if (state === 'statistics-filter' && main.querySelector<HTMLSelectElement>('select')?.value !== '30') return
+    if (main.getAttribute('aria-busy') === 'true') return;
+    if (state === 'statistics-error') {
+      if (!main.querySelector('[role="alert"]')) return;
+    } else if (state === 'statistics-empty') {
+      if (!main.querySelector('.admin-map-empty')) return;
+    } else {
+      if (!main.querySelector('.admin-map-statistics__hero')) return;
+      if (
+        main.querySelectorAll('.admin-map-demand li').length !==
+        (state === 'statistics-filter' ? 2 : 4)
+      )
+        return;
+      if (
+        state === 'statistics-filter' &&
+        main.querySelector<HTMLSelectElement>('select')?.value !== '30'
+      )
+        return;
     }
   }
-  if (state === 'delete' && !main.querySelector('[role="dialog"]')) return
+  if (state === 'delete' && !main.querySelector('[role="dialog"]')) return;
   if (state === 'proof-revoked' && authority.value.permissions.includes('DATA_DELETE')) {
-    const password = main.querySelector<HTMLInputElement>('input[type="password"]'); if (!password) return
-    password.value = 'synthetic-proof'; password.dispatchEvent(new Event('input', { bubbles: true }))
-    authority.value = { ...authority.value, mode: 'LIMITED', permissions: ['CAMPUS_MAP_MANAGE'], version: 2 }; void nextTick(ready); return
+    const password = main.querySelector<HTMLInputElement>('input[type="password"]');
+    if (!password) return;
+    password.value = 'synthetic-proof';
+    password.dispatchEvent(new Event('input', { bubbles: true }));
+    authority.value = {
+      ...authority.value,
+      mode: 'LIMITED',
+      permissions: ['CAMPUS_MAP_MANAGE'],
+      version: 2,
+    };
+    void nextTick(ready);
+    return;
   }
-  if (state === 'proof-revoked' && main.querySelector('[role="dialog"]')) return
-  if (state === 'combined-pending' && !main.textContent?.includes('Сохраняем')) return
-  if (['combined-new', 'combined-existing'].includes(state) && !main.textContent?.includes('Схема добавлена')) return
-  if (state === 'replace' && !main.textContent?.includes('Схема заменена')) return
-  if (state === 'partial-failure' && !main.textContent?.includes('Файл схемы отклонён')) return
-  if (state.startsWith('unknown') && !main.textContent?.includes('Исход загрузки') && !main.textContent?.includes('На сервере появилась')) return
-  if (state === 'unknown-reconciled' && main.textContent?.includes('Исход загрузки')) { if (!reconciliationRequested && click('Проверить текущую схему')) reconciliationRequested = true; return }
-  if (state === 'browse' && !main.querySelector('dialog[open]')) return
-  if (state === 'target-switch' && (main.querySelector('[aria-label="Убрать выбранный PNG"]') || main.querySelector<HTMLInputElement>('[data-field="building-code"]')?.value !== '2')) return
-  if (['target-unselected', 'target-invalid'].includes(state) && fixtures.requests.length) { document.documentElement.dataset.adminMapHarnessError = 'Incomplete or invalid codes sent API request'; return }
-  if (state === 'target-invalid' && main.querySelectorAll('[aria-invalid="true"]').length !== 2) return
-  if (state === 'target-missing-format' && (main.querySelector('[aria-label="Скачать PNG"]') || !main.querySelector('[aria-label="Выбрать PNG"]'))) return
-  const pendingImages = [...main.querySelectorAll<HTMLImageElement>('.admin-map-preview')].some(image => !image.complete)
-  if (pendingImages) return
-  document.documentElement.dataset.adminMapReady = 'true'
-  document.documentElement.dataset.adminMapState = state
-  document.documentElement.dataset.adminMapRequests = JSON.stringify(fixtures.requests)
-  document.documentElement.dataset.adminMapHeading = main.querySelector('h1')?.textContent?.trim() ?? ''
+  if (state === 'proof-revoked' && main.querySelector('[role="dialog"]')) return;
+  if (state === 'combined-pending' && !main.textContent?.includes('Сохраняем')) return;
+  if (
+    ['combined-new', 'combined-existing'].includes(state) &&
+    !main.textContent?.includes('Схема добавлена')
+  )
+    return;
+  if (state === 'replace' && !main.textContent?.includes('Схема заменена')) return;
+  if (state === 'partial-failure' && !main.textContent?.includes('Файл схемы отклонён')) return;
+  if (
+    state.startsWith('unknown') &&
+    !main.textContent?.includes('Исход загрузки') &&
+    !main.textContent?.includes('На сервере появилась')
+  )
+    return;
+  if (state === 'unknown-reconciled' && main.textContent?.includes('Исход загрузки')) {
+    if (!reconciliationRequested && click('Проверить текущую схему'))
+      reconciliationRequested = true;
+    return;
+  }
+  if (state === 'browse' && !main.querySelector('dialog[open]')) return;
+  if (
+    state === 'target-switch' &&
+    (main.querySelector('[aria-label="Убрать выбранный PNG"]') ||
+      main.querySelector<HTMLInputElement>('[data-field="building-code"]')?.value !== '2')
+  )
+    return;
+  if (['target-unselected', 'target-invalid'].includes(state) && fixtures.requests.length) {
+    document.documentElement.dataset.adminMapHarnessError =
+      'Incomplete or invalid codes sent API request';
+    return;
+  }
+  if (state === 'target-invalid' && main.querySelectorAll('[aria-invalid="true"]').length !== 2)
+    return;
+  if (
+    state === 'target-missing-format' &&
+    (main.querySelector('[aria-label="Скачать PNG"]') ||
+      !main.querySelector('[aria-label="Выбрать PNG"]'))
+  )
+    return;
+  const pendingImages = [...main.querySelectorAll<HTMLImageElement>('.admin-map-preview')].some(
+    (image) => !image.complete,
+  );
+  if (pendingImages) return;
+  document.documentElement.dataset.adminMapReady = 'true';
+  document.documentElement.dataset.adminMapState = state;
+  document.documentElement.dataset.adminMapRequests = JSON.stringify(fixtures.requests);
+  document.documentElement.dataset.adminMapHeading =
+    main.querySelector('h1')?.textContent?.trim() ?? '';
 }
 onMounted(() => {
-  document.title = `Карта · ${state} · ${shell.toUpperCase()} · синтетический API`
-  observer = new MutationObserver(ready); observer.observe(document.getElementById('app')!, { childList: true, subtree: true, attributes: true }); document.getElementById('app')!.addEventListener('load', ready, true); document.getElementById('app')!.addEventListener('error', ready, true)
-  void Promise.all([document.fonts.load('400 16px "Onest Variable"', 'Корпус 123'), document.fonts.load('600 16px "Onest Variable"', 'Этаж 123')]).then(() => { fontsReady = document.fonts.check('400 16px "Onest Variable"', 'Корпус 123') && document.fonts.check('600 16px "Onest Variable"', 'Этаж 123'); if (!disposed) { document.documentElement.dataset.adminMapFontsReady = String(fontsReady); ready() } })
-})
-onUnmounted(() => { disposed = true; observer?.disconnect(); document.getElementById('app')?.removeEventListener('load', ready, true); document.getElementById('app')?.removeEventListener('error', ready, true); theme.dispose(); document.documentElement.style.fontSize = rootFont; delete document.documentElement.dataset.adminMapReady; delete document.documentElement.dataset.adminMapFontsReady })
+  document.title = `Карта · ${state} · ${shell.toUpperCase()} · синтетический API`;
+  observer = new MutationObserver(ready);
+  observer.observe(document.getElementById('app')!, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+  });
+  document.getElementById('app')!.addEventListener('load', ready, true);
+  document.getElementById('app')!.addEventListener('error', ready, true);
+  void Promise.all([
+    document.fonts.load('400 16px "Onest Variable"', 'Корпус 123'),
+    document.fonts.load('600 16px "Onest Variable"', 'Этаж 123'),
+  ]).then(() => {
+    fontsReady =
+      document.fonts.check('400 16px "Onest Variable"', 'Корпус 123') &&
+      document.fonts.check('600 16px "Onest Variable"', 'Этаж 123');
+    if (!disposed) {
+      document.documentElement.dataset.adminMapFontsReady = String(fontsReady);
+      ready();
+    }
+  });
+});
+onUnmounted(() => {
+  disposed = true;
+  observer?.disconnect();
+  document.getElementById('app')?.removeEventListener('load', ready, true);
+  document.getElementById('app')?.removeEventListener('error', ready, true);
+  theme.dispose();
+  document.documentElement.style.fontSize = rootFont;
+  delete document.documentElement.dataset.adminMapReady;
+  delete document.documentElement.dataset.adminMapFontsReady;
+});
 </script>
 
 <template>
@@ -111,11 +292,13 @@ onUnmounted(() => { disposed = true; observer?.disconnect(); document.getElement
     v-if="query.get('capture') !== '1'"
     class="admin-map-review-catalog"
   >
-    <p>Actual Vue · синтетический API · {{ shell.toUpperCase() }}</p><a
+    <p>Actual Vue · синтетический API · {{ shell.toUpperCase() }}</p
+    ><a
       v-for="id in adminMapStates"
       :key="id"
       :href="`?state=${id}&shell=${shell}`"
-    >{{ id }}</a>
+      >{{ id }}</a
+    >
   </aside>
   <AdminShell
     :authority="authority"

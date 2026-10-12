@@ -7,7 +7,8 @@ export type LessonSchedule = components['schemas']['LessonSchedule']
 export type StudentSemesterSchedule = components['schemas']['StudentSemesterSchedule']
 export type StudentHomework = components['schemas']['StudentHomework']
 export type StudentHomeworkItem = components['schemas']['StudentHomeworkItem']
-export type StudentHomeworkCompletionCommand = components['schemas']['StudentHomeworkCompletionCommand']
+export type StudentHomeworkCompletionCommand =
+  components['schemas']['StudentHomeworkCompletionCommand']
 export type StudentHomeworkCompletion = components['schemas']['StudentHomeworkCompletion']
 export type StudentCheckinAck = components['schemas']['StudentCheckinAck']
 export type StudentCheckinCommand = components['schemas']['StudentCheckinCommand']
@@ -183,7 +184,10 @@ export type StudentAttendanceLessonStatus =
   | 'FUTURE'
   | 'NO_DATA'
   | 'CANCELLED'
-export type StudentAttendanceHistoryStatus = Exclude<StudentAttendanceLessonStatus, 'ACTIVE' | 'CANCELLED'>
+export type StudentAttendanceHistoryStatus = Exclude<
+  StudentAttendanceLessonStatus,
+  'ACTIVE' | 'CANCELLED'
+>
 export type StudentProjectionState = 'PAST' | 'CURRENT' | 'FUTURE'
 export type StudentSeriesState = 'DATA' | 'NO_DATA' | 'FUTURE'
 

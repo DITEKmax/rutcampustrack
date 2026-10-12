@@ -16,10 +16,10 @@ misconfigurations:
   # exception; current Vue nginx root + port 80 runtime is unchanged.
   - id: DS-0002
     paths:
-      - "frontends/landing/Dockerfile"
-      - "frontends/tma-vue/Dockerfile"
-      - "frontends/pwa-vue/Dockerfile"
-      - "frontends/web-panel/Dockerfile"
+      - 'frontends/landing/Dockerfile'
+      - 'frontends/tma-vue/Dockerfile'
+      - 'frontends/pwa-vue/Dockerfile'
+      - 'frontends/web-panel/Dockerfile'
     statement: >-
       Retained during CI maintenance 2026-10-11 under the existing M15
       exception; current Vue nginx root and port 80 runtime is unchanged.

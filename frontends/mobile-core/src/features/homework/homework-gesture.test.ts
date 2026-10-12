@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
-  beginHomeworkPointer, createHomeworkGesture, finishHomeworkPointer,
-  moveHomeworkPointer, resetHomeworkGesture, stageHomeworkKey,
+  beginHomeworkPointer,
+  createHomeworkGesture,
+  finishHomeworkPointer,
+  moveHomeworkPointer,
+  resetHomeworkGesture,
+  stageHomeworkKey,
 } from './homework-gesture'
 
-function gesture(completed = false) { return createHomeworkGesture(completed, 274) }
+function gesture(completed = false) {
+  return createHomeworkGesture(completed, 274)
+}
 function pointer(completed: boolean, dx: number, dy = 0) {
   const state = gesture(completed)
   beginHomeworkPointer(state, 1, 50, 100)
@@ -67,13 +73,16 @@ describe('homework intentional completion gesture', () => {
   it('keyboard requires full directional staging then one Enter, reset discards it', () => {
     for (const completed of [false, true]) {
       const state = gesture(completed)
-      for (let step = 0; step < 4; step += 1) expect(stageHomeworkKey(state, completed ? 'ArrowLeft' : 'ArrowRight')).toBeNull()
+      for (let step = 0; step < 4; step += 1)
+        expect(stageHomeworkKey(state, completed ? 'ArrowLeft' : 'ArrowRight')).toBeNull()
       expect(stageHomeworkKey(state, 'Enter')).toBe(!completed)
       expect(stageHomeworkKey(state, 'Enter')).toBeNull()
-      for (let step = 0; step < 4; step += 1) stageHomeworkKey(state, completed ? 'ArrowLeft' : 'ArrowRight')
+      for (let step = 0; step < 4; step += 1)
+        stageHomeworkKey(state, completed ? 'ArrowLeft' : 'ArrowRight')
       stageHomeworkKey(state, 'Escape')
       expect(stageHomeworkKey(state, 'Enter')).toBeNull()
-      for (let step = 0; step < 4; step += 1) stageHomeworkKey(state, completed ? 'ArrowLeft' : 'ArrowRight')
+      for (let step = 0; step < 4; step += 1)
+        stageHomeworkKey(state, completed ? 'ArrowLeft' : 'ArrowRight')
       resetHomeworkGesture(state)
       expect(stageHomeworkKey(state, 'Enter')).toBeNull()
     }

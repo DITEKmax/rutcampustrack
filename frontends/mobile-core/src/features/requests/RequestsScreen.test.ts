@@ -3,7 +3,12 @@ import { renderToString } from '@vue/server-renderer'
 import { describe, expect, it } from 'vitest'
 import ExcuseRequestScreen from './ExcuseRequestScreen.vue'
 import RequestsScreen from './RequestsScreen.vue'
-import type { RequestAttachmentViewState, RequestDetail, RequestLessonOption, RequestReasonOption } from './types'
+import type {
+  RequestAttachmentViewState,
+  RequestDetail,
+  RequestLessonOption,
+  RequestReasonOption,
+} from './types'
 
 const pendingRequest: RequestDetail = {
   summary: {
@@ -28,15 +33,17 @@ const pendingRequest: RequestDetail = {
   decision: null,
 }
 
-async function renderScreen(overrides: Partial<{
-  bucket: 'open' | 'archive'
-  requests: readonly RequestDetail[]
-  loading: boolean
-  error: string | null
-  offline: boolean
-  access: 'allowed' | 'forbidden' | 'no-active-semester'
-  attachmentStates: Readonly<Record<string, RequestAttachmentViewState | undefined>>
-}> = {}): Promise<string> {
+async function renderScreen(
+  overrides: Partial<{
+    bucket: 'open' | 'archive'
+    requests: readonly RequestDetail[]
+    loading: boolean
+    error: string | null
+    offline: boolean
+    access: 'allowed' | 'forbidden' | 'no-active-semester'
+    attachmentStates: Readonly<Record<string, RequestAttachmentViewState | undefined>>
+  }> = {},
+): Promise<string> {
   const props = {
     bucket: 'open' as const,
     requests: [pendingRequest] as readonly RequestDetail[],
@@ -50,8 +57,9 @@ async function renderScreen(overrides: Partial<{
   return renderToString(createSSRApp(RequestsScreen, props))
 }
 
-
-const excuseReasons: RequestReasonOption[] = [{ code: 'ILLNESS', label: 'Болезнь', commentRequired: false }]
+const excuseReasons: RequestReasonOption[] = [
+  { code: 'ILLNESS', label: 'Болезнь', commentRequired: false },
+]
 const selectedExcuseLesson: RequestLessonOption = {
   lesson: {
     id: 'lesson-1',
@@ -64,24 +72,28 @@ const selectedExcuseLesson: RequestLessonOption = {
   excuseEligible: true,
 }
 
-async function renderExcuse(overrides: Partial<{
-  lessons: readonly RequestLessonOption[]
-  lessonIds: readonly string[]
-  reasons: readonly RequestReasonOption[]
-  reason: string | null
-  comment: string
-}> = {}): Promise<string> {
-  return renderToString(createSSRApp(ExcuseRequestScreen, {
-    access: 'allowed',
-    lessons: [selectedExcuseLesson],
-    lessonIds: ['lesson-1'],
-    reasons: excuseReasons,
-    reason: 'ILLNESS',
-    comment: '',
-    files: [],
-    fileLimits: null,
-    ...overrides,
-  }))
+async function renderExcuse(
+  overrides: Partial<{
+    lessons: readonly RequestLessonOption[]
+    lessonIds: readonly string[]
+    reasons: readonly RequestReasonOption[]
+    reason: string | null
+    comment: string
+  }> = {},
+): Promise<string> {
+  return renderToString(
+    createSSRApp(ExcuseRequestScreen, {
+      access: 'allowed',
+      lessons: [selectedExcuseLesson],
+      lessonIds: ['lesson-1'],
+      reasons: excuseReasons,
+      reason: 'ILLNESS',
+      comment: '',
+      files: [],
+      fileLimits: null,
+      ...overrides,
+    }),
+  )
 }
 
 describe('RequestsScreen rendered states', () => {
@@ -134,17 +146,20 @@ describe('RequestsScreen rendered states', () => {
     expect(pending).toMatch(/request-card__attachment-action[^>]*disabled/)
   })
 
-
   it('blocks a retained excuse selection when refreshed server eligibility no longer includes it', async () => {
     const first = await renderExcuse()
     expect(first).toContain('Отправить заявку')
     expect(first).not.toMatch(/class="requests-submit-action"[^>]*disabled/)
 
-    const refreshed = await renderExcuse({ lessons: [{
-      ...selectedExcuseLesson,
-      excuseEligible: false,
-      unavailableReason: 'Пара уже закрыта для заявки.',
-    }] })
+    const refreshed = await renderExcuse({
+      lessons: [
+        {
+          ...selectedExcuseLesson,
+          excuseEligible: false,
+          unavailableReason: 'Пара уже закрыта для заявки.',
+        },
+      ],
+    })
     expect(refreshed).toContain('Пара уже закрыта для заявки.')
     expect(refreshed).toContain('Убрать из заявки')
     expect(refreshed).toMatch(/class="requests-submit-action"[^>]*disabled/)
@@ -153,7 +168,9 @@ describe('RequestsScreen rendered states', () => {
     expect(refreshedReasons).toContain('Причины пока недоступны.')
     expect(refreshedReasons).toMatch(/class="requests-submit-action"[^>]*disabled/)
 
-    const reasonNoLongerAllowed = await renderExcuse({ reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: false }] })
+    const reasonNoLongerAllowed = await renderExcuse({
+      reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: false }],
+    })
     expect(reasonNoLongerAllowed).toContain('Выбранная причина больше недоступна.')
     expect(reasonNoLongerAllowed).toMatch(/class="requests-submit-action"[^>]*disabled/)
   })
@@ -169,44 +186,85 @@ describe('RequestsScreen rendered states', () => {
   })
 
   it('gates blank comments from server metadata instead of reason-code inference', async () => {
-    const requiredReasons: RequestReasonOption[] = [{ code: 'ILLNESS', label: 'Болезнь', commentRequired: true }]
+    const requiredReasons: RequestReasonOption[] = [
+      { code: 'ILLNESS', label: 'Болезнь', commentRequired: true },
+    ]
     const requiredBlank = await renderExcuse({ reasons: requiredReasons })
     expect(requiredBlank).toContain('Добавь комментарий, чтобы отправить заявку.')
     expect(requiredBlank).toMatch(/class="requests-submit-action"[^>]*disabled/)
 
-    const requiredFilled = await renderExcuse({ reasons: requiredReasons, comment: 'Справка будет приложена.' })
+    const requiredFilled = await renderExcuse({
+      reasons: requiredReasons,
+      comment: 'Справка будет приложена.',
+    })
     expect(requiredFilled).not.toMatch(/class="requests-submit-action"[^>]*disabled/)
 
-    const optionalBlank = await renderExcuse({ reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: false }], reason: 'OTHER' })
+    const optionalBlank = await renderExcuse({
+      reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: false }],
+      reason: 'OTHER',
+    })
     expect(optionalBlank).not.toMatch(/class="requests-submit-action"[^>]*disabled/)
   })
 
   it('announces loading, error and access boundaries as visible states', async () => {
     expect(await renderScreen({ loading: true })).toContain('Загружаем заявки')
-    expect(await renderScreen({ error: 'Сервис временно недоступен' })).toContain('Сервис временно недоступен')
+    expect(await renderScreen({ error: 'Сервис временно недоступен' })).toContain(
+      'Сервис временно недоступен',
+    )
     expect(await renderScreen({ access: 'forbidden' })).toContain('Раздел недоступен')
     expect(await renderScreen({ access: 'no-active-semester' })).toContain('Нет активного семестра')
   })
 })
 
-
 describe('immutable decision-time student coverage', () => {
-  it.each(['APPROVED', 'REJECTED'] as const)('shows whole transferred receipt targets for %s and preserves original evidence separately', async (status) => {
-    const original = pendingRequest.summary.lessons![0]!
-    const detail: RequestDetail = { ...pendingRequest, summary: { ...pendingRequest.summary, status, canCancel: false }, decisionSelection: { requestKey: '11111111-1111-4111-8111-111111111111', expectedRevision: 'a'.repeat(64), includedLessons: [{ ...original, id: 'current-21', occurrenceId: '121', occurrenceRevision: '3', subjectName: 'Текущая пара', date: '2026-09-10' }], excludedLessons: [] } }
-    const html = await renderScreen({ bucket: 'archive', requests: [detail] })
-    expect(html).toContain('Текущая пара')
-    expect(html).toContain('10 сентября')
-    expect(html).toContain('Исходные пары заявки')
-    expect(html).toContain('Основы программирования')
-    expect(html).toContain(status === 'APPROVED' ? 'Одобренные пары' : 'Пары в отклонённой заявке')
-    if (status === 'REJECTED') expect(html).not.toContain('Одобренные пары')
-  })
+  it.each(['APPROVED', 'REJECTED'] as const)(
+    'shows whole transferred receipt targets for %s and preserves original evidence separately',
+    async (status) => {
+      const original = pendingRequest.summary.lessons![0]!
+      const detail: RequestDetail = {
+        ...pendingRequest,
+        summary: { ...pendingRequest.summary, status, canCancel: false },
+        decisionSelection: {
+          requestKey: '11111111-1111-4111-8111-111111111111',
+          expectedRevision: 'a'.repeat(64),
+          includedLessons: [
+            {
+              ...original,
+              id: 'current-21',
+              occurrenceId: '121',
+              occurrenceRevision: '3',
+              subjectName: 'Текущая пара',
+              date: '2026-09-10',
+            },
+          ],
+          excludedLessons: [],
+        },
+      }
+      const html = await renderScreen({ bucket: 'archive', requests: [detail] })
+      expect(html).toContain('Текущая пара')
+      expect(html).toContain('10 сентября')
+      expect(html).toContain('Исходные пары заявки')
+      expect(html).toContain('Основы программирования')
+      expect(html).toContain(
+        status === 'APPROVED' ? 'Одобренные пары' : 'Пары в отклонённой заявке',
+      )
+      if (status === 'REJECTED') expect(html).not.toContain('Одобренные пары')
+    },
+  )
   it('keeps the default no-receipt card and avoids duplicating unchanged whole coverage', async () => {
     const ordinary = await renderScreen()
     expect(ordinary).not.toContain('Пары в решении')
     expect(ordinary).not.toContain('Исходные пары заявки')
-    const detail: RequestDetail = { ...pendingRequest, summary: { ...pendingRequest.summary, status: 'APPROVED', canCancel: false }, decisionSelection: { requestKey: '11111111-1111-4111-8111-111111111111', expectedRevision: 'a'.repeat(64), includedLessons: pendingRequest.summary.lessons!, excludedLessons: [] } }
+    const detail: RequestDetail = {
+      ...pendingRequest,
+      summary: { ...pendingRequest.summary, status: 'APPROVED', canCancel: false },
+      decisionSelection: {
+        requestKey: '11111111-1111-4111-8111-111111111111',
+        expectedRevision: 'a'.repeat(64),
+        includedLessons: pendingRequest.summary.lessons!,
+        excludedLessons: [],
+      },
+    }
     const html = await renderScreen({ bucket: 'archive', requests: [detail] })
     expect(html).toContain('Одобренные пары')
     expect(html).not.toContain('Исходные пары заявки')

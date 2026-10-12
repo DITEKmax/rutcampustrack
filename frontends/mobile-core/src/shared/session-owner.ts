@@ -68,12 +68,14 @@ export function createGenerationBoundAdminSemesterClient(
   }
   return new AdminSemesterClient({
     assertCurrent,
-    ...(owner.sessionScopeFor ? {
-      sessionScopeFor: () => {
-        assertCurrent()
-        return owner.sessionScopeFor?.(generation) ?? null
-      },
-    } : {}),
+    ...(owner.sessionScopeFor
+      ? {
+          sessionScopeFor: () => {
+            assertCurrent()
+            return owner.sessionScopeFor?.(generation) ?? null
+          },
+        }
+      : {}),
     accessToken: () => {
       assertCurrent()
       return owner.accessTokenFor(generation)
@@ -87,13 +89,27 @@ export function createGenerationBoundAdminSemesterClient(
   })
 }
 
-export function createGenerationBoundAdminAccessClient(owner: AdminSemesterApiGenerationOwner, fetcher?: typeof fetch, assertAuthority?: () => void): AdminAccessClient {
+export function createGenerationBoundAdminAccessClient(
+  owner: AdminSemesterApiGenerationOwner,
+  fetcher?: typeof fetch,
+  assertAuthority?: () => void,
+): AdminAccessClient {
   const generation = owner.currentGeneration()
-  const assertCurrent = (): void => { assertAuthority?.(); if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError() }
+  const assertCurrent = (): void => {
+    assertAuthority?.()
+    if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
+  }
   return new AdminAccessClient({
     assertCurrent,
-    accessToken: () => { assertCurrent(); return owner.accessTokenFor(generation) },
-    onUnauthorized: async () => { assertCurrent(); await owner.refreshFor(generation); assertCurrent() },
+    accessToken: () => {
+      assertCurrent()
+      return owner.accessTokenFor(generation)
+    },
+    onUnauthorized: async () => {
+      assertCurrent()
+      await owner.refreshFor(generation)
+      assertCurrent()
+    },
     ...(fetcher ? { fetcher } : {}),
   })
 }
@@ -193,7 +209,10 @@ export interface StudentFeatureScope {
   resetGeneration: number
 }
 
-export function studentFeatureScope(session: StudentSession, resetGeneration: number): StudentFeatureScope {
+export function studentFeatureScope(
+  session: StudentSession,
+  resetGeneration: number,
+): StudentFeatureScope {
   return {
     userId: session.user.id,
     activeRole: session.activeRole,

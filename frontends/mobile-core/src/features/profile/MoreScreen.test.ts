@@ -9,7 +9,7 @@ describe('MoreScreen route availability', () => {
     expect(html).toContain('Статистика')
     expect(html).toContain('Карта')
     expect(html).toContain('Заявки')
-    expect((html.match(/<button[^>]*\sdisabled(?:=|\s|>)/gu) ?? [])).toHaveLength(1)
+    expect(html.match(/<button[^>]*\sdisabled(?:=|\s|>)/gu) ?? []).toHaveLength(1)
     expect(html).toContain('aria-disabled="true"')
   })
 })

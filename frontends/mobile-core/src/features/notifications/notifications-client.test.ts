@@ -16,15 +16,17 @@ function jsonResponse(value: unknown, status = 200): Response {
 function historyResponse(payload: unknown = {}, type = 'LESSON_REMINDER'): Response {
   return jsonResponse({
     _embedded: {
-      notificationHistoryDtoList: [{
-        id: 'evt-123',
-        userId: 987,
-        type,
-        sentAt: '2026-09-25T09:00:00Z',
-        readAt: null,
-        payload,
-        _links: { self: { href: 'https://attacker.invalid/notification' } },
-      }],
+      notificationHistoryDtoList: [
+        {
+          id: 'evt-123',
+          userId: 987,
+          type,
+          sentAt: '2026-09-25T09:00:00Z',
+          readAt: null,
+          payload,
+          _links: { self: { href: 'https://attacker.invalid/notification' } },
+        },
+      ],
     },
     page: { number: 0, size: 20, totalPages: 1, totalElements: 1 },
   })
@@ -34,12 +36,16 @@ function sessionOwner(generation = 1) {
   return {
     generation,
     token: 'token-one',
-    currentGeneration() { return this.generation },
+    currentGeneration() {
+      return this.generation
+    },
     accessTokenFor(captured: number) {
       if (captured !== this.generation) throw new StaleSessionGenerationError()
       return this.token
     },
-    refreshFor: vi.fn(async function (this: { token: string }) { this.token = 'token-two' }),
+    refreshFor: vi.fn(async function (this: { token: string }) {
+      this.token = 'token-two'
+    }),
   }
 }
 
@@ -47,12 +53,17 @@ describe('generation-bound notifications API', () => {
   it('accepts missing HAL embedded content only for a valid empty history page', async () => {
     const page = { size: 20, totalElements: 0, totalPages: 0, number: 0 }
     const emptyHistory = { _links: { self: { href: '/api/notifications?page=0&size=20' } }, page }
-    const apiFor = (value: unknown) => createGenerationBoundNotificationsApi(
-      sessionOwner(), vi.fn(async () => jsonResponse(value)),
-    )
+    const apiFor = (value: unknown) =>
+      createGenerationBoundNotificationsApi(
+        sessionOwner(),
+        vi.fn(async () => jsonResponse(value)),
+      )
 
     await expect(apiFor(emptyHistory).listHistory(0)).resolves.toEqual({
-      items: [], pageNumber: 0, totalPages: 0, totalElements: 0,
+      items: [],
+      pageNumber: 0,
+      totalPages: 0,
+      totalElements: 0,
     })
     for (const invalid of [
       { page: { ...page, totalElements: 1, totalPages: 1 } },
@@ -68,7 +79,12 @@ describe('generation-bound notifications API', () => {
   it('drops an in-flight response from an old session generation', async () => {
     const owner = sessionOwner()
     let finish!: (response: Response) => void
-    const fetcher = vi.fn(() => new Promise<Response>((resolve) => { finish = resolve }))
+    const fetcher = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          finish = resolve
+        }),
+    )
     const api = createGenerationBoundNotificationsApi(owner, fetcher)
 
     const pending = api.listHistory(0)
@@ -80,15 +96,18 @@ describe('generation-bound notifications API', () => {
 
   it('retries one 401 with the refreshed bearer and limits payload fields', async () => {
     const owner = sessionOwner()
-    const fetcher = vi.fn()
+    const fetcher = vi
+      .fn()
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
-      .mockResolvedValueOnce(historyResponse({
-        subjectName: 'Алгебра',
-        lessonNumber: 5,
-        reason: 'private explanation',
-        message: '<img src=x onerror=alert(1)>',
-        url: 'https://attacker.invalid/',
-      }))
+      .mockResolvedValueOnce(
+        historyResponse({
+          subjectName: 'Алгебра',
+          lessonNumber: 5,
+          reason: 'private explanation',
+          message: '<img src=x onerror=alert(1)>',
+          url: 'https://attacker.invalid/',
+        }),
+      )
     const api = createGenerationBoundNotificationsApi(owner, fetcher)
 
     const result = await api.listHistory(0)
@@ -109,11 +128,26 @@ describe('generation-bound notifications API', () => {
 
   it('parses only a safe homework ID and real lesson date from supported event payloads', async () => {
     const owner = sessionOwner()
-    const fetcher = vi.fn()
-      .mockResolvedValueOnce(historyResponse({ homework_id: 81, lesson_date: '2026-09-24', link: 'https://invalid.example/' }, 'HOMEWORK_PUBLISHED'))
-      .mockResolvedValueOnce(historyResponse({ homework_id: 82, lesson_date: '2026-02-30' }, 'HOMEWORK_UPDATED'))
-      .mockResolvedValueOnce(historyResponse({ homework_id: '9007199254740992', lesson_date: '2026-09-24' }, 'HOMEWORK_PUBLISHED'))
-      .mockResolvedValueOnce(historyResponse({ homework_id: 83, lesson_date: '2026-09-24' }, 'LESSON_STARTED'))
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(
+        historyResponse(
+          { homework_id: 81, lesson_date: '2026-09-24', link: 'https://invalid.example/' },
+          'HOMEWORK_PUBLISHED',
+        ),
+      )
+      .mockResolvedValueOnce(
+        historyResponse({ homework_id: 82, lesson_date: '2026-02-30' }, 'HOMEWORK_UPDATED'),
+      )
+      .mockResolvedValueOnce(
+        historyResponse(
+          { homework_id: '9007199254740992', lesson_date: '2026-09-24' },
+          'HOMEWORK_PUBLISHED',
+        ),
+      )
+      .mockResolvedValueOnce(
+        historyResponse({ homework_id: 83, lesson_date: '2026-09-24' }, 'LESSON_STARTED'),
+      )
     const api = createGenerationBoundNotificationsApi(owner, fetcher)
 
     const valid = await api.listHistory(0)
@@ -121,7 +155,11 @@ describe('generation-bound notifications API', () => {
     const unsafeId = await api.listHistory(0)
     const unsupportedType = await api.listHistory(0)
 
-    expect(valid.items[0]?.target).toEqual({ kind: 'homework', homeworkId: '81', lessonDate: '2026-09-24' })
+    expect(valid.items[0]?.target).toEqual({
+      kind: 'homework',
+      homeworkId: '81',
+      lessonDate: '2026-09-24',
+    })
     expect(invalidDate.items[0]?.target).toBeNull()
     expect(unsafeId.items[0]?.target).toBeNull()
     expect(unsupportedType.items[0]?.target).toBeNull()
@@ -147,7 +185,8 @@ describe('generation-bound notifications API', () => {
       ['HOMEWORK_WEEKLY_DIGEST', { homework: { homework_id: 56, lesson_date: '2026-09-24' } }],
     ]
     const fetcher = vi.fn()
-    for (const [type, payload] of payloads) fetcher.mockResolvedValueOnce(historyResponse(payload, type))
+    for (const [type, payload] of payloads)
+      fetcher.mockResolvedValueOnce(historyResponse(payload, type))
     const api = createGenerationBoundNotificationsApi(owner, fetcher)
 
     const targets: (NotificationTarget | null)[] = []
@@ -194,60 +233,149 @@ describe('generation-bound notifications API', () => {
   })
 })
 
-
 describe('safe partial EXCUSE approval history', () => {
   async function read(payload: unknown, type = 'EXCUSE_APPROVED') {
-    const api = createGenerationBoundNotificationsApi(sessionOwner(), async () => historyResponse(payload, type))
+    const api = createGenerationBoundNotificationsApi(sessionOwner(), async () =>
+      historyResponse(payload, type),
+    )
     return (await api.listHistory(0)).items[0]!
   }
-  const receipt = {included_lesson_ids:[1],excluded_lesson_ids:[2,3,4,5],ticket_id:'ticket-43'}
-  const lesson = (id:number, subject = 'Алгебра') => ({lesson_id:id,occurrence_id:`private-occurrence-${id}`,date:'2026-10-06',lesson_number:id,subject_name:subject,lesson_type:'LECTURE',comment:'private-comment',url:'https://private.invalid'})
+  const receipt = {
+    included_lesson_ids: [1],
+    excluded_lesson_ids: [2, 3, 4, 5],
+    ticket_id: 'ticket-43',
+  }
+  const lesson = (id: number, subject = 'Алгебра') => ({
+    lesson_id: id,
+    occurrence_id: `private-occurrence-${id}`,
+    date: '2026-10-06',
+    lesson_number: id,
+    subject_name: subject,
+    lesson_type: 'LECTURE',
+    comment: 'private-comment',
+    url: 'https://private.invalid',
+  })
 
   it('matches immutable excluded metadata, returns at most three pairs and an exact remainder without identifiers', async () => {
-    const item = await read({...receipt,excluded_lessons:[lesson(5),lesson(4),lesson(3),lesson(2)]})
-    expect(item.partialDecision).toEqual({excludedCount:4,excludedLessons:[
-      {date:'2026-10-06',lessonNumber:2,subjectName:'Алгебра'},
-      {date:'2026-10-06',lessonNumber:3,subjectName:'Алгебра'},
-      {date:'2026-10-06',lessonNumber:4,subjectName:'Алгебра'},
-    ],remainingCount:1})
-    expect(item.target).toEqual({kind:'request',requestId:'ticket-43',requestKind:'EXCUSE'})
+    const item = await read({
+      ...receipt,
+      excluded_lessons: [lesson(5), lesson(4), lesson(3), lesson(2)],
+    })
+    expect(item.partialDecision).toEqual({
+      excludedCount: 4,
+      excludedLessons: [
+        { date: '2026-10-06', lessonNumber: 2, subjectName: 'Алгебра' },
+        { date: '2026-10-06', lessonNumber: 3, subjectName: 'Алгебра' },
+        { date: '2026-10-06', lessonNumber: 4, subjectName: 'Алгебра' },
+      ],
+      remainingCount: 1,
+    })
+    expect(item.target).toEqual({ kind: 'request', requestId: 'ticket-43', requestKind: 'EXCUSE' })
     const display = JSON.stringify(item.partialDecision)
-    for (const forbidden of ['lesson_id','occurrence','private','comment','url','lesson_type']) expect(display).not.toContain(forbidden)
+    for (const forbidden of ['lesson_id', 'occurrence', 'private', 'comment', 'url', 'lesson_type'])
+      expect(display).not.toContain(forbidden)
   })
 
   it('keeps legacy/full approvals and non-approved events free of a fabricated partial decision', async () => {
-    for (const payload of [{ticket_id:'ticket-43'},{...receipt,excluded_lesson_ids:[]},{...receipt,included_lesson_ids:[]}]) {
+    for (const payload of [
+      { ticket_id: 'ticket-43' },
+      { ...receipt, excluded_lesson_ids: [] },
+      { ...receipt, included_lesson_ids: [] },
+    ]) {
       expect((await read(payload)).partialDecision).toBeNull()
     }
-    for (const type of ['EXCUSE_REJECTED','EXCUSE_REQUESTED','LATE_CHECKIN_APPROVED','UNKNOWN']) {
-      expect((await read(receipt,type)).partialDecision).toBeNull()
+    for (const type of [
+      'EXCUSE_REJECTED',
+      'EXCUSE_REQUESTED',
+      'LATE_CHECKIN_APPROVED',
+      'UNKNOWN',
+    ]) {
+      expect((await read(receipt, type)).partialDecision).toBeNull()
     }
   })
 
   it('requires unique disjoint positive safe identifiers rather than trusting metadata or a claimed count', async () => {
-    for (const ids of [null,'2',[0],[-1],[1.5],[Number.MAX_SAFE_INTEGER+1],['9007199254740992'],['../2'],[2,2],[2,'2']]) {
-      expect((await read({...receipt,excluded_lesson_ids:ids,excluded_count:999,excluded_lessons:[lesson(2)]})).partialDecision).toBeNull()
-      expect((await read({...receipt,included_lesson_ids:ids})).partialDecision).toBeNull()
+    for (const ids of [
+      null,
+      '2',
+      [0],
+      [-1],
+      [1.5],
+      [Number.MAX_SAFE_INTEGER + 1],
+      ['9007199254740992'],
+      ['../2'],
+      [2, 2],
+      [2, '2'],
+    ]) {
+      expect(
+        (
+          await read({
+            ...receipt,
+            excluded_lesson_ids: ids,
+            excluded_count: 999,
+            excluded_lessons: [lesson(2)],
+          })
+        ).partialDecision,
+      ).toBeNull()
+      expect((await read({ ...receipt, included_lesson_ids: ids })).partialDecision).toBeNull()
     }
-    expect((await read({...receipt,included_lesson_ids:[2]})).partialDecision).toBeNull()
-    expect((await read({excluded_lessons:[lesson(2)],excluded_count:1})).partialDecision).toBeNull()
+    expect((await read({ ...receipt, included_lesson_ids: [2] })).partialDecision).toBeNull()
+    expect(
+      (await read({ excluded_lessons: [lesson(2)], excluded_count: 1 })).partialDecision,
+    ).toBeNull()
   })
 
   it('redacts unsafe display fields and foreign or conflicting metadata while retaining truthful excluded counts', async () => {
-    for (const subject of ['<script>','https://private.invalid','//private.invalid/confidential','javascript:alert(1)','www.private.invalid','Алгебра\nsecret','Алгебра\u202esecret','Алгебра\u061csecret']) {
-      const item = await read({...receipt,excluded_lessons:[{...lesson(2,subject),date:'2026-02-30',lesson_number:Number.MAX_SAFE_INTEGER+1},lesson(99)]})
-      expect(item.partialDecision?.excludedLessons[0]).toEqual({date:null,lessonNumber:null,subjectName:null})
+    for (const subject of [
+      '<script>',
+      'https://private.invalid',
+      '//private.invalid/confidential',
+      'javascript:alert(1)',
+      'www.private.invalid',
+      'Алгебра\nsecret',
+      'Алгебра\u202esecret',
+      'Алгебра\u061csecret',
+    ]) {
+      const item = await read({
+        ...receipt,
+        excluded_lessons: [
+          { ...lesson(2, subject), date: '2026-02-30', lesson_number: Number.MAX_SAFE_INTEGER + 1 },
+          lesson(99),
+        ],
+      })
+      expect(item.partialDecision?.excludedLessons[0]).toEqual({
+        date: null,
+        lessonNumber: null,
+        subjectName: null,
+      })
       expect(item.partialDecision?.excludedCount).toBe(4)
       expect(item.partialDecision?.remainingCount).toBe(1)
     }
-    const duplicate = await read({...receipt,excluded_lessons:[lesson(2),lesson(2,'Физика')]})
-    expect(duplicate.partialDecision?.excludedLessons[0]).toEqual({date:null,lessonNumber:null,subjectName:null})
+    const duplicate = await read({ ...receipt, excluded_lessons: [lesson(2), lesson(2, 'Физика')] })
+    expect(duplicate.partialDecision?.excludedLessons[0]).toEqual({
+      date: null,
+      lessonNumber: null,
+      subjectName: null,
+    })
   })
 
   it('retains partial coverage with honest unavailable metadata for optional legacy receipt fields', async () => {
-    for (const metadata of [undefined,null,{},[null,{lesson_id:2,date:null,lesson_number:null,subject_name:null}]]) {
-      const item = await read({...receipt,excluded_lesson_ids:['2'],excluded_lessons:metadata})
-      expect(item.partialDecision).toEqual({excludedCount:1,excludedLessons:[{date:null,lessonNumber:null,subjectName:null}],remainingCount:0})
+    for (const metadata of [
+      undefined,
+      null,
+      {},
+      [null, { lesson_id: 2, date: null, lesson_number: null, subject_name: null }],
+    ]) {
+      const item = await read({
+        ...receipt,
+        excluded_lesson_ids: ['2'],
+        excluded_lessons: metadata,
+      })
+      expect(item.partialDecision).toEqual({
+        excludedCount: 1,
+        excludedLessons: [{ date: null, lessonNumber: null, subjectName: null }],
+        remainingCount: 0,
+      })
     }
   })
 })

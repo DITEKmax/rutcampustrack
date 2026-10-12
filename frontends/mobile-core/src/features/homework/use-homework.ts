@@ -22,7 +22,9 @@ export interface StudentHomeworkQueryScope {
   resetGeneration: number
 }
 
-export type StudentHomeworkScopeInput = MaybeRefOrGetter<StudentHomeworkQueryScope | null | undefined>
+export type StudentHomeworkScopeInput = MaybeRefOrGetter<
+  StudentHomeworkQueryScope | null | undefined
+>
 
 export interface HomeworkUseOptions {
   offline?: MaybeRefOrGetter<boolean>
@@ -89,7 +91,9 @@ export type HomeworkQueryKey = readonly [
   string,
 ]
 
-export function normalizeHomeworkScope(scope: StudentHomeworkQueryScope | null | undefined): StudentHomeworkQueryScope {
+export function normalizeHomeworkScope(
+  scope: StudentHomeworkQueryScope | null | undefined,
+): StudentHomeworkQueryScope {
   return {
     userId: scope?.userId ?? null,
     activeRole: scope?.activeRole ?? null,
@@ -99,9 +103,10 @@ export function normalizeHomeworkScope(scope: StudentHomeworkQueryScope | null |
     sessionVersion: scope?.sessionVersion ?? null,
     rolesVersion: scope?.rolesVersion ?? null,
     readOnly: scope?.readOnly ?? false,
-    resetGeneration: Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
-      ? scope?.resetGeneration ?? 0
-      : 0,
+    resetGeneration:
+      Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
+        ? (scope?.resetGeneration ?? 0)
+        : 0,
   }
 }
 
@@ -120,13 +125,21 @@ export function homeworkScopeIdentity(scope: StudentHomeworkQueryScope | null | 
   ])
 }
 
-export function isHomeworkScopeReady(scope: StudentHomeworkQueryScope | null | undefined): scope is StudentHomeworkQueryScope {
+export function isHomeworkScopeReady(
+  scope: StudentHomeworkQueryScope | null | undefined,
+): scope is StudentHomeworkQueryScope {
   if (!scope) return false
-  return scope.activeRole === 'STUDENT'
-    && typeof scope.userId === 'string' && scope.userId.length > 0
-    && typeof scope.groupId === 'string' && scope.groupId.length > 0
-    && typeof scope.semesterId === 'string' && scope.semesterId.length > 0
-    && Number.isInteger(scope.resetGeneration) && scope.resetGeneration >= 0
+  return (
+    scope.activeRole === 'STUDENT' &&
+    typeof scope.userId === 'string' &&
+    scope.userId.length > 0 &&
+    typeof scope.groupId === 'string' &&
+    scope.groupId.length > 0 &&
+    typeof scope.semesterId === 'string' &&
+    scope.semesterId.length > 0 &&
+    Number.isInteger(scope.resetGeneration) &&
+    scope.resetGeneration >= 0
+  )
 }
 
 export function homeworkQueryKey(
@@ -150,7 +163,9 @@ export function homeworkQueryKey(
   ]
 }
 
-export function homeworkScopeQueryPrefix(scope: StudentHomeworkQueryScope | null | undefined): readonly unknown[] {
+export function homeworkScopeQueryPrefix(
+  scope: StudentHomeworkQueryScope | null | undefined,
+): readonly unknown[] {
   const value = normalizeHomeworkScope(scope)
   return [
     'student',
@@ -177,16 +192,23 @@ export function validateHomeworkCompletionAck(
   expectedId: string,
   expectedCompleted: boolean,
 ): StudentHomeworkCompletion {
-  if (!isRecord(value)
-    || typeof value.id !== 'string'
-    || typeof value.completed !== 'boolean'
-    || (typeof value.completedAt !== 'string' && value.completedAt !== null)) {
+  if (
+    !isRecord(value) ||
+    typeof value.id !== 'string' ||
+    typeof value.completed !== 'boolean' ||
+    (typeof value.completedAt !== 'string' && value.completedAt !== null)
+  ) {
     throw new HomeworkCompletionAckError('Сервер вернул неполный ответ о задании')
   }
   if (value.id !== expectedId || value.completed !== expectedCompleted) {
-    throw new HomeworkCompletionAckError('Сервер вернул состояние задания, отличное от запрошенного')
+    throw new HomeworkCompletionAckError(
+      'Сервер вернул состояние задания, отличное от запрошенного',
+    )
   }
-  if (expectedCompleted && (value.completedAt === null || !Number.isFinite(Date.parse(value.completedAt)))) {
+  if (
+    expectedCompleted &&
+    (value.completedAt === null || !Number.isFinite(Date.parse(value.completedAt)))
+  ) {
     throw new HomeworkCompletionAckError('Сервер не вернул дату выполнения задания')
   }
   if (!expectedCompleted && value.completedAt !== null) {
@@ -234,7 +256,9 @@ export function useHomework(
   const offline = computed(() => Boolean(toValue(optionsValue.offline)))
   const readOnly = computed(() => Boolean(toValue(optionsValue.readOnly)))
   const fallback = computed(() => toValue(optionsValue.fallback))
-  const selectedRange = ref<HomeworkDateRange | null>(normalizeHomeworkRange(optionsValue.initialRange))
+  const selectedRange = ref<HomeworkDateRange | null>(
+    normalizeHomeworkRange(optionsValue.initialRange),
+  )
   let rangeRequestRevision = 0
   const range = computed(() => selectedRange.value)
   const scopeIdentity = computed(() => homeworkScopeIdentity(scope.value))
@@ -262,7 +286,10 @@ export function useHomework(
   const mutation = useMutation<StudentHomeworkCompletion, unknown, HomeworkCompletionInput>({
     mutationFn: async (input) => {
       if (readOnly.value || isArchived(input.id)) throw new HomeworkReadOnlyError()
-      if (!isHomeworkScopeReady(input.scope) || homeworkScopeIdentity(scope.value) !== homeworkScopeIdentity(input.scope)) {
+      if (
+        !isHomeworkScopeReady(input.scope) ||
+        homeworkScopeIdentity(scope.value) !== homeworkScopeIdentity(input.scope)
+      ) {
         throw new HomeworkStaleResponseError()
       }
       const response = await api.setHomeworkCompletion(input.id, { completed: input.completed })
@@ -291,7 +318,10 @@ export function useHomework(
   }
 
   function isArchived(id: string): boolean {
-    return (query.data.value ?? fallback.value)?.items.some((item) => item.id === id && item.archived) ?? false
+    return (
+      (query.data.value ?? fallback.value)?.items.some((item) => item.id === id && item.archived) ??
+      false
+    )
   }
 
   function submitCompletion(id: string, completed: boolean): Promise<StudentHomeworkCompletion> {
@@ -314,11 +344,12 @@ export function useHomework(
     state.error = null
     retryCommands.set(id, input)
 
-    const request = mutation.mutateAsync(input)
+    const request = mutation
+      .mutateAsync(input)
       .then((ack) => {
-      if (homeworkScopeIdentity(scope.value) === homeworkScopeIdentity(input.scope)) {
-        retryCommands.delete(id)
-        const targetKey = homeworkQueryKey(input.scope, input.range)
+        if (homeworkScopeIdentity(scope.value) === homeworkScopeIdentity(input.scope)) {
+          retryCommands.delete(id)
+          const targetKey = homeworkQueryKey(input.scope, input.range)
           queryClient.setQueryData<StudentHomework>(targetKey, (current) => {
             // Snapshot fallback is only the current feed. Never seed a
             // historical range from it, and never publish after the scope
@@ -381,10 +412,11 @@ export function useHomework(
     const requestRevision = ++rangeRequestRevision
     selectedRange.value = targetRange
     await nextTick()
-    const isCurrentRequest = (): boolean => rangeRequestRevision === requestRevision
-      && scopeIdentity.value === requestIdentity
-      && selectedRange.value?.from === date
-      && selectedRange.value.to === date
+    const isCurrentRequest = (): boolean =>
+      rangeRequestRevision === requestRevision &&
+      scopeIdentity.value === requestIdentity &&
+      selectedRange.value?.from === date &&
+      selectedRange.value.to === date
     if (!isCurrentRequest()) {
       throw new HomeworkStaleResponseError()
     }
@@ -453,9 +485,11 @@ export function useHomework(
 function applyHomeworkAck(feed: StudentHomework, ack: StudentHomeworkCompletion): StudentHomework {
   return {
     ...feed,
-    items: feed.items.map((item) => item.id === ack.id
-      ? { ...item, completed: ack.completed, completedAt: ack.completedAt }
-      : item),
+    items: feed.items.map((item) =>
+      item.id === ack.id
+        ? { ...item, completed: ack.completed, completedAt: ack.completedAt }
+        : item,
+    ),
   }
 }
 

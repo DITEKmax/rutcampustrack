@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import type { RequestKind, RequestTypeChoice } from './types'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import type { RequestKind, RequestTypeChoice } from './types';
 
-const props = withDefaults(defineProps<{
-  choices: readonly RequestTypeChoice[]
-  busy?: boolean
-  error?: string | null
-}>(), {
-  busy: false,
-  error: null,
-})
+const props = withDefaults(
+  defineProps<{
+    choices: readonly RequestTypeChoice[];
+    busy?: boolean;
+    error?: string | null;
+  }>(),
+  {
+    busy: false,
+    error: null,
+  },
+);
 
 const emit = defineEmits<{
-  back: []
-  choose: [kind: RequestKind]
-}>()
+  back: [];
+  choose: [kind: RequestKind];
+}>();
 </script>
 
 <template>
@@ -40,9 +43,7 @@ const emit = defineEmits<{
           />
         </svg>
       </button>
-      <h1 id="request-type-title">
-        Новая заявка
-      </h1>
+      <h1 id="request-type-title"> Новая заявка </h1>
     </header>
 
     <StudentWarningBlock
@@ -90,7 +91,8 @@ const emit = defineEmits<{
             v-else
             class="requests-type-choice__symbol requests-type-choice__symbol--excuse"
             aria-hidden="true"
-          >{{ choice.symbol }}</span>
+            >{{ choice.symbol }}</span
+          >
           <span class="requests-type-choice__label">{{ choice.label }}</span>
         </button>
         <p

@@ -291,7 +291,7 @@ jobs:
       # подпись + запись в Rekor transparency log.
       - name: Cosign sign image (keyless)
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: '1'
         run: |
           cosign sign --yes \
             ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }}
@@ -300,7 +300,7 @@ jobs:
       # cosign attach, после этого verify может проверить SBOM origin.
       - name: Cosign attest SBOM (keyless)
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: '1'
         run: |
           # attest использует тот же keyless-flow что и sign
           cosign attest --yes \
@@ -336,7 +336,7 @@ jobs:
 
       - name: Verify signatures (13 images)
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: '1'
         run: |
           set -e
           IMAGES=(api-gateway mobile-bff auth-service academic-service schedule-service attendance-service document-renderer-service notification-web notification-bot pwa-nginx mini-app-nginx web-panel-nginx landing-nginx)

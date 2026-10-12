@@ -1,44 +1,47 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import './install-offer.pcss'
-import type { InstallPromptController, InstallPromptState } from './install-prompt'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import './install-offer.pcss';
+import type { InstallPromptController, InstallPromptState } from './install-prompt';
 
 const props = defineProps<{
-  controller: InstallPromptController
-  eligible: boolean
-}>()
+  controller: InstallPromptController;
+  eligible: boolean;
+}>();
 
-const state = ref<InstallPromptState>(props.controller.getState())
-const busy = ref(false)
-let stopSubscription = (): void => undefined
+const state = ref<InstallPromptState>(props.controller.getState());
+const busy = ref(false);
+let stopSubscription = (): void => undefined;
 
-const visible = computed(() => props.eligible
-  && !state.value.dismissed
-  && !state.value.installed
-  && !state.value.standalone
-  && (state.value.canInstall || state.value.ios))
-const mode = computed(() => state.value.canInstall ? 'native' : 'ios')
+const visible = computed(
+  () =>
+    props.eligible &&
+    !state.value.dismissed &&
+    !state.value.installed &&
+    !state.value.standalone &&
+    (state.value.canInstall || state.value.ios),
+);
+const mode = computed(() => (state.value.canInstall ? 'native' : 'ios'));
 
 onMounted(() => {
   stopSubscription = props.controller.subscribe((nextState) => {
-    state.value = nextState
-  })
-})
+    state.value = nextState;
+  });
+});
 
 onBeforeUnmount(() => {
-  stopSubscription()
-})
+  stopSubscription();
+});
 
 async function install(): Promise<void> {
-  if (busy.value) return
-  busy.value = true
-  await props.controller.install()
-  busy.value = false
-  state.value = props.controller.getState()
+  if (busy.value) return;
+  busy.value = true;
+  await props.controller.install();
+  busy.value = false;
+  state.value = props.controller.getState();
 }
 
 function dismiss(): void {
-  props.controller.dismiss()
+  props.controller.dismiss();
 }
 </script>
 
@@ -52,11 +55,10 @@ function dismiss(): void {
     <span
       class="install-offer__mark"
       aria-hidden="true"
-    >↗</span>
+      >↗</span
+    >
     <div class="install-offer__copy">
-      <h2 class="install-offer__title">
-        Добавь RutCampusTrack на главный экран
-      </h2>
+      <h2 class="install-offer__title"> Добавь RutCampusTrack на главный экран </h2>
       <p
         v-if="mode === 'native'"
         class="install-offer__hint"

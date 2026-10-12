@@ -7,13 +7,15 @@ import type { ProfileSnapshot } from '../../mobile-core/src/features/profile/pro
  * only when both responses describe the same server session and role.
  */
 export function assertAuthBffCoherence(profile: ProfileSnapshot, candidate: StudentSession): void {
-  if (profile.activeRole !== 'STUDENT'
-    || candidate.activeRole !== 'STUDENT'
-    || candidate.user.id !== profile.userId
-    || candidate.sessionId !== profile.sessionId
-    || candidate.sessionVersion !== profile.sessionVersion
-    || candidate.rolesVersion !== profile.rolesVersion
-    || candidate.readOnly !== profile.readOnly) {
+  if (
+    profile.activeRole !== 'STUDENT' ||
+    candidate.activeRole !== 'STUDENT' ||
+    candidate.user.id !== profile.userId ||
+    candidate.sessionId !== profile.sessionId ||
+    candidate.sessionVersion !== profile.sessionVersion ||
+    candidate.rolesVersion !== profile.rolesVersion ||
+    candidate.readOnly !== profile.readOnly
+  ) {
     throw new ProfileRequestError(
       'SESSION_STATE_STALE',
       'Auth и учебная сессия не совпадают. Повтори вход.',

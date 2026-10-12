@@ -65,8 +65,8 @@ springdoc:
 
 jwt:
   key-dir: ${JWT_KEY_DIR:./keys}
-  access-token-expiration: 900        # 15 минут
-  refresh-token-expiration: 604800    # 7 дней
+  access-token-expiration: 900 # 15 минут
+  refresh-token-expiration: 604800 # 7 дней
 
 rutcampustrack:
   security:

@@ -9,10 +9,7 @@ export type AssistantPermissionRefreshReason = 'forbidden' | 'foreground'
 export interface AssistantPermissionRefresherOptions {
   currentGeneration(): number
   currentOwnerKey(): string | null
-  load(
-    generation: number,
-    ownerKey: string,
-  ): Promise<readonly HeadmanAssistantPermission[]>
+  load(generation: number, ownerKey: string): Promise<readonly HeadmanAssistantPermission[]>
   apply(permissions: readonly HeadmanAssistantPermission[]): void
   now?: () => number
   foregroundCooldownMs?: number
@@ -44,13 +41,20 @@ export function createAssistantPermissionRefresher(options: AssistantPermissionR
     const ownerKey = options.currentOwnerKey()
     if (ownerKey === null) return false
 
-    if (reason === 'foreground' && flight?.generation === generation && flight.ownerKey === ownerKey) {
+    if (
+      reason === 'foreground' &&
+      flight?.generation === generation &&
+      flight.ownerKey === ownerKey
+    ) {
       return flight.promise
     }
 
     if (reason === 'foreground') {
-      if (lastForeground?.generation === generation && lastForeground.ownerKey === ownerKey
-        && now() - lastForeground.at < foregroundCooldownMs) {
+      if (
+        lastForeground?.generation === generation &&
+        lastForeground.ownerKey === ownerKey &&
+        now() - lastForeground.at < foregroundCooldownMs
+      ) {
         return false
       }
     }
@@ -62,14 +66,22 @@ export function createAssistantPermissionRefresher(options: AssistantPermissionR
     const promise = Promise.resolve()
       .then(() => options.load(generation, ownerKey))
       .then((permissions) => {
-        if (requestId !== latestRequestId || options.currentGeneration() !== generation
-          || options.currentOwnerKey() !== ownerKey) return false
+        if (
+          requestId !== latestRequestId ||
+          options.currentGeneration() !== generation ||
+          options.currentOwnerKey() !== ownerKey
+        )
+          return false
         options.apply(permissions)
         return true
       })
       .catch((cause: unknown) => {
-        if (requestId !== latestRequestId || options.currentGeneration() !== generation
-          || options.currentOwnerKey() !== ownerKey) return false
+        if (
+          requestId !== latestRequestId ||
+          options.currentGeneration() !== generation ||
+          options.currentOwnerKey() !== ownerKey
+        )
+          return false
         throw cause
       })
       .finally(() => {
@@ -87,8 +99,12 @@ export function createAssistantPermissionRefresher(options: AssistantPermissionR
 
 /** These assistant operations use 403 for capability denial, not session loss. */
 export function isAssistantCapabilityForbiddenError(cause: unknown): boolean {
-  if (cause instanceof HeadmanHomeworkApiError || cause instanceof HeadmanStatsApiError
-    || cause instanceof HeadmanRequestsApiError || cause instanceof HeadmanJournalApiError) {
+  if (
+    cause instanceof HeadmanHomeworkApiError ||
+    cause instanceof HeadmanStatsApiError ||
+    cause instanceof HeadmanRequestsApiError ||
+    cause instanceof HeadmanJournalApiError
+  ) {
     return cause.response.status === 403
   }
   return false

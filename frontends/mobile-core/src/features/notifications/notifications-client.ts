@@ -103,7 +103,12 @@ export class NotificationsApiError extends Error {
 }
 
 const categoryKeys: readonly NotificationCategoryKey[] = [
-  'lessons', 'reminders', 'homework', 'tickets', 'schedule', 'group',
+  'lessons',
+  'reminders',
+  'homework',
+  'tickets',
+  'schedule',
+  'group',
 ]
 
 const contextLabels: Readonly<Record<string, string>> = {
@@ -151,7 +156,9 @@ export function createGenerationBoundNotificationsApi(
         assertCurrent()
         const status = errorStatus(error)
         throw new NotificationsApiError(
-          status === 401 ? 'Сессия истекла. Войди в приложение ещё раз.' : 'Не удалось обновить сессию.',
+          status === 401
+            ? 'Сессия истекла. Войди в приложение ещё раз.'
+            : 'Не удалось обновить сессию.',
           status,
         )
       }
@@ -203,13 +210,15 @@ export function createGenerationBoundNotificationsApi(
       return parsePreferences(await request('/notifications/preferences'))
     },
     async updatePreferences(value) {
-      return parsePreferences(await request('/notifications/preferences', {
-        method: 'PUT',
-        body: JSON.stringify({
-          categories: normalizeCategories(value.categories),
-          mutedUntil: value.mutedUntil,
+      return parsePreferences(
+        await request('/notifications/preferences', {
+          method: 'PUT',
+          body: JSON.stringify({
+            categories: normalizeCategories(value.categories),
+            mutedUntil: value.mutedUntil,
+          }),
         }),
-      }))
+      )
     },
   }
 }
@@ -217,15 +226,22 @@ export function createGenerationBoundNotificationsApi(
 export function notificationsErrorMessage(error: unknown): string {
   if (error instanceof NotificationsApiError) {
     switch (error.status) {
-      case 400: return 'Запрос уведомлений не принят. Обнови экран и попробуй снова.'
-      case 401: return 'Сессия истекла. Войди в приложение ещё раз.'
-      case 403: return 'Доступ к уведомлениям сейчас недоступен.'
-      case 409: return 'Данные изменились. Обнови экран и попробуй снова.'
-      case 429: return 'Слишком много запросов. Подожди немного и повтори.'
-      case 503: return 'Сервис уведомлений временно недоступен. Попробуй позже.'
-      default: return error.status === null
-        ? error.message
-        : 'Не удалось загрузить уведомления. Попробуй ещё раз.'
+      case 400:
+        return 'Запрос уведомлений не принят. Обнови экран и попробуй снова.'
+      case 401:
+        return 'Сессия истекла. Войди в приложение ещё раз.'
+      case 403:
+        return 'Доступ к уведомлениям сейчас недоступен.'
+      case 409:
+        return 'Данные изменились. Обнови экран и попробуй снова.'
+      case 429:
+        return 'Слишком много запросов. Подожди немного и повтори.'
+      case 503:
+        return 'Сервис уведомлений временно недоступен. Попробуй позже.'
+      default:
+        return error.status === null
+          ? error.message
+          : 'Не удалось загрузить уведомления. Попробуй ещё раз.'
     }
   }
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -263,9 +279,15 @@ function parseHistoryPage(value: unknown): NotificationHistoryPage {
 
 function parseHistoryItem(value: unknown): NotificationHistoryItem | null {
   const record = asRecord(value)
-  if (!record || typeof record.id !== 'string' || !isSafeId(record.id)
-    || typeof record.type !== 'string' || typeof record.sentAt !== 'string'
-    || (record.readAt !== null && typeof record.readAt !== 'string')) return null
+  if (
+    !record ||
+    typeof record.id !== 'string' ||
+    !isSafeId(record.id) ||
+    typeof record.type !== 'string' ||
+    typeof record.sentAt !== 'string' ||
+    (record.readAt !== null && typeof record.readAt !== 'string')
+  )
+    return null
   return {
     id: record.id,
     type: /^[A-Z_]{1,80}$/.test(record.type) ? record.type : 'UNKNOWN',
@@ -304,11 +326,18 @@ function parsePartialDecision(type: string, value: unknown): NotificationPartial
     const lessonNumber = lesson?.lesson_number
     return {
       date: typeof date === 'string' && isHomeworkDate(date) ? date : null,
-      lessonNumber: typeof lessonNumber === 'number' && Number.isSafeInteger(lessonNumber) && lessonNumber > 0 ? lessonNumber : null,
+      lessonNumber:
+        typeof lessonNumber === 'number' && Number.isSafeInteger(lessonNumber) && lessonNumber > 0
+          ? lessonNumber
+          : null,
       subjectName: safeExcludedSubjectName(lesson?.subject_name),
     }
   })
-  return { excludedCount: excluded.length, excludedLessons, remainingCount: excluded.length - excludedLessons.length }
+  return {
+    excludedCount: excluded.length,
+    excludedLessons,
+    remainingCount: excluded.length - excludedLessons.length,
+  }
 }
 
 function decisionLessonIds(value: unknown): string[] | null {
@@ -328,12 +357,23 @@ function safeExcludedSubjectName(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const hasControl = [...value].some((character) => {
     const code = character.codePointAt(0)!
-    return code < 32 || code >= 127 && code <= 159 || code === 0x061c || code >= 0x200b && code <= 0x200f
-      || code >= 0x202a && code <= 0x202e || code >= 0x2060 && code <= 0x206f
+    return (
+      code < 32 ||
+      (code >= 127 && code <= 159) ||
+      code === 0x061c ||
+      (code >= 0x200b && code <= 0x200f) ||
+      (code >= 0x202a && code <= 0x202e) ||
+      (code >= 0x2060 && code <= 0x206f)
+    )
   })
   if (hasControl) return null
   const text = value.trim()
-  return text && text.length <= 80 && !/[<>]/.test(text) && !/(?:[a-z][a-z\d+.-]*:|www\.|\/\/)/i.test(text) ? text : null
+  return text &&
+    text.length <= 80 &&
+    !/[<>]/.test(text) &&
+    !/(?:[a-z][a-z\d+.-]*:|www\.|\/\/)/i.test(text)
+    ? text
+    : null
 }
 
 function parseTarget(type: string, value: unknown): NotificationTarget | null {
@@ -350,11 +390,19 @@ function parseTarget(type: string, value: unknown): NotificationTarget | null {
     const requestId = safeRequestId(payload.ticket_id)
     return requestId ? { kind: 'request', requestId, requestKind: 'EXCUSE' } : null
   }
-  if (type === 'LATE_CHECKIN_REQUESTED' || type === 'LATE_CHECKIN_APPROVED' || type === 'LATE_CHECKIN_REJECTED') {
+  if (
+    type === 'LATE_CHECKIN_REQUESTED' ||
+    type === 'LATE_CHECKIN_APPROVED' ||
+    type === 'LATE_CHECKIN_REJECTED'
+  ) {
     const requestId = safeRequestId(payload.request_id)
     return requestId ? { kind: 'request', requestId, requestKind: 'LATE_CHECKIN' } : null
   }
-  if (type === 'LESSON_STARTED' || type === 'LESSON_CANCELLED' || type === 'ATTENDANCE_MARKED_BY_HEADMAN') {
+  if (
+    type === 'LESSON_STARTED' ||
+    type === 'LESSON_CANCELLED' ||
+    type === 'ATTENDANCE_MARKED_BY_HEADMAN'
+  ) {
     const lessonId = positiveSafeId(payload.lesson_id)
     return lessonId ? { kind: 'lesson', lessonId } : null
   }
@@ -389,14 +437,24 @@ function safeContext(value: unknown): NotificationHistoryItem['context'] {
   const result: { label: string; value: string }[] = []
   for (const [key, label] of Object.entries(contextLabels)) {
     const raw = payload[key]
-    const text = typeof raw === 'number' && Number.isSafeInteger(raw)
-      ? String(raw)
-      : typeof raw === 'string' ? raw.trim() : ''
+    const text =
+      typeof raw === 'number' && Number.isSafeInteger(raw)
+        ? String(raw)
+        : typeof raw === 'string'
+          ? raw.trim()
+          : ''
     const hasControlCharacter = [...text].some((character) => {
       const code = character.charCodeAt(0)
       return code < 32 || code === 127
     })
-    if (!text || text.length > 80 || /[<>]/.test(text) || hasControlCharacter || /https?:\/\//i.test(text)) continue
+    if (
+      !text ||
+      text.length > 80 ||
+      /[<>]/.test(text) ||
+      hasControlCharacter ||
+      /https?:\/\//i.test(text)
+    )
+      continue
     result.push({ label, value: text })
   }
   return result
@@ -405,7 +463,8 @@ function safeContext(value: unknown): NotificationHistoryItem['context'] {
 function parsePreferences(value: unknown): NotificationPreferences {
   const record = asRecord(value)
   const categories = asRecord(record?.categories)
-  if (!record || !categories) throw new NotificationsApiError('Сервер вернул некорректные настройки')
+  if (!record || !categories)
+    throw new NotificationsApiError('Сервер вернул некорректные настройки')
   const rawMutedUntil = record.mutedUntil
   if (rawMutedUntil !== null && typeof rawMutedUntil !== 'string') {
     throw new NotificationsApiError('Сервер вернул некорректные настройки')
@@ -419,8 +478,12 @@ function parsePreferences(value: unknown): NotificationPreferences {
   }
 }
 
-function normalizeCategories(value: Partial<Record<NotificationCategoryKey, unknown>>): Record<NotificationCategoryKey, boolean> {
-  return Object.fromEntries(categoryKeys.map((key) => [key, typeof value[key] === 'boolean' ? value[key] : true])) as Record<NotificationCategoryKey, boolean>
+function normalizeCategories(
+  value: Partial<Record<NotificationCategoryKey, unknown>>,
+): Record<NotificationCategoryKey, boolean> {
+  return Object.fromEntries(
+    categoryKeys.map((key) => [key, typeof value[key] === 'boolean' ? value[key] : true]),
+  ) as Record<NotificationCategoryKey, boolean>
 }
 
 function notificationId(value: string): string {
@@ -441,7 +504,7 @@ function nonNegativeInteger(value: unknown, field: string): number {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : null
 }
 

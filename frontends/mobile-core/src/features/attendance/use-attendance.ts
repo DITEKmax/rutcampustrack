@@ -42,7 +42,9 @@ export type AttendanceQueryKey = readonly [
   number,
 ]
 
-export function normalizeAttendanceScope(scope: StudentFeatureScope | null | undefined): StudentFeatureScope {
+export function normalizeAttendanceScope(
+  scope: StudentFeatureScope | null | undefined,
+): StudentFeatureScope {
   return {
     userId: scope?.userId ?? null,
     activeRole: scope?.activeRole ?? null,
@@ -52,21 +54,31 @@ export function normalizeAttendanceScope(scope: StudentFeatureScope | null | und
     sessionVersion: scope?.sessionVersion ?? null,
     rolesVersion: scope?.rolesVersion ?? null,
     readOnly: scope?.readOnly ?? false,
-    resetGeneration: Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
-      ? scope?.resetGeneration ?? 0
-      : 0,
+    resetGeneration:
+      Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
+        ? (scope?.resetGeneration ?? 0)
+        : 0,
   }
 }
 
-export function isAttendanceScopeReady(scope: StudentFeatureScope | null | undefined): scope is StudentFeatureScope {
+export function isAttendanceScopeReady(
+  scope: StudentFeatureScope | null | undefined,
+): scope is StudentFeatureScope {
   if (!scope) return false
-  return scope.activeRole === 'STUDENT'
-    && typeof scope.userId === 'string' && scope.userId.length > 0
-    && typeof scope.semesterId === 'string' && scope.semesterId.length > 0
-    && Number.isInteger(scope.resetGeneration) && scope.resetGeneration >= 0
+  return (
+    scope.activeRole === 'STUDENT' &&
+    typeof scope.userId === 'string' &&
+    scope.userId.length > 0 &&
+    typeof scope.semesterId === 'string' &&
+    scope.semesterId.length > 0 &&
+    Number.isInteger(scope.resetGeneration) &&
+    scope.resetGeneration >= 0
+  )
 }
 
-export function attendanceQueryKey(scope: StudentFeatureScope | null | undefined): AttendanceQueryKey {
+export function attendanceQueryKey(
+  scope: StudentFeatureScope | null | undefined,
+): AttendanceQueryKey {
   const value = normalizeAttendanceScope(scope)
   return [
     'student',
@@ -83,7 +95,9 @@ export function attendanceQueryKey(scope: StudentFeatureScope | null | undefined
   ]
 }
 
-function mapLesson(lesson: StudentAttendanceLesson): AttendanceViewModel['days'][number]['lessons'][number] {
+function mapLesson(
+  lesson: StudentAttendanceLesson,
+): AttendanceViewModel['days'][number]['lessons'][number] {
   return {
     id: lesson.id,
     date: lesson.date,
@@ -106,7 +120,9 @@ function mapDay(day: StudentAttendanceDay): AttendanceViewModel['days'][number] 
   }
 }
 
-function mapTypeCard(card: StudentAttendanceTypeCard): AttendanceViewModel['subjects'][number]['typeCards'][number] {
+function mapTypeCard(
+  card: StudentAttendanceTypeCard,
+): AttendanceViewModel['subjects'][number]['typeCards'][number] {
   return {
     type: card.type,
     metrics: { ...card.metrics },
@@ -122,7 +138,9 @@ function mapSubject(subject: StudentAttendanceSubject): AttendanceViewModel['sub
   }
 }
 
-function mapPoint(point: StudentAttendanceSeriesPoint): AttendanceViewModel['graph']['days'][number] {
+function mapPoint(
+  point: StudentAttendanceSeriesPoint,
+): AttendanceViewModel['graph']['days'][number] {
   return {
     id: point.id,
     label: point.label,
@@ -148,11 +166,13 @@ export function toAttendanceViewModel(value: StudentAttendanceResponse): Attenda
 }
 
 function hasAttendanceProjection(value: AttendanceViewModel): boolean {
-  return value.metrics.planned > 0
-    || value.days.some((day) => day.lessons.length > 0)
-    || value.subjects.length > 0
-    || value.graph.days.length > 0
-    || value.graph.weeks.length > 0
+  return (
+    value.metrics.planned > 0 ||
+    value.days.some((day) => day.lessons.length > 0) ||
+    value.subjects.length > 0 ||
+    value.graph.days.length > 0 ||
+    value.graph.weeks.length > 0
+  )
 }
 
 function readErrorDetails(error: unknown): { code: string; message: string; retryable: boolean } {
@@ -167,17 +187,24 @@ function readErrorDetails(error: unknown): { code: string; message: string; retr
   }
   return {
     code: error instanceof Error ? error.name : 'NETWORK',
-    message: error instanceof Error && error.message ? error.message : 'Не удалось получить посещаемость.',
+    message:
+      error instanceof Error && error.message ? error.message : 'Не удалось получить посещаемость.',
     retryable: true,
   }
 }
 
 function shouldRetry(failureCount: number, error: unknown): boolean {
   if (failureCount >= 1) return false
-  return !(error instanceof StudentApiError && error.response.status >= 400 && error.response.status < 500)
+  return !(
+    error instanceof StudentApiError &&
+    error.response.status >= 400 &&
+    error.response.status < 500
+  )
 }
 
-function errorState(error: unknown): Extract<AttendanceReadState<never>, { status: 'error' | 'forbidden' }> {
+function errorState(
+  error: unknown,
+): Extract<AttendanceReadState<never>, { status: 'error' | 'forbidden' }> {
   if (error instanceof StudentApiError && error.response.status === 403) {
     return {
       status: 'forbidden',
@@ -214,15 +241,16 @@ export function useAttendance(
     retry: shouldRetry,
   })
 
-  const data = computed(() => query.data.value ? toAttendanceViewModel(query.data.value) : null)
+  const data = computed(() => (query.data.value ? toAttendanceViewModel(query.data.value) : null))
   const terminalReadOnly = computed(() => query.data.value?.terminalReadOnly === true)
   const state = computed<AttendanceReadState<AttendanceViewModel>>(() => {
     if (offline.value) return { status: 'offline' }
     if (!scope.value.semesterId) return { status: 'no-semester' }
     if (query.error.value) return errorState(query.error.value)
-    if (data.value) return hasAttendanceProjection(data.value)
-      ? { status: 'ready', data: data.value }
-      : { status: 'empty' }
+    if (data.value)
+      return hasAttendanceProjection(data.value)
+        ? { status: 'ready', data: data.value }
+        : { status: 'empty' }
     if (query.isPending.value || !scopeReady.value) return { status: 'loading' }
     return { status: 'empty' }
   })

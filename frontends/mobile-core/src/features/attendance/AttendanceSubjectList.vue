@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import chevronDown from '../../assets/chevron-down.svg'
+import { computed } from 'vue';
+import chevronDown from '../../assets/chevron-down.svg';
 import {
   displayPercent,
   historyStatusLabel,
@@ -8,44 +8,44 @@ import {
   LESSON_TYPE_ORDER,
   type AttendanceSubject,
   type AttendanceSubjectTypeSummary,
-} from './attendance-view-model'
+} from './attendance-view-model';
 
-const props = withDefaults(defineProps<{
-  subjects: readonly AttendanceSubject[]
-  expandedSubjectId?: string | null
-}>(), {
-  expandedSubjectId: null,
-})
+const props = withDefaults(
+  defineProps<{
+    subjects: readonly AttendanceSubject[];
+    expandedSubjectId?: string | null;
+  }>(),
+  {
+    expandedSubjectId: null,
+  },
+);
 
-const emit = defineEmits<{ toggle: [subjectId: string] }>()
+const emit = defineEmits<{ toggle: [subjectId: string] }>();
 
 function subjectIsExpanded(subject: AttendanceSubject): boolean {
-  return subject.id === props.expandedSubjectId
+  return subject.id === props.expandedSubjectId;
 }
 
 function orderedTypeCards(subject: AttendanceSubject): readonly AttendanceSubjectTypeSummary[] {
-  return LESSON_TYPE_ORDER
-    .map((type) => subject.typeCards.find((card) => card.type === type))
-    .filter((card): card is AttendanceSubjectTypeSummary => Boolean(card))
+  return LESSON_TYPE_ORDER.map((type) =>
+    subject.typeCards.find((card) => card.type === type),
+  ).filter((card): card is AttendanceSubjectTypeSummary => Boolean(card));
 }
 
 function historyTone(status: AttendanceSubjectTypeSummary['history'][number]['status']): string {
-  return status.toLowerCase().replace('_', '-')
+  return status.toLowerCase().replace('_', '-');
 }
 
-function metricLabel(
-  status: 'present' | 'excused' | 'absent',
-  percent: number | null,
-): string {
+function metricLabel(status: 'present' | 'excused' | 'absent', percent: number | null): string {
   const labels: Record<typeof status, string> = {
     present: 'Присутствовал',
     excused: 'Уважительная причина',
     absent: 'Отсутствовал',
-  }
-  return `${labels[status]}: ${displayPercent(percent)}`
+  };
+  return `${labels[status]}: ${displayPercent(percent)}`;
 }
 
-const hasSubjects = computed(() => props.subjects.length > 0)
+const hasSubjects = computed(() => props.subjects.length > 0);
 </script>
 
 <template>
@@ -86,7 +86,7 @@ const hasSubjects = computed(() => props.subjects.length > 0)
             <img
               :src="chevronDown"
               alt=""
-            >
+            />
           </span>
         </button>
         <div

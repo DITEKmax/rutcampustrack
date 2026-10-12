@@ -70,7 +70,10 @@ test.describe('Student excuse + file upload', () => {
 
     // 2. Excuse type через MatSelect (открыть → выбрать option).
     await page.getByLabel(/причина пропуска/i).click();
-    await page.getByRole('option', { name: /болезн|медицин/i }).first().click();
+    await page
+      .getByRole('option', { name: /болезн|медицин/i })
+      .first()
+      .click();
 
     // 3. Comment — необязательно, но добавим.
     await page.getByLabel(/комментарий/i).fill('Справка от врача прилагается.');

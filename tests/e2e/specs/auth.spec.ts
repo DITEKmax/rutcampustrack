@@ -84,8 +84,11 @@ test.describe('Auth a11y @a11y', () => {
   });
 
   test('student-headman dashboard — TODO color-contrast fix', async ({ page }) => {
-    test.skip(true, 'TODO M13 G25.24: headman dashboard color-contrast violation на одном узле — '
-        + 'extended axe report (G25.24) покажет element при следующем запуске --grep @a11y');
+    test.skip(
+      true,
+      'TODO M13 G25.24: headman dashboard color-contrast violation на одном узле — ' +
+        'extended axe report (G25.24) покажет element при следующем запуске --grep @a11y',
+    );
     await loginAs(page, TEST_USERS.student);
     await assertNoA11yCriticalOrSerious(page);
   });

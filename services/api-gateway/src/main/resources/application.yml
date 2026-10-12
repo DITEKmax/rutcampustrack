@@ -31,7 +31,7 @@ spring:
             cors-configurations:
               '[/api/report-download/**]':
                 allowed-origins:
-                  - "https://web.telegram.org"
+                  - 'https://web.telegram.org'
                 allowed-methods:
                   - GET
                 allowed-headers:
@@ -40,14 +40,14 @@ spring:
                 max-age: 300
               '[/**]':
                 allowed-origins:
-                  - "${CORS_ALLOWED_ORIGIN:http://localhost:5173}"
-                  - "http://localhost:5173"
-                  - "http://localhost:80"
-                  - "http://localhost:5174"
-                  - "http://localhost:5175"
-                  - "http://localhost:5176"
-                  - "http://localhost:3000"
-                  - "http://localhost:4200"
+                  - '${CORS_ALLOWED_ORIGIN:http://localhost:5173}'
+                  - 'http://localhost:5173'
+                  - 'http://localhost:80'
+                  - 'http://localhost:5174'
+                  - 'http://localhost:5175'
+                  - 'http://localhost:5176'
+                  - 'http://localhost:3000'
+                  - 'http://localhost:4200'
                 allowed-methods:
                   - GET
                   - POST
@@ -55,7 +55,7 @@ spring:
                   - PATCH
                   - DELETE
                   - OPTIONS
-                allowed-headers: "*"
+                allowed-headers: '*'
                 allow-credentials: true
                 max-age: 3600
           # M13 G25.22 — убран `default-filters: DedupeResponseHeader` (CORS dedup).
@@ -99,7 +99,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 60
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # /api/auth/otp/verify-by-code — 5 req/min per IP
             - id: auth-otp-verify
@@ -114,7 +114,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 12
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # Reset OTPs also have per-account send and verification windows in auth-service.
             - id: auth-password-reset-request
@@ -130,7 +130,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 60
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: auth-password-reset-verify
               uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
@@ -145,7 +145,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 12
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: auth-password-reset-complete
               uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
@@ -160,7 +160,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 12
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # /api/auth/login — 5 req/min per IP (single rate limiter).
             #
@@ -200,7 +200,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: ${AUTH_LOGIN_BURST_CAPACITY:60}
                     redis-rate-limiter.requestedTokens: 12
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
             - id: auth-refresh
@@ -215,7 +215,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 2
-                    key-resolver: "#{@userIdKeyResolver}"
+                    key-resolver: '#{@userIdKeyResolver}'
 
             # /api/attendance/check-in — 10 req/min per user (предотвращает multi-mark)
             - id: attendance-checkin
@@ -230,7 +230,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 6
-                    key-resolver: "#{@userIdKeyResolver}"
+                    key-resolver: '#{@userIdKeyResolver}'
 
             # === Regular routes (unchanged) ===
 
@@ -245,7 +245,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 6
-                    key-resolver: "#{@userIdKeyResolver}"
+                    key-resolver: '#{@userIdKeyResolver}'
 
             # Exact Requests upload route must win over the generic student
             # route so it can use the streaming transport cap.
@@ -263,7 +263,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 12
-                    key-resolver: "#{@userIdKeyResolver}"
+                    key-resolver: '#{@userIdKeyResolver}'
 
             - id: mobile-bff
               uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
@@ -275,7 +275,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: mobile-bff-teacher
               uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
@@ -287,7 +287,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: mobile-bff-map
               uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
@@ -299,7 +299,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: auth-service
               uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
@@ -320,7 +320,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: schedule-service
               uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
@@ -333,7 +333,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # M07 G12 MED-1: tight RL для multipart-upload excuse tickets.
             # 25 MB body × 600 rpm (generic attendance RL) = 15 GB/мин amplification.
@@ -353,7 +353,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 12
-                    key-resolver: "#{@userIdKeyResolver}"
+                    key-resolver: '#{@userIdKeyResolver}'
 
             - id: attendance-service
               uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
@@ -366,7 +366,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: notification-web
               uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
@@ -386,7 +386,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # M10 G5 — notification history (list / unread-count / mark-read).
             - id: notification-history
@@ -400,7 +400,7 @@ spring:
                     redis-rate-limiter.replenishRate: 600
                     redis-rate-limiter.burstCapacity: 600
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             # M13 G16 — CSP violation reports от браузеров.
             # Публичный endpoint (no auth); rate-limit агрессивный per-IP
@@ -418,7 +418,7 @@ spring:
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 60
                     redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@ipKeyResolver}"
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: auth-service-openapi
               uri: ${AUTH_SERVICE_URL:http://auth-service:9090}

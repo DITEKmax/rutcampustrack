@@ -1,60 +1,63 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import roomIcon from '../../assets/room-light.svg'
-import lessonTypeIcon from '../../assets/lesson-type-light.svg'
+import { computed } from 'vue';
+import roomIcon from '../../assets/room-light.svg';
+import lessonTypeIcon from '../../assets/lesson-type-light.svg';
 import {
   hasEnabledRequestOption,
   lessonStatusLabel,
   lessonTypeLabel,
   type AttendanceLesson,
   type AttendanceRequestOption,
-} from './attendance-view-model'
+} from './attendance-view-model';
 
-const props = withDefaults(defineProps<{
-  lesson: AttendanceLesson
-  actionsOpen?: boolean
-  notificationTarget?: boolean
-  terminal?: boolean
-}>(), {
-  actionsOpen: false,
-  notificationTarget: false,
-  terminal: false,
-})
+const props = withDefaults(
+  defineProps<{
+    lesson: AttendanceLesson;
+    actionsOpen?: boolean;
+    notificationTarget?: boolean;
+    terminal?: boolean;
+  }>(),
+  {
+    actionsOpen: false,
+    notificationTarget: false,
+    terminal: false,
+  },
+);
 
 const emit = defineEmits<{
-  'toggle-actions': [lessonId: string]
-  request: [lesson: AttendanceLesson, option: AttendanceRequestOption]
-}>()
+  'toggle-actions': [lessonId: string];
+  request: [lesson: AttendanceLesson, option: AttendanceRequestOption];
+}>();
 
-const requestOptions = computed(() => props.lesson.requestOptions)
-const hasRequestOptions = computed(() => requestOptions.value.length > 0)
-const canOpenActions = computed(() => hasEnabledRequestOption(props.lesson) && !props.terminal)
+const requestOptions = computed(() => props.lesson.requestOptions);
+const hasRequestOptions = computed(() => requestOptions.value.length > 0);
+const canOpenActions = computed(() => hasEnabledRequestOption(props.lesson) && !props.terminal);
 
 function statusTone(status: AttendanceLesson['status']): string {
-  if (status === 'PRESENT') return 'present'
-  if (status === 'ABSENT') return 'absent'
-  if (status === 'EXCUSED') return 'excused'
-  if (status === 'CANCELLED') return 'cancelled'
-  return 'neutral'
+  if (status === 'PRESENT') return 'present';
+  if (status === 'ABSENT') return 'absent';
+  if (status === 'EXCUSED') return 'excused';
+  if (status === 'CANCELLED') return 'cancelled';
+  return 'neutral';
 }
 
 function statusSymbol(status: AttendanceLesson['status']): string {
-  if (status === 'PRESENT') return '+'
-  if (status === 'ABSENT') return 'н'
-  if (status === 'EXCUSED') return 'у'
-  if (status === 'ACTIVE') return 'сейчас'
-  if (status === 'FUTURE') return 'будет'
-  if (status === 'CANCELLED') return '×'
-  return '—'
+  if (status === 'PRESENT') return '+';
+  if (status === 'ABSENT') return 'н';
+  if (status === 'EXCUSED') return 'у';
+  if (status === 'ACTIVE') return 'сейчас';
+  if (status === 'FUTURE') return 'будет';
+  if (status === 'CANCELLED') return '×';
+  return '—';
 }
 
 function optionDisabled(option: AttendanceRequestOption): boolean {
-  return props.terminal || !option.enabled
+  return props.terminal || !option.enabled;
 }
 
 function optionLabel(option: AttendanceRequestOption): string {
-  if (optionDisabled(option) && option.reason) return `${option.label} · ${option.reason}`
-  return option.label
+  if (optionDisabled(option) && option.reason) return `${option.label} · ${option.reason}`;
+  return option.label;
 }
 </script>
 
@@ -83,7 +86,11 @@ function optionLabel(option: AttendanceRequestOption): string {
           :data-request-trigger="lesson.id"
           type="button"
           :disabled="!canOpenActions"
-          :aria-label="canOpenActions ? `Действия для отметки ${lessonStatusLabel(lesson.status)}` : 'Действия недоступны'"
+          :aria-label="
+            canOpenActions
+              ? `Действия для отметки ${lessonStatusLabel(lesson.status)}`
+              : 'Действия недоступны'
+          "
           :aria-expanded="canOpenActions ? actionsOpen : undefined"
           @click="emit('toggle-actions', lesson.id)"
         >
@@ -94,7 +101,8 @@ function optionLabel(option: AttendanceRequestOption): string {
           :class="`attendance-status-badge attendance-status-badge--${statusTone(lesson.status)}`"
           role="img"
           :aria-label="`Статус: ${lessonStatusLabel(lesson.status)}`"
-        >{{ statusSymbol(lesson.status) }}</span>
+          >{{ statusSymbol(lesson.status) }}</span
+        >
       </header>
       <div class="attendance-lesson-row__metadata">
         <span>
@@ -102,7 +110,7 @@ function optionLabel(option: AttendanceRequestOption): string {
             :src="roomIcon"
             alt=""
             aria-hidden="true"
-          >
+          />
           {{ lesson.schedule.room ?? 'Аудитория уточняется' }}
         </span>
         <span>
@@ -110,7 +118,7 @@ function optionLabel(option: AttendanceRequestOption): string {
             :src="lessonTypeIcon"
             alt=""
             aria-hidden="true"
-          >
+          />
           {{ lessonTypeLabel(lesson.type) }}
         </span>
       </div>

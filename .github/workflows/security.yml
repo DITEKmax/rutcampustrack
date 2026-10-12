@@ -19,7 +19,7 @@ on:
 
 permissions:
   contents: read
-  security-events: write  # for uploading SARIF results to GitHub Security tab
+  security-events: write # for uploading SARIF results to GitHub Security tab
 
 # Owner 2026-10-11: web-panel is deferred from the current release scope.
 # Scan the accepted backend, PWA/TMA and bot; web-panel security debt remains
@@ -92,7 +92,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0  # full history for gitleaks protect
+          fetch-depth: 0 # full history for gitleaks protect
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2 — MED-09 SHA-pin

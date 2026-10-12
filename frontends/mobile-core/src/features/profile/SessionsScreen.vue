@@ -1,57 +1,75 @@
 <script setup lang="ts">
-import type { ProfileRequestError, ProfileResolvedTheme, ProfileSessionSummary } from './profile-types'
-import { formatProfileInstant, truthfulMetadata } from './profile-types'
-import sessionsPrevious from './assets/sessions-previous.svg'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import './profile-screen.pcss'
+import type {
+  ProfileRequestError,
+  ProfileResolvedTheme,
+  ProfileSessionSummary,
+} from './profile-types';
+import { formatProfileInstant, truthfulMetadata } from './profile-types';
+import sessionsPrevious from './assets/sessions-previous.svg';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  sessions: readonly ProfileSessionSummary[]
-  loading?: boolean
-  error?: ProfileRequestError | null
-  terminatingSessionId?: string | null
-  terminationError?: ProfileRequestError | null
-  onTerminateSession?: ((sessionId: string) => void | Promise<void>) | undefined
-  busy?: boolean
-  offline?: boolean
-  onBack?: (() => void | Promise<void>) | undefined
-  onRetry?: (() => void | Promise<void>) | undefined
-  onLogoutAll?: (() => void | Promise<void>) | undefined
-  theme?: ProfileResolvedTheme
-}>(), {
-  loading: false,
-  error: null,
-  terminatingSessionId: null,
-  terminationError: null,
-  onTerminateSession: undefined,
-  busy: false,
-  offline: false,
-  onBack: undefined,
-  onRetry: undefined,
-  onLogoutAll: undefined,
-  theme: 'dark',
-})
+const props = withDefaults(
+  defineProps<{
+    sessions: readonly ProfileSessionSummary[];
+    loading?: boolean;
+    error?: ProfileRequestError | null;
+    terminatingSessionId?: string | null;
+    terminationError?: ProfileRequestError | null;
+    onTerminateSession?: ((sessionId: string) => void | Promise<void>) | undefined;
+    busy?: boolean;
+    offline?: boolean;
+    onBack?: (() => void | Promise<void>) | undefined;
+    onRetry?: (() => void | Promise<void>) | undefined;
+    onLogoutAll?: (() => void | Promise<void>) | undefined;
+    theme?: ProfileResolvedTheme;
+  }>(),
+  {
+    loading: false,
+    error: null,
+    terminatingSessionId: null,
+    terminationError: null,
+    onTerminateSession: undefined,
+    busy: false,
+    offline: false,
+    onBack: undefined,
+    onRetry: undefined,
+    onLogoutAll: undefined,
+    theme: 'dark',
+  },
+);
 
 function authMethodLabel(method: ProfileSessionSummary['authMethod']): string | null {
-  if (method === 'PASSWORD') return 'пароль'
-  if (method === 'OTP') return 'одноразовый код'
-  if (method === 'TMA') return 'Telegram'
-  return null
+  if (method === 'PASSWORD') return 'пароль';
+  if (method === 'OTP') return 'одноразовый код';
+  if (method === 'TMA') return 'Telegram';
+  return null;
 }
 
 function title(session: ProfileSessionSummary): string {
-  return session.clientLabel?.trim() || 'Сеанс'
+  return session.clientLabel?.trim() || 'Сеанс';
 }
 
 function metadata(session: ProfileSessionSummary): string {
-  const method = authMethodLabel(session.authMethod)
-  const lastSeen = `Последняя активность: ${formatProfileInstant(session.lastSeenAt)}`
-  return truthfulMetadata(session.locationLabel, method, lastSeen) ?? lastSeen
+  const method = authMethodLabel(session.authMethod);
+  const lastSeen = `Последняя активность: ${formatProfileInstant(session.lastSeenAt)}`;
+  return truthfulMetadata(session.locationLabel, method, lastSeen) ?? lastSeen;
 }
 
 async function terminate(sessionId: string): Promise<void> {
-  if (props.offline || props.loading || props.busy || props.terminatingSessionId !== null || !props.onTerminateSession) return
-  try { await props.onTerminateSession(sessionId) } catch { /* The account owner publishes terminationError and preserves the loaded list. */ }
+  if (
+    props.offline ||
+    props.loading ||
+    props.busy ||
+    props.terminatingSessionId !== null ||
+    !props.onTerminateSession
+  )
+    return;
+  try {
+    await props.onTerminateSession(sessionId);
+  } catch {
+    /* The account owner publishes terminationError and preserves the loaded list. */
+  }
 }
 </script>
 
@@ -73,7 +91,7 @@ async function terminate(sessionId: string): Promise<void> {
             :src="sessionsPrevious"
             alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-sessions-title"
@@ -145,7 +163,8 @@ async function terminate(sessionId: string): Promise<void> {
             <span
               v-if="session.current"
               class="profile-session-card__current"
-            >Это устройство</span>
+              >Это устройство</span
+            >
           </div>
           <p class="profile-session-card__meta">
             {{ metadata(session) }}
@@ -153,23 +172,39 @@ async function terminate(sessionId: string): Promise<void> {
           <button
             class="profile-session-terminate"
             type="button"
-            :disabled="busy || loading || offline || terminatingSessionId !== null || !onTerminateSession"
+            :disabled="
+              busy || loading || offline || terminatingSessionId !== null || !onTerminateSession
+            "
             :aria-busy="terminatingSessionId === session.sessionId"
             @click="terminate(session.sessionId)"
           >
-            {{ terminatingSessionId === session.sessionId ? 'Завершаем…' : session.current ? 'Завершить текущий сеанс' : 'Завершить сеанс' }}
+            {{
+              terminatingSessionId === session.sessionId
+                ? 'Завершаем…'
+                : session.current
+                  ? 'Завершить текущий сеанс'
+                  : 'Завершить сеанс'
+            }}
           </button>
         </li>
       </ul>
 
-
       <button
         class="profile-danger-button"
         type="button"
-        :disabled="busy || loading || offline || terminatingSessionId !== null || sessions.length === 0 || !onLogoutAll"
+        :disabled="
+          busy ||
+          loading ||
+          offline ||
+          terminatingSessionId !== null ||
+          sessions.length === 0 ||
+          !onLogoutAll
+        "
         @click="onLogoutAll?.()"
       >
-        {{ busy && terminatingSessionId === null ? 'Завершаем сеансы…' : 'Выйти на всех устройствах' }}
+        {{
+          busy && terminatingSessionId === null ? 'Завершаем сеансы…' : 'Выйти на всех устройствах'
+        }}
       </button>
     </div>
   </main>

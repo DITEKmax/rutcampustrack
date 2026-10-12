@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AdminManagedRole } from './admin-users-client'
-defineProps<{ role: AdminManagedRole }>()
+import type { AdminManagedRole } from './admin-users-client';
+defineProps<{ role: AdminManagedRole }>();
 </script>
 
 <template>

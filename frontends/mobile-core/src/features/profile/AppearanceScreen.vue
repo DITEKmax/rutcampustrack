@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import type { ProfileResolvedTheme, ProfileTheme } from './profile-types'
-import appearancePrevious from './assets/appearance-previous.svg'
-import './profile-screen.pcss'
+import type { ProfileResolvedTheme, ProfileTheme } from './profile-types';
+import appearancePrevious from './assets/appearance-previous.svg';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  theme: ProfileTheme
-  resolvedTheme?: ProfileResolvedTheme
-  onBack?: (() => void | Promise<void>) | undefined
-  onThemeChange?: ((theme: ProfileTheme) => void | Promise<void>) | undefined
-}>(), {
-  resolvedTheme: 'dark',
-  onBack: undefined,
-  onThemeChange: undefined,
-})
+const props = withDefaults(
+  defineProps<{
+    theme: ProfileTheme;
+    resolvedTheme?: ProfileResolvedTheme;
+    onBack?: (() => void | Promise<void>) | undefined;
+    onThemeChange?: ((theme: ProfileTheme) => void | Promise<void>) | undefined;
+  }>(),
+  {
+    resolvedTheme: 'dark',
+    onBack: undefined,
+    onThemeChange: undefined,
+  },
+);
 
 const options: readonly { value: ProfileTheme; label: string }[] = [
   { value: 'light', label: 'Светлая' },
   { value: 'dark', label: 'Тёмная' },
   { value: 'system', label: 'Как в системе' },
-]
+];
 
 function chooseTheme(theme: ProfileTheme): void {
-  void props.onThemeChange?.(theme)
+  void props.onThemeChange?.(theme);
 }
 </script>
 
@@ -43,7 +46,7 @@ function chooseTheme(theme: ProfileTheme): void {
             :src="appearancePrevious"
             alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-appearance-title"
@@ -66,7 +69,7 @@ function chooseTheme(theme: ProfileTheme): void {
             :value="option.value"
             :checked="theme === option.value"
             @change="chooseTheme(option.value)"
-          >
+          />
           <span>{{ option.label }}</span>
         </label>
       </fieldset>

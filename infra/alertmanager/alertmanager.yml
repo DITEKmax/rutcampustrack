@@ -30,9 +30,9 @@ time_intervals:
 route:
   receiver: 'notification-webhook'
   group_by: ['alertname', 'service']
-  group_wait: 30s       # accumulate related alerts в одну notification
-  group_interval: 5m    # between group notifications same group
-  repeat_interval: 3h   # повторное уведомление если alert продолжается
+  group_wait: 30s # accumulate related alerts в одну notification
+  group_interval: 5m # between group notifications same group
+  repeat_interval: 3h # повторное уведомление если alert продолжается
   routes:
     # Critical — идут всегда, включая тихий час. Мышление простое:
     # если сервис лёг ночью, лучше разбудить админа, чем ждать утра.
@@ -54,7 +54,7 @@ receivers:
     webhook_configs:
       - url: 'http://notification-web:9094/internal/alert'
         send_resolved: true
-        max_alerts: 0  # без лимита в одном POST payload'е
+        max_alerts: 0 # без лимита в одном POST payload'е
         http_config:
           # Internal secret для защиты endpoint'а (M06 заменит на mTLS).
           # Alertmanager добавляет header Authorization: Bearer <token>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { computed, nextTick, ref, watch } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import {
   formatDecisionDate,
   formatLessonDate,
@@ -11,87 +11,112 @@ import {
   requestStatusLabel,
   requestStatusTone,
   requestTime,
-} from './state'
-import type { RequestAttachment, RequestAttachmentViewState, RequestDetail, RequestLesson } from './types'
+} from './state';
+import type {
+  RequestAttachment,
+  RequestAttachmentViewState,
+  RequestDetail,
+  RequestLesson,
+} from './types';
 
-const props = withDefaults(defineProps<{
-  detail: RequestDetail
-  offline: boolean
-  cancelling?: boolean
-  attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined
-  focusTarget?: boolean
-}>(), {
-  cancelling: false,
-  attachmentStates: undefined,
-  focusTarget: false,
-})
+const props = withDefaults(
+  defineProps<{
+    detail: RequestDetail;
+    offline: boolean;
+    cancelling?: boolean;
+    attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined;
+    focusTarget?: boolean;
+  }>(),
+  {
+    cancelling: false,
+    attachmentStates: undefined,
+    focusTarget: false,
+  },
+);
 
 const emit = defineEmits<{
-  cancel: [id: string]
-  openAttachment: [value: { requestId: string; attachment: RequestAttachment }]
-}>()
+  cancel: [id: string];
+  openAttachment: [value: { requestId: string; attachment: RequestAttachment }];
+}>();
 
-const summary = computed(() => props.detail.summary)
-const lessons = computed(() => props.detail.decisionSelection?.includedLessons ?? summary.value.lessons ?? [])
-const originalLessons = computed(() => summary.value.lessons ?? [])
+const summary = computed(() => props.detail.summary);
+const lessons = computed(
+  () => props.detail.decisionSelection?.includedLessons ?? summary.value.lessons ?? [],
+);
+const originalLessons = computed(() => summary.value.lessons ?? []);
 const originalDiffers = computed(() => {
-  if (!props.detail.decisionSelection) return false
-  const projection = (items: readonly RequestLesson[]) => items.map((lesson) => [lesson.id, lesson.date, lesson.startsAt, lesson.endsAt])
-  return JSON.stringify(projection(originalLessons.value)) !== JSON.stringify(projection([...lessons.value, ...props.detail.decisionSelection.excludedLessons]))
-})
-const attachments = computed(() => props.detail.attachments ?? [])
-const showCancel = computed(() => summary.value.canCancel === true)
-const detailUnavailable = computed(() => props.detail.detailState !== undefined && props.detail.detailState !== 'ready')
-const statusTone = computed(() => requestStatusTone(summary.value.status))
-const lessonsExpanded = ref(true)
-const lessonsRegionId = computed(() => 'request-lessons-' + summary.value.id)
-const titleElement = ref<HTMLHeadingElement | null>(null)
-const decision = computed(() => props.detail.decision ?? null)
-const decisionComment = computed(() => props.detail.decision?.comment?.trim() || null)
+  if (!props.detail.decisionSelection) return false;
+  const projection = (items: readonly RequestLesson[]) =>
+    items.map((lesson) => [lesson.id, lesson.date, lesson.startsAt, lesson.endsAt]);
+  return (
+    JSON.stringify(projection(originalLessons.value)) !==
+    JSON.stringify(
+      projection([...lessons.value, ...props.detail.decisionSelection.excludedLessons]),
+    )
+  );
+});
+const attachments = computed(() => props.detail.attachments ?? []);
+const showCancel = computed(() => summary.value.canCancel === true);
+const detailUnavailable = computed(
+  () => props.detail.detailState !== undefined && props.detail.detailState !== 'ready',
+);
+const statusTone = computed(() => requestStatusTone(summary.value.status));
+const lessonsExpanded = ref(true);
+const lessonsRegionId = computed(() => 'request-lessons-' + summary.value.id);
+const titleElement = ref<HTMLHeadingElement | null>(null);
+const decision = computed(() => props.detail.decision ?? null);
+const decisionComment = computed(() => props.detail.decision?.comment?.trim() || null);
 const decisionDate = computed(() => {
-  const value = decision.value?.decidedAt?.trim()
-  return value || null
-})
+  const value = decision.value?.decidedAt?.trim();
+  return value || null;
+});
 const decisionLabel = computed(() => {
-  if (!decision.value) return null
+  if (!decision.value) return null;
 
-  const parsedDate = decisionDate.value ? new Date(decisionDate.value) : null
-  const dateLabel = parsedDate && !Number.isNaN(parsedDate.getTime())
-    ? formatDecisionDate(decisionDate.value)
-    : null
-  const values = [dateLabel, decisionComment.value].filter((value): value is string => Boolean(value))
-  return values.length > 0 ? values.join(' · ') : null
-})
+  const parsedDate = decisionDate.value ? new Date(decisionDate.value) : null;
+  const dateLabel =
+    parsedDate && !Number.isNaN(parsedDate.getTime())
+      ? formatDecisionDate(decisionDate.value)
+      : null;
+  const values = [dateLabel, decisionComment.value].filter((value): value is string =>
+    Boolean(value),
+  );
+  return values.length > 0 ? values.join(' · ') : null;
+});
 
 function subjectName(lesson: RequestLesson): string {
-  return lesson.subjectName || 'Предмет не указан'
+  return lesson.subjectName || 'Предмет не указан';
 }
 
 function attachmentName(attachment: RequestAttachment): string {
-  return attachment.name || 'Вложение без названия'
+  return attachment.name || 'Вложение без названия';
 }
 
 function attachmentIsExpired(attachment: RequestAttachment): boolean {
-  return attachment.state === 'EXPIRED' || Boolean(attachment.expiredAt)
+  return attachment.state === 'EXPIRED' || Boolean(attachment.expiredAt);
 }
 
 function attachmentStateKey(attachment: RequestAttachment): string {
-  return summary.value.id + '\u0000' + attachment.id
+  return summary.value.id + '\u0000' + attachment.id;
 }
 
 function attachmentActionState(attachment: RequestAttachment): RequestAttachmentViewState | null {
-  return props.attachmentStates?.[attachmentStateKey(attachment)] ?? null
+  return props.attachmentStates?.[attachmentStateKey(attachment)] ?? null;
 }
 
 function attachmentErrorId(attachment: RequestAttachment): string {
-  return 'request-attachment-error-' + summary.value.id + '-' + attachment.id
+  return 'request-attachment-error-' + summary.value.id + '-' + attachment.id;
 }
 
-watch(() => props.focusTarget, async (focus) => {
-  if (!focus) return
-  await nextTick()
-  titleElement.value?.focus()
-}, { immediate: true, flush: 'post' })
+watch(
+  () => props.focusTarget,
+  async (focus) => {
+    if (!focus) return;
+    await nextTick();
+    titleElement.value?.focus();
+  },
+  { immediate: true, flush: 'post' },
+);
 </script>
 
 <template>
@@ -146,7 +171,13 @@ watch(() => props.focusTarget, async (focus) => {
       v-if="detail.decisionSelection"
       class="request-card__reason"
     >
-      {{ summary.status === 'APPROVED' ? 'Одобренные пары' : summary.status === 'REJECTED' ? 'Пары в отклонённой заявке' : 'Пары в решении' }}
+      {{
+        summary.status === 'APPROVED'
+          ? 'Одобренные пары'
+          : summary.status === 'REJECTED'
+            ? 'Пары в отклонённой заявке'
+            : 'Пары в решении'
+      }}
     </p>
 
     <ul
@@ -184,9 +215,7 @@ watch(() => props.focusTarget, async (focus) => {
     </p>
 
     <template v-if="detail.decisionSelection && detail.decisionSelection.excludedLessons.length">
-      <p class="request-card__reason">
-        Исключённые пары — одобрение не изменило их отметки
-      </p>
+      <p class="request-card__reason"> Исключённые пары — одобрение не изменило их отметки </p>
       <ul
         class="request-card__lessons"
         aria-label="Исключённые пары"
@@ -196,7 +225,9 @@ watch(() => props.focusTarget, async (focus) => {
           :key="lesson.occurrenceId ?? lesson.id"
           class="request-lesson-card"
         >
-          <h3>{{ subjectName(lesson) }}</h3><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
+          <h3>{{ subjectName(lesson) }}</h3
+          ><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p
+          ><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
         </li>
       </ul>
     </template>
@@ -214,7 +245,9 @@ watch(() => props.focusTarget, async (focus) => {
           :key="lesson.id"
           class="request-lesson-card"
         >
-          <h3>{{ subjectName(lesson) }}</h3><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
+          <h3>{{ subjectName(lesson) }}</h3
+          ><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p
+          ><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
         </li>
       </ul>
     </details>
@@ -248,11 +281,13 @@ watch(() => props.focusTarget, async (focus) => {
         <span
           v-if="attachmentIsExpired(attachment)"
           class="request-card__attachment-state"
-        >Срок истёк</span>
+          >Срок истёк</span
+        >
         <span
           v-else-if="attachment.state !== 'ACTIVE'"
           class="request-card__attachment-state"
-        >Недоступно</span>
+          >Недоступно</span
+        >
         <span
           v-else
           class="request-card__attachment-actions"
@@ -261,12 +296,28 @@ watch(() => props.focusTarget, async (focus) => {
             class="request-card__attachment-action"
             type="button"
             :disabled="offline || attachmentActionState(attachment)?.status === 'pending'"
-            :aria-busy="attachmentActionState(attachment)?.status === 'pending' ? 'true' : undefined"
-            :aria-describedby="attachmentActionState(attachment)?.status === 'error' ? attachmentErrorId(attachment) : undefined"
-            :aria-label="(attachmentActionState(attachment)?.status === 'error' ? 'Повторить открытие ' : 'Открыть ') + attachmentName(attachment)"
+            :aria-busy="
+              attachmentActionState(attachment)?.status === 'pending' ? 'true' : undefined
+            "
+            :aria-describedby="
+              attachmentActionState(attachment)?.status === 'error'
+                ? attachmentErrorId(attachment)
+                : undefined
+            "
+            :aria-label="
+              (attachmentActionState(attachment)?.status === 'error'
+                ? 'Повторить открытие '
+                : 'Открыть ') + attachmentName(attachment)
+            "
             @click="emit('openAttachment', { requestId: summary.id, attachment })"
           >
-            {{ attachmentActionState(attachment)?.status === 'pending' ? 'Открываем…' : attachmentActionState(attachment)?.status === 'error' ? 'Повторить' : 'Открыть' }}
+            {{
+              attachmentActionState(attachment)?.status === 'pending'
+                ? 'Открываем…'
+                : attachmentActionState(attachment)?.status === 'error'
+                  ? 'Повторить'
+                  : 'Открыть'
+            }}
           </button>
           <span
             v-if="attachmentActionState(attachment)?.status === 'error'"

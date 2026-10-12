@@ -1,7 +1,10 @@
 import type { MobileHostAdapter, MobileHostAction, StudentCheckinCommand } from '@rct/mobile-core'
 import type { TelegramDownloadFileParams } from './report-download-adapter'
 
-interface TelegramLocation { latitude: number; longitude: number }
+interface TelegramLocation {
+  latitude: number
+  longitude: number
+}
 
 interface TelegramButton {
   show?: () => void
@@ -28,10 +31,17 @@ interface TelegramWebApp {
   offEvent?: (event: string, callback: () => void) => void
   openLink?: (url: string) => void
   downloadFile?: (params: TelegramDownloadFileParams, callback: (accepted: boolean) => void) => void
-  LocationManager?: { init(callback: () => void): void; getLocation(callback: (location: TelegramLocation | null) => void): void }
+  LocationManager?: {
+    init(callback: () => void): void
+    getLocation(callback: (location: TelegramLocation | null) => void): void
+  }
 }
 
-declare global { interface Window { Telegram?: { WebApp: TelegramWebApp } } }
+declare global {
+  interface Window {
+    Telegram?: { WebApp: TelegramWebApp }
+  }
+}
 
 export function installFixtureTelegramHost(): void {
   if (window.Telegram?.WebApp?.initData) return
@@ -59,26 +69,28 @@ export function installFixtureTelegramHost(): void {
     },
     offClick: (callback) => listeners.get('mainButtonClicked')?.delete(callback),
   }
-  window.Telegram = { WebApp: {
-    initData: 'fixture-signed-init-data',
-    ready: () => undefined,
-    expand: () => undefined,
-    viewportHeight: window.innerHeight,
-    viewportStableHeight: window.innerHeight,
-    safeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
-    BackButton: backButton,
-    MainButton: mainButton,
-    onEvent: (event, callback) => {
-      const entries = listeners.get(event) ?? new Set<() => void>()
-      entries.add(callback)
-      listeners.set(event, entries)
+  window.Telegram = {
+    WebApp: {
+      initData: 'fixture-signed-init-data',
+      ready: () => undefined,
+      expand: () => undefined,
+      viewportHeight: window.innerHeight,
+      viewportStableHeight: window.innerHeight,
+      safeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
+      BackButton: backButton,
+      MainButton: mainButton,
+      onEvent: (event, callback) => {
+        const entries = listeners.get(event) ?? new Set<() => void>()
+        entries.add(callback)
+        listeners.set(event, entries)
+      },
+      offEvent: (event, callback) => listeners.get(event)?.delete(callback),
+      LocationManager: {
+        init: (callback) => callback(),
+        getLocation: (callback) => callback({ latitude: 55.7539, longitude: 37.6208 }),
+      },
     },
-    offEvent: (event, callback) => listeners.get(event)?.delete(callback),
-    LocationManager: {
-      init: (callback) => callback(),
-      getLocation: (callback) => callback({ latitude: 55.7539, longitude: 37.6208 }),
-    },
-  } }
+  }
 }
 
 export class TelegramHost implements MobileHostAdapter {
@@ -101,7 +113,11 @@ export class TelegramHost implements MobileHostAdapter {
     if (typeof document !== 'undefined') {
       const stableHeight = this.app.viewportStableHeight ?? this.app.viewportHeight
       document.documentElement.style.setProperty('--rct-host-viewport', `${stableHeight}px`)
-      if (this.app.safeAreaInset) document.documentElement.style.setProperty('--rct-host-safe-bottom', `${this.app.safeAreaInset.bottom}px`)
+      if (this.app.safeAreaInset)
+        document.documentElement.style.setProperty(
+          '--rct-host-safe-bottom',
+          `${this.app.safeAreaInset.bottom}px`,
+        )
     }
     return this.app.initData
   }
@@ -163,7 +179,8 @@ export class TelegramHost implements MobileHostAdapter {
   }
 
   private applyBackVisibility(): void {
-    if (this.backSuspensions > 0 || (!this.backClaim && !this.backRequestedVisible)) this.app?.BackButton?.hide?.()
+    if (this.backSuspensions > 0 || (!this.backClaim && !this.backRequestedVisible))
+      this.app?.BackButton?.hide?.()
     else this.app?.BackButton?.show?.()
   }
 
@@ -194,7 +211,9 @@ export class TelegramHost implements MobileHostAdapter {
     button.setText?.(action.label)
     if (action.disabled) button.disable?.()
     else button.enable?.()
-    const handler = (): void => { void action.onInvoke() }
+    const handler = (): void => {
+      void action.onInvoke()
+    }
     this.primaryActionHandler = handler
     button.onClick?.(handler)
     button.show?.()
@@ -229,11 +248,21 @@ export class TelegramHost implements MobileHostAdapter {
         resolve({ geo: { kind: 'UNAVAILABLE', reason: 'POSITION_UNAVAILABLE' } })
         return
       }
-      this.app.LocationManager.init(() => this.app?.LocationManager?.getLocation((location) => {
-        resolve(location
-          ? { geo: { kind: 'COORDINATES', latitude: location.latitude, longitude: location.longitude } }
-          : { geo: { kind: 'UNAVAILABLE', reason: 'POSITION_UNAVAILABLE' } })
-      }))
+      this.app.LocationManager.init(() =>
+        this.app?.LocationManager?.getLocation((location) => {
+          resolve(
+            location
+              ? {
+                  geo: {
+                    kind: 'COORDINATES',
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                  },
+                }
+              : { geo: { kind: 'UNAVAILABLE', reason: 'POSITION_UNAVAILABLE' } },
+          )
+        }),
+      )
     })
   }
 }

@@ -1,4 +1,9 @@
-import type { HeadmanHomeworkCreateInput, HeadmanHomeworkPublicationReceipt, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
+import type {
+  HeadmanHomeworkCreateInput,
+  HeadmanHomeworkPublicationReceipt,
+  HeadmanHomeworkUpdateInput,
+  HomeworkBindingMode,
+} from './headman-homework-client'
 
 export interface AssistantHomeworkDraftContext {
   readonly userId: number
@@ -10,7 +15,9 @@ export interface AssistantHomeworkDraftContext {
   readonly subjectId: number
   readonly lessonNumber: number | null
   readonly bindingMode: HomeworkBindingMode
-  readonly lessonType?: import('../headman-subjects/headman-subjects-client').HeadmanSubjectType | null
+  readonly lessonType?:
+    | import('../headman-subjects/headman-subjects-client').HeadmanSubjectType
+    | null
   readonly selectedOccurrenceId?: string
   readonly selectedOccurrenceRevision?: string
 }
@@ -44,7 +51,12 @@ export function createAssistantHomeworkCreateIntent(
     lessonNumber: frozenContext.lessonNumber,
     bindingMode: frozenContext.bindingMode,
     ...(frozenContext.lessonType === undefined ? {} : { lessonType: frozenContext.lessonType }),
-    ...(frozenContext.selectedOccurrenceId === undefined ? {} : { selectedOccurrenceId: frozenContext.selectedOccurrenceId, selectedOccurrenceRevision: frozenContext.selectedOccurrenceRevision }),
+    ...(frozenContext.selectedOccurrenceId === undefined
+      ? {}
+      : {
+          selectedOccurrenceId: frozenContext.selectedOccurrenceId,
+          selectedOccurrenceRevision: frozenContext.selectedOccurrenceRevision,
+        }),
     requestKey,
   })
   return Object.freeze({ context: frozenContext, input, receipt: null })
@@ -62,19 +74,21 @@ export function sameAssistantHomeworkDraftContext(
   left: AssistantHomeworkDraftContext,
   right: AssistantHomeworkDraftContext | null,
 ): boolean {
-  return right !== null
-    && left.userId === right.userId
-    && left.groupId === right.groupId
-    && left.semesterId === right.semesterId
-    && left.selectedDate === right.selectedDate
-    && left.lessonId === right.lessonId
-    && left.lessonDate === right.lessonDate
-    && left.subjectId === right.subjectId
-    && left.lessonNumber === right.lessonNumber
-    && left.bindingMode === right.bindingMode
-    && left.lessonType === right.lessonType
-    && left.selectedOccurrenceId === right.selectedOccurrenceId
-    && left.selectedOccurrenceRevision === right.selectedOccurrenceRevision
+  return (
+    right !== null &&
+    left.userId === right.userId &&
+    left.groupId === right.groupId &&
+    left.semesterId === right.semesterId &&
+    left.selectedDate === right.selectedDate &&
+    left.lessonId === right.lessonId &&
+    left.lessonDate === right.lessonDate &&
+    left.subjectId === right.subjectId &&
+    left.lessonNumber === right.lessonNumber &&
+    left.bindingMode === right.bindingMode &&
+    left.lessonType === right.lessonType &&
+    left.selectedOccurrenceId === right.selectedOccurrenceId &&
+    left.selectedOccurrenceRevision === right.selectedOccurrenceRevision
+  )
 }
 
 export function isDefinitiveHomeworkCreateRejection(status: number | null): boolean {
@@ -117,8 +131,10 @@ export function reuseOrCreateAssistantHomeworkEditIntent(
   requestKey: () => string,
 ): AssistantHomeworkEditIntent | null {
   if (existing) {
-    return existing.homeworkId === homeworkId && sameAssistantHomeworkDraftContext(existing.context, context)
-      ? existing : null
+    return existing.homeworkId === homeworkId &&
+      sameAssistantHomeworkDraftContext(existing.context, context)
+      ? existing
+      : null
   }
   return Object.freeze({
     context: Object.freeze({ ...context }),

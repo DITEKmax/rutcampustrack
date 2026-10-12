@@ -54,7 +54,9 @@ export function isHomeworkDate(value: string): boolean {
   const [year, month, day] = value.split('-').map(Number)
   if (!year || !month || !day) return false
   const date = new Date(Date.UTC(year, month - 1, day))
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  )
 }
 
 export function compareHomeworkDates(left: string, right: string): number {
@@ -94,7 +96,11 @@ function itemOrder(left: StudentHomeworkItem, right: StudentHomeworkItem): numbe
   if (dateOrder !== 0) return dateOrder
   const completionOrder = Number(left.completed) - Number(right.completed)
   if (completionOrder !== 0) return completionOrder
-  if (left.lessonNumber !== right.lessonNumber) return (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) - (right.lessonNumber ?? Number.MAX_SAFE_INTEGER)
+  if (left.lessonNumber !== right.lessonNumber)
+    return (
+      (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) -
+      (right.lessonNumber ?? Number.MAX_SAFE_INTEGER)
+    )
   const subjectOrder = left.subject.name.localeCompare(right.subject.name, 'ru')
   if (subjectOrder !== 0) return subjectOrder
   return left.id.localeCompare(right.id)
@@ -115,8 +121,12 @@ export function dedupeHomeworkItems(items: readonly StudentHomeworkItem[]): Stud
 }
 
 export function isCompletedToday(item: StudentHomeworkItem, serverNow: string): boolean {
-  return item.completed && item.completedAt !== null && moscowDate(item.completedAt) !== null
-    && moscowDate(item.completedAt) === moscowDate(serverNow)
+  return (
+    item.completed &&
+    item.completedAt !== null &&
+    moscowDate(item.completedAt) !== null &&
+    moscowDate(item.completedAt) === moscowDate(serverNow)
+  )
 }
 
 /**
@@ -125,8 +135,12 @@ export function isCompletedToday(item: StudentHomeworkItem, serverNow: string): 
  */
 export function groupHomework(feed: StudentHomework): HomeworkGroup[] {
   const unique = dedupeHomeworkItems(feed.items)
-  const completedToday = unique.filter((item) => isCompletedToday(item, feed.serverNow)).sort(itemOrder)
-  const chronological = unique.filter((item) => !isCompletedToday(item, feed.serverNow)).sort(itemOrder)
+  const completedToday = unique
+    .filter((item) => isCompletedToday(item, feed.serverNow))
+    .sort(itemOrder)
+  const chronological = unique
+    .filter((item) => !isCompletedToday(item, feed.serverNow))
+    .sort(itemOrder)
   const groups: HomeworkGroup[] = []
 
   if (completedToday.length > 0) {
@@ -184,7 +198,9 @@ export function homeworkRangeKey(range: HomeworkDateRange | null): string {
   return range ? `${range.from}:${range.to}` : 'current'
 }
 
-export function normalizeHomeworkRange(range: HomeworkDateRange | null | undefined): HomeworkDateRange | null {
+export function normalizeHomeworkRange(
+  range: HomeworkDateRange | null | undefined,
+): HomeworkDateRange | null {
   if (!range || !isHomeworkDate(range.from) || !isHomeworkDate(range.to)) return null
   if (compareHomeworkDates(range.from, range.to) > 0) return null
   return { from: range.from, to: range.to }
@@ -195,7 +211,10 @@ export function normalizeHomeworkRange(range: HomeworkDateRange | null | undefin
  * semester start is always the lower bound, so repeated navigation cannot
  * escape the server-authorized semester.
  */
-export function previousHomeworkRange(feed: StudentHomework | null, pageSize = 7): HomeworkDateRange | null {
+export function previousHomeworkRange(
+  feed: StudentHomework | null,
+  pageSize = 7,
+): HomeworkDateRange | null {
   if (!feed || !isHomeworkDate(feed.from) || !isHomeworkDate(feed.semester.dateFrom)) return null
   const end = addHomeworkDays(feed.from, -1)
   if (compareHomeworkDates(end, feed.semester.dateFrom) < 0) return null

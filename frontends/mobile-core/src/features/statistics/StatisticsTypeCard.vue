@@ -5,14 +5,14 @@ import {
   statisticsTypeLabel,
   type StatisticsHistoryStatus,
   type StatisticsTypeCardData,
-} from './statistics-view-model'
+} from './statistics-view-model';
 
 defineProps<{
-  card: StatisticsTypeCardData
-}>()
+  card: StatisticsTypeCardData;
+}>();
 
 function historyTone(status: StatisticsHistoryStatus): string {
-  return status.toLowerCase().replace('_', '-')
+  return status.toLowerCase().replace('_', '-');
 }
 </script>
 
@@ -31,11 +31,15 @@ function historyTone(status: StatisticsHistoryStatus): string {
     >
       <span class="statistics-type-card__metric statistics-type-card__metric--present">
         <i aria-hidden="true" />{{ displayPercent(card.metrics.present.percent) }}
-        <span class="statistics-visually-hidden"> присутствие, {{ card.metrics.present.count }}</span>
+        <span class="statistics-visually-hidden">
+          присутствие, {{ card.metrics.present.count }}</span
+        >
       </span>
       <span class="statistics-type-card__metric statistics-type-card__metric--excused">
         <i aria-hidden="true" />{{ displayPercent(card.metrics.excused.percent) }}
-        <span class="statistics-visually-hidden"> уважительная причина, {{ card.metrics.excused.count }}</span>
+        <span class="statistics-visually-hidden">
+          уважительная причина, {{ card.metrics.excused.count }}</span
+        >
       </span>
       <span class="statistics-type-card__metric statistics-type-card__metric--absent">
         <i aria-hidden="true" />{{ displayPercent(card.metrics.absent.percent) }}

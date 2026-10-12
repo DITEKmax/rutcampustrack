@@ -1,106 +1,124 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { TodayLesson } from '../../api/types'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import RequestLessonSummary from './RequestLessonSummary.vue'
-import RequestLessonSelector from './RequestLessonSelector.vue'
-import { budgetLabel, canRequestLesson } from './state'
+import { computed } from 'vue';
+import type { TodayLesson } from '../../api/types';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import RequestLessonSummary from './RequestLessonSummary.vue';
+import RequestLessonSelector from './RequestLessonSelector.vue';
+import { budgetLabel, canRequestLesson } from './state';
 import type {
   LateCheckinRequestPayload,
   RequestAccessState,
   RequestBudget,
   RequestLesson,
   RequestLessonOption,
-} from './types'
+} from './types';
 
-const props = withDefaults(defineProps<{
-  access: RequestAccessState
-  lessons: readonly RequestLessonOption[]
-  lessonId: string | null
-  budget: RequestBudget | null
-  lessonsLoading?: boolean
-  lessonsError?: string | null
-  offline?: boolean
-  readOnly?: boolean
-  submitting?: boolean
-  submitError?: string | null
-  disabled?: boolean
-  ambiguous?: boolean
-  todayLesson?: TodayLesson | null
-  selectedLesson?: RequestLesson | null
-  attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null
-  backLabel?: string
-  selectionComplete?: boolean
-}>(), {
-  lessonsLoading: false,
-  lessonsError: null,
-  offline: false,
-  readOnly: false,
-  submitting: false,
-  submitError: null,
-  disabled: false,
-  ambiguous: false,
-  todayLesson: null,
-  selectedLesson: null,
-  attendanceStatus: null,
-  backLabel: 'Вернуться назад',
-  selectionComplete: false,
-})
+const props = withDefaults(
+  defineProps<{
+    access: RequestAccessState;
+    lessons: readonly RequestLessonOption[];
+    lessonId: string | null;
+    budget: RequestBudget | null;
+    lessonsLoading?: boolean;
+    lessonsError?: string | null;
+    offline?: boolean;
+    readOnly?: boolean;
+    submitting?: boolean;
+    submitError?: string | null;
+    disabled?: boolean;
+    ambiguous?: boolean;
+    todayLesson?: TodayLesson | null;
+    selectedLesson?: RequestLesson | null;
+    attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null;
+    backLabel?: string;
+    selectionComplete?: boolean;
+  }>(),
+  {
+    lessonsLoading: false,
+    lessonsError: null,
+    offline: false,
+    readOnly: false,
+    submitting: false,
+    submitError: null,
+    disabled: false,
+    ambiguous: false,
+    todayLesson: null,
+    selectedLesson: null,
+    attendanceStatus: null,
+    backLabel: 'Вернуться назад',
+    selectionComplete: false,
+  },
+);
 
 const emit = defineEmits<{
-  back: []
-  editSelection: []
-  cancel: []
-  retryLessons: []
-  abandon: []
-  'update:lessonId': [lessonId: string | null]
-  submit: [payload: LateCheckinRequestPayload]
-}>()
+  back: [];
+  editSelection: [];
+  cancel: [];
+  retryLessons: [];
+  abandon: [];
+  'update:lessonId': [lessonId: string | null];
+  submit: [payload: LateCheckinRequestPayload];
+}>();
 
-const contextLesson = computed<RequestLesson | null>(() => props.todayLesson ? {
-  id: props.todayLesson.schedule.id,
-  subjectName: props.todayLesson.schedule.subject.name,
-  subjectType: props.todayLesson.schedule.subject.type,
-  date: props.todayLesson.schedule.date,
-  startsAt: props.todayLesson.schedule.startsAt,
-  endsAt: props.todayLesson.schedule.endsAt,
-  status: props.todayLesson.schedule.status,
-} : props.selectedLesson)
-const contextStatus = computed(() => props.todayLesson ? props.todayLesson.attendance?.status ?? null : props.attendanceStatus)
+const contextLesson = computed<RequestLesson | null>(() =>
+  props.todayLesson
+    ? {
+        id: props.todayLesson.schedule.id,
+        subjectName: props.todayLesson.schedule.subject.name,
+        subjectType: props.todayLesson.schedule.subject.type,
+        date: props.todayLesson.schedule.date,
+        startsAt: props.todayLesson.schedule.startsAt,
+        endsAt: props.todayLesson.schedule.endsAt,
+        status: props.todayLesson.schedule.status,
+      }
+    : props.selectedLesson,
+);
+const contextStatus = computed(() =>
+  props.todayLesson ? (props.todayLesson.attendance?.status ?? null) : props.attendanceStatus,
+);
 
-const selectedOption = computed(() => props.lessons.find((option) => option.lesson?.id === props.lessonId) ?? null)
-const retainedLessonUnavailable = computed(() => Boolean(props.lessonId) && !selectedOption.value)
+const selectedOption = computed(
+  () => props.lessons.find((option) => option.lesson?.id === props.lessonId) ?? null,
+);
+const retainedLessonUnavailable = computed(() => Boolean(props.lessonId) && !selectedOption.value);
 const budgetExhausted = computed(() => {
-  const remaining = props.budget?.remaining
-  return typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0
-})
-const selectedEligible = computed(() => canRequestLesson(selectedOption.value, 'LATE_CHECKIN'))
-const todaySelectionMatches = computed(() => !contextLesson.value || props.lessonId === contextLesson.value.id)
+  const remaining = props.budget?.remaining;
+  return typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0;
+});
+const selectedEligible = computed(() => canRequestLesson(selectedOption.value, 'LATE_CHECKIN'));
+const todaySelectionMatches = computed(
+  () => !contextLesson.value || props.lessonId === contextLesson.value.id,
+);
 const budgetLimitText = computed(() => {
-  const limit = props.budget?.limit
-  return typeof limit === 'number' && Number.isFinite(limit) ? 'Одна из ' + limit + ' попыток будет использована.' : 'При отправке будет использована одна попытка.'
-})
-const canSubmit = computed(() => props.access === 'allowed'
-  && !props.offline
-  && !props.disabled
-  && !props.readOnly
-  && !props.submitting
-  && !props.ambiguous
-  && !props.lessonsLoading
-  && !props.lessonsError
-  && Boolean(props.lessonId)
-  && selectedEligible.value
-  && todaySelectionMatches.value
-  && !budgetExhausted.value)
+  const limit = props.budget?.limit;
+  return typeof limit === 'number' && Number.isFinite(limit)
+    ? 'Одна из ' + limit + ' попыток будет использована.'
+    : 'При отправке будет использована одна попытка.';
+});
+const canSubmit = computed(
+  () =>
+    props.access === 'allowed' &&
+    !props.offline &&
+    !props.disabled &&
+    !props.readOnly &&
+    !props.submitting &&
+    !props.ambiguous &&
+    !props.lessonsLoading &&
+    !props.lessonsError &&
+    Boolean(props.lessonId) &&
+    selectedEligible.value &&
+    todaySelectionMatches.value &&
+    !budgetExhausted.value,
+);
 
 function updateLessonId(value: string[] | string | null): void {
-  emit('update:lessonId', typeof value === 'string' && value ? value : null)
+  emit('update:lessonId', typeof value === 'string' && value ? value : null);
 }
 
 function onSubmit(): void {
-  if (!canSubmit.value || !props.lessonId) return
-  emit('submit', { lessonId: props.lessonId })
+  if (!canSubmit.value || !props.lessonId) return;
+  emit('submit', { lessonId: props.lessonId });
 }
 </script>
 
@@ -118,9 +136,7 @@ function onSubmit(): void {
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="late-request-title">
-        Забыл отметиться
-      </h1>
+      <h1 id="late-request-title"> Забыл отметиться </h1>
     </header>
 
     <StudentWarningBlock
@@ -142,7 +158,11 @@ function onSubmit(): void {
       v-if="props.access !== 'allowed'"
       severity="error"
       :title="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
-      :message="props.access === 'forbidden' ? 'У тебя сейчас нет доступа к заявкам.' : 'Подать заявку можно только в активном семестре.'"
+      :message="
+        props.access === 'forbidden'
+          ? 'У тебя сейчас нет доступа к заявкам.'
+          : 'Подать заявку можно только в активном семестре.'
+      "
     />
 
     <form
@@ -175,11 +195,19 @@ function onSubmit(): void {
           :attendance-status="contextStatus"
         />
         <p
-          v-if="contextLesson && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches || !selectedEligible)"
+          v-if="
+            contextLesson &&
+            !props.lessonsLoading &&
+            !props.lessonsError &&
+            (!todaySelectionMatches || !selectedEligible)
+          "
           class="request-validation-hint"
           role="alert"
         >
-          {{ selectedOption?.unavailableReason || 'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.' }}
+          {{
+            selectedOption?.unavailableReason ||
+            'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.'
+          }}
         </p>
         <RequestLessonSelector
           v-if="!contextLesson && !props.selectionComplete && !props.lessonsLoading"
@@ -200,7 +228,11 @@ function onSubmit(): void {
         v-else-if="!contextLesson"
         class="request-validation-hint"
       >
-        {{ retainedLessonUnavailable ? 'Выбранная пара больше недоступна. Выбери доступную пару.' : 'Выбери пару, по которой нужно отправить запрос.' }}
+        {{
+          retainedLessonUnavailable
+            ? 'Выбранная пара больше недоступна. Выбери доступную пару.'
+            : 'Выбери пару, по которой нужно отправить запрос.'
+        }}
       </p>
 
       <p
@@ -229,9 +261,7 @@ function onSubmit(): void {
         class="request-confirmation-panel"
         aria-labelledby="late-confirmation-title"
       >
-        <h2 id="late-confirmation-title">
-          Отправить запрос?
-        </h2>
+        <h2 id="late-confirmation-title"> Отправить запрос? </h2>
         <p
           v-if="budgetExhausted"
           class="request-validation-hint"
@@ -279,4 +309,3 @@ function onSubmit(): void {
 
 <style src="./requests.pcss"></style>
 <style src="./requests-today.pcss"></style>
-

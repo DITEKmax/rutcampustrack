@@ -198,7 +198,9 @@ if (mode === 'inventory') {
     } else if (tool === 'sql') {
       assertVersion('pg_format', ['--version'], /\b5\.6\b/)
       for (const path of files) {
-        const formatted = run('pg_format', ['--spaces', '4', '--no-extra-line', path], { capture: true }).stdout
+        const formatted = run('pg_format', ['--spaces', '4', '--no-extra-line', path], {
+          capture: true,
+        }).stdout
         const original = readFileSync(resolve(root, path), 'utf8')
         if (original === formatted) continue
         if (!write) throw new Error(`SQL format differs: ${path}`)

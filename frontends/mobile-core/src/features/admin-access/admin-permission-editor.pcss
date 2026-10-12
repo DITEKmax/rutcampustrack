@@ -1,15 +1,82 @@
 @import '../../styles/tokens.pcss';
-.admin-permission-editor { display: grid; gap: var(--rct-space-4); }
-.admin-permission-editor fieldset { display: grid; gap: var(--rct-space-3); min-inline-size: 0; margin: 0; border: 0; border-radius: var(--rct-radius-xl); padding: var(--rct-space-4); background: var(--rct-color-surface-raised); }
-.admin-permission-editor legend { float: inline-start; inline-size: 100%; margin-block-end: var(--rct-space-3); padding: 0; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-caption); }
+.admin-permission-editor {
+  display: grid;
+  gap: var(--rct-space-4);
+}
+.admin-permission-editor fieldset {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+  margin: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+.admin-permission-editor legend {
+  float: inline-start;
+  inline-size: 100%;
+  margin-block-end: var(--rct-space-3);
+  padding: 0;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
 
-.admin-permission-editor .admin-permission-editor__mode { position: relative; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; padding: 0; border-radius: var(--rct-radius-full); }
-.admin-permission-editor .admin-permission-editor__mode-legend { position: absolute; float: none; inline-size: 0; block-size: 0; overflow: hidden; margin: 0; clip-path: inset(50%); white-space: nowrap; }
-.admin-permission-editor__mode label { position: relative; display: grid; gap: 0; cursor: pointer; }
-.admin-permission-editor__mode input { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; opacity: 0; cursor: inherit; }
-.admin-permission-editor__mode label > span { align-content: center; justify-items: center; min-block-size: var(--rct-control-min-touch); padding-inline: var(--rct-space-2); border-radius: var(--rct-radius-full); font-size: var(--rct-font-size-dense); text-align: center; }
-.admin-permission-editor__mode input:checked + span { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
-.admin-permission-editor__mode input:focus-visible + span { outline: var(--rct-focus-width) solid var(--rct-color-accent-now); outline-offset: var(--rct-focus-offset); }
-.admin-permission-editor__mode input:disabled + span { opacity: 0.6; }
+.admin-permission-editor .admin-permission-editor__mode {
+  position: relative;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  padding: 0;
+  border-radius: var(--rct-radius-full);
+}
+.admin-permission-editor .admin-permission-editor__mode-legend {
+  position: absolute;
+  float: none;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+  margin: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.admin-permission-editor__mode label {
+  position: relative;
+  display: grid;
+  gap: 0;
+  cursor: pointer;
+}
+.admin-permission-editor__mode input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.admin-permission-editor__mode label > span {
+  align-content: center;
+  justify-items: center;
+  min-block-size: var(--rct-control-min-touch);
+  padding-inline: var(--rct-space-2);
+  border-radius: var(--rct-radius-full);
+  font-size: var(--rct-font-size-dense);
+  text-align: center;
+}
+.admin-permission-editor__mode input:checked + span {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+.admin-permission-editor__mode input:focus-visible + span {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
+.admin-permission-editor__mode input:disabled + span {
+  opacity: 0.6;
+}
 
-.admin-permission-editor__note { color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-caption); line-height: var(--rct-leading-caption); }
+.admin-permission-editor__note {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: var(--rct-leading-caption);
+}

@@ -1,5 +1,8 @@
 import type { AdminAccessClient } from '../../mobile-core/src/features/admin-access/admin-access-client'
-import { createGenerationBoundHeadmanLessonActionsApi, type HeadmanLessonActionsApi } from '../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
+import {
+  createGenerationBoundHeadmanLessonActionsApi,
+  type HeadmanLessonActionsApi,
+} from '../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
 import { ref, shallowRef } from 'vue'
 import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
@@ -97,7 +100,10 @@ export interface PwaAuthRoleResult extends ProfileRoleSelection {
 }
 
 export class PwaAuthError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
     super(message)
     this.name = 'PwaAuthError'
   }
@@ -111,7 +117,9 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   const accessToken = ref<string | null>(null)
   const resetGeneration = ref(0)
   const deviceSession = shallowRef<PwaDeviceSession | null>(null)
-  const request = options.fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const request =
+    options.fetcher ??
+    ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   const client: AuthClient = createAuthClient({
     fetcher: request,
     accessToken: () => accessToken.value,
@@ -120,9 +128,10 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   let deviceCleanup: Promise<void> | null = null
   const invalidationListeners = new Set<(reason: PwaAuthInvalidationReason) => void>()
   const channel = options.channel ?? createBrowserChannel()
-  const logoutMarkerStorage = options.logoutMarkerStorage === undefined
-    ? createBrowserLogoutMarkerStorage()
-    : options.logoutMarkerStorage
+  const logoutMarkerStorage =
+    options.logoutMarkerStorage === undefined
+      ? createBrowserLogoutMarkerStorage()
+      : options.logoutMarkerStorage
   let logoutState: PwaAuthLogoutState | null = null
   let knownProfile: ProfileSnapshot | null = null
   let knownProfileGeneration: number | null = null
@@ -130,7 +139,8 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   function explicitLogoutState(): PwaAuthLogoutState | null {
     try {
       const stored = logoutMarkerStorage?.getItem(EXPLICIT_LOGOUT_STORAGE_KEY)
-      if (stored === 'pending' || stored === 'confirmed' || stored === 'unconfirmed') logoutState = stored
+      if (stored === 'pending' || stored === 'confirmed' || stored === 'unconfirmed')
+        logoutState = stored
       // A missing persistent marker cannot clear this instance's latch: the
       // preceding storage write may have failed, but logout still happened.
     } catch {
@@ -153,9 +163,10 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     knownProfile = profile
     knownProfileGeneration = generation
     const token = accessToken.value
-    deviceSession.value = token && profile.activeRole
-      ? { userId: profile.userId, sessionId: profile.sessionId, generation, token }
-      : null
+    deviceSession.value =
+      token && profile.activeRole
+        ? { userId: profile.userId, sessionId: profile.sessionId, generation, token }
+        : null
   }
 
   function notifyInvalidation(reason: PwaAuthInvalidationReason): void {
@@ -184,8 +195,13 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   function sessionScopeFor(generation: number): string | null {
     assertCurrent(generation)
     const profile = knownProfileGeneration === generation ? knownProfile : null
-    if (!profile || profile.activeRole !== 'ADMIN'
-      || profile.userId.trim() === '' || profile.sessionId.trim() === '') return null
+    if (
+      !profile ||
+      profile.activeRole !== 'ADMIN' ||
+      profile.userId.trim() === '' ||
+      profile.sessionId.trim() === ''
+    )
+      return null
     return JSON.stringify([profile.userId, profile.sessionId, profile.activeRole])
   }
 
@@ -193,7 +209,8 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     assertCurrent(generation)
     if (refreshInFlight?.generation === generation) return refreshInFlight.promise
 
-    const promise = client.refresh()
+    const promise = client
+      .refresh()
       .then(async (token) => {
         assertCurrent(generation)
         const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
@@ -254,140 +271,220 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     return snapshot
   }
 
-  async function selectRoleFor(generation: number, input: AuthSelectRoleInput): Promise<PwaAuthRoleResult> {
+  async function selectRoleFor(
+    generation: number,
+    input: AuthSelectRoleInput,
+  ): Promise<PwaAuthRoleResult> {
     assertCurrent(generation)
     const selection = await client.selectRole(input)
     assertCurrent(generation)
     // The old role's token must be unusable before the fresh role token is
     // visible to any BFF client.
     const previous = knownProfileGeneration === generation ? knownProfile : null
-    const sameSession = previous?.userId === selection.session.userId
-      && previous.sessionId === selection.session.sessionId
-    const nextGeneration = clear(sameSession
-      ? { preserveDevice: { userId: selection.session.userId, sessionId: selection.session.sessionId } } : {})
+    const sameSession =
+      previous?.userId === selection.session.userId &&
+      previous.sessionId === selection.session.sessionId
+    const nextGeneration = clear(
+      sameSession
+        ? {
+            preserveDevice: {
+              userId: selection.session.userId,
+              sessionId: selection.session.sessionId,
+            },
+          }
+        : {},
+    )
     accessToken.value = selection.accessToken
     rememberProfile(selection.session, nextGeneration)
     return { ...selection, generation: nextGeneration }
   }
 
   function createApi(fetcher?: typeof fetch): StudentApi {
-    return createGenerationBoundStudentApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundStudentApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanApi(fetcher?: typeof fetch): HeadmanScheduleApi {
-    return createGenerationBoundHeadmanScheduleApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanScheduleApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanJournalApi(fetcher?: typeof fetch): HeadmanJournalApi {
-    return createGenerationBoundHeadmanJournalApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanJournalApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanLessonActionsApi(fetcher?: typeof fetch): HeadmanLessonActionsApi {
-    return createGenerationBoundHeadmanLessonActionsApi({ currentGeneration, accessTokenFor, refreshFor: refreshFor }, fetcher)
+    return createGenerationBoundHeadmanLessonActionsApi(
+      { currentGeneration, accessTokenFor, refreshFor: refreshFor },
+      fetcher,
+    )
   }
 
   function createHeadmanStatsApi(fetcher?: typeof fetch): HeadmanStatsApi {
-    return createGenerationBoundHeadmanStatsApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanStatsApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanRequestsApi(fetcher?: typeof fetch): HeadmanRequestsApi {
-    return createGenerationBoundHeadmanRequestsApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanRequestsApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanGroupApi(fetcher?: typeof fetch): HeadmanGroupApi {
-    return createGenerationBoundHeadmanGroupApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanGroupApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanHomeworkApi(fetcher?: typeof fetch): HeadmanHomeworkApi {
-    return createGenerationBoundHeadmanHomeworkApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanHomeworkApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createHeadmanSubjectsApi(fetcher?: typeof fetch): HeadmanSubjectsApi {
-    return createGenerationBoundHeadmanSubjectsApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundHeadmanSubjectsApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
   function createTeacherApi(fetcher?: typeof fetch): TeacherApi {
-    return createGenerationBoundTeacherApi({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher)
+    return createGenerationBoundTeacherApi(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+    )
   }
 
-  function createAdminSemesterApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminSemesterClient {
-    return createGenerationBoundAdminSemesterClient({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-      sessionScopeFor,
-    }, fetcher, assertAuthority)
+  function createAdminSemesterApi(
+    fetcher?: typeof fetch,
+    assertAuthority?: () => void,
+  ): AdminSemesterClient {
+    return createGenerationBoundAdminSemesterClient(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+        sessionScopeFor,
+      },
+      fetcher,
+      assertAuthority,
+    )
   }
 
-  function createAdminAccessApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminAccessClient {
-    return createGenerationBoundAdminAccessClient({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher, assertAuthority)
+  function createAdminAccessApi(
+    fetcher?: typeof fetch,
+    assertAuthority?: () => void,
+  ): AdminAccessClient {
+    return createGenerationBoundAdminAccessClient(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+      assertAuthority,
+    )
   }
 
-  function createAdminDashboardApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminDashboardClient {
-    return createGenerationBoundAdminDashboardClient({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher, assertAuthority)
+  function createAdminDashboardApi(
+    fetcher?: typeof fetch,
+    assertAuthority?: () => void,
+  ): AdminDashboardClient {
+    return createGenerationBoundAdminDashboardClient(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+      assertAuthority,
+    )
   }
 
-  function createAdminUsersApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminUsersClient {
-    return createGenerationBoundAdminUsersClient({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher, assertAuthority)
+  function createAdminUsersApi(
+    fetcher?: typeof fetch,
+    assertAuthority?: () => void,
+  ): AdminUsersClient {
+    return createGenerationBoundAdminUsersClient(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+      assertAuthority,
+    )
   }
 
-  function createAdminGroupsApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminGroupsClient {
-    return createGenerationBoundAdminGroupsClient({
-      currentGeneration,
-      accessTokenFor,
-      refreshFor,
-    }, fetcher, assertAuthority)
+  function createAdminGroupsApi(
+    fetcher?: typeof fetch,
+    assertAuthority?: () => void,
+  ): AdminGroupsClient {
+    return createGenerationBoundAdminGroupsClient(
+      {
+        currentGeneration,
+        accessTokenFor,
+        refreshFor,
+      },
+      fetcher,
+      assertAuthority,
+    )
   }
 
-  function createProfilePort(generation = currentGeneration(), options: PwaProfilePortOptions = {}): ProfilePort {
+  function createProfilePort(
+    generation = currentGeneration(),
+    options: PwaProfilePortOptions = {},
+  ): ProfilePort {
     function assertPortCurrent(): void {
       assertCurrent(generation)
     }
@@ -412,13 +509,17 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
         return profile
       },
       selectRole: (input) => guarded(() => client.selectRole(input)),
-      listSessions: (input?: ProfilePageRequest): Promise<ProfileSessionsPage> => guarded(() => client.listSessions(input)),
-      listHistory: (input?: ProfilePageRequest): Promise<ProfileHistoryPage> => guarded(() => client.listHistory(input)),
+      listSessions: (input?: ProfilePageRequest): Promise<ProfileSessionsPage> =>
+        guarded(() => client.listSessions(input)),
+      listHistory: (input?: ProfilePageRequest): Promise<ProfileHistoryPage> =>
+        guarded(() => client.listHistory(input)),
       changePassword: (input) => guarded(() => client.changePassword(input)),
       logoutAll: () => guarded(() => client.logoutAll()),
       terminateSession: (sessionId) => guarded(() => client.terminateSession(sessionId)),
       ...(options.onInvalidated ? { onInvalidated: options.onInvalidated } : {}),
-      ...(options.onRefreshAlreadyRotated ? { onRefreshAlreadyRotated: options.onRefreshAlreadyRotated } : {}),
+      ...(options.onRefreshAlreadyRotated
+        ? { onRefreshAlreadyRotated: options.onRefreshAlreadyRotated }
+        : {}),
       isOnline: () => typeof navigator === 'undefined' || navigator.onLine !== false,
     }
   }
@@ -426,28 +527,46 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   function setToken(token: string, generation = currentGeneration()): void {
     assertCurrent(generation)
     accessToken.value = token
-    if (knownProfileGeneration === generation && knownProfile) rememberProfile(knownProfile, generation)
+    if (knownProfileGeneration === generation && knownProfile)
+      rememberProfile(knownProfile, generation)
   }
 
   /** Invalidates every API client captured before this call. */
-  function clear(clearOptions: { broadcast?: boolean; preserveDevice?: Pick<PwaDeviceSession, 'userId' | 'sessionId'> } = {}): number {
-    const preserved = deviceSession.value && clearOptions.preserveDevice
-      && deviceSession.value.userId === clearOptions.preserveDevice.userId
-      && deviceSession.value.sessionId === clearOptions.preserveDevice.sessionId
-      ? deviceSession.value : null
+  function clear(
+    clearOptions: {
+      broadcast?: boolean
+      preserveDevice?: Pick<PwaDeviceSession, 'userId' | 'sessionId'>
+    } = {},
+  ): number {
+    const preserved =
+      deviceSession.value &&
+      clearOptions.preserveDevice &&
+      deviceSession.value.userId === clearOptions.preserveDevice.userId &&
+      deviceSession.value.sessionId === clearOptions.preserveDevice.sessionId
+        ? deviceSession.value
+        : null
     try {
       const cleanup = preserved ? undefined : options.beforeClear?.()
       deviceCleanup = cleanup ? Promise.resolve(cleanup).catch(() => undefined) : null
-    } catch { deviceCleanup = null }
+    } catch {
+      deviceCleanup = null
+    }
     resetGeneration.value += 1
     // Keep only the confirmed account binding across role replacement, never its old bearer.
-    deviceSession.value = preserved ? { ...preserved, generation: resetGeneration.value, token: null } : null
+    deviceSession.value = preserved
+      ? { ...preserved, generation: resetGeneration.value, token: null }
+      : null
     accessToken.value = null
     knownProfile = null
     knownProfileGeneration = null
     if (clearOptions.broadcast !== false) {
       try {
-        channel?.postMessage({ type: INVALIDATION_MESSAGE, ...(preserved ? { deviceScope: { userId: preserved.userId, sessionId: preserved.sessionId } } : {}) })
+        channel?.postMessage({
+          type: INVALIDATION_MESSAGE,
+          ...(preserved
+            ? { deviceScope: { userId: preserved.userId, sessionId: preserved.sessionId } }
+            : {}),
+        })
       } catch {
         // A closed or unavailable channel cannot weaken local invalidation.
       }
@@ -455,7 +574,9 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     return currentGeneration()
   }
 
-  function subscribeInvalidation(listener: (reason: PwaAuthInvalidationReason) => void): () => void {
+  function subscribeInvalidation(
+    listener: (reason: PwaAuthInvalidationReason) => void,
+  ): () => void {
     invalidationListeners.add(listener)
     return () => invalidationListeners.delete(listener)
   }
@@ -481,24 +602,36 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
         let timer: ReturnType<typeof setTimeout> | undefined
         try {
           // A dismissed browser permission dialog must not hold logout forever.
-          await Promise.race([deviceCleanup, new Promise<void>((resolve) => { timer = setTimeout(resolve, LOGOUT_TIMEOUT_MS) })])
-        } finally { if (timer !== undefined) clearTimeout(timer) }
+          await Promise.race([
+            deviceCleanup,
+            new Promise<void>((resolve) => {
+              timer = setTimeout(resolve, LOGOUT_TIMEOUT_MS)
+            }),
+          ])
+        } finally {
+          if (timer !== undefined) clearTimeout(timer)
+        }
       }
       // A manual login during device cleanup owns a new cookie; do not revoke it.
-      if (currentGeneration() !== logoutGeneration) { await snapshotCleared; return }
+      if (currentGeneration() !== logoutGeneration) {
+        await snapshotCleared
+        return
+      }
       // Keep this request shape stable for the cookie-only logout endpoint.
       const response = await request('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
         signal: AbortSignal.timeout(LOGOUT_TIMEOUT_MS),
       })
-      if (!response.ok) throw new PwaAuthError(response.status, 'Не удалось подтвердить отзыв текущей сессии')
+      if (!response.ok)
+        throw new PwaAuthError(response.status, 'Не удалось подтвердить отзыв текущей сессии')
       if (currentGeneration() === logoutGeneration) setExplicitLogoutState('confirmed')
     } catch (cause) {
       if (currentGeneration() === logoutGeneration) setExplicitLogoutState('unconfirmed')
-      logoutError = cause instanceof PwaAuthError
-        ? cause
-        : new PwaAuthError(0, 'Не удалось связаться с Auth и подтвердить отзыв текущей сессии')
+      logoutError =
+        cause instanceof PwaAuthError
+          ? cause
+          : new PwaAuthError(0, 'Не удалось связаться с Auth и подтвердить отзыв текущей сессии')
     }
     await snapshotCleared
     if (logoutError) throw logoutError
@@ -507,17 +640,31 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   function dispose(): void {
     if (!channel) return
     channel.removeEventListener('message', onChannelMessage)
-    try { channel.close() } catch { /* already closed */ }
+    try {
+      channel.close()
+    } catch {
+      /* already closed */
+    }
   }
 
   function onChannelMessage(event: MessageEvent<unknown>): void {
     if (!isInvalidationMessage(event.data)) return
     const scope = (event.data as { deviceScope?: unknown }).deviceScope
     const previous = deviceSession.value
-    const sameSession = previous && scope && typeof scope === 'object' && 'userId' in scope && 'sessionId' in scope
-      && previous.userId === scope.userId && previous.sessionId === scope.sessionId
-    clear({ broadcast: false, ...(sameSession && previous
-      ? { preserveDevice: { userId: previous.userId, sessionId: previous.sessionId } } : {}) })
+    const sameSession =
+      previous &&
+      scope &&
+      typeof scope === 'object' &&
+      'userId' in scope &&
+      'sessionId' in scope &&
+      previous.userId === scope.userId &&
+      previous.sessionId === scope.sessionId
+    clear({
+      broadcast: false,
+      ...(sameSession && previous
+        ? { preserveDevice: { userId: previous.userId, sessionId: previous.sessionId } }
+        : {}),
+    })
     notifyInvalidation('external')
   }
 
@@ -571,7 +718,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
 export function authAuthorityIdentity(profile: ProfileSnapshot): string {
   const grants = [...profile.roles]
     .map(normalizeRoleGrant)
-    .sort((left, right) => left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0)
+    .sort((left, right) => (left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0))
   return JSON.stringify([
     profile.sessionId,
     profile.userId,
@@ -583,15 +730,9 @@ export function authAuthorityIdentity(profile: ProfileSnapshot): string {
   ])
 }
 
-function normalizeRoleGrant(grant: ProfileRoleGrant): readonly [
-  string,
-  string,
-  string,
-  string | null,
-  string | null,
-  boolean,
-  boolean,
-] {
+function normalizeRoleGrant(
+  grant: ProfileRoleGrant,
+): readonly [string, string, string, string | null, string | null, boolean, boolean] {
   return [
     grant.grantId,
     grant.role,
@@ -604,8 +745,11 @@ function normalizeRoleGrant(grant: ProfileRoleGrant): readonly [
 }
 
 function createBrowserChannel(): PwaAuthInvalidationChannel | undefined {
-  if (typeof window === 'undefined' || typeof window.BroadcastChannel !== 'function') return undefined
-  return new window.BroadcastChannel('rct-auth-invalidation') as unknown as PwaAuthInvalidationChannel
+  if (typeof window === 'undefined' || typeof window.BroadcastChannel !== 'function')
+    return undefined
+  return new window.BroadcastChannel(
+    'rct-auth-invalidation',
+  ) as unknown as PwaAuthInvalidationChannel
 }
 
 function createBrowserLogoutMarkerStorage(): PwaAuthLogoutMarkerStorage | null {
@@ -617,10 +761,12 @@ function createBrowserLogoutMarkerStorage(): PwaAuthLogoutMarkerStorage | null {
 }
 
 function isInvalidationMessage(value: unknown): boolean {
-  return typeof value === 'object'
-    && value !== null
-    && 'type' in value
-    && value.type === INVALIDATION_MESSAGE
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === INVALIDATION_MESSAGE
+  )
 }
 
 export { AuthRequestError }

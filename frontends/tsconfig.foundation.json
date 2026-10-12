@@ -9,9 +9,7 @@
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
   "include": [
     "mobile-core/src/**/*.ts",

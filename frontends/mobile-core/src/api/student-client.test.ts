@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { StudentApi } from './student-client'
 
-afterEach(() => { vi.restoreAllMocks() })
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('StudentApi.getSemesterSchedule', () => {
   it('consumes a 304 body before returning the null schedule and ETag', async () => {
@@ -67,7 +69,11 @@ describe('StudentApi Requests transport', () => {
     })
     const file = new File(['proof'], 'proof.txt', { type: 'text/plain' })
 
-    await api.submitExcuse({ lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Пояснение' }, [file], 'request-key-0001')
+    await api.submitExcuse(
+      { lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Пояснение' },
+      [file],
+      'request-key-0001',
+    )
 
     const snapshot = captured[0]
     expect(snapshot).toBeDefined()
@@ -93,11 +99,16 @@ describe('StudentApi Requests transport', () => {
       fetcher: async (_input, init) => {
         calls += 1
         accept = new Headers(init?.headers).get('Accept')
-        return new Response('bytes', { status: 200, headers: { 'Content-Type': 'application/octet-stream' } })
+        return new Response('bytes', {
+          status: 200,
+          headers: { 'Content-Type': 'application/octet-stream' },
+        })
       },
     })
 
-    await expect(Promise.resolve().then(() => api.submitLateCheckin({ lessonId: 'lesson-1' }, 'short'))).rejects.toThrow('16–128')
+    await expect(
+      Promise.resolve().then(() => api.submitLateCheckin({ lessonId: 'lesson-1' }, 'short')),
+    ).rejects.toThrow('16–128')
     expect(calls).toBe(0)
     await expect(api.downloadRequestAttachment('request-1', 'file-1')).resolves.toBeInstanceOf(Blob)
     expect(accept).toBe('application/octet-stream')

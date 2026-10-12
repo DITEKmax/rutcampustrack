@@ -40,7 +40,10 @@ export function useRequests(
 
   const activeBucket = computed(() => view[view.bucket])
   const currentRequests = computed(() => activeBucket.value.requests)
-  const hasNextPage = computed(() => activeBucket.value.page >= 0 && activeBucket.value.page + 1 < activeBucket.value.totalPages)
+  const hasNextPage = computed(
+    () =>
+      activeBucket.value.page >= 0 && activeBucket.value.page + 1 < activeBucket.value.totalPages,
+  )
 
   const stopContext = watch(
     [
@@ -67,13 +70,17 @@ export function useRequests(
     selectBucket: (bucket: RequestBucket) => controller.selectBucket(bucket),
     load: (bucket?: RequestBucket) => controller.loadBucket(bucket),
     loadMore: (bucket?: RequestBucket) => controller.loadMore(bucket),
-    loadTargetDetail: (id: string, expectedKind: RequestKind) => controller.loadTargetDetail(id, expectedKind),
-    cancelTargetRequest: (id: string, expectedKind: RequestKind) => controller.cancelTargetRequest(id, expectedKind),
+    loadTargetDetail: (id: string, expectedKind: RequestKind) =>
+      controller.loadTargetDetail(id, expectedKind),
+    cancelTargetRequest: (id: string, expectedKind: RequestKind) =>
+      controller.cancelTargetRequest(id, expectedKind),
     loadOptions: () => controller.loadOptions(),
     submitExcuse: (payload: ExcuseRequestPayload) => controller.submitExcuse(payload),
-    submitLateCheckin: (payload: LateCheckinRequestPayload) => controller.submitLateCheckin(payload),
+    submitLateCheckin: (payload: LateCheckinRequestPayload) =>
+      controller.submitLateCheckin(payload),
     cancelRequest: (id: string) => controller.cancelRequest(id),
-    downloadAttachment: (requestId: string, attachmentId: string) => controller.downloadAttachment(requestId, attachmentId),
+    downloadAttachment: (requestId: string, attachmentId: string) =>
+      controller.downloadAttachment(requestId, attachmentId),
     commandState: (kind: RequestKind) => controller.commandState(kind),
     abandonCommand: (kind: RequestKind) => controller.abandonCommand(kind),
     reconcileCommand: (kind: RequestKind) => controller.reconcileCommand(kind),

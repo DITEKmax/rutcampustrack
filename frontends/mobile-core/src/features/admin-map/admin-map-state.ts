@@ -1,4 +1,8 @@
-import type { AdminMapBuildingResponse, AdminMapDeletionPreview, AdminMapDeletionTarget } from '../../api/types'
+import type {
+  AdminMapBuildingResponse,
+  AdminMapDeletionPreview,
+  AdminMapDeletionTarget,
+} from '../../api/types'
 
 export interface AdminMapActionTarget {
   readonly type: AdminMapDeletionTarget
@@ -8,20 +12,44 @@ export interface AdminMapActionTarget {
 }
 
 export function captureAdminMapActionTarget(
-  buildings: readonly AdminMapBuildingResponse[], type: AdminMapDeletionTarget,
-  buildingId: string | null, floorId: string | null,
+  buildings: readonly AdminMapBuildingResponse[],
+  type: AdminMapDeletionTarget,
+  buildingId: string | null,
+  floorId: string | null,
 ): AdminMapActionTarget | null {
   const building = buildings.find((item) => item.id === buildingId)
   if (!building) return null
-  if (type === 'BUILDING') return Object.freeze({ type, id: building.id, buildingId: building.id, label: `Корпус ${building.code}` })
-  const floor = building.floors.find((item) => item.id === floorId && item.buildingId === building.id)
-  return floor ? Object.freeze({ type, id: floor.id, buildingId: building.id, label: `Корпус ${building.code} · этаж ${floor.code}` }) : null
+  if (type === 'BUILDING')
+    return Object.freeze({
+      type,
+      id: building.id,
+      buildingId: building.id,
+      label: `Корпус ${building.code}`,
+    })
+  const floor = building.floors.find(
+    (item) => item.id === floorId && item.buildingId === building.id,
+  )
+  return floor
+    ? Object.freeze({
+        type,
+        id: floor.id,
+        buildingId: building.id,
+        label: `Корпус ${building.code} · этаж ${floor.code}`,
+      })
+    : null
 }
 
-export function matchesAdminMapPreview(target: AdminMapActionTarget, preview: AdminMapDeletionPreview): boolean {
-  return preview.targetType === target.type && preview.targetId === target.id
-    && preview.buildingId === target.buildingId && /^[0-9a-f]{64}$/.test(preview.previewDigest)
-    && (target.type !== 'BUILDING' || preview.remainingFloors === 0)
+export function matchesAdminMapPreview(
+  target: AdminMapActionTarget,
+  preview: AdminMapDeletionPreview,
+): boolean {
+  return (
+    preview.targetType === target.type &&
+    preview.targetId === target.id &&
+    preview.buildingId === target.buildingId &&
+    /^[0-9a-f]{64}$/.test(preview.previewDigest) &&
+    (target.type !== 'BUILDING' || preview.remainingFloors === 0)
+  )
 }
 
 export interface AdminMapUploadTarget {
@@ -34,7 +62,10 @@ export interface AdminMapUploadTarget {
   readonly svg?: File
 }
 
-export function adminMapSelectionKey(buildingId: string | null, floorId: string | null): string | null {
+export function adminMapSelectionKey(
+  buildingId: string | null,
+  floorId: string | null,
+): string | null {
   return buildingId && floorId ? JSON.stringify([buildingId, floorId]) : null
 }
 

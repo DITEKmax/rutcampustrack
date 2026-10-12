@@ -1,10 +1,33 @@
 export type ProfileRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
-export type ProfileRoleStatus = 'ACTIVE' | 'SUSPENDED' | 'EXPELLED' | 'GRADUATED' | 'DISMISSED' | 'ARCHIVED'
+export type ProfileRoleStatus =
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'EXPELLED'
+  | 'GRADUATED'
+  | 'DISMISSED'
+  | 'ARCHIVED'
 export type ProfileTheme = 'light' | 'dark' | 'system'
 export type ProfileResolvedTheme = 'light' | 'dark'
-export type ProfileRoute = 'schedule' | 'statistics' | 'map' | 'requests' | 'assistant' | 'profile' | 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
+export type ProfileRoute =
+  | 'schedule'
+  | 'statistics'
+  | 'map'
+  | 'requests'
+  | 'assistant'
+  | 'profile'
+  | 'role-switch'
+  | 'appearance'
+  | 'security'
+  | 'sessions'
+  | 'history'
 export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA'
-export type ProfileHistoryType = 'LOGIN' | 'ROLE_CHANGED' | 'CURRENT_LOGOUT' | 'LOGOUT_ALL' | 'PASSWORD_CHANGED' | 'SECURITY_REVOKED'
+export type ProfileHistoryType =
+  | 'LOGIN'
+  | 'ROLE_CHANGED'
+  | 'CURRENT_LOGOUT'
+  | 'LOGOUT_ALL'
+  | 'PASSWORD_CHANGED'
+  | 'SECURITY_REVOKED'
 
 export interface ProfileRoleGrant {
   grantId: string
@@ -114,7 +137,10 @@ export class ProfileRequestError extends Error {
 
 export interface ProfilePort {
   getSnapshot(): Promise<ProfileSnapshot>
-  selectRole(input: { role: ProfileRole; expectedSessionVersion: string }): Promise<ProfileRoleSelection>
+  selectRole(input: {
+    role: ProfileRole
+    expectedSessionVersion: string
+  }): Promise<ProfileRoleSelection>
   listSessions(input?: ProfilePageRequest): Promise<ProfileSessionsPage>
   listHistory(input?: ProfilePageRequest): Promise<ProfileHistoryPage>
   changePassword(input: { currentPassword: string; newPassword: string }): Promise<void>
@@ -123,7 +149,9 @@ export interface ProfilePort {
   recoverPassword?(): void | Promise<void>
   navigate?(route: ProfileRoute): void | Promise<void>
   setTheme?(theme: ProfileTheme): void | Promise<void>
-  onInvalidated?(reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated'): void | Promise<void>
+  onInvalidated?(
+    reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated',
+  ): void | Promise<void>
   onRefreshAlreadyRotated?(error: ProfileRequestError): void | Promise<void>
   isOnline(): boolean
 }
@@ -186,7 +214,9 @@ export function roleInitial(role: ProfileRole): string {
 }
 
 export function truthfulMetadata(...values: readonly (string | null | undefined)[]): string | null {
-  const parts = values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))
+  const parts = values
+    .map((value) => value?.trim())
+    .filter((value): value is string => Boolean(value))
   return parts.length > 0 ? parts.join(' · ') : null
 }
 
@@ -210,15 +240,32 @@ function hasUnpairedSurrogate(value: string): boolean {
   return false
 }
 
-export type PasswordValidationIssue = 'UNPAIRED_SURROGATE' | 'MIN_CODE_POINTS' | 'MAX_UTF8_BYTES' | 'DECIMAL_DIGIT' | 'SPECIAL_CHARACTER'
+export type PasswordValidationIssue =
+  | 'UNPAIRED_SURROGATE'
+  | 'MIN_CODE_POINTS'
+  | 'MAX_UTF8_BYTES'
+  | 'DECIMAL_DIGIT'
+  | 'SPECIAL_CHARACTER'
 
-export function validateNewPassword(value: string, policy: ProfilePasswordPolicy): readonly PasswordValidationIssue[] {
+export function validateNewPassword(
+  value: string,
+  policy: ProfilePasswordPolicy,
+): readonly PasswordValidationIssue[] {
   const issues: PasswordValidationIssue[] = []
   if (hasUnpairedSurrogate(value)) issues.push('UNPAIRED_SURROGATE')
   const codePoints = Array.from(value).length
   if (codePoints < policy.minCodePoints) issues.push('MIN_CODE_POINTS')
-  if (!hasUnpairedSurrogate(value) && new TextEncoder().encode(value).byteLength > policy.maxUtf8Bytes) issues.push('MAX_UTF8_BYTES')
+  if (
+    !hasUnpairedSurrogate(value) &&
+    new TextEncoder().encode(value).byteLength > policy.maxUtf8Bytes
+  )
+    issues.push('MAX_UTF8_BYTES')
   if (policy.requiresDecimalDigit && !/\p{Nd}/u.test(value)) issues.push('DECIMAL_DIGIT')
-  if (!policy.specialCategories.some((category) => (category === 'P' ? /\p{P}/u : /\p{S}/u).test(value))) issues.push('SPECIAL_CHARACTER')
+  if (
+    !policy.specialCategories.some((category) =>
+      (category === 'P' ? /\p{P}/u : /\p{S}/u).test(value),
+    )
+  )
+    issues.push('SPECIAL_CHARACTER')
   return issues
 }

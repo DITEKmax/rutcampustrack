@@ -20,7 +20,7 @@ ingester:
 
 compactor:
   compaction:
-    block_retention: 336h  # QA5 — 14d retention
+    block_retention: 336h # QA5 — 14d retention
     compacted_block_retention: 1h
 
 storage:

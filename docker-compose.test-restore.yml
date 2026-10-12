@@ -14,7 +14,7 @@ services:
       - /var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
+      test: ['CMD-SHELL', 'pg_isready -U rct_user -d academic_db']
       interval: 2s
       timeout: 3s
       retries: 40
@@ -32,7 +32,7 @@ services:
       - /var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
+      test: ['CMD-SHELL', 'pg_isready -U rct_user -d schedule_db']
       interval: 2s
       timeout: 3s
       retries: 40
@@ -48,7 +48,7 @@ services:
       - /data/configdb
     mem_limit: 512m
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ping:1}).ok ? 0 : 1)"]
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'quit(db.adminCommand({ping:1}).ok ? 0 : 1)']
       interval: 2s
       timeout: 5s
       retries: 40

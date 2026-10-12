@@ -51,6 +51,7 @@ const exactReceiptCopies = new Set(
     'np01-config-author/verify-config.py',
     'np01-source-resolution/source-ledger.py',
     'ntr-seal-review/audit.py',
+    'scenario-sources/build-matrix.py',
     'security-fingerprint-author/sensitivity.py',
     'security-fingerprint-author/verify.py',
     'source-manifest-recovery/check-dependencies.py',

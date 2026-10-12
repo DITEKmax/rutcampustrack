@@ -1,8 +1,8 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { test as base, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Page } from '@playwright/test';
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
-import { requirePrivateArtifacts } from './artifact-privacy';
+import { test as base, requirePrivateArtifacts } from './artifact-privacy';
 
 type Role = Exclude<CurrentSession['activeRole'], null>;
 type Model = Record<string, any>;

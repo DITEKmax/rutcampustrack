@@ -1,6 +1,9 @@
 import { defineConfig } from '@playwright/test';
 import existing from './playwright.config';
 
+// Pinned Playwright checks this before reading a page snapshot, including during teardown.
+process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
+
 /** One shared active semester and task-owned disposable dataset; never run in parallel with another seed writer. */
 export default defineConfig({
   ...existing,

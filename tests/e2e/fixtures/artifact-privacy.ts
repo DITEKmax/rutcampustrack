@@ -1,4 +1,20 @@
-import type { TestInfo, WorkerInfo } from '@playwright/test';
+import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
+
+/** Automatic fixtures start before explicit page/dataset fixtures and finish after their teardown. */
+export const test = base.extend<{ privateArtifacts: void }>({
+  privateArtifacts: [
+    async ({}, use, info) => {
+      requirePrivateArtifacts(info);
+      try {
+        await use();
+      } finally {
+        // afterEach cannot cover errors added by page/context/request fixture teardown.
+        sanitizeTestErrors(info);
+      }
+    },
+    { auto: true, box: true },
+  ],
+});
 
 /** Validate before creating credentials. Extra reporters/debug logging can disclose API arguments. */
 export function requirePrivateArtifacts(info: WorkerInfo): void {
@@ -9,10 +25,11 @@ export function requirePrivateArtifacts(info: WorkerInfo): void {
     process.env.PW_TEST_REPORTER ||
     process.env.DEBUG ||
     process.env.DEBUG_FILE ||
-    process.env.PWDEBUG
+    process.env.PWDEBUG ||
+    process.env.PLAYWRIGHT_NO_COPY_PROMPT !== '1'
   ) {
     throw new Error(
-      'Real-mobile credentials require the dedicated safe reporter and no debug/extra reporter',
+      'Real-mobile requires the dedicated safe reporter, no debug/extra reporter and snapshot capture disabled',
     );
   }
   const use = info.project.use;

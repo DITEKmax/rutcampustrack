@@ -1,6 +1,9 @@
 import { defineConfig } from '@playwright/test';
 import existing from '../playwright.config';
 
+// Pinned Playwright checks this before reading a page snapshot, including during teardown.
+process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
+
 /** Explicit opt-in lane; one real API dataset writer and private artifacts only. */
 export default defineConfig({
   ...existing,

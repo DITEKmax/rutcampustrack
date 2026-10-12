@@ -1,0 +1,77 @@
+[
+  {
+    "path": "AGENTS.md",
+    "bytes": 4327,
+    "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+  },
+  {
+    "path": "services/AGENTS.md",
+    "bytes": 2914,
+    "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3"
+  },
+  {
+    "path": "tests/AGENTS.md",
+    "bytes": 5464,
+    "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37"
+  },
+  {
+    "path": ".agent/orchestration-v2/RULES.md",
+    "bytes": 24809,
+    "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+  },
+  {
+    "path": ".agent/orchestration-v2/CURRENT.md",
+    "bytes": 1799,
+    "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b"
+  },
+  {
+    "path": "docs/agent-workflow.md",
+    "bytes": 7916,
+    "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "bytes": 86218,
+    "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/CURRENT.md",
+    "bytes": 6662,
+    "sha256": "d88fd7e4ee4f51b0a5b325e213f95f98c6a7be092865d802f06ee16245d01573"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/decisions.md",
+    "bytes": 14979,
+    "sha256": "4fe5d9ea4d0c5b244544752d80952b2d1b7b7f32557b6df022879dc880c4ae26"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/questions.md",
+    "bytes": 9948,
+    "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/resources.md",
+    "bytes": 3261,
+    "sha256": "e9dfa5d1a7452542d0493d30088cae19a8da286396bf0b9c8f2055fd0468a439"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/packet-export-merged-repository-review.md",
+    "bytes": 2847,
+    "sha256": "f27fee0f0f7b3c353f3f3ed2c43cc6074045989094132535e6985e4d887334f5"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/skills/project/rct-source-resolution/SKILL.md",
+    "bytes": 1557,
+    "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/skills/project/rct-verification/SKILL.md",
+    "bytes": 1733,
+    "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa"
+  },
+  {
+    "path": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+    "bytes": 4026,
+    "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33"
+  }
+]

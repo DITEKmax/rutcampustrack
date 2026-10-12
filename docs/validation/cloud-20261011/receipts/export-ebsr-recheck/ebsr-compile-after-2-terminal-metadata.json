@@ -1,0 +1,10 @@
+{
+  "phase": "ebsr-compile-after-2",
+  "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "exit_code": 0,
+  "status": "PASS",
+  "result_sha256": "8e00085c25f2be3f27e0e816aebaf3e9ae741a65b883f7eb86d7474e03fd7237",
+  "log_sha256": "e3cb992b241c9b12b13ae2ee7b5941e775b8fd55d1ce6a0365e2d8f508f716af",
+  "task_execution": {},
+  "source_files_unchanged_during_run": true
+}

@@ -1,0 +1,21 @@
+{
+  "actual_producer": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "receipt_sha256": "80c3c56edb40a78a4d6b2687f77d460de83df6db4181a475fc2c55d48effbba1",
+  "exit_code": 0,
+  "counts": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_inputs": 1853,
+  "fixture_controls": {},
+  "task_execution": "EXECUTED",
+  "log": {
+    "source": "/workspace/scratch/rct-validation/export_resume/ebsr-crosslayer-after-3.log",
+    "sha256": "fdfbb88cf4896a115d2dbdb9a516d4e6a7fd388b99dc79db2ed449997b550d89",
+    "task_executed": true,
+    "build_successful": true,
+    "raw_content_not_published": true
+  }
+}

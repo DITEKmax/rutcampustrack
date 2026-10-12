@@ -1,0 +1,113 @@
+{
+  "source": "/workspace/scratch/rct-validation/security_fingerprint",
+  "manifest": "sealed-safe-manifest.json",
+  "files": [
+    {
+      "path": "provenance.json",
+      "original_sha256": "1c5c854bbae1425b2d3c5d888985253b0d9d8ebfad8b55d2bffb2c00818a5367",
+      "original_bytes": 471,
+      "working_sha256": "1c5c854bbae1425b2d3c5d888985253b0d9d8ebfad8b55d2bffb2c00818a5367",
+      "working_bytes": 471,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "historical-source.safe.json",
+      "original_sha256": "481e30e1f40a6eac7a17e1260ffb33ed2c62d46dd725ca3ad442d0db71fa7697",
+      "original_bytes": 444,
+      "working_sha256": "481e30e1f40a6eac7a17e1260ffb33ed2c62d46dd725ca3ad442d0db71fa7697",
+      "working_bytes": 444,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "historical-proof.safe.json",
+      "original_sha256": "a3010c07154cdd5faa4132d2a0a28583b752316fcff28766315d076a4e0de71e",
+      "original_bytes": 428,
+      "working_sha256": "a3010c07154cdd5faa4132d2a0a28583b752316fcff28766315d076a4e0de71e",
+      "working_bytes": 428,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "baseline-historical.safe.json",
+      "original_sha256": "943f16a134375956358729f5ae1eff128809cc1e4edf7cda63afb8df9333b6e3",
+      "original_bytes": 1131,
+      "working_sha256": "943f16a134375956358729f5ae1eff128809cc1e4edf7cda63afb8df9333b6e3",
+      "working_bytes": 1131,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "corrected-historical.safe.json",
+      "original_sha256": "02fc0761d1e5f74b899ef7eb12775ab23638cd4cd04c7bf0591665502b538864",
+      "original_bytes": 712,
+      "working_sha256": "02fc0761d1e5f74b899ef7eb12775ab23638cd4cd04c7bf0591665502b538864",
+      "working_bytes": 712,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sensitivity.safe.json",
+      "original_sha256": "2ccd0377e14cfa73557949d94a44be4837aa295b2e1eb6b8144cf713899b5c38",
+      "original_bytes": 1599,
+      "working_sha256": "2ccd0377e14cfa73557949d94a44be4837aa295b2e1eb6b8144cf713899b5c38",
+      "working_bytes": 1599,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "commit-checks.safe.json",
+      "original_sha256": "6d68bf7bd1c22a9ed93862a230c20bd457020126d30e7f174b627e51cd587680",
+      "original_bytes": 820,
+      "working_sha256": "6d68bf7bd1c22a9ed93862a230c20bd457020126d30e7f174b627e51cd587680",
+      "working_bytes": 820,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-manifest.json",
+      "original_sha256": "b654f0428d5a189c6886896f7d8529552aa4af1326ba72f13dcec07e552d3e5b",
+      "original_bytes": 1373535,
+      "working_sha256": "27180cba8bfc430c34790454659ab264226261ccc0280d8726fd8ebba687377c",
+      "working_bytes": 355549,
+      "transformation": "byte-equal compressed member; exact originals retained immutable-original-receipts.zip",
+      "working_path": "original-manifest.json.readable.zip",
+      "working_archive_member": "original-manifest.json"
+    },
+    {
+      "path": "verify.py",
+      "original_sha256": "2376ffd7f209861a6094484468933df0cfcb34f527da0b42127baddd3075462e",
+      "original_bytes": 3903,
+      "working_sha256": "2376ffd7f209861a6094484468933df0cfcb34f527da0b42127baddd3075462e",
+      "working_bytes": 3903,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sensitivity.py",
+      "original_sha256": "81e209736dc4f8deeb4e70d9ee9576067e66d6d9e3429072b3e88026bc707b1a",
+      "original_bytes": 3703,
+      "working_sha256": "81e209736dc4f8deeb4e70d9ee9576067e66d6d9e3429072b3e88026bc707b1a",
+      "working_bytes": 3703,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "summary.safe.json",
+      "original_sha256": "92cf2020ba8ce1d06b97bba82734ddbed7589ab188ca9f165b0f7e564d2bc277",
+      "original_bytes": 1944,
+      "working_sha256": "92cf2020ba8ce1d06b97bba82734ddbed7589ab188ca9f165b0f7e564d2bc277",
+      "working_bytes": 1944,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "gitleaks_8.24.3_checksums.txt",
+      "original_sha256": "eefa9ab1ee69571248a6fa070a2a7de0837dd9eb72745d131f8766206aac8ac2",
+      "original_bytes": 1099,
+      "working_sha256": "eefa9ab1ee69571248a6fa070a2a7de0837dd9eb72745d131f8766206aac8ac2",
+      "working_bytes": 1099,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-safe-manifest.json",
+      "original_sha256": "b52ecde3bf819ecbf1743854f4f1e2e24d7b692d63a907b11f8678dc7226851f",
+      "original_bytes": 1619,
+      "working_sha256": "b52ecde3bf819ecbf1743854f4f1e2e24d7b692d63a907b11f8678dc7226851f",
+      "working_bytes": 1619,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

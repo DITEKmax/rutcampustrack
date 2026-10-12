@@ -1,0 +1,30 @@
+{
+  "status": "READ_ONLY_PREPARATION_COMPLETE; semantic freeze pending",
+  "root_frozen": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "tracked": 6990,
+  "current_tools": {
+    "excluded": 4345,
+    "prettier": 961,
+    "sql": 6,
+    "python": 124,
+    "java": 1554
+  },
+  "curated_tools": {
+    "excluded": 4365,
+    "prettier": 957,
+    "sql": 6,
+    "python": 113,
+    "java": 1549
+  },
+  "originals_verified": 16,
+  "exact_original_python": 11,
+  "unsealed_doc_authored_harness_candidates": [
+    "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py"
+  ],
+  "hardlinked_files": 32,
+  "eligible_tool_targets_hardlinked": [],
+  "export_changed_sources": 94,
+  "export_unequal_sources": 93,
+  "runtime": "NOT_RUN: no formatting, lint/type/build/Gradle/app/browser/container execution authorized",
+  "next": "Preserve sealed originals with exact perpath exclusions; reconcile actual drivers; refresh inventory after exports+NP01 integration and explicit frozen writer assignment."
+}

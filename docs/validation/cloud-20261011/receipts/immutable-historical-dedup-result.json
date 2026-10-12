@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-12T00:29:03.180848+00:00",
+  "phase": "immutable-historical-dedup",
+  "entries": 480,
+  "exact_hashes_modes_and_worktree_git_status_preserved": true,
+  "free_bytes_before": 2697441280,
+  "free_bytes_after": 5516431360,
+  "actual_free_delta_bytes": 2818990080,
+  "protected": "historical sources immutable; future edits require atomic COW",
+  "plan": "immutable-historical-dedup-plan.json"
+}

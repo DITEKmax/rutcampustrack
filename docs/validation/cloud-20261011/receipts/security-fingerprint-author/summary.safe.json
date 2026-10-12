@@ -1,0 +1,47 @@
+{
+  "status": "SOURCE_READY; independent review and integration pending",
+  "author_commit": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+  "frozen_base": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "worktree": "/workspace/rct-worktrees/security-fingerprint",
+  "branch": "codex/rct-validation-security-fingerprint-20261011",
+  "inventory": {
+    "Created": [
+      ".gitleaksignore"
+    ],
+    "Modified": [],
+    "Deleted": []
+  },
+  "historical_fingerprint": "63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12",
+  "criteria": {
+    "official_8_24_3_provenance_checksum": "PASS",
+    "native_26_commit_baseline_red": "PASS: exit1, one exact expected historical finding",
+    "exact_ignore_historical_green": "PASS: exit0, zero findings",
+    "new_commit_same_path_rule_line_positive": "PASS: exit1, one distinct new fingerprint",
+    "tracked_source_bytes_and_modes_preserved": "PASS:6985 original inputs unchanged",
+    "terminal_clean_git": "PASS",
+    "applicable_standard_hook_predicates": "PASS; installed hook absent; official8.24.3 staged scan exit0; size/EOF/trailing whitespace/diffcheck PASS; YAML/JSON N/A"
+  },
+  "limits": [
+    "No remote Security PASS claimed.",
+    "Native future branch/PR Security required after integration.",
+    "No CI, scanner rules, paths, triggers, lockfile, generator or other config changes."
+  ],
+  "resources": {
+    "children": 0,
+    "heavy_processes": 0,
+    "scanner_processes": 0,
+    "synthetic_git_objects": "Own controlled repo only; retained privately and not in product branch"
+  },
+  "safe_evidence": [
+    "provenance.json",
+    "historical-source.safe.json",
+    "historical-proof.safe.json",
+    "baseline-historical.safe.json",
+    "corrected-historical.safe.json",
+    "sensitivity.safe.json",
+    "commit-checks.safe.json",
+    "original-manifest.json",
+    "verify.py",
+    "sensitivity.py"
+  ]
+}

@@ -1,57 +1,13 @@
 # Active writers and resources
 
-Updated 2026-10-11T22:20:50.151475+00:00. Root + up to6 activechildren, all requestedgpt-6.1-sol explicit high/xhigh forknone; actualUNKNOWN. Rootsharedtaskdocs/integration solewriter. Heavymax2 onlyindependent maxworker1 after5CPU/17GiBavailable measurement, no third JVM/native stack. Prior leases/history in attempts; terminal pointers never restart forhistory.
+Updated2026-10-12T01:44:26.109780+00:00. Root sole shared-doc writer/integrator; requestedSol6.1 actualUNKNOWN. Childcapacity6, source/lightparallel; ONE NP01_CONTRACT1 heavy lease at a time, maxworker1/Gradle+test JVM768MiB. Actualavailable17850212352B/5CPU/free6085935104B. Floor4GiB before/while work; no sharedresource/globalprune.
 
-| Writer | Frozen worktree / scope | Lease / status |
+| Owner | Worktree / resources | Scope/status |
 | --- | --- | --- |
-| root | /workspace/rutcampustrack branchcodex/server-validation-20261011 local2f5f / shared docs+integration | No heavy; published232f |
-| export_developer xhigh | exports frozene51; solepublicAPI/proto/V56/exportdomain/exportUI + threeOpenAPIsnapshots extension | EXPORTS1 reserved max1; AuthHTTP12476terminal0, noownliveresources; stablepackage next |
-| frontend_inventory high | client-runtime6e clean immutable; ci-evidence frozen2f5f config/collector solewriter | LIGHTCI thenCTR01testfixtureonly; ClocknoJava/appsuntilrecheck |
-| security_diagnostics high | notification-provider frozene093 NEWdistinct provider/bridge/WS/tickettests; gateway-claims2003948 immutableapproved | NOTIFY3 granted max1, explicitmessagepending; no protocol/productwrites |
-| client_clock_typed_review xhigh | read-only6e / scratchreview immutable9 | CHANGES_REQUESTED CTR01; noresources; narrowrecheckafterauthorfix |
-| gateway_test_review xhigh | read-only2003948 / scratchreview immutable7 | APPROVE; noresources |
-| renderer_files_developer high | file-boundaries e689clean immutable | FILES2released78170terminal0/PGgone; freshreviewqueued, browserunknown |
-| recovery writer high | recovery frozen232f existingpreparedNEWtestfile; previousdata-lecture c115 immutable | LIGHT2stdlibcontrolledseams only, RECOVERY1nativequeued; noDocker/apps/dumps |
-| map reviewer xhigh | read-onlye689 / newownscratch | Pendingfreshassignment, noheavy |
+| root | /workspace/rutcampustrack local2bca/designatedbranch | shared docs/integration only |
+| export_resume xhigh | /workspace/rct-worktrees/np01-contract; /workspace/scratch/rct-validation/np01_contract | soleproto/schema/V57/generated+retainedMigrationIT; NP01_CONTRACT1 granted; ownpostgres16-alpine/Testcontainers only |
+| np01_domain_bot xhigh | /workspace/rct-worktrees/np01-domain-bot; /workspace/scratch/rct-validation/np01_domain_bot | designated22domain/Auth/bot sourcepaths; SOURCE_ONLY no heavy |
+| security_fingerprint high | /workspace/rct-worktrees/np01-config; /workspace/scratch/rct-validation/np01_config | solecommonconfig/generator/formatter/locks; twofiles source5d ready; SOURCE_ONLY until scopedgenerator extension |
+| independent reviewer xhigh (next) | own scratch, common975read-only | proto/schema/migration/criticaltest review, no writers/runtime |
 
-PublicAPI/proto/exports/newmigration: exportauthor ONLY. Commonconfig/Gradle/npm/locks/formatter/CI: frontendauthor ONLY, threeOpenAPIsnapshot files explicitlydelegatedexportauthor rootpreservesforeignupdates. DATA3teacherquery integrated root preservesseparateexportfindLessonTypeCodes hunk. No sharedports/DB/queue/volume/namespaces, privatebot/private18514/prod/sourcecredentials/children.
-
-Precise current sessions authorowned scratchCURRENT/attempts; export12476terminal, FILES78170terminal, GW finaltoolsessionUNKNOWN but actualBuildSuccess43XML; Clock7108/53222terminalstaleexternalJAR DO_NOT_LAUNCH. DefunctPID1helpers33249/33286/Java11771 knownnotactive. No owningdaemon/scheduler/controlplane.
-
-2026-10-11T22:29:09.496568+00:00: securityauthor NP02productextension ONLY bot/notifications/otp_requested.py safefailurepropagation, ownNEWtests + justifiedexistingOTPtests; genericconsumer/queue/contracts remainread-only. NP01 proto/API proposalonly commonexportwriter. NOTIFY3max1 unchanged.
-
-2026-10-11T22:31:59.616430+00:00: exportauthor existingnormalAuth+AcademicgeneratedTSconsumeroutputs assignedwithAPI/proto owner; generatorconfigs/locks frontendowner only, Scheduleunchanged. EXPORTS1slot release after active91845terminal thenCLOCK1 compile/consumer/JARpriority; NOTIFY3 othermax1. NewFILES2 MVR01/02 lightqueued; Q008 numericPNGpolicydependentpending.
-
-2026-10-11T22:38:47.343287+00:00: CURRENTHEAVY CLOCK1 GRANTED max1 db9 sourceapprovedcompile/11context/consumer/wrongclock/freshproductionJARisolationonly alongsideNOTIFY3max1reserved. EXPORTS1released91845/noownresource. 5CPU/16879MiBavailable/noJVMbeforegrant. Noapps/browseradmission. FILES2MVRSVG+acceptedD008PNG budgetLIGHTqueued; exportnativequeued.
-
-2026-10-11T22:39:33.774499+00:00: commonconfigsolefrontendauthor CIO01 existingcollector correction3files + NEWseparategeneratorWT frozene587 exactgenerate-auth-types.mjs source-onlynormalgenerationfix/old2dynamicpaths typecompat. GeneratedAuth/Academicoutputs exportsolewriter. CIreviewb611 immutableGit/receipts, no assumednodynamicAuthpaths.
-
-2026-10-11T22:50:35.910467+00:00: authoritative current localHEADe5870376fe9ed974ba04c4c16fa534b38cc32f6b; CLOCK1 compile29481 terminal1/released; NOTIFY3 final36827 terminal0/released; EXPORTS1 released91845. No active heavy lease/JVM at measurement, available16476MiB. CI4b0d/gen381543 ready fresh review; Clock dependency proposal pending exact assignment; FILES2 focused17cases ready max1 renewal; EBSR counterexamples queued. Old lease lines historical only.
-
-2026-10-11T22:51:34.351805+00:00: FILES2 GRANTED maxworker1 focused17scaled SVG/PNG cases at e689 then narrow correction and green; 128MiB+1 maximum streamed fixture. Other heavy slot reserved for export ready counterexample; Clock source-only library correction first, no lease/app launch. New read-only CI+generator reviewer may run LIGHT. Common frontend sole writer assigned exact record move/BFF API dependency/two fixture lines in packet-clock-library-correction.md.
-
-2026-10-11T22:54:00.562429+00:00: Fresh notification_recovery_review requestedSol6.1/xhigh LIGHTread-only fa02sixpaths+bd430onecontrolledtestfile, outputownscratch; separateverdicts/NP01GAPpreserved. Fresh export_client_review requestedSol6.1/xhigh LIGHTread-only frozen c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b27paths, outputownscratch; source/testquality only realbackend browserNOT_RUN. Finiteproposalagentcompleted/noheavy. Slots<=root+6children.
-
-2026-10-11T22:56:37.536940+00:00: commonconfigfrontend exactNEW independent auth-gateway-test-deps WT frozenroot e587 onefile auth-app/build.gradle.kts testImplementation(api-gateway), no productdep/cycle/configwidening; source-ready commit before EXPORTS2 boundedrealAuth-Gateway counterexample. Exportproductsolewriter canpreparetests LIGHT, sourcecorrections onlyaftermeaningfulred. Legacy60sverifier unchanged bychosenplan.
-
-2026-10-11T23:00:41.212505+00:00: CURRENT HEAVY FILES2active38765max1 +CLOCK1renewed10a freshSOURCEAPPROVEmax1;5CPU15661MiBfree measured. ExportcounterexampleEXPORTS2queuedafterFILES/Clockterminal, no thirdheavy. ClockNOapps/browser, exactcurrentcompile11/context/controlledfixturebadclock/freshfourJAR inspectors only.
-
-2026-10-11T23:01:58.452147+00:00: CURRENTHEAVY CLOCK1active22199max1 only. FILES2released38765allterminal0/PGgone; EXPORTS2mayusefree secondmax1 onceownnewtest/configready; neverthird. CI/gen/ClockfreshreviewcompletedAPPROVE_SOURCE/noresources. Mapproduct/sourcefreezecommitlightnext; freshrecheckqueued.
-
-2026-10-11T23:04:32.000793+00:00: CURRENTHEAVY CLOCK1negative92944max1 +EXPORTS2GRANTEDmax1 newcrosslayer before-oracles oncf6/testdepf263, 16449MiBavailable/5CPU. FILES2c73ef stable released38765/noresources; freshrecheck LIGHTqueued. AuthGatewaytestclasspath autoconfig impact actualUNKNOWN handleinfra honestly, no weakenedordinaryAuthgates.
-
-2026-10-11T23:06:19.689202+00:00: security_diagnostics retainedsolewriter exactNTR01 Auth WsTicketConcurrencyBoundaryIT.java test-only correction LIGHT; existingfa02production/other5files immutable; NOTIFY3runtimeQUEUED. Exportsoleproductauthor ECR01-03 followsfrozenclientreview/lightoracles; backendruntimeEXPORTS2 granted/captureprotocolpreserved. Mapfreshrecheckc73efLIGHTnext.
-
-2026-10-11T23:07:25.046709+00:00: Fresh map_validation_recheck Sol6.1/xhigh LIGHTread-only c73ef correction/e689 original/D008/actualred-green sourcebridges, independentownscratch; no heavyresources. Root integrates onlyfreshapprovedCI b611+4b0d andRecoverybd430, generator381543helduntilcoherentbackend/schema/generatedclient bundle (rootoldtrackedAuth differs fromnewnormalgenerator).
-
-2026-10-11T23:09:54.862583+00:00: CURRENTHEAVY NONE: Clock94958/3534terminal, EXPORTS2compilebeforeINFRAterminal/noJVM pausedpendingtestBOM, FILESreleased. NTR01testprep LIGHTpendingreadythenNOTIFY3max1; exportsrenewaftercommonconfigsourcecorrection. CommonconfigAuthbuild exacttestscopedSpringCloudplatform in independent863WT, no prodBOM/gates changes.
-
-2026-10-11T23:17:50.255884+00:00: AUTHORITATIVE rootHEAD439ce17b392e80101ff2ef81f9bcb228c8e3dc35; EXPORTS2correctedcompile74932max1, NOTIFY3GRANTEDmax1 NTR01 ownRedis test-only1s thenrestore30s; measurement5CPU17063MiBavailable. AllClock/FILESprior terminal/released; noapps/browser. Commonconfigfrontend6e2 stable SOURCE_READY minimaltestBOM, export0f9176f ownscompile. FreshECRa7c review/Clock10aruntimereview LIGHTqueue; mapc73APPROVE transfer/integrationrootnext.
-
-2026-10-11T23:18:57.221388+00:00: SOURCE_ONLY commonconfig solefrontend writer: extend independent auth-gateway-test-deps stable6e2 exact Authappbuild with ONE testImplementation("org.springframework.cloud:spring-cloud-gateway-server") managed by existing testBOM2025.0.3. Export actualcompilebefore2 terminal1 cannot access GlobalFilter; cached Gateway4.3.5 coreJAR actualclass source confirmed author. No prod/globalBOM/ordinaryAuthgates/config otherpaths edits; source-ready cleancommit/sendroot+export; no heavy. EXPORTS2 paused; NOTIFY3max1 activegrant.
-
-2026-10-11T23:22:37.057017+00:00: commonconfig frontend completeda2df managedtestGatewaycore SOURCE_READY; fresh NP01 transportprep LIGHTread-only ownNEWscratch assigned, no configs/proto/productwrites. Exportnextboundedcompile aftersourcecherry; NOTIFY3TTLredterminal86023/restoredrealgreen next.
-
-2026-10-11T23:26:09.981500+00:00: Solecommonconfigfrontend scopeextension exactly Auth src/test/resources/application-test.yml additive spring.cloud.gateway.server.webflux.enabled=false. Actual18setupMVCfail fromintroducedGatewaycore autoconfig beforetests. Independently inspectcached4.3.5conditional annotations; disablesonlynewtestGatewaybootstrap, manualrealGatewayverifier/client/filter/worker remainsactive; production/Authsecurity/ordinarygates/standaloneGatewaygates unchanged. Source-readycleancommit before renewedEXPORTS2realbeforeoracles; no force reactive/Authgate relaxation.
-
-2026-10-11T23:26:58.931178+00:00: Freshmapreviewer retainedSol6.1/xhigh nowassigned NEWntr01-recheck readonlyLIGHT aftersuccessfulboundedNTRcontrol; prior58mapreviewimmutable preserved. Waitsource-readyseal/cleancommit if needed, no heavy.
+frontend_inventory pendinginit ownerREVOKED/interrupted; doNOTAUTORESUME. Old exports f09, FP2a1c, NTRd674, clock10a, maps, priorreviews immutable read-only. RealclientWT eec3/projectrct-client-eec3, ports8443/28488/IPAM172.29.84/24,8Javaimages/syntheticTLS/Chromium retained; all app/browser newallocationsPAUSED/no phase2B. Diskrescue128newhistoricalcopies exact completed35610 native0; no activecleanup process. Legacyresourcehistories before-0144-resources.md. Do not touch foreignWIP/privatebot/18514/prod/backup/secrets.

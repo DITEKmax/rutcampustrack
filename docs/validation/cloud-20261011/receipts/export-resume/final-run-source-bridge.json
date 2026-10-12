@@ -1,0 +1,152 @@
+{
+  "final_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "product_commit": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "runs": [
+    {
+      "phase": "ebsr-compile-after-1",
+      "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+      "producer_manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1851,
+      "differences": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+          "producer_sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+          "final_sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "producer_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+          "final_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818"
+        }
+      ],
+      "qualification": "Explicit test-only later corrections; no complete final-input equality claim"
+    },
+    {
+      "phase": "ebsr-compile-after-2",
+      "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+      "producer_manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1851,
+      "differences": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+          "producer_sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+          "final_sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "producer_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+          "final_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818"
+        }
+      ],
+      "qualification": "Explicit test-only later corrections; no complete final-input equality claim"
+    },
+    {
+      "phase": "ebsr-crosslayer-after-1",
+      "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+      "producer_manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1851,
+      "differences": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+          "producer_sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+          "final_sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "producer_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+          "final_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818"
+        }
+      ],
+      "qualification": "Explicit test-only later corrections; no complete final-input equality claim"
+    },
+    {
+      "phase": "ebsr-crosslayer-after-2",
+      "producer_head": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+      "producer_manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1851,
+      "differences": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+          "producer_sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+          "final_sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "producer_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+          "final_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818"
+        }
+      ],
+      "qualification": "Explicit test-only later corrections; no complete final-input equality claim"
+    },
+    {
+      "phase": "ebsr-crosslayer-after-3",
+      "producer_head": "e258af8f7b836814ad47aed3ded46060594f8567",
+      "producer_manifest_sha256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1852,
+      "differences": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "producer_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+          "final_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818"
+        }
+      ],
+      "qualification": "Only new unit-test signer fixture differs from successful e258 crosslayer source; crosslayer class/all main/build/config/proto inputs exact. Do not describe earlier runs as executed on final f09b."
+    },
+    {
+      "phase": "ebsr-affected-unit-1",
+      "producer_head": "e258af8f7b836814ad47aed3ded46060594f8567",
+      "producer_manifest_sha256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1852,
+      "differences": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "producer_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+          "final_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818"
+        }
+      ],
+      "qualification": "Explicit test-only later corrections; no complete final-input equality claim"
+    },
+    {
+      "phase": "ebsr-affected-unit-2",
+      "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+      "producer_manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1853,
+      "differences": [],
+      "qualification": "Exact final input equality"
+    },
+    {
+      "phase": "ebsr-auth-compatibility-1",
+      "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+      "producer_manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1853,
+      "differences": [],
+      "qualification": "Exact final input equality"
+    },
+    {
+      "phase": "ebsr-jobs-compatibility-1",
+      "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+      "producer_manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "source_unchanged_during_run": true,
+      "inputs": 1853,
+      "matches_final": 1853,
+      "differences": [],
+      "qualification": "Exact final input equality"
+    }
+  ]
+}

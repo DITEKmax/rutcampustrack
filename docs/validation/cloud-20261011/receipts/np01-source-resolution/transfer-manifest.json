@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "sealedAt": "2026-10-12T00:52:48.874117+00:00",
+  "sourceCodeRootRevision": "d5510a2cd94349fb534197e0aead2d2e12ab8c55",
+  "currentRootObserved": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "ownerContractSha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+  "receiptRoot": "/workspace/scratch/rct-validation/np01_source_resolution",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 903,
+      "sha256": "0cb087083270dfd6d7ed50331b1a7b63dbd5550aba3cb157a7c6556fbad9b227"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 7229,
+      "sha256": "980c9918ba3c94a165ce943cc6431ec638b8df3f1c83bb4a1874934c7a2fd361"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 923,
+      "sha256": "d9d7dc72a7fcfd09033e856b39b61b7654f03ade9c1161314bdb46e0e619dda4"
+    },
+    {
+      "path": "implementation-packet.md",
+      "bytes": 20250,
+      "sha256": "488acee0ab787ee697edd42a1f0c50dd1d5fc7ec863304df79f5417f07b2d7b1"
+    },
+    {
+      "path": "proto-proposal.txt",
+      "bytes": 3694,
+      "sha256": "b60c0c0f7a5d849ce34e7857a1f268d316338e8d703180ad1437223c62032184"
+    },
+    {
+      "path": "source-ledger.json",
+      "bytes": 41135,
+      "sha256": "1b81cff00333377a8b6890e4fbfcba48e5479dca4e88d0eb96df5e2993f1ba07"
+    },
+    {
+      "path": "source-ledger.py",
+      "bytes": 12061,
+      "sha256": "de08b5a28ce33ef590b406a2a02c8d89a3206ce481db5bcac2279baad0f91906"
+    },
+    {
+      "path": "verdict.json",
+      "bytes": 1620,
+      "sha256": "8dde81eddf4d2174cc0a4eef28a997e84276dc445022fcd57fde940972e47cc9"
+    }
+  ],
+  "originalSources": "Exacttrackedcode sourcesatd551, alsoverifiedcurrentpaths. Currentauthoritativeownercontract8cbd/priorfrozenc933 distinct. Selectedexcerpts preserved inledger withoriginalsourceSHA. No whole-source orsecret/configtransfer.",
+  "claims": "Source-onlyimplementationpacket, notruntime/newpolicy/NP01PASS; no sharedsource/matrixwrites.",
+  "next": "Rootfreezeboundedcontract/owners; implement+independentreview+actualproof;retainprior30637red."
+}

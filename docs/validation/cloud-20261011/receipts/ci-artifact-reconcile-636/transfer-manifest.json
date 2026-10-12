@@ -1,0 +1,191 @@
+{
+  "producerHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "currentReviewedSha": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "workflowRunId": 38184430139,
+  "event": "pull_request",
+  "source": "Native GitHub workflow artifact download, Sediment-backed materialization",
+  "archives": [
+    {
+      "artifactId": 11719530075,
+      "artifactName": "safe-integration-outcomes-api-gateway-1",
+      "originalArchive": "immutable-artifacts/11719530075.zip",
+      "sha256": "6e4c3638642e55500490ce6ad87aeceecb4e09030ee49936b679cb8a9262bdb6",
+      "bytes": 1339,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "8f2634eb90b3287fe2daadc277b21de6fd58fb585186175df5619920a8b74ebc",
+          "bytes": 8118
+        }
+      ]
+    },
+    {
+      "artifactId": 11719500562,
+      "artifactName": "safe-integration-outcomes-schedule-service-1",
+      "originalArchive": "immutable-artifacts/11719500562.zip",
+      "sha256": "c889101fd51f52dd568435e07a9445adcb455c3f70927b1d7d713a23164210b7",
+      "bytes": 10774,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "b944a4338808d9a6c067123d5c1b23ca153a4f45761156b263ae1e27752c2b46",
+          "bytes": 125324
+        }
+      ]
+    },
+    {
+      "artifactId": 11719450597,
+      "artifactName": "safe-unit-outcomes-api-gateway-1",
+      "originalArchive": "immutable-artifacts/11719450597.zip",
+      "sha256": "47fcf5a1958bc25fb3e01b9f4f93dbd8546a322e2db8d8c236d323870b76532a",
+      "bytes": 5834,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "116cc3a20d4ef2e352264fd5d0014566ec8fea90851bbceb74469db6893ba54b",
+          "bytes": 85738
+        }
+      ]
+    },
+    {
+      "artifactId": 11719430751,
+      "artifactName": "safe-integration-outcomes-auth-service-1",
+      "originalArchive": "immutable-artifacts/11719430751.zip",
+      "sha256": "dde4404d5ee526b6b088941e034c6226e624265ec9943084d20b0faa7029a6d5",
+      "bytes": 6913,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "050fd10d77ca2aeb9d9b39114c3b6f4aac412a062f0068d94d34a7cdf68da814",
+          "bytes": 78582
+        }
+      ]
+    },
+    {
+      "artifactId": 11719167418,
+      "artifactName": "safe-integration-outcomes-attendance-service-1",
+      "originalArchive": "immutable-artifacts/11719167418.zip",
+      "sha256": "8e635ec1da4ac16f742a41cf4e5c5500286d242fd01b882e1af415d4f2e002a0",
+      "bytes": 12433,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "d5a6ae3ee3d4bfb585d31a73f3ab728af87c4c4cc6e7b84c9b32042658697201",
+          "bytes": 138638
+        }
+      ]
+    },
+    {
+      "artifactId": 11719102777,
+      "artifactName": "safe-integration-outcomes-academic-service-1",
+      "originalArchive": "immutable-artifacts/11719102777.zip",
+      "sha256": "8ff450fb0a1370dea997d92db27e0a4fa3863a8dfb496eba492810bc52dfa14f",
+      "bytes": 19454,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "5b952dc517c05751c842425438667a38257eb623bab4111ff7b8254a5e80e9a5",
+          "bytes": 239669
+        }
+      ]
+    },
+    {
+      "artifactId": 11718972638,
+      "artifactName": "safe-unit-outcomes-auth-service-1",
+      "originalArchive": "immutable-artifacts/11718972638.zip",
+      "sha256": "61c9339cc80dc58015eaf9f58b97c3de8cfc1386b6a09c0419821ecc002950f5",
+      "bytes": 7275,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "8d34611240255078554d01f03cb6574d0a58931db19142363f6a1a9c5e632af0",
+          "bytes": 79208
+        }
+      ]
+    },
+    {
+      "artifactId": 11718823099,
+      "artifactName": "safe-unit-outcomes-attendance-service-1",
+      "originalArchive": "immutable-artifacts/11718823099.zip",
+      "sha256": "4a37b54ce8d81b9d2f761b850c7ef73becfd1a9676c1cc712b76099897b62670",
+      "bytes": 14651,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "e2a7abc5430a8e396ce6af7e4e3b110bf918a0166f7951046f5b61f1a8ab62ad",
+          "bytes": 185936
+        }
+      ]
+    },
+    {
+      "artifactId": 11718792984,
+      "artifactName": "safe-unit-outcomes-academic-service-1",
+      "originalArchive": "immutable-artifacts/11718792984.zip",
+      "sha256": "1546d07400b65b5b03e34cfd4f12079fff1dc3e129928a037d41d5f80da6c965",
+      "bytes": 14719,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "66fb50d2b2dfc47aef8976ec32e5dafa0033bc6ef01edb485929f968276ba404",
+          "bytes": 249038
+        }
+      ]
+    },
+    {
+      "artifactId": 11718743176,
+      "artifactName": "safe-unit-outcomes-notification-service-1",
+      "originalArchive": "immutable-artifacts/11718743176.zip",
+      "sha256": "ebbbb08dcddd8925f32dd577c9102f4cf3a56e10df405db4e5784c3ba9b0c0ab",
+      "bytes": 7295,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "d60e31bf34bac149b2434b426fc9c2b47e132dd1369c9a7f864bac59814932eb",
+          "bytes": 78840
+        }
+      ]
+    },
+    {
+      "artifactId": 11718708644,
+      "artifactName": "safe-integration-outcomes-notification-service-1",
+      "originalArchive": "immutable-artifacts/11718708644.zip",
+      "sha256": "8985cb06ce982f76e95c161663fa309f2919ba607554054e9f0f85976d29537e",
+      "bytes": 3987,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "9f9deb2a58ba8d8c791002448a3c011d904be8fa8f230bb679a924d539c0c1bb",
+          "bytes": 38877
+        }
+      ]
+    },
+    {
+      "artifactId": 11718619123,
+      "artifactName": "safe-unit-outcomes-schedule-service-1",
+      "originalArchive": "immutable-artifacts/11718619123.zip",
+      "sha256": "4d1956a7fecde179f9d90576a88692496f94a60b94011c06736f6531f1fa672b",
+      "bytes": 5407,
+      "githubDigestVerified": true,
+      "members": [
+        {
+          "path": "safe-outcomes.json",
+          "sha256": "7c884027b2d69f424e61e7f580b1800f8f9e3f250d376e499bbe67b6af6a43e6",
+          "bytes": 138989
+        }
+      ]
+    }
+  ],
+  "originalXMLAvailability": "Not included by design. Original XML SHA and case outcomes retained by reviewed privacy collector; original ZIP bytes preserved exactly. No independent reparse of original XML claimed.",
+  "runtimeReruns": 0
+}

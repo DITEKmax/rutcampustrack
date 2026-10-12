@@ -1,0 +1,165 @@
+{
+  "at": "2026-10-12T00:47:42.921066+00:00",
+  "phase": "ebsr-affected-unit-1",
+  "head": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "wipHash": "dcbb452a806d114e0e90cb6db0e2636781a2e2b93f9ada5ae101c15ba6748fed",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:test",
+    "--tests",
+    "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+    "--tests",
+    "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+    "--tests",
+    "ru.rutcampustrack.auth.events.ExportStateContractTest",
+    "--rerun",
+    ":services:api-gateway:test",
+    "--tests",
+    "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+    "--tests",
+    "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+    "--rerun",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "FAIL",
+  "sourceManifest": "ebsr-affected-unit-1-source-manifest.json",
+  "sourceManifestSHA256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+  "testFixtureControls": {},
+  "diskFreeBeforeBytes": 6477303808,
+  "diskFreeAfterBytes": 6476783616,
+  "exitCode": 1,
+  "finished": "2026-10-12T00:48:08.407246+00:00",
+  "logSHA256": "468f8df4cdf53d734c27d85c2a566637c1eaa7e6263b39f024a81fea7654ec41",
+  "sourceFilesUnchangedDuringRun": true,
+  "taskExecution": {
+    ":services:auth-service:auth-app:test": "> Task :services:auth-service:auth-app:test",
+    ":services:api-gateway:test": "NOT_RUN"
+  },
+  "suites": {
+    ":services:auth-service:auth-app:test": [
+      {
+        "suite": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlSHA256": "93a300fe16cee63115702e1c11d14656c852e810440c287d154e9f6fe650729c",
+        "cases": [
+          {
+            "name": "explicitServiceSelectorFailureMapsToBadRequest()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "rosterSelectorIsClosedFormatOnlyAndBindsKindAndFormat()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "selectorWithAnExtraParameterObjectIsRejectedAsBadRequestBeforeIssuance()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "journalTicketBindsCompletedAndExactSelectionAndNormalizesMissingFalse()",
+            "outcome": "PASS",
+            "failureType": null
+          }
+        ]
+      },
+      {
+        "suite": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlSHA256": "38c2fd0becaf1e0934271f68f9dfe9f0a47c6809ca30150dde6dc2d532ac2e6f",
+        "cases": [
+          {
+            "name": "actualProducerCodesRoundTripAndSchemaExcludesUnknownStatesAndFileContents()",
+            "outcome": "PASS",
+            "failureType": null
+          }
+        ]
+      },
+      {
+        "suite": "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlSHA256": "a260b18a84fbe172e97e0d48e335ea06db89085ad13c326c369514c7df43b2c3",
+        "cases": [
+          {
+            "name": "fullFileMetadataRequiresFullEvenWhenOrdinaryAdmissionAndRolesVersionAreValid()",
+            "outcome": "PASS",
+            "failureType": null
+          }
+        ]
+      },
+      {
+        "suite": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+        "tests": 8,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "xmlSHA256": "f45f462283143aed3da49b51edb39ced0f64dcc4751f3a047cb0527412bfe505",
+        "cases": [
+          {
+            "name": "malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "revokedViewStatsDeniesTrendTicketBeforeRateLimitOrStorage()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "rechecksLiveSessionBeforeMintingAndDeniesARevokedOrChangedSession()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "viewStatsAssistantCannotIssueRosterTicketOrConsumeIssueBudget()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow()",
+            "outcome": "FAIL",
+            "failureType": "java.lang.NullPointerException"
+          },
+          {
+            "name": "readyJobCapabilityCannotOutliveItsCommittedFileExpiry()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "rosterTicketsBindOwnHeadmanSessionAcrossFormatsAndRefuseRevokedRedemption()",
+            "outcome": "PASS",
+            "failureType": null
+          }
+        ]
+      }
+    ],
+    ":services:api-gateway:test": []
+  }
+}

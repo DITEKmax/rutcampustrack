@@ -1,0 +1,106 @@
+{
+  "at": "2026-10-11T23:27:09.094539+00:00",
+  "source": "/workspace/scratch/rct-validation/ci_generator_recheck/clock-runtime-recheck",
+  "verdict": "APPROVE_BOUNDED_CLOCK_EVIDENCE",
+  "target_sha": "10a213344673c84af4efc6b501a8084bbf5045be",
+  "original_byte_index": {
+    "path": "original-byte-index.json",
+    "sha256": "3c817f6e4b71784770c743e7b9c5ff3ce33eceaa72c5e48e968a7d523055eeb9",
+    "bytes": 2951
+  },
+  "immutable_originals": {
+    "path": "immutable-review-receipts.zip",
+    "sha256": "96bf1cb012651c6971fb3c97189bac9b2131e201536bab31d5a1b3b6b8dcc2ce",
+    "bytes": 26778,
+    "members": 13,
+    "all_original_members_byte_equal": true
+  },
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "ec7a8d03d6ec39d9f81924cd06e55fc4a5828de25e4899aa22ba17f14ada4d5e",
+      "original_bytes": 715,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "artifact-qualification.json",
+      "original_sha256": "647204359596a10f0774f08b6a9c0c89c9e40291f5df10ab61c6773679d7d72c",
+      "original_bytes": 245,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "audit.py",
+      "original_sha256": "04dd84ac47a199daf727cb6c15d8272a40d92964cf25d543ddb1c0811616b4a1",
+      "original_bytes": 19983,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "checks.json",
+      "original_sha256": "8d1f63b7c6bbf84422c91921e8eb5d312f3439885783bf9c3d18f0b966f97fa1",
+      "original_bytes": 543,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "findings.md",
+      "original_sha256": "08d70a0ef80f0448886d79a9c853d0ec760a1e26c33a53c240f9ef57238c70d2",
+      "original_bytes": 7948,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "independent-current-artifact-inspection.json",
+      "original_sha256": "3e603c1c0737261613a0b1b985ab249e97e1dc57fc6e0c8ab0fbbf1b1e23e276",
+      "original_bytes": 6677,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "opened-sources-and-receipts.json",
+      "original_sha256": "c2d9838bdf86956ce57b3bd4a28453aa86a92e0beb3701e58d8ad026b33aabfe",
+      "original_bytes": 18114,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "original-xml-reconciliation.json",
+      "original_sha256": "ef5b8c8ac06fc842e49a0ed9d41cd2837fe1a6179c9c54312f931824dc5953e6",
+      "original_bytes": 20719,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "sealed-prior-review-preservation.json",
+      "original_sha256": "2c36f32c027940b6e97b83df530b4387d7753bbe6b39e7a91ab5f96677d712c0",
+      "original_bytes": 2037,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "sensitivity-restoration.json",
+      "original_sha256": "7992ceccfb79e980de4c196f25e6a294d204f39426a36b47a3666eb79e441e14",
+      "original_bytes": 2787,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "source-run-bridges.json",
+      "original_sha256": "2ca40bdab930bb93bf60aa5f0c15a8453a8705b3cf2b3241509e856e89190bd2",
+      "original_bytes": 8287,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "verdict.json",
+      "original_sha256": "9383ec9344445cde6f162886fe708f165bfbc7d23ad6cf3a77abc45f54e37339",
+      "original_bytes": 8280,
+      "transformation": "NONE; original reviewer bytes"
+    }
+  ],
+  "transfer_rule": "Preserve original reviewer bytes/index/archive. Keep root qualifications separately. Do not import raw XML/logs/JARs/credentials/parameters/PII. Exact10a bounded consumer/context/sensitivity/packaged artifacts only; root integration and actual apps/browser/geo/D005/CC03 remain separate.",
+  "prior_sealed16members": "PRESERVED verified independently by archive/member/index/manifest SHA",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "runtime_replays_mutations_fixes": "NONE",
+  "safe_output_checks": {
+    "only_safe_review_outputs": true,
+    "raw_xml_log_bodies_copied": false,
+    "known_privacy_marker_copied": false,
+    "reviewer_product_or_root_writes": false,
+    "reviewer_runtime_replay_or_mutation": false,
+    "prior_sealed16_preserved": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-12T01:15:34.226423+00:00",
+  "verdict": "APPROVE",
+  "level": "SOURCE_ONLY_BOUNDED",
+  "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "merged_source_sha256": "3288e8caf3d87e414c0e4b76a6cc1ab7411163b25b31f9a6c609bef0b0bde9d2",
+  "blocking_findings": 0,
+  "native_three_way_merge_exact": true,
+  "teacher_predicate_preserved_exact": true,
+  "author_batch_preserved_exact": true,
+  "other_author_paths_exact": 96,
+  "current_Academic_runtime": "NOT_RUN",
+  "verification_dependency": "Specific Academic compile +two existing cases; see verification-dependency.json",
+  "source_writes": 0,
+  "heavy": 0,
+  "children": 0,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "next": "Root runs or reuses the specified current integrated Academic checks and keeps global scope qualified."
+}

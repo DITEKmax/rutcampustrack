@@ -1,0 +1,856 @@
+{
+  "timestamp": "2026-10-12T00:46:57.547588+00:00",
+  "rootRevision": "d5510a2cd94349fb534197e0aead2d2e12ab8c55",
+  "readOnly": true,
+  "entries": [
+    {
+      "source_id": "owner:cloud-TASKCONTRACT-initial-exception",
+      "canonical_path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+      "status": "Current owner contract; authoritative",
+      "fragments": [
+        {
+          "line": 46,
+          "text": "Отсутствующую принятую функцию разрешено реализовать автономно, если документация и решения владельца задают её поведение и границы. Новую функцию или спорное продуктовое правило без принятого решения не выдумывай. При противоречии источников задай вопрос и отложи только зависимую часть. Для каждого defect/gap сохраняй severity, IDs, cause, scope, before/after evidence и revision."
+        },
+        {
+          "line": 51,
+          "text": "Пароли пользователя должны обрабатываться безопасно: проверяемые hash/verify rules и смена/reset, без утечки через API/логи/экспорт/тестовые artifacts. Исключение владельца — принятый начальный/сброшенный пароль, который текущий продукт хранит в открытом виде до смены пользователем. Это ограниченное продуктовое исключение: сохраняй принятый показ только по нужным grants, происхождение пароля и очистку после смены. Оно не разрешает хранить в открытом виде пользовательский изменённый пароль, расширять выдачу начального или печатать секреты. Новое решение о шифровании/сроке/выгрузке начального пароля, если оно меняет принятый продукт, вынеси вопросом. Используй только синтетические credentials; значения настоящих секретов не читать и не выводить."
+        }
+      ],
+      "bounded_claim": "Accepted initial/reset plaintext display only within existing grants and clearing after change; no new lifetime/encryption/export policy",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance",
+      "priorFrozenSha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "identityQualification": "Ownercontract advancedconcurrently: priorfrozend551 c933, authoritativecurrentworking8cbd(D009). Exactinitial-exception fragment unchanged; currentfullcontractsourcebyteequivalence notclaimed."
+    },
+    {
+      "source_id": "design:knowledge/job-stories.md:JS-SYSTEM-01",
+      "canonical_path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "status": "Exact archived-copy manifest status; retained canonical story text by current registry and explicitly scoped owner assignment",
+      "fragments": [
+        {
+          "line": 118,
+          "text": "| **Логин генерируется из данных человека**, а не из роли | JS-ADMIN-01 (✏️) | Решение владельца: фамилия и имя латиницей + последние 4 цифры Tr id или табельного номера. Схема `studentXXXXX` / `teacherXXXXX` отменена. Закрывает прим. 1 скана 121 |"
+        },
+        {
+          "line": 167,
+          "text": "**JS-ADMIN-01**: ✏️ **ИЗМЕНЕНО (чат 7).** Когда в вуз приходит новый студент или преподаватель, я (администратор) хочу ~~массово~~ **по одному** добавить его в систему, указав ФИО, ~~email,~~ роль и группу (для студентов) / табельный номер (для преподавателей), чтобы ему автоматически сгенерировались логин ~~(`studentXXXXX` / `teacherXXXXX`)~~ **по алгоритму, не зависящему от роли** и пароль, которые будут отправлены при первом запуске Telegram-бота."
+        },
+        {
+          "line": 851,
+          "text": "**JS-SYSTEM-01**: Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен."
+        },
+        {
+          "line": 853,
+          "text": "**JS-SYSTEM-02**: ✏️ **Уточнение.** Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`)."
+        },
+        {
+          "line": 868,
+          "text": "> 🆕 Факт смены пароля уведомляется в Telegram — требуется событие `password.changed`."
+        }
+      ],
+      "bounded_claim": "Own first-start credentials and deletion of old dialogue data accepted; old role-prefixed login statement superseded by explicit chat7/admin story; preserve actual login generator",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "registry:JS-SYSTEM-01",
+      "canonical_path": "docs/product/job-stories.yaml",
+      "sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+      "status": "Generated preparation registry; decision_status retained, delivery_status not-started, contract_revision null",
+      "fragments": [
+        {
+          "line": 17827,
+          "text": "                        \"id\":  \"JS-SYSTEM-01\","
+        },
+        {
+          "line": 17847,
+          "text": "                        \"current_accepted_text\":  \"Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен.\","
+        }
+      ],
+      "bounded_claim": "Corroborates source text; does not establish permission matrix or runtime",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "owner:limited-administrators-20261008",
+      "canonical_path": "docs/product/decisions/2026-10-08-limited-administrators.md",
+      "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+      "status": "Accepted dated owner decision",
+      "fragments": [
+        {
+          "line": 12,
+          "text": "- Просмотр обычных данных пользователя не даёт автоматически доступ к его начальному паролю или восстановлению доступа."
+        },
+        {
+          "line": 21,
+          "text": "Frozen contract R1: `.agent/evidence/admin-permissions-20261008/CONTRACT.md`; каталог 12 прав и границы согласованы root/фронтенд-дизайнером. FULL управляет административными назначениями, LIMITED не получает это право; отдельные права пользователей/групп/семестров/карты/сводки/credentials/archive/finaldelete описаны в контракте. Self access change запрещён, ограниченный администратор не изменяет и не получает credentials пользователя с active ADMIN."
+        }
+      ],
+      "bounded_claim": "Administrative target-credential restrictions remain; own-recipient notification does not grant administrative access to another user",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "owner:user-restore-without-rights-20261002",
+      "canonical_path": "docs/product/decisions/2026-10-02-user-restore-without-rights.md",
+      "sha256": "f3cb44eca63bef01ecc4c91ee60455aed3a2d966f94aa7ab640c5d8b8e52dd22",
+      "status": "Accepted dated owner decision",
+      "fragments": [
+        {
+          "line": 5,
+          "text": "JS-ADMIN-04 остаётся обратимым архивированием: аккаунт, занятый логин, посещаемость, заявки и история сохраняются. Восстановление снимает архивный статус аккаунта, но не реактивирует роли и статусы grants, членство в группе, старосту или помощника. Администратор выдаёт роли и назначения заново обычными разрешёнными операциями. Старые сессии и выбранные полномочия автоматически не восстанавливаются."
+        }
+      ],
+      "bounded_claim": "Restore does not recreate revoked role grants",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Auth.ActiveRolePolicy",
+      "canonical_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "sha256": "7f3f6d9b2f78bed99b22d89b8f943481cd4db5fbd672ee977d39533418fabd13",
+      "status": "Current implementation; not owner policy",
+      "fragments": [
+        {
+          "line": 34,
+          "text": "        RoleGrant defaultGrant = copy.stream()"
+        },
+        {
+          "line": 35,
+          "text": "                .filter(RoleGrant::isSelectable)"
+        },
+        {
+          "line": 36,
+          "text": "                .filter(grant -> grant.role() == AuthRole.STUDENT)"
+        },
+        {
+          "line": 39,
+          "text": "                        .filter(RoleGrant::isSelectable)"
+        },
+        {
+          "line": 40,
+          "text": "                        .filter(grant -> grant.role() == AuthRole.TEACHER)"
+        },
+        {
+          "line": 43,
+          "text": "        return Evaluation.success(copy, defaultGrant);"
+        },
+        {
+          "line": 66,
+          "text": "        if (!grant.isSelectable()) {"
+        },
+        {
+          "line": 81,
+          "text": "    public record Evaluation(Code code, List<RoleGrant> grants, RoleGrant defaultGrant) {"
+        },
+        {
+          "line": 93,
+          "text": "        public static Evaluation success(List<RoleGrant> grants, RoleGrant defaultGrant) {"
+        }
+      ],
+      "bounded_claim": "Default student/teacher selection distinct from manually selectable activeADMIN; no student-only credential whitelist",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Auth.RoleStatus",
+      "canonical_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+      "sha256": "d27f6ff82baa41308de2eacf9bdd83bc4505481ffc2763fbee94f8ebac3ef1ac",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 8,
+          "text": "    ACTIVE(false, true),"
+        },
+        {
+          "line": 11,
+          "text": "    SUSPENDED(true, false),"
+        },
+        {
+          "line": 13,
+          "text": "    ARCHIVED(true, false);"
+        }
+      ],
+      "bounded_claim": "Only ACTIVE grants are selectable; lifecycle facts retained",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Bot.start",
+      "canonical_path": "services/notification-bot/bot/handlers/start.py",
+      "sha256": "bc7e81bfab13be25169a44f0bc0a798fc78f93ed7c0d04480fb4cd3b9fcf422b",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 50,
+          "text": "async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sync=None) -> None:"
+        },
+        {
+          "line": 52,
+          "text": "    telegram_id = message.from_user.id"
+        },
+        {
+          "line": 56,
+          "text": "        response = await academic_client.get_user_by_telegram_id(telegram_id)"
+        },
+        {
+          "line": 60,
+          "text": "            await message.answer("
+        },
+        {
+          "line": 72,
+          "text": "        if response.initial_password:"
+        },
+        {
+          "line": 74,
+          "text": "            initial_password = html.escape(str(response.initial_password or \"\"))"
+        },
+        {
+          "line": 75,
+          "text": "            await message.answer("
+        },
+        {
+          "line": 89,
+          "text": "            await message.answer("
+        },
+        {
+          "line": 103,
+          "text": "        await message.answer("
+        },
+        {
+          "line": 112,
+          "text": "async def cmd_credentials(message: Message, academic_client) -> None:"
+        },
+        {
+          "line": 114,
+          "text": "    telegram_id = message.from_user.id"
+        },
+        {
+          "line": 116,
+          "text": "        response = await academic_client.get_user_by_telegram_id(telegram_id)"
+        },
+        {
+          "line": 119,
+          "text": "        await message.answer(\"⚠️ <b>Сервис временно недоступен</b>\\n\\nПопробуйте ещё раз чуть позже.\", parse_mode=\"HTML\")"
+        },
+        {
+          "line": 123,
+          "text": "        await message.answer("
+        },
+        {
+          "line": 132,
+          "text": "    initial_password = html.escape(str(response.initial_password or \"\"))"
+        },
+        {
+          "line": 159,
+          "text": "    await message.answer(\"\\n\".join(lines), parse_mode=\"HTML\")"
+        },
+        {
+          "line": 166,
+          "text": "    await message.answer(f\"{_LINKS_BLOCK}\\n\\n{_INSTALL_BLOCK}\", parse_mode=\"HTML\")"
+        }
+      ],
+      "bounded_claim": "Both own-start and credentials lack private/sender-chat guards; generic lookup redaction currently prevents initial delivery",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Bot.private-reset",
+      "canonical_path": "services/notification-bot/bot/handlers/password_reset.py",
+      "sha256": "2d6d8733a6a0069e0e99044dbd5316a1385ee031ae8e9792223614bebab33099",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 26,
+          "text": "    if message.chat.type != \"private\":"
+        }
+      ],
+      "bounded_claim": "Existing private-chat guard pattern only; OTP TTL not applicable to initial card tracking",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Bot.AcademicGrpcClient",
+      "canonical_path": "services/notification-bot/bot/grpc_client/academic_client.py",
+      "sha256": "67c625e8803fb6b7b383f2a5e75f93989ac297c0054f2b2b8618a6ac32c65a64",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 15,
+          "text": "    _CACHE_TTL_SECONDS = 300  # 5 minutes"
+        },
+        {
+          "line": 33,
+          "text": "            self._channel = grpc.aio.secure_channel(target, credentials)"
+        },
+        {
+          "line": 35,
+          "text": "            self._channel = grpc.aio.insecure_channel(target)"
+        },
+        {
+          "line": 39,
+          "text": "        self._metadata = ((\"x-grpc-secret\", grpc_secret),) if grpc_secret else ()"
+        },
+        {
+          "line": 63,
+          "text": "            if now - ts < self._CACHE_TTL_SECONDS:"
+        },
+        {
+          "line": 97,
+          "text": "    async def get_user_by_telegram_id(self, telegram_id: int):"
+        }
+      ],
+      "bounded_claim": "Current TLS/CA channel support; shared-secret only; no directed protected own-credential call; credential read must remain uncached",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Academic.generic-profile",
+      "canonical_path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 1220,
+          "text": "    public void getUserByTelegramId(UserByTelegramIdRequest request,"
+        },
+        {
+          "line": 1251,
+          "text": "                // Generic service user lookup has no bound credential capability."
+        },
+        {
+          "line": 1252,
+          "text": "                .setInitialPassword(\"\")"
+        }
+      ],
+      "bounded_claim": "Generic profile must remain blank even after additive own capability",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Academic.uncached-binding",
+      "canonical_path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java",
+      "sha256": "28cda380679261c2480ec1153971e0245e7f806be55acdb24428aa8e051f73d4",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 105,
+          "text": "    public Optional<User> fetchUserByTelegramId(Long telegramId) {"
+        },
+        {
+          "line": 106,
+          "text": "        return userRepository.findByTelegramId(telegramId);"
+        }
+      ],
+      "bounded_claim": "Current uncached binding read",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Academic.User",
+      "canonical_path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/User.java",
+      "sha256": "a44a8e02f6682182c41e9c142ccd57e142f29faeb1d42d8ef0faaca8268e611e",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 15,
+          "text": "@SQLRestriction(\"status <> 'archived'\")"
+        },
+        {
+          "line": 63,
+          "text": "    private Long telegramId;"
+        },
+        {
+          "line": 91,
+          "text": "    private String initialPassword;"
+        },
+        {
+          "line": 95,
+          "text": "    private boolean passwordChanged;"
+        },
+        {
+          "line": 108,
+          "text": "    private OffsetDateTime updatedAt;"
+        }
+      ],
+      "bounded_claim": "Archived filtered; no durable credential/binding generation columns in entity",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Shared.ServicePrincipal",
+      "canonical_path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServicePrincipal.java",
+      "sha256": "9cc0ada0fdd7650ec2a3858662b1fc127319c339a595a9a858784925fba07643",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 12,
+          "text": " * does not carry a user, session, or domain actor identity.</p>"
+        },
+        {
+          "line": 22,
+          "text": "    public static final Context.Key<ServicePrincipal> CONTEXT_KEY ="
+        },
+        {
+          "line": 27,
+          "text": "    public ServicePrincipal(String name) {"
+        }
+      ],
+      "bounded_claim": "Existing immutable value type supports notification-bot principal without core redesign; authenticates service, not Telegram end user",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Shared.directed-token",
+      "canonical_path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+      "sha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 20,
+          "text": "    public static final int TOKEN_CHARACTERS = 43;"
+        },
+        {
+          "line": 22,
+          "text": "            Metadata.Key.of(\"x-service-token\", Metadata.ASCII_STRING_MARSHALLER);"
+        },
+        {
+          "line": 48,
+          "text": "    public static Optional<DirectedServiceCredential> tryCreate("
+        },
+        {
+          "line": 82,
+          "text": "        return candidateBytes != null && MessageDigest.isEqual(tokenBytes, candidateBytes);"
+        }
+      ],
+      "bounded_claim": "Canonical32-byte unpadded base64url token; exact direction, no actual token values read",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Shared.method-policy",
+      "canonical_path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "sha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 75,
+          "text": "        if (expectedCaller == null) {"
+        },
+        {
+          "line": 79,
+          "text": "        if (!hasAuthenticatedTls(call)) {"
+        },
+        {
+          "line": 83,
+          "text": "        String token = exactlyOneToken(headers);"
+        },
+        {
+          "line": 92,
+          "text": "        if (!expectedCaller.equals(verified.source())) {"
+        },
+        {
+          "line": 96,
+          "text": "        Context context = Context.current().withValue(ServicePrincipal.CONTEXT_KEY, verified.source());"
+        },
+        {
+          "line": 100,
+          "text": "    private boolean hasAuthenticatedTls(ServerCall<?, ?> call) {"
+        },
+        {
+          "line": 104,
+          "text": "        SSLSession session = call.getAttributes().get(Grpc.TRANSPORT_ATTR_SSL_SESSION);"
+        },
+        {
+          "line": 117,
+          "text": "    private static String exactlyOneToken(Metadata headers) {"
+        }
+      ],
+      "bounded_claim": "Exact-method receiver policy, requiresTLS session plus directed credential; absent methods inert; not proof of mutualTLS/end-user signature",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Shared.JavaCallCredentials",
+      "canonical_path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentials.java",
+      "sha256": "75f8f9dceba3169bb577f1815bffecb7b3490df6257f4b59ea91376ae60ec7fb",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 27,
+          "text": "    private final String targetAuthority;"
+        },
+        {
+          "line": 32,
+          "text": "            String targetAuthority,"
+        },
+        {
+          "line": 34,
+          "text": "        if (credential == null || targetAuthority == null || targetAuthority.isBlank()"
+        },
+        {
+          "line": 40,
+          "text": "        this.targetAuthority = targetAuthority;"
+        },
+        {
+          "line": 46,
+          "text": "            String targetAuthority,"
+        },
+        {
+          "line": 48,
+          "text": "        return new ServiceTokenCallCredentials(credential, targetAuthority, protectedMethod);"
+        },
+        {
+          "line": 68,
+          "text": "            if (method == null || !protectedMethods.contains(method.getFullMethodName())"
+        },
+        {
+          "line": 69,
+          "text": "                    || !targetAuthority.equals(requestInfo.getAuthority())) {"
+        },
+        {
+          "line": 73,
+          "text": "            if (requestInfo.getSecurityLevel() != SecurityLevel.PRIVACY_AND_INTEGRITY) {"
+        },
+        {
+          "line": 80,
+          "text": "            metadata.put(DirectedServiceCredential.TOKEN_METADATA_KEY, credential.wireToken());"
+        }
+      ],
+      "bounded_claim": "Java client releases token only exact method/authority/authenticated confidentiality; Python must enforce equivalent secure-channel scope",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Academic.shared-secret",
+      "canonical_path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcAuthInterceptor.java",
+      "sha256": "1ad2005dabbbce6e9780a306032e75d5fbdfcc61311c4c9eb3b962eae01d4e82",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 11,
+          "text": " * in the {@code x-grpc-secret} metadata header. Rejects unauthenticated calls"
+        },
+        {
+          "line": 18,
+          "text": "            Metadata.Key.of(\"x-grpc-secret\", Metadata.ASCII_STRING_MARSHALLER);"
+        },
+        {
+          "line": 29,
+          "text": "        if (expectedSecret != null && !expectedSecret.isBlank()) {"
+        },
+        {
+          "line": 31,
+          "text": "            if (provided == null || !provided.equals(expectedSecret)) {"
+        }
+      ],
+      "bounded_claim": "Shared secret remains pre-existing authentication factor, never replacement for new directed identity",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Auth.credential-clear",
+      "canonical_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 143,
+          "text": "            SET password_hash = ?, password_changed = TRUE, initial_password = NULL"
+        },
+        {
+          "line": 179,
+          "text": "            SET password_hash = ?, password_changed = TRUE, initial_password = NULL"
+        },
+        {
+          "line": 381,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 399,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 453,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 511,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 552,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 607,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 633,
+          "text": "        UserRow user = findUser(command.userId(), true);"
+        },
+        {
+          "line": 683,
+          "text": "        passwordChangedOutbox.append(command.userId(), command.now());"
+        },
+        {
+          "line": 740,
+          "text": "        passwordChangedOutbox.append(userId, command.now());"
+        }
+      ],
+      "bounded_claim": "Change/reset clear plaintext and append outbox under existing transaction/user lock",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Auth.PasswordChangedOutbox",
+      "canonical_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "sha256": "e863811ed08a1fef05458ad59e16b4a0e45439465522493871a2ba95a20af742",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 31,
+          "text": "        Long telegramId = jdbc.queryForObject(\"SELECT telegram_id FROM users WHERE id = ?\","
+        },
+        {
+          "line": 33,
+          "text": "        if (telegramId == null || telegramId <= 0) {"
+        },
+        {
+          "line": 36,
+          "text": "        PasswordChangedEvent event = new PasswordChangedEvent(this, telegramId);"
+        },
+        {
+          "line": 40,
+          "text": "            jdbc.update(\"INSERT INTO auth_outbox (event_type, payload) VALUES (?, CAST(? AS jsonb))\","
+        }
+      ],
+      "bounded_claim": "Current snapshot telegram only, returns before event if no current binding; cleanup must also work after unlink",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Auth.PasswordChangedEvent",
+      "canonical_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedEvent.java",
+      "sha256": "ddcc815ed090c7cda240f3f76934186e01063ac7260376fb8be3c5771236d0e0",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 8,
+          "text": "    public record Payload(@JsonProperty(\"telegram_id\") long telegramId) {"
+        },
+        {
+          "line": 17,
+          "text": "        super(source, \"password.changed\", new Payload(telegramId));"
+        }
+      ],
+      "bounded_claim": "Payload v1 lacks UID and credential/binding generations",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "schema:password.changed.v1",
+      "canonical_path": "event-schemas/password.changed.json",
+      "sha256": "53a952516e2f8439cf2c97f631ac3dec38731f374ea4f9e9c24c9d26fe22a29d",
+      "status": "Current schema; no runtime proof",
+      "fragments": [
+        {
+          "line": 22,
+          "text": "      \"required\": [ \"telegram_id\" ],"
+        },
+        {
+          "line": 26,
+          "text": "      \"additionalProperties\": false"
+        },
+        {
+          "line": 28,
+          "text": "    \"event_version\": { \"const\": 1 },"
+        },
+        {
+          "line": 32,
+          "text": "  \"additionalProperties\": false"
+        }
+      ],
+      "bounded_claim": "Explicit versioning required; cannot silently add fields to v1 additionalProperties=false",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Bot.PasswordChanged",
+      "canonical_path": "services/notification-bot/bot/notifications/password_changed.py",
+      "sha256": "f5ce4d45fc5df93282e20bb6ae127b4310008e61282266e18fef00ff60df3e97",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 12,
+          "text": "async def handle_password_changed(event: dict, *, bot: Bot) -> None:"
+        },
+        {
+          "line": 18,
+          "text": "    telegram_id = payload.get(\"telegram_id\")"
+        },
+        {
+          "line": 31,
+          "text": "    await bot.send_message("
+        }
+      ],
+      "bounded_claim": "Current notice only, no previous credential card edit/delete and no rebinding authority",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Bot.RequestTracker",
+      "canonical_path": "services/notification-bot/bot/services/request_message_tracker.py",
+      "sha256": "adf7cdf8bcf602ce4fbc7b0b7874789f34bd8c1819f0851cae87501332e29c8d",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 34,
+          "text": "        ttl: int = 7 * 24 * 3600,"
+        },
+        {
+          "line": 52,
+          "text": "    async def add(self, kind: str, request_id: str | int, chat_id: int, message_id: int, user_id: int) -> None:"
+        },
+        {
+          "line": 55,
+          "text": "        payload = json.dumps({\"chat_id\": chat_id, \"message_id\": message_id, \"user_id\": user_id})"
+        },
+        {
+          "line": 57,
+          "text": "            await self._redis.rpush(key, payload)"
+        },
+        {
+          "line": 58,
+          "text": "            await self._redis.expire(key, self._ttl)"
+        },
+        {
+          "line": 81,
+          "text": "            {\"chat_id\": entry[\"chat_id\"], \"message_id\": entry[\"message_id\"], \"user_id\": entry[\"user_id\"]}"
+        }
+      ],
+      "bounded_claim": "Useful exactowner/message-ID pattern; 7dayTTL Redis store not durable credential cleanup authority",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "code:Bot.OtpTracker",
+      "canonical_path": "services/notification-bot/bot/services/otp_message_tracker.py",
+      "sha256": "7501b01be4b82909c14f72a8fcc4a4130b500ff2ea439b836d63e7f2ace0a853",
+      "status": "Current implementation",
+      "fragments": [
+        {
+          "line": 4,
+          "text": "equal to the OTP lifetime. When the OTP is consumed (otp.verified event) or"
+        },
+        {
+          "line": 22,
+          "text": "class OtpMessageTracker:"
+        },
+        {
+          "line": 74,
+          "text": "            await self._redis.set(self._pending_key(telegram_id, purpose), payload, ex=self._ttl)"
+        },
+        {
+          "line": 139,
+          "text": "            await self._redis.set(self._key(telegram_id, purpose), payload, ex=self._ttl)"
+        }
+      ],
+      "bounded_claim": "OTP lifetime intentionally unrelated; no reuse of short TTL for initial credentials",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "config:production-Redis-policy",
+      "canonical_path": "docker-compose.prod.yml",
+      "sha256": "f8e4818a0d6917607d670d315b6e59b0c1f4b538bbcacf7361be92204d833704",
+      "status": "Current configuration source; runtime not inspected",
+      "fragments": [
+        {
+          "line": 122,
+          "text": "    command: redis-server --requirepass \"${REDIS_PASSWORD}\" --maxmemory 96mb --maxmemory-policy allkeys-lru"
+        }
+      ],
+      "bounded_claim": "Evictable Redis cannot be sole lifetime tracking authority; no global config edit proposed",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "migration:V24-version-inventory",
+      "canonical_path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+      "status": "Current canonical Academic-only migration",
+      "fragments": [
+        {
+          "line": 32,
+          "text": "    ADD COLUMN roles_version BIGINT NOT NULL DEFAULT 1;"
+        },
+        {
+          "line": 105,
+          "text": "    IF NEW.role IS DISTINCT FROM OLD.role"
+        },
+        {
+          "line": 117,
+          "text": "CREATE TRIGGER user_role_grants_roles_version_trg"
+        },
+        {
+          "line": 127,
+          "text": "    session_version        BIGINT       NOT NULL,"
+        }
+      ],
+      "bounded_claim": "roles_version covers grants; session_version is per session; neither tracks Telegram rebind or credential generation",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "migration:V51-admin-version",
+      "canonical_path": "services/academic-service/academic-app/src/main/resources/db/migration/V51__admin_access_permissions.sql",
+      "sha256": "49a4fb3fcf91827f96ac3ad2c8173d49ef6a454a7396fa71a06efefeaf47b382",
+      "status": "Current canonical Academic-only migration",
+      "fragments": [
+        {
+          "line": 31,
+          "text": " UPDATE users SET roles_version=roles_version+1 WHERE id=NEW.user_id;"
+        }
+      ],
+      "bounded_claim": "Admin profile/version mutation advances roles_version only",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    },
+    {
+      "source_id": "proto:Academic.compatibility",
+      "canonical_path": "proto/academic.proto",
+      "sha256": "25ea5e2105de4aaa473b6dec9c6114ac99569a5da57aaa6c8072d3d1dbed1060",
+      "status": "Current canonical proto contract",
+      "fragments": [
+        {
+          "line": 63,
+          "text": "  rpc GetUserByTelegramId (UserByTelegramIdRequest) returns (UserByTelegramIdResponse);"
+        },
+        {
+          "line": 155,
+          "text": "  reserved 3;"
+        },
+        {
+          "line": 156,
+          "text": "  reserved \"code\";"
+        },
+        {
+          "line": 322,
+          "text": "  reserved 2;"
+        },
+        {
+          "line": 323,
+          "text": "  reserved \"group_id\";"
+        },
+        {
+          "line": 382,
+          "text": "message UserByTelegramIdRequest {"
+        },
+        {
+          "line": 386,
+          "text": "message UserByTelegramIdResponse {"
+        },
+        {
+          "line": 396,
+          "text": "  string initial_password = 10;"
+        },
+        {
+          "line": 397,
+          "text": "  bool password_changed = 11;"
+        }
+      ],
+      "bounded_claim": "Preserve all existing tags/methods/reserved names; additive own RPC messages only",
+      "read_scope": "Exact selected original fragments and relevant surrounding code, not claim of full source-family acceptance"
+    }
+  ],
+  "manifestEdits": 0,
+  "manifestProposals": [
+    {
+      "source_id": "delivery:NP01-own-initial-credentials-and-cleanup",
+      "canonical_path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "source_fragment": "JS-SYSTEM-01 line851; JS-SYSTEM-02 line853-855; JS-ADMIN-01 line167/chat7 login supersession",
+      "status_proposal": "accepted-for-bounded-NP01-delivery by current retained scenario and scoped owner contract; runtime GAP",
+      "owner": "root sole manifest writer",
+      "supersedes": "No new policy; role-prefixed login clause remains superseded by chat7; generic credential redaction preserved"
+    }
+  ],
+  "currentRootObserved": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "ownerContractSnapshot": "Currentworking8cbd SHA, originalfrozend551c933 preserved asprioridentity; 28other source files exactfrozen/current."
+}

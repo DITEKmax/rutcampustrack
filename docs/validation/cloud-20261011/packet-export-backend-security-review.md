@@ -9,7 +9,7 @@ Server identity/current grants and exactselectedsession oninitiation/claim/compl
 # Constraints
 Independent currentoriginalsourceopening and actualevidencehashes/testquality; source+prepared+mock vsactualPG/HTTP/Redis/template distinctions explicit. NativePDF/PNG/client/socket/broker chain pending cannotfullEA/clientPASS orclaimno remaining risks. AUTHORFIX ONLY; reviewer no fix ownfindings. Rootsoleintegrator/shareddocswriter.
 # Existing patterns
-RESToutside/gRPCinside, domaintransaction/JDBCdurableauthority, oneAcademicFlyway pipeline owns sharedauthschema, existingprivateSTOMP/boundcapability downloads; no newSSE/APIgrant/stack.
+REST is public and gRPC is internal. Domain services own rules and transactions; durable authority uses JDBC. Academic owns the shared schema migrations. Downloads use bound capabilities and private STOMP hints. Preserve this architecture.
 # Acceptance criteria
 APPROVE/CHANGES_REQUESTED precise severity/source/path/line/counterexample/requiredcorrection andunclosedmandatoryverificationdependencies. Criticaltest expectedobservablebehavior/mutationactualevidence restoration sourcebyteequivalence; UP_TO_DATE initialAuth sensitivity is NOT_RUN, correctedrerunactualFAIL+green required. SQLdowngradechangesrolesVersion so don'tclaimonlyflag sensitivity; independenttypedguard fixturequalify. Inventory sourceprelaunch/final matches source actualcommit. Safeimmutablemanifest/report/ledger/testquality output.
 # Verification

@@ -1,0 +1,12 @@
+{
+  "phase": "ebsr-crosslayer-after-1",
+  "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "exit_code": -15,
+  "status": "FAIL",
+  "result_sha256": "eb56aa7f70a3d7c86c02ab08d52d6b04d610f349d99936935daa3ca5abf693ef",
+  "log_sha256": "dd112f9f3325570b47849e90f4c350dc44f4cfc1ba201cc1f860bd1ba0ff63b2",
+  "task_execution": {
+    ":services:auth-service:auth-app:integrationTest": "NOT_RUN"
+  },
+  "source_files_unchanged_during_run": true
+}

@@ -1,0 +1,35 @@
+{
+  "command": [
+    "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+    "git",
+    "--no-banner",
+    "--no-color",
+    "--redact=100",
+    "--report-format=json",
+    "--report-path=/workspace/scratch/rct-validation/security_fingerprint/sensitivity.private-redacted.json",
+    "--log-opts=--no-merges --first-parent e99abf06062f8efd2697da4dc424658feaee08b0^..1901133a3df2da743e32c6b54d965b51a992a5f5",
+    "--gitleaks-ignore-path=/workspace/scratch/rct-validation/security_fingerprint/controlled-repo",
+    "/workspace/scratch/rct-validation/security_fingerprint/controlled-repo"
+  ],
+  "exit_code": 1,
+  "findings_count": 1,
+  "findings": [
+    {
+      "RuleID": "generic-api-key",
+      "File": "docs/validation/cloud-20261011/packet-export-backend-security-review.md",
+      "StartLine": 12,
+      "EndLine": 12,
+      "Commit": "1901133a3df2da743e32c6b54d965b51a992a5f5",
+      "Fingerprint": "1901133a3df2da743e32c6b54d965b51a992a5f5:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12"
+    }
+  ],
+  "fake_value_random_only": true,
+  "synthetic_parent": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "synthetic_commit": "1901133a3df2da743e32c6b54d965b51a992a5f5",
+  "synthetic_repo": "/workspace/scratch/rct-validation/security_fingerprint/controlled-repo",
+  "synthetic_objects_separate_from_main": true,
+  "report_sha256": "592f97fdf4503ac09890cd1e6ea835f9ae67db680f8ec1bc423d54d4d9261b0c",
+  "author_worktree_tracked_source_identity_preserved": true,
+  "author_worktree_head_preserved": true,
+  "ignore_identity_preserved": true
+}

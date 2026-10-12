@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-12T00:52:26.726060+00:00",
+  "phase": "ebsr-jobs-compatibility-1",
+  "head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "wipHash": "dcbb452a806d114e0e90cb6db0e2636781a2e2b93f9ada5ae101c15ba6748fed",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.export.ExportJobsIT",
+    "--rerun",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "PASS",
+  "sourceManifest": "ebsr-jobs-compatibility-1-source-manifest.json",
+  "sourceManifestSHA256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+  "testFixtureControls": {},
+  "diskFreeBeforeBytes": 6475419648,
+  "diskFreeAfterBytes": 6442876928,
+  "exitCode": 0,
+  "finished": "2026-10-12T00:53:03.410627+00:00",
+  "logSHA256": "7022f3d911521ca6c6c4e82a614773953d84100e55e5a13d2590dc7433de8a15",
+  "sourceFilesUnchangedDuringRun": true,
+  "taskExecution": {
+    ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+  },
+  "suites": {
+    ":services:auth-service:auth-app:integrationTest": [
+      {
+        "suite": "ru.rutcampustrack.auth.export.ExportJobsIT",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlSHA256": "08bc9da7ccf59b3e54a5e211aa96879e5d9c9f6c65567ac3d8410dce407f1714",
+        "cases": [
+          {
+            "name": "threeGenerationFailuresTerminateAndWireAndDatabaseRejectUnknownOrOrdinalState()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "fullFileRemainsProtectedAfterDowngradeEvenWithOrdinaryViewGrantAndForeignSessionIsHidden()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "ordinaryLimitedGrantWorksAndRevokeDeniesEveryLaterReadAndCompletingClaim()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "failedOutboxInsertRollsBackReadyFileAndAuditThenRetryCommitsExactlyOnce()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "durableQueueSurvivesNewWorkerAndAbandonedLeaseWithoutPartialFileOrDuplicateAudit()",
+            "outcome": "PASS",
+            "failureType": null
+          }
+        ]
+      }
+    ]
+  }
+}

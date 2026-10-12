@@ -1,0 +1,21 @@
+{
+  "repository_full_name": "DITEKmax/rutcampustrack",
+  "base": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "head": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+  "status": "ahead",
+  "ahead_by": 1,
+  "behind_by": 0,
+  "total_commits": 1,
+  "too_large": null,
+  "base_commit": {
+    "sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+    "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/commits/63647fc9b63175e1e32b0773d57affc637ea1065",
+    "html_url": "https://github.com/DITEKmax/rutcampustrack/commit/63647fc9b63175e1e32b0773d57affc637ea1065"
+  },
+  "merge_base_commit": {
+    "sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+    "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/commits/63647fc9b63175e1e32b0773d57affc637ea1065",
+    "html_url": "https://github.com/DITEKmax/rutcampustrack/commit/63647fc9b63175e1e32b0773d57affc637ea1065"
+  },
+  "files": []
+}

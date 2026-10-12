@@ -67,7 +67,7 @@
   "cloud_validation_20261011": {
     "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
     "state": "IN_PROGRESS",
-    "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
+    "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
     "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
     "commands_receipts": [
       "docs/validation/cloud-20261011/attempts.ndjson",
@@ -125,9 +125,21 @@
         "exit_code": 0,
         "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
         "evidence": "attempts.ndjson session57652terminal0"
+      },
+      {
+        "command": "root scoped mandatory source gates sixhooks",
+        "exit_code": 0,
+        "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+        "evidence": "attempts.ndjson session95875terminal0; exportcoherent96sourcebridge"
+      },
+      {
+        "command": "independent mergedRepository source review",
+        "exit_code": 0,
+        "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+        "evidence": "receipts/export-merged-repository-review; sourceAPPROVE/currenttwoAcademicchecksNOT_RUN"
       }
     ],
-    "runtime": "bounded39finitecase matrix; currentClock/map/export controls qualified ownreceipts; fullmatrix/client/format/recovery UNKNOWN",
-    "remote": "published232 PR2 gatesSUCCESS; local439 not yet pushed/currentexactgates NOT_RUN"
+    "runtime": "Bounded actual export/NTR/map/clock/CI finite receipts qualified; wholematrix/client/NP01/format NOT_DONE",
+    "remote": "last636 PR2 CI/CoverageSUCCESS SecurityFAIL; laterrootnotyetpushed"
   }
 }

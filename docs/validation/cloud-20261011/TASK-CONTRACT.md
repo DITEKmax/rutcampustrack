@@ -388,3 +388,16 @@ Preserve ordinary safe PNG formats, grayscale/indexed/Adam7 support and the alre
 Supersedes: the unresolved decoded-work/row-budget branch of current MAP-04 validation and independent source finding MVR03. It does not increase the accepted uploaded file size or authorize production operations.
 
 Verification: boundary-at-limit, over-limit, overflow-safe size accounting and a scaled strongly compressed many-row counterexample; reject before any data publication and preserve valid positive controls. Do not execute a billion-row input just to prove resource exhaustion. Actual browser/render/network acceptance remains separate.
+
+---
+Последующее решение владельца — 2026-10-12
+
+# Final documentation commit and exact-revision receipts — owner decision 2026-10-12
+
+D009. The owner answered Q009: «Разрешить финальный коммит документов с доказанным совпадением исходников с проверенной revision; явно сохранить оба SHA и CI-квитанции (рекомендую)».
+
+After the final product/config/test/harness/formatter revision has all required current CI/Coverage/Security checks completed successfully and sufficient actual acceptance/review, a final documentation/evidence-only commit may retain those receipts by proven byte identity of all executable/product/configuration/test/generated/API/schema/migration/lockfile/build/gate inputs. The final commit may record the run IDs, URLs, events, producer head SHA and actual PR checkout merge SHA, final branch/PR SHA, source inventory/equivalence and morning handoff. It must introduce no product, test, configuration, gate, dependency, formatting-rule or accepted behavior changes.
+
+Explicitly retain both the tested product revision and final documentation revision. Do not describe the earlier runs as having executed at the later SHA. Final local SHA = remote designated branch SHA = draft PR head SHA remains required, target main remains unmerged. Verify the exact allowed documentation/evidence diff and source byte hashes; run sufficient documentation/parser/security checks without weakening their rules.
+
+Supersedes only the final documentation/evidence-only exact-revision ambiguity in TASK-CONTRACT criteria F/G/H and verification section8. A new executable/product/test/config dependency change invalidates this exception and requires current checks on the new product revision. All required scenarios, fixes, reviews, meaningful sensitivity checks, formatting/type/build and source/security acceptance criteria remain unchanged. This does not authorize artificial product changes, trigger changes, production/main/deploy operations or a partial checkpoint being called DONE.

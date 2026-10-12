@@ -1,0 +1,50 @@
+{
+  "controls": [
+    {
+      "module": "academic",
+      "fixture_path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+      "replacement_occurrences": 1,
+      "one_fixture_wiring_replacement_digest_matches_red_prelaunch": true,
+      "original_committed_current_and_preserved_bytes_equal": true,
+      "restore_sha_matches_original_current": true,
+      "restore_diff_paths_empty": true,
+      "oracle": {
+        "expected_selected": 2,
+        "actual_selected": 2,
+        "failed": 1,
+        "passed": 1,
+        "skipped": 0,
+        "meaningful_effect": "Wrong past teaching Clock admits actually expired session; expected INVALID_SESSION exception missing",
+        "actual_assertion": "Expecting code to raise a throwable.",
+        "failure_type": "java.lang.AssertionError",
+        "production_mutation": "NONE",
+        "restored": "Exact original SHA verified negative_academic-restore.json"
+      },
+      "production_mutation": "NONE; independently compared all per-phase tracked hashes, exact one test fixture changed."
+    },
+    {
+      "module": "attendance",
+      "fixture_path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/EducationalRetentionClockIsolationTest.java",
+      "replacement_occurrences": 1,
+      "one_fixture_wiring_replacement_digest_matches_red_prelaunch": true,
+      "original_committed_current_and_preserved_bytes_equal": true,
+      "restore_sha_matches_original_current": true,
+      "restore_diff_paths_empty": true,
+      "oracle": {
+        "expected_selected": 2,
+        "actual_selected": 2,
+        "failed": 1,
+        "passed": 1,
+        "skipped": 0,
+        "meaningful_effect": "Wrong past teaching Clock allows actual attachment download after real expiry; expected GONE exception missing",
+        "actual_assertion": "Expecting code to raise a throwable.",
+        "failure_type": "java.lang.AssertionError",
+        "production_mutation": "NONE",
+        "restored": "Exact original SHA verified negative_attendance-restore.json"
+      },
+      "production_mutation": "NONE; independently compared all per-phase tracked hashes, exact one test fixture changed."
+    }
+  ],
+  "sensitivity_scope": "Actual consumer failures under wrong operational clock in test wiring; no production guard or global system clock mutation.",
+  "test_quality": "Academic actual service/Spring constructor selection with controlled authority port. Attendance actual download/cleanup with controlled storage ports; synthetic query expiry emulation is not MongoDB acceptance. BFF actual response header/timestamp projection. Explicit rule/result assertions, zero skips, no broad catches."
+}

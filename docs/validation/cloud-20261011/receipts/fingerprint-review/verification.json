@@ -1,0 +1,15 @@
+{
+  "started_utc": "2026-10-12T00:41:41.473814+00:00",
+  "completed_utc": "2026-10-12T00:41:45.072461+00:00",
+  "command": "python3 /workspace/scratch/rct-validation/fingerprint_review/audit.py",
+  "native_exit": 0,
+  "mode": "INDEPENDENT_LIGHT_READ_ONLY_HASH_GIT_TAR_SAFE_RECORD_PARSER",
+  "source_inputs": 6985,
+  "safe_author_originals": 12,
+  "prior_NTR_unchanged": true,
+  "binary_version_observed": "8.24.3",
+  "scanner_replay": "NOT_RUN",
+  "product_config_source_edits": 0,
+  "heavy_operations": 0,
+  "children": 0
+}

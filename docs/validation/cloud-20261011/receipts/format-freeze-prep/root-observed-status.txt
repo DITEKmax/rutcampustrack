@@ -1,0 +1,41 @@
+ M docs/sources/manifest.yaml
+ M docs/validation/cloud-20261011/CURRENT.md
+ M docs/validation/cloud-20261011/TASK-CONTRACT.md
+ M docs/validation/cloud-20261011/attempts.ndjson
+ M docs/validation/cloud-20261011/decisions.md
+ M docs/validation/cloud-20261011/packet-export-backend-security-review.md
+ M docs/validation/cloud-20261011/questions.md
+ M docs/validation/cloud-20261011/resources.md
+ M docs/validation/cloud-20261011/source-ledger.json
+ M docs/validation/cloud-20261011/verified-cases.csv
+?? docs/product/decisions/2026-10-12-final-doc-receipt-equivalence.md
+?? docs/validation/cloud-20261011/packet-ci-artifacts-636.md
+?? docs/validation/cloud-20261011/packet-export-ebsr-recheck.md
+?? docs/validation/cloud-20261011/packet-export-resume.md
+?? docs/validation/cloud-20261011/packet-fingerprint-review.md
+?? docs/validation/cloud-20261011/packet-np01-source-resolution.md
+?? docs/validation/cloud-20261011/packet-ntr-seal-review.md
+?? docs/validation/cloud-20261011/packet-real-client-runtime.md
+?? docs/validation/cloud-20261011/packet-security-fingerprint.md
+?? docs/validation/cloud-20261011/receipts/CURRENT-before-0018.md
+?? docs/validation/cloud-20261011/receipts/checkpoint-63647-remote.json
+?? docs/validation/cloud-20261011/receipts/checkpoint636-local-redacted-gitleaks.json
+?? docs/validation/cloud-20261011/receipts/checkpoint636-native-gitleaks-metadata.json
+?? docs/validation/cloud-20261011/receipts/checkpoint636-security-gitleaks-metadata.json
+?? docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/
+?? docs/validation/cloud-20261011/receipts/clock-cumulative-integration-plan.json
+?? docs/validation/cloud-20261011/receipts/clock-integrated-source-bridge.json
+?? docs/validation/cloud-20261011/receipts/clock-runtime-recheck/
+?? docs/validation/cloud-20261011/receipts/export-client-recheck/
+?? docs/validation/cloud-20261011/receipts/fingerprint-integrated-bridge.json
+?? docs/validation/cloud-20261011/receipts/fingerprint-review/
+?? docs/validation/cloud-20261011/receipts/immutable-asset-dedup-plan.json
+?? docs/validation/cloud-20261011/receipts/immutable-historical-dedup-plan.json
+?? docs/validation/cloud-20261011/receipts/immutable-historical-dedup-result.json
+?? docs/validation/cloud-20261011/receipts/notification-ntr-integrated-bridge.json
+?? docs/validation/cloud-20261011/receipts/np01-source-resolution/
+?? docs/validation/cloud-20261011/receipts/ntr-seal-review/
+?? docs/validation/cloud-20261011/receipts/owned-source-local-cleanup-plan.json
+?? docs/validation/cloud-20261011/receipts/owned-source-local-cleanup-result.json
+?? docs/validation/cloud-20261011/receipts/resources-before-0018.md
+?? docs/validation/cloud-20261011/receipts/security-fingerprint-author/

@@ -1,0 +1,36 @@
+{
+  "current_java_runner_count": 1554,
+  "actual_spotless_target_count": 1549,
+  "curated_java_count": 1549,
+  "current_inventory_but_not_spotless": [
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java"
+  ],
+  "curated_java_vs_spotless_equal": true,
+  "current_python_count": 124,
+  "curated_python_count": 113,
+  "ruff_existing_driver_would_touch_exact_originals": [
+    "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+    "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/run-map-check.py",
+    "docs/validation/cloud-20261011/receipts/map-validation-review/audit_evidence.py",
+    "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/dispositions.py",
+    "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/queue.py",
+    "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/reconcile.py",
+    "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+    "docs/validation/cloud-20261011/receipts/source-manifest-recovery/check-dependencies.py",
+    "docs/validation/cloud-20261011/receipts/source-manifest-recovery/propose-restoration.py"
+  ],
+  "prettier_exact_original_collisions": [],
+  "prettier_document_registry_collisions": {
+    "docs/design/packets/JS-STUDENT-01/manifest.json": "canonical design packet asset/source identity registry; separate source owner",
+    "docs/presentations/manifest.json": "canonical presentation source identity registry; immutable historical source owner",
+    "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json": "machine verification hash/normalization receipt; preserve producer evidence",
+    "docs/validation/cloud-20261011/skills/manifest.json": "imported skills package identity manifest; preserved archive/source identity"
+  },
+  "status": "PREPARATION: exact targeted classifier disposition correction needed before blind --write; no config edits performed"
+}

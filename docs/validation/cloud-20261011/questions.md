@@ -46,10 +46,18 @@ Dependent scopes: LIMITEDuser/group exportboundary; FULLgroupimplementation/serv
 ## Q008 — PNG validation resource budget
 
 Source: accepted MAP04/image upload compressed limit10MiB, no explicit decoded/work/dimension limit found; new independentreview MVR03 sourcecounterexample PNG1×1billion rows/2GB decoded can fitcompressedlimit anddrive1billionvalidationloops. Currentexisting8KiBmemory bound notCPUbound. Classification SOURCE risk, actual expensivecandidate deliberatelyNOT_RUN, no latency/browserFAILclaim.
-State: PENDING owner; required only exactnewPNGprocessing-budget policy, MVR01/02SVG corrections/client/server/exportruntime independent.
+State: ANSWERED A — D008; required only exactnewPNGprocessing-budget policy, MVR01/02SVG corrections/client/server/exportruntime independent.
 Choices: A permit operationalguard 128MiB decoded scanline bytes and1million scanline validations, reject overbudgetPNG with clear4xx (recommended initialsafeceiling, preservewide100000×1 fixture). B permitdifferent explicitnumericlimits supplied byowner. C retainonly10MiBcompressedlimit, require alternative strictlybounded validation design without rejecting other acceptedvalidPNG; additionaldesignwork thenactualresourceproof required. No answer selectsnewrule.
 Dependent: MVR03 correctedPNGresourceguard/overbudgetboundary; no canvassizeproductrestriction inferred from silence.
 
 2026-10-11T22:34:30.054529+00:00: Q008 owner requested explanation, supplied response is notdecision. Uploadcap10MiB unchanged; clarified128MiB isdecodedworkbudget/notfileorresidentmemory, examples4000×4000≈64MB. Nativequestionreasked A128MiB/1Mrows(recommended), B64MiB/1Mrows, Cdefer. StillPENDING; silence grantsneitherlimit.
 
 2026-10-11T22:36:00.514745+00:00: Q008 ANSWERED A onclarifiedquestion: «Разрешить предел 128 МиБ (рекомендую)». D008 accepteddecoded134217728bytes and1000000validatedrows includingAdam7passes, compressedfilelimit10MiB unchanged. Earlierclarificationwasnotdecision. All Q001–Q008 resolved.
+
+## Q009 — Final receipt-only commit versus exact-revision CI
+
+State: ANSWERED A — D009, raised after actual published636 checkpoint; dependent ONLY finalreceipt/strictDONE gate, all diagnostic/implementation/format/runtime/review work independent.
+Sources: TASK-CONTRACT §7F/§8 explicitly says docs-only paths-ignore leaves exact-revision criterion a question/blocker until concrete decision; current .github/workflows/ci.yml, coverage/security workflows retain existing triggers. Final current CI receipts/handoff must be saved; their later docs-only commit produces a new SHA with ignored gates. No artificial product change or trigger change authorized by silence.
+Choices: A allow final docs/evidence-only commit with exact product/config/test source byte identity to the last all-three-green revision, root documentation/parser/security gates, and explicit producer/current SHA distinction (recommended); B explicitly allow safe manual workflow_dispatch for the three existing gates on the final designated-branch SHA, existing checks/Deploy unchanged, actual meaningful task execution required. No choice until owneranswer. A changes only final receipt evidence policy, not product acceptance; B needs soleconfig implementation/review before run. Preserve exact final local/remote/PR equality and draftmain under either.
+
+2026-10-12T00:14:21.446201+00:00: Q009 ANSWERED A: «Разрешить финальный коммит документов с доказанным совпадением исходников с проверенной revision; явно сохранить оба SHA и CI-квитанции (рекомендую)». D009 permits only finaldoc/evidence source-byte identity exception, all product/gates/scenarios/reviews remain. AllQ001–Q009resolved.

@@ -1,0 +1,2 @@
+{"attempt": "controlled-settings-1", "outcome": "HARNESS_FIXTURE_FAILURE", "reason": "Synthetic Notification and Academic tokens were initially identical; repr included the separate legacy Notification field. No new token field exposure established.", "correction": "Use distinct independently random test tokens; no product change."}
+{"attempt": "controlled-settings-2", "outcome": "PASS", "command": "python3 verify-config.py", "proof": "9 safe config assertions; actual current dependency versions explicitly recorded; pinned runtime not run."}

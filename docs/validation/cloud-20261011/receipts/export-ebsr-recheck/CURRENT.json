@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-12T00:54:33.299742+00:00",
+  "verdict": "APPROVE",
+  "scope": "Affected EBSR01\u201304 eight-path corrections only",
+  "final_revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "product_revision": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "crosslayer_actual_producer": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "source_exact": true,
+  "blocking_findings": 0,
+  "known_bad_actual_rule_failures": 11,
+  "excluded_before3_fixture_failures": 1,
+  "heavy_by_reviewer": "NOT_RUN",
+  "full_native_private_client_chain": "NOT_RUN_NOT_APPROVED",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "next": "Root integrates qualified corrections and retains outstanding full-runtime/final-revision gates."
+}

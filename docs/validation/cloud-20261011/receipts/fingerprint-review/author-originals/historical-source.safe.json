@@ -1,0 +1,8 @@
+{
+  "commit": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "path": "docs/validation/cloud-20261011/packet-export-backend-security-review.md",
+  "line": 12,
+  "blob_sha256": "041b38046f426ff860d8625c1029549d674e96521243fa102bfccdb489c27bb7",
+  "line_sha256": "8d45ff494f4991e99c94509811935a760c82693d23a3eeb1773b41a6cf99e719",
+  "classification": "Architecture prose describing REST Auth Academic and export scope; no credential assignment."
+}

@@ -1,0 +1,26 @@
+{
+  "verification.safe.json": {
+    "sha256": "c5ebe239e956ce307cd0139bfabaf8bfdcefbf1aa76dabcece5be4f74f1cc914",
+    "bytes": 1568
+  },
+  "verify-config.py": {
+    "sha256": "c886805e546086e6086403c69fe140721e7a7da5b3d39e41d39649f3c42c4d4e",
+    "bytes": 5889
+  },
+  "attempts.safe.ndjson": {
+    "sha256": "17801a328592fce0c89710c4ad78f3b8665039c89653732671a3782563c5e670",
+    "bytes": 548
+  },
+  "consumer-api-packet.safe.json": {
+    "sha256": "82ef32d7b81c00e6d3d93074af23fa9a99d9ff20fc6ea16269d4bff6d8821a6f",
+    "bytes": 1810
+  },
+  "commit-checks.safe.json": {
+    "sha256": "90e151a6168f8babe025fad33fa8040f97be5563cdbc1bc87d540346fbaf5627",
+    "bytes": 969
+  },
+  "source-inventory.safe.json": {
+    "sha256": "4569f2f74c078c71425ef8214777241ea53305a5f5d743f99db48ff74157f167",
+    "bytes": 627
+  }
+}

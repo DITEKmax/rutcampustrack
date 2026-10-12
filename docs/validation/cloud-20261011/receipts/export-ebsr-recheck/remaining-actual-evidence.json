@@ -1,0 +1,440 @@
+[
+  {
+    "phase": "ebsr-affected-unit-1",
+    "state": "FAIL",
+    "producer": "e258af8f7b836814ad47aed3ded46060594f8567",
+    "receipt_sha256": "c6d42aca16d2828e99b3b2948ed851cda035ea4dcef6765b641aed06cf701258",
+    "exit_code": 1,
+    "source_manifest_sha256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+    "source_count": 1853,
+    "source_matches_committed_revision": true,
+    "log_sha256": "468f8df4cdf53d734c27d85c2a566637c1eaa7e6263b39f024a81fea7654ec41",
+    "task_execution": {
+      ":services:auth-service:auth-app:test": "> Task :services:auth-service:auth-app:test",
+      ":services:api-gateway:test": "NOT_RUN"
+    },
+    "suites": [
+      {
+        "task": ":services:auth-service:auth-app:test",
+        "suite": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+        "sha256": "93a300fe16cee63115702e1c11d14656c852e810440c287d154e9f6fe650729c",
+        "counts": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "explicitServiceSelectorFailureMapsToBadRequest()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "rosterSelectorIsClosedFormatOnlyAndBindsKindAndFormat()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "selectorWithAnExtraParameterObjectIsRejectedAsBadRequestBeforeIssuance()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "journalTicketBindsCompletedAndExactSelectionAndNormalizesMissingFalse()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:auth-service:auth-app:test",
+        "suite": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+        "sha256": "38c2fd0becaf1e0934271f68f9dfe9f0a47c6809ca30150dde6dc2d532ac2e6f",
+        "counts": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "actualProducerCodesRoundTripAndSchemaExcludesUnknownStatesAndFileContents()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:auth-service:auth-app:test",
+        "suite": "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+        "sha256": "a260b18a84fbe172e97e0d48e335ea06db89085ad13c326c369514c7df43b2c3",
+        "counts": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "fullFileMetadataRequiresFullEvenWhenOrdinaryAdmissionAndRolesVersionAreValid()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:auth-service:auth-app:test",
+        "suite": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+        "sha256": "f45f462283143aed3da49b51edb39ced0f64dcc4751f3a047cb0527412bfe505",
+        "counts": {
+          "tests": 8,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "revokedViewStatsDeniesTrendTicketBeforeRateLimitOrStorage()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "rechecksLiveSessionBeforeMintingAndDeniesARevokedOrChangedSession()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "viewStatsAssistantCannotIssueRosterTicketOrConsumeIssueBudget()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow()",
+            "outcome": "FAIL"
+          },
+          {
+            "name": "readyJobCapabilityCannotOutliveItsCommittedFileExpiry()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "rosterTicketsBindOwnHeadmanSessionAcrossFormatsAndRefuseRevokedRedemption()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      }
+    ]
+  },
+  {
+    "phase": "ebsr-affected-unit-2",
+    "state": "PASS",
+    "producer": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+    "receipt_sha256": "17c11bbef11883c4dd9e35bece5ed5b67996a9cdf60900da8ae586576762a309",
+    "exit_code": 0,
+    "source_manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+    "source_count": 1853,
+    "source_matches_committed_revision": true,
+    "log_sha256": "1252dd7b3a38b558ca4a4f4305a62f05eb7a1ed3993bacf25de774581f1470a3",
+    "task_execution": {
+      ":services:auth-service:auth-app:test": "> Task :services:auth-service:auth-app:test",
+      ":services:api-gateway:test": "> Task :services:api-gateway:test"
+    },
+    "suites": [
+      {
+        "task": ":services:auth-service:auth-app:test",
+        "suite": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+        "sha256": "8017a306be58bff5671568c7b4bd40f417a13409ab089bda686fb3f5a064b0b7",
+        "counts": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "revokedViewStatsDeniesTrendTicketBeforeRateLimitOrStorage()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "rechecksLiveSessionBeforeMintingAndDeniesARevokedOrChangedSession()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "viewStatsAssistantCannotIssueRosterTicketOrConsumeIssueBudget()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "readyJobCapabilityCannotOutliveItsCommittedFileExpiry()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "rosterTicketsBindOwnHeadmanSessionAcrossFormatsAndRefuseRevokedRedemption()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:api-gateway:test",
+        "suite": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+        "sha256": "c4530311bd37e4ba7314d4606f82d39b06a0ece8afdb43919f13e5178caa7d10",
+        "counts": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "dependencyFailureReportsOnlySafeRetryCodeAndNeverCommitsPartialBytes()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "anActiveClaimPreventsDuplicateScheduledWorkAndShutdownCancelsIt()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "readyCommitReceivesBytesAndPrivilegeFlagOnlyAfterGenerationCompletes()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:api-gateway:test",
+        "suite": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+        "sha256": "ee784e213c4e0eb5e51ab513549c23eb54afb2957883520cc0912c17f1000b25",
+        "counts": {
+          "tests": 23,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "[1] format=DOCX",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[2] format=PDF",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[3] format=PNG",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[4] format=HTML",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[5] format=XLSX",
+            "outcome": "PASS"
+          },
+          {
+            "name": "teacherJournalUsesOnlyFixedBffExportAndStoredQuery()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "downstream422IsPreservedAndItsBodyIsNotForwarded()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "headmanStatsUsesFixedAttendanceRouteAndReturnsBoundAttachmentWithTelegramCors()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "alteredRosterFormatCannotUseOriginalBindingOrReachBackend()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "unknownCapabilityReturnsNotFoundWithoutBackendCall()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "nonGetOverrideQueryAndRangeFailBeforeTicketRedemption()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "teacherStatsHtmlUsesDynamicAcceptAndStillValidatesActualMediaType()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "missingRegistryPrivilegeMetadataNeverProducesAFile()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "downstreamPermissionDenialIsPreservedAndItsBodyIsNotForwarded()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "readyJobCapabilityReadsCommittedBytesWithoutCallingAnyGenerator()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "teacherStatsHtmlRejectsUnexpectedDownstreamMediaType()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[1] format=DOCX",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[2] format=PDF",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[3] format=PNG",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[4] format=HTML",
+            "outcome": "PASS"
+          },
+          {
+            "name": "[5] format=XLSX",
+            "outcome": "PASS"
+          },
+          {
+            "name": "publicAttemptBudgetStopsUnknownTicketCallsBeforeAuthAndUsesCanonicalPeer()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "headmanTrendPngUsesFixedAttendanceRouteAndRealImageMime()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      }
+    ]
+  },
+  {
+    "phase": "ebsr-auth-compatibility-1",
+    "state": "PASS",
+    "producer": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+    "receipt_sha256": "83f2aad30cf5dce2e135dfd6334e5343ad0bd2b169bcbed5a7a484e7d22caf52",
+    "exit_code": 0,
+    "source_manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+    "source_count": 1853,
+    "source_matches_committed_revision": true,
+    "log_sha256": "fba5f4e93566c708504237afe94336cb177c81e2147d85809bfa95ab4f1d074b",
+    "task_execution": {
+      ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+    },
+    "suites": [
+      {
+        "task": ":services:auth-service:auth-app:integrationTest",
+        "suite": "ru.rutcampustrack.auth.integration.AuthIT",
+        "sha256": "8c84f2ae2d839cce04a9a7609c0e0a07cc710cd05fb84b24629cf144c82d1d89",
+        "counts": {
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "login_withNonexistentUser_returns401()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "login_withInvalidPassword_returns401()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "logout_viaCookie_returns204_andClearsCookie()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "login_setsRefreshCookie_withStrictAttributes()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "login_withSeedStudent_returnsTokenPair()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "login_withSeedTeacher_returnsTokenPair()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "refresh_withoutCookie_returns401()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "publicKey_returnsRsaPem()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "refresh_withUsedCookie_returns409ForPreviousJti()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "login_withSeedAdmin_returnsTokenPair()",
+            "outcome": "PASS"
+          },
+          {
+            "name": "refresh_viaCookie_returnsNewTokenPair_andRotatesCookie()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:auth-service:auth-app:integrationTest",
+        "suite": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+        "sha256": "ae0925891a520c62ec7662f763bad989e006ab105836d013249c0e114c6df70c",
+        "counts": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      },
+      {
+        "task": ":services:auth-service:auth-app:integrationTest",
+        "suite": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+        "sha256": "702a416978a490a5043e6ff1d334211014647e314be0e34bd54417f9ebe2c3c0",
+        "counts": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "cases": [
+          {
+            "name": "M12 G5: /api-docs matches committed snapshot",
+            "outcome": "PASS"
+          }
+        ],
+        "fresh_xml": true
+      }
+    ]
+  }
+]

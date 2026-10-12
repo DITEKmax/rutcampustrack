@@ -1,0 +1,79 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_source_resolution",
+  "manifest": "transfer-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "0cb087083270dfd6d7ed50331b1a7b63dbd5550aba3cb157a7c6556fbad9b227",
+      "original_bytes": 903,
+      "working_sha256": "0cb087083270dfd6d7ed50331b1a7b63dbd5550aba3cb157a7c6556fbad9b227",
+      "working_bytes": 903,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "cases.json",
+      "original_sha256": "980c9918ba3c94a165ce943cc6431ec638b8df3f1c83bb4a1874934c7a2fd361",
+      "original_bytes": 7229,
+      "working_sha256": "980c9918ba3c94a165ce943cc6431ec638b8df3f1c83bb4a1874934c7a2fd361",
+      "working_bytes": 7229,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "checks.json",
+      "original_sha256": "d9d7dc72a7fcfd09033e856b39b61b7654f03ade9c1161314bdb46e0e619dda4",
+      "original_bytes": 923,
+      "working_sha256": "d9d7dc72a7fcfd09033e856b39b61b7654f03ade9c1161314bdb46e0e619dda4",
+      "working_bytes": 923,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "implementation-packet.md",
+      "original_sha256": "488acee0ab787ee697edd42a1f0c50dd1d5fc7ec863304df79f5417f07b2d7b1",
+      "original_bytes": 20250,
+      "working_sha256": "488acee0ab787ee697edd42a1f0c50dd1d5fc7ec863304df79f5417f07b2d7b1",
+      "working_bytes": 20250,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proto-proposal.txt",
+      "original_sha256": "b60c0c0f7a5d849ce34e7857a1f268d316338e8d703180ad1437223c62032184",
+      "original_bytes": 3694,
+      "working_sha256": "b60c0c0f7a5d849ce34e7857a1f268d316338e8d703180ad1437223c62032184",
+      "working_bytes": 3694,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-ledger.json",
+      "original_sha256": "1b81cff00333377a8b6890e4fbfcba48e5479dca4e88d0eb96df5e2993f1ba07",
+      "original_bytes": 41135,
+      "working_sha256": "1b81cff00333377a8b6890e4fbfcba48e5479dca4e88d0eb96df5e2993f1ba07",
+      "working_bytes": 41135,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-ledger.py",
+      "original_sha256": "de08b5a28ce33ef590b406a2a02c8d89a3206ce481db5bcac2279baad0f91906",
+      "original_bytes": 12061,
+      "working_sha256": "de08b5a28ce33ef590b406a2a02c8d89a3206ce481db5bcac2279baad0f91906",
+      "working_bytes": 12061,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verdict.json",
+      "original_sha256": "8dde81eddf4d2174cc0a4eef28a997e84276dc445022fcd57fde940972e47cc9",
+      "original_bytes": 1620,
+      "working_sha256": "8dde81eddf4d2174cc0a4eef28a997e84276dc445022fcd57fde940972e47cc9",
+      "working_bytes": 1620,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "3f9b4d43ff923ec8c1ecdbe92b66423fbf503120efacc54e70a1edb7742f35f6",
+      "original_bytes": 2060,
+      "working_sha256": "3f9b4d43ff923ec8c1ecdbe92b66423fbf503120efacc54e70a1edb7742f35f6",
+      "working_bytes": 2060,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

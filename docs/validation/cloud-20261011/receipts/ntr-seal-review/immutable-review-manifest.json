@@ -1,0 +1,121 @@
+{
+  "created_utc": "2026-10-12T00:30:13.661747+00:00",
+  "reviewer": "ntr_seal_review",
+  "verdict": "APPROVE",
+  "reviewed_commit": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+  "hash": "SHA256",
+  "payload_entries": [
+    {
+      "path": "audit.py",
+      "bytes": 26059,
+      "sha256": "f6418136ef1a2f392496e39da91d834cb00c22c4be7df309f395763f15c0e4b7"
+    },
+    {
+      "path": "cleanup-qualification.json",
+      "bytes": 1369,
+      "sha256": "38fcefbe001366d1dbd1d25297e5c6b2c207ce422da6796450f146231cdf6203"
+    },
+    {
+      "path": "completion.json",
+      "bytes": 1356,
+      "sha256": "0021edcfba36d46fa86359104a72c1b2f712bd09e1c55219e7c11240c16efd66"
+    },
+    {
+      "path": "findings.md",
+      "bytes": 11528,
+      "sha256": "f65bd5dd69207a17e74caaaab12786bbd61d91689bd5585dfeeac410ccbe9f2e"
+    },
+    {
+      "path": "governing/CURRENT.md",
+      "bytes": 4601,
+      "sha256": "5c3e2713a896818c43b1cf2820dad9b90606bbfb3305a86913610cc7af7686a8"
+    },
+    {
+      "path": "governing/TASK-CONTRACT.md",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+    },
+    {
+      "path": "governing/decisions.md",
+      "bytes": 11724,
+      "sha256": "d22223fb721663b89628b50b9522e90838530c5569b0a3bf9aef1dd42baa26cd"
+    },
+    {
+      "path": "governing/packet-ntr-seal-review.md",
+      "bytes": 3686,
+      "sha256": "c9e6393b1b40860662e15a7adc275d1d60b1007c23b95c7e2893528c0721faae"
+    },
+    {
+      "path": "governing/questions.md",
+      "bytes": 9930,
+      "sha256": "27f657586c7bca1cba84457063741fa5f744ee9d57021900a27b8b5cafeace17"
+    },
+    {
+      "path": "governing/resources.md",
+      "bytes": 2111,
+      "sha256": "8cbedffb12e5cacdc74d3f52ecbc493d0872d648e852d1b90efe7cd1afdf9f92"
+    },
+    {
+      "path": "immutable-author-25-originals.zip",
+      "bytes": 70007,
+      "sha256": "f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317"
+    },
+    {
+      "path": "immutable-prior-review-originals.zip",
+      "bytes": 301166,
+      "sha256": "53a1ffbea1d68a2b2e0040cc56af388b72bda09211c6a6c114e5fde886af3214"
+    },
+    {
+      "path": "lifecycle-and-private-log-identity.json",
+      "bytes": 2973,
+      "sha256": "200d7b0e9466e47f4c2fcc402aca79094d22234e8d67ce957504beb54f54abee"
+    },
+    {
+      "path": "oracle-evidence-audit.json",
+      "bytes": 2006,
+      "sha256": "c476de563df8a380e67f5b4806bdc6eca18eef320d8ed92cdcd1e487eb291484"
+    },
+    {
+      "path": "original-input-integrity.json",
+      "bytes": 131321,
+      "sha256": "5fbe5cb97464f0e7333f6596eb914fd8fe9ab8678458577c9bac78cc95bb18ab"
+    },
+    {
+      "path": "prior-partial/findings.md",
+      "bytes": 10080,
+      "sha256": "8e99b8245ee01a0fb2262ff77e6185b23879adbd596123230521534c9e3244a2"
+    },
+    {
+      "path": "prior-review-reuse.json",
+      "bytes": 12838,
+      "sha256": "94a6d1e69eb7837f71be744e6b5a12e56d0598830ef4bea835994410e23928bd"
+    },
+    {
+      "path": "review.json",
+      "bytes": 2006,
+      "sha256": "57f2d59ec8a09e59782b38ddbf60afa7a6cf7a00f9b8af5609ba2af330991a4a"
+    },
+    {
+      "path": "reviewed-change.patch",
+      "bytes": 3168,
+      "sha256": "06b1f5254815fa6859fc1e9b8beb337004f44319b2971babb66a97ab3dafcc86"
+    },
+    {
+      "path": "safe-publication-audit.json",
+      "bytes": 620,
+      "sha256": "46e401d450cf86bf547462ca748519466b0236ff75bf6ac66741e7889552c8a0"
+    },
+    {
+      "path": "source-equivalence.json",
+      "bytes": 87653,
+      "sha256": "cab16d774b74c40110d13cefd49aba44acdb7f87800b435140aed7ee3b8c4639"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 517,
+      "sha256": "4eee72d9652d0e7f07bdd5a87db075dbd475121db08811512a5b0d8a5a5fd1c2"
+    }
+  ],
+  "immutability": "These exact safe source/review/evidence bytes are preserved without normalization; any future edit changes a recorded hash.",
+  "no_recursive_self_hash": "This manifest is hashed by transfer-manifest.json; payload archive includes this exact manifest."
+}

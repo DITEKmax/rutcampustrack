@@ -1,0 +1,8 @@
+{
+  "time": "2026-10-11T23:55:15.793117+00:00",
+  "scope": "local exact232..636 Git history, cachedsameGitleaks8.22.1/redact; not actualremote log",
+  "native_exit": 0,
+  "findings_metadata_only": [],
+  "secret_values": "not accessed or forwarded",
+  "remote_log_transport": "gh signedredirectFORBIDDEN; downloaded0bytes, not actuallog/evidence; safernativeconnectorpending"
+}

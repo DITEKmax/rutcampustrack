@@ -1,0 +1,22 @@
+{
+  "codes": [
+    "TEACHER_JOURNAL",
+    "TEACHER_STATS",
+    "HEADMAN_WEEKLY_CURRENT",
+    "HEADMAN_WEEKLY_SELECTED",
+    "HEADMAN_STATS",
+    "HEADMAN_STATS_TREND",
+    "HEADMAN_GROUP_COMPOSITION",
+    "HEADMAN_SUBJECT_JOURNAL",
+    "ADMIN_USERS",
+    "ADMIN_GROUPS"
+  ],
+  "explicit_stable_string_codes": true,
+  "existing_names_and_codes_equal": true,
+  "openapi_string_enum_unchanged": true,
+  "generated_TS_union_unchanged": true,
+  "DB": "Stored report kind remains canonical text inside JSONB/Redis; no ordinal column or migration change",
+  "proto": "Report kind is REST selector; no report-kind proto enum or field numbers changed",
+  "legacy_consumer": "Java enum identifiers, constructors, switches, names, emitted strings and binding hashes retain their prior meanings; input coercion narrows to accepted string contract",
+  "boundary": "Local JsonCreator(Object) rejects nonstrings/unknown, required property Nulls.FAIL; global Jackson config unchanged"
+}

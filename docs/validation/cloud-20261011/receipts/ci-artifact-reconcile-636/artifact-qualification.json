@@ -1,0 +1,314 @@
+[
+  {
+    "artifactId": 11719530075,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "api-gateway",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 9,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 4,
+    "suiteCount": 4,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 12
+  },
+  {
+    "artifactId": 11719500562,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "schedule-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 205,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 38,
+    "suiteCount": 38,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 9
+  },
+  {
+    "artifactId": 11719450597,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "api-gateway",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 158,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 15,
+    "suiteCount": 15,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 71
+  },
+  {
+    "artifactId": 11719430751,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "auth-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 139,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 20,
+    "suiteCount": 20,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 23
+  },
+  {
+    "artifactId": 11719167418,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "attendance-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 220,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 41,
+    "suiteCount": 41,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 7
+  },
+  {
+    "artifactId": 11719102777,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "academic-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 406,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 61,
+    "suiteCount": 61,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 78
+  },
+  {
+    "artifactId": 11718972638,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "auth-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 134,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 23,
+    "suiteCount": 23,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 27
+  },
+  {
+    "artifactId": 11718823099,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "attendance-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 303,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 45,
+    "suiteCount": 45,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 21
+  },
+  {
+    "artifactId": 11718792984,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "academic-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 451,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 44,
+    "suiteCount": 44,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 198
+  },
+  {
+    "artifactId": 11718743176,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "notification-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 120,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 25,
+    "suiteCount": 25,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 0
+  },
+  {
+    "artifactId": 11718708644,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "notification-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 61,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 12,
+    "suiteCount": 12,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 24
+  },
+  {
+    "artifactId": 11718619123,
+    "metadata": {
+      "checkoutSha": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+      "prHeadSha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "service": "schedule-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38184430139",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "summary": {
+      "PASSED": 272,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xmlCount": 18,
+    "suiteCount": 18,
+    "collection": "RESULTS",
+    "inconsistentSuites": 0,
+    "ordinalOnly": 230
+  }
+]

@@ -1,0 +1,1223 @@
+{
+  "at": "2026-10-12T00:23:22.301459+00:00",
+  "operation": "candidate_only_no_mutation",
+  "root_sha": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "protected_nonmatching": [],
+  "entries": [
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/archive/rutcampustrack-kit/.codex/part2-task2-before.png",
+      "size": 524470,
+      "sha256": "fd7586f6375e8c42cc6b189174ce5584ca842ea939449e957fae09a077b7e936",
+      "git_blob": "ed9bf192bb1b368133c2d984b6412d6bb7046001",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "size": 746489,
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "size": 531799,
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "size": 1690298,
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "size": 590375,
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/security/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "size": 2319229,
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "git_blob": "6a70a3f6334531c983377310fd41f3c0c95b6714",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/headman-contact.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/design/mobile/reference-audit/headman-contact.png",
+      "size": 2909338,
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "git_blob": "70c5f917dd94f7c2600cbf0e304e58a9bb89e068",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/security/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/mobile/reference-audit/student-contact.png",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/design/mobile/reference-audit/student-contact.png",
+      "size": 1456252,
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "git_blob": "16ab24fccfa91cab4d075f57fa5149e490eeb169",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/auth-generator/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/notification-provider/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/client-format/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/gateway-claims/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/recovery/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/auth-gateway-test-deps/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/data-lecture/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/security/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/renderer-files/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/client-acceptance/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/ci-evidence/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/exports/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/client-runtime/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/delivery/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "copy_path": "/workspace/rct-worktrees/file-boundaries/docs/research/reference-rutcampustrack-design/Onest.zip",
+      "size": 710850,
+      "sha256": "47bf318426ab3fa7bf668c2f2002dfcd8883ac5e79b5ca33b2a8f2d43dd21122",
+      "git_blob": "4d6053b3b6e0cb6838a530f6016879b6bda861e7",
+      "mode": "0o600",
+      "same_device": true
+    }
+  ]
+}

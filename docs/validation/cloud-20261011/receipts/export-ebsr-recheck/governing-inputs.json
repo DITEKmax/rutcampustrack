@@ -1,0 +1,77 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/AGENTS.md",
+    "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+    "bytes": 4327
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/AGENTS.md",
+    "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+    "bytes": 2914
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/AGENTS.md",
+    "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+    "bytes": 5464
+  },
+  {
+    "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+    "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+    "bytes": 24809
+  },
+  {
+    "path": "/workspace/rutcampustrack/.agent/orchestration-v2/CURRENT.md",
+    "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b",
+    "bytes": 1799
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+    "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+    "bytes": 7916
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "bytes": 86218
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+    "sha256": "7d855790b328e2d4cc0f121f7925d84d13b537915dc6ae3a0edd72ffc8a32484",
+    "bytes": 5724
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+    "sha256": "d22223fb721663b89628b50b9522e90838530c5569b0a3bf9aef1dd42baa26cd",
+    "bytes": 11724
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+    "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+    "bytes": 9948
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+    "sha256": "e9dfa5d1a7452542d0493d30088cae19a8da286396bf0b9c8f2055fd0468a439",
+    "bytes": 3261
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-export-ebsr-recheck.md",
+    "sha256": "51e07c2394c7936b41957538077af205ed23b658b968e7d38461a28dc97682d8",
+    "bytes": 4300
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-source-resolution/SKILL.md",
+    "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d",
+    "bytes": 1557
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-verification/SKILL.md",
+    "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa",
+    "bytes": 1733
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+    "sha256": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+    "bytes": 1836
+  }
+]

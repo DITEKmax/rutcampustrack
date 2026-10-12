@@ -1,0 +1,13 @@
+{
+  "phase": "ebsr-affected-unit-1",
+  "producer_head": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "exit_code": 1,
+  "status": "FAIL",
+  "result_sha256": "c6d42aca16d2828e99b3b2948ed851cda035ea4dcef6765b641aed06cf701258",
+  "log_sha256": "468f8df4cdf53d734c27d85c2a566637c1eaa7e6263b39f024a81fea7654ec41",
+  "task_execution": {
+    ":services:auth-service:auth-app:test": "> Task :services:auth-service:auth-app:test",
+    ":services:api-gateway:test": "NOT_RUN"
+  },
+  "source_files_unchanged_during_run": true
+}

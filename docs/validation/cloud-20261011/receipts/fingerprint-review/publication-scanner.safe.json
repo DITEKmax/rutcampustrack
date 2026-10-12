@@ -1,0 +1,21 @@
+{
+  "scope": "Own candidate safely publishable review receipts only; not repository history or product runtime",
+  "command": [
+    "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+    "dir",
+    "--no-banner",
+    "--no-color",
+    "--redact=100",
+    "--report-format=json",
+    "--report-path=/workspace/scratch/rct-validation/fingerprint_review/publication.private-redacted.json",
+    "--gitleaks-ignore-path=/workspace/scratch/rct-validation/fingerprint_review/empty-ignore",
+    "/workspace/scratch/rct-validation/fingerprint_review"
+  ],
+  "native_exit": 0,
+  "findings_count": 0,
+  "safe_findings": [],
+  "raw_report_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "raw_stdio_sha256": "f7f46a435cb41a8774946ea89563cb6a8da17d72a45f1975bcc9ebfc4148914e",
+  "raw_report_not_publishable": true,
+  "actual_secret_match_values_not_printed_or_copied": true
+}

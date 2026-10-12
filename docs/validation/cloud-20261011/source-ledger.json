@@ -5,12 +5,13 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
       "status": "authoritative-owner-contract",
       "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
       "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
-      "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b"
+      "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "previous_sha256_before_D009": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c"
     },
     {
       "id": "AGENTS.md",
@@ -1157,6 +1158,113 @@
       "sha256": "2690424affa99c571296a53208e8df701bf0ed79b3decee954204c1d83da0557",
       "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
       "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "owner-D009-final-doc-receipt-equivalence",
+      "path": "docs/product/decisions/2026-10-12-final-doc-receipt-equivalence.md",
+      "sha256": "6aad9144905eea1ff56a7622c40002012214f1431006de01710011ae21f2d86a",
+      "status": "accepted-owner-decision",
+      "date": "2026-10-12T00:14:21.446201+00:00",
+      "supersedes": "finaldocs-only exactCIreceipt ambiguity only",
+      "scope": "finalhandoff/documentation; no productcriteria waiver"
+    },
+    {
+      "id": "ci636-native-safe-receipts",
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/immutable-original-receipts.zip",
+      "sha256": "e54e8d5489d83df2c0607992d45706e01eb23a9c79649efc5948552abf9024ea",
+      "status": "verified-runtime-receipts",
+      "date": "2026-10-12T00:33:37.725659+00:00",
+      "scope": "12 originalsafeZIPs actualCI636; one finiteL05PASS producer636, no wholefamily/currentclockclaim"
+    },
+    {
+      "id": "ntr-fresh-sealed-review",
+      "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/immutable-original-receipts.zip",
+      "sha256": "0a53df777e51122cb155887dd216eb16d0b2b0c484aac1830cbe04e9ae7656a3",
+      "status": "independent-review-approved",
+      "date": "2026-10-12T00:33:37.725659+00:00",
+      "scope": "d674/parentfa02 bounded NTRtest/provider; NP01GAP; no reviewer runtime"
+    },
+    {
+      "id": "notification-root-integrated-bridge",
+      "path": "docs/validation/cloud-20261011/receipts/notification-ntr-integrated-bridge.json",
+      "sha256": "de8f9da3fe4cda5ac9d7f73842a2b5397a2a7090c913a05d50c3d5f0cc4cda2e",
+      "status": "integrated-exact-patch-evidence",
+      "date": "2026-10-12T00:33:37.725659+00:00",
+      "scope": "twoauthor/rootpatchpairs andapplicablehooks; rootd551"
+    },
+    {
+      "id": "historical-asset-storage-dedup",
+      "path": "docs/validation/cloud-20261011/receipts/immutable-historical-dedup-result.json",
+      "sha256": "d484a53aae4e96f55e451a3c03a578ca92fc307dac1cbd52f4e7d1f2cfb71b91",
+      "status": "verified-resource-action",
+      "date": "2026-10-12T00:33:37.725659+00:00",
+      "scope": "480unchangedhistoricalcopies byte/mode/Git preserved; physicallyshared immutable assets require COW beforefuturechanges"
+    },
+    {
+      "id": "strict-fingerprint-independent-review",
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/original-byte-index.json",
+      "sha256": "bf872423bd501ad3f012f9e77fa59398bf0dbe4918b403b09786d20543a0e61e",
+      "status": "independent-review-approved",
+      "date": "2026-10-12T00:48:11.527276+00:00",
+      "scope": "onehistoricalFP/all6985originals/exactsamepathnewsecretstilldetected",
+      "original_archive_sha256": "bd19be702aec051f6b4b3ef43302fd1ea79f82b418eeb42efda6bf80b405920f",
+      "storage": "exactoriginalZIP transportparts; indexreconstruction mandatory"
+    },
+    {
+      "id": "strict-fingerprint-author-proofs",
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/immutable-original-receipts.zip",
+      "sha256": "b900ec27c9372c1497cdccab3f14452b387dbef2fc5159f413a245be920bc206",
+      "status": "verified-safe-author-receipts",
+      "date": "2026-10-12T00:48:11.527276+00:00",
+      "scope": "official8.24.3 26commit red1/green0 +newcommitpositive"
+    },
+    {
+      "id": "strict-fingerprint-root-bridge",
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-integrated-bridge.json",
+      "sha256": "2814ffb67cfb86fe25ffdb45e833e4fcafde97b07c91e2880bc76ae8843022af",
+      "status": "integrated-exact-patch-evidence",
+      "date": "2026-10-12T00:48:11.527276+00:00",
+      "scope": "oneimmutablefp only; remoteSecuritystillFAIL"
+    },
+    {
+      "id": "NP01-source-resolution",
+      "path": "docs/validation/cloud-20261011/receipts/np01-source-resolution/original-byte-index.json",
+      "sha256": "131926e81cb8c3b92c63dd32514235148d94d5085a0b379464046de7b5d07b40",
+      "status": "accepted-source-fragments/diagnostic-implementation-receipt",
+      "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "read_at": "2026-10-12T01:48:05.662867+00:00"
+    },
+    {
+      "id": "NP01-config-source",
+      "path": "docs/validation/cloud-20261011/receipts/np01-config-author/original-byte-index.json",
+      "sha256": "7dfb68cb5d0e3440bdc081b11a6032cf30d763e9880903f28aca2e6caf5bb4c4",
+      "status": "SOURCE_READY5d/runtimeNOT_RUN",
+      "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "read_at": "2026-10-12T01:48:05.662867+00:00"
+    },
+    {
+      "id": "export-resume-current",
+      "path": "docs/validation/cloud-20261011/receipts/export-resume/original-byte-index.json",
+      "sha256": "3d40e14cb2cee1befe55925191764109a418abf9766e07a56d54addcb351b47c",
+      "status": "actualboundedqualifiedruntime; sourcef09",
+      "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "read_at": "2026-10-12T01:48:05.662867+00:00"
+    },
+    {
+      "id": "export-merged-current",
+      "path": "docs/validation/cloud-20261011/receipts/export-merged-repository-review/original-byte-index.json",
+      "sha256": "fa89a2cfac314062415fd8f645f71684c41c10e80358d2f13e072afb0143f739",
+      "status": "APPROVE_SOURCE_ONLY/currenttwoAcademiccasesNOT_RUN",
+      "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "read_at": "2026-10-12T01:48:05.662867+00:00"
+    },
+    {
+      "id": "format-freeze-prep",
+      "path": "docs/validation/cloud-20261011/receipts/format-freeze-prep/original-byte-index.json",
+      "sha256": "66dbe6df7ba6154d45a12b8be5ef0d2149086998a4eb1644a0e7c10b6a522dea",
+      "status": "read-onlycuratedinventory/currentrefreshandformatNOT_RUN",
+      "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "read_at": "2026-10-12T01:48:05.662867+00:00"
     }
   ],
   "research_receipt": {

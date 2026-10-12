@@ -85,3 +85,21 @@ Author/root shared state: bounded correction and independent recheck pending; no
 ## ECR03 — P3, independent client review
 
 2026-10-11T23:06:19.689202+00:00: PWA trendsuccess usesTelegramwording rather thanexistingcarrier-aware helper. Source/testqualitycounterexample, browserrealbackend NOT_RUN; fresh recheck afterauthorcorrection.
+
+## FMT-ESLINT-01 / FMT-RUFF-VERSION-01 / FMT-BOOTSTRAP-ORACLE-01 — current correction package
+
+Source65e0ba existing strict ESLint reported 2969 warnings across mobile/PWA/TMA; finite original-source comparison showed 110 formatting regressions and one earlier-warning file. CI38236931589 failed one Ruff format check (unpinned actual0.17 versus configured0.11); Coverage38236931576 failed the exact-single-line bootstrap source oracle while1027 Vue tests passed. These are confirmed source/check failures, not an offline product-policy change.
+
+Corrective author9a77f68205df2cbd41892373e261fa05adae0265: minimal script/style-only Prettier plus unchanged native Vue ESLint formatting, exact literal preservation and meaningful selective controls; pin Ruff0.17 consistently; bootstrap AST oracle verifies the same accepted guard and rejects relevant malformed controls. Actual combined680 check, strict lint, PWA/TMA types and scoped hooks PASS. Independent source review pending; Root integration and new current CI/Coverage/Security remain required. Evidence: receipts/vue-format-corrective-final original safe50 archive. Angular untouched under D010; Windows actual runtime NOT_RUN.
+
+## CRA-EXPORT-T01 / CRA-VIEWPORT-T02 — NEW client-test source quality
+
+Original independent source review found filtered-export oracle false greens and inherited desktop viewport overriding the intended mobile viewport. Corrected cf067 source closes both P2: exact ordinary export columns/values/filter exclusions plus20 meaningful controls, effective390×844 on both projects and five private-suite hooks. Fresh independent verdict APPROVE_SOURCE; Root exact seven files integrated at690324a. Evidence: receipts/client-source-independent-review, client-source-independent-recheck and client-acceptance-source-packages. Actual NEW14/browser/backend scenarios remain NOT_RUN; source closure is not CLIENT PASS.
+
+## HOSTCFG-V5-REDIRECT-QUERY — P2 synthetic runtime source finding
+
+The v5 explicit `/app` and `/mini-app` slash redirects drop query parameters retained by former Nginx automatic redirects. T004 requires unchanged navigation/recovery route semantics. Independent source counterexample; actual HTTP NOT_RUN. Correct only own runtime two redirect targets and meaningful query controls, preserve original source seal, then independently recheck before launch.
+
+## HOSTCFG-V5-MONGO-IDENTITY — P2 synthetic runtime bootstrap boundary
+
+Bootstrap requires the exact live mongod child PID and birth identity. The original source expression accepts a surviving recorded descendant when the original child is absent, reused or zombie (three finite counterexamples). No real-process/runtime defect claim. Correct only this gate, preserve original seals and independently recheck before launch.

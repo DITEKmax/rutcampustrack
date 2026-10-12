@@ -1,0 +1,91 @@
+{
+  "utc": "2026-10-12T12:30:38.876573+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "open_findings": [
+    "HOSTCFG-V5-MONGO-IDENTITY"
+  ],
+  "closed_findings": [
+    "HOSTCFG-V5-REDIRECT-QUERY"
+  ],
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 426,
+      "sha256": "90fe51e09860273c5c8c3a957e83810f7d8d145ca09397559c4f99ffcc88b4d4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 7033,
+      "sha256": "f6bf14e115d387c8705bb6237b8c1833aad6ce6952febf913745acad280784f7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 731,
+      "sha256": "aae9df55dc3e8683d815bade8b19717bf0b9a338500957974ddcc8dee5a85d32"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/check-bootstrap.mjs",
+      "relative_path": "check-bootstrap.mjs",
+      "bytes": 3869,
+      "sha256": "0b34dddfae8029a7e4cdb452c7126f1563ee28c7a81dd5618032df8cad0435b2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/check-exact-identity.py",
+      "relative_path": "check-exact-identity.py",
+      "bytes": 1711,
+      "sha256": "d8c8a4096af5758ec3de6bfc826d116bc2a811ecd2adbeaddd2ce9dbed709b21"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/check-source.py",
+      "relative_path": "check-source.py",
+      "bytes": 7114,
+      "sha256": "a36b2b23b5466789e59ec7d0ebe61dfafb8ca1bb5db6c5f753bef92e54bdbe95"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/findings-partial.json",
+      "relative_path": "findings-partial.json",
+      "bytes": 893,
+      "sha256": "c29f15f41a02c306c92eb187d0850f483786c68cb55c3255536f5b583035d523"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/identity-counterexample.safe.json",
+      "relative_path": "identity-counterexample.safe.json",
+      "bytes": 1022,
+      "sha256": "50343ee6ec29e444b782476dd336a4c4252fc1de1efa3d821a53d61849dff31b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/independent-bootstrap-controls.safe.json",
+      "relative_path": "independent-bootstrap-controls.safe.json",
+      "bytes": 2912,
+      "sha256": "3abae9ebad401107698e4a22c5e444b7d8cbf24f78ea0ad5b6ad8b8650382b41"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/independent-source-checks.safe.json",
+      "relative_path": "independent-source-checks.safe.json",
+      "bytes": 21333,
+      "sha256": "a107e3012f067fb549aaa154b4abc694031a126c9d62be916f823c7310856061"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/input-ledger-final.json",
+      "relative_path": "input-ledger-final.json",
+      "bytes": 1264,
+      "sha256": "01e2982b49613e66087dd69acbbe26834a8dfd4bdc0cdb1d94773819a8048755"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/input-ledger.json",
+      "relative_path": "input-ledger.json",
+      "bytes": 978,
+      "sha256": "ad958646a0b33cfa693a5a2eb20a2a0ca24d9cf6ac84528e2023b47f7a4d869e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/redirect-controls.safe.json",
+      "relative_path": "redirect-controls.safe.json",
+      "bytes": 1779,
+      "sha256": "84e4a68a6179f946aa0536d8ad222c9134251eba6a20b919cb98387baf70c799"
+    }
+  ],
+  "runtime": false
+}

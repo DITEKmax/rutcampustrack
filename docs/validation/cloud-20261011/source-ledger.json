@@ -1916,6 +1916,15 @@
       "revision": "690324a1d9b56962b323a9ecec260aa430fbec79",
       "registered_at": "2026-10-12T12:07:48.780004+00:00",
       "source_authority": "evidence only; no new product policy"
+    },
+    {
+      "id": "SAFE-runtime-v5-source",
+      "path": "docs/validation/cloud-20261011/receipts/runtime-v5-source/launch-manifest.json",
+      "sha256": "e3b6e2c80d819e758bd54722a0d348764dcee5ce64a1ede0cd20df16adc96378",
+      "status": "source-only-independent-review-pending",
+      "revision": "2774ccbd8513fd7244c2c4df1cca428b59a6ddb3",
+      "registered_at": "2026-10-12T12:10:04.429804+00:00",
+      "source_authority": "technical synthetic runtime T004; not product policy"
     }
   ],
   "research_receipt": {

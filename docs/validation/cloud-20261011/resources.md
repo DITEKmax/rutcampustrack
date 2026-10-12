@@ -20,3 +20,5 @@ No perprocesshardcgroup/private-keyOSisolation claim; genuine7productionhostBoot
 2026-10-12T11:13:48.431777+00:00: V4source168SOURCEapproved/e393+232c; RootNEW600v4grantcreated forphasedactualDocker9 withfreshpreflight. Host7helduntilformatter1GiBNodelease explicitrelease andactualcapacitybarrier. HeavyJava/brokerreleased; noappsstartedyet.
 
 2026-10-12T12:07:11.855380+00:00: Explicit followup tasks restarted idle independent formatter reviewer export_ebsr_recheck, v5 runtime source reviewer ci731_reconcile, client preparation owner client_real_acceptance. Sole runtime config writer host_runtime_prepare; formatter writer complete9a77/Node lease released. Root local690324a, no activeRootprocess, no apps/browser yet.
+
+2026-10-12T13:00:01.034121+00:00: ACTUAL Docker6running (up81635terminal0/allCLIreaped), nativeMongo50157wrapper292500/child292563birth6368643 RUNNING; soleownerhost_runtime_prepare. AllotherNode/Java/NP01leasesreleased. Rootnoactiveprocess; scopedRootdocumentationhooksnext. Runtimeguardfloor4GiB/shared15GiB/reserve1GiB; original5vols/newtmpdata preserved.

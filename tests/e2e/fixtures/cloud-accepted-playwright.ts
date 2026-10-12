@@ -1,5 +1,5 @@
-import { defineConfig } from '@playwright/test'
-import existing from '../playwright.config'
+import { defineConfig } from '@playwright/test';
+import existing from '../playwright.config';
 
 /** Explicit opt-in lane; one real API dataset writer and private artifacts only. */
 export default defineConfig({
@@ -26,4 +26,4 @@ export default defineConfig({
       ...project,
       use: { ...project.use, viewport: { width: 390, height: 844 } },
     })),
-})
+});

@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { resolve, extname } from 'node:path'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -222,11 +222,10 @@ if (mode === 'inventory') {
 
 async function formatVueFiles(files) {
   if (!files.length) return
-  const prettier = await import(resolve(root, 'frontends/node_modules/prettier/index.mjs'))
-  const { parse } = await import(
-    resolve(root, 'frontends/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js')
-  )
-  const { ESLint } = await import(resolve(root, 'frontends/node_modules/eslint/lib/api.js'))
+  const moduleUrl = (path) => pathToFileURL(resolve(root, 'frontends/node_modules', path)).href
+  const prettier = await import(moduleUrl('prettier/index.mjs'))
+  const { parse } = await import(moduleUrl('@vue/compiler-sfc/dist/compiler-sfc.cjs.js'))
+  const { ESLint } = await import(moduleUrl('eslint/lib/api.js'))
   const eslint = new ESLint({ cwd: resolve(root, 'frontends'), fix: true, cache: false })
   for (const path of files) {
     const filename = resolve(root, path)

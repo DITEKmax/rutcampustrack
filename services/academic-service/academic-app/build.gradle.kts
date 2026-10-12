@@ -104,6 +104,10 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     // Test
+    // NP01 broker bridge exercises the real Auth credential producer and outbox sender.
+    testImplementation(project(":services:auth-service:auth-app")) {
+        isTransitive = false
+    }
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")

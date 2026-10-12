@@ -277,7 +277,10 @@ class BotCredentialBrokerBridgeIT {
                     assertThat(producer.completePasswordReset(new CredentialSessionTransactionPort.PasswordResetCommand(
                             ticket, new CredentialSessionTransactionPort.CredentialHash(passwords.encode(token())), now())).succeeded()).isTrue();
                 }
-                case "publish" -> assertThat(tx.execute(status -> publisher.publishBatch())).isEqualTo(1);
+                case "publish" -> {
+                    Integer published = tx.execute(status -> publisher.publishBatch());
+                    assertThat(published).isEqualTo(1);
+                }
                 case "replay" -> sender.send("password.changed", event(jdbc, own));
                 case "unknown_version" -> {
                     ObjectNode malformed = (ObjectNode) mapper.readTree(event(jdbc, own));

@@ -22,11 +22,11 @@ from urllib.parse import quote
 import aio_pika
 import aiohttp
 import redis.asyncio as aioredis
-from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.types import Update
+from aiohttp import web
 
 from bot.consumers.event_consumer import DLQ_QUEUE_NAME, QUEUE_NAME, start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher

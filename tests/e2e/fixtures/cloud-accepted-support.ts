@@ -11,7 +11,15 @@ import {
 import type { CurrentSession } from './pwa-auth'
 import { sanitizeTestErrors } from './artifact-privacy'
 import { syntheticInitData } from './telegram'
-import type { HeadmanAssistantPermission } from '../../../frontends/mobile-core/src/features/headman-group/headman-group-client'
+
+// Exact accepted wire codes from HeadmanAssistantPermission. Keep the E2E
+// helper type local: the Vue module uses Bundler resolution, E2E uses NodeNext.
+type HelperCapability =
+  | 'MARK_ATTENDANCE'
+  | 'MANAGE_EXCUSES'
+  | 'MANAGE_HOMEWORK'
+  | 'CANCEL_LESSONS'
+  | 'VIEW_STATS'
 
 // MobileDataset enforces the synthetic loopback stand and canonical safe reporter
 // before it generates credentials. Keep the same policy for every new case.
@@ -40,10 +48,7 @@ export async function reloadSession(page: Page): Promise<CurrentSession> {
   return current.json()
 }
 
-export async function singleCapability(
-  dataset: MobileDataset,
-  permission: HeadmanAssistantPermission,
-) {
+export async function singleCapability(dataset: MobileDataset, permission: HelperCapability) {
   const user = await dataset.user('STUDENT', dataset.group.id)
   const grant = await dataset.headmanActor.call(
     'POST',

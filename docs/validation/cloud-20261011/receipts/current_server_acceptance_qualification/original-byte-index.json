@@ -103,9 +103,9 @@
       "path": "proposed-verified-cases.csv",
       "original_sha256": "81c043079397c9e4a2e21bc95b04c5d9ef44143216d5e05ccd5ef992d30fb088",
       "original_bytes": 83850,
-      "working_sha256": "74874526c0cca167e2b4591dd2294c207cab251f9aff8085bf911adda619fe6b",
-      "working_bytes": 83849,
-      "transformation": "only final newline normalization"
+      "working_sha256": "d4ec01e04821ea3278cb51bdb1065d5478633277e792516804f3be05e894ef94",
+      "working_bytes": 83826,
+      "transformation": "only final newline normalization; copiedCSV CRLF->LF with universal-newline parsedrows exact; original archive bytes retained"
     },
     {
       "path": "remaining-boundaries.json",

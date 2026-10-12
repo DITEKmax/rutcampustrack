@@ -1,0 +1,3 @@
+Canonical385b072 plan: APPROVE_SOURCE_PLAN, bothP2 CLOSED_SOURCE_PLAN. Unique causal post-delete witness + unchanged NEW invariant/noawait and singleclosedJava recipe verified; in-memory AST/text fullrestoration proof,13sourcecontrols, exactEBac58/98d3/archive5 and old4seals preserved. No native/runtime/mutation.
+
+Future Root grant/resources stillPENDING. Do not adopt unsupported1GiB diskdelta; historical1120100352 exceeds it. Fresh adequatebudget/floor/cleanup required. Actual intendedred→ownedcleanup→fullbytes/modesrestore→chronologicalnormal7green stillrequired; completedEBgreen isPREonly. No artificialproduct/trigger commit or family/provider/productPASS.

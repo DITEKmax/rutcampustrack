@@ -1,0 +1,106 @@
+{
+  "status": "V2_CORRECTION_SOURCE_READY_NOT_RUNTIME_PASS",
+  "original_restart_manifest_path": "/workspace/scratch/rct-validation/current_host_restart_plan/manifest.json",
+  "original_restart_manifest_sha256": "3b02e82b61409f7118bf434afcd888f5ae556504067913527d673d673d421537",
+  "preserved_ancestor_manifest_path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction/manifest.json",
+  "preserved_ancestor_manifest_sha256": "ad0b7d42314db89a53e40bbef461993e6536909ddbe3cc93bca766820ab4bc11",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "beffc54bceca850f12c41e89c11467e10b6a3969e0ac468d6c64ac1971006190",
+      "bytes": 382
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "bea08ae1a5bef4159208a4a3da5e03c23836769a685170ad6a2db8600b2e689c",
+      "bytes": 3019
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/ancestor-controls.py",
+      "name": "ancestor-controls.py",
+      "sha256": "88ce4bd806c6445f76f3884addd9b0fee042839b4fc457c94f6987b07a1367ca",
+      "bytes": 6845
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/ancestor-controls.safe.json",
+      "name": "ancestor-controls.safe.json",
+      "sha256": "1c4baabbaa34be5939d2a9f6156b4f653b7c258f82ceca8898708db580aad0f6",
+      "bytes": 6060
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/delta.safe.json",
+      "name": "delta.safe.json",
+      "sha256": "ac4a0f6e1ba6df6d71166506c18c2b269a35ad60b287e6281377b6bef30f74ed",
+      "bytes": 1153
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/docker-up-restart.py",
+      "name": "docker-up-restart.py",
+      "sha256": "cf8c045933280286ccfaac65869abf31941e9db4ea16560dba776dc6e41b639d",
+      "bytes": 6441
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/effective-launch-inputs.json",
+      "name": "effective-launch-inputs.json",
+      "sha256": "a14495be0813927d9f14723a620973a4855acab4e52d2b15b02efd33c23e4a97",
+      "bytes": 4897
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/helper-import-controls.py",
+      "name": "helper-import-controls.py",
+      "sha256": "43a8af233a1b899fd57ef05603dcf439a93a1a740ea43e4ec069ec15c022c7cc",
+      "bytes": 1722
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/helper-import-controls.safe.json",
+      "name": "helper-import-controls.safe.json",
+      "sha256": "797abf882037bf2d0eeddd24778b8630c157abffed5970d355511f5c35261cda",
+      "bytes": 786
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/import-erratum.safe.json",
+      "name": "import-erratum.safe.json",
+      "sha256": "6f613f5a80d6d7343678bc71108d5182b7ffe1d16e82719736dad9a5bdeda8b5",
+      "bytes": 444
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/preservation.safe.json",
+      "name": "preservation.safe.json",
+      "sha256": "294d37e3bfb831f36afd5f1bab25d305692b528bcd7f814e29c9e8eeb9678388",
+      "bytes": 555
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/resources.safe.json",
+      "name": "resources.safe.json",
+      "sha256": "4f4559acda89ab345ab52c7423455d745bfa1a72790c7add4be233e8e066c812",
+      "bytes": 283
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/restart-boundary.py",
+      "name": "restart-boundary.py",
+      "sha256": "f5077ee899932b989514c0390d83d5b052bf227e7f0720d6b1e7e0d0cc8b6392",
+      "bytes": 11008
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/run-mongo-restart.py",
+      "name": "run-mongo-restart.py",
+      "sha256": "9df69a39688f7508100c67edf13ede449cedb3145d8fb84be81d18953eb0e339",
+      "bytes": 11568
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/run-service-restart.py",
+      "name": "run-service-restart.py",
+      "sha256": "57cb44b84f59dcfd1599e869f46608877c17def758edca180f43b62311eeaef2",
+      "bytes": 7759
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ancestor_correction_v2/runtime-ancestor-anchors.safe.json",
+      "name": "runtime-ancestor-anchors.safe.json",
+      "sha256": "43bf0e5d527840fdb33c8d9583279ffd28871ebb172e75887a26aa9e296cc381",
+      "bytes": 854
+    }
+  ],
+  "private_data_keys_ENV_logs_or_nativepayload_included": false
+}

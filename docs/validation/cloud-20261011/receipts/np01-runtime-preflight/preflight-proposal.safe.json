@@ -1,0 +1,281 @@
+{
+  "id": "NP01-SENS-READONLY-CACHE-RESOURCE-PREFLIGHT",
+  "utc": "2026-10-12T14:23:46.272584+00:00",
+  "status": "PREFLIGHT_METADATA_READY_RUNTIME_GRANT_AND_REVIEW_PENDING",
+  "root_revision": "5be23eda9fa916b678c69f33f486410225a05e1f",
+  "source_product_revision": "17d25ddea37b1d7f6788fddb33ef0faa52287837",
+  "runtime_not_run": true,
+  "model_selected": "gpt-6.1-sol/high",
+  "actual_model": "UNKNOWN",
+  "proposal_identity": {
+    "current_plan": "/workspace/scratch/rct-validation/np01_broker_sensitivity_plan_correction_canonical/PLAN.safe.json",
+    "safe_zip_sha256": "385b07206662207ee5077f2b6e22e7ff3720422c22bcf5c0ab98c85abd10a341",
+    "review": "Finite independentcanonical recheck pending. Original7f andfirstcorrectiona5c09 preserved; canonical only removes stale executableJava recipe and addsvalidatorguard."
+  },
+  "jdk": {
+    "home": "/workspace/rct-cloud-setup/jdk21",
+    "release_version": "21.0.12.1",
+    "implementor": "Eclipse Adoptium/Temurin21.0.12.1+1",
+    "release_sha256": "ebbd70bf00bab6d39addf51969c5ff244030b86b29de400b9fb10612ebd3ceec",
+    "java_binary_exists": true,
+    "javac_exists": true,
+    "native_JVM_version_probe": "NOT_RUN_BY_SCOPE"
+  },
+  "gradle": {
+    "version": "8.12",
+    "distribution": "/workspace/.gradle/wrapper/dists/gradle-8.12-bin/cetblhg4pflnnks72fxwobvgv/gradle-8.12",
+    "completed_zip_ok_marker": true,
+    "cache_home": "/workspace/.gradle",
+    "historical_external_graph_artifacts": 242,
+    "missing_or_hash_mismatch": 0,
+    "cached_native_generators": [
+      "protoc3.25.8-linux-x86_64",
+      "protoc-gen-grpc-java1.82.4-linux-x86_64"
+    ],
+    "qualification": "Read-only metadata/hashmatches forcapturedpriorgraph; currentofflinegraph/plugin/transforms/protogen/nativecompile actualNOT_RUN. No availabilityclaim beyond inspectedcache. No Gradle/JVMstarted."
+  },
+  "python": {
+    "executable": "/workspace/rct-cloud-setup/bot-venv/bin/python3.12",
+    "actual_version": "3.12.14",
+    "old_receipt_path_erratum": "Historical prose python3.12.14 filename absent; actualexecutable python3.12 resolvesplatform3.12binary andnativeversion3.12.14.",
+    "runtime_exact_pins": 17,
+    "all_runtime_pins_match": true,
+    "requirements_test_ranges": "pytest>=8.0/pytest-asyncio>=1.1.0/pytest-cov>=5.0.0/fakeredis[aioredis]>=2.34.0; currentinstalledmetadata9.1.1/1.4.0/7.1.0/2.39.0 satisfies these; rangesnotcalledpinned.",
+    "import_execution": "Onlyisolatedstdlibsysversion andmetadatareader, no bot/product/test imports; compilednativeextension availability/runtime imports deferred.",
+    "installs_pulls": 0
+  },
+  "docker": {
+    "native_engine": "28.4.0",
+    "driver": "vfs",
+    "images": [
+      {
+        "id": "sha256:81bd698b4594e751a3269e4dcd3e03a4a0ec0daf7b72e7aa1abd43cce9887542",
+        "tags": [
+          "postgres:16-alpine"
+        ],
+        "digests": [
+          "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
+        ],
+        "logical_bytes": 294292520,
+        "arch": "amd64",
+        "os": "linux"
+      },
+      {
+        "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "tags": [
+          "rabbitmq:3.13-management-alpine"
+        ],
+        "digests": [
+          "rabbitmq@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281"
+        ],
+        "logical_bytes": 176465533,
+        "arch": "amd64",
+        "os": "linux"
+      },
+      {
+        "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+        "tags": [
+          "redis:7-alpine"
+        ],
+        "digests": [
+          "redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499"
+        ],
+        "logical_bytes": 39061364,
+        "arch": "amd64",
+        "os": "linux"
+      },
+      {
+        "id": "sha256:0cd5951d043f34c6fdb61274eb61c42bbb15aa8e05eab35c110ffd69a84e9463",
+        "tags": [
+          "testcontainers/ryuk:0.11.0"
+        ],
+        "digests": [
+          "testcontainers/ryuk@sha256:2eaec4fc2cf1f67eb6624d4463467ea8aac999a01b2ff74b5973e9a563b7c2b5"
+        ],
+        "logical_bytes": 15293388,
+        "arch": "amd64",
+        "os": "linux"
+      }
+    ],
+    "logical_four_image_sum_bytes": 525112805,
+    "cached_Ryuk_default": "testcontainers1.20.4 RyukContainer class constant testcontainers/ryuk:0.11.0 verified; imagecached. Closedfutureenv must preservedefaultnotdisable cleanup.",
+    "containers_all": [],
+    "published_ports_current": [],
+    "qualification": "Metadataonly, no containerstart/pull/networkcreate. DockerpsallEMPTY, no activeowned/foreigncontainerports atsample. Oldvolumes/nativeMongoDB/key untouched."
+  },
+  "capacity": {
+    "snapshot": {
+      "disk": {
+        "/workspace": {
+          "available_bytes": 9504169984,
+          "total_bytes": 33770192896,
+          "device": 27
+        },
+        "/tmp": {
+          "available_bytes": 7842869248,
+          "total_bytes": 9466122240,
+          "device": 33
+        }
+      },
+      "cgroup": {
+        "memory.current": "5055320064",
+        "memory.max": "17179869184",
+        "memory.peak": "13001928704",
+        "cpu.max": "400000 100000",
+        "pids.current": "554"
+      },
+      "active_heavy": [],
+      "foreign_zombie_heavy_count": 6
+    },
+    "floor_workspace_bytes": 4294967296,
+    "shared_stop_bytes": 16106127360,
+    "shared_reserve_bytes": 1073741824,
+    "original_plan_disk_cap_bytes": 1073741824,
+    "original_cap_verdict": "NOT_SUPPORTED_BY_KNOWN_PRIOR_MEASUREMENT",
+    "prior_actual": {
+      "receipt": "/workspace/scratch/rct-validation/np01_broker_actual/broker-attempt03/broker1-process-result.safe.json",
+      "receipt_sha256": "5ccbff4267281ecb73921ba14447e88c13af0cccc9f4bdd4582451302f69baeb",
+      "run_terminal": "SUPERVISION_ERROR/ESRCH/native-15 at244.965seconds; notproductPASS",
+      "initial_disk": 8350203904,
+      "minimum_disk": 7230103552,
+      "observed_aggregate_disk_growth": 1120100352,
+      "over_1GiB_bytes": 46358528,
+      "observed_aggregate_memory_growth": 3630555136,
+      "qualification": "Historicalmostlypreparedbuild/broker3 priorrun; sharedbackground writes/nativeVFS/data/cache splitUNKNOWN. Difference is actual aggregatefree-disk delta, not preciseattribution nor currentphase03forecast."
+    },
+    "checkout_estimate": {
+      "sparse_paths": 1921,
+      "tracked_source_logical_bytes": 14499995,
+      "source_4k_rounded_bytes": 19116032,
+      "root_top_files_git_index_not_included": true,
+      "current_known_historical_build_allocated_bytes": 57479168,
+      "build_qualification": "Academic31125504/Auth25047040/shared1306624 existingfrozenWToutputs; APIs/otherprojects/cachemetadata/recompilation extra notcomplete. No ignoredoutputs copied/reused."
+    },
+    "proposed_new_disk_cap_bytes": 2147483648,
+    "proposed_shared_extra_cap_bytes": 4294967296,
+    "proposed_free_threshold_floor_plus_disk_cap": 6442450944,
+    "current_free_above_proposed_threshold": 3061719040,
+    "grant_change": "PROPOSAL_ONLY; Root mustexplicitly grant bounded2GiB ratherthan silentlychange1GiB. Noallocationauthorized. Re-measureaftercompile/startup; cap/floor guard abortownexactresources beforebreach. VFS actualnewcopyallocation UNKNOWN; no2GiBguarantee.",
+    "stage": "Freshexclusivecompile/cachepreparation underfuturelease first; measureoutputs+cache delta, then freshcontainerbarrier againstremainingallocationcap/floor. Ifremainingcapacityinsufficient STOP/BLOCKED beforecontainerstart, not uncap/raise/pull."
+  },
+  "preparation": {
+    "worktree": "/workspace/rct-worktrees/np01-broker-sensitivity",
+    "created": false,
+    "strategy": "Root-assigned NEWdetached sparseworktree atactualfrozenlaunchproducer; services/proto/gradle/buildSrc/scripts pluscone rootfiles, no frontend/docmasscopy, no template/buildborrow fromfrozen9a77/Root. SharedGitobjects readonlyreuse; separateworktreeindex/build/generated and sourceprivate600 viaumask077. Exactnativebuilddependencyclosure verifiedduringnormalofflinecompile, not claimed fromsparseproposal alone.",
+    "proposal_argv_sequences": [
+      [
+        "git",
+        "-C",
+        "/workspace/rutcampustrack",
+        "worktree",
+        "add",
+        "--detach",
+        "--no-checkout",
+        "/workspace/rct-worktrees/np01-broker-sensitivity",
+        "ACTUAL_FROZEN_ROOT_SHA"
+      ],
+      [
+        "git",
+        "-C",
+        "/workspace/rct-worktrees/np01-broker-sensitivity",
+        "sparse-checkout",
+        "init",
+        "--cone"
+      ],
+      [
+        "git",
+        "-C",
+        "/workspace/rct-worktrees/np01-broker-sensitivity",
+        "sparse-checkout",
+        "set",
+        "services",
+        "proto",
+        "gradle",
+        "buildSrc",
+        "scripts"
+      ],
+      [
+        "git",
+        "-C",
+        "/workspace/rct-worktrees/np01-broker-sensitivity",
+        "checkout",
+        "--detach",
+        "ACTUAL_FROZEN_ROOT_SHA"
+      ]
+    ],
+    "normal_generator_exception": "Rootbuild generateGitProperties normalprocessResources prerequisite writes8IGNORED src/main/resources/git.properties acrossBootapps. Explicitfuturegrant must includeONLYtheseexpectednormalgeneratedtempWToutputs; noRoot/frozen9a77 writes, no trackedgenerated/sourcechanges ortaskskip. Existinggitignore excludes them.",
+    "two_mutant_hunks": "OnlycanonicalPy3causalstatements/Javauniquecloseddiagnostic; sourceCOW iff nlink>1 beforewrites; restoreexacttwo bytes/modes/allothertrackedsources; never mutate borrowedoutputs."
+  },
+  "future_native_commands": {
+    "compile_argv": [
+      "bash",
+      "gradlew",
+      ":services:auth-service:auth-app:jar",
+      ":services:academic-service:academic-app:compileJava",
+      ":services:academic-service:academic-app:compileTestJava",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--no-build-cache",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+    ],
+    "fault_case_argv": [
+      "bash",
+      "gradlew",
+      ":services:academic-service:academic-app:integrationTest",
+      "--tests",
+      "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT.actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--no-build-cache",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+    ],
+    "environment_names": [
+      "PATH",
+      "JAVA_HOME",
+      "GRADLE_USER_HOME",
+      "LANG",
+      "LC_ALL",
+      "TZ",
+      "TMPDIR",
+      "NP01_PYTHON_EXECUTABLE",
+      "PYTHONDONTWRITEBYTECODE",
+      "PYTHONNOUSERSITE",
+      "PYTHONSAFEPATH",
+      "DOCKER_HOST",
+      "TESTCONTAINERS_HOST_OVERRIDE"
+    ],
+    "safe_known_selectors": {
+      "JAVA_HOME": "/workspace/rct-cloud-setup/jdk21",
+      "GRADLE_USER_HOME": "/workspace/.gradle",
+      "NP01_PYTHON_EXECUTABLE": "/workspace/rct-cloud-setup/bot-venv/bin/python3.12",
+      "DOCKER_HOST": "unix:///var/run/docker.sock",
+      "TESTCONTAINERS_HOST_OVERRIDE": "127.0.0.1",
+      "PATH": "/workspace/rct-cloud-setup/jdk21/bin:/usr/local/bin:/usr/bin:/bin"
+    },
+    "proxies": "Notneededforofflinecode/localhost metadata; no inheritedENVdump/credentialproxyvalues. Supportedtooladditionalpermissions localIPC only, no externalproduct/dependencyrequest.",
+    "genuine_execution": "Freshown integrationTest outputsABSENT/no-build-cache. Requireexactselected1JUnitmethod nativeFAILED0expected/1actual plusuniqueclosedstage andallcleanup/noninfra; existingfilterisFailOnNoMatching=false means empty/no-source/UP-TO-DATE mustexplicitlyBLOCKED, nevercounterexample. No --rerun-tasks fullgraphrebuild/testskip/gateedit."
+  },
+  "grant_conditions": [
+    "CanonicalfiniteindependentreviewAPPROVE; no launchfromheld7f/a5recipe.",
+    "AllNodeprivacy/browser/host/broker/JVM leases explicitlyRELEASED, freshnoactiveheavy Dockerpsempty; Rootexclusivelease source/cacheoutputs declared.",
+    "ExplicitRootbudget2GiBproposal/4GiBextragrowth approvedwithfreshfloor/sharedreserve andphasedcompile/containerbarriers; reusedoldgrant forbidden.",
+    "Existingreviewed ESRCH-safe boundedguard exactfile/hash boundbyRootgrant; oldf539 knownsupervisionfailure mustNOTbe reused. Exactguardpath assignmentpending, no silentfallback.",
+    "RecordrunID/session/parent+children birthticks+pidfd/subreaper ownership; Dockeroriginalbaselineempty+newnamespace rct.validation.owner/Testcontainerssessionlabels/imageIDs/actual127.0.0.1ports/Ryukidentity; rawlogs/XML private600 andsafeclosed extraction.",
+    "DefaultTTL300 remains unchanged; phase03naturalred beforeheldphase07, no clockshortcuts. Nativechild600 andouter900 withexplicitcleanupmargin60 proposedexact Rootgrant needed."
+  ],
+  "cleanup": "Stop/reap onlycapturedownedtree/allknownbirths includingadoptedworkers; no lingeringZ accepted. NativeJava/Python finally scopes preserved; removeonlyexactnewowncontainers/Ryuk/network/ownvhost/volumewrites atRoot-approveddisposal, NEVERoriginal5volumes/nativeMongoDB/key/foreignresources. Retainmutantproof; restoretwohunks andactualchronologicalcurrentnormalgreen afterrestore required. Preservebothoriginalseals/Angular0/frozen9a77.",
+  "initial_infra_erratum": "Firstread-onlyDockerCLI command closedPATH lacked/usr/local/bin, exit127docker-notfound; no Dockerallocation/runtime occurred. Correctedabsolute/usr/local/bin/docker metadata exits0 savedprivate600logs; no approvalrejection/bypass.",
+  "CLOCK_H5_followup": {
+    "status": "SOURCE_ONLY_ACTUAL_CAUSE_UNKNOWN",
+    "ReportService_and_HeadmanStatsService": "Editblocked predicates semesterblocked/permission/PENDINGtransfer/CANCELLED/!hasStarted only, no endcutoff. OrdinaryrealClock separatefromhistoricaldatedroster.",
+    "ScheduleLessonStatusTransitionJob": "Autowiredconstructor usesEducationalTime.clock; closurequery date+end+5min<=Moscow now. Teaching09 versuswall16:20 alone doesnotcausefirstlessonclosure at09:00 withcanonicalend09:50+5.",
+    "LessonEventService": "AUTOABSENT followsactualclosed event; Instant.now metadata timestamps noteligibility. Unknownearlierstate/event/nativeJARfixturescouldyieldnonemptyrow; notDEFECTclaim.",
+    "minimumactualnext": "GET lessonstatus+targetrowstatus/reporteditable/roweditable/blockedPresent underliveactor needed; no clockmove/globalClock/sourcechange."
+  }
+}

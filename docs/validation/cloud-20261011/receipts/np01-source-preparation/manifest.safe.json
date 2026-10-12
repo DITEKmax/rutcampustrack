@@ -1,0 +1,54 @@
+{
+  "status": "SEALED_SOURCEPREP_NO_NATIVE_AUTHORITY",
+  "private_mutant_patch_not_in_archive": true,
+  "entries": [
+    {
+      "path": "before-root.safe.json",
+      "sha256": "6f7442f67e6aa002533eea05db3a0c4006eb8c748fda09d4729e7b6d5cce585f",
+      "bytes": 703,
+      "mode": "0600"
+    },
+    {
+      "path": "checkout.safe.json",
+      "sha256": "204bebc94c9d78596937ddfa46d2d8510388bfb2dad0c71776f04e818984a008",
+      "bytes": 1156,
+      "mode": "0600"
+    },
+    {
+      "path": "complete-sparse-baseline.safe.json",
+      "sha256": "c429daec5ffd100147a718d53e3e16779ee36d1df261ee34420812d2dccf7c07",
+      "bytes": 554316,
+      "mode": "0600"
+    },
+    {
+      "path": "sourceprep.safe.json",
+      "sha256": "400475378dbe33e37201f665c3598279710cd65ff800a6ffa0bde5617f568734",
+      "bytes": 1798,
+      "mode": "0600"
+    },
+    {
+      "path": "run-stage.py",
+      "sha256": "07475597f612ef2733dfc26ea7f830be174d40e6f647d7004d524cde78871958",
+      "bytes": 9077,
+      "mode": "0600"
+    },
+    {
+      "path": "native-procedure.safe.json",
+      "sha256": "1be5ddc193de745c6d4000fb4593b9be83f9b8f9e2fdaceb9e070a5cb5a62af8",
+      "bytes": 7674,
+      "mode": "0600"
+    },
+    {
+      "path": "actual-source-controls.safe.json",
+      "sha256": "8d6ba97dca5af944c0f61adbde3765e6ff2b0a24009fe6e10c7b8c0bcff81d32",
+      "bytes": 848,
+      "mode": "0600"
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "966559a6b3f46e15882d887ae56067fa78bd01c3a9fd788b073d0a5517e18b62",
+      "bytes": 3143,
+      "mode": "0600"
+    }
+  ]
+}

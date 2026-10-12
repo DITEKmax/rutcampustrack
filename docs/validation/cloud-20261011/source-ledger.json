@@ -1988,6 +1988,126 @@
       "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
       "registered_at": "2026-10-12T13:59:27.978099+00:00",
       "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "receipt:client-privacy-correction-final/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-privacy-correction-final/manifest.json",
+      "sha256": "cac2e65c2ac939d1eb4c1e949c076664bd38ef73d30c786360a4b984aabafe84",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:client-privacy-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-privacy-independent-review/manifest.json",
+      "sha256": "ea90153bf330acdb90b4c043f4a87c079341fbbc8238e41ece9593f0c6804617",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:host-restart-aggregate-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-aggregate-review/manifest.json",
+      "sha256": "ea745ddcceb36c9f2b8816865e8c68967107325b3a52dae337422796d38480fb",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:host-restart-ancestor-v2/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-ancestor-v2/manifest.json",
+      "sha256": "9ce528ac02bf076952f99fdcf2df2580518833c18abf57ab0672a1822cea1c4d",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-caller-correction/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-caller-correction/manifest.safe.json",
+      "sha256": "e1fd1f85bbd7afa727a036f920a61701140f262fe0cd3dd58873cf98e32cc61c",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-caller-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-caller-independent-review/manifest.json",
+      "sha256": "ecc8cf5f9e022b419ee5620a69a334fa94b7d61da92297bb8307b5b4cf9901f1",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-source-preparation/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-source-preparation/manifest.safe.json",
+      "sha256": "37a7a45b6567a5ea23190e8a61e1a443942a41c0e1ce985b3f8618e5134d2ee9",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-plan-canonical/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-plan-canonical/manifest.json",
+      "sha256": "c6a8b4ddceeee446475ef4e4a9ed42b91494dfd8d4aab8890e8f78e99e6d5e25",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-plan-canonical-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-plan-canonical-review/manifest.json",
+      "sha256": "78a546e4563283a0fc8279cae264b63a0d2d4cc9a595dfa1917af89bf17e1c74",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-runtime-preflight/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-runtime-preflight/manifest.json",
+      "sha256": "26395dec4d69441e0073d634b6dc76fdf0fb9163936b8b12faeee6c58b503466",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:np01-runtime-preflight/preflight-proposal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-runtime-preflight/preflight-proposal.safe.json",
+      "sha256": "f3f5482602f6b2d899ef19f99e4a52c236258ca55ac74feb3c42b3386698348d",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:webkit-native-preflight/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-native-preflight/manifest.json",
+      "sha256": "bdcf0dbddc9719cae29328f2c8a7352dc69166dad9c1c8a92662eca909373a18",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:webkit-signed-source-plan/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-signed-source-plan/manifest.json",
+      "sha256": "82a2775335737cbf8fe0bd40e612f2302f2cd5e73ea2663be3e489aa2a8cb3ac",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:webkit-signed-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-signed-independent-review/manifest.json",
+      "sha256": "4ee15dc1ccc77f77b451810d1aef8523c0418616a17004bd53ceb6ad4a801fa5",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:webkit-system-dependency-blocker/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-system-dependency-blocker/manifest.json",
+      "sha256": "c6fee2a3ca591b5d34762daa4c70b549077290b66261c05438abb45ea9b9cce9",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+      "recorded_at": "2026-10-12T15:44:08.393382+00:00"
     }
   ],
   "research_receipt": {

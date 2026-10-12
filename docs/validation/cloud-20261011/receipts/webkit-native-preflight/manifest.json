@@ -1,0 +1,96 @@
+{
+  "status": "READ_ONLY_AVAILABILITY_COMPLETE_WEBKIT_BLOCKED",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "91a681ca17a5f0ee6b7c4dc90f8d40abb77fce95a50f5e2fd8b760b414f26f7a",
+      "bytes": 517
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "80d6d399a128e5abfa2f7c2cdf9d5df4a73c243f32ca4f7f9e86d118f96dae17",
+      "bytes": 2527
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/attempt01/cache-metadata-before.safe.json",
+      "name": "attempt01/cache-metadata-before.safe.json",
+      "sha256": "62c9280d05f2532055ad1978e9e196c85f9b033486df9ab0a58c718b5d55b54a",
+      "bytes": 169928
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/attempt01/outcome.safe.json",
+      "name": "attempt01/outcome.safe.json",
+      "sha256": "98d826f30d447c019c047d68066c3e3f949f0ef30c0cd2847913497142ed907a",
+      "bytes": 342
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/attempt01/partial-loader-results.safe.json",
+      "name": "attempt01/partial-loader-results.safe.json",
+      "sha256": "74d397d4c3136835160278e0e68085baf6035301efb36245eb620157f79130e3",
+      "bytes": 6897
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/attempt01/pinned-build-host.safe.json",
+      "name": "attempt01/pinned-build-host.safe.json",
+      "sha256": "4a70c85a5dbc4ae814e270f742f11b458a4c350c20af7e5661cf4701ac85b582",
+      "bytes": 2830
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/attempt01/read-only-preflight.py",
+      "name": "attempt01/read-only-preflight.py",
+      "sha256": "dea189cec41117a22b4692623eb71a6217c6bb5de8832b9bc79bb77b1160aed9",
+      "bytes": 7293
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/availability-summary.safe.json",
+      "name": "availability-summary.safe.json",
+      "sha256": "d5bdb95b1bb893fd61949b89ae7ef405e04892ccc3bc041614d9938958bb468a",
+      "bytes": 1637
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/cache-metadata-after.safe.json",
+      "name": "cache-metadata-after.safe.json",
+      "sha256": "bdd8aedcf1062787f038917c066bc6746a891a56f9efbcccca640916a0a9908a",
+      "bytes": 170169
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/cache-metadata-before.safe.json",
+      "name": "cache-metadata-before.safe.json",
+      "sha256": "62c9280d05f2532055ad1978e9e196c85f9b033486df9ab0a58c718b5d55b54a",
+      "bytes": 169928
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/loader-results.safe.json",
+      "name": "loader-results.safe.json",
+      "sha256": "e0dab62150e9394964af7e395a071ca0819044f0e3cd4c4cc5d1657ca2890248",
+      "bytes": 82631
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/partial-loader-results.safe.json",
+      "name": "partial-loader-results.safe.json",
+      "sha256": "fd11afd7d364aba2568fd9ff92e9ad1c17ba5ea496bb1d4289c2cbdb2f29814b",
+      "bytes": 82142
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/pinned-build-host.safe.json",
+      "name": "pinned-build-host.safe.json",
+      "sha256": "4a70c85a5dbc4ae814e270f742f11b458a4c350c20af7e5661cf4701ac85b582",
+      "bytes": 2830
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/read-only-preflight.py",
+      "name": "read-only-preflight.py",
+      "sha256": "aeb8b30dfb9f36fa81107106daf65268e38972eacd5a436720e22b90c8ba7c02",
+      "bytes": 7303
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_preflight/resources.safe.json",
+      "name": "resources.safe.json",
+      "sha256": "c6784ac419e442463097ffe3ec37d75d3c2141f61b41f8750a26152b7eb77d76",
+      "bytes": 239
+    }
+  ],
+  "no_ENV_key_rawlogs_data_or_vendor_payloads": true
+}

@@ -1,0 +1,56 @@
+{
+  "utc": "2026-10-12T14:06:37.815758+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "RESTART-COHORT-ANCESTOR"
+  ],
+  "source_only": true,
+  "runtime": false,
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 173,
+      "sha256": "40ec7a6575c45c1fdf8403f0d2a3a3f64eeb7aa5dd8184bb109fdf416700b5ad"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 6629,
+      "sha256": "df6a0a604337c9310bcfe439693b490bc4751beee800a3985a0921e626ba81b5"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 577,
+      "sha256": "f75b135fd366514ae5feb2718b36129bafd930c615a11c3c62ebee68c3b585da"
+    },
+    {
+      "path": "check-cohort-path.py",
+      "bytes": 3692,
+      "sha256": "a47740d05167c44b2c08bccc1c4893c4dbfbba4acc951d0da15db4c3d142feeb"
+    },
+    {
+      "path": "check-source.py",
+      "bytes": 8122,
+      "sha256": "a04192314a8c19a898b89db96e6591f7aa016354d131670e2c744f6f060edb19"
+    },
+    {
+      "path": "cohort-parent-counterexample.safe.json",
+      "bytes": 1125,
+      "sha256": "817f249f79f10b9ca8c383d93211369247ec1ce453ab4cc7058df576c9ccd74c"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 988,
+      "sha256": "bfedb7ae288d5d4436665376b52d524c332a221132148429ab315c7b34af7650"
+    },
+    {
+      "path": "input-ledger.json",
+      "bytes": 1292,
+      "sha256": "6a64666a9c4752c05cba4ba7bf59af7f893818ad9d83761d394ab5fa98ba2d7e"
+    },
+    {
+      "path": "source-checks.safe.json",
+      "bytes": 5635,
+      "sha256": "ff5ae28420bb3654d679d8d998ddcef54a093c500ae97887e5e9337e10313687"
+    }
+  ]
+}

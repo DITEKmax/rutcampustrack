@@ -58,6 +58,14 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
         assertThat(queued.getHeaders().getCacheControl()).isEqualTo("no-store");
         JsonNode status = mapper.readTree(queued.getBody());
         UUID id = UUID.fromString(status.path("jobId").asText());
+        // A previous legitimate export shares this database; audit history must remain intact.
+        UUID historicalJobId = UUID.randomUUID();
+        assertThat(historicalJobId).isNotEqualTo(id);
+        long historicalAuditId = jdbc.queryForObject(
+                "INSERT INTO audit_log(user_id,action,target_type,extras,succeeded,created_at) "
+                        + "SELECT id,'registry.export','ADMIN_USERS',?::jsonb,TRUE,NOW()-interval '1 day' "
+                        + "FROM users WHERE login='admin' RETURNING id",
+                Long.class, mapper.writeValueAsString(Map.of("kind", "ADMIN_USERS", "rowCount", 1, "jobId", historicalJobId.toString())));
         assertThat(status.path("state").asText()).isEqualTo("queued");
         assertThat(status.has("content")).isFalse(); assertThat(status.has("internalToken")).isFalse();
         assertThat(send("/auth/export-jobs/" + id + "/file", HttpMethod.GET, null, actor, null).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
@@ -74,7 +82,8 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
             assertThat(ready.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(mapper.readTree(ready.getBody()).path("state").asText()).isEqualTo("ready");
         }
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action='registry.export'", Long.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action='registry.export' AND extras->>'jobId'=?", Long.class, id.toString())).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE id=? AND extras->>'jobId'=?", Long.class, historicalAuditId, historicalJobId.toString())).isEqualTo(1);
         for (String envelope : jdbc.queryForList("SELECT payload::text FROM auth_outbox WHERE event_type='export.state.changed'", String.class)) {
             assertThat(ru.rutcampustrack.auth.events.EventSchemaValidator.validate("export.state.changed.json", envelope)).isEmpty();
         }

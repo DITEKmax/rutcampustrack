@@ -1,0 +1,19 @@
+{
+  "utc": "2026-10-12T07:36:25.889628+00:00",
+  "argv": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java"
+  ],
+  "native_exit": 0,
+  "elapsed": 1.125,
+  "output": "Gitleaks secret detection................................................Passed\ncheck yaml...........................................(no files to check)Skipped\ncheck json...........................................(no files to check)Skipped\ncheck for added large files..............................................Passed\nfix end of files.........................................................Passed\ntrim trailing whitespace.................................................Passed\n",
+  "source_only": true
+}

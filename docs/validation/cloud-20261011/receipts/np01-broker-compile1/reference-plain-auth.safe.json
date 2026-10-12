@@ -1,0 +1,11 @@
+{
+  "path": "/workspace/rct-worktrees/ci-academic-heap/services/auth-service/auth-app/build/libs/auth-app-0.1.0-plain.jar",
+  "sha256": "81d66641f248a139071cd93c57635d5cb00e6b17445cab6577e5a8a79ee5c0c0",
+  "bytes": 3142830,
+  "members": 1285,
+  "authJdbcMainPresent": true,
+  "bootClasses": false,
+  "read_only_reference": true,
+  "NP_own_artifact_missing": true,
+  "own_auth_jar_task_required": true
+}

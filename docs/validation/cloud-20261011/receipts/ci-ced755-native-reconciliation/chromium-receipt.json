@@ -1,0 +1,12 @@
+{
+  "job_id": 114688682433,
+  "checkout": [
+    "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+  ],
+  "nativeSummary": [
+    "2026-10-12T06:37:14.0969653Z Running 9 tests using 2 workers",
+    "2026-10-12T06:37:26.3810283Z   9 passed (13.6s)",
+    "2026-10-12T06:37:26.4100970Z ##[notice]  9 passed (13.6s)"
+  ],
+  "qualifier": "Genuine current isolated Vue Auth smoke stack/Chromium; not full accepted client-server/data matrix"
+}

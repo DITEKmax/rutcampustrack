@@ -1,0 +1,5 @@
+{"attempt": 1, "native_exit": 1, "stage": "input sealed receipts preflight", "candidate_reference_mutations": 0, "error_receipt": "attempt1-preflight-error.json"}
+{"attempt": 2, "native_exit": 1, "actual_replacements": 250, "no_pending_temps": true, "full_identity_and_protected_seals_verified": true, "error": "duplicate utc batch log TypeError", "sealed_partial": "attempt2-partial-manifest.json"}
+{"attempt": 3, "exec_session": 34373, "native_exit": 0, "actual_new_replacements": 10581, "prior_replacements_not_repeated": 250, "all12153_identity_alias_SHA_verification": "PASS", "utc": "2026-10-12T06:42:50.597570+00:00"}
+{"readonly_preservation_session": 30773, "native_exit": 0, "public_inputs": 7350, "deps": 8272, "utc": "2026-10-12T06:42:50.597570+00:00"}
+{"final_native_git_temp_session": 57993, "native_exit": 0, "heads_clean": 17, "exact_owned_temps_absent": 10831, "utc": "2026-10-12T06:42:50.597570+00:00"}

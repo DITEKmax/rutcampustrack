@@ -1,0 +1,13 @@
+{
+  "state": "REAPED",
+  "child_pid": 220276,
+  "group": 220276,
+  "members_including_Z": [],
+  "reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "utc": "2026-10-12T07:19:52.829939+00:00",
+  "lease": "NP01_BROKER1",
+  "observer_pid": 220239,
+  "disk_free": 8370765824,
+  "shared_memory_current": 4961308672
+}

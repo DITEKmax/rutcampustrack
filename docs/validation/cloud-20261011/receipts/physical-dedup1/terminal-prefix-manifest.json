@@ -1,0 +1,61 @@
+{
+  "utc": "2026-10-12T06:38:55.924288+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/CURRENT.json",
+      "bytes": 205,
+      "sha256": "c35d462ff602ff100555589ec8c15f1b70fab8ca5f495544eb611ec135c4ade5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/PROCESS.json",
+      "bytes": 166,
+      "sha256": "723f489797994445ed983a5b30f45d0a431aac95fb54072395f1063f32c69f20"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/RESULT.json",
+      "bytes": 1371,
+      "sha256": "5824be9dc49881ffdd46c2789b2c02026cf15c6bfa0938be862aef83f0239739"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/batches.json",
+      "bytes": 8668,
+      "sha256": "50541b61175559d7025e30bc8ebc212a32c6ce2da0a011531a0055b730e69639"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/dedup.py",
+      "bytes": 21425,
+      "sha256": "d8153cde3522d2d9dd5f2d882790a5bc5ba5f2e4d13c3c32098768bf87de0603"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/heads-before.json",
+      "bytes": 6617,
+      "sha256": "a68cba45d770efddd9240e622ba2266e6d2e559156784d66234656691cd66e7b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/journal.ndjson",
+      "bytes": 9909333,
+      "sha256": "58e75033cb1e143d2a0e5127c8c519264acb63981e622d34e92b072d9beb865d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/launch-and-controls.json",
+      "bytes": 615,
+      "sha256": "18cabbcbeec121b664b17393e8ee7afa9c269eb48ef1beca3f613e43de25880f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/link-ledger.json",
+      "bytes": 1088156,
+      "sha256": "0264ec5c104a45e7ae6c40dbdd0504bcf51ae3b006da34ee270c5fd3c0b3a47d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt3/preflight.json",
+      "bytes": 18849,
+      "sha256": "d4233d773810d23955c40a2a1bcbb0d021e09254d02934c07632b9c95831cef8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/terminal-resource-receipt.json",
+      "bytes": 1018,
+      "sha256": "3247a2daed3da0b29306d3cdc9a519ddf6b7bc33d5ccb46e6b3ba0340bbc8fec"
+    }
+  ],
+  "status": "ACTUAL_DEDUP1_NATIVE0_COMPLETE; optional further readonly source verification/packaging next"
+}

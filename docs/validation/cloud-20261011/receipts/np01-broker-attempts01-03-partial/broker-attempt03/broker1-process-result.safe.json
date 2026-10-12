@@ -1,0 +1,116 @@
+{
+  "direct_pid": 238375,
+  "native_exit": -15,
+  "terminal_reason": "SUPERVISION_ERROR",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 238375,
+      "start_ticks": 4559455
+    },
+    {
+      "pid": 238376,
+      "start_ticks": 4559459
+    },
+    {
+      "pid": 238377,
+      "start_ticks": 4559463
+    },
+    {
+      "pid": 238425,
+      "start_ticks": 4559600
+    },
+    {
+      "pid": 238660,
+      "start_ticks": 4561603
+    },
+    {
+      "pid": 239731,
+      "start_ticks": 4564944
+    },
+    {
+      "pid": 239771,
+      "start_ticks": 4565006
+    },
+    {
+      "pid": 239816,
+      "start_ticks": 4565104
+    },
+    {
+      "pid": 239947,
+      "start_ticks": 4565777
+    },
+    {
+      "pid": 241406,
+      "start_ticks": 4569589
+    },
+    {
+      "pid": 242118,
+      "start_ticks": 4573081
+    }
+  ],
+  "adopted_waitpid_receipts": [
+    {
+      "pid": 238376,
+      "start_ticks": 4559459,
+      "native_exit": -15
+    },
+    {
+      "pid": 238377,
+      "start_ticks": 4559463,
+      "native_exit": 143
+    },
+    {
+      "pid": 239816,
+      "start_ticks": 4565104,
+      "native_exit": -15
+    },
+    {
+      "pid": 238425,
+      "start_ticks": 4559600,
+      "native_exit": 143
+    }
+  ],
+  "supervision_error_type": "ProcessLookupError",
+  "phase_success": false,
+  "utc": "2026-10-12T08:00:46.541807+00:00",
+  "lease": "NP01_BROKER1",
+  "elapsed_seconds": 244.965,
+  "initial_disk_free": 8350203904,
+  "initial_memory_current": 4299280384,
+  "peaks": {
+    "maximum_memory_current": 7929835520,
+    "minimum_disk_free": 7230103552
+  },
+  "environment_keys": [
+    "DOCKER_HOST",
+    "GRADLE_USER_HOME",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "JAVA_HOME",
+    "LANG",
+    "LC_ALL",
+    "NO_PROXY",
+    "NP01_PYTHON_EXECUTABLE",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONNOUSERSITE",
+    "PYTHONSAFEPATH",
+    "SSL_CERT_FILE",
+    "TESTCONTAINERS_HOST_OVERRIDE",
+    "TESTCONTAINERS_RYUK_DISABLED",
+    "TMPDIR",
+    "TZ"
+  ],
+  "environment_values_dumped": false,
+  "container_observer_failure": null,
+  "observed_owned_container_ids": [
+    "255d2336f4d5d28473080ac847b0eabe716f62d0693b6bd2f890f029cf07c695",
+    "5f618e62c1a98aefaa7427995cfba27db19362032c2a41a039aeb128e25bf0df",
+    "f9cccd0d9916a5906ec8373c78703dce815d6a1a3ed624160871d6ec355b8c3f"
+  ],
+  "container_namespace": "np01_2e9a6d33a66146499913a594460c93be"
+}

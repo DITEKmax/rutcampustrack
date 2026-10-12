@@ -1,0 +1,18 @@
+{
+  "author_manifest_sha256": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+  "author_safe26_exact": true,
+  "author_archive": {
+    "sha256": "30ed29a619cc90f34031ec0ec4b4a1b1fb45ad961b21f66d739f3f5298590268",
+    "bytes": 1324465,
+    "CRC_members": 27
+  },
+  "Root_archive": {
+    "sha256": "c6aa13d50ed6ef3b63937e46f787fd1768d868a75380ef130bb32abff44f1cea",
+    "bytes": 1324465,
+    "CRC_members": 27
+  },
+  "Root_outer_archive_byteexact_author": false,
+  "Root_all27_member_names_bytes_exact_author": true,
+  "Root_all27_copied_readable_views_lossless_exact": true,
+  "scope": "current8 payload stage/source only; app/browser/UID/TLS runtime NOT_RUN"
+}

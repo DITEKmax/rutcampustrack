@@ -1,0 +1,50 @@
+[
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/TASK-CONTRACT.md",
+    "bytes": 86218,
+    "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/CURRENT.md",
+    "bytes": 11879,
+    "sha256": "c2fac08ac68af1ceec8bac4f0a16a1d189813aab593ecad3bf56bd1ac774aeaa"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/decisions.md",
+    "bytes": 16719,
+    "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/questions.md",
+    "bytes": 9948,
+    "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/resources.md",
+    "bytes": 4237,
+    "sha256": "1e6c65c253bd9f72c15adf34fd2c03a4e75a85f4a4720ab950d6bb2e06b89c61"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/exact-path-freeze.json",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/exact-path-freeze.json",
+    "bytes": 962,
+    "sha256": "6d4cef1bce6b7ee9d6ddae95a9b087e6b59af00c464572c2ecd65fc47ad61f50"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-np01-broker-actual.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/packet-np01-broker-actual.md",
+    "bytes": 4501,
+    "sha256": "bc5dcf7057a76507d76dd365f438122dcf27c48945366fea7d0015a6cd00a245"
+  },
+  {
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-np01-broker-harness.md",
+    "restored": "/workspace/scratch/rct-validation/np01_broker_actual/governing/packet-np01-broker-harness.md",
+    "bytes": 6672,
+    "sha256": "79f790d237724cc9592f6b120a0211010a215903da408b09cd6946058e65c6f4"
+  }
+]

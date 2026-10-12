@@ -1,0 +1,345 @@
+[
+  {
+    "utc": "2026-10-12T06:36:55.316868+00:00",
+    "free_available_bytes": 7128117248,
+    "memory_current": 6400393216,
+    "memory_max": 17179869184,
+    "pid": 216989
+  },
+  {
+    "utc": "2026-10-12T06:36:56.462563+00:00",
+    "free_available_bytes": 7162306560,
+    "memory_current": 6366425088,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 500
+  },
+  {
+    "utc": "2026-10-12T06:36:57.887516+00:00",
+    "free_available_bytes": 7183273984,
+    "memory_current": 6351773696,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 750
+  },
+  {
+    "utc": "2026-10-12T06:36:59.072259+00:00",
+    "free_available_bytes": 7214829568,
+    "memory_current": 6319972352,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 1000
+  },
+  {
+    "utc": "2026-10-12T06:37:00.163073+00:00",
+    "free_available_bytes": 7251730432,
+    "memory_current": 6283087872,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 1250
+  },
+  {
+    "utc": "2026-10-12T06:37:01.168289+00:00",
+    "free_available_bytes": 7275438080,
+    "memory_current": 6260965376,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 1500
+  },
+  {
+    "utc": "2026-10-12T06:37:02.264136+00:00",
+    "free_available_bytes": 7302606848,
+    "memory_current": 6233550848,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 1750
+  },
+  {
+    "utc": "2026-10-12T06:37:03.764721+00:00",
+    "free_available_bytes": 7339536384,
+    "memory_current": 6193606656,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 2000
+  },
+  {
+    "utc": "2026-10-12T06:37:05.384240+00:00",
+    "free_available_bytes": 7368839168,
+    "memory_current": 6158532608,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 2250
+  },
+  {
+    "utc": "2026-10-12T06:37:07.032493+00:00",
+    "free_available_bytes": 7395381248,
+    "memory_current": 6126710784,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 2500
+  },
+  {
+    "utc": "2026-10-12T06:37:10.191332+00:00",
+    "free_available_bytes": 7623745536,
+    "memory_current": 5900419072,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 2750
+  },
+  {
+    "utc": "2026-10-12T06:37:11.567680+00:00",
+    "free_available_bytes": 7654191104,
+    "memory_current": 5870379008,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 3000
+  },
+  {
+    "utc": "2026-10-12T06:37:12.706363+00:00",
+    "free_available_bytes": 7688458240,
+    "memory_current": 5831176192,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 3250
+  },
+  {
+    "utc": "2026-10-12T06:37:14.190121+00:00",
+    "free_available_bytes": 7710547968,
+    "memory_current": 5811433472,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 3500
+  },
+  {
+    "utc": "2026-10-12T06:37:15.480973+00:00",
+    "free_available_bytes": 7741231104,
+    "memory_current": 5780234240,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 3750
+  },
+  {
+    "utc": "2026-10-12T06:37:17.828987+00:00",
+    "free_available_bytes": 7779377152,
+    "memory_current": 5741535232,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 4000
+  },
+  {
+    "utc": "2026-10-12T06:37:20.217902+00:00",
+    "free_available_bytes": 7804416000,
+    "memory_current": 5717102592,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 4250
+  },
+  {
+    "utc": "2026-10-12T06:37:22.075385+00:00",
+    "free_available_bytes": 7829450752,
+    "memory_current": 5691543552,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 4500
+  },
+  {
+    "utc": "2026-10-12T06:37:23.945505+00:00",
+    "free_available_bytes": 7865110528,
+    "memory_current": 5657354240,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 4750
+  },
+  {
+    "utc": "2026-10-12T06:37:25.977499+00:00",
+    "free_available_bytes": 7895547904,
+    "memory_current": 5627031552,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 5000
+  },
+  {
+    "utc": "2026-10-12T06:37:27.398510+00:00",
+    "free_available_bytes": 7929495552,
+    "memory_current": 5505105920,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 5250
+  },
+  {
+    "utc": "2026-10-12T06:37:29.595512+00:00",
+    "free_available_bytes": 7950487552,
+    "memory_current": 5401387008,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 5500
+  },
+  {
+    "utc": "2026-10-12T06:37:31.250451+00:00",
+    "free_available_bytes": 7982030848,
+    "memory_current": 5365919744,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 5750
+  },
+  {
+    "utc": "2026-10-12T06:37:33.051981+00:00",
+    "free_available_bytes": 8018919424,
+    "memory_current": 5329305600,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 6000
+  },
+  {
+    "utc": "2026-10-12T06:37:34.278057+00:00",
+    "free_available_bytes": 8042749952,
+    "memory_current": 5306122240,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 6250
+  },
+  {
+    "utc": "2026-10-12T06:37:35.554947+00:00",
+    "free_available_bytes": 8069918720,
+    "memory_current": 5310435328,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 6500
+  },
+  {
+    "utc": "2026-10-12T06:37:36.675953+00:00",
+    "free_available_bytes": 8105324544,
+    "memory_current": 5252468736,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 6750
+  },
+  {
+    "utc": "2026-10-12T06:37:38.437176+00:00",
+    "free_available_bytes": 8134803456,
+    "memory_current": 5096189952,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 7000
+  },
+  {
+    "utc": "2026-10-12T06:37:39.911398+00:00",
+    "free_available_bytes": 8159473664,
+    "memory_current": 5076619264,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 7250
+  },
+  {
+    "utc": "2026-10-12T06:37:41.035244+00:00",
+    "free_available_bytes": 8194154496,
+    "memory_current": 5048139776,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 7500
+  },
+  {
+    "utc": "2026-10-12T06:37:42.240030+00:00",
+    "free_available_bytes": 8225779712,
+    "memory_current": 5017481216,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 7750
+  },
+  {
+    "utc": "2026-10-12T06:37:43.381473+00:00",
+    "free_available_bytes": 8262516736,
+    "memory_current": 4985102336,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 8000
+  },
+  {
+    "utc": "2026-10-12T06:37:45.466466+00:00",
+    "free_available_bytes": 8289566720,
+    "memory_current": 4963180544,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 8250
+  },
+  {
+    "utc": "2026-10-12T06:37:46.902697+00:00",
+    "free_available_bytes": 8318042112,
+    "memory_current": 4942360576,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 8500
+  },
+  {
+    "utc": "2026-10-12T06:37:48.617526+00:00",
+    "free_available_bytes": 8355704832,
+    "memory_current": 4925476864,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 8750
+  },
+  {
+    "utc": "2026-10-12T06:37:49.926195+00:00",
+    "free_available_bytes": 8382803968,
+    "memory_current": 4904771584,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 9000
+  },
+  {
+    "utc": "2026-10-12T06:37:51.228869+00:00",
+    "free_available_bytes": 8407650304,
+    "memory_current": 4880388096,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 9250
+  },
+  {
+    "utc": "2026-10-12T06:37:52.410462+00:00",
+    "free_available_bytes": 8440082432,
+    "memory_current": 4845699072,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 9500
+  },
+  {
+    "utc": "2026-10-12T06:37:53.717317+00:00",
+    "free_available_bytes": 8470605824,
+    "memory_current": 4732940288,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 9750
+  },
+  {
+    "utc": "2026-10-12T06:37:55.494180+00:00",
+    "free_available_bytes": 8505618432,
+    "memory_current": 4657709056,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 10000
+  },
+  {
+    "utc": "2026-10-12T06:37:56.453443+00:00",
+    "free_available_bytes": 8531750912,
+    "memory_current": 4563730432,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 10250
+  },
+  {
+    "utc": "2026-10-12T06:37:57.863177+00:00",
+    "free_available_bytes": 8562606080,
+    "memory_current": 4533878784,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 10500
+  },
+  {
+    "utc": "2026-10-12T06:37:59.053560+00:00",
+    "free_available_bytes": 8600326144,
+    "memory_current": 4502519808,
+    "memory_max": 17179869184,
+    "pid": 216989,
+    "completed": 10750
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "utc": "2026-10-12T07:34:05.022766+00:00",
+  "status": "ACTUAL_DIFFERENTIAL_CAUSE_OBSERVED_BEFORE_SOURCE_FIX",
+  "single_probe_native_exit": 0,
+  "probe_records": [
+    {
+      "phase": "jdk_context",
+      "default_proxy_direct": true
+    },
+    {
+      "phase": "default_put_0",
+      "io_failure": true,
+      "eof_cause": true
+    },
+    {
+      "phase": "h1_put_0",
+      "http_status": 201,
+      "http_version": "HTTP_1_1",
+      "bytes": 0,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "h1_put_1",
+      "http_status": 204,
+      "http_version": "HTTP_1_1",
+      "bytes": 0,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "private_log_sha256": "2f44f50a0efb457b5c804e69a87b71942e0f4d4d8398ab3e21bd6749e5b2bc10",
+  "recording_limit": "child live snapshot collided with outer guard live filename; stdout phases preserved; Docker events will recover exact ownID without rerunning"
+}

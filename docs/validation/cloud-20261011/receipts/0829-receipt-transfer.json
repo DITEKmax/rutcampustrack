@@ -1,0 +1,24 @@
+{
+  "packages": [
+    {
+      "path": "guard-proc-race-source",
+      "safe_count": 14,
+      "archive_sha256": "3de1a747b0059ebf1b0bde959dfa9e7189949113445a7f3007aa06bfff27677d"
+    },
+    {
+      "path": "current-host-stage-review",
+      "safe_count": 9,
+      "archive_sha256": "d1874614acbaa03d1b90f9731340d68b9e00c86084ea15614f48afd44cebe7a3"
+    },
+    {
+      "path": "np01-broker-attempts01-03-partial",
+      "safe_count": 46,
+      "archive_sha256": "7cc7a2b4f615799efcadedf5ccad43bdef92c7a2074d569d877fd1aabaa3f1dd"
+    }
+  ],
+  "exact_original_containers_retained": true,
+  "source_ledger_rows": 219,
+  "all_broker_scenarios": "GAP",
+  "actual_error_frame_errno": "UNKNOWN",
+  "runtime_grants": "formatterJava only; hostconfig/NEWsynthetic key prep only; noapps/browser"
+}

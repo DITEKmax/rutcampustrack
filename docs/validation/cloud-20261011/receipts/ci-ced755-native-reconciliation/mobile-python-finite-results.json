@@ -1,0 +1,31 @@
+{
+  "producer": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+  "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+  "VueCoverage": {
+    "job_id": 114688682176,
+    "summary": [
+      "Test Files  113 passed (113)",
+      "Tests  1028 passed (1028)",
+      "Duration  24.67s (transform 10.40s, setup 0ms, import 22.77s, tests 17.59s, environment 65ms)"
+    ],
+    "scope": "Vitest workspace tests with coverage; no full current client acceptance claim"
+  },
+  "PythonCoverage": {
+    "job_id": 114688682387,
+    "passed": 415,
+    "summary": "415 passed in 33.58s",
+    "scope": "pytest notification-bot coverage; CI Python lint/test job fails before its tests"
+  },
+  "Chromium": {
+    "job_id": 114688682433,
+    "checkout": [
+      "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    ],
+    "nativeSummary": [
+      "2026-10-12T06:37:14.0969653Z Running 9 tests using 2 workers",
+      "2026-10-12T06:37:26.3810283Z   9 passed (13.6s)",
+      "2026-10-12T06:37:26.4100970Z ##[notice]  9 passed (13.6s)"
+    ],
+    "qualifier": "Genuine current isolated Vue Auth smoke stack/Chromium; not full accepted client-server/data matrix"
+  }
+}

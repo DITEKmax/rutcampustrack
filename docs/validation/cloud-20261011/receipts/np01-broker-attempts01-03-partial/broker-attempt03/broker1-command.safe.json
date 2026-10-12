@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "python3",
+    "/workspace/scratch/rct-validation/np01_broker_actual/broker-attempt03/run-broker1-owned.py"
+  ],
+  "gradle_arguments": [
+    ":services:auth-service:auth-app:jar",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+  ],
+  "cwd": "/workspace/rct-worktrees/np01-domain-bot",
+  "scope": "Root granted seven actual broker scenarios ONLY; no mutation"
+}

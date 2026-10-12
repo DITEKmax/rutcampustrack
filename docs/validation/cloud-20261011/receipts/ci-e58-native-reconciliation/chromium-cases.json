@@ -1,0 +1,92 @@
+{
+  "job_id": 114702915982,
+  "initial_failed": 1,
+  "final_flaky": 1,
+  "passed_clean": 8,
+  "cases": [
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 10,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a wrong password does not establish a session",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 23,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a student login issues a protected cookie and uses the student grant",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 37,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a student cannot select admin; rejected selection preserves the current role",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 62,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a refresh rotates the cookie and reload recovers the same user session",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 86,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a logout clears the cookie, revokes the bearer and prevents recovery on reload",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 99,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a offline then online reload recovers authenticated navigation",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 50,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a admin bootstrap requires explicit role selection in the Vue client",
+      "retry": 0,
+      "status": "FAILED"
+    },
+    {
+      "file": "specs/mini-app.spec.ts",
+      "line": 7,
+      "column": 7,
+      "title": "Vue Telegram entry @smoke \u203a tampered Telegram proof cannot expose role data or navigation",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/mini-app.spec.ts",
+      "line": 19,
+      "column": 7,
+      "title": "Vue Telegram entry @smoke \u203a signed teacher entry loads the real session and shared profile with host Back",
+      "retry": 0,
+      "status": "PASSED"
+    },
+    {
+      "file": "specs/auth-token-lifecycle.spec.ts",
+      "line": 50,
+      "column": 7,
+      "title": "Vue PWA auth lifecycle @smoke \u203a admin bootstrap requires explicit role selection in the Vue client",
+      "retry": 1,
+      "status": "PASSED"
+    }
+  ],
+  "assertion_type": "expect(locator).toBeVisible()",
+  "failure_frame": "tests/e2e/specs/auth-token-lifecycle.spec.ts:59:79",
+  "source_sha256": "fda9b934deff0e4f4ad439bd13c2aabbb8d96101bbbe86343ed57988dae9a61a",
+  "qualification": "9 scheduled, 8 clean PASS, 1 FLAKY that passed retry #1; no whole-client-matrix credit"
+}

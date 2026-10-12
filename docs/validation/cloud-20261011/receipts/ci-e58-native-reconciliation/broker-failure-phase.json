@@ -1,0 +1,29 @@
+{
+  "time": "2026-10-12T07:33:41.965398+00:00",
+  "producer_source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+  "source_sha256": "8660f1e49daa90dcfb4319ab9b4aa6634f2acf76021878c18bb09a38bfd1e05e",
+  "reported_first_source_line": 417,
+  "nearest_method": [
+    {
+      "line": 407,
+      "declaration": "createOwnVhost"
+    }
+  ],
+  "safe_call_symbols": [
+    {
+      "line": 107,
+      "symbol": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards"
+    },
+    {
+      "line": 133,
+      "symbol": "createOwnVhost"
+    },
+    {
+      "line": 407,
+      "symbol": "createOwnVhost"
+    }
+  ],
+  "line417_has_httpclient_send": true,
+  "phase_qualification": "Rabbit management vhost provision before seven bridge scenarios; java.io.IOException caused by java.io.EOFException from nativejoblogs; no application/product-red credit",
+  "rawXMLdownload": "AUTO_REVIEW_REJECTED_NOT_EXECUTED; safecollector +nativelogtypes sufficient"
+}

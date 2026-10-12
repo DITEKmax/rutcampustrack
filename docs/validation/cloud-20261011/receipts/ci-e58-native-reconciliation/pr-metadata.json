@@ -1,0 +1,12 @@
+{
+  "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "number": 2,
+  "state": "open",
+  "merged": false,
+  "draft": true,
+  "base": "main",
+  "base_sha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "head": "codex/server-validation-20261011",
+  "head_sha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "merge_commit_sha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9"
+}

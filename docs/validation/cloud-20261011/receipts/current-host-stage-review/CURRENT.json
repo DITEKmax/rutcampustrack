@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-12T07:43:29.715037+00:00",
+  "status": "COMPLETE",
+  "source_manifest": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+  "native_author_stage": "native0",
+  "scope": "current8 staged paths/member hashes/standard loader/Renderer overlay/POSIX/static Vue prerequisite",
+  "native_apps_or_UID_probe": "NOT_RUN",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "owned_runtime_processes": "NONE",
+  "next": "Root prerequisite/source/resource handoff; no startup grant inferred",
+  "verdict": "APPROVE_CURRENT8_STAGE_AND_SOURCE",
+  "required_browser_prerequisite": "STAGE-PRE01 PENDING new22publiccopies"
+}

@@ -1,0 +1,169 @@
+{
+  "utc": "2026-10-12T06:56:21.493071+00:00",
+  "status": "PASS",
+  "members": 10834,
+  "unique_new644_tuples": 2937,
+  "source_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "old_seals": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+      "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "safe_files": 24
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_review/manifest.json",
+      "sha256": "9b62cd7bab7a27c77de3a2048b527cab8d808d5e866fb705c93bf5271feddbcd",
+      "safe_files": 23
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/manifest.json",
+      "sha256": "be3853df8f62a968c9e0e0171f70e4fa0b4435bcddce5b2b6e93b8c30f756a6b",
+      "safe_files": 36
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "safe_files": 6
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/manifest.json",
+      "sha256": "ff9f2c4121641cd7b530a9eb57919e83051492a666328ed9f649d91e2004c968",
+      "safe_files": 24
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_correction_v2_review/manifest.json",
+      "sha256": "64715bd8880fb714f45f3cd3a719a442fc43384018e3067ce1c3a7dc321459ee",
+      "safe_files": 10
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/manifest.json",
+      "sha256": "4c2702f30182f291919b79d0d2b55bb8f917b94bd983f59f96bf7770b6485dcf",
+      "safe_files": 31
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/manifest.json",
+      "sha256": "a84242355d6223fbc2f87cd61b6b6928ce83d8bb476276df308afb8196496116",
+      "safe_files": 13
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/manifest.json",
+      "sha256": "70bd8a7d4aadd226913551dd852e701d6cf2d0df54671fc89c84f3e1e78db687",
+      "safe_files": 36
+    }
+  ],
+  "JAR_metadata": {
+    "auth": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1246760,
+      "nlink": 1,
+      "bytes": 100183493,
+      "allocated_bytes": 100188160,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778813099348208,
+      "ctime_ns": 1791778813099348208
+    },
+    "academic": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1249291,
+      "nlink": 1,
+      "bytes": 99760018,
+      "allocated_bytes": 99766272,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778830075661825,
+      "ctime_ns": 1791778830075661825
+    },
+    "schedule": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1251413,
+      "nlink": 1,
+      "bytes": 93153993,
+      "allocated_bytes": 93159424,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778842383889775,
+      "ctime_ns": 1791778842383889775
+    },
+    "attendance": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1311480,
+      "nlink": 1,
+      "bytes": 95976000,
+      "allocated_bytes": 95981568,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778858120182403,
+      "ctime_ns": 1791778858120182403
+    },
+    "bff": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1442010,
+      "nlink": 1,
+      "bytes": 50139225,
+      "allocated_bytes": 50147328,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778865844327299,
+      "ctime_ns": 1791778865844327299
+    },
+    "gateway": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "device": 27,
+      "inode": 1442092,
+      "nlink": 1,
+      "bytes": 62093389,
+      "allocated_bytes": 62099456,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778867304354901,
+      "ctime_ns": 1791778867304354901
+    },
+    "notification": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1444106,
+      "nlink": 1,
+      "bytes": 86688703,
+      "allocated_bytes": 86695936,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778879888588783,
+      "ctime_ns": 1791778879888588783
+    },
+    "renderer": {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1445889,
+      "nlink": 1,
+      "bytes": 48918520,
+      "allocated_bytes": 48922624,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1791778886156704624,
+      "ctime_ns": 1791778886156704624
+    }
+  },
+  "before": {
+    "utc": "2026-10-12T06:56:19.755074+00:00",
+    "free_available_bytes": 8593068032,
+    "memory_current": 4416516096,
+    "memory_max": 17179869184,
+    "own_peak_rss_bytes": 12058624,
+    "own_unique_allocated_bytes": 36864
+  },
+  "method": "stdlib streaming ZIP with source CRC + SHA, NEW644 before links, standard4layer+flatapp"
+}

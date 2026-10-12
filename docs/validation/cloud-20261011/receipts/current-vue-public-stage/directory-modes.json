@@ -1,0 +1,93 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend",
+    "device": 27,
+    "inode": 29487,
+    "nlink": 4,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230824459553,
+    "ctime_ns": 1791791230824459553
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/tma-vue",
+    "device": 27,
+    "inode": 29499,
+    "nlink": 3,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230825449543,
+    "ctime_ns": 1791791230825449543
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/tma-vue/dist",
+    "device": 27,
+    "inode": 29500,
+    "nlink": 3,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230875977988,
+    "ctime_ns": 1791791230875977988
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/tma-vue/dist/assets",
+    "device": 27,
+    "inode": 29501,
+    "nlink": 2,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230867251628,
+    "ctime_ns": 1791791230867251628
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue",
+    "device": 27,
+    "inode": 29488,
+    "nlink": 3,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230771481356,
+    "ctime_ns": 1791791230771481356
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue/dist",
+    "device": 27,
+    "inode": 29489,
+    "nlink": 3,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230822577783,
+    "ctime_ns": 1791791230822577783
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue/dist/assets",
+    "device": 27,
+    "inode": 29490,
+    "nlink": 2,
+    "bytes": 4096,
+    "allocated_bytes": 4096,
+    "mode": "0o755",
+    "uid": 1000,
+    "gid": 1000,
+    "mtime_ns": 1791791230800130342,
+    "ctime_ns": 1791791230800130342
+  }
+]

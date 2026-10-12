@@ -1,0 +1,53 @@
+{
+  "renderer_schema": "Draft202012Validator local schema/no refs/network",
+  "filled_payload1260_exact_actual_member_map": true,
+  "retained_native_image_snapshot_SHA_exact": true,
+  "nativeUSER_workdir_entrypoint": "app /app java JarLauncher retained SOURCE snapshot; no Docker inspection executed",
+  "new_overlay": "read-only complete renderer/app\u2192/app; create_host_path:false; no USER/cwd/entrypoint/native-engine override; base service has no conflicting nested/app mounts",
+  "public_app_files_and_dirs": "actual644/755; container bind rooted/app does not require process traversal of host-private OUT ancestors; actual mount/UID probe NOT_RUN",
+  "future_native_UID_tmp_tools_mount_liveness_conversions": {
+    "app_launch_granted": false,
+    "numeric_uid": null,
+    "tmp_writable": "NOT_RUN",
+    "mount_readonly": "NOT_RUN",
+    "native_tools_fonts": "NOT_RUN",
+    "liveness": "NOT_RUN",
+    "real_conversions": "NOT_RUN"
+  },
+  "Vue22": [
+    {
+      "source_root": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue/dist",
+      "root_mode": "0o700",
+      "files": 13,
+      "files_mode": "0600",
+      "all_files_hash_bytes_exact_original": true,
+      "logical_bytes": 4005941
+    },
+    {
+      "source_root": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue/dist",
+      "root_mode": "0o700",
+      "files": 9,
+      "files_mode": "0600",
+      "all_files_hash_bytes_exact_original": true,
+      "logical_bytes": 3931468
+    }
+  ],
+  "browser_prerequisite": {
+    "id": "STAGE-PRE01",
+    "status": "PENDING_REQUIRED_PUBLIC_SERVING_STAGING",
+    "planned_bind_sources": [
+      {
+        "path": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/frontend/pwa-vue/dist",
+        "exists": false
+      },
+      {
+        "path": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/frontend/tma-vue/dist",
+        "exists": false
+      }
+    ],
+    "required": "Separate NEW own exact22 hash/byte copies public644/dirs755 or alreadyaccepted owner-serving rule; neverchmod/hardlink600 originals",
+    "classification": "Missing narrow next-phase prerequisite, not JARstage defect or observed HTTP/UID failure"
+  },
+  "stage_helper_author_pid218459_absent_now": true,
+  "runtime_apps_browser_network": "NOT_RUN"
+}

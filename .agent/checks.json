@@ -67,7 +67,7 @@
   "cloud_validation_20261011": {
     "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
     "state": "IN_PROGRESS",
-    "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3",
+    "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
     "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
     "commands_receipts": [
       "docs/validation/cloud-20261011/attempts.ndjson",
@@ -158,6 +158,12 @@
         "exit_code": 0,
         "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3",
         "evidence": "docs/validation/cloud-20261011/receipts/root-checkpoint88-gates.json"
+      },
+      {
+        "command": "cached six mandatory precommit hooks --files taskdocs322",
+        "exit_code": 0,
+        "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+        "evidence": "docs/validation/cloud-20261011/receipts/root-doc-hooks-0837.json; source/runtime acceptance remains incomplete"
       }
     ],
     "runtime": "boundedDOMAIN1/audit/graphcompile/build sufficientfinite proofs; realbroker/client/wholematrix/format NOT_DONE",

@@ -1,0 +1,1702 @@
+[
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+    "sha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminPermissionRpcIT.java",
+    "sha256": "5855c1ce3db7337ea3e5af82a0d36d8ddb77211515b3ca5566cef3a1c36fd42d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AuthConfirmationErrorsTest.java",
+    "sha256": "cfc14db0d24f0d936d0ecd704fa45a36db1e90d654c4baecd42d1fab8e5aeb70",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+    "sha256": "3eacc66f6feef44df5848e530acfb6a27af09c15fd3837fd97c17b389b9553a5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+    "sha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+    "sha256": "f96ab9b148bcd31dca3a4a5ad5411dc67638f5fc0ab72db8eda1cd3c0674644e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementIT.java",
+    "sha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "sha256": "8660f1e49daa90dcfb4319ab9b4aa6634f2acf76021878c18bb09a38bfd1e05e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+    "sha256": "db252b05a7dc9d46e2381f4eab6799b5be81fb1d9f0c4cf95f22f409f6be7059",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+    "sha256": "fac76b9e9facc54843c322e7a8912c3cc162ebf4eac3914fba2b46fffbeef43d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialServiceIdentityInterceptorTest.java",
+    "sha256": "a1b8389f8c0846bedcf32cab99ee2b7ad775c7198ce32eefe05f3f27a21d9ab8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/LowercaseEnumConverterTest.java",
+    "sha256": "e92ff4f479859e9a9c7fc2515b90674a46a36d30debb20307b4a54433a1fac10",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/SubjectTypeUserTypeTest.java",
+    "sha256": "b2408483cf5f0193e3fb8be698086626a0544e43a547eb71c331c445e5bb445f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/WebConfigEnumConversionTest.java",
+    "sha256": "780290bca4ef4a725af87dbde154877b71d3709fe4c2bd318712097fd1fe9191",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardActivityServiceTest.java",
+    "sha256": "f1ddb46be568a8d991f8dc7f55901627f30953ccef9edfb5401317184bacc3fa",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardInvalidationIT.java",
+    "sha256": "0731a4cebd8f8349be733336a5d43ffb1b64464a5bb421258df35c8d030fe96a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/GroupUpdatedContractIT.java",
+    "sha256": "183452621802e03fbdbf5f4605659183522754b7e57df6d4c1d102ccda143e4b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+    "sha256": "ad56637bb2738c68fc425699582fc7fdbdc7ccaf4fc115967320cf5ee547d8a4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandlerTest.java",
+    "sha256": "6ca96babe99083e3a822464cf79c04c5d8481d676e3fdffb016fa0011e1e3054",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java",
+    "sha256": "8f4bf86db778ed09fe8c5cf5603a48e5f7a9197be191fed28c7ac95f8460593e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNameGoldenTest.java",
+    "sha256": "d8be2b482caaf30e566687599051e9ba742695b75a368970a10740c5a0ead373",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNamePropertyTest.java",
+    "sha256": "f950b942910de48edfe9ab5d2b7c5d8cfec36158dbe80fa35d60c92455b184a1",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/AdministrativeNotificationGroupCycleIT.java",
+    "sha256": "924299ee11d30a9658b75cbcb6acd83248be7b583820396859b7184965b5d122",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupArchivalServiceTest.java",
+    "sha256": "6cd2fcd9a524142f553a984d8a29a1b4973bb992f31cb716f82cf50f645a3d4d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+    "sha256": "27aa62b8921d66425cae7dcde14c468855c5f24071c74b4c9b927ab891afdffc",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupNameParserTest.java",
+    "sha256": "29892d2154325e2a5ab5ddb66e790803f65ce9d3c6b790f87d8195a777bb55a5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+    "sha256": "9625d822185092aabfc9105967a6889eff86bd603ad52040bd73aecbd505b2ed",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionServiceTest.java",
+    "sha256": "4931f11546ec7caef2e8cd243ca9377f6a30b4e60904de3ff6c932c774c82d31",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+    "sha256": "ee218a0bda4e750f006ec3ad1410cf40440c470302bdbd2b4e434e3f56b0c7b1",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java",
+    "sha256": "19f8624897992153b4215fc060e0996878525870e03d54c5704f3a101f5d5c64",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+    "sha256": "89ef75da5bfbe10430ef7a81b597fb0ab391fb9bc89f7bf91525fe1fb8c0debb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+    "sha256": "f20cfc0aae3da34998fb261bbcb4d17701baef6ed72ed6ee0e5c2389e4b5a489",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "sha256": "ba6d2eff9590d2055080162163b8f678d7f6583d739f53f3d36f40b6a788b1ce",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+    "sha256": "f9ac077159005ef780b01b106785832d0e0762af3da9a941afcf779df6970c5d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java",
+    "sha256": "e53029ad5276756d34c9b2fc4176e7c402d7d9223049bc6b1e9f7f924f6420b3",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/InMemoryHeadmanRateLimiterTest.java",
+    "sha256": "631f7f6b4313741bd035c95f669acc459d9e483974f65890a02e7b723e82e46b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/RedisHeadmanRateLimiterTest.java",
+    "sha256": "6dc734e50a0cb4161a91294ff20655251e242726d3529e3545c39c50d091725b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+    "sha256": "51e8350e6f7e2f1b8864c7f42e13ac230d91369427be12dac2527ece9f8ae1ee",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+    "sha256": "3ffbbf69f34850a1169f0ce6e1d2e45c58a75a42d83a15dd418683c9c5c188da",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/TeacherAcademicReadGrpcServiceTest.java",
+    "sha256": "eaeab519eb9ccb5708e33e79db85c371fba1ee74a2bd23d1d33bcd9f2d05b215",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/history/HistoricalMembershipServiceTest.java",
+    "sha256": "b371d3c9593390d942e614e38a58a906f50fec1b877494a2bec8149822104221",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveIT.java",
+    "sha256": "66c003b0144c315fd7c4ba7e1b7ad7cd98503bab430916b433c582c28066a2ef",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java",
+    "sha256": "60afd6fd09dddb8b5d8a4bc9eb513301c21817aa07f29706ba1a2383b895745c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkControllerIT.java",
+    "sha256": "4ba75508f8a1a501ce7e465479f800c6486f7b8d94cea32e707605cf2af456e8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+    "sha256": "7899c10c1ffac08ce621cf443d9499ebeeb6da5dcf146d4c740aa64751b3dd0e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkMigrationIT.java",
+    "sha256": "5d92f299cd7ad12a7c1d32a92d660f3d4473b1c62b40059a0364727d0e2dfba4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJobTest.java",
+    "sha256": "065688f8981f23059243964c85e888f31c0b7009642b7dc93f5cdc989f29d96e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkServiceTest.java",
+    "sha256": "e9c488a9ce7d66cfa571101f345181911bbcb655d31ed879fe10b069d7f95f05",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+    "sha256": "e326c7f2ba7a37ee8728845001b82a6f58a485314367cd9d5c9c151f4df1952c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+    "sha256": "fb464d8e92c7e5ffc91141a41e31a1c93b2c3a79f0b4029be2bdbf92ff863812",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkTeacherReadIT.java",
+    "sha256": "c285ad7cd0ded5cc987e6acb98680744892cf74929183e5242dac4aea2658999",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+    "sha256": "ac5d454c23c9b98826ea4930b0208a2a659cb4a740eb83401ec41514f4b83ebe",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicPerformanceIT.java",
+    "sha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java",
+    "sha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+    "sha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIT.java",
+    "sha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java",
+    "sha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/GroupRenameEventIT.java",
+    "sha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+    "sha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HealthDegradationIT.java",
+    "sha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+    "sha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+    "sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiErrorResponsesIT.java",
+    "sha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+    "sha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+    "sha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxCleanupIT.java",
+    "sha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java",
+    "sha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+    "sha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java",
+    "sha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+    "sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+    "sha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapOwnerHmacProviderTest.java",
+    "sha256": "992268e9131d94a0cc202e5219191a1a4575543c269dcc9cbca8d850f8ec5337",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+    "sha256": "5e630d3de0e98ae6256bd0613710257007965ae6eca78f3f5ced8994cd43ba58",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapUsageServiceTest.java",
+    "sha256": "f4b6a1459b9939d7fdec14bb791f1cd8df933d01b94ee9c7b5fc750264f4460b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+    "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/FlywayMigrationIT.java",
+    "sha256": "db6b36ed568250c1e8d2725fa8606c2ea21077854f53bc99eca639582725e9e5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/MigrationConcurrentlyTest.java",
+    "sha256": "8e410c9c9519f24837770572fa6f5b4db0107a32460800d6f9d519899783c56b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+    "sha256": "132ab1b550edbc2367c332f0147fa2d7d9f62afb7c2d87cd151903eba188e82f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/notification/NotificationAudienceIT.java",
+    "sha256": "bb6937bd8d6db124940431ff2262d4c9e01c6e3423165dfe757c674a63c6c1e7",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterIT.java",
+    "sha256": "62233fa7204272d6612a3fbf94f3f937daa12377dd1c37db578f9ccb36c32a0c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterStrictModeIT.java",
+    "sha256": "afc93be14829392f28ca3fb64811747852374c00c4dad53f562e0aa74d2b92b4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/RoleCheckAspectTest.java",
+    "sha256": "80cffad9a1cc58d87c9e42eaf49471c17226c93d44421b5eacbeee201994c406",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/SecurityIdorIT.java",
+    "sha256": "c16df5244b02cde41309eac61a5bcbb12adf889cde671b447ead76a97deb6975",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+    "sha256": "a65066e0fd78b6561b01da13e36b11ed428a1c82812d7417b80622b1b9bb18fb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+    "sha256": "8fd755c885e853fb9b534f04c7726a521df0bdc97dc24baf14b578f64d62e240",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+    "sha256": "073eb455673753d25c0d25fbb34407036a802c9afcaa5fd26eae9417c4a26039",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+    "sha256": "4bb1fe2655c0bdea657d89852db769c07daaf22b24a31da919226ebe9c6d4946",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+    "sha256": "c30fc24412aa557fcc2736f49d367ed25cc1ba339710ad47b46d70fde8659318",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+    "sha256": "534fbd652fab153a854b5a907dda90b764c32c8613a587e3c13d54de4acc1429",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+    "sha256": "28e93d1a7330c57a477d9f649264f669ea105bb0e62d64d0da08aeb65fa3d192",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+    "sha256": "982d6091f4de43478ccd829e6693b8d7dd810a188fc933d5cca822b41f12be07",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectSchemaIT.java",
+    "sha256": "20ffbf89053c44daaae3e4833ba3a2e1440d035ea81ab7916c0a4efed62180e4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+    "sha256": "762620c1fe5a71d58236fcccb9ca7d95ed3bb1067dc207bca9b1713764ed65c0",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserByIdsApiIT.java",
+    "sha256": "7620bcacbc13618800d8b634b2864bb174db22e8ecb429f13bf40834f9b918e3",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySearchIT.java",
+    "sha256": "c1a9494d7ec392afd35b57b4d597bd082c23af6ab9f9754e6353b927fe115216",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySortIT.java",
+    "sha256": "6e175ad776cbbfde770eeff7a4e9e21a472d3fd2f6d74fadc93cf3b1b6364391",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+    "sha256": "9c7c5d52893af8cb1a2b9bb9158b2e40cb2aed8ca3d456b97e0beafd637d17b1",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java",
+    "sha256": "0548032ac194eea6f68c5a5cd8b894ce39f72cec47619de6da969935efd93c64",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java",
+    "sha256": "29e2a63607cf9d0b162189d573d67a048693387a702820feb85f50978ec7d704",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServicePatchProfileTest.java",
+    "sha256": "71f817713983710c68571a7931c8f64851b7c489ff75c2bfffb08ae4c539f1bd",
+    "matches_producer": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java",
+    "sha256": "3b397692f2ba09e83a94ed73fc41cd916890e85b2ddefabc813d63c3c7ed7de5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+    "sha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+    "sha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+    "sha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+    "sha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+    "sha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+    "sha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+    "sha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenIT.java",
+    "sha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+    "sha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "sha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+    "sha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+    "sha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+    "sha256": "f06f84172b353df2ee26bbd62fa2f29166306df7d1a04bfbad60f78b31a17403",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+    "sha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+    "sha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+    "sha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+    "sha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+    "sha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+    "sha256": "46c5d4262086dc3d296a2de11ae369df5897951375b877ee35ab8877ba542280",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/checkin/CheckinServiceTest.java",
+    "sha256": "1093e2e05fbdb1ac96bac4ba7fe91b5d94069a31459d20f46c5cb8a2d20dfacb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/AttendanceSemesterDeletionDataIT.java",
+    "sha256": "a025fda3c7f9818aa3424ffbb56d24bdd1c9416d32f446cf6567a4d4cf66c896",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventConsumerTest.java",
+    "sha256": "fb38d115e0e2950e3171e1a29abf24ca8b329959f6d5115d0ebe448c0c7aa577",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventIdempotentIT.java",
+    "sha256": "8479d70a00557055bb4086cad282d5112dd4753e0c52dbcbbfa9fff8fc649428",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java",
+    "sha256": "e310ff8299e7b1e101c0f8a328874a670e2ad9aed7bea41b55a0d0822b4dc34b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java",
+    "sha256": "40e691e8097d90137dc5a6480310a9fd702bf4791fbc53db3fcd10c9a8c95e04",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonGenerationMergeTest.java",
+    "sha256": "c4d204a653a102e7fa19a14161cffc46b173408b12a5a2ed0d2d353bc4cd0479",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+    "sha256": "ea9d0c7393285f59c18f80c607488a58abb8a1797e8d61f58fdce21f5756a264",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+    "sha256": "45c16689ce5d3e12119c882a97bba65dc5ec2ac544cbfefd531bd7f52e383bb7",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+    "sha256": "995f8ea1bbc8fdeb0e4fe39756e5a079d11295db0c87560db78b0e91ee5143ea",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/events/AttendanceMarkedContractIT.java",
+    "sha256": "e61cbf8f59d9117f281a2cffd6c0450e6cb41d83adfe9f4f2fe021a9e3cd5d11",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+    "sha256": "ec8c5b8e6e84bbbf0dda2af680e8988fde1b5bc16a5397ab8c461b1f1b01927a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java",
+    "sha256": "cd568a500c0e03b718364741ff8ddc804ecb98ea0bc45c69c928f93cf7fa9109",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+    "sha256": "0ff820522bb075977d03987550ac12754167746b3df496731cfd0dd8aad70e7f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+    "sha256": "63cc24bcc7c1170455d22c5dbf8a7de7d92ceb83907ffa0387a29ac090c25159",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+    "sha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceTest.java",
+    "sha256": "97cc8e34038397f01cc18e12722043873772a30b9e1fc7bd2791fed277a1e847",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeoUtilsTest.java",
+    "sha256": "6e7621f19066cc10544790e4aae80afb570ed63db7e233d39d02c9ebe4ad3089",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeofenceServiceTest.java",
+    "sha256": "47d9976da1c2499dd2b62fafffe90415e97a0504001867811f2d60d4e52ee944",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+    "sha256": "a5d630f58b7821fd3f463e8a1aa6d48d0fb9dbf5ab91111d1b491afe7bf7c8d4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AdminActivityGrpcIT.java",
+    "sha256": "dd625ac5804e4730199ca85b2d158685b4ff96ce187e2d5c8776fdc1275fc5e8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceSemesterDeletionGrpcSecurityTest.java",
+    "sha256": "6ba370d7079ebe921607effe7d0537d82e7687df41a98df2f1a50652f6db9668",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+    "sha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcRequestReadOnlyTest.java",
+    "sha256": "68e6c16d864c92153b6b5c0e4bb633f015ca96672ae99ca810336e5077498a7a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceTest.java",
+    "sha256": "0efaa461e052b5dac85aa30215788d219bdda6ee86a40b87bec3b97f026c9d71",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+    "sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClientTest.java",
+    "sha256": "65b7b665f8a82437371358fb19d5e1eef1fca9e5a4a2ca8fb69493918832c244",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentGrpcBoundaryTest.java",
+    "sha256": "508334919476954897211e10f7affa909f32e84c56682b8439227b0ba33d027a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrorsTest.java",
+    "sha256": "f6ba4e60d7b1d108faa1527e5c0abad27629d4dec2ecf4b7ae80149528f7266d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java",
+    "sha256": "277560efb0500292f8c27d55e4e0f0c11e655e680cda46856be07c7a21344822",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+    "sha256": "a434e4c64e5a5eaba5bc27c69afa5323e6fc1363b67d0fdfdbb1e35e342308a6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/UserImpactIT.java",
+    "sha256": "56c52631d7ef5ab02053e687e4c0f9d4bd6d58b93c9ef8914f5c7c9edcae19a9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+    "sha256": "476e475dd50fb5f2d557c11a4e7c771e125d1e09551cc026a036cfe44575f7fd",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/CheckinIT.java",
+    "sha256": "176c0f9c82153b58e10e32c7c7b73fa87c0f41f3cd528f7e07d713ca83e4bf0c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+    "sha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+    "sha256": "712f3e4e8d227f904b8cad2f280af550ad3401f6ac081c5a51d8096959125b1e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/LateCheckinPerformanceIT.java",
+    "sha256": "b619785767344b5c03e23009649ac5103fa5933a45339b95604fdd6b6c8b107a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+    "sha256": "ae76ab01133735cb92b3e9103556abfc5088e4b7ec1b4654c8dcfdaee2fe2f2f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+    "sha256": "2526e64650781957f6ca74aff691b09d3ff8682abcff0b069565c9521596dde4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+    "sha256": "52ba393a4e0c5a1a5b0d65d407f1b1d5002c835f99ea7674fe362fe01ea9747c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+    "sha256": "51205c6d46f8691cf61b308c28b0538802906e7d5708492800e6edc25f0c02a6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/PaginationCapIT.java",
+    "sha256": "c5ce70c7f0d42a65942d3a73543346ffe29b917a6d7b65d45dd8d8194150788b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+    "sha256": "4eb7786825e5fe3ba8556c8fd6d763ffbc646edda995dcb6ef303afdb21be67f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+    "sha256": "95bff3ce808623bfcd370499410a33bfc3c38465af9097fe3016f80d49e51eda",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+    "sha256": "9892c235ea152a4f299db29eef5937b8b9ebf0cc08d687773094b835c8181b67",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+    "sha256": "9d85121067b26b5b3959679eb1b3d53b9ec7868c1b823ad09ad7969a315a688f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/StartupOrphanCleanupRemovedIT.java",
+    "sha256": "4274355439c47e74045f84ce94677bdb7cba5642af3a1bb5be3628b6132bf112",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+    "sha256": "0a3d4fb8f810f4c78d543d1175c9cf83afd62c1112e07bd7b3cba82791a4cf95",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+    "sha256": "55ef0951bb1510c297936848d33f3ec3561d1485baa0ef6f02b1cfc8fa3335f2",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinServiceTest.java",
+    "sha256": "edc823a8799523493cde0c03abc2fa9ca1c867512ad814d66f962f765f007cce",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/marking/MarkingServiceTest.java",
+    "sha256": "66575c7642632800c0b9620ad1f6106291b7413791d3c8466b3e9504e9bd5b33",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/ratelimit/CheckinRateLimiterTest.java",
+    "sha256": "05668e0ba62514d99e0b1fe1b5edeb3beffa9209ec82649e723a9cbb2025a584",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/DocxRendererTest.java",
+    "sha256": "cfbac32b1963aaa628837a9fde46d10299625bf104b8fd79ebd80c2dadcad55b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanGroupCompositionServiceTest.java",
+    "sha256": "ac182bec18db80e6a0a17b0bae929b0434753b1199e140fed29e3473a3164cd9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsRendererTest.java",
+    "sha256": "6daba81fd46fa4157a13aa5d3de789c9b4cdd18c6a5c820a8d1e3c194b60de3c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+    "sha256": "9f433f73408a7d64334cdcc3cf4ee65775d981cffa1b5488d03c9afdbd950c1e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsTrendRendererTest.java",
+    "sha256": "56fa475f9a55f6a9c6a0ec3644e5119639cdaab52c1dda40dad6c632042612e5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanSubjectJournalServiceTest.java",
+    "sha256": "572746e579482f577f5edd29b9f37d8de34a884f60b219ef3623733731e15bdb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+    "sha256": "2dea809a1b34f1dbc43fc6e5674e5bfc125443e671f9f3932c0e059bfb8c8e15",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportServiceTest.java",
+    "sha256": "3e28ecef292065e7f1af0bb5def9ae2a92aebecf15a9065e1294b58ee8a044ad",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTemplateSmokeTest.java",
+    "sha256": "923624affaf163378b48b45a4d4c8dcd42a4a8858261c204a7934a82a5130582",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+    "sha256": "cb78ab3ca58cecffc44108ba97a7ec1a9cb780497caa978bc529bff4385f0310",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+    "sha256": "84d57612511220fa20adfeae1787eed9e085a68e2d9ea75d7e21d266cc0b3030",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java",
+    "sha256": "d41927321ba948a28c0e9c40574e80d0a75d8b2f0a5d52eea7799199b5ec346c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java",
+    "sha256": "db7d66fd676e41c31fa44bc9809ebd0e008dbb8094e50e678b9b2f64c2d8daa1",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+    "sha256": "661c26eede80bf224b2e8c9eb8e4dbbc788461336cbc600544075504b68e012d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRendererTest.java",
+    "sha256": "d956bb71d631748a74a7702aaef38a7236be5d348ba3482cff6b6f6fa8a2c4b8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportServiceTest.java",
+    "sha256": "6e88d7366bee1cfa3234cc1b24f6138bab61dce737071ef45c2a2fd5c6f2a733",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+    "sha256": "c2b445f8ab2874f8867eafaef68c9d1628114aad947b100cb7848b20edf4a940",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+    "sha256": "9474edb4d0538f96732547ac2b84434ed6077cb9ecd2fa5a08932851c0358490",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+    "sha256": "81c88862e77bc0756ecad1881e7f499e85d8636c299dfa8521ba1a2b04133632",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+    "sha256": "047308e6da9cc0c4cf2041a39fdd052670aa868e350997d176388bc3e44a7d7d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+    "sha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+    "sha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotServiceTest.java",
+    "sha256": "3164c41468ec85d3885d8aa1ee8d591bd0bbe71b2fece4608fc668f941e0ba0c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+    "sha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/EducationalRetentionClockIsolationTest.java",
+    "sha256": "204de1d68bff64c6efc905db39604ed9a9f45e57cf36769385d8bd969f434291",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+    "sha256": "9d11da9244932f2fee98a063b295cf02e7eb8f25e082e3fd4050b06826479292",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+    "sha256": "cb6cfa6671e80fa2bdd0b1d419bbc344b7ad68359ba3e9df9a4f144fd0087cf2",
+    "matches_producer": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+    "sha256": "deef34cd362c85956cc2e448a4fc96e4fbdf3733d0a8318c830f5892067d0eff",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+    "sha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+    "sha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+    "sha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+    "sha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+    "sha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/PasswordResetValidationExceptionHandlerTest.java",
+    "sha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+    "sha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+    "sha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+    "sha256": "1399edc9c564d8627d854dd138da43ace9517338ee298a485868ee8337d4ea79",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+    "sha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+    "sha256": "4bf21512bc882e5cd8dbffe1de49f001ff5988d89ea2dd93c4491798553d40e6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+    "sha256": "ef149ec5b3be6f8a17cf5675080ed271481233f551b5d66da499c15ea738276b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportReportAuthorityTest.java",
+    "sha256": "7736a54950d86fa0c9fccdd034a16160d0d75ef6b595c2ec09c781623ed95945",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorIT.java",
+    "sha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorSpanFilterIT.java",
+    "sha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+    "sha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/BcryptDoSMitigationIT.java",
+    "sha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+    "sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+    "sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+    "sha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LoginRateLimiterIT.java",
+    "sha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+    "sha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+    "sha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+    "sha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+    "sha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+    "sha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SameSiteCookieContractIT.java",
+    "sha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+    "sha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+    "sha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+    "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+    "sha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+    "sha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+    "sha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+    "sha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+    "sha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStoreContextTest.java",
+    "sha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+    "sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+    "sha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+    "sha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+    "sha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+    "sha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+    "sha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+    "sha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+    "sha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649",
+    "matches_producer": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+    "sha256": "97a58eebbcaa342c7a9b5c59072b75d50041d5c502bdc67c89dedeaf589ec3c7",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/NotificationLoggingIT.java",
+    "sha256": "1a8451ec013a210c616f1c338d9f277cc8431baff1499e891103da85541c22f5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+    "sha256": "70910bbe80258a9da0ec6f25548d5dc0c632e6e7b1551c62ede8475eaef30649",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+    "sha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+    "sha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+    "sha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+    "sha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+    "sha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WebSocketConfigTest.java",
+    "sha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+    "sha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+    "sha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+    "sha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportIT.java",
+    "sha256": "0d0fca075c1d34e0ba25a3a3e9323a4967394778acd7ccb719ef88115f0d0022",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+    "sha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+    "sha256": "cd167d73dac37ad869d20f9074cccf88eb73c60cf17a1afdc544d77904c6df00",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+    "sha256": "190ef5ef9c6a1cf72495b9980213c16ff58935e7f234cfffe37de5b70d389289",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/GroupEventTest.java",
+    "sha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationErrorHandlingIT.java",
+    "sha256": "6039c8350f450bf72093f8ea55587f04655dcddd2098c418adcace005d64062e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationUnavailableBoundaryTest.java",
+    "sha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+    "sha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+    "sha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerIT.java",
+    "sha256": "5e8545bf689a979ee1e2d89bc2d31dc9aa38e8bc6440a0a4e4ed05cb3e3ab7f5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+    "sha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerTest.java",
+    "sha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryEventProcessorTest.java",
+    "sha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+    "sha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationMongoIndexesIT.java",
+    "sha256": "462af7c19c4f70da24dda571623d1b268bfda359bcb8701800ad401480fa9c81",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java",
+    "sha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationV2SerializationTest.java",
+    "sha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+    "sha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java",
+    "sha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+    "sha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+    "sha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionCleanupJobIT.java",
+    "sha256": "d17b2596591cc821099236a191b81d583c190fc785ffe978104c02c625cba367",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionRepositoryTest.java",
+    "sha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+    "sha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/NotificationSignedContextTest.java",
+    "sha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java",
+    "sha256": "28cf6829a337d667a7848783fba19ea46976975732a8808df9cc7c1033362e22",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+    "sha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677",
+    "matches_producer": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java",
+    "sha256": "b85e9386e61c5b677af59dcc25eb965f274daed0a82ce1b93ee9e472ea118f8d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/ScheduledLockRuleNegativeTest.java",
+    "sha256": "058a814c406ebf2616d8c3bda27cf36e36693831f2bd15047c8eb78ac932b642",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/config/SchedulingConfigStructureTest.java",
+    "sha256": "cae35d733b93aa8e2b5520c1809f92cf8614f5edbbff0ad8f95d29a10a4d0597",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/event/EventIdempotentIT.java",
+    "sha256": "f638ab8e196ca61686ecd3d4c7257e341083192c9e336e2e5f9bef81576d4654",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonBlockedContractIT.java",
+    "sha256": "607c2ef0c305543d8ec1685f898ce27f2863605f745a632f120001a27f698d16",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonCancelledContractIT.java",
+    "sha256": "35629f5872bc9d69ed47a16612eed891bea59198ba4d364059085cacce9bfc3c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+    "sha256": "541b1b8fa00b06476670af362aad0f3369991d995332a4e1f20430e91147b89b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java",
+    "sha256": "2e4d08a5f670081d45edc325d23e68585980a502acf43eaef0e491a0a0a52f11",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+    "sha256": "ced13be86613f7f981ea61dbdc093c30d464fe0ada6752765ef61afbc69ca820",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+    "sha256": "59b3df62ea55bbc3576f777aebe108c73a8902c39ff4f6051bc18958fce00622",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "sha256": "4b00a51ddebcb3d4d5bc66079af7ed309d3011009eaa51cd418eeae2c992b44c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+    "sha256": "76914b8a56585e026f1992e5d6ca2652d974ebf20097253118926b1ab2d80edd",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+    "sha256": "5a2e4c96b185143395fc0dadf8faa2bc992b5adaed33605e3dcb8c880d4626ac",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+    "sha256": "2b52cb335c640ebace500ec88c2a3d2d26073241d390c11a35dd54070c95d0eb",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+    "sha256": "b34c5ec53276e050d4fe0261e573c50827071e852a1d63150d07a92276aaca5b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+    "sha256": "f5b674359d396b585c3d57336d2e8b28ff378529b123c1469254d0e4d7afb524",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+    "sha256": "932a456352f1e565335b97b5f27b1fea2a29472f6bbcbf193278531a1acc81ad",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/EntityMappingIT.java",
+    "sha256": "f52b8976bcfe77b318c4d37f73bed27c427c1912ff6b798057f3ac8f2e5247d4",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+    "sha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonCancelEventIT.java",
+    "sha256": "d437b3558aca89019e5e9ecf71bb6de9b2923c03c4c2cfae31675c059450944f",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+    "sha256": "11bc36b7468a1ad111e4814c07f3f09f5dd90b7bea66b1342350070ab71e21f8",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java",
+    "sha256": "aa05c5194f114f31b8931cde351ccadf5c5a2c25f6406fb5700eaf956e440f52",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+    "sha256": "82bd54f117088a4756e40aeff0843bd20c0c53ab65f447f76b0c5e43da4ccd3d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/PaginationCapIT.java",
+    "sha256": "b8bd87838cf75d37e31f4657cca392a645dd8311f0bd44b2418f7c4dfe71c9aa",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+    "sha256": "e597d0a6fd24143ffa389cff9ece0fa5624b30c1c2dc82fbca5d2438d0d912ae",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+    "sha256": "d10ed6fa9cc4bd7605cb2e7ee5efb77a5f80ec808d9497f1b6c8388f88a6c202",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+    "sha256": "2986c249f9adea0110d6f7de33b102ece7786c38522d4bb6675eb202dde9c2a6",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+    "sha256": "841f46ddbeb23b7952ae84569c69a4f0507e39ba37d18823ff211882127826c9",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ShedLockSmokeIT.java",
+    "sha256": "25c09fe04f69c3acb03f491a790fb6d78ad5459b509ec15bd223990af54cf181",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemEntityTest.java",
+    "sha256": "32ee4bf58a63d2a7c884d87f59e502c03d1dd7d8860cee7e5f2503b5a9d31353",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+    "sha256": "ab68559a2882a70560f5a5469d474c5859cbffb443b44c7f680c3ed7cfc39498",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonControllerTransferTest.java",
+    "sha256": "e56335cc33af688c0e71cf877951558ea9ba08001dece6267428cc4add939283",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+    "sha256": "2a138bea8d36ef41fdab2b7ab5f0fd59459f94a39de2fc31c21a941fe70b2f8c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+    "sha256": "85e42ef9247729c072cab2061e2b793f57853e1659cdecad1f3b5348c7c66a30",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonSlotTest.java",
+    "sha256": "d6b2d4b2ed344d952ec8fefa41eb262c2891f39d05f21957fdca7ec5a4862e8c",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+    "sha256": "3503ab917116151564c28a7a519b611b2023c7ef058923e58fc4fb27224c4a2d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+    "sha256": "a3d87edbe7de9b12ad73499eff9f21140032155e9e057b695c23360d203d8855",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+    "sha256": "3d593d5a080faa19cfa2c59e4e104e00eb5ee9a28370ed2f3ae25e80a8a9dd77",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java",
+    "sha256": "ec7062fc70ad2cc151ad77dedd7c503e63e238634c54cbec96277a924910f538",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+    "sha256": "60a766901985d8603fc11878c75ea1b392b0447e6619fa8e14bb0945251ad2ba",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+    "sha256": "cd3fb9f3382ef5f31ace7d21c9df2c3abad0ec02346d3bb0a53e5c4c4667f998",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+    "sha256": "e357867b6112fd113fed8efca62877ba8c0f8ef0c3b8243e8ea416dcd419073d",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+    "sha256": "8329d3e2fb4d9cb7b3afa28c14deb212ed313e6c24d24697eacc720be644fb15",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+    "sha256": "6ad73a18aa657c56cfa8c84215609e0ce1a4a3eadafb8b0ca9487519e33e4144",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+    "sha256": "97b27948a4693c0d31f095439229d1caf588dad0e148ac54530bce4102377db3",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemCoordinatorTest.java",
+    "sha256": "814ab189f8c60bd7cd25b659614b8d7e05b5275fc9681b3da2fb6fc0524851ac",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+    "sha256": "beb381a33b217b3e3a894eea0fe75984b59fd74f691305272eed06cc9071c7b5",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+    "sha256": "e47d5b2332a484cc5fa286cc67143631900770126a2e6c5d05859dad42f9ba9b",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+    "sha256": "d552bfa72f03b05bb7d02552f5cd9c8235c0f4366b534ea6ea6c45e2348cc944",
+    "matches_producer": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+    "sha256": "5b804277e915406795352fc75c7bbddb53fa41b8a6e8227944e21256b4a4e007",
+    "matches_producer": true
+  }
+]

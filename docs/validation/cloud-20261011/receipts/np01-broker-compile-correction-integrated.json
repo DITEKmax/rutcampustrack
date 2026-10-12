@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-12T06:43:19.143900+00:00",
+  "author_sha": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "root_sha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "source2byteequal": true,
+  "runtime": "pending",
+  "review": "np01-broker-compile-correction-root-review.json"
+}

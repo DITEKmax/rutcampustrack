@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rct-current-host-stage-renderer-payload-manifest",
+  "title": "Future actual current Renderer payload staging receipt; schema only, no present PASS",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "source_revision",
+    "eight_jar_build_receipt_sha256",
+    "source_frozen",
+    "renderer_jar",
+    "unfolded_manifest",
+    "native_image",
+    "extracted_union",
+    "byte_identity",
+    "future_runtime_observations"
+  ],
+  "properties": {
+    "status": {
+      "const": "CURRENT_STAGED_PAYLOAD_BYTE_PROVEN_RUNTIME_NOT_RUN"
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "eight_jar_build_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_frozen": {
+      "const": true
+    },
+    "renderer_jar": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "recursive_fixture_absent"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "recursive_fixture_absent": {
+          "const": true
+        }
+      }
+    },
+    "unfolded_manifest": {
+      "type": "object",
+      "required": [
+        "Main-Class",
+        "Start-Class",
+        "Spring-Boot-Classes",
+        "Spring-Boot-Lib",
+        "Spring-Boot-Classpath-Index",
+        "Spring-Boot-Layers-Index"
+      ],
+      "properties": {
+        "Main-Class": {
+          "const": "org.springframework.boot.loader.launch.JarLauncher"
+        },
+        "Start-Class": {
+          "const": "ru.rutcampustrack.documentrenderer.DocumentRendererApplication"
+        },
+        "Spring-Boot-Classes": {
+          "const": "BOOT-INF/classes/"
+        },
+        "Spring-Boot-Lib": {
+          "const": "BOOT-INF/lib/"
+        },
+        "Spring-Boot-Classpath-Index": {
+          "const": "BOOT-INF/classpath.idx"
+        },
+        "Spring-Boot-Layers-Index": {
+          "const": "BOOT-INF/layers.idx"
+        }
+      }
+    },
+    "native_image": {
+      "type": "object",
+      "required": [
+        "id",
+        "metadata_sha256",
+        "user",
+        "working_dir",
+        "entrypoint"
+      ],
+      "properties": {
+        "id": {
+          "const": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f"
+        },
+        "metadata_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "user": {
+          "const": "app"
+        },
+        "working_dir": {
+          "const": "/app"
+        },
+        "entrypoint": {
+          "const": [
+            "java",
+            "org.springframework.boot.loader.launch.JarLauncher"
+          ]
+        }
+      }
+    },
+    "extracted_union": {
+      "type": "object",
+      "required": [
+        "root",
+        "ordered_layers",
+        "payload_files",
+        "directories_mode_manifest_sha256",
+        "unique_inode_allocated_bytes",
+        "free_after_staging_bytes",
+        "root_approved_extraction_receipt_sha256"
+      ],
+      "properties": {
+        "root": {
+          "const": "/workspace/scratch/rct-validation/current_host_stage/payload/renderer/app"
+        },
+        "ordered_layers": {
+          "const": [
+            "dependencies",
+            "spring-boot-loader",
+            "snapshot-dependencies",
+            "application"
+          ]
+        },
+        "payload_files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "relative_path",
+              "mapped_current_jar_member",
+              "sha256",
+              "bytes",
+              "mode"
+            ],
+            "properties": {
+              "relative_path": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_.$/@+\\-]+$"
+              },
+              "mapped_current_jar_member": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "mode": {
+                "type": "string",
+                "pattern": "^[0-7]{4}$"
+              }
+            }
+          }
+        },
+        "directories_mode_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "unique_inode_allocated_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "free_after_staging_bytes": {
+          "type": "integer",
+          "minimum": 4294967296
+        },
+        "root_approved_extraction_receipt_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "byte_identity": {
+      "type": "object",
+      "required": [
+        "complete_current_jar_union",
+        "no_extra_files",
+        "no_symlinks",
+        "no_collision",
+        "world_readable_payload_traversable_dirs",
+        "no_fixture"
+      ],
+      "properties": {
+        "complete_current_jar_union": {
+          "const": true
+        },
+        "no_extra_files": {
+          "const": true
+        },
+        "no_symlinks": {
+          "const": true
+        },
+        "no_collision": {
+          "const": true
+        },
+        "world_readable_payload_traversable_dirs": {
+          "const": true
+        },
+        "no_fixture": {
+          "const": true
+        }
+      }
+    },
+    "future_runtime_observations": {
+      "type": "object",
+      "required": [
+        "app_launch_granted",
+        "numeric_uid",
+        "tmp_writable",
+        "mount_readonly",
+        "native_tools_fonts",
+        "liveness",
+        "real_conversions"
+      ],
+      "properties": {
+        "app_launch_granted": {
+          "const": false
+        },
+        "numeric_uid": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tmp_writable": {
+          "const": "NOT_RUN"
+        },
+        "mount_readonly": {
+          "const": "NOT_RUN"
+        },
+        "native_tools_fonts": {
+          "const": "NOT_RUN"
+        },
+        "liveness": {
+          "const": "NOT_RUN"
+        },
+        "real_conversions": {
+          "const": "NOT_RUN"
+        }
+      }
+    }
+  },
+  "description": "Schema gates do not replace structural verification. Validator must prove full pathset + streamed current JAR member SHA/size equality, no mapped omissions/collisions, mode readability/traversability, exact external fixture absence. Grant and runtime results are separate receipts. Numeric UID/tmp/native checks remain honest NOT_RUN here."
+}

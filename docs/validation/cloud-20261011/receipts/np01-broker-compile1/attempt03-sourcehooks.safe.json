@@ -1,0 +1,23 @@
+{
+  "utc": "2026-10-12T06:40:54.774888+00:00",
+  "argv": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "own_uv_tools": true,
+  "existing_cache": "/workspace/.uv-cache",
+  "pre_commit_home": "/workspace/.cache/pre-commit",
+  "native_exit": 0,
+  "elapsed_seconds": 1.593,
+  "output": "Gitleaks secret detection................................................Passed\ncheck yaml...........................................(no files to check)Skipped\ncheck json...........................................(no files to check)Skipped\ncheck for added large files..............................................Passed\nfix end of files.........................................................Passed\ntrim trailing whitespace.................................................Passed\n",
+  "source_only": true
+}

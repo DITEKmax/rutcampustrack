@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-12T07:53:26.348070+00:00",
+  "state": "INTERRUPTED_BY_OWN_CONFIGURED_4GiB_GROWTH_CAP_NOT_PRODUCT_FAIL",
+  "source_sha": "b89874ccb92a444c945e020cf1d7ffe20ede997a",
+  "elapsed_seconds": 419.424,
+  "native_exit": -15,
+  "terminal_reason": "SHARED_MEMORY_GROWTH_CAP",
+  "initial_memory": 4390445056,
+  "memory_peak": 8686579712,
+  "configured_growth_cap": 4294967296,
+  "absolute_stop": 16106127360,
+  "last_processing_pttl_ms": 12101,
+  "completed_keys_observed": 3,
+  "owned_container_ids": [
+    "122854a4244b75bb9c3cf2e4b5723e3a54061c3366ebc9584fe2feab125afe5a",
+    "a2bfa3bbb138f91b3d8f2e99558feba9f760770f13080bf43389a45939d6b312",
+    "c0512e0d1ef9aba049da09e06c006c42555c001f44819fdeacc3fdb64038e564"
+  ],
+  "post_native_container_ids": [],
+  "owned_host_pids_plus_guard": [
+    223430,
+    223432,
+    223431,
+    223481,
+    223865,
+    225155,
+    225195,
+    225240,
+    225364,
+    226701,
+    227432,
+    223393
+  ],
+  "remaining_owned_host_PIDs_including_Z": [],
+  "tracked7048_byte_mode_changes": [],
+  "worktree_clean": true,
+  "xml": {
+    "current_attempt_nativeXML": false
+  },
+  "seven_scenarios": "NOT_PROVEN_NO_PASS_PROMOTION",
+  "next": "Root authorized future6GiB growth retry after exact cleanup/fresh snapshot; no livehotreload/mutation occurred"
+}

@@ -1,0 +1,17 @@
+{
+  "original_archive_sha256": "c6aa13d50ed6ef3b63937e46f787fd1768d868a75380ef130bb32abff44f1cea",
+  "original_bytes": 1324465,
+  "parts": [
+    {
+      "path": "immutable-original-receipts.zip.part-001",
+      "bytes": 750000,
+      "sha256": "f91c8a43092063f324fc3ec08e576ad4d3edc2a7543a9a6f551fbee4838518e7"
+    },
+    {
+      "path": "immutable-original-receipts.zip.part-002",
+      "bytes": 574465,
+      "sha256": "4fcc3194ab317a31faa1b3df8b41163750dadf515c4d2d38b1364260d498bc53"
+    }
+  ],
+  "reconstruction": "concatenate listedorder/hash/CRCverify"
+}

@@ -1,0 +1,34 @@
+{
+  "utc": "2026-10-12T07:19:28.226443+00:00",
+  "packages": [
+    {
+      "scope": "np01_broker_actual-compile1",
+      "target": "np01-broker-compile1",
+      "source_manifest_sha256": "83a04b2aec320e1918d94f17621805ebffdc16c442b925d4147d495d0075b2ec",
+      "source_archive_sha256": "c80b923c1b489196de757970e5f884c0c8fc9943d9d0872983b7b239d17fd79c",
+      "original_members_verified": 24,
+      "liveCURRENT": "notused; immutableZIPmembersverified"
+    },
+    {
+      "scope": "physical_dedup1",
+      "target": "physical-dedup1",
+      "source_manifest_sha256": "70bd8a7d4aadd226913551dd852e701d6cf2d0df54671fc89c84f3e1e78db687",
+      "original_members_verified": 37,
+      "root_views": "source/large/machine-manifest losslesslywrapped, originals byteexact"
+    },
+    {
+      "scope": "current_host_stage",
+      "target": "current-host-stage",
+      "source_manifest_sha256": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+      "original_members_verified": 27,
+      "root_views": "source/large/machine-manifest losslesslywrapped, originals byteexact"
+    },
+    {
+      "scope": "ci_ced755_receipts",
+      "target": "ci-ced755-native-reconciliation",
+      "source_manifest_sha256": "852698c9045044149aab3e3bcb14efd3fd86066fd58a08e291f923ddb8e21f77",
+      "original_members_verified": 43,
+      "root_views": "source/large/machine-manifest losslesslywrapped, originals byteexact"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-12T07:47:11.611783+00:00",
+  "status": "VUE22_CURRENT_PUBLIC_COPY_BYTE_PROVEN_NATIVE_UID_HTTP_NOT_RUN",
+  "pid": 231816,
+  "source_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "files": 22,
+  "per_workspace": {
+    "pwa-vue": 13,
+    "tma-vue": 9
+  },
+  "old22_mode600_metadata_SHA_exact": true,
+  "oldJAR8_oldstage26_originaltemplate_exact": true,
+  "new_files_mode": "0644",
+  "new_directories_mode": "0755",
+  "copies_new_independent_inode_nlink1": true,
+  "pathset_exact_noextras_missing_symlinks": true,
+  "temp_files": 0,
+  "children": 0,
+  "before": {
+    "utc": "2026-10-12T07:47:09.641260+00:00",
+    "own_unique_allocated_bytes": 28672,
+    "free_available_bytes": 7245520896,
+    "memory_current": 8430039040,
+    "memory_max": 17179869184,
+    "extra_cap": 12582912
+  },
+  "after": {
+    "utc": "2026-10-12T07:47:11.611766+00:00",
+    "own_unique_allocated_bytes": 8126464,
+    "free_available_bytes": 7237423104,
+    "memory_current": 8669622272,
+    "memory_max": 17179869184,
+    "extra_cap": 12582912
+  },
+  "buffer_bytes": 131072,
+  "freeze_policy": "All NEW stage files/directories immutable; COW before any future edit/build/formatter/chmod/write.",
+  "native_UID_HTTP_browser_keys_Docker_JVM_network": "NOT_RUN"
+}

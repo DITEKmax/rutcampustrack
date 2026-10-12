@@ -1,0 +1,65 @@
+{
+  "utc": "2026-10-12T08:03:07.463117+00:00",
+  "state": "OWN_GUARD_SUPERVISION_ESRCH_INFRA_INTERRUPTION_NOT_PRODUCT_FAIL",
+  "native_exit": -15,
+  "elapsed": 244.965,
+  "terminal_reason": "SUPERVISION_ERROR",
+  "supervision_error_type": "ProcessLookupError",
+  "guard_sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "last_guard_states": {
+    "utc": "2026-10-12T08:00:43.204323+00:00",
+    "scan_cursor_zero": true,
+    "guard_states": [
+      {
+        "event_identity_sha256": "33de1fbbbc6f6d4cfeb7a91856f3f81d49363c976ef11dd83d65d831823bc263",
+        "state": "completed",
+        "pttl_ms": 604646248
+      },
+      {
+        "event_identity_sha256": "9e6246279bf7fe952ac44626b93e7b9c850ba39f36263df7a58a7a70329784cb",
+        "state": "processing",
+        "pttl_ms": 175750
+      },
+      {
+        "event_identity_sha256": "b2f7573ea5ea152a4adffe6130576a8faa7c606635e9c3ecf89b7d952e7a02c8",
+        "state": "completed",
+        "pttl_ms": 604638259
+      },
+      {
+        "event_identity_sha256": "a9dd93510b43fd8af2a59b9ddabf2a31811ebcfdf67a5eedb4d43bd90f840926",
+        "state": "completed",
+        "pttl_ms": 604668442
+      }
+    ],
+    "readonly": true,
+    "values_or_claim_tokens_persisted": false
+  },
+  "peak_memory": 7929835520,
+  "initial_memory": 4299280384,
+  "shared_growth_cap": 6442450944,
+  "owned_host_pids_plus_guard": [
+    238375,
+    238376,
+    238377,
+    238425,
+    238660,
+    239731,
+    239771,
+    239816,
+    239947,
+    241406,
+    242118,
+    238338
+  ],
+  "remaining_owned_host_PIDs_including_Z": [],
+  "owned_container_ids": [
+    "255d2336f4d5d28473080ac847b0eabe716f62d0693b6bd2f890f029cf07c695",
+    "5f618e62c1a98aefaa7427995cfba27db19362032c2a41a039aeb128e25bf0df",
+    "f9cccd0d9916a5906ec8373c78703dce815d6a1a3ed624160871d6ec355b8c3f"
+  ],
+  "post_native_container_ids": [],
+  "tracked7048_changes": [],
+  "no_product_source_change": true,
+  "seven_scenarios": "NOT_PROVEN_NO_PASS",
+  "hypothesis": "Linux disappearing /proc/<PID>/stat can raise ProcessLookupError/ESRCH; exactf539 process_table only catches FileNotFoundError. Need bounded pure proof/freshguardfixreview before more realruns."
+}

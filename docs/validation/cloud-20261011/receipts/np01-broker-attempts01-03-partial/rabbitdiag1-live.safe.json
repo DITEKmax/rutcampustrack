@@ -1,0 +1,13 @@
+{
+  "state": "REAPED",
+  "child_pid": 221817,
+  "group": 221817,
+  "members_including_Z": [],
+  "reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "utc": "2026-10-12T07:32:28.226624+00:00",
+  "lease": "RABBIT_DIAG1",
+  "observer_pid": 221798,
+  "disk_free": 8367931392,
+  "shared_memory_current": 4557180928
+}

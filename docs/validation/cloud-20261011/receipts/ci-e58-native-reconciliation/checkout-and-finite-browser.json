@@ -1,0 +1,40 @@
+{
+  "producer_head": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "checkout": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+  "executed_jobs": 30,
+  "all_executed_checkout_equal": true,
+  "skipped_jobs": [
+    {
+      "run": 38216670775,
+      "name": "Diff coverage report"
+    },
+    {
+      "run": 38216670738,
+      "name": "Trivy built images"
+    }
+  ],
+  "coverage_python": {
+    "job": 114702915950,
+    "passed": 415
+  },
+  "coverage_vue": {
+    "job": 114702916309,
+    "files_passed": 113,
+    "tests_passed": 1028
+  },
+  "chromium": {
+    "job": 114702915982,
+    "scheduled": 9,
+    "passed_clean": 8,
+    "flaky_pass_on_retry": 1,
+    "failed_final": 0,
+    "flake_method": "admin bootstrap requires explicit role selection in the Vue client",
+    "flake_source": "specs/auth-token-lifecycle.spec.ts:50:7",
+    "failure_frame": "specs/auth-token-lifecycle.spec.ts:59:79",
+    "scope": "isolated Vue auth backend smoke only; not all eleven client groups",
+    "stack_boot": "SUCCESS",
+    "seed_link": "SUCCESS",
+    "cleanup": "SUCCESS",
+    "failure_only_artifacts": "SKIPPED"
+  }
+}

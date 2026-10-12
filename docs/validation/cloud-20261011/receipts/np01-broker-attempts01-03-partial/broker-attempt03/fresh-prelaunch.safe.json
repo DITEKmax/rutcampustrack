@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-12T07:56:34.785590+00:00",
+  "source_clean": true,
+  "sha": "b89874ccb92a444c945e020cf1d7ffe20ede997a",
+  "Docker_empty": true,
+  "old_owned_PIDs_absent_including_Z": true,
+  "disk": {
+    "total": 33770192896,
+    "used": 23685197824,
+    "free": 8350232576
+  },
+  "memory": 4325556224,
+  "growth_cap": 6442450944,
+  "absolute_stop": 16106127360,
+  "Root_budget_sha256": "30df7e145c64b50acf4b13b3a0576f9efc1def0e28320f4e09a12c4ec3870dc4"
+}

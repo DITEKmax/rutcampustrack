@@ -1,0 +1,32 @@
+{
+  "time": "2026-10-12T07:41:45.577893+00:00",
+  "state": "COMPLETE_FINITE_RECEIPTS",
+  "producer": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "checkout": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+  "runs": {
+    "CI38216670757": "FAILURE",
+    "Coverage38216670775": "FAILURE",
+    "Security38216670738": "SUCCESS",
+    "OpenAPI38216670773": "SUCCESS"
+  },
+  "all_30_executed_checkout_verified": true,
+  "safe_collectors": 12,
+  "all_xml_counts_consistent": true,
+  "producer_public_sources_verified": 340,
+  "broker_phase": "Rabbit management vhost provisioning before seven scenarios; IOException caused EOFException at createOwnVhost:417",
+  "academic_unit_passed": 465,
+  "academic_it_passed": 445,
+  "academic_it_failed": 1,
+  "auth_unit_passed": 140,
+  "auth_it_passed": 169,
+  "chromium_clean_passed": 8,
+  "chromium_flaky_retry_passed": 1,
+  "python_coverage_passed": 415,
+  "vue_coverage_tests_passed": 1028,
+  "qualification": "Finite current receipts; overall acceptance NOT_ASSESSED; no product-red credit for harness provisioning; no full11clientmatrix or seven broker scenario PASS",
+  "raw_xml_download": "Automatic review rejected before execution; safe fallback completed",
+  "processes": [],
+  "source_mutations": false,
+  "local_runtimes": false,
+  "prior_receipts": "four prior archive hashes unchanged"
+}

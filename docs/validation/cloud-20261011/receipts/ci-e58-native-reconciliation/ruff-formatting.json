@@ -1,0 +1,21 @@
+{
+  "job_id": 114702916347,
+  "lint": "PASS",
+  "format": "FAIL",
+  "files_would_reformat": 11,
+  "files_already_formatted": 99,
+  "tests": "SKIPPED",
+  "paths": [
+    "bot/__main__.py",
+    "bot/grpc_client/bot_credentials_client.py",
+    "bot/grpc_client/bot_service_credentials.py",
+    "bot/handlers/start.py",
+    "bot/notifications/password_changed.py",
+    "bot/services/bot_credential_cards.py",
+    "tests/np01_bridge_runner.py",
+    "tests/np01_broker_bridge_runner.py",
+    "tests/test_bot_credential_cards.py",
+    "tests/test_password_changed.py",
+    "tests/test_start_handler.py"
+  ]
+}

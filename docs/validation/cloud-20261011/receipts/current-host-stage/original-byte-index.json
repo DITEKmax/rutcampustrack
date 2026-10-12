@@ -1,0 +1,235 @@
+{
+  "source": "/workspace/scratch/rct-validation/current_host_stage",
+  "manifest": "manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "84053c4f47dd83862351a5015203e926759649f888e252d78d46057c760de5c4",
+      "original_bytes": 307,
+      "working_sha256": "84053c4f47dd83862351a5015203e926759649f888e252d78d46057c760de5c4",
+      "working_bytes": 307,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "7be650aa939ad2dacb50d0c95c75ac836abeb07e9b3968217cd1a0585e13b90a",
+      "original_bytes": 4905,
+      "working_sha256": "7be650aa939ad2dacb50d0c95c75ac836abeb07e9b3968217cd1a0585e13b90a",
+      "working_bytes": 4905,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "PROCESS.json",
+      "original_sha256": "3a2f8f23518c1b5b99fd7f17a374095ab8bf66fbb12a8ea62b9bd2d89ef8a8e3",
+      "original_bytes": 157,
+      "working_sha256": "3a2f8f23518c1b5b99fd7f17a374095ab8bf66fbb12a8ea62b9bd2d89ef8a8e3",
+      "working_bytes": 157,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "RESULT.json",
+      "original_sha256": "9704f89bc356a2b59c63e8d202f1653c2c61cd2be7f91d9f5c443a16a908f676",
+      "original_bytes": 1804,
+      "working_sha256": "9704f89bc356a2b59c63e8d202f1653c2c61cd2be7f91d9f5c443a16a908f676",
+      "working_bytes": 1804,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "d018f8efcd2c72fc2f539b43db11b5eadb2f764e60308adbb600addc0af0f033",
+      "original_bytes": 3838603,
+      "working_sha256": "80b3ae2305b2a5cdc4fd788706cdcfd294c2cae844c4443427563aa1a5dfd6b1",
+      "working_bytes": 201384,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "attempts.ndjson.readable.zip"
+    },
+    {
+      "path": "exact-final-structure.json",
+      "original_sha256": "76b11194540db5780e8cac7d60621f9f7a80ed5eb3265f4a00a15266a13ea9e7",
+      "original_bytes": 261,
+      "working_sha256": "76b11194540db5780e8cac7d60621f9f7a80ed5eb3265f4a00a15266a13ea9e7",
+      "working_bytes": 261,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "launch-and-controls.json",
+      "original_sha256": "8637b74ea0d40be9ff4cdf24eb71af92487ac2f876f41d1e67ac165e94f2e2dd",
+      "original_bytes": 982,
+      "working_sha256": "8637b74ea0d40be9ff4cdf24eb71af92487ac2f876f41d1e67ac165e94f2e2dd",
+      "working_bytes": 982,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "new-stage-directory-modes.json",
+      "original_sha256": "729c9babde10acfa8c3be1e192b34f2200f734aa8f5aaee032edcc1199c806de",
+      "original_bytes": 303027,
+      "working_sha256": "729c9babde10acfa8c3be1e192b34f2200f734aa8f5aaee032edcc1199c806de",
+      "working_bytes": 303027,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "new-stage-inode-aliases.json",
+      "original_sha256": "71bd3ede44d1120cabc2d37473164275e6955e6cc619a8f9194b4449c46c2270",
+      "original_bytes": 5176614,
+      "working_sha256": "b4039488ace53dcc2df950fde6d60550efe217752ec8f81025ebe6c609554dd4",
+      "working_bytes": 195871,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "new-stage-inode-aliases.json.readable.zip"
+    },
+    {
+      "path": "payload-academic.json",
+      "original_sha256": "6c86909993defcd4c8838fd792e2854cf7f18e16408a7958b4f5d54131585e7d",
+      "original_bytes": 1416264,
+      "working_sha256": "e94f6c7541c5e564d3e6caa5ffd102a1310391b7f2012889bbf9835380f5ffb8",
+      "working_bytes": 135734,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-academic.json.readable.zip"
+    },
+    {
+      "path": "payload-attendance.json",
+      "original_sha256": "4805160957bf67b5c1358cd1e171df4bd067b9139c47271781aad407fcf66d6a",
+      "original_bytes": 1395910,
+      "working_sha256": "16e48c115d4253cd607a6bd4f05f37584177dba884dbce4407bfd75fa8f26765",
+      "working_bytes": 131409,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-attendance.json.readable.zip"
+    },
+    {
+      "path": "payload-auth.json",
+      "original_sha256": "9773ad4c64b2a373f4d50a734013ce18b10801adcf90025a72cf3204c18b1477",
+      "original_bytes": 1186105,
+      "working_sha256": "2252c9413a29b86a6dc00160c83707d39b5c3b4fe5ad3e76a6aafa5388b979bd",
+      "working_bytes": 114839,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-auth.json.readable.zip"
+    },
+    {
+      "path": "payload-bff.json",
+      "original_sha256": "6a2762c67bd84d3821e0fe4f2cee198ab6f85356878705961a72c014f844d6fb",
+      "original_bytes": 1009200,
+      "working_sha256": "9f17cf6d1d1eb92da6bf895f6e448e12481b061a987955ed8eb706cc875a6952",
+      "working_bytes": 97060,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-bff.json.readable.zip"
+    },
+    {
+      "path": "payload-gateway.json",
+      "original_sha256": "1df47b0562e4acb1466b853860abb66363d8e42504096a7d86a87db8efb6f5e6",
+      "original_bytes": 212928,
+      "working_sha256": "1df47b0562e4acb1466b853860abb66363d8e42504096a7d86a87db8efb6f5e6",
+      "working_bytes": 212928,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "payload-notification.json",
+      "original_sha256": "84b9ef63bd21c0ae18ca5a7a5432c672523f66057d3f817e53ccaffa19a6e8a7",
+      "original_bytes": 1119732,
+      "working_sha256": "cf842f5418a9c2565735eb1dc12b5ebbb329095642d5d02024d922c3d40446c3",
+      "working_bytes": 104883,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-notification.json.readable.zip"
+    },
+    {
+      "path": "payload-renderer.json",
+      "original_sha256": "f2ee0d4547d67fefd185b639ff069ffa7e6a2c51f82d1258b1b373f50f7d470c",
+      "original_bytes": 1002102,
+      "working_sha256": "54e96ab66fcdeb4f6c57d5dafaab7afb54f8c97f7e471983587542a4f236287c",
+      "working_bytes": 94170,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-renderer.json.readable.zip"
+    },
+    {
+      "path": "payload-schedule.json",
+      "original_sha256": "876a778e6945ca1891f5c6d18f2c51b90b7b07432736d2e502b897289b2a0939",
+      "original_bytes": 1192276,
+      "working_sha256": "42dee5805002a5464d231ac1107754f676e55c37f1b9fbfb97bc9f313db36e35",
+      "working_bytes": 114114,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "payload-schedule.json.readable.zip"
+    },
+    {
+      "path": "preflight.json",
+      "original_sha256": "4c3ba3738a5a214c6ad083cced9475e33ff236bee374de1f877a78d4491078de",
+      "original_bytes": 5901,
+      "working_sha256": "4c3ba3738a5a214c6ad083cced9475e33ff236bee374de1f877a78d4491078de",
+      "working_bytes": 5901,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "prepackage-resource.json",
+      "original_sha256": "f180ee1372f23b31075fb68ff22e2ea5b5aedd713b3f37d2369ddc5e8dcd3ed7",
+      "original_bytes": 484,
+      "working_sha256": "f180ee1372f23b31075fb68ff22e2ea5b5aedd713b3f37d2369ddc5e8dcd3ed7",
+      "working_bytes": 484,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "renderer-overlay.template.yml",
+      "original_sha256": "82d156ea1cd14651f15c4148f1f2b04acf46ce19f8322c9f3f4abb96c641defb",
+      "original_bytes": 688,
+      "working_sha256": "82d156ea1cd14651f15c4148f1f2b04acf46ce19f8322c9f3f4abb96c641defb",
+      "working_bytes": 688,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "renderer-payload-manifest.json",
+      "original_sha256": "5b56f132b0a9bb90b93d6298951278df458557636e664a299b2165bdbcc83f5a",
+      "original_bytes": 488012,
+      "working_sha256": "727ad9eed5901a8b74f88a366e004224689485fc8170259521bc9991ccfa99a5",
+      "working_bytes": 75797,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "renderer-payload-manifest.json.readable.zip"
+    },
+    {
+      "path": "renderer-payload.schema.json",
+      "original_sha256": "360c6f6c0754c177170551b4d36eff9212f95a0d8831b2da2233d627b7058533",
+      "original_bytes": 7021,
+      "working_sha256": "360c6f6c0754c177170551b4d36eff9212f95a0d8831b2da2233d627b7058533",
+      "working_bytes": 7021,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "renderer-schema-check.json",
+      "original_sha256": "42d511ff11f9b94b252fff4e732f4b99d071474fc2f04978be69925fb78dec42",
+      "original_bytes": 401,
+      "working_sha256": "42d511ff11f9b94b252fff4e732f4b99d071474fc2f04978be69925fb78dec42",
+      "working_bytes": 401,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "resource-samples.json",
+      "original_sha256": "5cd9805fe8c5b294dc051e45c84bae7cf1810435ead4b9d4a15f88c712294af0",
+      "original_bytes": 5782,
+      "working_sha256": "5cd9805fe8c5b294dc051e45c84bae7cf1810435ead4b9d4a15f88c712294af0",
+      "working_bytes": 5782,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "stage.py",
+      "original_sha256": "ce100a17a61b34a68d6efa3c2a6d4b3f8c56d296e2d9c80b2b24814ce67eaffb",
+      "original_bytes": 20745,
+      "working_sha256": "8cf09066bbb0419e73104e8773918a1ab18c8b21679952a3b612a70f7be2c6d3",
+      "working_bytes": 6852,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "stage.py.readable.zip"
+    },
+    {
+      "path": "terminal-native.json",
+      "original_sha256": "e4a7c96cc0b3639fa8ca956365dade0513492b247524a2e1c721a0da1ad8df0c",
+      "original_bytes": 460,
+      "working_sha256": "e4a7c96cc0b3639fa8ca956365dade0513492b247524a2e1c721a0da1ad8df0c",
+      "working_bytes": 460,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "manifest.json",
+      "original_sha256": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+      "original_bytes": 10066,
+      "working_sha256": "e3a3826a99b66eb32b536e97a9e58b74b26febb462bde8b7d66420a587361d93",
+      "working_bytes": 2402,
+      "transformation": "lossless exact-working single-member ZIP; immutable originals preserved",
+      "working_path": "manifest.json.readable.zip"
+    }
+  ],
+  "immutable_originals": "immutable-original-parts.json"
+}

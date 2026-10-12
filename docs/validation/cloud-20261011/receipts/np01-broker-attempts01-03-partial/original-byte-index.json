@@ -1,0 +1,393 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_broker_actual",
+  "manifest": "broker-partial-transfer-manifest.safe.json",
+  "files": [
+    {
+      "path": "PARTIAL-BROKER-HANDOFF.md",
+      "original_sha256": "d8cbc4c6541fcc745c7e8acc25f5ccf6f82b9443b52fb2afcb2adf15855642d4",
+      "original_bytes": 4402,
+      "working_sha256": "d8cbc4c6541fcc745c7e8acc25f5ccf6f82b9443b52fb2afcb2adf15855642d4",
+      "working_bytes": 4402,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "scenarios.csv",
+      "original_sha256": "e22ce69515c933a5b8fd75400efe1c08abc420d6f92c1d771f606fd17d92cd83",
+      "original_bytes": 2748,
+      "working_sha256": "4664cc206c100ee17c7372b2dc1a96e816b00c255d0f030456945ef315d89532",
+      "working_bytes": 2740,
+      "transformation": "CRLF to LF copied readable CSV view only; parsed CSV rows equal, exact original sealed ZIP retained"
+    },
+    {
+      "path": "partial-native-evidence.safe.json",
+      "original_sha256": "c70f3e4fc92705da066a9b9f758f460167996b38dcf2f4b0410ec186e61c74de",
+      "original_bytes": 978,
+      "working_sha256": "c70f3e4fc92705da066a9b9f758f460167996b38dcf2f4b0410ec186e61c74de",
+      "working_bytes": 978,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-seals-readonly.safe.json",
+      "original_sha256": "82f30f0b778feace2a11b66d79a123eb94e3025892e37e823f73b57d57f19dac",
+      "original_bytes": 858,
+      "working_sha256": "82f30f0b778feace2a11b66d79a123eb94e3025892e37e823f73b57d57f19dac",
+      "working_bytes": 858,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "freeze-registry-shape.safe.json",
+      "original_sha256": "eb6ac50c92e44acfa6c485fc5a5d8f6d4f094ddd7658c6e9a5a96eb3340fa0bf",
+      "original_bytes": 413,
+      "working_sha256": "eb6ac50c92e44acfa6c485fc5a5d8f6d4f094ddd7658c6e9a5a96eb3340fa0bf",
+      "working_bytes": 413,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "compile1-outcome.safe.json",
+      "original_sha256": "bb16ae6688ae2e06c429fa93d072de4d54b9634ce965460ec691fd1dc3ace3ce",
+      "original_bytes": 4820,
+      "working_sha256": "bb16ae6688ae2e06c429fa93d072de4d54b9634ce965460ec691fd1dc3ace3ce",
+      "working_bytes": 4820,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "compile1-plain-auth-comparison.safe.json",
+      "original_sha256": "ad99e802ece88813e8e343c81f9847ff095f21ea070bc15f813952b6b12ffad0",
+      "original_bytes": 412,
+      "working_sha256": "ad99e802ece88813e8e343c81f9847ff095f21ea070bc15f813952b6b12ffad0",
+      "working_bytes": 412,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "correction-source-proof.safe.json",
+      "original_sha256": "9ea1f36132772ee45ab7926e5508e3cc12b9bce82de0474f77df3ba51ef3c54b",
+      "original_bytes": 6245,
+      "working_sha256": "9ea1f36132772ee45ab7926e5508e3cc12b9bce82de0474f77df3ba51ef3c54b",
+      "working_bytes": 6245,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbit-http1-source-correction.safe.json",
+      "original_sha256": "064a0d81018607e7bcc20bc91be1aa0ff2d65fc621ecddf49e03bb7e2030ec15",
+      "original_bytes": 713,
+      "working_sha256": "064a0d81018607e7bcc20bc91be1aa0ff2d65fc621ecddf49e03bb7e2030ec15",
+      "working_bytes": 713,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "http1-sourcehooks.safe.json",
+      "original_sha256": "750f820a46e4b0e282fd916cf2f401bed0d2bab74550ea83b67df51f934e3a43",
+      "original_bytes": 897,
+      "working_sha256": "750f820a46e4b0e282fd916cf2f401bed0d2bab74550ea83b67df51f934e3a43",
+      "working_bytes": 897,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempt01-sourcehooks.safe.json",
+      "original_sha256": "d5c12d550a08b95c65662cb87df6b0f0df143513ebd8127e7f3f051a03a7b2cf",
+      "original_bytes": 711,
+      "working_sha256": "d5c12d550a08b95c65662cb87df6b0f0df143513ebd8127e7f3f051a03a7b2cf",
+      "working_bytes": 711,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempt02-sourcehooks.safe.json",
+      "original_sha256": "23903e950edffc61ff823172e1bf66752320d19b24cf9e848efd29f3f04b3b0c",
+      "original_bytes": 771,
+      "working_sha256": "23903e950edffc61ff823172e1bf66752320d19b24cf9e848efd29f3f04b3b0c",
+      "working_bytes": 771,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempt03-sourcehooks.safe.json",
+      "original_sha256": "0d813403c991e8137dca4ad65a80cb303dab345def3fedcd7b7a2c5c9fff020f",
+      "original_bytes": 1094,
+      "working_sha256": "0d813403c991e8137dca4ad65a80cb303dab345def3fedcd7b7a2c5c9fff020f",
+      "working_bytes": 1094,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-prelaunch-stage-settled.safe.json",
+      "original_sha256": "f16502dbb2a50eedc6e986029c930067e3c8c554567c9f4d0fea191bd52b9ea0",
+      "original_bytes": 754,
+      "working_sha256": "f16502dbb2a50eedc6e986029c930067e3c8c554567c9f4d0fea191bd52b9ea0",
+      "working_bytes": 754,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-command.safe.json",
+      "original_sha256": "aa6e6c90cbe5dc43c2192ff85301152a9257cd170597eb15c690d7bd95c4159a",
+      "original_bytes": 757,
+      "working_sha256": "aa6e6c90cbe5dc43c2192ff85301152a9257cd170597eb15c690d7bd95c4159a",
+      "working_bytes": 757,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-grant.safe.json",
+      "original_sha256": "f7bc7f8ec4f3dc8c8fbcbfc5ed5417c73f394948f6bbc1ce6fbecb92c08a4b80",
+      "original_bytes": 2526,
+      "working_sha256": "f7bc7f8ec4f3dc8c8fbcbfc5ed5417c73f394948f6bbc1ce6fbecb92c08a4b80",
+      "working_bytes": 2526,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-process-result.safe.json",
+      "original_sha256": "8aa4ec5156ea0abe5872cf1ff48f748f44cb594817ce9990395319b70db9a5f9",
+      "original_bytes": 1648,
+      "working_sha256": "8aa4ec5156ea0abe5872cf1ff48f748f44cb594817ce9990395319b70db9a5f9",
+      "working_bytes": 1648,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-live.safe.json",
+      "original_sha256": "66baafe1f79ef8849d04134bcfefa7989717ddc8974369f0ade01291da7fc1a2",
+      "original_bytes": 311,
+      "working_sha256": "66baafe1f79ef8849d04134bcfefa7989717ddc8974369f0ade01291da7fc1a2",
+      "working_bytes": 311,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-containers.safe.json",
+      "original_sha256": "81eeb9a8ed0708138c2847c072cc9ac4b09509fb96957be9bac05e1b625b418d",
+      "original_bytes": 3791,
+      "working_sha256": "81eeb9a8ed0708138c2847c072cc9ac4b09509fb96957be9bac05e1b625b418d",
+      "working_bytes": 3791,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-child-exit.safe.json",
+      "original_sha256": "e862ec8ccfad0dc79f423885dde46d667039043afda8e97ea65ce5c6700d247f",
+      "original_bytes": 19,
+      "working_sha256": "e862ec8ccfad0dc79f423885dde46d667039043afda8e97ea65ce5c6700d247f",
+      "working_bytes": 19,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-attempt01-failure.safe.json",
+      "original_sha256": "e37b422ae0cde69b2d7bf0f38ffc72af48b41800bf8435cb71023761b1c295f6",
+      "original_bytes": 2866,
+      "working_sha256": "e37b422ae0cde69b2d7bf0f38ffc72af48b41800bf8435cb71023761b1c295f6",
+      "working_bytes": 2866,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker1-attempt01-preservation.safe.json",
+      "original_sha256": "4e9a7f19df3ef1d59c1f80a363dec2f4126c68a16adb164cdfa67621e152cfd6",
+      "original_bytes": 444,
+      "working_sha256": "4e9a7f19df3ef1d59c1f80a363dec2f4126c68a16adb164cdfa67621e152cfd6",
+      "working_bytes": 444,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbitdiag1-grant.safe.json",
+      "original_sha256": "3de6a80171a493cd69fb1fadfd225b681bd833fb63b1ed6c4b697b2d07ae59e1",
+      "original_bytes": 2463,
+      "working_sha256": "3de6a80171a493cd69fb1fadfd225b681bd833fb63b1ed6c4b697b2d07ae59e1",
+      "working_bytes": 2463,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbitdiag1-process-result.safe.json",
+      "original_sha256": "9a5e1073d0bbe86a0164c5060948abad8912a32471938a5719610c4d82198504",
+      "original_bytes": 1238,
+      "working_sha256": "9a5e1073d0bbe86a0164c5060948abad8912a32471938a5719610c4d82198504",
+      "working_bytes": 1238,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbitdiag1-live.safe.json",
+      "original_sha256": "6bc3b022ff8ec7c35a10679af802ff8dc5314785539ddfa29714211738b9ac4c",
+      "original_bytes": 311,
+      "working_sha256": "6bc3b022ff8ec7c35a10679af802ff8dc5314785539ddfa29714211738b9ac4c",
+      "working_bytes": 311,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbitdiag1-differential.safe.json",
+      "original_sha256": "c0c98999ab5123e39c37b57eb59cf2dfaa0b9d8cfe423a58bd67d3fafcb6184e",
+      "original_bytes": 1018,
+      "working_sha256": "c0c98999ab5123e39c37b57eb59cf2dfaa0b9d8cfe423a58bd67d3fafcb6184e",
+      "working_bytes": 1018,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbitdiag1-native-events.safe.json",
+      "original_sha256": "8a9da1d2aeb5043f1bb084c24c68a07f080c2205df8baeb79f63e61a192c2800",
+      "original_bytes": 4244,
+      "working_sha256": "8a9da1d2aeb5043f1bb084c24c68a07f080c2205df8baeb79f63e61a192c2800",
+      "working_bytes": 4244,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "rabbitdiag1-cleanup-and-limits.safe.json",
+      "original_sha256": "b1de2d2748dc7281ac224605ff069d9292445405c1bde02bb1cc0d0ce10713cb",
+      "original_bytes": 1010,
+      "working_sha256": "b1de2d2748dc7281ac224605ff069d9292445405c1bde02bb1cc0d0ce10713cb",
+      "working_bytes": 1010,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt02/attempt02-outcome.safe.json",
+      "original_sha256": "b1ebd1b17d0b48bdb21e20292d07e9171d1103fbab371fb2165aa42d4402812e",
+      "original_bytes": 1294,
+      "working_sha256": "b1ebd1b17d0b48bdb21e20292d07e9171d1103fbab371fb2165aa42d4402812e",
+      "working_bytes": 1294,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt02/broker1-command.safe.json",
+      "original_sha256": "cd4c0e591e9ed47c6e20ccd4cddcd14e93ffaa939d37dd7499d29e7f8f575fd5",
+      "original_bytes": 774,
+      "working_sha256": "cd4c0e591e9ed47c6e20ccd4cddcd14e93ffaa939d37dd7499d29e7f8f575fd5",
+      "working_bytes": 774,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt02/broker1-containers.safe.json",
+      "original_sha256": "cd6bd944625b90caada2af38c0c546af7e5bdd8980f30601ee36d7885dc1d558",
+      "original_bytes": 296971,
+      "working_sha256": "cd6bd944625b90caada2af38c0c546af7e5bdd8980f30601ee36d7885dc1d558",
+      "working_bytes": 296971,
+      "transformation": "byte equal",
+      "working_path": "broker-attempt02/broker1-containers.safe.json.readable.zip",
+      "working_container_sha256": "3ec9ac5cd55d69d9fca002907b58737530d30f6984da34dfe297b82ecf38889d",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "broker-attempt02/broker1-grant.safe.json",
+      "original_sha256": "1dd782277711281a1fedf87c30ea6071159759be9bc2aac2dc44d954c8cac0a4",
+      "original_bytes": 2691,
+      "working_sha256": "1dd782277711281a1fedf87c30ea6071159759be9bc2aac2dc44d954c8cac0a4",
+      "working_bytes": 2691,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt02/broker1-live.safe.json",
+      "original_sha256": "f4d1bed281fee9b551f06c1fd8a3ed1b2d6ca4dfa8554fe8ff9e034ea60bf8bc",
+      "original_bytes": 320,
+      "working_sha256": "f4d1bed281fee9b551f06c1fd8a3ed1b2d6ca4dfa8554fe8ff9e034ea60bf8bc",
+      "working_bytes": 320,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt02/broker1-process-result.safe.json",
+      "original_sha256": "02eac33c829e67158aa1969432ca4767a46dfb9a40b23a1f4510064f10e9762e",
+      "original_bytes": 2379,
+      "working_sha256": "02eac33c829e67158aa1969432ca4767a46dfb9a40b23a1f4510064f10e9762e",
+      "working_bytes": 2379,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt02/broker1-tracked-before.safe.json",
+      "original_sha256": "d745cbfbc51a78b83828525ce68743eaf29606f780c708b3dfdebcaf39a60ef4",
+      "original_bytes": 1607185,
+      "working_sha256": "d745cbfbc51a78b83828525ce68743eaf29606f780c708b3dfdebcaf39a60ef4",
+      "working_bytes": 1607185,
+      "transformation": "byte equal",
+      "working_path": "broker-attempt02/broker1-tracked-before.safe.json.readable.zip",
+      "working_container_sha256": "2e349933e1421a3044294a190fb72aa6725dcc6b3e9da08f3c8602dd266d8fa7",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "broker-attempt02/root-http1-review.safe.json",
+      "original_sha256": "9c3624371f69f3220c025c580eb24351f2b3467bfb753309e66cf58cedf20d9a",
+      "original_bytes": 730,
+      "working_sha256": "9c3624371f69f3220c025c580eb24351f2b3467bfb753309e66cf58cedf20d9a",
+      "working_bytes": 730,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/attempt03-outcome.safe.json",
+      "original_sha256": "7230f6c80396ac5e94c3ab1d5b3048ad0d125a397af7676bfab5cf22b260d84d",
+      "original_bytes": 2165,
+      "working_sha256": "4ca75ed973445307664ff5e528a6669e9e21a2854a2702a98c2c97b2abdea0dc",
+      "working_bytes": 2185,
+      "transformation": "presentation field event_key_sha256 renamed event_identity_sha256 ONLY; original sealed ZIP exact. Hash is Redis consumed-event identifier, not token/key material."
+    },
+    {
+      "path": "broker-attempt03/broker1-command.safe.json",
+      "original_sha256": "f58b39ff2595f0341842a279e90d646c19088979c029938fbd331992b70a4c2e",
+      "original_bytes": 774,
+      "working_sha256": "f58b39ff2595f0341842a279e90d646c19088979c029938fbd331992b70a4c2e",
+      "working_bytes": 774,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/broker1-containers.safe.json",
+      "original_sha256": "9dc715e48135bf38d0f583fee9cc6fb08a04da7824638bb416e150eabe2cb56b",
+      "original_bytes": 146758,
+      "working_sha256": "155a850d511efb1a6674a95369ec4d11388a0240232b74d47a4a00eb4f7439db",
+      "working_bytes": 149498,
+      "transformation": "presentation field event_key_sha256 renamed event_identity_sha256 ONLY; original sealed ZIP exact. Hash is Redis consumed-event identifier, not token/key material."
+    },
+    {
+      "path": "broker-attempt03/broker1-grant.safe.json",
+      "original_sha256": "4222e4ef4cba1ba48f60a0b90869b55d41a4e92074c17959f38fc4439a74b75f",
+      "original_bytes": 2707,
+      "working_sha256": "4222e4ef4cba1ba48f60a0b90869b55d41a4e92074c17959f38fc4439a74b75f",
+      "working_bytes": 2707,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/broker1-live.safe.json",
+      "original_sha256": "f79fd75015cf9be0437a94c23ff5aeda91ec8dc4f03855dfe8e65747d9cfc21d",
+      "original_bytes": 313,
+      "working_sha256": "f79fd75015cf9be0437a94c23ff5aeda91ec8dc4f03855dfe8e65747d9cfc21d",
+      "working_bytes": 313,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/broker1-process-result.safe.json",
+      "original_sha256": "5ccbff4267281ecb73921ba14447e88c13af0cccc9f4bdd4582451302f69baeb",
+      "original_bytes": 2477,
+      "working_sha256": "5ccbff4267281ecb73921ba14447e88c13af0cccc9f4bdd4582451302f69baeb",
+      "working_bytes": 2477,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/broker1-tracked-before.safe.json",
+      "original_sha256": "d745cbfbc51a78b83828525ce68743eaf29606f780c708b3dfdebcaf39a60ef4",
+      "original_bytes": 1607185,
+      "working_sha256": "d745cbfbc51a78b83828525ce68743eaf29606f780c708b3dfdebcaf39a60ef4",
+      "working_bytes": 1607185,
+      "transformation": "byte equal",
+      "working_path": "broker-attempt03/broker1-tracked-before.safe.json.readable.zip",
+      "working_container_sha256": "2e349933e1421a3044294a190fb72aa6725dcc6b3e9da08f3c8602dd266d8fa7",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "broker-attempt03/fresh-prelaunch.safe.json",
+      "original_sha256": "1b2f1f1152ac47e743572b6af181e0b8efd62ea92cf68fffb6825980c8ad51db",
+      "original_bytes": 461,
+      "working_sha256": "1b2f1f1152ac47e743572b6af181e0b8efd62ea92cf68fffb6825980c8ad51db",
+      "working_bytes": 461,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/guard-error-provenance.safe.json",
+      "original_sha256": "af60bc13628a96d1840ff50785ae7181cc122cb23426637efd2b60d588dcc0c0",
+      "original_bytes": 1834,
+      "working_sha256": "af60bc13628a96d1840ff50785ae7181cc122cb23426637efd2b60d588dcc0c0",
+      "working_bytes": 1834,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-attempt03/root-attempt03-budget.safe.json",
+      "original_sha256": "30df7e145c64b50acf4b13b3a0576f9efc1def0e28320f4e09a12c4ec3870dc4",
+      "original_bytes": 1286,
+      "working_sha256": "30df7e145c64b50acf4b13b3a0576f9efc1def0e28320f4e09a12c4ec3870dc4",
+      "working_bytes": 1286,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "broker-partial-transfer-manifest.safe.json",
+      "original_sha256": "50d948318a13c8f807ed49d08a07db9e566c9b46e6867b3caa9493c0fe7edb2e",
+      "original_bytes": 9517,
+      "working_sha256": "50d948318a13c8f807ed49d08a07db9e566c9b46e6867b3caa9493c0fe7edb2e",
+      "working_bytes": 9517,
+      "transformation": "external original manifest byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

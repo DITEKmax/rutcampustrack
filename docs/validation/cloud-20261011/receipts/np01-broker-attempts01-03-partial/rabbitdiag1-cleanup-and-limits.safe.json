@@ -1,0 +1,30 @@
+{
+  "utc": "2026-10-12T07:39:26.611292+00:00",
+  "diag_container_id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+  "normal_native_events": [
+    "create",
+    "start",
+    "kill",
+    "stop",
+    "die",
+    "destroy"
+  ],
+  "all_first_broker3_plus_diag_container_ids_absent": true,
+  "diag_host_pids_plus_guard": [
+    221817,
+    221827,
+    222023,
+    222053,
+    222110,
+    221798
+  ],
+  "all_diag_owned_host_pids_absent_including_Z": true,
+  "recording_collision": "diagnostic child live file overwritten by guard live; retained privateJDKsafe phases and nativeDocker create/start/normalTERM/dieexit0/destroy events recover cause+exactID. Original successful GET readiness exactbytes/status and standalone binding snapshot not retained; no broader claim or rerun credit.",
+  "source_correction_commit": "b89874ccb92a444c945e020cf1d7ffe20ede997a",
+  "current_disk": {
+    "total": 33770192896,
+    "used": 23669501952,
+    "free": 8365928448
+  },
+  "current_memory": 4345552896
+}

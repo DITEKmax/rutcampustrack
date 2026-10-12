@@ -5,13 +5,14 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+      "sha256": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
       "status": "authoritative-owner-contract",
       "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
       "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
       "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
-      "previous_sha256_before_D009": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c"
+      "previous_sha256_before_D009": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "previous_sha256_before_D010": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
     },
     {
       "id": "AGENTS.md",
@@ -186,9 +187,9 @@
     {
       "id": "docs/sources/manifest.yaml",
       "path": "docs/sources/manifest.yaml",
-      "sha256": "2a4077924fc822146c1a272f3e4e85189eeb0da7410d505b5471977f7570eb30",
-      "status": "read-current-source",
-      "revision": "task-current-uncommitted",
+      "sha256": "13199f5c4fbda7f304b63bc030778ccb5a5e4ee4bbfb7e0df7041ea4ede52696",
+      "status": "current-source-registry",
+      "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
       "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
     },
     {
@@ -1701,6 +1702,79 @@
       "sha256": "6b8bc891647123255b4a7c109534801f1e7322fbc81fd3ff39d691b46717f76d",
       "status": "immutable-append-only-journal-segment",
       "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3"
+    },
+    {
+      "id": "np01_broker_actual-compile1-native",
+      "path": "docs/validation/cloud-20261011/receipts/np01-broker-compile1/original-byte-index.json",
+      "source_manifest_sha256": "83a04b2aec320e1918d94f17621805ebffdc16c442b925d4147d495d0075b2ec",
+      "status": "actualnative-receipts-transferred-qualified",
+      "revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70"
+    },
+    {
+      "id": "physical_dedup1-native",
+      "path": "docs/validation/cloud-20261011/receipts/physical-dedup1/original-byte-index.json",
+      "source_manifest_sha256": "70bd8a7d4aadd226913551dd852e701d6cf2d0df54671fc89c84f3e1e78db687",
+      "status": "actualnative-receipts-transferred-qualified",
+      "revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70"
+    },
+    {
+      "id": "current_host_stage-native",
+      "path": "docs/validation/cloud-20261011/receipts/current-host-stage/original-byte-index.json",
+      "source_manifest_sha256": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+      "status": "actualnative-receipts-transferred-qualified",
+      "revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70"
+    },
+    {
+      "id": "ci_ced755_receipts-native",
+      "path": "docs/validation/cloud-20261011/receipts/ci-ced755-native-reconciliation/original-byte-index.json",
+      "source_manifest_sha256": "852698c9045044149aab3e3bcb14efd3fd86066fd58a08e291f923ddb8e21f77",
+      "status": "actualnative-receipts-transferred-qualified",
+      "revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70"
+    },
+    {
+      "id": "Vue22-public",
+      "path": "docs/validation/cloud-20261011/receipts/current-vue-public-stage/original-byte-index.json",
+      "original_manifest_sha256": "59dc74c777dbbb6e5d074474e548b682d05dd523bd9817088cf32ed232cd05bf",
+      "status": "actualnative-verified-qualified",
+      "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb"
+    },
+    {
+      "id": "CI-e58-current",
+      "path": "docs/validation/cloud-20261011/receipts/ci-e58-native-reconciliation/original-byte-index.json",
+      "original_manifest_sha256": "80c11b699a0417bafb3ea4b4fbe8112313a093def8e1f6fae6c24cd71c816be9",
+      "status": "actualnative-verified-qualified",
+      "revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70"
+    },
+    {
+      "id": "RECEIPT-guard-proc-race-source",
+      "path": "docs/validation/cloud-20261011/receipts/guard-proc-race-source",
+      "status": "transferred-sealed-safe-receipts-original-container-and-member-bytes-preserved",
+      "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+      "source_original_manifest_sha256": "2486f5f66ff9770af071e2792d3a37164c811dd6362d3311b479993d45577a39",
+      "evidence": "original-byte-index.json and immutable-original-receipts.zip"
+    },
+    {
+      "id": "RECEIPT-current-host-stage-review",
+      "path": "docs/validation/cloud-20261011/receipts/current-host-stage-review",
+      "status": "transferred-sealed-safe-receipts-original-container-and-member-bytes-preserved",
+      "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+      "source_original_manifest_sha256": "71c62d47338a05dbcda5f6f00ce435f6fad9f1f0e87a3c1a0f3e5958dce36a01",
+      "evidence": "original-byte-index.json and immutable-original-receipts.zip"
+    },
+    {
+      "id": "RECEIPT-np01-broker-attempts01-03-partial",
+      "path": "docs/validation/cloud-20261011/receipts/np01-broker-attempts01-03-partial",
+      "status": "transferred-sealed-safe-receipts-original-container-and-member-bytes-preserved",
+      "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+      "source_original_manifest_sha256": "50d948318a13c8f807ed49d08a07db9e566c9b46e6867b3caa9493c0fe7edb2e",
+      "evidence": "original-byte-index.json and immutable-original-receipts.zip"
+    },
+    {
+      "id": "DEC-2026-10-12-angular-frontend-untouched",
+      "path": "docs/product/decisions/2026-10-12-angular-frontend-untouched.md",
+      "sha256": "3f1825b02a699cdee24575f6319151e58287e2844b652362ff91bdf4e0c68a82",
+      "status": "accepted-owner-D010",
+      "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb"
     }
   ],
   "research_receipt": {

@@ -1,0 +1,36 @@
+{
+  "utc": "2026-10-12T08:25:24.947391+00:00",
+  "writer": "ci_academic_heap sole independentWT formatter",
+  "source_import_first": "cherry-pick exact b89874ccb92a444c945e020cf1d7ffe20ede997a ONE Java HTTP_1_1 harness line, verify that Java file equals Rootcd3 before formatting; preserve non-overlap Prettier WIP and commits",
+  "grant": "serial Java1590/Python121/SQL6 refreshed authored inventory and actual format/check/meaning/preservation; frozen source split mechanical commits. Can run NOW while NP broker noheavy, require immediate announce start/release; no other JVM/Docker/browser heavy concurrently",
+  "java_commands": [
+    [
+      "bash",
+      "gradlew",
+      "formatJava",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+    ],
+    [
+      "bash",
+      "gradlew",
+      "formatJavaCheck",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+    ]
+  ],
+  "java_runtime": "workspaceTemurinJDK21/wrapper8.12/oneGradle/no tests/build/app/Docker; extra512MiB/outer600s/heap768m/meta256/oneworker",
+  "python_sql": "existing driver python/sql --write/--check serial; Ruff0.11.13/pgFormatter5.6 only; AST/literals/parsed values unchanged, unselectedhistorical89Flyway/fixtures/generated/schema/proto/locks exact; no lintfix folded silently",
+  "vm_deps": "minimal pinned formatter tools owncache<=64MiB allowed; projectdeps/locks unchanged, no silentversionfallback",
+  "disk_floor_bytes": 4294967296,
+  "shared_stop_bytes": 16106127360,
+  "shared_reserve_bytes": 1073741824,
+  "ownership": "one bounded foreground ordinary owned command/true birth identity/reapall; no broadsignal/newdaemon; read ownCURRENT/NPheavy status beforeeachlaunch; COW everysharedactualpath",
+  "checks": "independent review after frozen, applicable lint/parser/type/build futuregrant separate; no newtestperline"
+}

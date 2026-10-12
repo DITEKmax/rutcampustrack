@@ -1,0 +1,40 @@
+{
+  "utc": "2026-10-12T06:42:50.597570+00:00",
+  "status": "COMPLETE_ACTUAL_DEDUP1_NATIVE0_AND_READONLY_PRESERVATION_PASS",
+  "actual_replacements": 10831,
+  "attempt2": {
+    "native_exit": 1,
+    "replaced_verified": 250,
+    "error": "batch journal duplicate utc; exact partial preserved"
+  },
+  "attempt3": {
+    "native_exit": 0,
+    "replaced_verified": 10581,
+    "total_verified": 10831
+  },
+  "source_preserver_native_exit": 0,
+  "final_native_git_and_temp_check_exit": 0,
+  "candidate_paths": 10831,
+  "original_aliases": 1322,
+  "reference_groups": 714,
+  "exact_immutable_COW_fence_paths": 12153,
+  "source_build_inputs_preserved": 7350,
+  "installed_dependencies_preserved": 8272,
+  "production_JARs_preserved": 16,
+  "production_Vue_files_preserved": 22,
+  "old_safe_files_preserved": 186,
+  "peer_safe12_alias_safe13_preserved": true,
+  "all_exact_owned_temps_absent": 10831,
+  "mutator_PIDs_absent": [
+    216393,
+    216989
+  ],
+  "children_created_by_mutators": 0,
+  "free_available_bytes": 8604229632,
+  "net_free_delta_from_first_pre_mutation": 1502285824,
+  "runtime_phase_budget": 8277277457,
+  "runtime_phase_headroom": 326952175,
+  "net_delta_qualification": "Own/independent Root receipt allocation included; original1519378432 block potential separately recorded.",
+  "stage_keys_apps_runtime": "NOT_RUN",
+  "next": "Root receipt transfer; remeasure before separate new allocation/runtime grant"
+}

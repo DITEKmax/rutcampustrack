@@ -1,0 +1,192 @@
+{
+  "members": 10834,
+  "layer_plus_app_paths": 21668,
+  "directories": 813,
+  "unique_content_inodes": 2937,
+  "all_unique_content_SHA256_verified": 2937,
+  "all_paths_sizes_modes_link_alias_metadata_exact": true,
+  "no_missing_extra_symlink_collision": true,
+  "no_original_JAR_inode_shared": true,
+  "temp_files": 0,
+  "payload_allocated_bytes": 172953600,
+  "directory_allocated_bytes": 4784128,
+  "services": [
+    {
+      "service": "auth",
+      "accepted_JAR_sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "original_metadata_exact": true,
+      "members": 1530,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.auth.AuthApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 172,
+      "all_libs": 173,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "academic",
+      "accepted_JAR_sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+      "original_metadata_exact": true,
+      "members": 1797,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.academic.AcademicApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 182,
+      "all_libs": 183,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "schedule",
+      "accepted_JAR_sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "original_metadata_exact": true,
+      "members": 1515,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.schedule.ScheduleApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 173,
+      "all_libs": 174,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "attendance",
+      "accepted_JAR_sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "original_metadata_exact": true,
+      "members": 1745,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.attendance.AttendanceApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 196,
+      "all_libs": 197,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "bff",
+      "accepted_JAR_sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "original_metadata_exact": true,
+      "members": 1296,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.mobilebff.MobileBffApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 102,
+      "all_libs": 103,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "gateway",
+      "accepted_JAR_sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "original_metadata_exact": true,
+      "members": 291,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.gateway.GatewayApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 134,
+      "all_libs": 135,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "notification",
+      "accepted_JAR_sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "original_metadata_exact": true,
+      "members": 1400,
+      "critical_originalZIP_readbacks": 6,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.notification.NotificationWebApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 184,
+      "all_libs": 185,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    },
+    {
+      "service": "renderer",
+      "accepted_JAR_sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "original_metadata_exact": true,
+      "members": 1260,
+      "critical_originalZIP_readbacks": 5,
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.documentrenderer.DocumentRendererApplication",
+      "index_and_all_libs_original_exact": true,
+      "indexed_libs": 92,
+      "all_libs": 93,
+      "original_auto_added_nonindex_jarmode_tools": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "ordered_layers": [
+        "dependencies",
+        "spring-boot-loader",
+        "snapshot-dependencies",
+        "application"
+      ],
+      "whole_original_JAR_rehash": "Not repeated; unmodified inode/size/mode/UIDGID/mtime/ctime+critical ZIP readbacks and sealed/native full source SHA proof reused"
+    }
+  ],
+  "actual_executed": "Read/hash/POSIX/ZIP/parser only; no JVM/Docker/network/nativeUID/apps/browser probes"
+}

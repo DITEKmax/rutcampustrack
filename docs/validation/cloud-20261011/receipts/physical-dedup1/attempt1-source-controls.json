@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-12T06:32:29.452275+00:00",
+  "source_sha256": "5428d126123c0a7329ac592e96842613c6465d482f6d725b7a60192d10d2f774",
+  "native_parser": "PASS",
+  "pure_exact_function_controls": [
+    {
+      "case": "exact identity/owned currentctime positive",
+      "result": "PASS"
+    },
+    {
+      "case": "reject foreign/stale inode",
+      "result": "PASS"
+    },
+    {
+      "case": "reject foreign/stale nlink",
+      "result": "PASS"
+    },
+    {
+      "case": "reject foreign/stale ctime_ns",
+      "result": "PASS"
+    },
+    {
+      "case": "reject foreign/stale uid",
+      "result": "PASS"
+    },
+    {
+      "case": "reject foreign/stale mode",
+      "result": "PASS"
+    },
+    {
+      "case": "reject foreignSHA",
+      "result": "PASS"
+    }
+  ],
+  "controls_actual_source_file_mutations": 0,
+  "children": 0,
+  "permission": "DEDUP1 exact10831 only; no stage/apps/keys/containers"
+}

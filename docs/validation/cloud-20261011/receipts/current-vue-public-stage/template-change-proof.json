@@ -1,0 +1,20 @@
+{
+  "old_template": "/workspace/scratch/rct-validation/host_runtime_prepare/data-renderer-edge.compose.template.yml",
+  "old_sha256": "c2ae96c53bbfd4fcbaf8886d12d0fc3c7d66a19de25174bd30ec601c1554cea6",
+  "new_template": "/workspace/scratch/rct-validation/current_vue_stage/data-renderer-edge.public-vue.compose.template.yml",
+  "new_sha256": "0c8694ad58c277c89152f2c190b8ba3d4fefaabf53bc242c34cd628c4ff69655",
+  "exact2_source_replacements": [
+    {
+      "old_source": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/frontend/pwa-vue/dist",
+      "new_source": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue/dist"
+    },
+    {
+      "old_source": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/frontend/tma-vue/dist",
+      "new_source": "/workspace/scratch/rct-validation/current_vue_stage/frontend/tma-vue/dist"
+    }
+  ],
+  "roundtrip_to_original_byte_exact": true,
+  "routing_USER_nginx_create_host_path_false_unchanged": true,
+  "renderer_current_overlay": "/workspace/scratch/rct-validation/current_host_stage/renderer-overlay.template.yml",
+  "complete9service_readiness": "NOT_RUN; future Root merges Renderer overlay and separately grants data/TLS/app runtime"
+}

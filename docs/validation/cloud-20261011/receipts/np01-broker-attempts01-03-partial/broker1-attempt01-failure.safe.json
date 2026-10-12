@@ -1,0 +1,47 @@
+{
+  "failure_type": "java.io.IOException",
+  "safe_io_message": "EOF reached while reading",
+  "source_frames": [
+    "at ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT.createOwnVhost(BotCredentialBrokerBridgeIT.java:417)",
+    "at ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT.actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards(BotCredentialBrokerBridgeIT.java:133)"
+  ],
+  "transport_stack_classes_only": [
+    "at java.net.http/jdk.internal.net.http.HttpClientImpl.send(HttpClientImpl.java:970)",
+    "at java.net.http/jdk.internal.net.http.HttpClientFacade.send(HttpClientFacade.java:133)",
+    "Caused by: java.io.EOFException: EOF reached while reading",
+    "at java.net.http/jdk.internal.net.http.Http2Connection$Http2TubeSubscriber.onComplete(Http2Connection.java:1885)",
+    "at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$ReadSubscription.signalCompletion(SocketTube.java:648)",
+    "at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$InternalReadSubscription.read(SocketTube.java:853)",
+    "at java.net.http/jdk.internal.net.http.SocketTube$SocketFlowTask.run(SocketTube.java:181)",
+    "at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:207)",
+    "at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:280)",
+    "at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:233)",
+    "at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$InternalReadSubscription.signalReadable(SocketTube.java:782)",
+    "at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$ReadEvent.signalEvent(SocketTube.java:965)",
+    "at java.net.http/jdk.internal.net.http.SocketTube$SocketFlowEvent.handle(SocketTube.java:253)",
+    "at java.net.http/jdk.internal.net.http.HttpClientImpl$SelectorManager.handleEvent(HttpClientImpl.java:1477)",
+    "at java.net.http/jdk.internal.net.http.HttpClientImpl$SelectorManager.lambda$run$3(HttpClientImpl.java:1422)",
+    "at java.net.http/jdk.internal.net.http.HttpClientImpl$SelectorManager.run(HttpClientImpl.java:1422)"
+  ],
+  "native_output_owned_starting_container_ids": [
+    {
+      "image": "postgres:16-alpine",
+      "id": "5d19b72ab1e8d2096bbed350188b423e88b6af0ce3ca76897e8f511a79916fe3"
+    },
+    {
+      "image": "rabbitmq:3.13-management-alpine",
+      "id": "96edc1b4a095ae7413ed7a9182788d49ab94c05c8705c4e525ab0250f19a9e5e"
+    },
+    {
+      "image": "redis:7-alpine",
+      "id": "f67e7cce779fd621a91f0569d535ab3583a932756b65c185541c1551bb9cd8fc"
+    }
+  ],
+  "counts": {
+    "tests": "1",
+    "failures": "1",
+    "errors": "0",
+    "skipped": "0"
+  },
+  "status": "ACTUAL_FAIL_BEFORE_FIX_NOT_PRODUCT_RED"
+}

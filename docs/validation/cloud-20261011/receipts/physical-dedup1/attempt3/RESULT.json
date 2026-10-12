@@ -1,0 +1,36 @@
+{
+  "utc": "2026-10-12T06:38:09.026145+00:00",
+  "status": "PASS",
+  "pid": 216989,
+  "children": 0,
+  "candidate_count": 10831,
+  "actual_replacements": 10831,
+  "pending_temp": null,
+  "prior_verified_replacements": 250,
+  "this_attempt_replacements": 10581,
+  "interrupts": [],
+  "error": null,
+  "verification_error": null,
+  "before": {
+    "utc": "2026-10-12T06:36:55.316868+00:00",
+    "free_available_bytes": 7128117248,
+    "memory_current": 6400393216,
+    "memory_max": 17179869184,
+    "pid": 216989
+  },
+  "after": {
+    "utc": "2026-10-12T06:38:09.026121+00:00",
+    "free_available_bytes": 8604536832,
+    "memory_current": 4922609664,
+    "memory_max": 17179869184,
+    "pid": 216989
+  },
+  "observed_net_free_gain_bytes": 1476419584,
+  "original_unique_candidate_allocated_bytes": 1519378432,
+  "net_free_qualification": "Observed VFS net difference includes own receipts and unrelated concurrent Root documentation writes; not a per-file allocator attribution.",
+  "candidate_metadata_changes": "inode/nlink/mtime/ctime intentionally become reference values; SHA/size/mode/UID/GID/path preserved",
+  "reference_mtime_preserved": true,
+  "all_known_alias_nlink_exact": true,
+  "future_rule": "All exact12153 paths immutable; atomic COW + identity journal before ANY later edit/build/formatter/chmod.",
+  "runtime_stage_keys_apps_containers": "NOT_RUN"
+}

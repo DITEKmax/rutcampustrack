@@ -1,0 +1,111 @@
+{
+  "scope": "Bounded proposed next checks, NOT_EXECUTED. Original48 routing groups preserved by reference; no new campaign/grant.",
+  "queue": [
+    {
+      "priority": "1",
+      "id": "CLIENT-FIRST3-DIAG",
+      "families": "ALL mandatory CLIENT-FE-*",
+      "existing_qualified_evidence": "actual58534 first3FAIL causesUNKNOWN; remaining5interrupted, NEW14/WebKitNOT_RUN",
+      "missing_and_next_check": "Root separate coherent stand grant; diagnose failed source locus with closed GET status/target presence/DOM counts under integrated privacy boundary, then affected real flow. No wholeCLIENT promotion."
+    },
+    {
+      "priority": "1",
+      "id": "NP01-EXACT-SENSITIVITY",
+      "families": "JS-SYSTEM-01;JS-SYSTEM-04;RESEARCH-P12",
+      "existing_qualified_evidence": "EB actual broker7/sourceAc58; canonical385b plan; current pre-fault green only",
+      "missing_and_next_check": "Already approved one method/two temporary hunks after Root capacity/authority grant; exact foreignNEW-card intended AssertionError, reap, byte+mode restore, actual chronological restored green. No artificial commit/trigger."
+    },
+    {
+      "priority": "1",
+      "id": "AUTH-REVOKE-RESTART",
+      "families": "JS-SYSTEM-02;JS-SYSTEM-04;JS-SYSTEM-14;RESEARCH-P06",
+      "existing_qualified_evidence": "Current EB23 finite source-identical methods; DATA L08 and real SessionAuthFlowIT",
+      "missing_and_next_check": "Actual current Auth/Gateway revoke+authority outage/restart while old bearer/refresh retained; active client generation resets; protected state unchanged. Reuse adequate JDBC/CAS outcomes."
+    },
+    {
+      "priority": "1",
+      "id": "GRANTS-ROLE-ACTIONS",
+      "families": "JS-ADMIN-01;JS-ADMIN-02;JS-ADMIN-19;JS-ADMIN-26;JS-HEADMAN-14;JS-HEADMAN-15",
+      "existing_qualified_evidence": "SAQ lastFULL/catalogue/SB06 + approved NEW14 limited/helper/role tests",
+      "missing_and_next_check": "Real selected grants on relevant action/foreign target/revoke; helper remains STUDENT with permission array. Match actual DB/API/UI result, not catalogue count12."
+    },
+    {
+      "priority": "2",
+      "id": "PASSWORD-RESET-CARRIERS",
+      "families": "JS-SYSTEM-01;JS-SYSTEM-03;JS-SYSTEM-04;RESEARCH-P10;CLIENT-FE-AUTH-05;CLIENT-FE-AUTH-06",
+      "existing_qualified_evidence": "SB06 hash/clear and SAQ purpose/expiry/attempts; NP broker local-provider subset",
+      "missing_and_next_check": "Real browser change/reset/history/cookie clear and fallback/copy-origin; before-positive after-negative same target. No fullprovider claim from local transaction."
+    },
+    {
+      "priority": "2",
+      "id": "TMA-CURRENT-CARRIERS",
+      "families": "RESEARCH-SD-TMA;JS-SYSTEM-13;CLIENT-FE-TMA-*",
+      "existing_qualified_evidence": "SD01 server + nineCI smoke + approved cf067 date-oracle/source controls",
+      "missing_and_next_check": "Current signer prerequisite then actual same-target valid-before-each typed date negative, live grant/binding drift and actual role/client state. Signed mock host not external Telegram device."
+    },
+    {
+      "priority": "2",
+      "id": "ENUM-ROW-EQUALITY",
+      "families": "RESEARCH-L04",
+      "existing_qualified_evidence": "Native Academic locale asserts DB codes/200400; other locale diagnostic bounded fixed",
+      "missing_and_next_check": "Locate retained equal-filtered-row ID oracle under canonical/tr-TR; if absent one precise response-ID/status/count comparison. Keep BOUNDARY50/P18 broad compatibility pending; no numeric/SLA campaign."
+    },
+    {
+      "priority": "2",
+      "id": "TRANSFER-MUTABLE-EFFECT",
+      "families": "RESEARCH-L06;JS-HEADMAN-21;JS-STUDENT-05;JS-STUDENT-06",
+      "existing_qualified_evidence": "Production client Netty + counterfeit/restoredgreen/EB pass",
+      "missing_and_next_check": "Actual pending-transfer mutable command/no durable write and correct scope on recovery using existing transfer+Attendance fixtures. No guard removal or new batch architecture."
+    },
+    {
+      "priority": "2",
+      "id": "EVENT-CONSUMER-AUDIENCE",
+      "families": "RESEARCH-L01;RESEARCH-P12;JS-SYSTEM-09;JS-SYSTEM-10;JS-SYSTEM-11;JS-HEADMAN-16;JS-HEADMAN-17",
+      "existing_qualified_evidence": "Publisher fault PENDING/recovery; Mongo consumer seams; real NP password broker subset",
+      "missing_and_next_check": "Applicable actual homework/attendance event through broker to durable consumer/current audience/preferences with ACK after effect; reuse old confirm fault, do not infer all routing/provider."
+    },
+    {
+      "priority": "2",
+      "id": "REAL-SOCKET-REVOKE",
+      "families": "RESEARCH-P09;JS-SYSTEM-09;CLIENT-FE-NOTIFY-01",
+      "existing_qualified_evidence": "SAQ real ticket race + controlled-authority outbound seam",
+      "missing_and_next_check": "Opened Auth-bound socket/two users, before-event positive then revoke/private event denied. Separate seams do not prove real chain."
+    },
+    {
+      "priority": "2",
+      "id": "DISTINCT-EXPORT-MODELS",
+      "families": "JS-ADMIN-13;JS-HEADMAN-19;JS-HEADMAN-32;JS-TEACHER-07;RESEARCH-P16",
+      "existing_qualified_evidence": "Native converter/renderer + Auth job/audit/revoke seam + accepted registry schema and cf067 sensitivity",
+      "missing_and_next_check": "Real rows/model/native files/ready/audit/browser download; current role/filter/sort/live grant. Five table/two graph code paths only as applicable; FULL-onlyTelegramID/no passwords. NEW14 HTML subset alone not allformats."
+    },
+    {
+      "priority": "3",
+      "id": "MAP-FILES-HISTORY",
+      "families": "JS-ADMIN-23;JS-ADMIN-25;JS-STUDENT-24;JS-TEACHER-11;CLIENT-FE-MAP-01",
+      "existing_qualified_evidence": "SVG/PNG budgets source/native checks + finite static serving",
+      "missing_and_next_check": "Actual upload/view/download/version/history/current role/foreign denial; D004 legend only excluded. No invented icon dataset."
+    },
+    {
+      "priority": "3",
+      "id": "MIGRATION-RECOVERY-OUTAGE",
+      "families": "RESEARCH-P18;RESEARCH-P19;RESEARCH-P20;RESEARCH-L07",
+      "existing_qualified_evidence": "Current clean PG/V57 localdomain + scoped races/cancel; stand6KILL qualification",
+      "missing_and_next_check": "Affected populated upgrade/history/indices/sequences; restored actual app read and pending protocol replay; routed outage/recovery/graceful drain. Validators/probes/8sTERM→KILL are not app recovery proof or automatic product defect."
+    },
+    {
+      "priority": "3",
+      "id": "WIRE-TOKEN-CACHE-ERROR",
+      "families": "RESEARCH-P07;RESEARCH-P11;RESEARCH-P14;RESEARCH-P17;RESEARCH-P21",
+      "existing_qualified_evidence": "Sensitive advice/signed RPC bounded evidence; unit login body filter; CacheConfig source",
+      "missing_and_next_check": "Only missing actual wire fixed/chunked413/directAuth reachability, allowed serialization+foreign@class reject and targeted TLS/caller/target/method/current safe error observables. Check existing exact source/native first, no broad suite."
+    },
+    {
+      "priority": "3",
+      "id": "CLIENT-OFFLINE-NOTIFY-INSTALL",
+      "families": "ALL mandatory CLIENT-FE-*",
+      "existing_qualified_evidence": "nineChrome two-spec smoke; existing8 first3FAIL; other5UNKNOWN/new14/WebKitNOTRUN",
+      "missing_and_next_check": "Remaining D002 cached read-only/logouts/reconnect/role isolation, notification preferences/install/push/actual WebKit states after separate grants. No75/218 ratio or futureVueweb/Angular work."
+    }
+  ],
+  "immutable_full_queue": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/remaining-execution-queue.json"
+}

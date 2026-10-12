@@ -2108,6 +2108,150 @@
       "status": "diagnostic-evidence-not-product-authority",
       "revision": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
       "recorded_at": "2026-10-12T15:44:08.393382+00:00"
+    },
+    {
+      "id": "receipt:ci-c16-current/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-c16-current/manifest.json",
+      "sha256": "83dd87b689856f363c7ce4deb47ef9fbc35041c38740d0e1975994e07ee873bf",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:context-anchor-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/context-anchor-independent-review/manifest.json",
+      "sha256": "9498afbb0f18a27263e57c23805d514ff9a4001886482cd5d7634560b2fbee59",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:webkit-payload-header-preparation/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-payload-header-preparation/manifest.json",
+      "sha256": "1204a8f852ce7250b8a5763e93634d7cc1ffa8523c37e3da151126e2d151be98",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:webkit-payload-context-correction/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-payload-context-correction/manifest.json",
+      "sha256": "58986163c28a691e7fd5aeb982feb9bb98f777ad3f99b0e4310cf637d8960334",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:host-restart-context-correction/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-context-correction/manifest.json",
+      "sha256": "7c03e6cb7cb1c200c7e788e8b7c28b0d6cabb8b5b8bfc29d37f906739ad68236",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:webkit-payload-actual/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-payload-actual/manifest.json",
+      "sha256": "68e1304d370e5f9f5e4e21568753b611e77c0a0496766baa4e8435583b6c1d9b",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:np01-caller-correction-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-caller-correction-independent-review/manifest.json",
+      "sha256": "37d25c7b51cddd4450e91385e182658015d5550baed564e23245641fca364b3c",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:np01-native-compile/native-compile.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-native-compile/native-compile.safe.json",
+      "sha256": "e89228163bb91331f48de188f325f6dfa280a3a26a3205bff56de0a902312ea0",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:np01-restored-green-source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-restored-green-source/manifest.safe.json",
+      "sha256": "886c5ce8f68aa3aff26b71ce4425f88d9a60fe96eb02557c3eec18e998e5158e",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:np01-green-caller-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-green-caller-independent-review/manifest.json",
+      "sha256": "524448438d9c2a1876bea0d58351923c9d591d97a72b7d22578ae10b59456b6e",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:matrix-current-reconciliation/derived-family-view.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/derived-family-view.safe.json",
+      "sha256": "11a18c42728219db810e94f61a715eb8ebcda39342a2d020bf3b208675422ad2",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:matrix-current-reconciliation/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/manifest.safe.json",
+      "sha256": "9733f2b9b8fa6624f0e85b0573c66ebf3f663c270cfca30d0dfc0156d8f2efa8",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:matrix-current-reconciliation/normalized-case-links.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/normalized-case-links.safe.json",
+      "sha256": "1ef6ad08ef39ce38b859125764e322c4468144c99d15225af018534dec68b192",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:matrix-current-reconciliation/prioritized-missing-oracles.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/prioritized-missing-oracles.safe.json",
+      "sha256": "96f3a055a3c09c6b051cd0f489c7d21cafbddd5290f544528f716523d7fa5b09",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:matrix-current-reconciliation/schema-L08-supplement.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/schema-L08-supplement.safe.json",
+      "sha256": "6519bfc9e4307ef49fefe349b8e9eddeb21411228181e64248812407f0d034a4",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:client-focused3-source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-source/READY.safe.json",
+      "sha256": "167b8b1b3bd15dc41c4adebb93d73d514c553c8f6bfd59a6bd03c8294323f49e",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:client-focused3-source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-source/manifest.safe.json",
+      "sha256": "5899b322179f48bec65ab48f729ec66242aba9821a86f68500987d4d0b109044",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:client-focused3-node-verification/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-node-verification/REPORT.safe.json",
+      "sha256": "d78e11becfceb0c52a1e31b024aa64cdfcbf03c71bcf5359ec889b8ad67507f0",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+      "recorded_at": "2026-10-12T16:41:17.477868+00:00"
     }
   ],
   "research_receipt": {

@@ -1,0 +1,978 @@
+[
+  {
+    "id": "CASE-SD01-TMA-SERVER",
+    "parents": [
+      "JS-SYSTEM-13",
+      "JS-SYSTEM-02",
+      "CLIENT-FE-TMA-01",
+      "CLIENT-FE-TMA-02",
+      "RESEARCH-SD-TMA"
+    ],
+    "boundaries": [
+      "BOUNDARY-06"
+    ],
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SD02-LOCALE-AUTH-ACADEMIC",
+    "parents": [
+      "JS-ADMIN-02",
+      "RESEARCH-L04"
+    ],
+    "boundaries": [
+      "BOUNDARY-50"
+    ],
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SD03-HELPER-HOMEWORK-PRODUCER",
+    "parents": [
+      "JS-HEADMAN-16",
+      "JS-HEADMAN-17",
+      "JS-HEADMAN-14",
+      "JS-HEADMAN-15"
+    ],
+    "boundaries": [
+      "BOUNDARY-36"
+    ],
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SD03-HOMEWORK-SCHEDULE-CONSUMER",
+    "parents": [
+      "JS-HEADMAN-16",
+      "JS-HEADMAN-17"
+    ],
+    "boundaries": [
+      "BOUNDARY-36"
+    ],
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-L03-QR-REDACTION",
+    "parents": [
+      "JS-SYSTEM-13",
+      "RESEARCH-L03",
+      "RESEARCH-P17"
+    ],
+    "boundaries": [
+      "BOUNDARY-08"
+    ],
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-L01-ACADEMIC-BROKER-ACCEPTANCE",
+    "parents": [
+      "RESEARCH-L01",
+      "RESEARCH-P12",
+      "JS-SYSTEM-10"
+    ],
+    "boundaries": [
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-L02-SEMESTER-AUTHORITATIVE-READ",
+    "parents": [
+      "RESEARCH-L02",
+      "RESEARCH-P13",
+      "JS-ADMIN-09",
+      "JS-STUDENT-05",
+      "JS-STUDENT-06",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-16"
+    ],
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DR01-OPTIONAL-PROJECTION-CONTAINMENT",
+    "parents": [
+      "JS-STUDENT-07",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-16",
+      "BOUNDARY-33"
+    ],
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DELIVERY-UNCHANGED-EVENT-CONTRACTS",
+    "parents": [
+      "JS-ADMIN-05",
+      "JS-HEADMAN-22"
+    ],
+    "boundaries": [
+      "BOUNDARY-23",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-RF01-GRPC-FORMAT-REJECTION",
+    "parents": [
+      "RESEARCH-P03",
+      "RESEARCH-P21",
+      "JS-HEADMAN-19",
+      "JS-TEACHER-07",
+      "JS-ADMIN-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-RF02-OWNED-PROCESS-TREE",
+    "parents": [
+      "RESEARCH-P19",
+      "RESEARCH-P21"
+    ],
+    "boundaries": [
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-RF03-OOXML-SECURE-INPUT",
+    "parents": [
+      "RESEARCH-P03",
+      "RESEARCH-P17",
+      "JS-HEADMAN-19",
+      "JS-TEACHER-07",
+      "JS-ADMIN-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-44",
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-RF04-ACTUAL-GRPC-CANCEL-DEADLINE",
+    "parents": [
+      "RESEARCH-P19",
+      "RESEARCH-P21"
+    ],
+    "boundaries": [
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-RENDERER-NATIVE-PDF-PNG",
+    "parents": [
+      "JS-HEADMAN-19",
+      "JS-TEACHER-07",
+      "JS-ADMIN-13",
+      "RESEARCH-P16"
+    ],
+    "boundaries": [
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CLIENT-TOOLING-SAFE-CONTROLS",
+    "parents": [],
+    "boundaries": [],
+    "producer_revision": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB01-OTP-VALIDATION-REDACTION",
+    "parents": [
+      "JS-SYSTEM-13",
+      "RESEARCH-L03",
+      "RESEARCH-P03",
+      "RESEARCH-P17"
+    ],
+    "boundaries": [
+      "BOUNDARY-05",
+      "BOUNDARY-08"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES",
+    "parents": [
+      "JS-HEADMAN-08",
+      "RESEARCH-L04",
+      "RESEARCH-P03"
+    ],
+    "boundaries": [
+      "BOUNDARY-50"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB03-MONGO-ENUM-ROUNDTRIP",
+    "parents": [
+      "RESEARCH-L04",
+      "RESEARCH-P18"
+    ],
+    "boundaries": [
+      "BOUNDARY-50"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE",
+    "parents": [
+      "RESEARCH-L04",
+      "RESEARCH-P03",
+      "RESEARCH-P07",
+      "RESEARCH-P17",
+      "CLIENT-FE-STUDENT-01"
+    ],
+    "boundaries": [
+      "BOUNDARY-08",
+      "BOUNDARY-50"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB05-REPORT-PROOF-REDACTION",
+    "parents": [
+      "RESEARCH-L03",
+      "RESEARCH-P17",
+      "RESEARCH-P16",
+      "JS-HEADMAN-19"
+    ],
+    "boundaries": [
+      "BOUNDARY-08",
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB06-INITIAL-PASSWORD-DISPLAY",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-ADMIN-02",
+      "JS-ADMIN-19",
+      "CLIENT-FE-ADMIN-03"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-10",
+      "BOUNDARY-11"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SB06-AUTH-PASSWORD-COMMIT-CLEAR",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-P06",
+      "RESEARCH-P10",
+      "CLIENT-FE-AUTH-05"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-07"
+    ],
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-T001-TEACHER-PUBLICATION",
+    "parents": [
+      "JS-TEACHER-09",
+      "JS-HEADMAN-12",
+      "RESEARCH-L05"
+    ],
+    "boundaries": [
+      "BOUNDARY-22"
+    ],
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-L06-BATCH-TRANSFER-FENCE",
+    "parents": [
+      "JS-HEADMAN-21",
+      "RESEARCH-L06",
+      "RESEARCH-P21"
+    ],
+    "boundaries": [
+      "BOUNDARY-24"
+    ],
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-L07-ARCHIVE-ACTIVATION-SERIAL",
+    "parents": [
+      "JS-ADMIN-09",
+      "RESEARCH-L07",
+      "RESEARCH-P04",
+      "RESEARCH-P05"
+    ],
+    "boundaries": [
+      "BOUNDARY-16",
+      "BOUNDARY-18"
+    ],
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-L08-FENCED-AUTH-TUPLE",
+    "parents": [
+      "JS-ADMIN-02",
+      "JS-SYSTEM-14",
+      "RESEARCH-L08",
+      "RESEARCH-P06"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-03"
+    ],
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-L08-PASSWORD-ROLLBACK-EVENT",
+    "parents": [
+      "JS-SYSTEM-04",
+      "RESEARCH-L08",
+      "RESEARCH-P05",
+      "RESEARCH-P06"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-07"
+    ],
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-L08-PASSWORD-ROLLBACK-SESSIONS",
+    "parents": [
+      "JS-SYSTEM-04",
+      "RESEARCH-L08",
+      "RESEARCH-P05",
+      "RESEARCH-P06"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-07"
+    ],
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY",
+    "parents": [
+      "JS-HEADMAN-11",
+      "JS-HEADMAN-12",
+      "JS-HEADMAN-13",
+      "RESEARCH-L05",
+      "RESEARCH-P15"
+    ],
+    "boundaries": [
+      "BOUNDARY-22"
+    ],
+    "producer_revision": "63647fc9b63175e1e32b0773d57affc637ea1065",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-GW01-NUMERICDATE-LOCAL-PRECHECK",
+    "parents": [
+      "RESEARCH-P07",
+      "RESEARCH-P17",
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-08"
+    ],
+    "producer_revision": "2003948d83b2603967aa29f6434217c2a29453e1",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-WRONG-PASSWORD",
+    "parents": [
+      "CLIENT-FE-AUTH-01",
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-01"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-STUDENT-LOGIN-COOKIE",
+    "parents": [
+      "CLIENT-FE-AUTH-01",
+      "JS-SYSTEM-13",
+      "RESEARCH-P08"
+    ],
+    "boundaries": [
+      "BOUNDARY-01"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-STUDENT-ADMIN-DENIAL",
+    "parents": [
+      "CLIENT-FE-AUTH-02",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-03"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+    "parents": [
+      "CLIENT-FE-AUTH-02",
+      "JS-ADMIN-26"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-09"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-REFRESH-RELOAD",
+    "parents": [
+      "CLIENT-FE-AUTH-03",
+      "JS-SYSTEM-14",
+      "RESEARCH-P08"
+    ],
+    "boundaries": [
+      "BOUNDARY-01"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-LOGOUT-REVOKE",
+    "parents": [
+      "CLIENT-FE-AUTH-04",
+      "RESEARCH-P06",
+      "RESEARCH-P08"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-02"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-ONLINE-RECONNECT",
+    "parents": [
+      "CLIENT-FE-AUTH-03",
+      "CLIENT-FE-OFFLINE-03"
+    ],
+    "boundaries": [
+      "BOUNDARY-47"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-TMA-TAMPERED",
+    "parents": [
+      "CLIENT-FE-TMA-01",
+      "CLIENT-FE-TMA-02",
+      "RESEARCH-P07"
+    ],
+    "boundaries": [
+      "BOUNDARY-05",
+      "BOUNDARY-06"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI232-TMA-TEACHER-HOST-BACK",
+    "parents": [
+      "CLIENT-FE-TMA-01",
+      "CLIENT-FE-TMA-03",
+      "CLIENT-FE-TEACHER-01"
+    ],
+    "boundaries": [
+      "BOUNDARY-06",
+      "BOUNDARY-49"
+    ],
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI-E58-SUBJECT-PUBLICATION",
+    "parents": [],
+    "boundaries": [],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI-E58-SUBJECT-PAGES",
+    "parents": [],
+    "boundaries": [],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-CI-E58-SUBJECT-RPC",
+    "parents": [],
+    "boundaries": [],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-AUTH-ROLE-SELECTION",
+    "parents": [
+      "JS-SYSTEM-02",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-01"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-AUTH-NEUTRAL-SCOPE",
+    "parents": [
+      "JS-SYSTEM-02",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-03"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+    "parents": [
+      "JS-SYSTEM-14",
+      "RESEARCH-P06",
+      "RESEARCH-P08"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-02"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-RESET-ATOMIC-PURPOSE",
+    "parents": [
+      "JS-SYSTEM-03",
+      "JS-SYSTEM-04",
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-04",
+      "BOUNDARY-07"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-RESET-NATURAL-EXPIRY-REUSE",
+    "parents": [
+      "JS-SYSTEM-03",
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-04",
+      "BOUNDARY-05"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-RESET-ACCOUNT-ATTEMPT-WINDOW",
+    "parents": [
+      "JS-SYSTEM-03"
+    ],
+    "boundaries": [
+      "BOUNDARY-04"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-RECOVERY-DENIAL",
+    "parents": [
+      "JS-SYSTEM-03",
+      "JS-ADMIN-20"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-07"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-AUTH-LIVE-REVOKE",
+    "parents": [
+      "JS-ADMIN-02",
+      "JS-SYSTEM-04",
+      "RESEARCH-P06"
+    ],
+    "boundaries": [
+      "BOUNDARY-02"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "parents": [
+      "JS-SYSTEM-09",
+      "RESEARCH-P09"
+    ],
+    "boundaries": [
+      "BOUNDARY-43"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-WS-OUTBOUND-REVOKE-SEAM",
+    "parents": [
+      "JS-SYSTEM-09",
+      "RESEARCH-P09"
+    ],
+    "boundaries": [
+      "BOUNDARY-43"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-LAST-FULL-AND-DOWNGRADE-RACE",
+    "parents": [
+      "JS-ADMIN-02",
+      "JS-ADMIN-04",
+      "JS-ADMIN-19",
+      "JS-ADMIN-26"
+    ],
+    "boundaries": [
+      "BOUNDARY-09",
+      "BOUNDARY-10"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-LIMITED-CATALOGUE",
+    "parents": [
+      "JS-ADMIN-19",
+      "JS-ADMIN-26"
+    ],
+    "boundaries": [
+      "BOUNDARY-09"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-USER-ARCHIVE-RESTORE-ROLLBACK",
+    "parents": [
+      "JS-ADMIN-04"
+    ],
+    "boundaries": [
+      "BOUNDARY-12",
+      "BOUNDARY-19"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-ASSIGNMENT-OVERLAP-AND-DATES",
+    "parents": [
+      "JS-HEADMAN-12",
+      "JS-HEADMAN-38",
+      "RESEARCH-P04"
+    ],
+    "boundaries": [
+      "BOUNDARY-22"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-ASSIGNMENT-PENDING-EXACT-REPLAY",
+    "parents": [
+      "JS-HEADMAN-12",
+      "JS-HEADMAN-38",
+      "RESEARCH-P05"
+    ],
+    "boundaries": [
+      "BOUNDARY-22"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-SEMESTER-RESTORE-NOT-ACTIVE",
+    "parents": [
+      "JS-ADMIN-09",
+      "RESEARCH-L02"
+    ],
+    "boundaries": [
+      "BOUNDARY-16"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-CLAIM-OUTAGE",
+    "parents": [
+      "JS-SYSTEM-10",
+      "JS-SYSTEM-11",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-40",
+      "BOUNDARY-42"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-BOT-TOGGLE-CAS",
+    "parents": [
+      "JS-SYSTEM-11"
+    ],
+    "boundaries": [
+      "BOUNDARY-42"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-WHOLE-PROFILE-CAS",
+    "parents": [
+      "JS-SYSTEM-11"
+    ],
+    "boundaries": [
+      "BOUNDARY-42"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-EXPORT-ENUM-DB-WIRE",
+    "parents": [
+      "JS-ADMIN-13",
+      "RESEARCH-L04",
+      "RESEARCH-P18"
+    ],
+    "boundaries": [
+      "BOUNDARY-46",
+      "BOUNDARY-50"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-EXPORT-HTTP-REVOKE-AUDIT",
+    "parents": [
+      "JS-ADMIN-13",
+      "RESEARCH-P06",
+      "RESEARCH-P16"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-46"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "parents": [
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-05"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "parents": [
+      "JS-SYSTEM-04",
+      "RESEARCH-P10"
+    ],
+    "boundaries": [
+      "BOUNDARY-07"
+    ],
+    "producer_revision": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-01",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-02",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-03",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-04",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-05",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-07",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-NP01-BR-06",
+    "parents": [
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-04",
+      "RESEARCH-L01",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-07",
+      "BOUNDARY-40"
+    ],
+    "producer_revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-HOST-V5-ADMIN-ADMISSION-REGISTRY",
+    "parents": [
+      "JS-SYSTEM-04"
+    ],
+    "boundaries": [],
+    "producer_revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-HOST-V5-DIRECT-FORGED-IDENTITY",
+    "parents": [
+      "JS-SYSTEM-04"
+    ],
+    "boundaries": [
+      "BOUNDARY-08"
+    ],
+    "producer_revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+    "status": "PASS"
+  },
+  {
+    "id": "CASE-HOST-V5-MONGO-APP-ISOLATION",
+    "parents": [],
+    "boundaries": [],
+    "producer_revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+    "status": "PASS"
+  }
+]

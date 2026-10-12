@@ -1,0 +1,74 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "utc": "2026-10-12T15:56:57.545494+00:00",
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "sha256": "a3753a03b71a2628059101966af0209ae4644ced71c4bda5a96a30d2df696eb0",
+      "bytes": 285,
+      "mode": "0o600"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "3aa2cc94d525eed874f3bf76360b3be1f8187a102f16305adfcf7e65ea9dc22e",
+      "bytes": 6691,
+      "mode": "0o600"
+    },
+    {
+      "path": "actual-source-closure.safe.json",
+      "sha256": "709cca79b3513a010c5ef8aea862bebd65679867ead112419c4643f30168d41f",
+      "bytes": 1444,
+      "mode": "0o600"
+    },
+    {
+      "path": "attempts.ndjson",
+      "sha256": "53d1357556f4ae051abfca06e5474b0e7ac552ea52f7c3140c77c1a534c83b22",
+      "bytes": 456,
+      "mode": "0o600"
+    },
+    {
+      "path": "check-correction.py",
+      "sha256": "0205c04ef456f5da6e4e25995a494a242bdf617bcbb8cb4358ed59b9983b84c0",
+      "bytes": 15932,
+      "mode": "0o600"
+    },
+    {
+      "path": "check-grant-gates.py",
+      "sha256": "eae74514b6e647b8633cb1c34eed8c45cd257679960f3b456ff6a65e5c25675f",
+      "bytes": 7229,
+      "mode": "0o600"
+    },
+    {
+      "path": "final-input-readback.safe.json",
+      "sha256": "c3d6125bec1f604e92e8654a83ec682de26d5d80235a35021893c72568b9932d",
+      "bytes": 1006,
+      "mode": "0o600"
+    },
+    {
+      "path": "findings.safe.json",
+      "sha256": "6a9c5873dba085f219997c13b55e693ff0be2f6949f2f29c565b9201ff82948a",
+      "bytes": 646,
+      "mode": "0o600"
+    },
+    {
+      "path": "independent-checks.safe.json",
+      "sha256": "0d37e34b1ed79f0eb8a71c5f167c1fdcea30192d9c8363050af0beb457e39cbb",
+      "bytes": 656017,
+      "mode": "0o600"
+    },
+    {
+      "path": "independent-grant-gates.safe.json",
+      "sha256": "8728e2bb20d972d4532d645620a606b50e17ebb21beaa30e7b9d0021f92687d2",
+      "bytes": 5633,
+      "mode": "0o600"
+    },
+    {
+      "path": "input-state.safe.json",
+      "sha256": "a729c11dbfc9829e2af59a8db1694d1633ee011dabac085a2fc3d1fe80fd10b9",
+      "bytes": 1541,
+      "mode": "0o600"
+    }
+  ],
+  "reviewed_manifest_sha256": "e1fd1f85bbd7afa727a036f920a61701140f262fe0cd3dd58873cf98e32cc61c",
+  "native": "NOT_RUN"
+}

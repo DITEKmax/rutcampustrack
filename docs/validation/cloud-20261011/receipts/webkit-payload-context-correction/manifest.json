@@ -1,0 +1,160 @@
+{
+  "status": "SOURCE_READY_CONTEXT_CORRECTION_RUNTIME_NOT_RUN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "f0213ca408033be75567ef3b448824c3914e49018e1296c51bac1421e93bb0c3",
+      "bytes": 403,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "7ceace4251a0c91c4d721e002a1099ee2ba5ce733852b64077b8ab84d2c8a094",
+      "bytes": 2025,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actor-controls.py",
+      "name": "actor-controls.py",
+      "sha256": "9efcf287ba6802828e019796a0ed3ce3f793c22858bee15ea561585ee8dea5b3",
+      "bytes": 1318,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actor-controls.safe.json",
+      "name": "actor-controls.safe.json",
+      "sha256": "b5f80dbd3a6da1a6cad4eea4d3a498657e1d16ff5a29af5c376e983de9934e53",
+      "bytes": 1187,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/approved-packages.safe.json",
+      "name": "approved-packages.safe.json",
+      "sha256": "99da88e8e8a5f9a046110638da97288881a246c7ede3a7d881183ebcfd1ae66c",
+      "bytes": 7332,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/context-controls.py",
+      "name": "context-controls.py",
+      "sha256": "b401fd9a9776cabd9726f8643a375a65cb9661e1ab67f19a25f8bd2666f24a82",
+      "bytes": 4631,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/context-controls.safe.json",
+      "name": "context-controls.safe.json",
+      "sha256": "ee88a13c90ec4d68fa59f3d38d6271a269b2f27182ca170eb9ddef2d1dd47ded",
+      "bytes": 4041,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/download-headers.py",
+      "name": "download-headers.py",
+      "sha256": "911e8e423a0d1dcc143c0f050f17439d181cfab3366d9c3e4fe5ec2427cfd38f",
+      "bytes": 17076,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/dual-context.safe.json",
+      "name": "dual-context.safe.json",
+      "sha256": "bb62853d842ea70f6bb7115d37bd10590e2eb5dbd4a7ec20dde84d10b3f56012",
+      "bytes": 2522,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/launch-schema.safe.json",
+      "name": "launch-schema.safe.json",
+      "sha256": "be6fe822a8f568616679436d4c65b66cbfd095428bb5009653f10ff1e524782e",
+      "bytes": 3383,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/namespace-anchors.safe.json",
+      "name": "namespace-anchors.safe.json",
+      "sha256": "f188a1b7c614897df4aebe55a33af7f31ecc8dc17b9f9ab36400ba60a4344fca",
+      "bytes": 667,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/native-context-metadata.safe.json",
+      "name": "native-context-metadata.safe.json",
+      "sha256": "179337c7b72b053b97b19bdb05d2ee46a444c845dcce1187b97af07a105c4470",
+      "bytes": 2625,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/packaging-erratum.safe.json",
+      "name": "packaging-erratum.safe.json",
+      "sha256": "bab15a987e2a55c71adce02ead177b4020d6ad456a20d29401f9287fe3b0b0a4",
+      "bytes": 366,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/preservation.safe.json",
+      "name": "preservation.safe.json",
+      "sha256": "a6897fd5a2ceb6de79ab2892ba725707b9acd5bda1c0431f85fb6f23e8de4b81",
+      "bytes": 1572,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/public-headers.py",
+      "name": "public-headers.py",
+      "sha256": "353e14f9b3f19a431c02a7e3fc276672364c940bd9ab3b574b9760c45869d615",
+      "bytes": 7611,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/public-tool-identity.safe.json",
+      "name": "public-tool-identity.safe.json",
+      "sha256": "7db36cb3f73130a5a0f7a374bcb6ff1b4d507816794a44dccdee836cab170efc",
+      "bytes": 375,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/source-controls.py",
+      "name": "source-controls.py",
+      "sha256": "37abc6a6ecd9aaf6b7a59f5005e038e589f41b1b06042be2a36932c130dd75c6",
+      "bytes": 8123,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/source-controls.safe.json",
+      "name": "source-controls.safe.json",
+      "sha256": "5c665e97b648b3766317b1711432e96ef931bade85e97d4e6c277a6739f7ec0c",
+      "bytes": 6068,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/source-delta.patch",
+      "name": "source-delta.patch",
+      "sha256": "dece78f8462e452aadae015a79ab921f8a4cd9929a80dc5549b46e92a82d77a3",
+      "bytes": 6720,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/source-review-advisories.safe.json",
+      "name": "source-review-advisories.safe.json",
+      "sha256": "a58e2318d803dc1d6d324b73b4753b890390fbaaf1dd558a98e94170ff2f5698",
+      "bytes": 827,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/unchanged-controls.safe.json",
+      "name": "unchanged-controls.safe.json",
+      "sha256": "8dd887b6f6a1d7952580c7515a22d965f6825719d5a8d0d8c5d92eb6f714214b",
+      "bytes": 301,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/upstream-requirement-inventory.safe.json",
+      "name": "upstream-requirement-inventory.safe.json",
+      "sha256": "147cf515bb2f99fe12f13d2a81211364a4c62de4ddfd93f338bddd1acd277522",
+      "bytes": 9475,
+      "mode": 384
+    }
+  ],
+  "private_values_payload_data_or_rawlogs_included": false
+}

@@ -1,22 +1,26 @@
 # Active writers and resources
 
-Updated 2026-10-12T18:51:10.861349+00:00. Root sole shared-document writer/integrator; requested Sol6.1/ULTRA, actual UNKNOWN. Current published branch/PR head4c3745f2; producer CI c16 all-four SUCCESS, docs-only source identity qualified. Angular433paths immutable; no API/proto/schema/migration/lockfile writer. Physical7slots including revoked pending frontend; do not restart revoked frontend.
+Updated current96c7aee0a114e978ce3ed2976127a2a59c1a69e3. Root sole shared-document writer/integrator; requested Sol6.1/ULTRA, actual UNKNOWN. Angular433paths immutable. No public API/proto/schema/migration/lockfile writer currently active.
 
 | Owner | Scope | State |
 | --- | --- | --- |
-| root | designated branch/task documents/integration | task docs/evidence WIP, no native lease |
-| export_ebsr_recheck xhigh | own frozen4c enum-filter-locale WT, AcademicGrpcIT +UserSpecifications sole product writer | test-only prepared; compile02 native0/fresh3classes/reaped; production original; one-method RED caller SOURCE prep |
-| client_real_acceptance xhigh | own public WebKitboot helper scratch | source-only use-time correction; no browser/API/seed grant |
-| webkit_dependency_review high | independent public WebKitboot review | source-only material expiry/deadline finding, exact proof seal pending |
-| ci731_reconcile high | independent157 Docker consumer recheck | APPROVE_SOURCE be10/6ac9, native NOT_RUN |
-| host_runtime_prepare high | retained stand/native availability resources | idle, native43 PASS and stopped stand retained |
+| root | branch/task docs/integration | latest safe receipt WIP, no native lease |
+| ci731_reconcile high | read-only source concurrency diagnostic | current96samecaseGREEN/CI18success; separateCovScheduleassertioncauseUNKNOWN |
+| host_runtime_prepare high | own frozen96 tmp Academic full-app stage | T006 NEW source allocation-monitor/resume preparation; stage66057 released; no runtime grant |
+| export_ebsr_recheck xhigh | sparse enum-filter-source-only frozen538, sole productauthor | completed49db fix reviewed/integrated; unchanged testdd0c |
+| webkit_dependency_review high | read-only observed Stage cost feasibility | source-only, no nativegrant |
+| client_real_acceptance xhigh | own nextFIRST3 guard correction | READY6f61/e7b5 independentlyfb7b approvedSOURCE; actualclientNOT_RUN |
 | frontend_inventory | former formatter pending_init | REVOKED; no restart |
 
-All native leases RELEASED: enum compile02 session51560 exited0, supervisor368909/8460624 and six known child births absent, no signals/TMP removed. No test/API/Docker/WebKit browser execution granted. Exact earlier observed free8,840,888,320 bytes/shared6.51GiB is not a future grant. Mandatory workspace/tmp floor4GiB/shared stop15GiB/reserve1GiB/max16GiB, periodic soft caps/sharedUID qualifications preserved.
+All current heavy leases RELEASED: STAGE66057 native1/894exactpartial/903missing, supervisor377731/birth9165639 absent; no completed stage/spec/runtime. BUILD47595 released0/11knownbirthsabsent; no stand/browser/app granted. Existing formatter7506 settled/reaped/no signals/TMP removed. PublicWPE8498 all recorded births absent; native availability43 and broker NP01 finite red/green complete. No repeat without changed risk. Mandatory workspace/tmp floor4GiB/shared stop15GiB/reserve1GiB/max16GiB with measured softcaps/sharedUID qualifications.
 
-Retained stand next01 stopped before fixed17:47:31Z; all8host sessions/16births/sixcontainers/network absent. Originalfive volumes/native157-node MongoDB/key retained; noreset/bootstrap/keygen. Future restart source Docker157 correction1e7e reviewedbe10; unchanged preDocker budget9,380,818,650 currently not met. No budget relaxation/prune/data deletion. SelectedWebKit14DSO+8links prefix retained, native43 actual22128/source6aed/reviewb3caa/proof5c167 +finiteindepaeb3 approved; genuinebrowser NOT_RUN.
+Retained stand next01 stopped before deadline, all8sessions/16births/sixcontainers absent; originalfivevolumes/native157-node Mongo data/key immutable. Future Docker157 source1e7 independentlybe10 approved. Unchanged preDocker budget9,380,818,650, fresh capacity required (own fullenum retirement recovered574435328B, measured workspace9401237504 before later formatter). No reset/bootstrap/prune/keygen/data deletion.
 
-Own enum worktree retained test5a4a and production4f62, 1898immutable compile inputs nlink1; don't deduplicate or mutate input bindings midtest. DEDUP1/2 historicalimmutable aliases preserved/COW before linked edits. No global Docker/system/library/cache/vendor/config changes or production operations. Old resource history below is historical, not current authorization.
+Old redundant fullenum WT retired after soleauthor release/exact sparse and Root source preservation. New sparse WT retains five assigned paths, fix49db/testdd0c; old class/build copies removed but hashes/evidence/source preserved. Custom incomplete RED runner scratch paused/never execute. Own NP01 clean detached WT retained (~90MB measured), all other worktrees unchanged. All shared/hardlinked immutable producers require COW before any authorized change.
+
+Future complete Academic bootJar must use NEW own /tmp frozen96 sparse production graph, never Root/global7generated resources or old908 producer. Tmp1.5GiB cap/workspace cache net8MiB growth proposed stop gates; footprint not yet measured, need independent source review and fresh Root grant. Entire new Academic app/libs/resources/runner binding must be inspected; old seven other artifacts preserved. No stand/currentcode claim before actual preparation.
+
+Old resource history below is historical, not current authorization.
 
 2026-10-12T15:53:37.275327+00:00: host WebKit DOWNLOAD/PUBLIC_HEADERS lease GRANTED through 2026-10-12T16:03:37.275327+00:00; exact11 archives6.285MB/namespace16MiB/combinedRSS192MiB, no library extraction/browser/stand. Other native heavy leases held until completion.
 

@@ -1,0 +1,60 @@
+{
+  "verdict": "APPROVE_SOURCE_FORMAT_EQUIVALENCE",
+  "scope": "AcademicGrpcIT.java only whitespace formatting",
+  "count": 7,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 225,
+      "mode": "0o600",
+      "sha256": "70e719a240d08def00bbdc10c921821fdcd86c055642b0c374312c151de7becd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 3934,
+      "mode": "0o600",
+      "sha256": "e0322033ff07fa223ac2e272d12c619d616a695a097c8ca71e8c4b76648b9f30"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 629,
+      "mode": "0o600",
+      "sha256": "61673b67607bc2763350a9cdc384e440db15ac63e8bef73e27a3ca15399a5c83"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/check.py",
+      "relative_path": "check.py",
+      "bytes": 9441,
+      "mode": "0o600",
+      "sha256": "60de96c29dba19625b02824406305969976a879fec5f5e900fdd471ae9f7fac3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/final-current-qualification.safe.json",
+      "relative_path": "final-current-qualification.safe.json",
+      "bytes": 325,
+      "mode": "0o600",
+      "sha256": "5043cdc88df438f63abd9c6b5a659163a282633c57e4b48ccabaed7549a72256"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/input-ledger.json",
+      "relative_path": "input-ledger.json",
+      "bytes": 979,
+      "mode": "0o600",
+      "sha256": "e8caeff49262a7dbefcf1c558334a28ed4a62e473b052044cfceeb955bf0d58f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_source_review/formatter_equivalence_recheck/lexical-source-proof.safe.json",
+      "relative_path": "lexical-source-proof.safe.json",
+      "bytes": 6231,
+      "mode": "0o600",
+      "sha256": "6c98c5f86f9aa8673cc57c8bb32aea58a6d53842fd76dae74beb3fd9e82bf90c"
+    }
+  ],
+  "native": false,
+  "private_inputs_included": false,
+  "selected_model_effort": "Sol6.1/high",
+  "actual_model_effort": "UNKNOWN"
+}

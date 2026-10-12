@@ -1,0 +1,27 @@
+{
+  "scope": "NARROW_INDEPENDENT_ACADEMIC_REFRESH_PIN_AGGREGATE_RECHECK",
+  "verdict": "APPROVE_SOURCE",
+  "finding": "ACR-RUNTIME-PIN-001 CLOSED_SOURCE",
+  "source_manifest_sha256": "d9efefedb1d3288ec186caaa70f4346d8366c3976ba4dde96e03b69d9867965e",
+  "original_BUILD_review_sha256": "27ca0c46fa1649b96c95d004f5b70eb5b7584bb096aa77d5832f58ee86f621ba",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 9056,
+      "sha256": "84375d976c19bdb1a3a4b89c8ad24f04c06118d482188c0b11c3b8b314aaaab7",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 1778,
+      "sha256": "1108ca98977d395382db4852e5ee6f48d24826d86e30e90447805731ff925e84",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 5012,
+      "sha256": "21e10babe277f3441f6cd4a0e477f2fe9d1e0c244c29ae53829993428ceb269a",
+      "mode": "0o400"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "verdict": "CLOSED_ASSERTION_SCOPE_UNDERLYING_CAUSE_UNKNOWN",
+  "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "run": 38302629088,
+  "job": 114988989924,
+  "count": 6,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/schedule_coverage_closed_diagnostic/Academic-terminal-steps.safe.json",
+      "relative_path": "Academic-terminal-steps.safe.json",
+      "bytes": 2620,
+      "mode": "0o600",
+      "sha256": "3468004baa2bfde0849801d32583d59b74ab13e213654d3882750cac01c88000"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/schedule_coverage_closed_diagnostic/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 260,
+      "mode": "0o600",
+      "sha256": "bad0e7cf3c55324e98e8d18eff072990ef9699fec5cfc5f78a77dce043f8dd4c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/schedule_coverage_closed_diagnostic/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 3368,
+      "mode": "0o600",
+      "sha256": "eced4b731e8a3551553dd09deb9eab589ba482985e4b5869ed9d71b4cd66a1a5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/schedule_coverage_closed_diagnostic/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 593,
+      "mode": "0o600",
+      "sha256": "b05a0dc5ec9fed9f3395a99f5626e9d3ae703addacef631459e820b823995b88"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/schedule_coverage_closed_diagnostic/closed-log-projection.safe.json",
+      "relative_path": "closed-log-projection.safe.json",
+      "bytes": 1831,
+      "mode": "0o600",
+      "sha256": "11da3f7bae6e4ed2dc6ba819facbbc2981c31b9db1d46d152ce39b4b0a7590c2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/schedule_coverage_closed_diagnostic/validate-source.py",
+      "relative_path": "validate-source.py",
+      "bytes": 1640,
+      "mode": "0o600",
+      "sha256": "7e032d9f8ea7286c43e5ebf96c93a87b1cb1cd73251e38501cb6870ac0ca4797"
+    }
+  ],
+  "original_green_seal_immutable": true,
+  "raw_logs_XML_private_values_included": false,
+  "local_native_or_source_mutation": false,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

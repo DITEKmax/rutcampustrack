@@ -1,0 +1,11 @@
+# Existing Java formatter application handoff
+
+The sole owned tracked change is AcademicGrpcIT.java in the frozen 4c3745f2 worktree. Root's existing formatJavaCheck run 7124 found exactly one clean candidate. This author applied that exact Spotless output, SHA256 dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d. The before5a4a and original baseline88bb sources are preserved in this packet. formatter.public.diff is only the formatter delta; test.public.diff is the complete one-file patch from the frozen baseline.
+
+4519 ordered Java code tokens, 143 string/char literals, 65 comments and 1278 delimiter events match exactly before/after formatting. Every source character was lexed; unicode escapes/textblocks are absent. No new Java AST parser/JVM was run. Structural preservation is supported by the complete identical token stream and balanced ordered delimiters; source positions/whitespace changed.
+
+All 9108 tracked filesystem metadata entries were compared before/after the atomic COW replacement. Only the test changed; Git tracked content diff lists only this test and git diff --check passes. This is full tracked metadata/Git-diff preservation, not a separate all-file body hash claim. Protected ENV/key bodies were not read for this comparison. Product UserSpecifications remains original4f62, and both Root source files remain unchanged. The seven files in the blocked custom RED WIP were verified unchanged and are excluded from this package.
+
+Compile02 native0/fresh3/classes/reaping evidence was produced by pre-format test5a4a. Token preservation bridges this formatter-only delta; no native compilation of dd0c or functional runtime claim is made. Root's existing formatter recheck and the project's standard configured CI remain pending. No tests/API/Docker/native process was started by this application task. No new formatter config/runner, product correction, custom RED preparation, Angular edit or Root tracked write occurred.
+
+The meaningful same-method locale test remains a hypothesis/source case, not a confirmed product defect. The existing English-backend clarification and finally locale/session cleanup remain identical. Root is the sole integrator. This one-file candidate is ready for independent source review and the existing normal checks; this packet grants no native execution.

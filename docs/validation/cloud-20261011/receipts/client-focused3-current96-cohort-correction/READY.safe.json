@@ -1,0 +1,234 @@
+{
+  "schema": "RCT_FOCUS3_CURRENT96_CORRECTION_SOURCE_READY_V1",
+  "state": "CORRECTED_SOURCE_REVIEW_REQUIRED_STAND_NOT_READY",
+  "utc": "2026-10-12T17:13:33.893432+00:00",
+  "owner": "client_real_acceptance",
+  "requested_model_effort": "gpt-6.1-sol/xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "read_checkout_sha": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "root_source_hashes": {
+    "tests/e2e/specs/mobile-real-server.spec.ts": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+    "tests/e2e/fixtures/mobile-dataset.ts": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+    "tests/e2e/fixtures/artifact-privacy.ts": "a682b63534c6dfdba54843df8a412f08a020b76734de1fa6546805076d82b8d0",
+    "tests/e2e/fixtures/safe-reporter.ts": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e",
+    "tests/e2e/fixtures/pwa-auth.ts": "61f6ceb0fe7f7c3ca547048f16ab6c5768a6a43a6e4fab7ef9b5e6529c744207",
+    "tests/e2e/fixtures/teaching-clock.ts": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+    "tests/e2e/fixtures/assistant-permissions.ts": "35bdcc3d19aec86ad4355dbd79a357b307246b4e29804d56b6aca4df929189e0",
+    "tests/e2e/fixtures/users.ts": "fdf4def40cd28b9ffc0a3da661ce0042b46f5bf4eb9f6446cf3391a5e3b314a6",
+    "tests/e2e/fixtures/telegram.ts": "0fb4d57014e3d047f423dcedaf34cf72643034fed2969eadfed3fb7db80e6039",
+    "tests/e2e/playwright.real-mobile.config.ts": "66541d545b8387e89d18d9e2eaa3e6e27ec0f762b800af93ba21a0139c23cd3c",
+    "tests/e2e/playwright.config.ts": "a4625d4a5c8f5ff8deac9381d26e3feaadb77e750eea7ab7208fbc419222b8e0",
+    "tests/e2e/package.json": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+    "tests/e2e/package-lock.json": "d1b110e5339f0fd13219892a0d2de315e2037fc98602772007243a6c2a1a3e48",
+    "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae",
+    "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue": "1a4f3b7add5d4e0de42a54b1ddc7b0300443134f89eda8cb1696a41c502ae3df",
+    "frontends/mobile-core/src/api/student-client.ts": "616ec51f7f27a0c8431b1f622f70538455f4d8af9e37b6b008117a9e817eb933",
+    "tests/e2e/tsconfig.json": "0577bd9290da4c2570f24a69ce7cc005709d5ef364d80b87357977677718cdaa",
+    "frontends/mobile-core/src/features/homework/use-homework.ts": "4d602311b88cd65bab765ad82c7076fb24d8855fb3f791c192613e4e5b9aa678",
+    "frontends/mobile-core/src/api/generated/mobile-bff.ts": "3d5a253daa8e3b27461625e7ef6657b3a0e8e14619e62f54208eca18cea7098e"
+  },
+  "own_source_hashes": {
+    "focus3.config.ts": "fe679b278c52fd1aa4c02c399aead5d2e4516879234ab64b715b3edd67da202c",
+    "run-focus3.py": "e7b5dca63157f50c4aceb0df08f905544ca9b68cd7ddde2e569973f6ccf24ee3",
+    "check-cohort-source.py": "cb25f7f1cd0991ab4020c5588185f4b81eb9a336d3b9ec233db2d3bb4388ec9a",
+    "PLAN.md": "54e6d9a29171c7acbd668b7656868476b82f02ab6bf74c45f1fabdcd5004fae2"
+  },
+  "third_party_links": {
+    "@playwright/test": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/@playwright/test",
+      "version": "1.59.1",
+      "package_sha256": "6a1bfbf979df620c080e4b0b0506e6fc53a070e2280a971b189839b1a481ac01",
+      "symlink_mode": "0o777"
+    },
+    "playwright": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/playwright",
+      "version": "1.59.1",
+      "package_sha256": "f5c873af32da3a56849a77a73eb4e6acf9629d58564ba420077feea88800225c",
+      "symlink_mode": "0o777"
+    },
+    "playwright-core": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/playwright-core",
+      "version": "1.59.1",
+      "package_sha256": "d4b8727c495ff2632084e922ee1c7f19a608ed23d86e8f3b0ba0ff317eea58ec",
+      "symlink_mode": "0o777"
+    },
+    "@types/node": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/@types/node",
+      "version": "22.19.17",
+      "package_sha256": "403e706113a09b27f38e95f1a4d9d04081d9744d349840e2521820e35d50db68",
+      "symlink_mode": "0o777"
+    },
+    "undici-types": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/undici-types",
+      "version": "6.21.0",
+      "package_sha256": "11f873b423b96a5ad444a099685ca6b9de1379dcd83fd8d368e757ddb53658e4",
+      "symlink_mode": "0o777"
+    },
+    "@axe-core/playwright": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/@axe-core/playwright",
+      "version": "4.11.2",
+      "package_sha256": "1156c42aeefc8ef879874b67d1d93de43d295adf2bb637ffa6c022d0147982a5",
+      "symlink_mode": "0o777"
+    },
+    "axe-core": {
+      "resolved_path": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/axe-core",
+      "version": "4.11.3",
+      "package_sha256": "2efb3a6c40e263a5cf7fc2c2950db551104b3b73fa1c67c9f19930dfd62645c7",
+      "symlink_mode": "0o777"
+    }
+  },
+  "runtime_hashes": {
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js": "5e79302a6aad7d835d92d5ae6b4244c91cf61b28e94d7917279090e6c231f7a1",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/index.js": "962b86481453ec438bd4040660c547b18f2bc95791c947363e88345b42ff3f77",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/worker/workerMain.js": "0935b573681ba8fb21b761f5e81f90b471c9411596a2a5ede3bfa97da78716fb",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/worker/fixtureRunner.js": "59f39daad5869c74c55e6c93c01ce91706f31bbcf13681b0c486bd98857a4e12",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/worker/testInfo.js": "81d7d18553d6274bb4341dfcb29bb94e061c7752ce5777acebe1338e96d692c8",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/browsers.json": "469f17a82348978f79738981bc8af9b4e8516aac5a020018911fff39b755fe60",
+    "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+    "/workspace/rutcampustrack/frontends/node_modules/typescript/package.json": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/client/fetch.js": "40d62064b3671a87db3ea89c00c72d9038d12ebfd0fc2ea2f00f4817746805b2",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/fetch.js": "4763a8d6e07088d702b667f6ed9c54eb0a92328032df6ff4d8fc806e1db53f04",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/dispatchers/networkDispatchers.js": "5b2c8b366471161749f3712e1fd5b5162561f2ffbe2afd69633fc6f2fdb524dd"
+  },
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "browser_manifest_hashes": {
+    "chromium-1217/INSTALLATION_COMPLETE": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chromium_headless_shell-1217/INSTALLATION_COMPLETE": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ffmpeg-1011/INSTALLATION_COMPLETE": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "webkit-2272/INSTALLATION_COMPLETE": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "browser_binary_hashes": {
+    "chromium-1217/chrome-linux64/chrome": "696170a79640ec5b50c7518140ace06c69a49cfb295bf527d4a85e26a12b89a7",
+    "chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell": "22d72b589f908111fa29ff4e61ead8a0601e925177f59c70e2e851c22e9b1886"
+  },
+  "clock_hashes": {
+    "/workspace/scratch/rct-validation/current_host_config_v4/teaching-clock/disposable-target": "4fe807274e14eda4e39e56c024aa39a4fb6be4d7aff917d848f35ed6ac76e803",
+    "/workspace/scratch/rct-validation/current_host_config_v4/teaching-clock/current-instant": "ffb6c41ae587278d82f8a950f3ea3ec3e529b6140ca5eff64dcc497ff1ca858d"
+  },
+  "clock_semantics": "accepted teachingInstant Date worker option, Monday09Moscow, ordinary security time unchanged",
+  "native_next": {
+    "scope": "focused3-current96-chromium-real-client",
+    "case_count": 3,
+    "source_lines": [
+      14,
+      61,
+      142
+    ],
+    "project": "chromium",
+    "workers": 1,
+    "retries": 0,
+    "deadline_max_seconds": 300,
+    "node_heap_mib": 512,
+    "owned_total_rss_stop_bytes": 1610612736,
+    "cache_stop_bytes": 33554432,
+    "host_cleanup_margin_seconds": 60,
+    "status": "NOT_GRANTED_NOT_RUN"
+  },
+  "verification": {
+    "python_ast_source_parse": "PASS_STATIC_ONLY",
+    "all_root_inventory_bytes_equal_source": true,
+    "typescript": "NOT_RUN",
+    "closed_field_controls": "NOT_RUN",
+    "native_discovery": "NOT_RUN",
+    "format": "NOT_RUN",
+    "browser": "NOT_RUN",
+    "API_login_network": "NOT_RUN",
+    "new_product_assertions": false,
+    "original_failure_causes": "UNKNOWN",
+    "own_runtime_processes": "NONE",
+    "lifetime_red_green": "NOT_RUN",
+    "all_root19_unchanged": true,
+    "all_old11_unchanged": true
+  },
+  "common_resource_floor": {
+    "disk_floor_bytes": 4294967296,
+    "shared_stop_bytes": 16106127360,
+    "shared_memory_reserve_bytes": 1073741824
+  },
+  "governing_hashes": {
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
+    "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+  },
+  "corrected_findings": [
+    "F3-C96-COHORT01",
+    "F3-C96-PREALLOC01"
+  ],
+  "ancestor": {
+    "ready_sha256": "167b8b1b3bd15dc41c4adebb93d73d514c553c8f6bfd59a6bd03c8294323f49e",
+    "source_archive_sha256": "5fe484b3e8f294d18de7adb72a5c7c0da5d85d67c8ef30ff3ed5c8880d504886",
+    "node_archive_sha256": "8f229b46b9465577af52efd1e4bc27eee368b0d4e131b4bb5c0109da3381e28b",
+    "old_observer": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-preparation-5ced/observer.ts",
+    "old_observer_sha256": "bc16825621d82805991a50b5cd98b65686697188502e43577d64945c653fc678"
+  },
+  "source_controls_qualification": "SOURCE_ADAPTER_ONLY_NO_BROWSER_API_OR_REAL_TRANSPORT",
+  "r1_ready_sha256": "78178f656c9a8ce6e02dedc72210dff4526b2acdf62d77849e64d5c90c90dc43",
+  "r1_source_hashes": {
+    "CORRECTION.md": "11eecb8e168562c8b6c36d9d934942b2e34fd853d591bb8ef7e5bc2f3693dcab",
+    "PLAN.md": "b150f0f58d98c317398658f9f5f19ad9b334106d566bbaf8c786aaa58900c633",
+    "check-observer-fields.cjs": "fa8288e7aebad60f06ed7d1f531d8f13d65672ebb18432ac9a7ad6359d1414db",
+    "check-observer-lifetime.cjs": "2b434258b000a626b56b0f0f9eda33d049c2ee7fabf1f2650d30cc235513fffa",
+    "discovery-reporter.cjs": "9e6e99710007651125dd6665bb61d87ad3b881dce8b4730fde89191426b2403f",
+    "focus3.config.ts": "9c468a6663f75dc8e36ab54f2436a3278aa584c4465791940d5efe7e1750c9de",
+    "focus3.spec.ts": "e18dee045e9f6bfee9d8da3d7f5032727f4c759dd62905bee51973c958252ef5",
+    "observer.ts": "4650d61052bbc6f5bb7171e529389da11331898e8aecdd4da807c69a2e26df40",
+    "run-focus3.py": "e54ca65d700b5e1945ceb581a462a323518c3bfd171cb8d77e008a2ce10e2ca6",
+    "run-source-checks.py": "6228b83a9ea49330ae72ce3bc53af3419171c797724c2cd5fd1a87e82f0287bb",
+    "source-discovery.config.ts": "91babd597287692b071b76138754b58287473fe555584c86e259b266f875ee65",
+    "tsconfig.focus3.json": "c61dbb63849e35dbc53812cbab2ed6a9ed35a8cabaf0e8d9025d67171a9927d4",
+    "typecheck-safe.cjs": "8d8de3f765aa29b23a05f9d1534a305beb90f2d8a4cf402a87179ddbbdb74a64"
+  },
+  "current_academic_source": {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java",
+    "sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b"
+  },
+  "provided_node_binary": {
+    "path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+    "metadata": {
+      "bytes": 125989464,
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "device": 27,
+      "inode": 9223372036854817350,
+      "nlink": 1
+    },
+    "X_OK": true,
+    "source_inspection_context": "require_escalated ordinaryactor1000/root0; readonly hash/metadata, Node NOT_EXECUTED"
+  },
+  "prior_finite_proofs": {
+    "r1_node_controls": {
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-preparation-5ced-r1/node-verification-02.safe.zip",
+      "sha256": "50e47d613de6b9850d176798d58c24417894f53ac3f32ff01b929c41934de66f"
+    },
+    "public_Chromium": {
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/precredential-classified-r1/actual-01.safe.zip",
+      "sha256": "e20034c76c42e26066fec9a018beb752377c16aae263b79935640ee489ab3440"
+    },
+    "public_WPE": {
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/webkit-public-boot-r2/actual-01.safe.zip",
+      "sha256": "37c3baacccc0642a3170ebd3cfee915b4c237c4d53e37a64d752516f94d74383"
+    }
+  },
+  "source_only_verification": {
+    "Python_AST": "PASS",
+    "config_only_namespace_delta": "EXACT_BYTE_BRIDGE_PASS",
+    "Root19_same": true,
+    "r1source13_same": true,
+    "original_assertions_observer_unchanged": true,
+    "new_typecheck_discovery_browser_API": "NOT_RUN"
+  },
+  "ancestor_ready_sha256": "04f6baa830920810a044adb512bd4adee2e45aa35c1fc3551c2ad78694d10886",
+  "ancestor_archive_sha256": "58e26d1d5d588e0b100d1c9c90a49f0b55e10f115d26e39cd9d4d5a6aa6d7cbf",
+  "pure_controls": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-r1/cohort-controls.safe.json",
+    "sha256": "c5efe0313be80412109274072eba2a9999d0d5a04f836f5c5d0d921dfb4da8c6",
+    "count": 12,
+    "passed": 12,
+    "qualification": "PURE_ACTUAL_SELECTED_FUNCTIONS_AND_FULL_NAMESPACE_PATH_RAM_ONLY",
+    "native_exit": 0,
+    "actual_stand_Node_API_browser": "NOT_RUN"
+  },
+  "source_delta_proof_sha256": "36ce8cce9058320ec7c5f7509353e00cc0ac48f2c9bf03497429304487365060"
+}

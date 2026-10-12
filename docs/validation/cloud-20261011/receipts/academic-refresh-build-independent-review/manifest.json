@@ -1,0 +1,32 @@
+{
+  "scope": "INDEPENDENT_ACADEMIC_REFRESH_SOURCE_ONLY",
+  "verdict": "CHANGES_REQUESTED",
+  "BUILD_verdict": "APPROVE_SOURCE_BUILD_ONLY",
+  "original_source_manifest_sha256": "0b7d2d59eef1fee06f0a8416ef86751e3949a042d7a5007c23aea8e3c9d581bd",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 9657,
+      "sha256": "ea7d2cd009f4e3b6373cbcd82e5c7ce79c7bc9e4b76e8246129efc78ea65dd7f",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 2579,
+      "sha256": "14132a5af801667ea37760b5aa7dbf72ab3948e97b1bd2e5f20dbaa045d092e8",
+      "mode": "0o400"
+    },
+    {
+      "path": "native-metadata.safe.json",
+      "bytes": 685,
+      "sha256": "20c8548ffd39ecd82f1d6ea9efed5b3d911178aed2eda820ca9f0fe82723a5af",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 7424,
+      "sha256": "6fb0fa6129248f8b2e7983a22ce3a3aeb86a9bf87026a482ef8411a5cb9d3c52",
+      "mode": "0o400"
+    }
+  ]
+}

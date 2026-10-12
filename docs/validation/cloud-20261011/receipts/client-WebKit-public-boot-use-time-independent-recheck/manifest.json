@@ -1,0 +1,32 @@
+{
+  "utc": "2026-10-12T19:01:40.895292+00:00",
+  "outcome": "APPROVE_SOURCE",
+  "closed_finding": "WEBKIT-PUBLIC-GRANT-USE-TIME",
+  "scope": "SameP2 narrow source recheck only",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_boot_recheck/REVIEW.md",
+      "relative_path": "REVIEW.md",
+      "size": 3496,
+      "mode": "0o400",
+      "sha256": "6ed26537e34a359bae078237eb207e51f3cbaad016465d0dbcbbc456acf66c2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_boot_recheck/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "size": 3841,
+      "mode": "0o400",
+      "sha256": "3cb5db2f0e322b5a1c5adf6dfb6a658e8c5a0aecf319ca96eb0b131e8da0a811"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_boot_recheck/check.py",
+      "relative_path": "check.py",
+      "size": 8288,
+      "mode": "0o400",
+      "sha256": "e08ce463612aaa49cc2c77158dab77e486b4d9d934fe133680a8c0c9a18652ac"
+    }
+  ],
+  "runtime": "NOT_RUN"
+}

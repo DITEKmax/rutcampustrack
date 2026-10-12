@@ -1,0 +1,124 @@
+{
+  "scope": "SOURCE_ONLY_RUNTIME_HELPER_PIN_CORRECTION",
+  "original_manifest_sha256": "0b7d2d59eef1fee06f0a8416ef86751e3949a042d7a5007c23aea8e3c9d581bd",
+  "frozen_source_revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/CORRECTION.md",
+      "sha256": "23cad4c67841a0df391a72c3a25a5e908d4217219b5763773f0b7a11b726c148",
+      "bytes": 1358
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/HANDOFF.md",
+      "sha256": "1310f7a4af083b0d9fcb081a113408718927c0a5cc658809ce33c90ef237e1de",
+      "bytes": 6313
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/academic-runner-delta.safe.json",
+      "sha256": "efb946f7756197ec2f7cd5be159aa1580d87364bd840dbbeac007302a0d19ed0",
+      "bytes": 1140
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/build-academic.py",
+      "sha256": "93a45dd10290772ba2c02310cdf59a629c2726872af1e64349e3a5602fa73220",
+      "bytes": 8909
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/build-grant.template.safe.json",
+      "sha256": "a0cb5a7435ab8dede5e3998312eaa091a7c8d68f39cef962273f46ad377bdc9e",
+      "bytes": 986
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/effective-launch-correction.safe.json",
+      "sha256": "a2886ef59c3061e2c1c30bc5d16a991dd556d9f2c9bd0accc3e05744e1f05074",
+      "bytes": 1857
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/inspect-academic.py",
+      "sha256": "ec0f1d6b06e0df15f83799865446e785835eb20f4c6167c7edde9f6eba11966f",
+      "bytes": 4164
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/launch-schema.safe.json",
+      "sha256": "76144837cfb0e36eed02a26c256230281a78072cd3da02f8d7acebf001baef62",
+      "bytes": 2362
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/pin-consumer-controls.py",
+      "sha256": "530290352ad201311bcec8f72cee793bdd1dae0dc07b68d194722fde2bee1c9f",
+      "bytes": 3973
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/pin-consumer-controls.safe.json",
+      "sha256": "69823289a944eb47a9d5684875978d7467472ca8a4dc9e3250035d612d798107",
+      "bytes": 951
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/pin-delta.safe.json",
+      "sha256": "cc421f9a3a79d9ed576b44c6059c273f5dd7698f9e92bc35f040ff75f3df3f2e",
+      "bytes": 1378
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/refresh-boundary.py",
+      "sha256": "5924346f1f56e270160ac4bd01918e55f3a577d198c0b1b67d45ad45b0a180f4",
+      "bytes": 11134
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/resources.safe.json",
+      "sha256": "9c23725c8e159593b4117c988db28ffb87de35b4cde049d54ae278a193730083",
+      "bytes": 434
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/run-academic-restart.py",
+      "sha256": "a4e2a5011270a5ce02e3c18ca19eb2dc0e73ef2f79016e6133fbd3cebfcb321d",
+      "bytes": 8959
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/runtime-binding.py",
+      "sha256": "7e7579ce554d6a94aaf79d331aeaccfa6611a989def97fa3ec2be7f261028d07",
+      "bytes": 4664
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/runtime-grant-addendum.template.safe.json",
+      "sha256": "53d9eb4de3d7cb1782b8055324b26054b49731329e39f8b2a9c61ed83c778bd0",
+      "bytes": 1121
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/source-controls.py",
+      "sha256": "78b542bbf63dbb632363773980f896b88b56a66c5c1c0bcc9a6867fee6f28e2c",
+      "bytes": 9957
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/source-controls.safe.json",
+      "sha256": "e57880734e2280f36ecfec12999a0ada73cf703617517f56c731c5e973621d62",
+      "bytes": 3062
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/stage-academic.py",
+      "sha256": "f3495254e3ef0a1a14fa31b29b10587e1eb11123029aa3baee1679a30c545909",
+      "bytes": 9588
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/stage-grant.template.safe.json",
+      "sha256": "ba9a2b1dfdf2c7446c661bd8de2fe6a6105ebea893065db6895acb8ab426df23",
+      "bytes": 1052
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/tmp-anchors.safe.json",
+      "sha256": "f188a1b7c614897df4aebe55a33af7f31ecc8dc17b9f9ab36400ba60a4344fca",
+      "bytes": 667
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/tool-inputs.safe.json",
+      "sha256": "12c3399942d94bef7b611793702dd5d7541fe941ba74156f3b199b83503b645b",
+      "bytes": 1279
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/tracked-inputs96.safe.json",
+      "sha256": "7a50001eb5db00a04552162cc201ecb156dc2a9a1345270ca50e94231ab6035b",
+      "bytes": 133250
+    }
+  ],
+  "private_inputs_excluded": true,
+  "actual_native": "NOT_RUN"
+}

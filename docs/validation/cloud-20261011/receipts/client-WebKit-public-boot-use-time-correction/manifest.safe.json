@@ -1,0 +1,66 @@
+{
+  "schema": "RCT_WEBKIT_PUBLIC_CORRECTION_MANIFEST_V1",
+  "files": [
+    {
+      "path": "probe.cjs",
+      "sha256": "0f245f7eb381222660bea38abf1389975a815ba586daed18b65d6e94a966b40f",
+      "bytes": 3147,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "launch-cause.cjs",
+      "sha256": "55667d44810196b73f232af2cc63e94f76c7b41a39298c64cff70c7cf2a4c981",
+      "bytes": 2533,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "run-probe.py",
+      "sha256": "af6a0f3b219563322e0ffc953ed1e7b35a9af1beb0887636075765a8a5402a8e",
+      "bytes": 14779,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "check-use-time.py",
+      "sha256": "550cd4b97f92e42d669f51259c9ce1c9984583f39c1435aab12bafdd76664165",
+      "bytes": 9798,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "2296616847e37d020291f09281733b2b9dda81726f226794158b214a447a10e8",
+      "bytes": 4019,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "CORRECTION.md",
+      "sha256": "aed0d2638cb8a800ba109351875fbe89def89300d7fcee9f1aab544d6aed16a8",
+      "bytes": 2463,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "use-time-controls.safe.json",
+      "sha256": "c81e8de59d1e9508e75e3d76b16d9f1e5eeb8cb75333b27ac86a7b704ff66092",
+      "bytes": 669,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "8aae65d1ceb1fd0c6fa6cc8d43932aea6dec021f493abcfbc76722538bd5dc6f",
+      "bytes": 11422,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "pure_source_controls12": "PASS",
+  "Python_AST": "PASS_SOURCE_ONLY",
+  "Node_browser_ABI_API": "NOT_RUN",
+  "originalab1b_bead_unchanged": true,
+  "Root19_r1source13_vendor34_unchanged": true
+}

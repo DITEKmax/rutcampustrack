@@ -1,0 +1,40 @@
+{
+  "producer": "538af12e280bc0e34b62c99c8823a7bb552d6ea6",
+  "checkoutSha": "6e5385ddbab9cc967e4ef7be5e1fe29c8198082d",
+  "runId": 38297567499,
+  "jobId": 114972244241,
+  "carrier_artifact_id": 11769312255,
+  "carrier_bytes": 1240766,
+  "carrier_sha256": "4e3aac31dcd79f9546d1cd7469f2ad2175f65113780c57c4b1a4ebf67474b48e",
+  "selected_XML_bytes": 218971,
+  "selected_XML_sha256": "0539d8eeb8e78841b6fab0d59a8a3f05f41cf2cc0822e96d56f65bbe8bd599fb",
+  "selected_XML_SAFE_ordinal": 28,
+  "target_case_ordinal": 12,
+  "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+  "targetFailureElementUnique": true,
+  "knownExceptionType": true,
+  "exceptionType": "org.assertj.core.error.AssertJMultipleFailuresError",
+  "firstAcademicGrpcITFrameLineInFailureText": 522,
+  "exactTargetMethodFrameLines": [
+    479
+  ],
+  "fixedSoftAssertionTagsSeen": {
+    "scalar_active": false,
+    "ADMIN_role": true,
+    "ACTIVE_grant": true
+  },
+  "aggregateFailureCounts": [
+    2
+  ],
+  "allHardCanonicalSQL_ID_status_count_total_page_positive_oracles_reached": true,
+  "sixHTTP200_and_unknown400_reached_by_exact_source_control_flow": true,
+  "scalarPairEqualQualified": true,
+  "roleAndGrantOnlyDivergenceQualified": true,
+  "verdict": "CONFIRMED_FINITE_CAUSAL_RED",
+  "inference_basis": "Current unique native FAILED target/source/dd0c plus exact aggregator479 AFTER all hard JDBC/HTTP/unknown400 assertions; exact two failed tags isolate roles/grants. No expectation weakening.",
+  "finally_cleanup": "SOURCE_PRESENT; runtime state not independently observed",
+  "other_archive_entries_decompressed": 0,
+  "unrelated_failure_bodies_or_system_out_read": false,
+  "raw_XML_logs_rows_IDs_credentials_failure_messages_persisted_or_emitted": false,
+  "native_reexecution_or_product_fix_authorized": false
+}

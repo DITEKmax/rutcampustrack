@@ -3108,6 +3108,723 @@
       "status": "diagnostic-evidence-not-product-authority",
       "revision": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
       "recorded_at": "2026-10-12T18:53:32.249961+00:00"
+    },
+    {
+      "id": "RECEIPT-academic-current-artifact-refresh-readonly/academic-refresh-readonly-20261012.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-artifact-refresh-readonly/academic-refresh-readonly-20261012.safe.json",
+      "sha256": "33cb030bbd9e6e7feac818388c197353f787cd8b0509cf5c5d1bac51a1527d22",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-closure/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-closure/HANDOFF.md",
+      "sha256": "1772e1308a13eb9ca75eafc6944801a826471cbad1edce39a71ad4655a087cae",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-closure/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-closure/REPORT.safe.json",
+      "sha256": "4c4eeed8e161c46cc3e21eb767c54d8be43b93852d26927daa713a04771923b6",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-closure/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-closure/manifest.safe.json",
+      "sha256": "6b423ed776c16f6b5a208c2bce3dfac6f11bae5aef4612de0f209f3d61183850",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-closure/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-closure/safe-evidence.zip",
+      "sha256": "37c3baacccc0642a3170ebd3cfee915b4c237c4d53e37a64d752516f94d74383",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/REPORT.safe.json",
+      "sha256": "1a9e855c954e6f459d6751303778f498377a39926e7902e1fbdf8e33f43fc14a",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/launch.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/launch.safe.json",
+      "sha256": "712e896f3d92d96cea6fbdde65307eb5dd9b8e138b34ecb09ae5cdd41cf218ca",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/manifest.json",
+      "sha256": "6d08b48d334a5ea0c9bc9dc6c3e0e814fc3395f9346bfbe9a0a6c994664a5393",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/probe.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/probe.safe.json",
+      "sha256": "5a9064c3005c2215005d696752a53861bac8e6425fd05fcd6ed7fa5c13e07e53",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/process.safe.json",
+      "sha256": "a77f391a655b5ae61e5dfafacc931694424ecdd3792bc80281dc7587a1c3e284",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/safe-evidence.zip",
+      "sha256": "42a1491dc600ae8ad174f5026631932cc93466959658c7f288c15ded3ccd49fc",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-actual-pass/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-actual-pass/terminal.safe.json",
+      "sha256": "c89b265fdd38031da80480d28ab2c21f8c184ba22919a02bd7cf4cc293c98c4e",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-boot-use-time-correction/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-boot-use-time-correction/READY.safe.json",
+      "sha256": "8aae65d1ceb1fd0c6fa6cc8d43932aea6dec021f493abcfbc76722538bd5dc6f",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-boot-use-time-correction/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-boot-use-time-correction/manifest.safe.json",
+      "sha256": "d97f58c740e5c803403dfb329982caf4e0f29853c23b9d909604d69b3acf0dde",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-boot-use-time-correction/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-boot-use-time-correction/safe-evidence.zip",
+      "sha256": "f33a52b5c085767025972aa2173785a5eefe3ede80231933399a6dbf2fbaafcd",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-boot-use-time-independent-recheck/REVIEW.md",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-boot-use-time-independent-recheck/REVIEW.md",
+      "sha256": "6ed26537e34a359bae078237eb207e51f3cbaad016465d0dbcbbc456acf66c2f",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-boot-use-time-independent-recheck/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-boot-use-time-independent-recheck/manifest.json",
+      "sha256": "43d69de48cd63691ba84802d33f7f9f4eedfd416794fa01d4a8d6566333bbc65",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-boot-use-time-independent-recheck/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-boot-use-time-independent-recheck/safe-evidence.zip",
+      "sha256": "6e005cfdad9dda755afbdfa24cbe81113fc8c2075ec0091736a7bbd7ec1d09ce",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-native-node-launch-block/launch.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-native-node-launch-block/launch.safe.json",
+      "sha256": "6917a325fc55a1bf08d1709f939a100bc1b992733f935603c39440e131e6ae1c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-native-node-launch-block/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-native-node-launch-block/terminal.safe.json",
+      "sha256": "6a34f497af628fb07ead23aa31a99fff4b04b51b445265c8ee914f0438541014",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-node-independent-review/REVIEW.md",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-node-independent-review/REVIEW.md",
+      "sha256": "a3d2ae7835e0391de63442c86b146c921855a9cc14c86a75358a15f32f83f012",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-node-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-node-independent-review/manifest.json",
+      "sha256": "ad3965ba5d85d3123c7ab3be31acca6fbcd4737e3c63f5f9cf0c94035c130039",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-node-independent-review/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-node-independent-review/safe-evidence.zip",
+      "sha256": "fff1e0ab084c02a832e7b539428f8cfc62c18d466fe7e06656810ac8123aeea7",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-node-path-correction/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-node-path-correction/READY.safe.json",
+      "sha256": "157fcf615e954c9bd7efd11f125ddc5721c04e9fe107a5b45681aa1851f64c44",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-node-path-correction/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-node-path-correction/manifest.safe.json",
+      "sha256": "ca257ea48ff4a1807364b9b9376ea46d5769f6fd7fcb03413a84858544a3a365",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-client-WebKit-public-node-path-correction/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-WebKit-public-node-path-correction/safe-evidence.zip",
+      "sha256": "98f1eda4c4dc66e864961d53459c14d8e5cc87de2b05dab7aaccdc5c62ecf58c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-current-before-185752.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-before-185752.zip",
+      "sha256": "8592082c6ac53785c9a6b715abb307bce8cff1de0622525a119d3dba05d728d9",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-current-before-193601.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-before-193601.zip",
+      "sha256": "569c30c6331d8c2322578c365ccdb4869bf9631612fa36e8d689a329ecec0e11",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-current-ci-causal-red-seal/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-current-ci-causal-red-seal/HANDOFF.md",
+      "sha256": "336df2b094646e512bc38d3ab8be6830828a29db43aecd177ed1f93b7b3f53e5",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-current-ci-causal-red-seal/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-current-ci-causal-red-seal/manifest.json",
+      "sha256": "3703071d1d67c6c3814b3a0f28528817d59e4fb87307bbb9c8794fdda89d4bea",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-current-ci-causal-red-seal/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-current-ci-causal-red-seal/safe-evidence.zip",
+      "sha256": "d65911ed1eaca50bab078a727c8b358a748e9212dfc7bd988f81e09be4003bfe",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-current-ci-causal-red/closed-target-cause.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-current-ci-causal-red/closed-target-cause.safe.json",
+      "sha256": "c8f68b9c8d970ca342f9931da7e5618b9d4bdafaf37a8d4d938cc81634c7502c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-existing-formatter-check01/launch.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-existing-formatter-check01/launch.safe.json",
+      "sha256": "6cc03a54b732682eb3e7606c4872b06ebf842e5ab2294d093374f5bc6c52e9ff",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-existing-formatter-check01/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-existing-formatter-check01/process.safe.json",
+      "sha256": "e2acd8e43da34fc26923b183783e8fd55a3bf9ee1e8971850d5d2eab5d95fbda",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-existing-formatter-check01/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-existing-formatter-check01/terminal.safe.json",
+      "sha256": "3a79f7aa45f341f2a5dd7c2ffbca293a4ee5225f1ed4cdfde47d474e2e0d50d5",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-existing-formatter-check02/launch.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-existing-formatter-check02/launch.safe.json",
+      "sha256": "74a15e2cf9d58f7fdd4032afbeb040af4c8936c0f55517efd985f53a4510a2c0",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-existing-formatter-check02/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-existing-formatter-check02/process.safe.json",
+      "sha256": "08be6ec4ea3714d8feca382c34b50e7cf62e7d36159ed4b3f8b0e5b4b1cf8748",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-existing-formatter-check02/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-existing-formatter-check02/terminal.safe.json",
+      "sha256": "f2130363b105a112409eddde5f3e3067c17519a04b44b79b9c1d4d2f9b6e499a",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-formatted-test-independent-review/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-formatted-test-independent-review/HANDOFF.md",
+      "sha256": "e0322033ff07fa223ac2e272d12c619d616a695a097c8ca71e8c4b76648b9f30",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-formatted-test-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-formatted-test-independent-review/manifest.json",
+      "sha256": "5c3b115fde10433ac160ce4588f55db4409c2bc5f82bd7062810609ca0fae264",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-formatted-test-independent-review/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-formatted-test-independent-review/safe-evidence.zip",
+      "sha256": "430c69f4df697c5f40d58d619239f8de74b4da7935785161991db3298a8bbf1f",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-formatted-test-source/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-formatted-test-source/HANDOFF.md",
+      "sha256": "540755ae5497a9b067e6803e3d17b4dce6bb531e156afbb38f4695b3bd8a22b9",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-formatted-test-source/formatted-test-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-formatted-test-source/formatted-test-source.safe.zip",
+      "sha256": "0a505245e8ada8e304f7c6f107c9f01002a3e7593e28fd0d08b09b2780530cd2",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-formatted-test-source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-formatted-test-source/manifest.safe.json",
+      "sha256": "727b1299101dd4e0fba0efcc7886439e2edd9fac828f2815e136b9038cfe13bd",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-integrated-fix-formatter/launch.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-integrated-fix-formatter/launch.safe.json",
+      "sha256": "50aca26db02f1c6cf8332b789a04c43e1d47247c9f178c9350947eb765e2e3e3",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-integrated-fix-formatter/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-integrated-fix-formatter/process.safe.json",
+      "sha256": "8fb59266b99322a05cc1490e6f308d78aef588c6768bc580b72309319c802c3e",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-integrated-fix-formatter/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-integrated-fix-formatter/terminal.safe.json",
+      "sha256": "1f3b2eadf4693480c89706a7ac35253ad7a8e240a5b9d3eb6c5ce7d302f1268b",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-root-independent-review/REVIEW.md",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-root-independent-review/REVIEW.md",
+      "sha256": "657ac3fc1bfb660e7ac2a54fbe4d70c9d67a45c42f3d4c96257cbe828992640d",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-root-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-root-independent-review/manifest.json",
+      "sha256": "105c29c38907122584960963267ee371a9606e5e69f537d744ef64a5423367fc",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-root-independent-review/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-root-independent-review/safe-evidence.zip",
+      "sha256": "2476f532ac3bb754ff54f31bac2831d3ffcc7d3246f4cd402289d5cb95c84050",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-root-source-fix/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-root-source-fix/HANDOFF.md",
+      "sha256": "19dd1f5b46da68508a6c207036c5c2f3077f59f5252bb7d56db93a5169d6eac9",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-root-source-fix/locale-root-fix.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-root-source-fix/locale-root-fix.safe.zip",
+      "sha256": "3ad61d84914018a783cba663210690b6721b4a30f68d52e96c4e10d4e4e70e8c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-root-source-fix/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-root-source-fix/manifest.safe.json",
+      "sha256": "78b069cc5cc0938ba60ebd5f37cd2711f0654e83cc42f2e23adf1416a2996005",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-handoff-before-194105.zip",
+      "path": "docs/validation/cloud-20261011/receipts/handoff-before-194105.zip",
+      "sha256": "9975e7ba88196ba0b4c37d34bcce8db72db12c05c2f31d8adb8fe41231719023",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see-original-sealed-receipt; observation revision does not imply runtime at current head"
+    },
+    {
+      "id": "RECEIPT-academic-current-refresh-source/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-refresh-source/HANDOFF.md",
+      "sha256": "1310f7a4af083b0d9fcb081a113408718927c0a5cc658809ce33c90ef237e1de",
+      "status": "root-retained-safe-source-preparation-not-runtime-or-product-authority",
+      "revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3"
+    },
+    {
+      "id": "RECEIPT-academic-current-refresh-source/current-academic-refresh-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-refresh-source/current-academic-refresh-source.safe.zip",
+      "sha256": "930ed856da1a1d442784bebe8f1d24d332d2542fcf9981e69c6246cb3afe5613",
+      "status": "root-retained-safe-source-preparation-not-runtime-or-product-authority",
+      "revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3"
+    },
+    {
+      "id": "RECEIPT-academic-current-refresh-source/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-refresh-source/manifest.json",
+      "sha256": "0b7d2d59eef1fee06f0a8416ef86751e3949a042d7a5007c23aea8e3c9d581bd",
+      "status": "root-retained-safe-source-preparation-not-runtime-or-product-authority",
+      "revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3"
+    },
+    {
+      "id": "RECEIPT-academic-current-build-actual/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-build-actual/HANDOFF.md",
+      "sha256": "b4f24a0489e0a964cf83c959155a9e7e3628a17948061236f80bb14d28fc892c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-current-build-actual/actual-academic-build01.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-build-actual/actual-academic-build01.safe.zip",
+      "sha256": "346dc7cc4ca2f7912cd7e9ae1e5429d27720dbe9899b7899a1638f9fb565285a",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-current-build-actual/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-build-actual/manifest.json",
+      "sha256": "807f205d8913c3cb8f068968e469ccf51709d310eb1ac44f5584c390bdc01861",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-current-stage-actual-partial/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-actual-partial/HANDOFF.md",
+      "sha256": "331a40897162bdf51dba7f0bcf0b41022767741638c94d1664187cb388518079",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-current-stage-actual-partial/actual-academic-stage01-partial.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-actual-partial/actual-academic-stage01-partial.safe.zip",
+      "sha256": "5bc005551c6e0ff36582bca976ac0825f465ffb093290d854dd464da1f4bc80c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-current-stage-actual-partial/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-actual-partial/manifest.json",
+      "sha256": "77b75e656d7b3857879fa4936a59a4e3abddc85761462dbf81e382bb541fa824",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-build-independent-review/REVIEW.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-build-independent-review/REVIEW.md",
+      "sha256": "6fb0fa6129248f8b2e7983a22ce3a3aeb86a9bf87026a482ef8411a5cb9d3c52",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-build-independent-review/academic-refresh-review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-build-independent-review/academic-refresh-review.safe.zip",
+      "sha256": "cf22fae059a3f89a63fdd269be4d02d6f5c80caf8c2de05fa8d181f11c3a6227",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-build-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-build-independent-review/manifest.json",
+      "sha256": "27ca0c46fa1649b96c95d004f5b70eb5b7584bb096aa77d5832f58ee86f621ba",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-pin-independent-recheck/REVIEW.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-pin-independent-recheck/REVIEW.md",
+      "sha256": "21e10babe277f3441f6cd4a0e477f2fe9d1e0c244c29ae53829993428ceb269a",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-pin-independent-recheck/academic-refresh-pin-recheck.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-pin-independent-recheck/academic-refresh-pin-recheck.safe.zip",
+      "sha256": "efd225966d25a197ecb099693582cabe9ea1b6a916f3a945cf4fec2e260936a9",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-pin-independent-recheck/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-pin-independent-recheck/manifest.json",
+      "sha256": "40287c23fd855b5597c4963bf0c483792d338c9ebaea36e48020121c674e409d",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-runtime-pin-correction/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-runtime-pin-correction/HANDOFF.md",
+      "sha256": "1310f7a4af083b0d9fcb081a113408718927c0a5cc658809ce33c90ef237e1de",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-runtime-pin-correction/current-academic-refresh-pin-correction.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-runtime-pin-correction/current-academic-refresh-pin-correction.safe.zip",
+      "sha256": "da568143744df7e92fdd8a78df50da25a60e00d272f1292a9d025c6c587236cc",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-refresh-runtime-pin-correction/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-refresh-runtime-pin-correction/manifest.json",
+      "sha256": "d9efefedb1d3288ec186caaa70f4346d8366c3976ba4dde96e03b69d9867965e",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-stage-source-cost-memo/MEMO.md",
+      "path": "docs/validation/cloud-20261011/receipts/academic-stage-source-cost-memo/MEMO.md",
+      "sha256": "add77f5a8152890eaa8593635e1c730829dc00b90522843e759f494c9d7231c8",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-stage-source-cost-memo/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-stage-source-cost-memo/manifest.json",
+      "sha256": "7dd574f4374ca2664f85634f55876aaec930ddc62adc7498f42321d2dc8e1616",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-academic-stage-source-cost-memo/stage-gate-cost-memo.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-stage-source-cost-memo/stage-gate-cost-memo.safe.zip",
+      "sha256": "f1eae06bc6c514fbb40bdaf6d9476c7f3d6a30c84e3bcda0dcc39fd047e22aae",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-cohort-correction/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-cohort-correction/READY.safe.json",
+      "sha256": "6f619a4583cb50260dccdd1e8eb6ec13974988becbb17451191de1eb1a7f760c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-cohort-correction/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-cohort-correction/source.safe.zip",
+      "sha256": "4fae161089430816d4de7a21b062079c742a33d4b0d30a91a6a0158857e6fb35",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-cohort-independent-recheck/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-cohort-independent-recheck/HANDOFF.md",
+      "sha256": "b5d9453790906788a7eadebb464bcb449eab582d4294ad25e69a8a2564fbca52",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-cohort-independent-recheck/focused3-next96-r1-recheck.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-cohort-independent-recheck/focused3-next96-r1-recheck.safe.zip",
+      "sha256": "884952cc35aec5bfe6075bfc274f964daa78b415f1d72a997eaef4931022278d",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-cohort-independent-recheck/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-cohort-independent-recheck/manifest.safe.json",
+      "sha256": "fb7b508ad2a359870322c7e2a9e40b15c7a3a2b21209d6fe1a5c403c282c4b7d",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-independent-review/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-independent-review/HANDOFF.md",
+      "sha256": "8fb6b7f4ce7ff54aedebd12a2d8a8de942763c906ba5b16705e07948b48e8527",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-independent-review/focused3-next96-review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-independent-review/focused3-next96-review.safe.zip",
+      "sha256": "bcf7fdcdcf4b6b8d545d8c521a99ea56f8beb7dce50916fd2378a275f2324710",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-independent-review/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-independent-review/manifest.safe.json",
+      "sha256": "57b55a136f6b87ed8fe4dd4402295b3416162be6f8d99083e467d1ae55b61901",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-source/READY.safe.json",
+      "sha256": "04f6baa830920810a044adb512bd4adee2e45aa35c1fc3551c2ad78694d10886",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-client-focused3-current96-source/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-current96-source/source.safe.zip",
+      "sha256": "58e26d1d5d588e0b100d1c9c90a49f0b55e10f115d26e39cd9d4d5a6aa6d7cbf",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-current96-schedule-coverage-closed-diagnostic/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current96-schedule-coverage-closed-diagnostic/HANDOFF.md",
+      "sha256": "eced4b731e8a3551553dd09deb9eab589ba482985e4b5869ed9d71b4cd66a1a5",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-current96-schedule-coverage-closed-diagnostic/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current96-schedule-coverage-closed-diagnostic/manifest.json",
+      "sha256": "3e3aa4b6c423b7967867c0cf92b34c5956a1217785c96f07086362106b1e5d1e",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-current96-schedule-coverage-closed-diagnostic/safe-closed-diagnostic.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current96-schedule-coverage-closed-diagnostic/safe-closed-diagnostic.zip",
+      "sha256": "08d466227c9897b93dc9d408ef4f1994b2b2571b9b02080c85e31fb92357878b",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-current96-green-seal/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-current96-green-seal/manifest.json",
+      "sha256": "6a168cf13f75d4ee296ee2e3a27b6665374cde32a661e728d05b1ba1e57cc52b",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "RECEIPT-enum-locale-current96-green-seal/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/enum-locale-current96-green-seal/safe-evidence.zip",
+      "sha256": "a6cf78303d2b5501dad97513d3b254066b9f7602eef768dfe3e21739327d980c",
+      "status": "root-retained-safe-evidence-not-product-authority",
+      "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "producer_revision": "see sealed original; observation is not native execution at current head"
     }
   ],
   "research_receipt": {

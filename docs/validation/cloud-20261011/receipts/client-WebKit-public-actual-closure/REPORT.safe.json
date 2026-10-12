@@ -1,0 +1,90 @@
+{
+  "schema": "RCT_WEBKIT_ACTUAL_FINITE_CLOSURE_V1",
+  "state": "PASS_PUBLIC_WPE_HEADLESS_PROTOCOL_AND_HEADING_ONLY",
+  "utc": "2026-10-12T19:25:48.233698+00:00",
+  "tool_session": 8498,
+  "runtime_runner": "Root actual invocation; author read-only finite closure",
+  "requested_model_effort": "gpt-6.1-sol/xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "native_exit": 0,
+  "settled": true,
+  "all_owned_reaped": true,
+  "recorded_births": [
+    {
+      "pid": 371772,
+      "start_ticks": 8640023,
+      "same_birth_present_after": false
+    },
+    {
+      "pid": 371776,
+      "start_ticks": 8640116,
+      "same_birth_present_after": false
+    },
+    {
+      "pid": 371788,
+      "start_ticks": 8640172,
+      "same_birth_present_after": false
+    },
+    {
+      "pid": 371790,
+      "start_ticks": 8640272,
+      "same_birth_present_after": false
+    },
+    {
+      "pid": 371802,
+      "start_ticks": 8640357,
+      "same_birth_present_after": false
+    },
+    {
+      "pid": 371804,
+      "start_ticks": 8640359,
+      "same_birth_present_after": false
+    }
+  ],
+  "signals": 0,
+  "private_tmp_removed": true,
+  "public_stages_passed": 5,
+  "public_heading_count": 1,
+  "public_heading_visible": true,
+  "classifier_passed": 15,
+  "prepared_source": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout": "ebc2d18226a2f931f2daab454c195c391c7b7f3b",
+  "inspection_checkout": "538af12e280bc0e34b62c99c8823a7bb552d6ea6",
+  "ready_sha256": "157fcf615e954c9bd7efd11f125ddc5721c04e9fe107a5b45681aa1851f64c44",
+  "source_archive_sha256": "98f1eda4c4dc66e864961d53459c14d8e5cc87de2b05dab7aaccdc5c62ecf58c",
+  "preservation": {
+    "Root_source_count": 19,
+    "Root_source_bytes_match": true,
+    "r1_source_count": 13,
+    "r1_source_bytes_match": true,
+    "own_source_bytes_match": true,
+    "pinned_source_bytes_match": true,
+    "third_party_package_bytes_match": true,
+    "declared_browser_manifest_and_Chromium_binary_bytes_match": true,
+    "provided_node_metadata_X_OK_SHA_match": true,
+    "native_proof_sha256": "5c16718574eac396903beff33d0f30ac036f67c7a89e58b0885b93c6fd95b7e8",
+    "native_subproof_count": 43,
+    "native_subproof_bytes_match": true,
+    "declared_upstream_browser_entries": 29,
+    "declared_upstream_browser_bytes_match": true,
+    "own_DSO_regular_count": 14,
+    "own_DSO_regular_bytes_metadata_match": true,
+    "own_SONAME_link_count": 8,
+    "own_SONAME_links_match": true,
+    "Root_four_actual_receipts_equal": true
+  },
+  "evidence_limits": "Post-run readback versus bound existing ledgers and captured receipts only; no unobserved transient byte/process claims.",
+  "peaks": {
+    "owned_rss_bytes": 444289024,
+    "run_allocated_bytes": 2711552,
+    "shared_memory_bytes": 5129433088
+  },
+  "clientAcceptance": false,
+  "real_API_fixture_dataset_seed_login_provider_stand": "NOT_RUN",
+  "GTK_fonts_locales_resources_full_rendering_all_clients": "NOT_PROVEN",
+  "worker_teachingInstant_type": "NOT_MEASURED_NO_CONFIG_OR_FIXTURES",
+  "original_three_client_failure_causes": "UNKNOWN",
+  "native43_replay": "NOT_RUN",
+  "raw_error_context_credentials_read_or_copied": false,
+  "lease": "RELEASED"
+}

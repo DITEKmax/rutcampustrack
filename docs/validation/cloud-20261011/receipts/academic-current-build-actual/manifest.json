@@ -1,0 +1,78 @@
+{
+  "scope": "ACTUAL_CURRENT_ACADEMIC_BUILD_ONLY",
+  "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/HANDOFF.md",
+      "sha256": "b4f24a0489e0a964cf83c959155a9e7e3628a17948061236f80bb14d28fc892c",
+      "bytes": 960
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/academic-bootjar-process.safe.json",
+      "sha256": "5a6ed1ffe3cd172ef9d02e58fab3a6956bed18a67f16f5f8db265194f0e668b8",
+      "bytes": 147
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/academic-bootjar-terminal.safe.json",
+      "sha256": "a1aacd23c6949d0416cd346bbae87ef97f224f5d788080bae7cfd00cda26170f",
+      "bytes": 646
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/build-result.safe.json",
+      "sha256": "08dd08de01d3c4fe5c0ebcea7cd53e22c41f36fb4d65e94b8d216b8aacda80ac",
+      "bytes": 390499
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/build-supervisor.safe.json",
+      "sha256": "aaceb3eecbf96b8494d35eb9c6957d0907cdee29f5ff73319c3e42bdf9dc250b",
+      "bytes": 116
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/checkout-process.safe.json",
+      "sha256": "cedf0c359f15baaf5ba95f4fe2df28b75bf8b0e4638a747682e2272637f9eedd",
+      "bytes": 147
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/checkout-terminal.safe.json",
+      "sha256": "797d0e8d84adce3fb4aab69a0f2129dfde4e80cbac7a07fd4ddcae0cf4774d12",
+      "bytes": 394
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/clone-process.safe.json",
+      "sha256": "c84e804e5057c9010e8bc13f1dd45c766db93763dcb539fd6f1536884aa90abf",
+      "bytes": 147
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/clone-terminal.safe.json",
+      "sha256": "c3b02d5a1c5155a9f60504e6f9880bc62ae6f930511c7079edd5ea3bb329c3cc",
+      "bytes": 520
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/full-current-app-proposal.safe.json",
+      "sha256": "941b99a2034c5489e8b8d2a85d70f86b6b40c5f30548aa854c7998cdca747fa3",
+      "bytes": 939
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/source-before.safe.json",
+      "sha256": "b99b520486850ba2f77d90096c926cc0ddcd70ab3417d469ed75abb4670e2aaa",
+      "bytes": 176813
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/sparse-config-process.safe.json",
+      "sha256": "05fd45b50c498de4e8a42f0734d3d1b89d353138e6c0c84f209918494a9143ff",
+      "bytes": 147
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/sparse-config-terminal.safe.json",
+      "sha256": "b028d6bf61db8be9c6fbebba3a4deea273505d19f74aa9247e1289ec8871785e",
+      "bytes": 394
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/actual-build01/terminal-outcome.safe.json",
+      "sha256": "6a45d3f40d148e457460d6c4f9e90c51e0176a73201518b2c97f337d201bb65a",
+      "bytes": 4061
+    }
+  ],
+  "private_files_excluded": true,
+  "runtime": "NOT_RUN"
+}

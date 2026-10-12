@@ -9,9 +9,8 @@ from bot.config import config, validate_startup_config
 from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
-from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
-from bot.services.bot_credential_cards import BotCredentialCards
 from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
+from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import (
     excuse_router,
@@ -29,6 +28,7 @@ from bot.observability import setup_observability
 from bot.services.academic_http_client import AcademicHttpClient
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
+from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.event_publisher import EventPublisher
 from bot.services.idempotency_guard import BotIdempotencyGuard
 from bot.services.jwt_redis_client import JwtRedisClient

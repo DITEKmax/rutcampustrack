@@ -9,12 +9,12 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-from aiohttp import web
 from aiogram import Bot, Dispatcher, Router
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.filters import Command
 from aiogram.types import Update
+from aiohttp import web
 
 from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client.bot_credentials_client import BotCredentialRequestDenied, BotCredentialsGrpcClient
@@ -155,7 +155,9 @@ class Provider:
 
     @staticmethod
     def error(description):
-        return web.json_response({"ok": False, "error_code": 400, "description": "Bad Request: " + description}, status=400)
+        return web.json_response(
+            {"ok": False, "error_code": 400, "description": "Bad Request: " + description}, status=400,
+        )
 
     def has_secret(self):
         import html
@@ -196,7 +198,9 @@ def message(bot):
 
 
 def profile():
-    return SimpleNamespace(found=True, user_id=17, display_name="Own", login="ordinary", group_name="Group", password_changed=False)
+    return SimpleNamespace(
+        found=True, user_id=17, display_name="Own", login="ordinary", group_name="Group", password_changed=False,
+    )
 
 
 @pytest.mark.asyncio
@@ -243,7 +247,9 @@ async def test_missing_dedicated_capability_keeps_ordinary_profile_usable_withou
     public = profile()
     public.password_changed = True
     generic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=public))
-    await cmd_start(incoming, generic, SimpleNamespace(), credential_cards=BotCredentialCards(bot=bot, client=authority))
+    await cmd_start(
+        incoming, generic, SimpleNamespace(), credential_cards=BotCredentialCards(bot=bot, client=authority),
+    )
     authority.read.assert_not_awaited()
     bot.edit_message_text.assert_not_awaited()
     assert "ordinary" in incoming.answer.await_args.args[0]

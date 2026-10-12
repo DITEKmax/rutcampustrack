@@ -301,7 +301,24 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(passwordChanged.path("event_type").asText()).isEqualTo("password.changed");
         JsonNode changedPayload = passwordChanged.path("payload");
         assertThat(changedPayload.path("telegram_id").asLong()).isEqualTo(TELEGRAM_ID);
-        assertThat(changedPayload.size()).isEqualTo(1);
+        assertThat(passwordChanged.path("event_version").asInt()).isEqualTo(2);
+        Map<String, Object> changedIdentity = jdbc.queryForMap(
+                "SELECT id, credentials_version, telegram_binding_version, telegram_id "
+                        + "FROM users WHERE login = 'student'");
+        var changedFields = new java.util.HashSet<String>();
+        changedPayload.fieldNames().forEachRemaining(changedFields::add);
+        assertThat(changedFields).containsExactlyInAnyOrder(
+                "user_id", "credentials_version", "telegram_binding_version", "telegram_id");
+        assertThat(changedPayload.path("user_id").asLong())
+                .isEqualTo(((Number) changedIdentity.get("id")).longValue());
+        assertThat(changedPayload.path("credentials_version").asLong()).isPositive()
+                .isEqualTo(((Number) changedIdentity.get("credentials_version")).longValue());
+        assertThat(changedPayload.path("telegram_binding_version").asLong()).isPositive()
+                .isEqualTo(((Number) changedIdentity.get("telegram_binding_version")).longValue());
+        assertThat(changedPayload.path("telegram_id").asLong())
+                .isEqualTo(((Number) changedIdentity.get("telegram_id")).longValue());
+        assertThat(passwordChangedJson.contains("NewStrongPassword42!") || passwordChangedJson.contains(resetTicket))
+                .as("password event must omit changed password and reset ticket values").isFalse();
         assertThat(changedPayload.has("password")).isFalse();
         assertThat(changedPayload.has("reset_ticket")).isFalse();
         assertThat(changedPayload.has("code")).isFalse();
@@ -357,7 +374,23 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 String.class);
         JsonNode storedEvent = objectMapper.readTree(storedJson);
         assertThat(EventSchemaValidator.validate("password.changed.json", storedJson)).isEmpty();
-        assertThat(storedEvent.path("payload").size()).isEqualTo(1);
+        assertThat(storedEvent.path("event_version").asInt()).isEqualTo(2);
+        JsonNode storedPayload = storedEvent.path("payload");
+        Map<String, Object> storedIdentity = jdbc.queryForMap(
+                "SELECT id, credentials_version, telegram_binding_version, telegram_id "
+                        + "FROM users WHERE login = 'student'");
+        var storedFields = new java.util.HashSet<String>();
+        storedPayload.fieldNames().forEachRemaining(storedFields::add);
+        assertThat(storedFields).containsExactlyInAnyOrder(
+                "user_id", "credentials_version", "telegram_binding_version", "telegram_id");
+        assertThat(storedPayload.path("user_id").asLong())
+                .isEqualTo(((Number) storedIdentity.get("id")).longValue());
+        assertThat(storedPayload.path("credentials_version").asLong()).isPositive()
+                .isEqualTo(((Number) storedIdentity.get("credentials_version")).longValue());
+        assertThat(storedPayload.path("telegram_binding_version").asLong()).isPositive()
+                .isEqualTo(((Number) storedIdentity.get("telegram_binding_version")).longValue());
+        assertThat(storedPayload.path("telegram_id").asLong())
+                .isEqualTo(((Number) storedIdentity.get("telegram_id")).longValue());
         assertThat(storedEvent.path("payload").path("telegram_id").asLong()).isEqualTo(TELEGRAM_ID);
         assertThat(storedJson).doesNotContain("OutboxNewPassword42!", "password_hash", "reset_ticket", "code");
 

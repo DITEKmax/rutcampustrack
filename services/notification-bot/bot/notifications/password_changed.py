@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from aiogram import Bot
+
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)

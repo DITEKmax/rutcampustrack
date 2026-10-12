@@ -13,11 +13,11 @@ from types import SimpleNamespace
 
 import aiohttp
 import grpc
-from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.types import Update
+from aiohttp import web
 
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client import academic_pb2 as pb

@@ -102,7 +102,7 @@ class BotCredentialLifecycleMigrationIT {
         try (Connection c = ds.getConnection()) {
             c.setAutoCommit(false);
             execute(c, "UPDATE users SET initial_password=NULL,password_changed=TRUE WHERE id=" + u);
-            execute(c, "INSERT INTO auth_outbox(event_type,payload) VALUES ('password.changed'," 
+            execute(c, "INSERT INTO auth_outbox(event_type,payload) VALUES ('password.changed',"
                     + "'{\"event_id\":\"00000000-0000-4000-8000-000000000004\",\"event_version\":2}')");
             c.rollback();
         }
@@ -113,7 +113,7 @@ class BotCredentialLifecycleMigrationIT {
         try (Connection c = ds.getConnection()) {
             c.setAutoCommit(false);
             execute(c, "UPDATE users SET initial_password=NULL,password_changed=TRUE WHERE id=" + u);
-            execute(c, "INSERT INTO auth_outbox(event_type,payload) VALUES ('password.changed'," 
+            execute(c, "INSERT INTO auth_outbox(event_type,payload) VALUES ('password.changed',"
                     + "'{\"event_id\":\"00000000-0000-4000-8000-000000000004\",\"event_version\":2}')");
             c.commit();
         }

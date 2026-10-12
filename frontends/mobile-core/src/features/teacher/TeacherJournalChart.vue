@@ -62,6 +62,8 @@ function text(index:number):string {const bar=bars.value[index]!;return `${bar.l
       role="group"
       aria-label="Зелёный — присутствовал, жёлтый — уважительная причина, красный — отсутствовал"
     >
+      <!-- Keep exact SVG text: pinned Prettier pads this label with spaces. -->
+      <!-- prettier-ignore -->
       <text
         ref="probe"
         class="teacher-journal__chart-probe"

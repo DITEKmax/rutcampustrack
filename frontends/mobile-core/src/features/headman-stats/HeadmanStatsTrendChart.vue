@@ -118,6 +118,8 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
         preserveAspectRatio="none"
         aria-hidden="false"
       >
+        <!-- Keep exact SVG text: pinned Prettier pads this label with spaces. -->
+        <!-- prettier-ignore -->
         <text
           ref="probe"
           class="headman-stats-trend__axis headman-stats-trend__probe"

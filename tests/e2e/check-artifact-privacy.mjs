@@ -33,8 +33,11 @@ function run(name, interrupted, missingGuard = false) {
       'test',
       '--config',
       'playwright.artifact-control.config.ts',
-      ...(missingGuard ? ['--grep', missingGuardControl] :
-        (red || interrupted) ? ['--grep', lateControl] : []),
+      ...(missingGuard
+        ? ['--grep', missingGuardControl]
+        : red || interrupted
+          ? ['--grep', lateControl]
+          : []),
     ],
     {
       cwd: root,
@@ -57,7 +60,11 @@ function run(name, interrupted, missingGuard = false) {
     ...artifactFiles.map((path) => readFileSync(path).toString()),
   ].some((value) => value.includes(marker))
   const read = (path) => {
-    try { return JSON.parse(readFileSync(path, 'utf8')) } catch { return null }
+    try {
+      return JSON.parse(readFileSync(path, 'utf8'))
+    } catch {
+      return null
+    }
   }
   return {
     childStatus: child.status,
@@ -65,7 +72,8 @@ function run(name, interrupted, missingGuard = false) {
     markerAbsent: !leaked,
     report: read(join(artifacts, 'safe-results.json')),
     producer: read(join(supervision, 'producer-boundary.safe.json')),
-    explicitOperationStarted: read(join(supervision, 'explicit-operation.safe.json'))?.explicitOperationStarted === true,
+    explicitOperationStarted:
+      read(join(supervision, 'explicit-operation.safe.json'))?.explicitOperationStarted === true,
     artifactFiles,
   }
 }
@@ -74,10 +82,15 @@ try {
   const expectedFailures = normal.report?.results.filter(
     (row) => row.status === 'failed' && row.expectedStatus === 'failed' && row.errorCount > 0,
   ).length
-  const producerPassed = normal.producer?.stage === 'AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT' &&
-    normal.producer.failureRetained === true && normal.producer.attachmentNotYetCreated === true
+  const producerPassed =
+    normal.producer?.stage === 'AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT' &&
+    normal.producer.failureRetained === true &&
+    normal.producer.attachmentNotYetCreated === true
   if (red) {
-    const reproduced = normal.childStatus === 0 && expectedFailures === 1 && producerPassed &&
+    const reproduced =
+      normal.childStatus === 0 &&
+      expectedFailures === 1 &&
+      producerPassed &&
       normal.producer.markerAbsent === false
     // Red fails the producer oracle while the real test remains an expected failure.
     emit({
@@ -90,29 +103,47 @@ try {
     })
     process.exitCode = 1
   } else {
-  const successRetained = normal.report?.results.filter((row) => row.status === 'passed').length === 3
-  const titleControl = normal.artifactFiles
-    .filter((path) => path.endsWith('control.json'))
-    .some((path) => JSON.parse(readFileSync(path, 'utf8')).originalFillTitleContainsMarker === true)
-  const guardControl = normal.artifactFiles
-    .filter((path) => path.endsWith('guard-control.json'))
-    .map((path) => JSON.parse(readFileSync(path, 'utf8')))[0]
-  const guardPassed = guardControl && Object.values(guardControl).every((value) => value === true)
-  const interrupted = run('interrupted', true)
-  const missingGuard = run('missing-guard', false, true)
-  const missingGuardRejectedBeforeOperation = missingGuard.childStatus === 0 &&
-    missingGuard.markerAbsent && !missingGuard.explicitOperationStarted &&
-    missingGuard.report?.results.filter((row) => row.status === 'failed' &&
-      row.expectedStatus === 'failed' && row.errorCount > 0).length === 1
-  const interruptionPassed = interrupted.producer?.interrupted === true &&
-    interrupted.producer.markerAbsent === true && interrupted.producer.failureRetained === true &&
-    interrupted.producer.attachmentNotYetCreated === true && interrupted.markerAbsent &&
-    interrupted.report?.results.filter((row) => row.status === 'failed' && row.errorCount > 0).length === 1
-  const passed = normal.childStatus === 0 && normal.markerAbsent && expectedFailures === 3 &&
-    successRetained && titleControl && guardPassed && producerPassed &&
-    normal.producer.markerAbsent === true && interruptionPassed && missingGuardRejectedBeforeOperation
-  // Never forward raw child output, even if this control detects a leak.
-  emit({
+    const successRetained =
+      normal.report?.results.filter((row) => row.status === 'passed').length === 3
+    const titleControl = normal.artifactFiles
+      .filter((path) => path.endsWith('control.json'))
+      .some(
+        (path) => JSON.parse(readFileSync(path, 'utf8')).originalFillTitleContainsMarker === true,
+      )
+    const guardControl = normal.artifactFiles
+      .filter((path) => path.endsWith('guard-control.json'))
+      .map((path) => JSON.parse(readFileSync(path, 'utf8')))[0]
+    const guardPassed = guardControl && Object.values(guardControl).every((value) => value === true)
+    const interrupted = run('interrupted', true)
+    const missingGuard = run('missing-guard', false, true)
+    const missingGuardRejectedBeforeOperation =
+      missingGuard.childStatus === 0 &&
+      missingGuard.markerAbsent &&
+      !missingGuard.explicitOperationStarted &&
+      missingGuard.report?.results.filter(
+        (row) => row.status === 'failed' && row.expectedStatus === 'failed' && row.errorCount > 0,
+      ).length === 1
+    const interruptionPassed =
+      interrupted.producer?.interrupted === true &&
+      interrupted.producer.markerAbsent === true &&
+      interrupted.producer.failureRetained === true &&
+      interrupted.producer.attachmentNotYetCreated === true &&
+      interrupted.markerAbsent &&
+      interrupted.report?.results.filter((row) => row.status === 'failed' && row.errorCount > 0)
+        .length === 1
+    const passed =
+      normal.childStatus === 0 &&
+      normal.markerAbsent &&
+      expectedFailures === 3 &&
+      successRetained &&
+      titleControl &&
+      guardPassed &&
+      producerPassed &&
+      normal.producer.markerAbsent === true &&
+      interruptionPassed &&
+      missingGuardRejectedBeforeOperation
+    // Never forward raw child output, even if this control detects a leak.
+    emit({
       state: passed ? 'PRIVACY_BOUNDARIES_PASSED' : 'PRIVACY_CONTROL_FAILED',
       normalChildStatus: normal.childStatus,
       markerAbsent: normal.markerAbsent,
@@ -128,7 +159,7 @@ try {
       missingGuardRejectedBeforeOperation,
       browser: 'NOT_STARTED',
     })
-  if (!passed) process.exitCode = 1
+    if (!passed) process.exitCode = 1
   }
 } catch {
   emit({ state: 'CONTROL_EXECUTION_ERROR', rawErrorSuppressed: true, browser: 'NOT_STARTED' })

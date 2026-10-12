@@ -65,34 +65,37 @@ const lateFailure = test.extend<{ lateFailure: void }>({
   ],
 });
 
-lateFailure.fail('late fixture diagnostics are safe before the producer attachment', async ({ lateFailure }, info) => {
-  void lateFailure;
-  const originalWrite = fsPromises.writeFile;
-  const artifact = info.outputPath('error-context.md');
-  // Test-only interception observes the ACTUAL vendor write before _attach/reporter.
-  // No vendor file is changed, no browser is requested, and only public-marker booleans are saved.
-  fsPromises.writeFile = async (...args: Parameters<typeof originalWrite>) => {
-    await originalWrite(...args);
-    if (String(args[0]) !== artifact) return;
-    fsPromises.writeFile = originalWrite;
-    const observation = {
-      stage: 'AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT',
-      markerAbsent: !readFileSync(artifact, 'utf8').includes(marker),
-      failureRetained: info.status === 'failed' && info.errors.length > 0,
-      attachmentNotYetCreated: !info.attachments.some((item) => item.name === 'error-context'),
-      interrupted: process.env.RCT_E2E_CONTROL_INTERRUPT === 'true',
+lateFailure.fail(
+  'late fixture diagnostics are safe before the producer attachment',
+  async ({ lateFailure }, info) => {
+    void lateFailure;
+    const originalWrite = fsPromises.writeFile;
+    const artifact = info.outputPath('error-context.md');
+    // Test-only interception observes the ACTUAL vendor write before _attach/reporter.
+    // No vendor file is changed, no browser is requested, and only public-marker booleans are saved.
+    fsPromises.writeFile = async (...args: Parameters<typeof originalWrite>) => {
+      await originalWrite(...args);
+      if (String(args[0]) !== artifact) return;
+      fsPromises.writeFile = originalWrite;
+      const observation = {
+        stage: 'AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT',
+        markerAbsent: !readFileSync(artifact, 'utf8').includes(marker),
+        failureRetained: info.status === 'failed' && info.errors.length > 0,
+        attachmentNotYetCreated: !info.attachments.some((item) => item.name === 'error-context'),
+        interrupted: process.env.RCT_E2E_CONTROL_INTERRUPT === 'true',
+      };
+      writeFileSync(
+        resolve(process.env.RCT_E2E_CONTROL_SUPERVISION_DIR!, 'producer-boundary.safe.json'),
+        JSON.stringify(observation),
+      );
+      if (observation.interrupted) {
+        process.kill(process.pid, 'SIGTERM');
+        // Do not resolve the vendor write await before the worker actually terminates.
+        await new Promise(() => {});
+      }
     };
-    writeFileSync(
-      resolve(process.env.RCT_E2E_CONTROL_SUPERVISION_DIR!, 'producer-boundary.safe.json'),
-      JSON.stringify(observation),
-    );
-    if (observation.interrupted) {
-      process.kill(process.pid, 'SIGTERM');
-      // Do not resolve the vendor write await before the worker actually terminates.
-      await new Promise(() => {});
-    }
-  };
-});
+  },
+);
 
 if (process.env.RCT_E2E_CONTROL_MISSING_GUARD === 'true') {
   const operation = privateTest.extend<{ protectedOperation: void }>({
@@ -104,9 +107,12 @@ if (process.env.RCT_E2E_CONTROL_MISSING_GUARD === 'true') {
       await use();
     },
   });
-  operation.fail('privacy guard rejects before an explicit operation fixture', async ({ protectedOperation }) => {
-    void protectedOperation;
-  });
+  operation.fail(
+    'privacy guard rejects before an explicit operation fixture',
+    async ({ protectedOperation }) => {
+      void protectedOperation;
+    },
+  );
 }
 
 test('revoked-array counterexample fails the actual permission assertion', async () => {

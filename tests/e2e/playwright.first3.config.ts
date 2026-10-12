@@ -17,9 +17,7 @@ for (const path of [run, join(run, 'artifacts'), join(run, 'supervision')]) {
     throw new Error('FIRST3 requires precreated private artifact directories');
   }
 }
-if (
-  process.env.RCT_FOCUS3_OBSERVATIONS !== join(run, 'supervision', 'observations.safe.json')
-) {
+if (process.env.RCT_FOCUS3_OBSERVATIONS !== join(run, 'supervision', 'observations.safe.json')) {
   throw new Error('FIRST3 observations must stay outside Playwright outputDir');
 }
 const teachingInstant = readTeachingInstant(process.env.RCT_E2E_TEACHING_CLOCK_DIR);

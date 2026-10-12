@@ -388,15 +388,13 @@ onBeforeUnmount(() => {
     v-if="catalog"
     class="profile-map-review-catalog"
   >
-    <h1>Карта и профиль · API fixture</h1
-    ><p
-      >{{ "Реальные Vue / ProfileState / CampusMapClient. Данные, API и Telegram host синтетические. Для проверки ready-форматов используется существующая иконка, не схема кампуса." }}</p
-    ><a
+    <h1>Карта и профиль · API fixture</h1><p>
+      {{ "Реальные Vue / ProfileState / CampusMapClient. Данные, API и Telegram host синтетические. Для проверки ready-форматов используется существующая иконка, не схема кампуса." }}
+    </p><a
       v-for="item in profileMapScenarios"
       :key="item[0]"
       :href="'?' + scenarioLink(item[0])"
-      >{{ item[1] }}</a
-    >
+    >{{ item[1] }}</a>
   </main>
   <MobileShell
     v-else
@@ -518,10 +516,10 @@ onBeforeUnmount(() => {
       class="profile-map-review-controls"
       aria-label="Управление API fixture"
     >
-      <p
-        >{{ "API fixture · owner " }}{{ owner }} · map requests {{ mapRequests }} · opens {{ opens }} ·
-        theme preference {{ theme }}{{ " · dark display" }}</p
-      >
+      <p>
+        {{ "API fixture · owner " }}{{ owner }} · map requests {{ mapRequests }} · opens {{ opens }} ·
+        theme preference {{ theme }}{{ " · dark display" }}
+      </p>
       <p role="status">
         {{ status }}
       </p>
@@ -529,18 +527,18 @@ onBeforeUnmount(() => {
         type="button"
         @click="replaceOwner"
       >
-        Сменить owner </button
-      ><button
+        Сменить owner
+      </button><button
         type="button"
         @click="state.invalidate()"
       >
-        Отозвать аккаунт </button
-      ><button
+        Отозвать аккаунт
+      </button><button
         type="button"
         @click="offline = !offline"
       >
-        {{ offline ? 'Онлайн' : 'Офлайн' }} </button
-      ><button
+        {{ offline ? 'Онлайн' : 'Офлайн' }}
+      </button><button
         type="button"
         @click="invokeHostBack"
       >

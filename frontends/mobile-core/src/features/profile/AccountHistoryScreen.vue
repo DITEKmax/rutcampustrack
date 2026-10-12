@@ -69,7 +69,7 @@ function loadMore(): void {
             :src="historyPrevious"
             alt=""
             aria-hidden="true"
-          />
+          >
         </button>
         <h1
           id="profile-history-title"

@@ -72,12 +72,9 @@ onBeforeUnmount(() => {
     class="admin-users-select"
     data-picker="group"
   >
-    <summary
-      ><span
-        ><small>{{ label }}</small
-        >{{ modelValue && selectedName ? selectedName : 'Выбрать группу' }}</span
-      ><MobileIcon name="chevron-down"
-    /></summary>
+    <summary>
+      <span><small>{{ label }}</small>{{ modelValue && selectedName ? selectedName : 'Выбрать группу' }}</span><MobileIcon name="chevron-down" />
+    </summary>
     <div class="admin-users-select__options">
       <div
         class="admin-users-group-search"
@@ -90,7 +87,7 @@ onBeforeUnmount(() => {
           aria-label="Найти группу"
           @input="load()"
           @keydown.enter.prevent="load()"
-        />
+        >
       </div>
       <p
         v-if="loading"
@@ -99,8 +96,9 @@ onBeforeUnmount(() => {
         Загружаем группы…
       </p>
       <template v-else-if="error">
-        <p role="alert"> {{ error }} </p
-        ><button
+        <p role="alert">
+          {{ error }}
+        </p><button
           type="button"
           @click="load()"
         >
@@ -115,8 +113,8 @@ onBeforeUnmount(() => {
           :aria-pressed="modelValue === String(group.id)"
           @click="select(group, $event)"
         >
-          {{ group.name }} </button
-        ><p
+          {{ group.name }}
+        </button><p
           v-if="!groups.length"
           role="status"
         >
@@ -132,9 +130,8 @@ onBeforeUnmount(() => {
           :disabled="loading || page === 0"
           @click="load(page - 1)"
         >
-          Назад </button
-        ><span>{{ page + 1 }} / {{ totalPages }}</span
-        ><button
+          Назад
+        </button><span>{{ page + 1 }} / {{ totalPages }}</span><button
           type="button"
           :disabled="loading || page + 1 >= totalPages"
           @click="load(page + 1)"

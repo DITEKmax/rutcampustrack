@@ -38,18 +38,17 @@ const symbol = computed(() =>
         class="request-lesson-summary__status"
         :data-status="attendanceStatus"
         :aria-label="statusLabel"
-        >{{ symbol }}</span
-      >
+      >{{ symbol }}</span>
     </div>
-    <p
-      ><MobileIcon name="calendar" /><span>{{ formatLessonDate(lesson.date) }}</span></p
-    >
-    <p
-      ><MobileIcon name="clock" /><span>{{ formatLessonTime(lesson) }}</span></p
-    >
-    <p
-      ><MobileIcon name="lesson" /><span>{{ lessonTypeLabel(lesson.subjectType) }}</span></p
-    >
+    <p>
+      <MobileIcon name="calendar" /><span>{{ formatLessonDate(lesson.date) }}</span>
+    </p>
+    <p>
+      <MobileIcon name="clock" /><span>{{ formatLessonTime(lesson) }}</span>
+    </p>
+    <p>
+      <MobileIcon name="lesson" /><span>{{ lessonTypeLabel(lesson.subjectType) }}</span>
+    </p>
     <p
       v-if="!attendanceStatus"
       class="request-lesson-summary__unknown"

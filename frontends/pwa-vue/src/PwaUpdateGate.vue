@@ -195,12 +195,16 @@ onBeforeUnmount(() => {
       @keydown="onGateKeydown"
     >
       <section class="pwa-update-gate__panel">
-        <p class="pwa-update-gate__eyebrow"> Обновление приложения </p>
-        <h1 id="pwa-update-gate-title"> Нужно обновить RutTrack </h1>
+        <p class="pwa-update-gate__eyebrow">
+          Обновление приложения
+        </p>
+        <h1 id="pwa-update-gate-title">
+          Нужно обновить RutTrack
+        </h1>
         <p id="pwa-update-gate-message">
           {{
             required.message ??
-            'Текущая версия больше не поддерживается. Обнови приложение, чтобы продолжить.'
+              'Текущая версия больше не поддерживается. Обнови приложение, чтобы продолжить.'
           }}
         </p>
         <p

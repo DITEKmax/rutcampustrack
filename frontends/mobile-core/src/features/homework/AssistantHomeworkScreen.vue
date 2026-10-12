@@ -615,8 +615,12 @@ onBeforeUnmount(() => {
   >
     <header class="assistant-homework__header">
       <div>
-        <p class="assistant-homework__eyebrow"> Помощник группы · ДЗ </p>
-        <h1 id="assistant-homework-title"> Домашние задания </h1>
+        <p class="assistant-homework__eyebrow">
+          Помощник группы · ДЗ
+        </p>
+        <h1 id="assistant-homework-title">
+          Домашние задания
+        </h1>
         <p class="assistant-homework__date">
           {{ formatDate(selectedDate) }}
         </p>
@@ -684,46 +688,38 @@ onBeforeUnmount(() => {
         class="assistant-homework__form"
         aria-label="Привязка домашнего задания"
       >
-        <label
-          ><span>Дата</span
-          ><input
-            v-model="selectedDate"
-            type="date"
-            :min="semester.dateFrom ?? undefined"
-            :max="semester.dateTo ?? undefined"
-            :disabled="mutationBusy || formId !== null"
-        /></label>
-        <label
-          ><span>Привязка</span
-          ><select
-            v-model="bindingMode"
-            :disabled="mutationBusy || formId !== null"
-          >
-            <option value="LESSON">К паре</option
-            ><option value="DATE">На дату</option>
-          </select></label
+        <label><span>Дата</span><input
+          v-model="selectedDate"
+          type="date"
+          :min="semester.dateFrom ?? undefined"
+          :max="semester.dateTo ?? undefined"
+          :disabled="mutationBusy || formId !== null"
+        ></label>
+        <label><span>Привязка</span><select
+          v-model="bindingMode"
+          :disabled="mutationBusy || formId !== null"
         >
-        <label v-if="bindingMode === 'DATE'"
-          ><span>Предмет</span
-          ><select
-            v-model="selectedSubjectId"
-            :disabled="mutationBusy || formId !== null"
-          >
-            <option
-              v-for="subject in subjects"
-              :key="subject.id"
-              :value="subject.id"
-              >{{ subject.name }}</option
-            >
-          </select></label
+          <option value="LESSON">К паре</option><option value="DATE">На дату</option>
+        </select></label>
+        <label v-if="bindingMode === 'DATE'"><span>Предмет</span><select
+          v-model="selectedSubjectId"
+          :disabled="mutationBusy || formId !== null"
         >
+          <option
+            v-for="subject in subjects"
+            :key="subject.id"
+            :value="subject.id"
+          >{{ subject.name }}</option>
+        </select></label>
       </section>
       <section
         v-if="bindingMode === 'LESSON'"
         class="assistant-homework__lessons"
         aria-labelledby="assistant-homework-lessons-title"
       >
-        <h2 id="assistant-homework-lessons-title"> Пары за день </h2>
+        <h2 id="assistant-homework-lessons-title">
+          Пары за день
+        </h2>
         <p
           v-if="lessons.length === 0"
           class="assistant-homework__empty"
@@ -759,13 +755,15 @@ onBeforeUnmount(() => {
             <h2 id="assistant-homework-items-title">
               {{ bindingMode === 'DATE' ? 'ДЗ на выбранную дату' : 'ДЗ на выбранную пару' }}
             </h2>
-            <p>{{
-              bindingMode === 'DATE'
-                ? formatDate(selectedDate)
-                : selectedLesson
-                  ? lessonLabel(selectedLesson)
-                  : ''
-            }}</p>
+            <p>
+              {{
+                bindingMode === 'DATE'
+                  ? formatDate(selectedDate)
+                  : selectedLesson
+                    ? lessonLabel(selectedLesson)
+                    : ''
+              }}
+            </p>
           </div>
           <button
             v-if="canCreate"
@@ -791,7 +789,9 @@ onBeforeUnmount(() => {
           <div>
             <strong>{{ item.title }}</strong>
             <p>{{ subjectLabel(item) }}</p>
-            <p v-if="item.archived"> Архив · только чтение </p>
+            <p v-if="item.archived">
+              Архив · только чтение
+            </p>
             <p v-if="item.description">
               {{ item.description }}
             </p>
@@ -800,8 +800,7 @@ onBeforeUnmount(() => {
               :href="item.link"
               target="_blank"
               rel="noopener noreferrer"
-              >Открыть материал</a
-            >
+            >Открыть материал</a>
           </div>
           <div class="assistant-homework__item-actions">
             <button
@@ -838,7 +837,9 @@ onBeforeUnmount(() => {
             >
               Загружаем историю…
             </p>
-            <p v-else-if="historyEntries.length === 0"> История изменений пуста. </p>
+            <p v-else-if="historyEntries.length === 0">
+              История изменений пуста.
+            </p>
             <ol v-else>
               <li
                 v-for="entry in historyEntries"
@@ -897,31 +898,25 @@ onBeforeUnmount(() => {
           >
             Результат отправки неизвестен. Повтори сохранение, чтобы отправить тот же запрос.
           </p>
-          <label
-            ><span>Название</span
-            ><input
-              v-model="title"
-              maxlength="255"
-              required
-              :disabled="mutationBusy || retryLocked"
-          /></label>
-          <label
-            ><span>Описание</span
-            ><textarea
-              v-model="description"
-              maxlength="4000"
-              rows="3"
-              :disabled="mutationBusy || retryLocked"
-            />
+          <label><span>Название</span><input
+            v-model="title"
+            maxlength="255"
+            required
+            :disabled="mutationBusy || retryLocked"
+          ></label>
+          <label><span>Описание</span><textarea
+            v-model="description"
+            maxlength="4000"
+            rows="3"
+            :disabled="mutationBusy || retryLocked"
+          />
           </label>
-          <label
-            ><span>Ссылка</span
-            ><input
-              v-model="link"
-              maxlength="2048"
-              type="url"
-              :disabled="mutationBusy || retryLocked"
-          /></label>
+          <label><span>Ссылка</span><input
+            v-model="link"
+            maxlength="2048"
+            type="url"
+            :disabled="mutationBusy || retryLocked"
+          ></label>
           <p
             v-if="title.trim() === '' || !validForm()"
             class="assistant-homework__form-error"

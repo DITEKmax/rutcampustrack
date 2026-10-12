@@ -31,7 +31,6 @@ const label = computed(() =>
       v-if="badge"
       class="notifications-entry__badge"
       aria-hidden="true"
-      >{{ badge }}</span
-    >
+    >{{ badge }}</span>
   </button>
 </template>

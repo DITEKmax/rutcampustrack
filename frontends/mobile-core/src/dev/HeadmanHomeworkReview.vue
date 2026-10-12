@@ -384,7 +384,7 @@ onBeforeUnmount(() => {
           <img
             :src="backIcon"
             alt=""
-          />
+          >
         </button>
       </template>
       <HeadmanHomeworkScreen
@@ -407,20 +407,17 @@ onBeforeUnmount(() => {
       class="headman-review__links"
       aria-label="Состояния синтетического API"
     >
-      <p>Фактический Vue · синтетический API · {{ shell.toUpperCase() }}</p
-      ><a :href="`?state=navigation&shell=${shell}`">navigation</a
-      ><button
+      <p>Фактический Vue · синтетический API · {{ shell.toUpperCase() }}</p><a :href="`?state=navigation&shell=${shell}`">navigation</a><button
         v-if="backVisible"
         type="button"
         @click="hostBack"
       >
-        Telegram Back </button
-      ><a
+        Telegram Back
+      </button><a
         v-for="id in headmanHomeworkStates"
         :key="id"
         :href="`?state=${id}&shell=${shell}`"
-        >{{ id }}</a
-      >
+      >{{ id }}</a>
     </nav>
   </div>
 </template>

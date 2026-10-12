@@ -115,8 +115,10 @@ async function load(): Promise<void> {
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" /> </button
-      ><h1 id="admin-map-statistics-title"> Статистика карты </h1>
+        <MobileIcon name="back" />
+      </button><h1 id="admin-map-statistics-title">
+        Статистика карты
+      </h1>
     </header>
     <AdminNotice
       v-if="!canView"
@@ -150,8 +152,7 @@ async function load(): Promise<void> {
       v-else-if="!allRows.length"
       class="admin-map-empty"
     >
-      <MobileIcon name="room" /><h2>Этажей пока нет</h2
-      ><p>Открытия схем появятся здесь после добавления этажей.</p>
+      <MobileIcon name="room" /><h2>Этажей пока нет</h2><p>Открытия схем появятся здесь после добавления этажей.</p>
     </div>
     <div
       v-else
@@ -161,28 +162,20 @@ async function load(): Promise<void> {
         class="admin-map-card admin-map-statistics__hero"
         aria-label="Открытия схем"
       >
-        <MobileIcon name="attendance-graph" /><p>Открытия схем</p
-        ><strong>{{ total.toLocaleString('ru-RU') }}</strong
-        ><span>За всё время</span>
+        <MobileIcon name="attendance-graph" /><p>Открытия схем</p><strong>{{ total.toLocaleString('ru-RU') }}</strong><span>За всё время</span>
       </section>
-      <label class="admin-map-field"
-        ><span>Корпус</span
-        ><span class="admin-map-select"
-          ><select v-model="buildingId"
-            ><option value="all">Все корпуса</option
-            ><option
-              v-for="building in inventory"
-              :key="building.id"
-              :value="building.id"
-              >Корпус {{ building.code }}</option
-            ></select
-          ><MobileIcon name="chevron-down" /></span
-      ></label>
+      <label class="admin-map-field"><span>Корпус</span><span class="admin-map-select"><select v-model="buildingId"><option value="all">Все корпуса</option><option
+        v-for="building in inventory"
+        :key="building.id"
+        :value="building.id"
+      >Корпус {{ building.code }}</option></select><MobileIcon name="chevron-down" /></span></label>
       <section
         class="admin-map-card"
         aria-labelledby="admin-map-statistics-floors"
       >
-        <h2 id="admin-map-statistics-floors"> По этажам </h2>
+        <h2 id="admin-map-statistics-floors">
+          По этажам
+        </h2>
         <ul
           class="admin-map-demand"
           aria-label="Количество открытий схем по этажам"
@@ -191,10 +184,9 @@ async function load(): Promise<void> {
             v-for="row in rows"
             :key="row.floor.id"
           >
-            <div
-              ><span>Корпус {{ row.building.code }} · этаж {{ row.floor.code }}</span
-              ><strong>{{ row.floor.openCount.toLocaleString('ru-RU') }}</strong></div
-            ><progress
+            <div>
+              <span>Корпус {{ row.building.code }} · этаж {{ row.floor.code }}</span><strong>{{ row.floor.openCount.toLocaleString('ru-RU') }}</strong>
+            </div><progress
               :value="row.floor.openCount"
               :max="maximum"
               :aria-label="`Корпус ${row.building.code}, этаж ${row.floor.code}: ${row.floor.openCount} открытий`"

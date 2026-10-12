@@ -124,7 +124,9 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
     aria-labelledby="statistics-title"
   >
     <header class="statistics-screen__header">
-      <h1 id="statistics-title"> Статистика </h1>
+      <h1 id="statistics-title">
+        Статистика
+      </h1>
     </header>
 
     <section
@@ -164,8 +166,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           <span
             class="statistics-metric__symbol"
             aria-hidden="true"
-            >+</span
-          >
+          >+</span>
           <span>{{ displayPercent(data.metrics.present.percent) }}</span>
           <span class="statistics-visually-hidden">был, {{ data.metrics.present.count }}</span>
         </article>
@@ -173,8 +174,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           <span
             class="statistics-metric__symbol"
             aria-hidden="true"
-            >н</span
-          >
+          >н</span>
           <span>{{ displayPercent(data.metrics.absent.percent) }}</span>
           <span class="statistics-visually-hidden">не был, {{ data.metrics.absent.count }}</span>
         </article>
@@ -182,12 +182,9 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           <span
             class="statistics-metric__symbol"
             aria-hidden="true"
-            >у</span
-          >
+          >у</span>
           <span>{{ displayPercent(data.metrics.excused.percent) }}</span>
-          <span class="statistics-visually-hidden"
-            >уважительная причина, {{ data.metrics.excused.count }}</span
-          >
+          <span class="statistics-visually-hidden">уважительная причина, {{ data.metrics.excused.count }}</span>
         </article>
       </section>
 
@@ -205,7 +202,9 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
         class="statistics-subjects"
         aria-labelledby="statistics-subjects-title"
       >
-        <h2 id="statistics-subjects-title"> По предметам </h2>
+        <h2 id="statistics-subjects-title">
+          По предметам
+        </h2>
         <p
           v-if="data.subjects.length === 0"
           class="statistics-subjects__empty"
@@ -232,24 +231,21 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
                 >
                   <i aria-hidden="true" />{{ displayPercent(subject.metrics.present.percent) }}
                   <span class="statistics-visually-hidden">
-                    присутствовал, {{ subject.metrics.present.count }}</span
-                  >
+                    присутствовал, {{ subject.metrics.present.count }}</span>
                 </span>
                 <span
                   class="statistics-subject-summary__metric statistics-subject-summary__metric--excused"
                 >
                   <i aria-hidden="true" />{{ displayPercent(subject.metrics.excused.percent) }}
                   <span class="statistics-visually-hidden">
-                    уважительная причина, {{ subject.metrics.excused.count }}</span
-                  >
+                    уважительная причина, {{ subject.metrics.excused.count }}</span>
                 </span>
                 <span
                   class="statistics-subject-summary__metric statistics-subject-summary__metric--absent"
                 >
                   <i aria-hidden="true" />{{ displayPercent(subject.metrics.absent.percent) }}
                   <span class="statistics-visually-hidden">
-                    отсутствовал, {{ subject.metrics.absent.count }}</span
-                  >
+                    отсутствовал, {{ subject.metrics.absent.count }}</span>
                 </span>
               </span>
               <span

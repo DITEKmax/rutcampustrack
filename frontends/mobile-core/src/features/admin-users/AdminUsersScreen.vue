@@ -1502,7 +1502,7 @@ onBeforeUnmount(() => {
           aria-label="Найти пользователя"
           placeholder="Найти пользователя"
           autocomplete="off"
-        /><button
+        ><button
           type="submit"
           aria-label="Найти"
         >
@@ -1526,8 +1526,8 @@ onBeforeUnmount(() => {
           type="button"
           @click="openFilters"
         >
-          Фильтры и сортировка </button
-        ><button
+          Фильтры и сортировка
+        </button><button
           class="admin-users-icon-button"
           type="button"
           aria-label="Сбросить поиск и фильтры"
@@ -1538,8 +1538,11 @@ onBeforeUnmount(() => {
       </div>
       <p class="admin-users-muted">
         Всего: {{ totalElements.toLocaleString('ru-RU')
-        }}<template v-if="roleFilter"> · {{ roleLabel(roleFilter) }} </template
-        ><template v-if="statusFilter"> · {{ statusLabel(statusFilter) }} </template>
+        }}<template v-if="roleFilter">
+          · {{ roleLabel(roleFilter) }}
+        </template><template v-if="statusFilter">
+          · {{ statusLabel(statusFilter) }}
+        </template>
       </p>
       <p
         v-if="loading"
@@ -1570,27 +1573,22 @@ onBeforeUnmount(() => {
         >
           <span class="admin-users-card__copy">
             <span class="admin-users-card__overview">
-              <span class="admin-users-role-icons"
-                ><span
-                  v-for="grant in user.roles"
-                  :key="grant.role"
-                  class="admin-users-role-icon"
-                  :data-active="grant.status === 'ACTIVE'"
-                  role="img"
-                  :aria-label="`${roleLabel(grant.role)}: ${statusLabel(grant.status)}`"
-                  ><AdminRoleIcon :role="grant.role" /></span
-              ></span>
+              <span class="admin-users-role-icons"><span
+                v-for="grant in user.roles"
+                :key="grant.role"
+                class="admin-users-role-icon"
+                :data-active="grant.status === 'ACTIVE'"
+                role="img"
+                :aria-label="`${roleLabel(grant.role)}: ${statusLabel(grant.status)}`"
+              ><AdminRoleIcon :role="grant.role" /></span></span>
               <span
                 class="admin-users-status admin-users-status--badge"
                 :data-tone="statusTone(user.status)"
-                ><span aria-hidden="true">●</span>{{ accountStatusLabel(user.status) }}</span
-              >
+              ><span aria-hidden="true">●</span>{{ accountStatusLabel(user.status) }}</span>
             </span>
-            <strong
-              ><span>{{ user.fullName }}</span
-              ><MobileIcon
-                name="back"
-                class="admin-users-next"
+            <strong><span>{{ user.fullName }}</span><MobileIcon
+              name="back"
+              class="admin-users-next"
             /></strong>
             <small>Логин: {{ user.login }}</small>
             <small
@@ -1600,8 +1598,7 @@ onBeforeUnmount(() => {
                 ),
               ]"
               :key="groupName"
-              >Группа: {{ groupName }}</small
-            >
+            >Группа: {{ groupName }}</small>
             <small v-if="!user.roles.length">Роли не назначены</small>
           </span>
         </button>
@@ -1618,11 +1615,9 @@ onBeforeUnmount(() => {
           :disabled="loading || page === 0"
           @click="changePage(page - 1)"
         >
-          <MobileIcon name="back" /> </button
-        ><span
-          >{{ page * pageSize + 1 }}–{{ Math.min((page + 1) * pageSize, totalElements) }} из
-          {{ totalElements.toLocaleString('ru-RU') }}</span
-        ><button
+          <MobileIcon name="back" />
+        </button><span>{{ page * pageSize + 1 }}–{{ Math.min((page + 1) * pageSize, totalElements) }} из
+          {{ totalElements.toLocaleString('ru-RU') }}</span><button
           class="admin-users-icon-button"
           type="button"
           aria-label="Следующая страница"
@@ -1646,10 +1641,9 @@ onBeforeUnmount(() => {
         class="admin-users-select"
         data-picker="filter-role"
       >
-        <summary
-          ><span><small>Роли</small>{{ draftRole ? roleLabel(draftRole) : 'Все роли' }}</span
-          ><MobileIcon name="chevron-down" /></summary
-        ><div class="admin-users-select__options">
+        <summary>
+          <span><small>Роли</small>{{ draftRole ? roleLabel(draftRole) : 'Все роли' }}</span><MobileIcon name="chevron-down" />
+        </summary><div class="admin-users-select__options">
           <button
             v-for="option in roleFilters"
             :key="option.value"
@@ -1668,12 +1662,9 @@ onBeforeUnmount(() => {
         class="admin-users-select"
         data-picker="filter-status"
       >
-        <summary
-          ><span
-            ><small>Статусы</small
-            >{{ draftStatus ? statusLabel(draftStatus) : 'Все статусы' }}</span
-          ><MobileIcon name="chevron-down" /></summary
-        ><div class="admin-users-select__options">
+        <summary>
+          <span><small>Статусы</small>{{ draftStatus ? statusLabel(draftStatus) : 'Все статусы' }}</span><MobileIcon name="chevron-down" />
+        </summary><div class="admin-users-select__options">
           <button
             type="button"
             @click="
@@ -1681,8 +1672,8 @@ onBeforeUnmount(() => {
               closeDropdown($event);
             "
           >
-            Все статусы </button
-          ><button
+            Все статусы
+          </button><button
             v-for="status in draftStatuses"
             :key="status"
             type="button"
@@ -1692,8 +1683,8 @@ onBeforeUnmount(() => {
               closeDropdown($event);
             "
           >
-            {{ statusLabel(status) }} </button
-          ><p
+            {{ statusLabel(status) }}
+          </button><p
             v-if="!draftRole"
             class="admin-users-muted"
           >
@@ -1705,12 +1696,9 @@ onBeforeUnmount(() => {
         class="admin-users-select"
         data-picker="filter-sort"
       >
-        <summary
-          ><span
-            ><small>ФИО</small
-            >{{ draftSort === 'asc' ? 'По алфавиту · А–Я' : 'По алфавиту · Я–А' }}</span
-          ><MobileIcon name="chevron-down" /></summary
-        ><div class="admin-users-select__options">
+        <summary>
+          <span><small>ФИО</small>{{ draftSort === 'asc' ? 'По алфавиту · А–Я' : 'По алфавиту · Я–А' }}</span><MobileIcon name="chevron-down" />
+        </summary><div class="admin-users-select__options">
           <button
             type="button"
             :aria-pressed="draftSort === 'asc'"
@@ -1719,8 +1707,8 @@ onBeforeUnmount(() => {
               closeDropdown($event);
             "
           >
-            По алфавиту · А–Я </button
-          ><button
+            По алфавиту · А–Я
+          </button><button
             type="button"
             :aria-pressed="draftSort === 'desc'"
             @click="
@@ -1749,10 +1737,9 @@ onBeforeUnmount(() => {
         class="admin-users-select"
         data-picker="create-role"
       >
-        <summary
-          ><span><small>Роль</small>{{ roleLabel(createRole) }}</span
-          ><MobileIcon name="chevron-down" /></summary
-        ><div class="admin-users-select__options">
+        <summary>
+          <span><small>Роль</small>{{ roleLabel(createRole) }}</span><MobileIcon name="chevron-down" />
+        </summary><div class="admin-users-select__options">
           <button
             v-for="role in ['STUDENT', 'TEACHER', ...(isFull ? (['ADMIN'] as const) : [])] as const"
             :key="role"
@@ -1768,31 +1755,24 @@ onBeforeUnmount(() => {
         </div>
       </details>
       <fieldset class="admin-users-names">
-        <legend>ФИО</legend
-        ><label
-          ><span>Фамилия</span
-          ><input
-            v-model="createLastName"
-            required
-            maxlength="128"
-            autocomplete="family-name"
-            placeholder="Фамилия" /></label
-        ><label
-          ><span>Имя</span
-          ><input
-            v-model="createFirstName"
-            required
-            maxlength="128"
-            autocomplete="given-name"
-            placeholder="Имя" /></label
-        ><label
-          ><span>Отчество</span
-          ><input
-            v-model="createMiddleName"
-            maxlength="128"
-            autocomplete="additional-name"
-            placeholder="Отчество, если есть"
-        /></label>
+        <legend>ФИО</legend><label><span>Фамилия</span><input
+          v-model="createLastName"
+          required
+          maxlength="128"
+          autocomplete="family-name"
+          placeholder="Фамилия"
+        ></label><label><span>Имя</span><input
+          v-model="createFirstName"
+          required
+          maxlength="128"
+          autocomplete="given-name"
+          placeholder="Имя"
+        ></label><label><span>Отчество</span><input
+          v-model="createMiddleName"
+          maxlength="128"
+          autocomplete="additional-name"
+          placeholder="Отчество, если есть"
+        ></label>
       </fieldset>
       <AdminUserGroupPicker
         v-if="createRole === 'STUDENT'"
@@ -1804,64 +1784,57 @@ onBeforeUnmount(() => {
       <label
         v-if="createRole === 'TEACHER'"
         class="admin-users-field"
-        ><span>Табельный номер</span
-        ><input
-          v-model="createEmployeeNumber"
-          required
-          maxlength="32"
-          autocomplete="off"
-          placeholder="Т-00421"
-      /></label>
+      ><span>Табельный номер</span><input
+        v-model="createEmployeeNumber"
+        required
+        maxlength="32"
+        autocomplete="off"
+        placeholder="Т-00421"
+      ></label>
       <button
         v-if="createRole === 'ADMIN'"
         class="admin-users-select admin-users-access-choice"
         type="button"
         @click="openPermissions('create')"
       >
-        <span
-          ><small>Права доступа</small
-          >{{
-            createAccess.mode === 'FULL'
-              ? 'Полный доступ'
-              : createAccess.permissions.length
-                ? `Выбрано прав: ${createAccess.permissions.length}`
-                : 'Выбрать права'
-          }}</span
-        ><MobileIcon name="chevron-down" />
+        <span><small>Права доступа</small>{{
+          createAccess.mode === 'FULL'
+            ? 'Полный доступ'
+            : createAccess.permissions.length
+              ? `Выбрано прав: ${createAccess.permissions.length}`
+              : 'Выбрать права'
+        }}</span><MobileIcon name="chevron-down" />
       </button>
       <AdminCheckbox
         v-if="
           createRole === 'ADMIN' &&
-          (createAccess.mode === 'FULL' || createAccess.permissions.length)
+            (createAccess.mode === 'FULL' || createAccess.permissions.length)
         "
         v-model="createAccessConfirmed"
         :label="
           'Подтверждаю создание администратора: ' +
-          (createAccess.mode === 'FULL'
-            ? 'полный доступ'
-            : accessLabels(createAccess.permissions).join(', '))
+            (createAccess.mode === 'FULL'
+              ? 'полный доступ'
+              : accessLabels(createAccess.permissions).join(', '))
         "
       />
-      <label class="admin-users-field"
-        ><span
-          >Telegram ID<template v-if="createRole !== 'STUDENT'"> · необязательно</template></span
-        ><input
-          v-model="createTelegramId"
-          :required="createRole === 'STUDENT'"
-          inputmode="numeric"
-          pattern="[0-9]+"
-          autocomplete="off"
-          placeholder="123456789"
-      /></label>
+      <label class="admin-users-field"><span>Telegram ID<template v-if="createRole !== 'STUDENT'"> · необязательно</template></span><input
+        v-model="createTelegramId"
+        :required="createRole === 'STUDENT'"
+        inputmode="numeric"
+        pattern="[0-9]+"
+        autocomplete="off"
+        placeholder="123456789"
+      ></label>
       <button
         class="admin-users-action admin-users-footer"
         type="submit"
         :disabled="
           saving ||
-          unknownMutation ||
-          (createRole === 'ADMIN' &&
-            (!createAccessConfirmed ||
-              (createAccess.mode === 'LIMITED' && !createAccess.permissions.length)))
+            unknownMutation ||
+            (createRole === 'ADMIN' &&
+              (!createAccessConfirmed ||
+                (createAccess.mode === 'LIMITED' && !createAccess.permissions.length)))
         "
         :aria-busy="saving"
       >
@@ -1874,16 +1847,13 @@ onBeforeUnmount(() => {
         tone="success"
         title="Пользователь создан"
       >
-        <p>{{ selectedUser.fullName }}</p
-        ><small
-          >{{ roleLabel(selectedUser.role)
-          }}<template v-if="selectedUser.employeeNumber">
-            · {{ selectedUser.employeeNumber }}</template
-          ></small
-        >
+        <p>{{ selectedUser.fullName }}</p><small>{{ roleLabel(selectedUser.role)
+        }}<template v-if="selectedUser.employeeNumber">
+          · {{ selectedUser.employeeNumber }}</template></small>
       </AdminNotice>
-      <h2 v-if="canCredentials"> Учётные данные </h2
-      ><div
+      <h2 v-if="canCredentials">
+        Учётные данные
+      </h2><div
         v-if="canCredentials"
         class="admin-users-credentials"
       >
@@ -1893,30 +1863,25 @@ onBeforeUnmount(() => {
           aria-label="Скопировать логин"
           @click="copyCredential(selectedUser.login)"
         >
-          <span
-            ><small>Логин</small><strong>{{ selectedUser.login }}</strong></span
-          ><img
+          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><img
             :src="copyIcon"
             alt=""
             aria-hidden="true"
-          /> </button
-        ><button
+          >
+        </button><button
           v-if="selectedUser.initialPassword"
           class="admin-users-credential"
           type="button"
           aria-label="Скопировать начальный пароль"
           @click="copyCredential(selectedUser.initialPassword!)"
         >
-          <span
-            ><small>Начальный пароль</small
-            ><strong>{{ selectedUser.initialPassword }}</strong></span
-          ><img
+          <span><small>Начальный пароль</small><strong>{{ selectedUser.initialPassword }}</strong></span><img
             :src="copyIcon"
             alt=""
             aria-hidden="true"
-          />
-        </button> </div
-      ><p
+          >
+        </button>
+      </div><p
         v-if="copied"
         role="status"
       >
@@ -1935,8 +1900,7 @@ onBeforeUnmount(() => {
       <div class="admin-users-summary">
         <strong>{{ selectedUser.fullName }}</strong>
       </div>
-      <h2>Данные</h2
-      ><dl class="admin-users-data">
+      <h2>Данные</h2><dl class="admin-users-data">
         <div
           v-for="grant in selectedUser.roles"
           :key="grant.role"
@@ -1947,34 +1911,33 @@ onBeforeUnmount(() => {
               class="admin-users-role-icon"
               :data-active="grant.status === 'ACTIVE'"
               aria-hidden="true"
-              ><AdminRoleIcon :role="grant.role" /></span
-            >{{ roleLabel(grant.role) }}
+            ><AdminRoleIcon :role="grant.role" /></span>{{ roleLabel(grant.role) }}
           </dt>
           <dd>
             <span
               class="admin-users-status"
               :data-tone="statusTone(grant.status)"
-              ><span aria-hidden="true">●</span>{{ statusLabel(grant.status) }}</span
-            ><small v-if="grant.groupName">Группа: {{ grant.groupName }}</small>
-          </dd> </div
-        ><div v-if="!selectedUser.roles.length"> <dt>Роли</dt><dd>Роли не назначены</dd> </div>
+            ><span aria-hidden="true">●</span>{{ statusLabel(grant.status) }}</span><small v-if="grant.groupName">Группа: {{ grant.groupName }}</small>
+          </dd>
+        </div><div v-if="!selectedUser.roles.length">
+          <dt>Роли</dt><dd>Роли не назначены</dd>
+        </div>
         <div>
-          <dt>Статус аккаунта</dt
-          ><dd>
+          <dt>Статус аккаунта</dt><dd>
             <span
               class="admin-users-status"
               :data-tone="statusTone(selectedUser.status)"
-              ><span aria-hidden="true">●</span>{{ accountStatusLabel(selectedUser.status) }}</span
-            >
-          </dd> </div
-        ><div v-if="selectedUser.employeeNumber">
-          <dt>Табельный номер</dt><dd>{{ selectedUser.employeeNumber }}</dd> </div
-        ><div v-if="selectedUser.telegramId">
+            ><span aria-hidden="true">●</span>{{ accountStatusLabel(selectedUser.status) }}</span>
+          </dd>
+        </div><div v-if="selectedUser.employeeNumber">
+          <dt>Табельный номер</dt><dd>{{ selectedUser.employeeNumber }}</dd>
+        </div><div v-if="selectedUser.telegramId">
           <dt>Telegram ID</dt><dd>{{ selectedUser.telegramId }}</dd>
         </div>
       </dl>
-      <h2 v-if="canCredentials"> Данные для входа </h2
-      ><div
+      <h2 v-if="canCredentials">
+        Данные для входа
+      </h2><div
         v-if="canCredentials"
         class="admin-users-credentials"
       >
@@ -1984,26 +1947,23 @@ onBeforeUnmount(() => {
           aria-label="Скопировать логин"
           @click="copyCredential(selectedUser.login)"
         >
-          <span
-            ><small>Логин</small><strong>{{ selectedUser.login }}</strong></span
-          ><img
+          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><img
             :src="copyIcon"
             alt=""
             aria-hidden="true"
-          /> </button
-        ><button
+          >
+        </button><button
           class="admin-users-credential"
           type="button"
           :disabled="saving || profileLoading || lifecycleUncertain"
           @click="view = 'recovery'"
         >
-          <span><strong>Восстановить доступ</strong></span
-          ><MobileIcon
+          <span><strong>Восстановить доступ</strong></span><MobileIcon
             name="back"
             class="admin-users-next"
           />
-        </button> </div
-      ><p
+        </button>
+      </div><p
         v-if="copied"
         role="status"
       >
@@ -2022,11 +1982,8 @@ onBeforeUnmount(() => {
 
     <template v-else-if="view === 'edit' && selectedUser">
       <div class="admin-users-summary">
-        <strong>{{ selectedUser.fullName }}</strong
-        ><small
-          >{{ selectedUser.login }} ·
-          {{ selectedUser.status === 'ARCHIVED' ? 'аккаунт в архиве' : 'аккаунт активен' }}</small
-        >
+        <strong>{{ selectedUser.fullName }}</strong><small>{{ selectedUser.login }} ·
+          {{ selectedUser.status === 'ARCHIVED' ? 'аккаунт в архиве' : 'аккаунт активен' }}</small>
       </div>
       <p
         v-if="profileLoading"
@@ -2040,43 +1997,35 @@ onBeforeUnmount(() => {
         @submit.prevent="updateProfile"
       >
         <fieldset class="admin-users-names">
-          <legend>ФИО</legend
-          ><label
-            ><span>Фамилия</span
-            ><input
-              v-model="profileLastName"
-              required
-              maxlength="128"
-              autocomplete="family-name" /></label
-          ><label
-            ><span>Имя</span
-            ><input
-              v-model="profileFirstName"
-              required
-              maxlength="128"
-              autocomplete="given-name" /></label
-          ><label
-            ><span>Отчество</span
-            ><input
-              v-model="profileMiddleName"
-              maxlength="128"
-              autocomplete="additional-name"
-          /></label> </fieldset
-        ><label
+          <legend>ФИО</legend><label><span>Фамилия</span><input
+            v-model="profileLastName"
+            required
+            maxlength="128"
+            autocomplete="family-name"
+          ></label><label><span>Имя</span><input
+            v-model="profileFirstName"
+            required
+            maxlength="128"
+            autocomplete="given-name"
+          ></label><label><span>Отчество</span><input
+            v-model="profileMiddleName"
+            maxlength="128"
+            autocomplete="additional-name"
+          ></label>
+        </fieldset><label
           v-if="profileHasTeacherRole || profileEmployeeNumber"
           class="admin-users-field"
-          ><span>Табельный номер</span
-          ><input
-            v-model="profileEmployeeNumber"
-            :required="profileHasTeacherRole"
-            maxlength="32"
-            autocomplete="off" /></label
-        ><div
+        ><span>Табельный номер</span><input
+          v-model="profileEmployeeNumber"
+          :required="profileHasTeacherRole"
+          maxlength="32"
+          autocomplete="off"
+        ></label><div
           v-if="selectedUser.telegramId"
           class="admin-users-field"
         >
-          <span>Telegram ID</span><p>{{ selectedUser.telegramId }}</p> </div
-        ><button
+          <span>Telegram ID</span><p>{{ selectedUser.telegramId }}</p>
+        </div><button
           class="admin-users-action"
           type="submit"
           :disabled="saving || unknownMutation"
@@ -2093,27 +2042,22 @@ onBeforeUnmount(() => {
       >
         {{ targetIsAdmin ? 'Настроить права администратора' : 'Назначить права администратора' }}
       </button>
-      <h2>Роли</h2
-      ><div class="admin-users-results">
+      <h2>Роли</h2><div class="admin-users-results">
         <div
           v-for="grant in selectedUser.roles"
           :key="grant.role"
           class="admin-users-role"
         >
           <div class="admin-users-role__heading">
-            <strong class="admin-users-role-heading"
-              ><span
-                class="admin-users-role-icon"
-                :data-active="grant.status === 'ACTIVE'"
-                aria-hidden="true"
-                ><AdminRoleIcon :role="grant.role" /></span
-              >{{ roleLabel(grant.role) }}</strong
-            ><span
+            <strong class="admin-users-role-heading"><span
+              class="admin-users-role-icon"
+              :data-active="grant.status === 'ACTIVE'"
+              aria-hidden="true"
+            ><AdminRoleIcon :role="grant.role" /></span>{{ roleLabel(grant.role) }}</strong><span
               class="admin-users-status admin-users-status--badge"
               :data-tone="statusTone(grant.status)"
-              ><span aria-hidden="true">●</span>{{ statusLabel(grant.status) }}</span
-            > </div
-          ><button
+            ><span aria-hidden="true">●</span>{{ statusLabel(grant.status) }}</span>
+          </div><button
             v-if="
               grant.role !== 'HEADMAN' && grant.role !== 'ADMIN' && grant.canUpdate && canManage
             "
@@ -2122,8 +2066,8 @@ onBeforeUnmount(() => {
             :disabled="saving"
             @click="openRole(grant.role)"
           >
-            {{ grant.status === 'ARCHIVED' ? 'Назначить заново' : 'Изменить статус' }} </button
-          ><p
+            {{ grant.status === 'ARCHIVED' ? 'Назначить заново' : 'Изменить статус' }}
+          </button><p
             v-if="grant.blockedReason"
             class="admin-users-muted"
           >
@@ -2134,9 +2078,9 @@ onBeforeUnmount(() => {
       <div
         v-if="
           canManage &&
-          (['STUDENT', 'TEACHER', ...(isFull ? (['ADMIN'] as const) : [])] as const).some(
-            (role) => !selectedUser!.roles.some((grant) => grant.role === role),
-          )
+            (['STUDENT', 'TEACHER', ...(isFull ? (['ADMIN'] as const) : [])] as const).some(
+              (role) => !selectedUser!.roles.some((grant) => grant.role === role),
+            )
         "
         class="admin-users-select"
         data-picker="add-role"
@@ -2149,8 +2093,8 @@ onBeforeUnmount(() => {
           :disabled="saving"
           @click="addRoleExpanded = !addRoleExpanded"
         >
-          <span>Добавить роль</span><MobileIcon name="plus" /> </button
-        ><div
+          <span>Добавить роль</span><MobileIcon name="plus" />
+        </button><div
           v-if="addRoleExpanded"
           id="admin-users-add-role-options"
           class="admin-users-select__options"
@@ -2174,8 +2118,8 @@ onBeforeUnmount(() => {
         :disabled="saving"
         @click="openTransfer"
       >
-        Перевести в другую группу </button
-      ><button
+        Перевести в другую группу
+      </button><button
         v-if="canCredentials"
         class="admin-users-action admin-users-action--secondary"
         type="button"
@@ -2201,22 +2145,16 @@ onBeforeUnmount(() => {
       @submit.prevent="updateRole"
     >
       <div class="admin-users-summary">
-        <strong>{{ selectedUser.fullName }}</strong
-        ><small>{{ roleLabel(editorRole) }}</small>
+        <strong>{{ selectedUser.fullName }}</strong><small>{{ roleLabel(editorRole) }}</small>
       </div>
-      <label class="admin-users-field"
-        ><span>Статус роли</span
-        ><select
-          v-model="editorStatus"
-          :disabled="!editorCanUpdate"
-          ><option
-            v-for="status in editorStatuses"
-            :key="status"
-            :value="status"
-            >{{ statusLabel(status) }}</option
-          ></select
-        ></label
-      >
+      <label class="admin-users-field"><span>Статус роли</span><select
+        v-model="editorStatus"
+        :disabled="!editorCanUpdate"
+      ><option
+        v-for="status in editorStatuses"
+        :key="status"
+        :value="status"
+      >{{ statusLabel(status) }}</option></select></label>
       <AdminUserGroupPicker
         v-if="editorRole === 'STUDENT' && needsRoleAssignment"
         v-model="editorGroupId"
@@ -2227,35 +2165,33 @@ onBeforeUnmount(() => {
       <label
         v-if="editorRole === 'TEACHER' && needsRoleAssignment"
         class="admin-users-field"
-        ><span>Табельный номер</span
-        ><input
-          v-model="editorEmployeeNumber"
-          required
-          maxlength="32" /></label
-      ><label
+      ><span>Табельный номер</span><input
+        v-model="editorEmployeeNumber"
+        required
+        maxlength="32"
+      ></label><label
         v-if="editorRole === 'STUDENT' && needsRoleAssignment"
         class="admin-users-field"
-        ><span>Telegram ID</span
-        ><input
-          v-model="editorTelegramId"
-          required
-          inputmode="numeric"
-          pattern="[0-9]+"
-      /></label>
+      ><span>Telegram ID</span><input
+        v-model="editorTelegramId"
+        required
+        inputmode="numeric"
+        pattern="[0-9]+"
+      ></label>
       <p
         v-if="selectedGrant?.blockedReason"
         class="admin-users-muted"
       >
-        {{ selectedGrant.blockedReason }} </p
-      ><button
+        {{ selectedGrant.blockedReason }}
+      </p><button
         class="admin-users-action admin-users-footer"
         type="submit"
         :disabled="
           saving ||
-          unknownMutation ||
-          !editorCanUpdate ||
-          !editorStatuses.length ||
-          editorRole === 'ADMIN'
+            unknownMutation ||
+            !editorCanUpdate ||
+            !editorStatuses.length ||
+            editorRole === 'ADMIN'
         "
       >
         {{ saving ? 'Сохраняем…' : needsRoleAssignment ? 'Назначить роль' : 'Сохранить статус' }}
@@ -2268,8 +2204,8 @@ onBeforeUnmount(() => {
       @submit.prevent="transferStudent"
     >
       <div class="admin-users-summary">
-        <strong>{{ selectedUser.fullName }}</strong> </div
-      ><AdminUserGroupPicker
+        <strong>{{ selectedUser.fullName }}</strong>
+      </div><AdminUserGroupPicker
         v-model="transferGroupId"
         :client="client"
         label="Новая группа"
@@ -2277,16 +2213,13 @@ onBeforeUnmount(() => {
           selectedUser.roles.find((grant) => grant.role === 'STUDENT')?.groupId ?? null
         "
         @owner-error="ownerError"
-      /><label class="admin-users-field"
-        ><span>Причина перевода</span
-        ><textarea
-          v-model="transferReason"
-          required
-          maxlength="1000"
-          rows="2"
-          placeholder="Укажи причину"
-        /></label
-      ><button
+      /><label class="admin-users-field"><span>Причина перевода</span><textarea
+        v-model="transferReason"
+        required
+        maxlength="1000"
+        rows="2"
+        placeholder="Укажи причину"
+      /></label><button
         class="admin-users-action admin-users-footer"
         type="submit"
         :disabled="saving || unknownMutation"
@@ -2300,8 +2233,7 @@ onBeforeUnmount(() => {
       @submit.prevent="submitLifecycle"
     >
       <div class="admin-users-summary">
-        <strong>{{ selectedUser.fullName }}</strong
-        ><small>{{ selectedUser.login }}</small>
+        <strong>{{ selectedUser.fullName }}</strong><small>{{ selectedUser.login }}</small>
       </div>
       <template v-if="view === 'archive'">
         <p
@@ -2314,31 +2246,29 @@ onBeforeUnmount(() => {
           v-if="archivePreview"
           class="admin-users-data"
         >
-          <div
-            ><dt>Связанные группы</dt><dd>{{ archivePreview.linkedGroupCount }}</dd></div
-          ><div
-            ><dt>Отметки посещаемости</dt><dd>{{ archivePreview.attendanceMarksCount }}</dd></div
-          ><div
-            ><dt>Группы со старостой</dt><dd>{{ archivePreview.activeHeadmanGroupCount }}</dd></div
-          ><div
-            ><dt>Назначения единственного преподавателя</dt
-            ><dd>{{ archivePreview.soleTeacherAssignmentCount }}</dd></div
-          >
+          <div>
+            <dt>Связанные группы</dt><dd>{{ archivePreview.linkedGroupCount }}</dd>
+          </div><div>
+            <dt>Отметки посещаемости</dt><dd>{{ archivePreview.attendanceMarksCount }}</dd>
+          </div><div>
+            <dt>Группы со старостой</dt><dd>{{ archivePreview.activeHeadmanGroupCount }}</dd>
+          </div><div>
+            <dt>Назначения единственного преподавателя</dt><dd>{{ archivePreview.soleTeacherAssignmentCount }}</dd>
+          </div>
         </dl>
         <label
           v-if="archivePreview?.requiresPassword"
           class="admin-users-field admin-users-field--password"
-          ><span>Твой текущий пароль</span
-          ><input
-            v-model="archivePassword"
-            type="password"
-            :required="!lifecycleUncertain"
-            :disabled="lifecycleUncertain || saving"
-            autocomplete="current-password"
-            :aria-invalid="Boolean(archivePasswordError)"
-            :aria-describedby="archivePasswordError ? 'admin-archive-password-error' : undefined"
-            @input="archivePasswordError = null"
-        /></label>
+        ><span>Твой текущий пароль</span><input
+          v-model="archivePassword"
+          type="password"
+          :required="!lifecycleUncertain"
+          :disabled="lifecycleUncertain || saving"
+          autocomplete="current-password"
+          :aria-invalid="Boolean(archivePasswordError)"
+          :aria-describedby="archivePasswordError ? 'admin-archive-password-error' : undefined"
+          @input="archivePasswordError = null"
+        ></label>
         <AdminNotice
           v-if="archivePasswordError"
           id="admin-archive-password-error"
@@ -2375,9 +2305,9 @@ onBeforeUnmount(() => {
         type="submit"
         :disabled="
           saving ||
-          lifecycleLoading ||
-          !lifecycleConfirmed ||
-          (view === 'archive' && (!archivePreview || lifecycleStale))
+            lifecycleLoading ||
+            !lifecycleConfirmed ||
+            (view === 'archive' && (!archivePreview || lifecycleStale))
         "
       >
         {{
@@ -2406,8 +2336,8 @@ onBeforeUnmount(() => {
           v-if="selectedUser && accessOwner === 'target'"
           class="admin-users-summary"
         >
-          <strong>{{ selectedUser.fullName }}</strong> </div
-        ><AdminPermissionEditor
+          <strong>{{ selectedUser.fullName }}</strong>
+        </div><AdminPermissionEditor
           v-model="accessDraft"
           :catalog="accessCatalog"
           :disabled="saving || accessUncertain"
@@ -2417,20 +2347,20 @@ onBeforeUnmount(() => {
           type="button"
           @click="reloadAccess"
         >
-          Обновить текущие права </button
-        ><button
+          Обновить текущие права
+        </button><button
           class="admin-users-action"
           type="button"
           :disabled="
             saving ||
-            accessUncertain ||
-            !accessSelectionValid ||
-            (accessOwner === 'target' && !accessProfile)
+              accessUncertain ||
+              !accessSelectionValid ||
+              (accessOwner === 'target' && !accessProfile)
           "
           @click="prepareAccess()"
         >
-          {{ accessOwner === 'create' ? 'Выбрать права' : 'Проверить изменения' }} </button
-        ><button
+          {{ accessOwner === 'create' ? 'Выбрать права' : 'Проверить изменения' }}
+        </button><button
           v-if="accessOwner === 'target' && accessProfile?.assigned"
           class="admin-users-action admin-users-action--secondary"
           type="button"
@@ -2464,8 +2394,7 @@ onBeforeUnmount(() => {
               v-for="right in accessConfirmation.step.rights"
               :key="right.code"
             >
-              <strong>{{ right.label }}</strong
-              ><span>{{
+              <strong>{{ right.label }}</strong><span>{{
                 accessConfirmation.step.kind === 'grant'
                   ? 'Запрещено → Разрешено'
                   : 'Разрешено → Запрещено'
@@ -2485,8 +2414,8 @@ onBeforeUnmount(() => {
               :disabled="saving"
               @click="closeAccessConfirmation"
             >
-              Отмена </button
-            ><button
+              Отмена
+            </button><button
               class="admin-users-action"
               type="button"
               :disabled="saving || !accessConfirmed"

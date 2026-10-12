@@ -320,8 +320,7 @@ function description(point: StatisticsSeriesPoint): string {
           <span
             v-for="label in axisLabels"
             :key="label"
-            >{{ label }}</span
-          >
+          >{{ label }}</span>
         </div>
         <span
           v-for="(tick, index) in axis.ticks"
@@ -334,8 +333,7 @@ function description(point: StatisticsSeriesPoint): string {
           }"
           :style="{ left: `${tick.position * 100}%` }"
           :title="tick.date"
-          >{{ tick.label }}</span
-        >
+        >{{ tick.label }}</span>
       </div>
     </template>
     <div
@@ -382,10 +380,9 @@ function description(point: StatisticsSeriesPoint): string {
             :class="`statistics-chart__percentage--${band}`"
             :style="{ inlineSize: `${selected.metrics[band].percent ?? 0}%` }"
             aria-hidden="true"
-            ><span class="statistics-chart__percentage-label">{{
-              displayPercent(selected.metrics[band].percent)
-            }}</span></span
-          >
+          ><span class="statistics-chart__percentage-label">{{
+            displayPercent(selected.metrics[band].percent)
+          }}</span></span>
         </div>
         <div
           v-if="outsideLabels"
@@ -396,8 +393,7 @@ function description(point: StatisticsSeriesPoint): string {
             v-for="band in bands"
             :key="band"
             :class="`statistics-chart__value--${band}`"
-            >{{ displayPercent(selected.metrics[band].percent) }}</span
-          >
+          >{{ displayPercent(selected.metrics[band].percent) }}</span>
         </div>
       </template>
     </section>

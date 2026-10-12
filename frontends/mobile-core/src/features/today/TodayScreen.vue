@@ -203,7 +203,9 @@ function lessonKind(lesson: TodayLesson): string {
         >
           <MobileIcon name="back" />
         </button>
-        <h1 id="today-title"> Запрос на отметку </h1>
+        <h1 id="today-title">
+          Запрос на отметку
+        </h1>
       </header>
       <header
         v-else
@@ -252,8 +254,7 @@ function lessonKind(lesson: TodayLesson): string {
         <span
           class="today-visually-hidden"
           role="status"
-          >Загружаем сегодняшнее расписание…</span
-        >
+        >Загружаем сегодняшнее расписание…</span>
         <div
           class="today-skeleton today-skeleton--hero"
           aria-hidden="true"
@@ -270,7 +271,9 @@ function lessonKind(lesson: TodayLesson): string {
           class="today-skeleton-row"
           aria-hidden="true"
         >
-          <i /><div class="today-skeleton"> <i /><i /><i /> </div>
+          <i /><div class="today-skeleton">
+            <i /><i /><i />
+          </div>
         </div>
       </section>
       <StudentWarningBlock
@@ -287,14 +290,18 @@ function lessonKind(lesson: TodayLesson): string {
         class="today-state"
         role="status"
       >
-        <MobileIcon name="calendar" /><h2>{{
-          offline ? 'Нет сохранённого расписания' : 'На сегодня пар нет'
-        }}</h2>
-        <p>{{
-          offline
-            ? 'Подключись к интернету, чтобы загрузить сегодняшние пары.'
-            : 'Когда появится следующая пара, ты увидишь её здесь.'
-        }}</p>
+        <MobileIcon name="calendar" /><h2>
+          {{
+            offline ? 'Нет сохранённого расписания' : 'На сегодня пар нет'
+          }}
+        </h2>
+        <p>
+          {{
+            offline
+              ? 'Подключись к интернету, чтобы загрузить сегодняшние пары.'
+              : 'Когда появится следующая пара, ты увидишь её здесь.'
+          }}
+        </p>
         <button
           v-if="!offline"
           class="today-secondary-action"
@@ -328,13 +335,13 @@ function lessonKind(lesson: TodayLesson): string {
           </p>
           <h2>{{ hero.schedule.subject.name }}</h2>
           <div class="today-hero__metadata">
-            <p
-              ><MobileIcon name="room" /><span>{{
+            <p>
+              <MobileIcon name="room" /><span>{{
                 hero.schedule.room.current ?? 'Аудитория уточняется'
-              }}</span></p
-            ><p
-              ><MobileIcon name="lesson" /><span>{{ lessonKind(hero) }}</span></p
-            >
+              }}</span>
+            </p><p>
+              <MobileIcon name="lesson" /><span>{{ lessonKind(hero) }}</span>
+            </p>
           </div>
           <button
             class="today-hero__action"
@@ -422,8 +429,8 @@ function lessonKind(lesson: TodayLesson): string {
                 <p
                   v-else-if="
                     !pendingRequest(lesson) &&
-                    !canRequest(lesson, 'EXCUSE') &&
-                    !canRequest(lesson, 'LATE_CHECKIN')
+                      !canRequest(lesson, 'EXCUSE') &&
+                      !canRequest(lesson, 'LATE_CHECKIN')
                   "
                 >
                   {{

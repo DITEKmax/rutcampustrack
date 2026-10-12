@@ -141,7 +141,9 @@ defineExpose({ focus });
   >
     <header class="headman-stats-detail__header">
       <div>
-        <p class="headman-stats-detail__eyebrow"> Личные подробности · ID {{ studentId }} </p>
+        <p class="headman-stats-detail__eyebrow">
+          Личные подробности · ID {{ studentId }}
+        </p>
         <h2 :id="`headman-stats-detail-title-${studentId}`">
           {{ detail?.student.displayName || `Студент ${studentId}` }}
         </h2>
@@ -197,20 +199,18 @@ defineExpose({ focus });
       >
         <h3>Посещаемость за семестр</h3>
         <dl class="headman-stats-detail__metrics">
-          <div
-            ><dt>«+» · присутствовал</dt><dd>{{ metricText(detail.metrics.present) }}</dd></div
-          >
-          <div
-            ><dt>«+ и у» · присутствовал или уважительно</dt
-            ><dd>{{ metricText(detail.metrics.presentOrExcused) }}</dd></div
-          >
-          <div
-            ><dt>«у» · уважительная причина</dt
-            ><dd>{{ metricText(detail.metrics.excused) }}</dd></div
-          >
-          <div
-            ><dt>«н» · отсутствие</dt><dd>{{ metricText(detail.metrics.absent) }}</dd></div
-          >
+          <div>
+            <dt>«+» · присутствовал</dt><dd>{{ metricText(detail.metrics.present) }}</dd>
+          </div>
+          <div>
+            <dt>«+ и у» · присутствовал или уважительно</dt><dd>{{ metricText(detail.metrics.presentOrExcused) }}</dd>
+          </div>
+          <div>
+            <dt>«у» · уважительная причина</dt><dd>{{ metricText(detail.metrics.excused) }}</dd>
+          </div>
+          <div>
+            <dt>«н» · отсутствие</dt><dd>{{ metricText(detail.metrics.absent) }}</dd>
+          </div>
         </dl>
       </section>
 
@@ -227,11 +227,21 @@ defineExpose({ focus });
           <table>
             <thead>
               <tr>
-                <th scope="col"> Предмет / тип </th>
-                <th scope="col"> «+» </th>
-                <th scope="col"> «+ и у» </th>
-                <th scope="col"> «у» </th>
-                <th scope="col"> «н» </th>
+                <th scope="col">
+                  Предмет / тип
+                </th>
+                <th scope="col">
+                  «+»
+                </th>
+                <th scope="col">
+                  «+ и у»
+                </th>
+                <th scope="col">
+                  «у»
+                </th>
+                <th scope="col">
+                  «н»
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -265,7 +275,9 @@ defineExpose({ focus });
                 </tr>
               </template>
               <tr v-if="detail.subjects.length === 0">
-                <td colspan="5"> Нет данных по предметам. </td>
+                <td colspan="5">
+                  Нет данных по предметам.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -288,7 +300,9 @@ defineExpose({ focus });
         class="headman-stats-detail__section"
         aria-labelledby="headman-stats-detail-late-title"
       >
-        <h3 id="headman-stats-detail-late-title"> Опоздания и поздние отметки </h3>
+        <h3 id="headman-stats-detail-late-title">
+          Опоздания и поздние отметки
+        </h3>
         <ul
           v-if="visibleLateCheckins.length"
           class="headman-stats-detail__tickets"
@@ -299,10 +313,8 @@ defineExpose({ focus });
           >
             <strong>{{ dateText(entry.lessonDate) }} · {{ lateHeading(entry) }}</strong>
             <span>Статус: {{ statusText(entry.status) }} · {{ originText(entry.origin) }}</span>
-            <span
-              >Создано: {{ instantText(entry.submittedAt) }} · Решение:
-              {{ instantText(entry.decidedAt) }}</span
-            >
+            <span>Создано: {{ instantText(entry.submittedAt) }} · Решение:
+              {{ instantText(entry.decidedAt) }}</span>
           </li>
         </ul>
         <p
@@ -340,7 +352,9 @@ defineExpose({ focus });
         class="headman-stats-detail__section"
         aria-labelledby="headman-stats-detail-excuse-title"
       >
-        <h3 id="headman-stats-detail-excuse-title"> Заявления об уважительной причине </h3>
+        <h3 id="headman-stats-detail-excuse-title">
+          Заявления об уважительной причине
+        </h3>
         <ul
           v-if="visibleExcuses.length"
           class="headman-stats-detail__tickets"
@@ -351,10 +365,8 @@ defineExpose({ focus });
           >
             <strong>Заявление · {{ statusText(entry.status) }}</strong>
             <span>Занятия: {{ excuseLessons(entry) || 'Не указаны' }}</span>
-            <span
-              >Создано: {{ instantText(entry.submittedAt) }} · Решение:
-              {{ instantText(entry.decidedAt) }}</span
-            >
+            <span>Создано: {{ instantText(entry.submittedAt) }} · Решение:
+              {{ instantText(entry.decidedAt) }}</span>
           </li>
         </ul>
         <p

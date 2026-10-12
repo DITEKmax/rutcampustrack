@@ -102,14 +102,14 @@ onBeforeUnmount(() => preview.dispose());
           :src="state.url"
           :alt="previewOnly ? 'Вложение заявки' : (attachment.name ?? 'Вложение заявки')"
           @error="imageFailed"
-        />
+        >
       </button>
       <img
         v-else-if="isImage"
         :src="state.url"
         :alt="attachment.name ?? 'Вложение заявки'"
         @error="imageFailed"
-      />
+      >
       <AttachmentPdfPreview
         v-else-if="previewOnly"
         :url="state.url"
@@ -120,8 +120,7 @@ onBeforeUnmount(() => preview.dispose());
         :data="state.url"
         type="application/pdf"
         :aria-label="attachment.name ?? 'PDF заявки'"
-        ><p>Предпросмотр PDF недоступен в этом браузере. Открой файл кнопкой ниже.</p></object
-      >
+      ><p>Предпросмотр PDF недоступен в этом браузере. Открой файл кнопкой ниже.</p></object>
       <button
         v-if="!previewOnly"
         type="button"

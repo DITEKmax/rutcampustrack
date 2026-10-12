@@ -616,10 +616,8 @@ onBeforeUnmount(() => {
             :disabled="state.locked"
             @click="date = datePlus(date, -7)"
           >
-            <MobileIcon name="back" /> </button
-          ><span
-            >{{ weekHeading }}<small>{{ weekLabel }}</small></span
-          ><button
+            <MobileIcon name="back" />
+          </button><span>{{ weekHeading }}<small>{{ weekLabel }}</small></span><button
             type="button"
             aria-label="Следующая неделя"
             :disabled="state.locked"
@@ -639,8 +637,8 @@ onBeforeUnmount(() => {
             :disabled="controlsLocked || !headmanMutable"
             @click="addMode = !addMode"
           >
-            Добавление пары<span class="lesson-management__switch" /> </button
-          ><button
+            Добавление пары<span class="lesson-management__switch" />
+          </button><button
             type="button"
             role="switch"
             :aria-checked="showCancelled"
@@ -680,8 +678,7 @@ onBeforeUnmount(() => {
         >
           <template v-if="row.lessons.length || addMode">
             <div class="lesson-management__time">
-              <strong>{{ row.slot.lessonNumber }} пара</strong
-              ><span>{{ time(row.slot.startTime) }}–{{ time(row.slot.endTime) }}</span>
+              <strong>{{ row.slot.lessonNumber }} пара</strong><span>{{ time(row.slot.startTime) }}–{{ time(row.slot.endTime) }}</span>
             </div>
             <button
               v-for="lesson in row.lessons"
@@ -693,12 +690,8 @@ onBeforeUnmount(() => {
               :data-lesson-id="lesson.id"
               @click="openLesson(lesson)"
             >
-              <small v-if="lesson.status === 'CANCELLED'">Отменена</small
-              ><strong>{{ subject(lesson) }}</strong
-              ><span
-                ><MobileIcon name="room" />{{ lesson.room || 'Аудитория не указана'
-                }}<MobileIcon name="lesson" />{{ typeName(lesson.lessonType) }}</span
-              ><MobileIcon
+              <small v-if="lesson.status === 'CANCELLED'">Отменена</small><strong>{{ subject(lesson) }}</strong><span><MobileIcon name="room" />{{ lesson.room || 'Аудитория не указана'
+              }}<MobileIcon name="lesson" />{{ typeName(lesson.lessonType) }}</span><MobileIcon
                 name="back"
                 class="lesson-management__chevron"
               />
@@ -722,16 +715,13 @@ onBeforeUnmount(() => {
           class="lesson-management__card lesson-management__summary"
           :data-cancelled="selected.status === 'CANCELLED'"
         >
-          <small v-if="selected.status === 'CANCELLED'">Отменена</small
-          ><strong>{{ subject(selected) }}</strong
-          ><span
-            >{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
-            {{ time(selected.startTime) }}–{{ time(selected.endTime) }}</span
-          ><span><MobileIcon name="room" />{{ selected.room || 'Аудитория не указана' }}</span
-          ><span><MobileIcon name="lesson" />{{ typeName(selected.lessonType) }}</span>
+          <small v-if="selected.status === 'CANCELLED'">Отменена</small><strong>{{ subject(selected) }}</strong><span>{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
+            {{ time(selected.startTime) }}–{{ time(selected.endTime) }}</span><span><MobileIcon name="room" />{{ selected.room || 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeName(selected.lessonType) }}</span>
         </section>
         <template v-if="view === 'detail'">
-          <h2 v-if="selected?.status !== 'CANCELLED'"> Действия </h2>
+          <h2 v-if="selected?.status !== 'CANCELLED'">
+            Действия
+          </h2>
           <template v-if="selected?.status === 'CANCELLED'">
             <button
               type="button"
@@ -752,8 +742,8 @@ onBeforeUnmount(() => {
               Перенести пару<MobileIcon
                 name="back"
                 class="lesson-management__next"
-              /> </button
-            ><button
+              />
+            </button><button
               type="button"
               class="lesson-management__action"
               :disabled="controlsLocked || !headmanMutable || !sourceCanRoom"
@@ -762,8 +752,8 @@ onBeforeUnmount(() => {
               Изменить аудиторию<MobileIcon
                 name="back"
                 class="lesson-management__next"
-              /> </button
-            ><p
+              />
+            </button><p
               v-if="!sourceCanTransfer"
               class="lesson-management__muted"
             >
@@ -787,10 +777,10 @@ onBeforeUnmount(() => {
             class="lesson-management__action lesson-management__danger-text"
             :disabled="
               controlsLocked ||
-              !cancelMutable ||
-              !selected?.current ||
-              !['PLANNED', 'ACTIVE', 'CLOSED'].includes(selected.status) ||
-              selected.transferState === 'PENDING'
+                !cancelMutable ||
+                !selected?.current ||
+                !['PLANNED', 'ACTIVE', 'CLOSED'].includes(selected.status) ||
+                selected.transferState === 'PENDING'
             "
             @click="openTask('cancel')"
           >
@@ -803,16 +793,14 @@ onBeforeUnmount(() => {
             v-if="confirmingRestore"
             class="lesson-management__confirmation"
           >
-            <h2>Восстановить пару?</h2
-            ><p>Пара снова появится в расписании. История отмены сохранится.</p
-            ><button
+            <h2>Восстановить пару?</h2><p>Пара снова появится в расписании. История отмены сохранится.</p><button
               type="button"
               class="lesson-management__primary"
               :disabled="controlsLocked || !cancelMutable"
               @click="submit"
             >
-              Подтвердить восстановление </button
-            ><button
+              Подтвердить восстановление
+            </button><button
               type="button"
               class="lesson-management__action"
               :disabled="state.locked"
@@ -823,14 +811,12 @@ onBeforeUnmount(() => {
           </section>
         </template>
         <template v-else-if="view === 'cancel'">
-          <label class="lesson-management__field"
-            >Причина отмены<textarea
-              v-model="reason"
-              maxlength="300"
-              :disabled="controlsLocked || !cancelMutable"
-              placeholder="Почему пара отменяется?"
-            /><small>{{ reason.length }} / 300</small></label
-          ><footer class="lesson-management__footer">
+          <label class="lesson-management__field">Причина отмены<textarea
+            v-model="reason"
+            maxlength="300"
+            :disabled="controlsLocked || !cancelMutable"
+            placeholder="Почему пара отменяется?"
+          /><small>{{ reason.length }} / 300</small></label><footer class="lesson-management__footer">
             <button
               class="lesson-management__primary lesson-management__danger"
               type="button"
@@ -842,15 +828,13 @@ onBeforeUnmount(() => {
           </footer>
         </template>
         <template v-else-if="view === 'transfer' || view === 'oneoff'">
-          <label class="lesson-management__field"
-            >{{ view === 'transfer' ? 'Новая дата' : 'Дата пары'
-            }}<button
-              type="button"
-              :disabled="controlsLocked || !headmanMutable"
-              class="lesson-management__select"
-              @click="calendarOpen = !calendarOpen"
-              >{{ dayLabel(targetDate) }}<MobileIcon name="chevron-down" /></button
-          ></label>
+          <label class="lesson-management__field">{{ view === 'transfer' ? 'Новая дата' : 'Дата пары'
+          }}<button
+            type="button"
+            :disabled="controlsLocked || !headmanMutable"
+            class="lesson-management__select"
+            @click="calendarOpen = !calendarOpen"
+          >{{ dayLabel(targetDate) }}<MobileIcon name="chevron-down" /></button></label>
           <section
             v-if="calendarOpen"
             class="lesson-management__calendar"
@@ -861,9 +845,8 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="shiftMonth(-1)"
               >
-                <MobileIcon name="back" /> </button
-              ><strong>{{ monthLabel }}</strong
-              ><button
+                <MobileIcon name="back" />
+              </button><strong>{{ monthLabel }}</strong><button
                 aria-label="Следующий месяц"
                 type="button"
                 @click="shiftMonth(1)"
@@ -872,13 +855,12 @@ onBeforeUnmount(() => {
                   name="back"
                   class="lesson-management__next"
                 />
-              </button> </div
-            ><div class="lesson-management__calendar-grid">
+              </button>
+            </div><div class="lesson-management__calendar-grid">
               <span
                 v-for="name in ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']"
                 :key="name"
-                >{{ name }}</span
-              ><button
+              >{{ name }}</span><button
                 v-for="day in calendarDays"
                 :key="day"
                 type="button"
@@ -894,21 +876,16 @@ onBeforeUnmount(() => {
               </button>
             </div>
           </section>
-          <label class="lesson-management__field"
-            >Номер пары<select
-              v-model.number="targetNumber"
-              :disabled="controlsLocked || targetBusy || !targetDateValid"
-              ><option :value="null">Выбери свободный слот</option
-              ><option
-                v-for="slot in targetSlots"
-                :key="slot.lessonNumber"
-                :value="slot.lessonNumber"
-                :disabled="slot.unavailable"
-                >{{ slot.lessonNumber }} пара · {{ time(slot.startTime) }}–{{ time(slot.endTime)
-                }}{{ slot.unavailable ? ' · занято' : '' }}</option
-              ></select
-            ></label
-          >
+          <label class="lesson-management__field">Номер пары<select
+            v-model.number="targetNumber"
+            :disabled="controlsLocked || targetBusy || !targetDateValid"
+          ><option :value="null">Выбери свободный слот</option><option
+            v-for="slot in targetSlots"
+            :key="slot.lessonNumber"
+            :value="slot.lessonNumber"
+            :disabled="slot.unavailable"
+          >{{ slot.lessonNumber }} пара · {{ time(slot.startTime) }}–{{ time(slot.endTime)
+          }}{{ slot.unavailable ? ' · занято' : '' }}</option></select></label>
           <StudentWarningBlock
             v-if="targetError"
             title="Занятость не проверена"
@@ -919,50 +896,41 @@ onBeforeUnmount(() => {
             v-if="targetBusy"
             role="status"
           >
-            Проверяем свободные слоты… </p
-          ><p
+            Проверяем свободные слоты…
+          </p><p
             v-if="!targetDateValid"
             role="status"
           >
             Выбери допустимую дату текущего семестра.
           </p>
           <template v-if="view === 'oneoff'">
-            <label class="lesson-management__field"
-              >Предмет<select
-                v-model.number="subjectId"
-                :disabled="controlsLocked"
-                ><option
-                  v-for="item in subjects"
-                  :key="item.subjectId"
-                  :value="item.subjectId"
-                  >{{ item.subjectName }}</option
-                ></select
-              ></label
-            ><label class="lesson-management__field"
-              >Тип занятия<select
-                v-model.number="assignmentId"
-                :disabled="controlsLocked"
-                ><option
-                  v-for="item in assignmentOptions"
-                  :key="item.id"
-                  :value="item.id"
-                  >{{ typeName(item.lessonType) }}</option
-                ></select
-              ></label
-            ><div class="lesson-management__field">
+            <label class="lesson-management__field">Предмет<select
+              v-model.number="subjectId"
+              :disabled="controlsLocked"
+            ><option
+              v-for="item in subjects"
+              :key="item.subjectId"
+              :value="item.subjectId"
+            >{{ item.subjectName }}</option></select></label><label class="lesson-management__field">Тип занятия<select
+              v-model.number="assignmentId"
+              :disabled="controlsLocked"
+            ><option
+              v-for="item in assignmentOptions"
+              :key="item.id"
+              :value="item.id"
+            >{{ typeName(item.lessonType) }}</option></select></label><div class="lesson-management__field">
               Преподаватель<strong>{{
                 assignment?.teacherName || 'Нет действующего назначения'
               }}</strong>
             </div>
           </template>
-          <label class="lesson-management__field"
-            >{{ view === 'transfer' ? 'Новая аудитория' : 'Аудитория'
-            }}<input
-              v-model="room"
-              maxlength="64"
-              :disabled="controlsLocked"
-              placeholder="Не указана"
-          /></label>
+          <label class="lesson-management__field">{{ view === 'transfer' ? 'Новая аудитория' : 'Аудитория'
+          }}<input
+            v-model="room"
+            maxlength="64"
+            :disabled="controlsLocked"
+            placeholder="Не указана"
+          ></label>
           <p
             v-if="view === 'transfer'"
             class="lesson-management__muted"
@@ -974,21 +942,13 @@ onBeforeUnmount(() => {
             v-if="view === 'transfer' && selected"
             class="lesson-management__preview"
           >
-            <h2>Проверь изменения</h2
-            ><div
-              ><small>Было</small
-              ><strong
-                >{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
-                {{ selected.room || 'Без аудитории' }}</strong
-              ></div
-            ><span class="lesson-management__arrow">↓</span
-            ><div
-              ><small>Станет</small
-              ><strong
-                >{{ dayLabel(targetDate) }} · {{ targetNumber || '—' }} пара ·
-                {{ effectiveTransferRoom || 'Без аудитории' }}</strong
-              ></div
-            >
+            <h2>Проверь изменения</h2><div>
+              <small>Было</small><strong>{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
+                {{ selected.room || 'Без аудитории' }}</strong>
+            </div><span class="lesson-management__arrow">↓</span><div>
+              <small>Станет</small><strong>{{ dayLabel(targetDate) }} · {{ targetNumber || '—' }} пара ·
+                {{ effectiveTransferRoom || 'Без аудитории' }}</strong>
+            </div>
           </section>
           <footer class="lesson-management__footer">
             <button
@@ -996,11 +956,11 @@ onBeforeUnmount(() => {
               class="lesson-management__primary"
               :disabled="
                 controlsLocked ||
-                !headmanMutable ||
-                !targetSlot ||
-                !targetDateValid ||
-                targetBusy ||
-                (view === 'oneoff' && !assignment)
+                  !headmanMutable ||
+                  !targetSlot ||
+                  !targetDateValid ||
+                  targetBusy ||
+                  (view === 'oneoff' && !assignment)
               "
               @click="submit"
             >
@@ -1010,14 +970,13 @@ onBeforeUnmount(() => {
         </template>
         <template v-else-if="view === 'room'">
           <p class="lesson-management__muted">
-            Изменится аудитория только этой пары. Дата, посещаемость и история сохранятся. </p
-          ><label class="lesson-management__field"
-            >Аудитория<input
-              v-model="room"
-              maxlength="64"
-              :disabled="controlsLocked"
-              placeholder="Оставь пустым, чтобы очистить" /></label
-          ><footer class="lesson-management__footer">
+            Изменится аудитория только этой пары. Дата, посещаемость и история сохранятся.
+          </p><label class="lesson-management__field">Аудитория<input
+            v-model="room"
+            maxlength="64"
+            :disabled="controlsLocked"
+            placeholder="Оставь пустым, чтобы очистить"
+          ></label><footer class="lesson-management__footer">
             <button
               type="button"
               class="lesson-management__primary"
@@ -1052,9 +1011,9 @@ onBeforeUnmount(() => {
         aria-label="Назад"
         @click="handleBack"
       >
-        <MobileIcon name="back" /> </button
-      ><h1>Журнал действий</h1> </header
-    ><HeadmanLessonActionsScreen
+        <MobileIcon name="back" />
+      </button><h1>Журнал действий</h1>
+    </header><HeadmanLessonActionsScreen
       :api="actionsApi"
       :lesson="selected"
       :subject-name="subject(selected)"

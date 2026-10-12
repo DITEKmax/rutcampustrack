@@ -64,24 +64,21 @@ function toggle(permission: AdminPermission, checked: boolean): void {
     aria-label="Права доступа"
   >
     <fieldset class="admin-permission-editor__mode">
-      <legend class="admin-permission-editor__mode-legend"> Уровень доступа </legend
-      ><label
-        ><input
-          type="radio"
-          name="admin-access-mode"
-          :checked="modelValue.mode === 'LIMITED'"
-          :disabled="disabled"
-          @change="setMode('LIMITED')"
-        /><span>Выбранные права</span></label
-      ><label
-        ><input
-          type="radio"
-          name="admin-access-mode"
-          :checked="modelValue.mode === 'FULL'"
-          :disabled="disabled"
-          @change="setMode('FULL')"
-        /><span>Полный доступ</span></label
-      >
+      <legend class="admin-permission-editor__mode-legend">
+        Уровень доступа
+      </legend><label><input
+        type="radio"
+        name="admin-access-mode"
+        :checked="modelValue.mode === 'LIMITED'"
+        :disabled="disabled"
+        @change="setMode('LIMITED')"
+      ><span>Выбранные права</span></label><label><input
+        type="radio"
+        name="admin-access-mode"
+        :checked="modelValue.mode === 'FULL'"
+        :disabled="disabled"
+        @change="setMode('FULL')"
+      ><span>Полный доступ</span></label>
     </fieldset>
     <p
       v-if="modelValue.mode === 'FULL'"
@@ -106,7 +103,9 @@ function toggle(permission: AdminPermission, checked: boolean): void {
           @update:model-value="toggle(permission, $event)"
         />
       </fieldset>
-      <p class="admin-permission-editor__note"> Выбрано прав: {{ selected.size }} </p>
+      <p class="admin-permission-editor__note">
+        Выбрано прав: {{ selected.size }}
+      </p>
     </template>
   </section>
 </template>

@@ -190,7 +190,7 @@ onUnmounted(() => {
             :src="securityPrevious"
             alt=""
             aria-hidden="true"
-          />
+          >
         </button>
         <h1
           id="profile-security-title"
@@ -226,7 +226,7 @@ onUnmounted(() => {
               :aria-describedby="
                 currentPasswordInvalid ? 'profile-current-password-error' : undefined
               "
-            />
+            >
             <button
               class="profile-field__toggle"
               type="button"
@@ -238,7 +238,7 @@ onUnmounted(() => {
                 :src="showCurrent ? securityHide : securityShow"
                 alt=""
                 aria-hidden="true"
-              />
+              >
             </button>
           </div>
           <span
@@ -264,7 +264,7 @@ onUnmounted(() => {
               :disabled="accountInvalidated"
               :aria-invalid="shouldShowPolicy && policyIssues.length > 0"
               aria-describedby="profile-password-policy"
-            />
+            >
             <button
               class="profile-field__toggle"
               type="button"
@@ -276,7 +276,7 @@ onUnmounted(() => {
                 :src="showNew ? securityHide : securityShow"
                 alt=""
                 aria-hidden="true"
-              />
+              >
             </button>
           </div>
         </div>
@@ -294,7 +294,7 @@ onUnmounted(() => {
               :disabled="accountInvalidated"
               :aria-invalid="repeatInvalid"
               :aria-describedby="repeatInvalid ? 'profile-repeat-password-error' : undefined"
-            />
+            >
             <button
               class="profile-field__toggle"
               type="button"
@@ -308,7 +308,7 @@ onUnmounted(() => {
                 :src="showRepeat ? securityHide : securityShow"
                 alt=""
                 aria-hidden="true"
-              />
+              >
             </button>
           </div>
           <span
@@ -330,14 +330,9 @@ onUnmounted(() => {
         >
           <span aria-hidden="true">{{
             shouldShowPolicy ? (policyIssues.length === 0 ? '✓' : '×') : '•'
-          }}</span
-          ><span
-            >{{ policyText()
-            }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')"
-              >; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span
-            >
-            <span v-if="policyRejectedByServer">; сервер отклонил пароль по политике</span></span
-          >
+          }}</span><span>{{ policyText()
+                         }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')">; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span>
+            <span v-if="policyRejectedByServer">; сервер отклонил пароль по политике</span></span>
         </p>
 
         <button

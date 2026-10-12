@@ -555,9 +555,7 @@ defineExpose({ back, openNotificationRequest });
         <span
           class="headman-requests__symbol"
           data-status="EXCUSED"
-          >у</span
-        ><span v-if="(counts.EXCUSE ?? 0) > 0">{{ counts.EXCUSE }}</span
-        ><span class="headman-requests__sr">Уважительные причины</span>
+        >у</span><span v-if="(counts.EXCUSE ?? 0) > 0">{{ counts.EXCUSE }}</span><span class="headman-requests__sr">Уважительные причины</span>
       </button>
       <button
         type="button"
@@ -567,9 +565,7 @@ defineExpose({ back, openNotificationRequest });
         <span
           class="headman-requests__symbol"
           data-status="ABSENT"
-          >н</span
-        ><span v-if="(counts.LATE_CHECKIN ?? 0) > 0">{{ counts.LATE_CHECKIN }}</span
-        ><span class="headman-requests__sr">Забыл отметиться</span>
+        >н</span><span v-if="(counts.LATE_CHECKIN ?? 0) > 0">{{ counts.LATE_CHECKIN }}</span><span class="headman-requests__sr">Забыл отметиться</span>
       </button>
       <button
         type="button"
@@ -584,21 +580,18 @@ defineExpose({ back, openNotificationRequest });
       class="headman-requests__filters"
       @submit.prevent="apply"
     >
-      <label
-        >ФИО<input
-          v-model="studentName"
-          type="search"
-          placeholder="Начни вводить фамилию"
-      /></label>
-      <label
-        >Период от<input
-          v-model="dateFrom"
-          type="date" /></label
-      ><label
-        >Период до<input
-          v-model="dateTo"
-          type="date"
-      /></label>
+      <label>ФИО<input
+        v-model="studentName"
+        type="search"
+        placeholder="Начни вводить фамилию"
+      ></label>
+      <label>Период от<input
+        v-model="dateFrom"
+        type="date"
+      ></label><label>Период до<input
+        v-model="dateTo"
+        type="date"
+      ></label>
       <button
         class="headman-requests__primary"
         type="submit"
@@ -672,9 +665,7 @@ defineExpose({ back, openNotificationRequest });
           v-if="group.lesson && bucket === 'OPEN'"
           class="headman-requests__context"
         >
-          <h2>{{ group.lesson.subjectName ?? 'Предмет не указан' }}</h2
-          ><p><MobileIcon name="clock" />{{ time(group.lesson) }} · {{ date(group.lesson.date) }}</p
-          ><p><MobileIcon name="lesson" />{{ lessonTypeLabel(group.lesson.subjectType) }}</p>
+          <h2>{{ group.lesson.subjectName ?? 'Предмет не указан' }}</h2><p><MobileIcon name="clock" />{{ time(group.lesson) }} · {{ date(group.lesson.date) }}</p><p><MobileIcon name="lesson" />{{ lessonTypeLabel(group.lesson.subjectType) }}</p>
         </header>
         <button
           v-for="item in group.items"
@@ -687,22 +678,15 @@ defineExpose({ back, openNotificationRequest });
           <span
             class="headman-requests__kind"
             :data-kind="item.kind"
-            >{{ item.kind === 'EXCUSE' ? 'у' : 'н' }}</span
-          ><span class="headman-requests__ticket-copy"
-            ><span
-              v-if="bucket === 'ARCHIVE'"
-              class="headman-requests__badge"
-              :data-tone="requestStatusTone(item.status)"
-              >{{ requestStatusLabel(item.status) }}</span
-            ><strong>{{ item.studentName ?? 'Студент' }}</strong
-            ><span
-              >{{
-                item.reason ??
-                (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина')
-              }}
-              · {{ date(item.coverageStart) }}</span
-            ><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span
-          ><MobileIcon
+          >{{ item.kind === 'EXCUSE' ? 'у' : 'н' }}</span><span class="headman-requests__ticket-copy"><span
+            v-if="bucket === 'ARCHIVE'"
+            class="headman-requests__badge"
+            :data-tone="requestStatusTone(item.status)"
+          >{{ requestStatusLabel(item.status) }}</span><strong>{{ item.studentName ?? 'Студент' }}</strong><span>{{
+            item.reason ??
+              (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина')
+          }}
+            · {{ date(item.coverageStart) }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
             name="back"
             class="headman-requests__next"
           />
@@ -728,28 +712,28 @@ defineExpose({ back, openNotificationRequest });
         class="headman-requests__student"
         :data-status="selected.summary.status"
       >
-        <strong>{{ selected.summary.studentName ?? 'Студент' }}</strong
-        ><p>{{
-          selected.summary.reason ??
-          (selected.summary.kind === 'LATE_CHECKIN'
-            ? 'Не успел отметиться'
-            : 'Уважительная причина')
-        }}</p
-        ><p>
+        <strong>{{ selected.summary.studentName ?? 'Студент' }}</strong><p>
+          {{
+            selected.summary.reason ??
+              (selected.summary.kind === 'LATE_CHECKIN'
+                ? 'Не успел отметиться'
+                : 'Уважительная причина')
+          }}
+        </p><p>
           Исходный период: {{ date(selected.summary.coverageStart)
           }}<template v-if="selected.summary.coverageEnd !== selected.summary.coverageStart">
             — {{ date(selected.summary.coverageEnd) }}
-          </template> </p
-        ><span
+          </template>
+        </p><span
           v-if="selected.summary.status !== 'PENDING'"
           class="headman-requests__badge"
           :data-tone="requestStatusTone(selected.summary.status)"
-          >{{ requestStatusLabel(selected.summary.status) }}</span
-        >
+        >{{ requestStatusLabel(selected.summary.status) }}</span>
       </section>
       <template v-if="view === 'detail'">
-        <h2 class="headman-requests__section-title"> Комментарий студента </h2
-        ><p class="headman-requests__comment">
+        <h2 class="headman-requests__section-title">
+          Комментарий студента
+        </h2><p class="headman-requests__comment">
           {{ selected.summary.comment || 'Комментарий не добавлен.' }}
         </p>
         <RequestAttachmentPreview
@@ -807,7 +791,7 @@ defineExpose({ back, openNotificationRequest });
               class="headman-requests__exclude"
               :disabled="
                 !writable ||
-                (!excludedIds.includes(lesson.occurrenceId ?? '') && affected.length <= 1)
+                  (!excludedIds.includes(lesson.occurrenceId ?? '') && affected.length <= 1)
               "
               :aria-label="`${excludedIds.includes(lesson.occurrenceId ?? '') ? 'Вернуть' : 'Исключить'} пару: ${lesson.subjectName ?? 'Предмет'}`"
               @click="changeExclusion(lesson, !excludedIds.includes(lesson.occurrenceId ?? ''))"
@@ -833,19 +817,11 @@ defineExpose({ back, openNotificationRequest });
                 />
               </svg>
             </button>
-            <span class="headman-requests__lesson-copy"
-              ><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong
-              ><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span
-              ><span>{{ lessonTypeLabel(lesson.subjectType) }}</span
-              ><span v-if="excludedIds.includes(lesson.occurrenceId ?? '')"
-                >Исключена из одобрения</span
-              ></span
-            ><span
+            <span class="headman-requests__lesson-copy"><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span><span>{{ lessonTypeLabel(lesson.subjectType) }}</span><span v-if="excludedIds.includes(lesson.occurrenceId ?? '')">Исключена из одобрения</span></span><span
               class="headman-requests__attendance"
               :data-status="displayStatus(lesson)"
               :aria-label="statusText(displayStatus(lesson))"
-              >{{ statusSymbol(displayStatus(lesson)) }}</span
-            >
+            >{{ statusSymbol(displayStatus(lesson)) }}</span>
           </li>
         </ul>
       </template>
@@ -853,18 +829,21 @@ defineExpose({ back, openNotificationRequest });
         v-if="view === 'approve'"
         class="headman-requests__after"
       >
-        <MobileIcon name="attendance" /><h2>После одобрения</h2
-        ><p>{{
-          selected.summary.kind === 'LATE_CHECKIN'
-            ? 'В выбранных парах появится отметка «Присутствовал». Подтверждённое присутствие сохранится.'
-            : 'В выбранных парах появится уважительная причина. Подтверждённое присутствие сохранится.'
-        }}</p>
+        <MobileIcon name="attendance" /><h2>После одобрения</h2><p>
+          {{
+            selected.summary.kind === 'LATE_CHECKIN'
+              ? 'В выбранных парах появится отметка «Присутствовал». Подтверждённое присутствие сохранится.'
+              : 'В выбранных парах появится уважительная причина. Подтверждённое присутствие сохранится.'
+          }}
+        </p>
       </section>
       <section
         v-if="excludedReceipt.length"
         class="headman-requests__original"
       >
-        <h2 class="headman-requests__section-title"> Исключённые пары </h2>
+        <h2 class="headman-requests__section-title">
+          Исключённые пары
+        </h2>
         <p class="headman-requests__hint">
           Одобрение не изменяет отметки этих пар. Исходные сведения заявки сохранены.
         </p>
@@ -879,10 +858,11 @@ defineExpose({ back, openNotificationRequest });
         v-if="view === 'detail' && (transferred || !!selected.decisionSelection)"
         class="headman-requests__original"
       >
-        <h2 class="headman-requests__section-title"> Исходные сведения заявки </h2
-        ><p class="headman-requests__hint">
-          Исходный состав заявки сохранён. Результат решения показан выше. </p
-        ><p
+        <h2 class="headman-requests__section-title">
+          Исходные сведения заявки
+        </h2><p class="headman-requests__hint">
+          Исходный состав заявки сохранён. Результат решения показан выше.
+        </p><p
           v-for="(lesson, index) in selected.lessons"
           :key="index"
         >
@@ -893,15 +873,13 @@ defineExpose({ back, openNotificationRequest });
         <StudentWarningBlock
           title="Заявка будет отклонена"
           message="Отметки посещаемости не изменятся. Студент увидит твою причину отказа."
-        /><label class="headman-requests__reason"
-          >Причина отклонения<textarea
-            v-model="reason"
-            maxlength="300"
-            rows="5"
-            placeholder="Напиши, почему отклоняешь заявку"
-            :disabled="!!pending || busy"
-          /><span>{{ reason.length }} / 300</span></label
-        >
+        /><label class="headman-requests__reason">Причина отклонения<textarea
+          v-model="reason"
+          maxlength="300"
+          rows="5"
+          placeholder="Напиши, почему отклоняешь заявку"
+          :disabled="!!pending || busy"
+        /><span>{{ reason.length }} / 300</span></label>
       </template>
       <div
         v-if="selected.summary.status === 'PENDING'"
@@ -914,8 +892,8 @@ defineExpose({ back, openNotificationRequest });
             :disabled="!writable"
             @click="confirm('APPROVED')"
           >
-            Одобрить </button
-          ><button
+            Одобрить
+          </button><button
             type="button"
             class="headman-requests__danger"
             :disabled="!writable"
@@ -930,9 +908,9 @@ defineExpose({ back, openNotificationRequest });
           class="headman-requests__primary"
           :disabled="
             !writable ||
-            !affected.length ||
-            !selected.currentAffectedLessons ||
-            (selected.summary.kind === 'EXCUSE' && !selectable)
+              !affected.length ||
+              !selected.currentAffectedLessons ||
+              (selected.summary.kind === 'EXCUSE' && !selectable)
           "
           @click="decide()"
         >

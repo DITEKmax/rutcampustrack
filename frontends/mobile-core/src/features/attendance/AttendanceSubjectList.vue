@@ -86,7 +86,7 @@ const hasSubjects = computed(() => props.subjects.length > 0);
             <img
               :src="chevronDown"
               alt=""
-            />
+            >
           </span>
         </button>
         <div

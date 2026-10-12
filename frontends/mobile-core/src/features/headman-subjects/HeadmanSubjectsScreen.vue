@@ -1494,18 +1494,20 @@ onBeforeUnmount(() => {
         aria-label="Назад"
         @click="clickBack"
       >
-        <MobileIcon name="back" /> </button
-      ><h1>{{
-        removeCandidate
-          ? 'Убрать преподавателя'
-          : pickerType
-            ? 'Добавить преподавателя'
-            : replacementSource
-              ? 'Заменить преподавателя'
-              : formOpen
-                ? (editorSubject?.name ?? 'Новый предмет')
-                : 'Предметы'
-      }}</h1>
+        <MobileIcon name="back" />
+      </button><h1>
+        {{
+          removeCandidate
+            ? 'Убрать преподавателя'
+            : pickerType
+              ? 'Добавить преподавателя'
+              : replacementSource
+                ? 'Заменить преподавателя'
+                : formOpen
+                  ? (editorSubject?.name ?? 'Новый предмет')
+                  : 'Предметы'
+        }}
+      </h1>
     </header>
     <StudentWarningBlock
       v-if="offline"
@@ -1548,9 +1550,9 @@ onBeforeUnmount(() => {
       class="headman-subjects__recovery"
     >
       <h2>Незавершённое снятие преподавателя</h2>
-      <p
-        >{{ "Продолжение использует исходную серверную квитанцию и дату. Будущие пары и история сохранятся." }}</p
-      >
+      <p>
+        {{ "Продолжение использует исходную серверную квитанцию и дату. Будущие пары и история сохранятся." }}
+      </p>
       <button
         v-for="handle in editorDetail.pendingClosures"
         :key="handle.operationId"
@@ -1570,17 +1572,11 @@ onBeforeUnmount(() => {
       <label
         v-if="editIntent.subjectId === null && editIntent.createdId === null && editIntent.unknown"
         class="headman-subjects__field"
-        ><span>Выбери конкретный сохранённый предмет для проверки</span
-        ><select v-model="recoverySubjectId"
-          ><option :value="null">Предмет не выбран</option
-          ><option
-            v-for="subject in subjects"
-            :key="subject.id"
-            :value="subject.id"
-            >{{ subject.name }} · № {{ subject.id }}</option
-          ></select
-        ></label
-      >
+      ><span>Выбери конкретный сохранённый предмет для проверки</span><select v-model="recoverySubjectId"><option :value="null">Предмет не выбран</option><option
+        v-for="subject in subjects"
+        :key="subject.id"
+        :value="subject.id"
+      >{{ subject.name }} · № {{ subject.id }}</option></select></label>
       <button
         v-if="editIntent.subjectId === null && editIntent.createdId === null && editIntent.unknown"
         type="button"
@@ -1602,29 +1598,29 @@ onBeforeUnmount(() => {
       >
         Отменить оставшиеся изменения
       </button>
-      <p>{{ editIntent.name }} · подтверждённых шагов: {{ editIntent.step }}</p
-      ><p>{{
-        editIntent.unknown
-          ? 'Ответ на запись ещё не подтверждён. Повтор неизвестной записи заблокирован.'
-          : 'Остались изменения, которые ещё не были отправлены.'
-      }}</p
-      ><button
+      <p>{{ editIntent.name }} · подтверждённых шагов: {{ editIntent.step }}</p><p>
+        {{
+          editIntent.unknown
+            ? 'Ответ на запись ещё не подтверждён. Повтор неизвестной записи заблокирован.'
+            : 'Остались изменения, которые ещё не были отправлены.'
+        }}
+      </p><button
         type="button"
         :disabled="offline || busy || loading"
         @click="reconcileEdit()"
       >
-        Проверить состояние </button
-      ><button
+        Проверить состояние
+      </button><button
         v-if="!editIntent.rejected && (!editIntent.unknown || subjectEditRemoval(editIntent))"
         type="button"
         :disabled="
           offline ||
-          busy ||
-          loading ||
-          readOnly ||
-          denied ||
-          !!editStorageError ||
-          !saveFlow.canContinue()
+            busy ||
+            loading ||
+            readOnly ||
+            denied ||
+            !!editStorageError ||
+            !saveFlow.canContinue()
         "
         @click="continueSave"
       >
@@ -1638,21 +1634,19 @@ onBeforeUnmount(() => {
       Загружаем предметы…
     </p>
     <template v-if="!formOpen && !replacementSource && !removeCandidate && hasSnapshot">
-      <p class="headman-subjects__count"> {{ subjects.length }} предметов </p>
-      <label class="headman-subjects__semester"
-        ><select
-          v-model="selectedSemesterId"
-          aria-label="Семестр"
-          :disabled="loading || mutationLocked"
-          @change="changeSemester"
-          ><option
-            v-for="semester in semesters"
-            :key="semester.id"
-            :value="semester.id"
-            >{{ semester.name }}</option
-          ></select
-        ><MobileIcon name="chevron-down"
-      /></label>
+      <p class="headman-subjects__count">
+        {{ subjects.length }} предметов
+      </p>
+      <label class="headman-subjects__semester"><select
+        v-model="selectedSemesterId"
+        aria-label="Семестр"
+        :disabled="loading || mutationLocked"
+        @change="changeSemester"
+      ><option
+        v-for="semester in semesters"
+        :key="semester.id"
+        :value="semester.id"
+      >{{ semester.name }}</option></select><MobileIcon name="chevron-down" /></label>
       <button
         class="headman-subjects__primary headman-subjects__add"
         type="button"
@@ -1671,24 +1665,20 @@ onBeforeUnmount(() => {
           :disabled="mutationLocked"
           @click="openSubject(subject)"
         >
-          <span
-            ><strong>{{ subject.name }}</strong
-            ><small
-              ><MobileIcon name="profile" />{{
-                [
-                  ...new Set(
-                    subject.lessonTypes.flatMap((type) =>
-                      assignmentsFor(subject, type).map((a) => teacherLabel(a.teacherId)),
-                    ),
-                  ),
-                ].join(', ') || 'Преподаватель не назначен'
-              }}</small
-            ></span
-          ><MobileIcon name="chevron-down" />
+          <span><strong>{{ subject.name }}</strong><small><MobileIcon name="profile" />{{
+            [
+              ...new Set(
+                subject.lessonTypes.flatMap((type) =>
+                  assignmentsFor(subject, type).map((a) => teacherLabel(a.teacherId)),
+                ),
+              ),
+            ].join(', ') || 'Преподаватель не назначен'
+          }}</small></span><MobileIcon name="chevron-down" />
         </button>
       </div>
-      <p v-if="!loading && !subjects.length"> Предметов пока нет. </p
-      ><button
+      <p v-if="!loading && !subjects.length">
+        Предметов пока нет.
+      </p><button
         v-if="!subjects.length || error"
         class="headman-subjects__secondary"
         type="button"
@@ -1706,15 +1696,15 @@ onBeforeUnmount(() => {
       >
         Исторический семестр · только просмотр
       </p>
-      <label class="headman-subjects__name"
-        ><span>Название</span
-        ><input
-          v-model="subjectName"
-          type="text"
-          :disabled="!editorWritable"
-          required
-      /></label>
-      <h2 class="headman-subjects__section-title"> Типы занятий и преподаватели </h2>
+      <label class="headman-subjects__name"><span>Название</span><input
+        v-model="subjectName"
+        type="text"
+        :disabled="!editorWritable"
+        required
+      ></label>
+      <h2 class="headman-subjects__section-title">
+        Типы занятий и преподаватели
+      </h2>
       <div class="headman-subjects__types">
         <button
           v-for="type in subjectTypes"
@@ -1732,8 +1722,7 @@ onBeforeUnmount(() => {
         :key="type"
         class="headman-subjects__assignment"
       >
-        <h3>{{ labelForType(type) }}</h3
-        ><button
+        <h3>{{ labelForType(type) }}</h3><button
           v-for="teacher in selectedTeachers[type]"
           :key="teacher.assignmentId ?? teacher.id"
           class="headman-subjects__teacher"
@@ -1741,13 +1730,9 @@ onBeforeUnmount(() => {
           :disabled="!editorWritable"
           @click="requestRemove(type, teacher)"
         >
-          <MobileIcon name="profile" /><span
-            >{{ teacher.fullName
-            }}<small v-if="teacher.validFrom && teacher.validFrom > semesterDay()"
-              >С {{ teacher.validFrom }}</small
-            ></span
-          ><MobileIcon name="chevron-down" /> </button
-        ><button
+          <MobileIcon name="profile" /><span>{{ teacher.fullName
+          }}<small v-if="teacher.validFrom && teacher.validFrom > semesterDay()">С {{ teacher.validFrom }}</small></span><MobileIcon name="chevron-down" />
+        </button><button
           v-if="!selectedTeachers[type].length"
           class="headman-subjects__teacher"
           type="button"
@@ -1779,9 +1764,10 @@ onBeforeUnmount(() => {
     </template>
     <template v-if="pickerType && !removeCandidate">
       <section class="headman-subjects__context-card">
-        <h2>{{ subjectName || 'Новый предмет' }}</h2
-        ><p>{{ editSemester?.name }}</p> </section
-      ><h2 class="headman-subjects__section-title"> Тип занятия </h2>
+        <h2>{{ subjectName || 'Новый предмет' }}</h2><p>{{ editSemester?.name }}</p>
+      </section><h2 class="headman-subjects__section-title">
+        Тип занятия
+      </h2>
       <div class="headman-subjects__types">
         <button
           v-for="type in subjectTypes"
@@ -1796,22 +1782,21 @@ onBeforeUnmount(() => {
           {{ type === 'LAB' ? 'Лаб.' : labelForType(type) }}
         </button>
       </div>
-      <label class="headman-subjects__search"
-        ><MobileIcon name="search" /><input
-          v-model="addPicker.query"
-          type="search"
-          aria-label="ФИО или табельный номер"
-          placeholder="ФИО или табельный номер"
-          :disabled="offline || !editorWritable"
-          @input="searchAddTeachers"
-          @keyup.enter="searchAddTeachers"
-      /></label>
+      <label class="headman-subjects__search"><MobileIcon name="search" /><input
+        v-model="addPicker.query"
+        type="search"
+        aria-label="ФИО или табельный номер"
+        placeholder="ФИО или табельный номер"
+        :disabled="offline || !editorWritable"
+        @input="searchAddTeachers"
+        @keyup.enter="searchAddTeachers"
+      ></label>
       <p
         v-if="addPicker.loading"
         role="status"
       >
-        Ищем преподавателей… </p
-      ><div class="headman-subjects__teacher-options">
+        Ищем преподавателей…
+      </p><div class="headman-subjects__teacher-options">
         <button
           v-for="teacher in addPicker.results"
           :key="teacher.id"
@@ -1825,29 +1810,25 @@ onBeforeUnmount(() => {
           <span
             class="headman-subjects__avatar"
             aria-hidden="true"
-            >{{ teacherInitials(teacher) }}</span
-          ><span
-            ><strong>{{ teacher.fullName }}</strong
-            ><small>{{
-              teacher.employeeNumber
-                ? `Табельный № ${teacher.employeeNumber}`
-                : 'Табельный номер недоступен'
-            }}</small></span
-          ><span
+          >{{ teacherInitials(teacher) }}</span><span><strong>{{ teacher.fullName }}</strong><small>{{
+            teacher.employeeNumber
+              ? `Табельный № ${teacher.employeeNumber}`
+              : 'Табельный номер недоступен'
+          }}</small></span><span
             class="headman-subjects__choice"
             aria-hidden="true"
           />
-        </button> </div
-      ><p v-if="!addPicker.loading && !addPicker.results.length"> Преподаватели не найдены. </p>
-      <label class="headman-subjects__field"
-        ><span>Начало назначения</span
-        ><input
-          v-model="pickerValidFrom"
-          type="date"
-          :min="editSemester?.dateFrom"
-          :max="editSemester?.dateTo"
-          :disabled="!editorWritable"
-      /></label>
+        </button>
+      </div><p v-if="!addPicker.loading && !addPicker.results.length">
+        Преподаватели не найдены.
+      </p>
+      <label class="headman-subjects__field"><span>Начало назначения</span><input
+        v-model="pickerValidFrom"
+        type="date"
+        :min="editSemester?.dateFrom"
+        :max="editSemester?.dateTo"
+        :disabled="!editorWritable"
+      ></label>
       <footer class="headman-subjects__footer">
         <button
           type="button"
@@ -1861,23 +1842,24 @@ onBeforeUnmount(() => {
     </template>
     <template v-if="removeCandidate">
       <section class="headman-subjects__context-card">
-        <h2>{{ subjectName }}</h2
-        ><p>{{ labelForType(removeCandidate.type) }}</p> </section
-      ><section class="headman-subjects__context-card">
-        <h2>{{ removeCandidate.teacher.fullName }}</h2
-        ><p>{{
-          removeCandidate.teacher.employeeNumber
-            ? `Табельный № ${removeCandidate.teacher.employeeNumber}`
-            : 'Табельный номер недоступен'
-        }}</p>
+        <h2>{{ subjectName }}</h2><p>{{ labelForType(removeCandidate.type) }}</p>
+      </section><section class="headman-subjects__context-card">
+        <h2>{{ removeCandidate.teacher.fullName }}</h2><p>
+          {{
+            removeCandidate.teacher.employeeNumber
+              ? `Табельный № ${removeCandidate.teacher.employeeNumber}`
+              : 'Табельный номер недоступен'
+          }}
+        </p>
       </section>
       <section class="headman-subjects__context-card">
-        <h2>Убрать преподавателя?</h2
-        ><p>{{
-          removeCandidate.assignment
-            ? 'Снятие будет отправлено после сохранения предмета. Будущие пары сохранятся без преподавателя; история посещаемости останется доступной.'
-            : 'Преподаватель будет убран из черновика. Связь ещё не сохранена на сервере.'
-        }}</p>
+        <h2>Убрать преподавателя?</h2><p>
+          {{
+            removeCandidate.assignment
+              ? 'Снятие будет отправлено после сохранения предмета. Будущие пары сохранятся без преподавателя; история посещаемости останется доступной.'
+              : 'Преподаватель будет убран из черновика. Связь ещё не сохранена на сервере.'
+          }}
+        </p>
       </section>
       <footer class="headman-subjects__footer">
         <button
@@ -1887,11 +1869,11 @@ onBeforeUnmount(() => {
           :disabled="!editorWritable"
           @click="removeDraftTeacher"
         >
-          Убрать преподавателя </button
-        ><button
+          Убрать преподавателя
+        </button><button
           v-if="
             removeCandidate.assignment &&
-            activeSemester?.id === removeCandidate.assignment.semesterId
+              activeSemester?.id === removeCandidate.assignment.semesterId
           "
           class="headman-subjects__secondary"
           type="button"
@@ -1910,15 +1892,14 @@ onBeforeUnmount(() => {
       icon-close
       title="Выйти без сохранения?"
     >
-      <p>Изменения названия, типов и выбранных преподавателей будут потеряны.</p
-      ><div class="headman-subjects__dialog-actions">
+      <p>Изменения названия, типов и выбранных преподавателей будут потеряны.</p><div class="headman-subjects__dialog-actions">
         <button
           type="button"
           data-action="cancel"
           @click="leaveOpen = false"
         >
-          Отмена </button
-        ><button
+          Отмена
+        </button><button
           type="button"
           data-action="confirm"
           @click="
@@ -1935,7 +1916,9 @@ onBeforeUnmount(() => {
       class="headman-subjects__replacement"
       aria-labelledby="headman-replacement-storage-title"
     >
-      <h2 id="headman-replacement-storage-title"> Локальная запись замены </h2>
+      <h2 id="headman-replacement-storage-title">
+        Локальная запись замены
+      </h2>
       <p
         class="headman-subjects__state headman-subjects__state--error"
         role="alert"
@@ -1958,7 +1941,9 @@ onBeforeUnmount(() => {
       aria-labelledby="headman-replacement-pending-title"
       :aria-busy="replacementBusy"
     >
-      <h2 id="headman-replacement-pending-title"> Незавершённые замены преподавателя </h2>
+      <h2 id="headman-replacement-pending-title">
+        Незавершённые замены преподавателя
+      </h2>
       <article
         v-for="intent in replacementIntents"
         :key="intent.requestKey"
@@ -2022,7 +2007,9 @@ onBeforeUnmount(() => {
       :aria-busy="replacementBusy"
     >
       <div class="headman-subjects__form-header">
-        <h2 id="headman-replacement-title"> Заменить преподавателя </h2>
+        <h2 id="headman-replacement-title">
+          Заменить преподавателя
+        </h2>
         <button
           class="headman-subjects__secondary"
           type="button"
@@ -2054,7 +2041,7 @@ onBeforeUnmount(() => {
               "
               :disabled="mutationLocked || offline || readOnly || denied"
               @keyup.enter="searchReplacementTeachers"
-            />
+            >
           </label>
           <button
             class="headman-subjects__secondary"
@@ -2109,7 +2096,7 @@ onBeforeUnmount(() => {
               : undefined
           "
           :disabled="mutationLocked || offline || readOnly || denied"
-        />
+        >
       </label>
       <p
         v-if="replacementError && replacementErrorRequestKey === null"
@@ -2132,11 +2119,11 @@ onBeforeUnmount(() => {
         type="button"
         :disabled="
           mutationLocked ||
-          offline ||
-          readOnly ||
-          denied ||
-          !replacementTeacher ||
-          !replacementEffectiveFrom
+            offline ||
+            readOnly ||
+            denied ||
+            !replacementTeacher ||
+            !replacementEffectiveFrom
         "
         @click="startReplacement"
       >

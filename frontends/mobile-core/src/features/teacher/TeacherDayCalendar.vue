@@ -52,7 +52,9 @@ function keyboard(event: KeyboardEvent): void {
       aria-labelledby="teacher-day-calendar-title"
     >
       <header class="teacher-day-calendar__heading">
-        <h2 id="teacher-day-calendar-title"> Выбери день </h2>
+        <h2 id="teacher-day-calendar-title">
+          Выбери день
+        </h2>
         <button
           class="teacher-screen__icon-button"
           type="button"

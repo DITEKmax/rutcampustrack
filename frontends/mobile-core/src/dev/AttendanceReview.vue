@@ -106,9 +106,7 @@ function sent(): void {
     v-if="catalog"
     class="attendance-review-catalog"
   >
-    <h1>Посещаемость · {{ shell.toUpperCase() }}</h1
-    ><p>Визуальные симуляции. API не вызывается.</p
-    ><ul>
+    <h1>Посещаемость · {{ shell.toUpperCase() }}</h1><p>Визуальные симуляции. API не вызывается.</p><ul>
       <li
         v-for="item in scenarios"
         :key="item.id"

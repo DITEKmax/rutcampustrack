@@ -502,28 +502,24 @@ function isDate(value: string): boolean {
             ref="period"
             class="teacher-attendance__dates"
           >
-            <label class="teacher-attendance__field"
-              ><span>С</span
-              ><input
-                v-model="dateFrom"
-                class="teacher-screen__date"
-                type="date"
-                :min="semester?.dateFrom"
-                :max="semester?.dateTo"
-                :aria-invalid="Boolean(periodError)"
-                :aria-describedby="periodError ? 'teacher-period-error' : undefined"
-            /></label>
-            <label class="teacher-attendance__field"
-              ><span>По</span
-              ><input
-                v-model="dateTo"
-                class="teacher-screen__date"
-                type="date"
-                :min="semester?.dateFrom"
-                :max="semester?.dateTo"
-                :aria-invalid="Boolean(periodError)"
-                :aria-describedby="periodError ? 'teacher-period-error' : undefined"
-            /></label>
+            <label class="teacher-attendance__field"><span>С</span><input
+              v-model="dateFrom"
+              class="teacher-screen__date"
+              type="date"
+              :min="semester?.dateFrom"
+              :max="semester?.dateTo"
+              :aria-invalid="Boolean(periodError)"
+              :aria-describedby="periodError ? 'teacher-period-error' : undefined"
+            ></label>
+            <label class="teacher-attendance__field"><span>По</span><input
+              v-model="dateTo"
+              class="teacher-screen__date"
+              type="date"
+              :min="semester?.dateFrom"
+              :max="semester?.dateTo"
+              :aria-invalid="Boolean(periodError)"
+              :aria-describedby="periodError ? 'teacher-period-error' : undefined"
+            ></label>
           </div>
           <p
             v-if="periodError"

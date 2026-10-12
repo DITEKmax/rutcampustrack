@@ -91,7 +91,7 @@ async function terminate(sessionId: string): Promise<void> {
             :src="sessionsPrevious"
             alt=""
             aria-hidden="true"
-          />
+          >
         </button>
         <h1
           id="profile-sessions-title"
@@ -163,8 +163,7 @@ async function terminate(sessionId: string): Promise<void> {
             <span
               v-if="session.current"
               class="profile-session-card__current"
-              >Это устройство</span
-            >
+            >Это устройство</span>
           </div>
           <p class="profile-session-card__meta">
             {{ metadata(session) }}
@@ -194,11 +193,11 @@ async function terminate(sessionId: string): Promise<void> {
         type="button"
         :disabled="
           busy ||
-          loading ||
-          offline ||
-          terminatingSessionId !== null ||
-          sessions.length === 0 ||
-          !onLogoutAll
+            loading ||
+            offline ||
+            terminatingSessionId !== null ||
+            sessions.length === 0 ||
+            !onLogoutAll
         "
         @click="onLogoutAll?.()"
       >

@@ -164,15 +164,13 @@ onBeforeUnmount(() => {
             <span
               class="role-dialog__avatar"
               aria-hidden="true"
-              >{{ roleInitial(grant.role) }}</span
-            >
+            >{{ roleInitial(grant.role) }}</span>
             <span class="role-dialog__label">{{ roleLabel(grant.role) }}</span>
             <span
               v-if="pendingRole === grant.role"
               class="role-dialog__pending"
               role="status"
-              >Сохраняем…</span
-            >
+            >Сохраняем…</span>
           </button>
           <p
             v-if="snapshot.roles.length === 0"

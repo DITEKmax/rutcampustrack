@@ -55,10 +55,11 @@ function dismiss(): void {
     <span
       class="install-offer__mark"
       aria-hidden="true"
-      >↗</span
-    >
+    >↗</span>
     <div class="install-offer__copy">
-      <h2 class="install-offer__title"> Добавь RutCampusTrack на главный экран </h2>
+      <h2 class="install-offer__title">
+        Добавь RutCampusTrack на главный экран
+      </h2>
       <p
         v-if="mode === 'native'"
         class="install-offer__hint"

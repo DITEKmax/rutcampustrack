@@ -315,8 +315,7 @@ function pointAriaLabel(
           year: 'numeric',
           timeZone: 'UTC',
         }).format(axis.start)
-      }}</time
-      ><time v-if="axis.start !== axis.end">{{
+      }}</time><time v-if="axis.start !== axis.end">{{
         new Intl.DateTimeFormat('ru-RU', {
           day: 'numeric',
           month: 'short',

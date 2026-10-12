@@ -566,8 +566,7 @@ onBeforeUnmount(() => {
       v-for="id in teacherReviewStates"
       :key="id"
       :href="`?state=${id}&shell=${shell}&theme=${query.get('theme') ?? 'dark'}`"
-      >{{ id }}</a
-    >
+    >{{ id }}</a>
     <button
       v-if="hostBackVisible"
       type="button"

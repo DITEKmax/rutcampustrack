@@ -580,9 +580,8 @@ defineExpose({ back });
         aria-label="Назад"
         @click="clickBack"
       >
-        <MobileIcon name="back" /> </button
-      ><h1>{{ view === 'list' ? 'Группа' : view === 'detail' ? 'Студент' : 'Права помощника' }}</h1
-      ><button
+        <MobileIcon name="back" />
+      </button><h1>{{ view === 'list' ? 'Группа' : view === 'detail' ? 'Студент' : 'Права помощника' }}</h1><button
         v-if="view === 'list' && isHeadman"
         class="headman-group__back"
         type="button"
@@ -625,14 +624,15 @@ defineExpose({ back });
       Загружаем группу…
     </p>
     <template v-if="view === 'list' && hasSnapshot">
-      <p class="headman-group__count"> {{ members.length }} студентов </p>
-      <label class="headman-group__search"
-        ><MobileIcon name="search" /><input
-          v-model="query"
-          type="search"
-          aria-label="Поиск студента"
-          placeholder="Поиск студента"
-      /></label>
+      <p class="headman-group__count">
+        {{ members.length }} студентов
+      </p>
+      <label class="headman-group__search"><MobileIcon name="search" /><input
+        v-model="query"
+        type="search"
+        aria-label="Поиск студента"
+        placeholder="Поиск студента"
+      ></label>
       <div class="headman-group__list">
         <button
           v-for="item in filteredMembers"
@@ -643,10 +643,7 @@ defineExpose({ back });
           :data-role="roleLabel(item)"
           @click="openMember(item)"
         >
-          <span
-            ><strong>{{ item.fullName }}</strong
-            ><small v-if="roleLabel(item) !== 'Студент'">{{ roleLabel(item) }}</small></span
-          ><MobileIcon name="chevron-down" />
+          <span><strong>{{ item.fullName }}</strong><small v-if="roleLabel(item) !== 'Студент'">{{ roleLabel(item) }}</small></span><MobileIcon name="chevron-down" />
         </button>
       </div>
       <p v-if="!loading && !filteredMembers.length">
@@ -655,15 +652,15 @@ defineExpose({ back });
     </template>
     <template v-else-if="member">
       <section class="headman-group__identity">
-        <h2>{{ member.fullName }}</h2
-        ><p>{{ roleLabel(member) }}</p>
+        <h2>{{ member.fullName }}</h2><p>{{ roleLabel(member) }}</p>
       </section>
       <template v-if="view === 'detail'">
         <section class="headman-group__summary">
-          <h2>Права помощника</h2
-          ><p>{{
-            helper ? `Разрешено прав: ${helper.permissions.length}` : 'Права помощника не назначены'
-          }}</p>
+          <h2>Права помощника</h2><p>
+            {{
+              helper ? `Разрешено прав: ${helper.permissions.length}` : 'Права помощника не назначены'
+            }}
+          </p>
         </section>
         <button
           v-if="!isMemberHeadman(member)"
@@ -682,12 +679,10 @@ defineExpose({ back });
             class="headman-group__permission"
             :data-changed="draft.includes(option.code) !== baseline.includes(option.code)"
           >
-            <span class="headman-group__permission-name">{{ option.label }}</span
-            ><span
+            <span class="headman-group__permission-name">{{ option.label }}</span><span
               class="headman-group__permission-status"
               :data-enabled="draft.includes(option.code)"
-              >{{ draft.includes(option.code) ? 'Разрешено' : 'Запрещено' }}</span
-            ><button
+            >{{ draft.includes(option.code) ? 'Разрешено' : 'Запрещено' }}</span><button
               type="button"
               role="switch"
               :aria-label="option.label"
@@ -721,18 +716,14 @@ defineExpose({ back });
       v-model:open="rosterOpen"
       title="Состав группы"
     >
-      <label class="headman-group__field"
-        >Формат файла<select
-          v-model="rosterFormat"
-          :disabled="rosterLoading || rosterDownloading"
-          ><option
-            v-for="format in rosterFormats"
-            :key="format.code"
-            :value="format.code"
-            >{{ format.label }}</option
-          ></select
-        ><MobileIcon name="chevron-down" /></label
-      ><StudentWarningBlock
+      <label class="headman-group__field">Формат файла<select
+        v-model="rosterFormat"
+        :disabled="rosterLoading || rosterDownloading"
+      ><option
+        v-for="format in rosterFormats"
+        :key="format.code"
+        :value="format.code"
+      >{{ format.label }}</option></select><MobileIcon name="chevron-down" /></label><StudentWarningBlock
         v-if="rosterError"
         title="Скачивание недоступно"
         :message="rosterError"
@@ -741,8 +732,8 @@ defineExpose({ back });
         v-if="rosterNotice"
         role="status"
       >
-        {{ rosterNotice }} </p
-      ><button
+        {{ rosterNotice }}
+      </p><button
         type="button"
         class="headman-group__primary"
         :disabled="offline || rosterLoading || rosterDownloading || !activeRosterFormat"
@@ -771,20 +762,21 @@ defineExpose({ back });
             v-for="change in confirmation.step.rights"
             :key="change.code"
           >
-            <strong>{{ change.label }}</strong
-            ><span>{{
+            <strong>{{ change.label }}</strong><span>{{
               confirmation.step.kind === 'grant' ? 'Запрещено → Разрешено' : 'Разрешено → Запрещено'
             }}</span>
           </li>
         </ul>
         <p v-if="confirmation.steps.length > 1 && confirmation.stepIndex === 0">
           После подтверждения отзыва проверь выдачу прав. Все изменения сохранятся вместе после
-          второго подтверждения. </p
-        ><p v-else>
+          второго подтверждения.
+        </p><p v-else>
           Подтверди выбранные {{ confirmation.step.kind === 'grant' ? 'права' : 'изменения' }}.
         </p>
       </template>
-      <p v-else> Несохранённые изменения прав будут потеряны. </p>
+      <p v-else>
+        Несохранённые изменения прав будут потеряны.
+      </p>
       <div class="headman-group__dialog-actions">
         <button
           type="button"

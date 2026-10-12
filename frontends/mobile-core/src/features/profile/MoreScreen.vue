@@ -127,7 +127,7 @@ function navigate(route: ProfileRoute): void {
           :src="item.icon ?? undefined"
           alt=""
           aria-hidden="true"
-        />
+        >
         <span>{{ item.label }}</span>
       </button>
       <button
@@ -146,8 +146,7 @@ function navigate(route: ProfileRoute): void {
             v-if="visibleUnreadCount"
             class="profile-notification-badge"
             aria-hidden="true"
-            >{{ visibleUnreadCount > 99 ? '99+' : visibleUnreadCount }}</span
-          >
+          >{{ visibleUnreadCount > 99 ? '99+' : visibleUnreadCount }}</span>
         </span>
         <span>Уведомления</span>
       </button>

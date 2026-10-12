@@ -107,8 +107,7 @@ onBeforeUnmount(() => {
     <span
       class="homework-completion__label"
       aria-hidden="true"
-      >{{ label }}</span
-    >
+    >{{ label }}</span>
     <button
       ref="handle"
       class="homework-completion__handle"

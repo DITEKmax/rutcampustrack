@@ -297,8 +297,12 @@ onBeforeUnmount(() => {
       class="login-card"
       @submit.prevent="requestCode"
     >
-      <p class="login-card__eyebrow"> RutCampusTrack </p>
-      <h1 id="password-recovery-title"> Восстановить пароль </h1>
+      <p class="login-card__eyebrow">
+        RutCampusTrack
+      </p>
+      <h1 id="password-recovery-title">
+        Восстановить пароль
+      </h1>
       <p class="login-card__hint">
         Введи логин. Если для аккаунта доступен Telegram, код придёт в бот.
       </p>
@@ -315,7 +319,7 @@ onBeforeUnmount(() => {
           autocomplete="username"
           required
           :disabled="busy"
-        />
+        >
       </label>
       <p
         v-if="feedback"
@@ -347,8 +351,12 @@ onBeforeUnmount(() => {
       class="login-card"
       @submit.prevent="verifyCode"
     >
-      <p class="login-card__eyebrow"> RutCampusTrack </p>
-      <h1 id="password-recovery-title"> Введи код </h1>
+      <p class="login-card__eyebrow">
+        RutCampusTrack
+      </p>
+      <h1 id="password-recovery-title">
+        Введи код
+      </h1>
       <p class="login-card__hint">
         {{
           challengeTtlSeconds === null
@@ -382,7 +390,7 @@ onBeforeUnmount(() => {
           autocomplete="one-time-code"
           required
           :disabled="busy"
-        />
+        >
       </label>
       <p
         v-if="feedback"
@@ -422,8 +430,12 @@ onBeforeUnmount(() => {
       class="login-card"
       @submit.prevent="completeReset"
     >
-      <p class="login-card__eyebrow"> RutCampusTrack </p>
-      <h1 id="password-recovery-title"> Задай новый пароль </h1>
+      <p class="login-card__eyebrow">
+        RutCampusTrack
+      </p>
+      <h1 id="password-recovery-title">
+        Задай новый пароль
+      </h1>
       <p class="login-card__hint">
         {{
           ticketTtlSeconds === null
@@ -440,7 +452,7 @@ onBeforeUnmount(() => {
           autocomplete="new-password"
           required
           :disabled="busy"
-        />
+        >
       </label>
       <label class="login-field">
         <span>Повтори новый пароль</span>
@@ -451,7 +463,7 @@ onBeforeUnmount(() => {
           autocomplete="new-password"
           required
           :disabled="busy"
-        />
+        >
       </label>
       <p
         v-if="feedback"

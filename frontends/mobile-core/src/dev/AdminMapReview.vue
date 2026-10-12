@@ -292,13 +292,11 @@ onUnmounted(() => {
     v-if="query.get('capture') !== '1'"
     class="admin-map-review-catalog"
   >
-    <p>Actual Vue · синтетический API · {{ shell.toUpperCase() }}</p
-    ><a
+    <p>Actual Vue · синтетический API · {{ shell.toUpperCase() }}</p><a
       v-for="id in adminMapStates"
       :key="id"
       :href="`?state=${id}&shell=${shell}`"
-      >{{ id }}</a
-    >
+    >{{ id }}</a>
   </aside>
   <AdminShell
     :authority="authority"

@@ -401,8 +401,8 @@ function changeStudent(value: string): void {
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" /> </button
-      ><h1 id="teacher-journal-title">
+        <MobileIcon name="back" />
+      </button><h1 id="teacher-journal-title">
         Журнал<small v-if="groupName">{{ groupName }}</small>
       </h1>
     </header>
@@ -442,8 +442,8 @@ function changeStudent(value: string): void {
           @click="toggleType(type)"
         >
           {{ teacherLessonTypeLabel(type) }}
-        </button> </div
-      ><button
+        </button>
+      </div><button
         type="button"
         class="teacher-journal__icon"
         :aria-label="chart ? 'Показать таблицу' : 'Показать график'"
@@ -535,8 +535,8 @@ function changeStudent(value: string): void {
           :options="formats.map((format) => ({ value: format.code, label: format.label }))"
           :disabled="formatsLoading || exportLoading || !formats.length"
           @update:model-value="changeFormat"
-        /> </div
-      ><button
+        />
+      </div><button
         class="teacher-journal__icon teacher-journal__download"
         type="button"
         data-teacher-action="export-download"

@@ -72,14 +72,12 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED');
           :class="{
             'student-lesson__room--changed': lesson.schedule.room.changeState === 'CHANGED',
           }"
-          >{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span
-        >
+        >{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
         <s
           v-if="lesson.schedule.room.previous"
           class="student-lesson__previous-room"
           :aria-label="`Прежняя аудитория: ${lesson.schedule.room.previous}`"
-          >{{ lesson.schedule.room.previous }}</s
-        >
+        >{{ lesson.schedule.room.previous }}</s>
       </p>
       <p class="student-lesson__meta">
         <MobileIcon name="lesson" /><span>{{ kind }}</span>
@@ -95,11 +93,11 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED');
         <span
           class="student-lesson__status"
           :data-status="status"
-          >{{ symbol
-          }}<MobileIcon
-            v-if="pending"
-            name="clock"
-            class="student-lesson__pending"
+        >{{ symbol
+        }}<MobileIcon
+          v-if="pending"
+          name="clock"
+          class="student-lesson__pending"
         /></span>
       </button>
       <span
@@ -107,11 +105,11 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED');
         class="student-lesson__status"
         :data-status="status"
         :aria-label="pending ? `${statusLabel}. Запрос на рассмотрении` : statusLabel"
-        >{{ symbol
-        }}<MobileIcon
-          v-if="pending"
-          name="clock"
-          class="student-lesson__pending"
+      >{{ symbol
+      }}<MobileIcon
+        v-if="pending"
+        name="clock"
+        class="student-lesson__pending"
       /></span>
       <p
         v-if="cancelled"

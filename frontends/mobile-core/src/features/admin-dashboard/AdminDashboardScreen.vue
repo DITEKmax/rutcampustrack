@@ -153,7 +153,7 @@ onBeforeUnmount(() => {
           :src="chevronIcon"
           alt=""
           aria-hidden="true"
-        />
+        >
       </button>
       <NotificationsEntryButton
         v-if="onNotifications"
@@ -162,7 +162,9 @@ onBeforeUnmount(() => {
       />
     </div>
     <header class="admin-dashboard-screen__header">
-      <h1 id="admin-dashboard-title"> Обзор </h1>
+      <h1 id="admin-dashboard-title">
+        Обзор
+      </h1>
     </header>
     <p
       v-if="loading"
@@ -192,36 +194,27 @@ onBeforeUnmount(() => {
       aria-label="Активные аккаунты и группы"
     >
       <div class="admin-dashboard-screen__stat">
-        <dt>Студенты</dt
-        ><dd>
-          <span>{{ formatCount(stats.totalStudents) }}</span
-          ><small
+        <dt>Студенты</dt><dd>
+          <span>{{ formatCount(stats.totalStudents) }}</span><small
             class="admin-dashboard-screen__delta"
             aria-label="Сравнение недоступно"
-            >—</small
-          >
+          >—</small>
         </dd>
       </div>
       <div class="admin-dashboard-screen__stat">
-        <dt>Преподаватели</dt
-        ><dd>
-          <span>{{ formatCount(stats.totalTeachers) }}</span
-          ><small
+        <dt>Преподаватели</dt><dd>
+          <span>{{ formatCount(stats.totalTeachers) }}</span><small
             class="admin-dashboard-screen__delta"
             aria-label="Сравнение недоступно"
-            >—</small
-          >
+          >—</small>
         </dd>
       </div>
       <div class="admin-dashboard-screen__stat">
-        <dt>Группы</dt
-        ><dd>
-          <span>{{ formatCount(stats.activeGroups) }}</span
-          ><small
+        <dt>Группы</dt><dd>
+          <span>{{ formatCount(stats.activeGroups) }}</span><small
             class="admin-dashboard-screen__delta"
             aria-label="Сравнение недоступно"
-            >—</small
-          >
+          >—</small>
         </dd>
       </div>
     </dl>
@@ -230,7 +223,9 @@ onBeforeUnmount(() => {
       aria-labelledby="admin-dashboard-activity-title"
       :aria-busy="activityLoading"
     >
-      <h2 id="admin-dashboard-activity-title"> Активность </h2>
+      <h2 id="admin-dashboard-activity-title">
+        Активность
+      </h2>
       <div
         class="admin-dashboard-screen__period"
         role="group"
@@ -335,7 +330,7 @@ onBeforeUnmount(() => {
                 :src="checkIcon"
                 alt=""
                 aria-hidden="true"
-              />
+              >
             </button>
           </div>
         </MobileToolsSheet>
@@ -350,11 +345,13 @@ onBeforeUnmount(() => {
           tone="warning"
           title="История показателя неполная"
         >
-          <p>{{
-            activity.summary.metrics[metricCode].state === 'AVAILABLE'
-              ? 'За часть периодов данных нет. Известные значения показаны на графике.'
-              : adminActivityExplanation(activity.summary.metrics[metricCode])
-          }}</p>
+          <p>
+            {{
+              activity.summary.metrics[metricCode].state === 'AVAILABLE'
+                ? 'За часть периодов данных нет. Известные значения показаны на графике.'
+                : adminActivityExplanation(activity.summary.metrics[metricCode])
+            }}
+          </p>
         </AdminNotice>
         <dl
           class="admin-dashboard-screen__stats admin-dashboard-screen__stats--activity"
@@ -367,23 +364,20 @@ onBeforeUnmount(() => {
             :data-admin-activity-metric="code"
             :data-state="activity.summary.metrics[code].state"
           >
-            <dt>{{ adminActivityLabels[code] }}</dt
-            ><dd>
+            <dt>{{ adminActivityLabels[code] }}</dt><dd>
               <span
                 :aria-label="
                   activity.summary.metrics[code].state === 'AVAILABLE' &&
-                  !(code === 'geoMarks' && activity.summary.metrics[code].percent === null)
+                    !(code === 'geoMarks' && activity.summary.metrics[code].percent === null)
                     ? undefined
                     : 'Данные недоступны'
                 "
-                >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span
-              >
+              >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span>
               <small
                 class="admin-dashboard-screen__delta"
                 :data-tone="adminActivityDelta(activity.summary.metrics[code], code).tone"
                 :aria-label="adminActivityDelta(activity.summary.metrics[code], code).description"
-                >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small
-              >
+              >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small>
             </dd>
           </div>
         </dl>

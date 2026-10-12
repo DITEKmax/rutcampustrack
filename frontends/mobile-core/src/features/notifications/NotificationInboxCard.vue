@@ -177,8 +177,7 @@ onBeforeUnmount(() => {
           <time
             class="notification-card__time"
             :datetime="item.sentAt"
-            >{{ sentLabel }}</time
-          >
+          >{{ sentLabel }}</time>
         </span>
       </button>
       <button

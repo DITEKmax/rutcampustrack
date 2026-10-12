@@ -698,7 +698,9 @@ function isCurrent(requestRevision: number): boolean {
       :disabled="loading || !!error"
       @error="emit('error', $event)"
     />
-    <h1 id="teacher-stats-title"> Статистика </h1>
+    <h1 id="teacher-stats-title">
+      Статистика
+    </h1>
     <StudentWarningBlock
       v-if="routeNotice"
       title="Отбор восстановлен"
@@ -713,18 +715,17 @@ function isCurrent(requestRevision: number): boolean {
       <label
         class="teacher-stats__field"
         for="teacher-stats-directory"
-        ><span>Поиск групп и студентов</span
-        ><input
-          id="teacher-stats-directory"
-          ref="directoryInput"
-          v-model="directoryQuery"
-          type="search"
-          autocomplete="off"
-          :disabled="!api || !semesterId"
-          :aria-invalid="Boolean(directoryValidation)"
-          :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
-          placeholder="Название группы или полное имя"
-      /></label>
+      ><span>Поиск групп и студентов</span><input
+        id="teacher-stats-directory"
+        ref="directoryInput"
+        v-model="directoryQuery"
+        type="search"
+        autocomplete="off"
+        :disabled="!api || !semesterId"
+        :aria-invalid="Boolean(directoryValidation)"
+        :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
+        placeholder="Название группы или полное имя"
+      ></label>
       <button
         v-if="directoryQuery"
         class="teacher-stats__icon-button"
@@ -765,16 +766,15 @@ function isCurrent(requestRevision: number): boolean {
       />
       <template v-else-if="directoryResult">
         <section aria-label="Найденные группы">
-          <h2>Группы</h2
-          ><button
+          <h2>Группы</h2><button
             v-for="group in directoryResult.groups"
             :key="group.id"
             type="button"
             :disabled="!canChooseContext"
             @click="chooseDirectoryGroup(group.id)"
           >
-            {{ group.name }} </button
-          ><p
+            {{ group.name }}
+          </button><p
             v-if="!directoryResult.groups.length"
             role="status"
           >
@@ -782,17 +782,15 @@ function isCurrent(requestRevision: number): boolean {
           </p>
         </section>
         <section aria-label="Найденные студенты">
-          <h2>Студенты</h2
-          ><button
+          <h2>Студенты</h2><button
             v-for="student in directoryResult.students"
             :key="`${student.groupId}:${student.id}`"
             type="button"
             :disabled="!canChooseContext"
             @click="chooseDirectoryGroup(student.groupId)"
           >
-            <span>{{ student.displayName }}</span
-            ><span>{{ student.groupName }}</span> </button
-          ><p
+            <span>{{ student.displayName }}</span><span>{{ student.groupName }}</span>
+          </button><p
             v-if="!directoryResult.students.length"
             role="status"
           >
@@ -833,8 +831,7 @@ function isCurrent(requestRevision: number): boolean {
       aria-label="Выбор контекста"
     >
       <div class="teacher-stats__field">
-        <span>Группа</span
-        ><HeadmanStatsSelect
+        <span>Группа</span><HeadmanStatsSelect
           label="Группа"
           :disabled="!canChooseContext"
           :model-value="String(selectedGroupId ?? '')"
@@ -847,8 +844,7 @@ function isCurrent(requestRevision: number): boolean {
         v-if="selectedGroupId"
         class="teacher-stats__field"
       >
-        <span>Предмет</span
-        ><HeadmanStatsSelect
+        <span>Предмет</span><HeadmanStatsSelect
           label="Предмет"
           :model-value="String(selectedSubjectId ?? '')"
           :options="subjectOptions"
@@ -863,8 +859,7 @@ function isCurrent(requestRevision: number): boolean {
       class="teacher-stats__types"
       :disabled="!canChooseContext"
     >
-      <legend>Тип занятия</legend
-      ><button
+      <legend>Тип занятия</legend><button
         v-for="type in types"
         :key="type"
         type="button"
@@ -945,28 +940,23 @@ function isCurrent(requestRevision: number): boolean {
         :aria-describedby="fieldErrors[column] ? `teacher-stats-${column}-error` : undefined"
         :disabled="!canChooseContext"
       >
-        <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend
-        ><label :for="`teacher-stats-${column}-min`"
-          ><span>От</span
-          ><input
-            :id="`teacher-stats-${column}-min`"
-            v-model="rangeDraft(column).minimum"
-            inputmode="decimal"
-            :aria-invalid="Boolean(fieldErrors[column])"
-            :aria-describedby="
-              fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
-            " /></label
-        ><label :for="`teacher-stats-${column}-max`"
-          ><span>До</span
-          ><input
-            :id="`teacher-stats-${column}-max`"
-            v-model="rangeDraft(column).maximum"
-            inputmode="decimal"
-            :aria-invalid="Boolean(fieldErrors[column])"
-            :aria-describedby="
-              fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
-            " /></label
-        ><p
+        <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend><label :for="`teacher-stats-${column}-min`"><span>От</span><input
+          :id="`teacher-stats-${column}-min`"
+          v-model="rangeDraft(column).minimum"
+          inputmode="decimal"
+          :aria-invalid="Boolean(fieldErrors[column])"
+          :aria-describedby="
+            fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
+          "
+        ></label><label :for="`teacher-stats-${column}-max`"><span>До</span><input
+          :id="`teacher-stats-${column}-max`"
+          v-model="rangeDraft(column).maximum"
+          inputmode="decimal"
+          :aria-invalid="Boolean(fieldErrors[column])"
+          :aria-describedby="
+            fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
+          "
+        ></label><p
           v-if="fieldErrors[column]"
           :id="`teacher-stats-${column}-error`"
           class="teacher-stats__field-error"
@@ -982,8 +972,8 @@ function isCurrent(requestRevision: number): boolean {
           :disabled="!canChooseContext || !canReset"
           @click="resetCriteria"
         >
-          <MobileIcon name="retry" /> </button
-        ><button
+          <MobileIcon name="retry" />
+        </button><button
           type="submit"
           class="teacher-stats__apply"
           :disabled="!canChooseContext"
@@ -1057,13 +1047,11 @@ function isCurrent(requestRevision: number): boolean {
               type="button"
               @click="openGroup(row.groupId)"
             >
-              <span class="teacher-stats__row-name">{{ row.name }}</span
-              ><span
+              <span class="teacher-stats__row-name">{{ row.name }}</span><span
                 v-if="'lessonsCount' in row"
                 class="teacher-stats__lesson-count"
-                >{{ row.lessonsCount }} пар</span
-              ><MobileIcon name="chevron-down" /> </button
-            ><template v-else>
+              >{{ row.lessonsCount }} пар</span><MobileIcon name="chevron-down" />
+            </button><template v-else>
               {{ row.name }}
             </template>
           </h3>
@@ -1085,8 +1073,8 @@ function isCurrent(requestRevision: number): boolean {
                       'teacher-stats__symbol--absent': symbol === 'н',
                     },
                   ]"
-                /> </dt
-              ><dd>{{ formatMetric(row[metric.column]) }}</dd>
+                />
+              </dt><dd>{{ formatMetric(row[metric.column]) }}</dd>
             </div>
           </dl>
         </article>

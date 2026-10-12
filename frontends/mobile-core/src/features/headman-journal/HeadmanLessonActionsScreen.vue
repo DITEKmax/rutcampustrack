@@ -233,12 +233,11 @@ onBeforeUnmount(() => {
       class="headman-actions__context"
       aria-label="Выбранная пара"
     >
-      <h2>{{ subjectName }}</h2
-      ><p
-        >{{ lesson.date }} · {{ lesson.startTime?.slice(0, 5) ?? '—' }}–{{
+      <h2>{{ subjectName }}</h2><p>
+        {{ lesson.date }} · {{ lesson.startTime?.slice(0, 5) ?? '—' }}–{{
           lesson.endTime?.slice(0, 5) ?? '—'
-        }}</p
-      ><p><MobileIcon name="lesson" />{{ lessonType(lesson.lessonType) }}</p>
+        }}
+      </p><p><MobileIcon name="lesson" />{{ lessonType(lesson.lessonType) }}</p>
     </section>
     <div
       class="headman-actions__filters"
@@ -306,8 +305,7 @@ onBeforeUnmount(() => {
             <span
               v-if="authorName(item)"
               class="headman-actions__actor"
-              >{{ authorName(item) }}</span
-            >
+            >{{ authorName(item) }}</span>
           </div>
         </div>
         <template v-if="!item.action.startsWith('HOMEWORK_')">
@@ -320,15 +318,13 @@ onBeforeUnmount(() => {
               class="headman-actions__mark"
               :data-status="markStatus(item.before?.status)"
               aria-hidden="true"
-              >{{ markSymbol(item.before?.status) }}</span
-            >
+            >{{ markSymbol(item.before?.status) }}</span>
             <span aria-hidden="true">→</span>
             <span
               class="headman-actions__mark"
               :data-status="markStatus(item.after?.status)"
               aria-hidden="true"
-              >{{ markSymbol(item.after?.status) }}</span
-            >
+            >{{ markSymbol(item.after?.status) }}</span>
           </div>
           <p v-else-if="item.student">
             {{ title(item) }}
@@ -346,11 +342,15 @@ onBeforeUnmount(() => {
             <p v-if="item.geo?.latitude != null && item.geo?.longitude != null">
               Координаты: {{ item.geo.latitude }}, {{ item.geo.longitude }}
             </p>
-            <p v-else> Координаты недоступны </p>
+            <p v-else>
+              Координаты недоступны
+            </p>
             <p v-if="item.geo?.distanceMeters != null">
               {{ item.geo.distanceMeters }} м от центра вуза
             </p>
-            <p v-else> Расстояние недоступно </p>
+            <p v-else>
+              Расстояние недоступно
+            </p>
           </template>
           <p v-if="item.ticket">
             Заявка

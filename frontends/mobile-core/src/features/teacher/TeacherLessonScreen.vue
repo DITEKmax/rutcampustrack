@@ -87,8 +87,10 @@ async function load(): Promise<void> {
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" /> </button
-      ><h1 id="teacher-lesson-title"> Пара </h1>
+        <MobileIcon name="back" />
+      </button><h1 id="teacher-lesson-title">
+        Пара
+      </h1>
       <div
         v-if="state"
         class="teacher-lesson-detail__download"
@@ -140,8 +142,9 @@ async function load(): Promise<void> {
         show-date
         :interactive="false"
         show-status
-      /><h2 class="teacher-screen__section-title"> Посещаемость </h2
-      ><TeacherRoster
+      /><h2 class="teacher-screen__section-title">
+        Посещаемость
+      </h2><TeacherRoster
         :rows="rows"
         @open-excuse="emit('open-excuse', $event)"
         @open-manual-excuse="emit('open-manual-excuse', state.lesson.id, $event)"

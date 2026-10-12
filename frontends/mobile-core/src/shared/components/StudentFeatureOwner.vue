@@ -2030,9 +2030,9 @@ defineExpose({ openNotificationAction });
   <MobileShell
     v-if="
       route.id === 'today/excuse' ||
-      route.id === 'today/late' ||
-      route.id === 'attendance/excuse' ||
-      route.id === 'attendance/late'
+        route.id === 'today/late' ||
+        route.id === 'attendance/excuse' ||
+        route.id === 'attendance/late'
     "
     custom-back
     :route="route"
@@ -2346,14 +2346,14 @@ defineExpose({ openNotificationAction });
       <span
         v-if="
           route.id === 'more/statistics' ||
-          route.id === 'more/statistics/subject' ||
-          [
-            'more/requests/type',
-            'more/requests/select-excuse',
-            'more/requests/select-late',
-            'more/requests/excuse',
-            'more/requests/late',
-          ].includes(route.id)
+            route.id === 'more/statistics/subject' ||
+            [
+              'more/requests/type',
+              'more/requests/select-excuse',
+              'more/requests/select-late',
+              'more/requests/excuse',
+              'more/requests/late',
+            ].includes(route.id)
         "
         hidden
         aria-hidden="true"

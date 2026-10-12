@@ -134,16 +134,13 @@ function setDelivery(
       :disabled="disabled || choiceOpen"
       @click="switchMode"
     >
-      <span class="notification-settings__mode-label"
-        >Раздельные настройки<span class="notification-settings__mode-state">{{
-          value.splitChannels ? 'Включены' : 'Выключены'
-        }}</span></span
-      >
+      <span class="notification-settings__mode-label">Раздельные настройки<span class="notification-settings__mode-state">{{
+        value.splitChannels ? 'Включены' : 'Выключены'
+      }}</span></span>
       <span
         class="notification-settings__slider"
         aria-hidden="true"
-        ><span
-      /></span>
+      ><span /></span>
     </button>
     <div
       v-if="choiceOpen"
@@ -181,11 +178,13 @@ function setDelivery(
       class="notification-settings__notice"
       role="alert"
     >
-      <p>{{
-        catalogChanged
-          ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.'
-          : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.'
-      }}</p>
+      <p>
+        {{
+          catalogChanged
+            ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.'
+            : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.'
+        }}
+      </p>
       <button
         type="button"
         :disabled="busy || offline"
@@ -230,8 +229,12 @@ function setDelivery(
       class="notification-settings__capability"
       role="status"
     >
-      <p v-if="appPushAvailable === false"> Web Push недоступен на этом устройстве </p>
-      <p v-if="!preferences.telegramLinked"> Telegram не привязан </p>
+      <p v-if="appPushAvailable === false">
+        Web Push недоступен на этом устройстве
+      </p>
+      <p v-if="!preferences.telegramLinked">
+        Telegram не привязан
+      </p>
     </div>
     <slot name="capability" />
     <form @submit.prevent="save()">
@@ -239,18 +242,22 @@ function setDelivery(
         class="notification-settings__matrix"
         :data-split="value.splitChannels"
       >
-        <caption class="notification-settings__sr"> Доставка по типам уведомлений </caption>
+        <caption class="notification-settings__sr">
+          Доставка по типам уведомлений
+        </caption>
         <colgroup>
-          <col /><col class="notification-settings__channel-col" /><col
+          <col><col class="notification-settings__channel-col"><col
             v-if="value.splitChannels"
             class="notification-settings__channel-col"
-          />
+          >
         </colgroup>
         <thead>
           <tr>
-            <th scope="col"> Уведомления </th
-            ><th scope="col"> {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }} </th
-            ><th
+            <th scope="col">
+              Уведомления
+            </th><th scope="col">
+              {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }}
+            </th><th
               v-if="value.splitChannels"
               scope="col"
             >

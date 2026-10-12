@@ -1346,8 +1346,7 @@ onBeforeUnmount(() => {
         >
           <span id="admin-group-course-value">{{
             filterCourse === null ? 'Все курсы' : filterCourse + ' курс'
-          }}</span
-          ><MobileIcon name="chevron-down" />
+          }}</span><MobileIcon name="chevron-down" />
         </button>
         <div
           v-if="expandedFilter === 'course'"
@@ -1362,8 +1361,8 @@ onBeforeUnmount(() => {
               expandedFilter = null;
             "
           >
-            Все курсы </button
-          ><button
+            Все курсы
+          </button><button
             v-for="value in 5"
             :key="value"
             type="button"
@@ -1386,8 +1385,7 @@ onBeforeUnmount(() => {
           :aria-expanded="expandedFilter === 'program'"
           @click="expandedFilter = expandedFilter === 'program' ? null : 'program'"
         >
-          <span id="admin-group-program-value">{{ programTypeLabel(filterProgramType) }}</span
-          ><MobileIcon name="chevron-down" />
+          <span id="admin-group-program-value">{{ programTypeLabel(filterProgramType) }}</span><MobileIcon name="chevron-down" />
         </button>
         <div
           v-if="expandedFilter === 'program'"
@@ -1402,8 +1400,8 @@ onBeforeUnmount(() => {
               expandedFilter = null;
             "
           >
-            Все типы программ </button
-          ><button
+            Все типы программ
+          </button><button
             v-for="program in adminGroupProgramTypes"
             :key="program.digit"
             type="button"
@@ -1428,8 +1426,7 @@ onBeforeUnmount(() => {
         >
           <span id="admin-group-sort-value">{{
             sortOptions.find((item) => item.value === filterSort)?.label
-          }}</span
-          ><MobileIcon name="chevron-down" />
+          }}</span><MobileIcon name="chevron-down" />
         </button>
         <div
           v-if="expandedFilter === 'sort'"
@@ -1461,8 +1458,7 @@ onBeforeUnmount(() => {
         >
           <span id="admin-group-status-value">{{
             tabs.find((tab) => tab.value === filterStatus)?.label
-          }}</span
-          ><MobileIcon name="chevron-down" />
+          }}</span><MobileIcon name="chevron-down" />
         </button>
         <div
           v-if="expandedFilter === 'status'"
@@ -1495,14 +1491,12 @@ onBeforeUnmount(() => {
       class="admin-groups-headman"
     >
       <div class="admin-groups-archive-summary">
-        <h2>{{ displayCode(archiveGroupConfirmation) }}</h2
-        ><p>{{ studentCountLabel(archiveGroupConfirmation.studentCount) }}</p
-        ><p
-          >{{ archiveGroupConfirmation.status === 'DRAFT' ? 'Черновик' : 'Активная группа' }}{{ " → Архив" }}</p
-        > </div
-      ><p
-        >{{ "Группа и её история сохранятся. Группа станет архивной; изменить её можно будет после восстановления." }}</p
-      >
+        <h2>{{ displayCode(archiveGroupConfirmation) }}</h2><p>{{ studentCountLabel(archiveGroupConfirmation.studentCount) }}</p><p>
+          {{ archiveGroupConfirmation.status === 'DRAFT' ? 'Черновик' : 'Активная группа' }}{{ " → Архив" }}
+        </p>
+      </div><p>
+        {{ "Группа и её история сохранятся. Группа станет архивной; изменить её можно будет после восстановления." }}
+      </p>
       <button
         class="admin-groups-action"
         type="button"
@@ -1526,37 +1520,31 @@ onBeforeUnmount(() => {
       aria-label="Новая группа"
       @submit.prevent="createGroup"
     >
-      <label
-        ><span>Буквенный код</span
-        ><input
-          v-model="alphabeticCode"
-          maxlength="4"
-          required
-          type="text"
-          autocomplete="off"
-          :disabled="saving"
-      /></label>
-      <label
-        ><span>Цифровой код</span
-        ><input
-          v-model="numericCode"
-          inputmode="numeric"
-          maxlength="3"
-          pattern="\d{3}"
-          required
-          type="text"
-          autocomplete="off"
-          :disabled="saving"
-      /></label>
-      <label
-        ><span>Срок обучения, лет</span
-        ><input
-          v-model="trainingDurationYears"
-          min="1"
-          required
-          type="number"
-          :disabled="saving"
-      /></label>
+      <label><span>Буквенный код</span><input
+        v-model="alphabeticCode"
+        maxlength="4"
+        required
+        type="text"
+        autocomplete="off"
+        :disabled="saving"
+      ></label>
+      <label><span>Цифровой код</span><input
+        v-model="numericCode"
+        inputmode="numeric"
+        maxlength="3"
+        pattern="\d{3}"
+        required
+        type="text"
+        autocomplete="off"
+        :disabled="saving"
+      ></label>
+      <label><span>Срок обучения, лет</span><input
+        v-model="trainingDurationYears"
+        min="1"
+        required
+        type="number"
+        :disabled="saving"
+      ></label>
       <p class="admin-groups-form__hint">
         Курс определяется первой цифрой цифрового кода. Новая группа появится в черновиках до
         назначения старосты.
@@ -1587,8 +1575,8 @@ onBeforeUnmount(() => {
             notice = null;
           "
         >
-          <MobileIcon name="plus" />Создать группу </button
-        ><button
+          <MobileIcon name="plus" />Создать группу
+        </button><button
           v-if="status !== 'ARCHIVED'"
           class="admin-groups-table__action"
           type="button"
@@ -1627,8 +1615,7 @@ onBeforeUnmount(() => {
         <label
           class="admin-groups-visually-hidden"
           for="admin-groups-search-input"
-          >Найти группу</label
-        ><button
+        >Найти группу</label><button
           type="submit"
           aria-label="Найти группу"
         >
@@ -1641,7 +1628,7 @@ onBeforeUnmount(() => {
           placeholder="Найти группу"
           autocomplete="off"
           @change="submitSearch"
-        />
+        >
         <button
           v-if="search"
           type="button"
@@ -1668,8 +1655,8 @@ onBeforeUnmount(() => {
           class="admin-groups-table__action"
           @click="openFilters"
         >
-          Фильтры и сортировка </button
-        ><button
+          Фильтры и сортировка
+        </button><button
           type="button"
           class="admin-groups-table__action"
           aria-label="Сбросить фильтры и поиск"
@@ -1695,10 +1682,11 @@ onBeforeUnmount(() => {
         v-else-if="groups.length === 0"
         class="admin-groups-empty"
       >
-        <h2>{{ search ? 'Ничего не найдено' : 'Групп пока нет' }}</h2
-        ><p>{{
-          search ? 'Измени поиск и попробуй снова.' : 'Создай группу — она появится в черновиках.'
-        }}</p>
+        <h2>{{ search ? 'Ничего не найдено' : 'Групп пока нет' }}</h2><p>
+          {{
+            search ? 'Измени поиск и попробуй снова.' : 'Создай группу — она появится в черновиках.'
+          }}
+        </p>
       </div>
       <div
         v-else
@@ -1717,25 +1705,20 @@ onBeforeUnmount(() => {
             :aria-controls="'admin-group-' + group.id"
             @click="expandedGroupId = expandedGroupId === group.id ? null : group.id"
           >
-            <span
-              ><strong>{{ displayCode(group) }}</strong
-              ><span
-                v-if="expandedGroupId !== group.id"
-                class="admin-groups-item__summary"
-                >{{
-                  status === 'DRAFT'
-                    ? (group.draftReason ?? 'Группа только создана')
-                    : (status === 'ARCHIVED' ? 'Архив · ' : '') +
-                      (group.currentCourse ?? '—') +
-                      ' курс · ' +
-                      studentCountLabel(group.studentCount)
-                }}</span
-              ><span
-                v-if="status === 'DRAFT' && expandedGroupId !== group.id"
-                class="admin-groups-item__summary"
-                >Староста не назначен</span
-              ></span
-            >
+            <span><strong>{{ displayCode(group) }}</strong><span
+              v-if="expandedGroupId !== group.id"
+              class="admin-groups-item__summary"
+            >{{
+              status === 'DRAFT'
+                ? (group.draftReason ?? 'Группа только создана')
+                : (status === 'ARCHIVED' ? 'Архив · ' : '') +
+                  (group.currentCourse ?? '—') +
+                  ' курс · ' +
+                  studentCountLabel(group.studentCount)
+            }}</span><span
+              v-if="status === 'DRAFT' && expandedGroupId !== group.id"
+              class="admin-groups-item__summary"
+            >Староста не назначен</span></span>
             <MobileIcon
               name="chevron-down"
               :class="{ 'admin-groups-item__chevron--open': expandedGroupId === group.id }"
@@ -1746,17 +1729,17 @@ onBeforeUnmount(() => {
             :id="'admin-group-' + group.id"
             class="admin-groups-item__details"
           >
-            <dl
-              ><div
-                ><dt>Курс</dt><dd>{{ group.currentCourse ?? '—' }}</dd></div
-              ><div
-                ><dt>Срок обучения</dt><dd>{{ durationLabel(group) }}</dd></div
-              ><div
-                ><dt>Студентов</dt><dd>{{ group.studentCount }}</dd></div
-              ><div
-                ><dt>Староста</dt><dd>{{ group.headmanFio ?? 'Не назначен' }}</dd></div
-              ></dl
-            >
+            <dl>
+              <div>
+                <dt>Курс</dt><dd>{{ group.currentCourse ?? '—' }}</dd>
+              </div><div>
+                <dt>Срок обучения</dt><dd>{{ durationLabel(group) }}</dd>
+              </div><div>
+                <dt>Студентов</dt><dd>{{ group.studentCount }}</dd>
+              </div><div>
+                <dt>Староста</dt><dd>{{ group.headmanFio ?? 'Не назначен' }}</dd>
+              </div>
+            </dl>
             <p
               v-if="status === 'DRAFT'"
               class="admin-groups-form__hint"
@@ -1774,15 +1757,15 @@ onBeforeUnmount(() => {
                     type="button"
                     @click="openHeadman(group)"
                   >
-                    {{ group.headmanFio ? 'Изменить старосту' : 'Назначить старосту' }} </button
-                  ><button
+                    {{ group.headmanFio ? 'Изменить старосту' : 'Назначить старосту' }}
+                  </button><button
                     class="admin-groups-table__action"
                     type="button"
                     :disabled="promotionMutationPending"
                     @click="openPromotion(group)"
                   >
-                    Перевести на следующий курс </button
-                  ><button
+                    Перевести на следующий курс
+                  </button><button
                     class="admin-groups-table__action"
                     type="button"
                     :disabled="archiveGroupSaving"
@@ -1822,13 +1805,11 @@ onBeforeUnmount(() => {
           :disabled="page === 0"
           @click="changePage(page - 1)"
         >
-          <MobileIcon name="back" /> </button
-        ><span
-          >{{ totalElements ? page * 3 + 1 : 0 }}–{{
-            Math.min(page * 3 + groups.length, totalElements)
-          }}
-          из {{ totalElements }}</span
-        ><button
+          <MobileIcon name="back" />
+        </button><span>{{ totalElements ? page * 3 + 1 : 0 }}–{{
+          Math.min(page * 3 + groups.length, totalElements)
+        }}
+          из {{ totalElements }}</span><button
           type="button"
           aria-label="Следующая страница"
           :disabled="totalPages === 0 || page + 1 >= totalPages"
@@ -1881,8 +1862,7 @@ onBeforeUnmount(() => {
         title="Перевод не выполнен"
         class="admin-groups-promotion__error"
       >
-        <p>{{ promotionError }}</p
-        ><template #actions>
+        <p>{{ promotionError }}</p><template #actions>
           <button
             v-if="!promotionMutationPending"
             class="admin-groups-table__action"
@@ -1933,9 +1913,7 @@ onBeforeUnmount(() => {
           <div>
             <dt>Перейдут на курс выше</dt>
             <dd class="admin-groups-promotion__count-values">
-              <span class="admin-groups-promotion__count-value"
-                ><strong>{{ promotionPreview.promoteCount }}</strong> <small>Группы</small></span
-              >
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.promoteCount }}</strong> <small>Группы</small></span>
               <!-- Preserve the literal space between this count and its inline label. -->
               <!-- prettier-ignore -->
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.promotedStudentCount }}</strong> <small>Студенты</small></span>
@@ -1944,9 +1922,7 @@ onBeforeUnmount(() => {
           <div>
             <dt>Уйдут в архив</dt>
             <dd class="admin-groups-promotion__count-values">
-              <span class="admin-groups-promotion__count-value"
-                ><strong>{{ promotionPreview.archiveCount }}</strong> <small>Группы</small></span
-              >
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.archiveCount }}</strong> <small>Группы</small></span>
               <!-- Preserve the literal space between this count and its inline label. -->
               <!-- prettier-ignore -->
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.archivedStudentCount }}</strong> <small>Студенты</small></span>
@@ -1963,16 +1939,18 @@ onBeforeUnmount(() => {
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.skippedStudentCount }}</strong> <small>Студенты</small></span>
             </dd>
           </div>
-          <div
-            ><dt>Конфликтные префиксы</dt><dd>{{ promotionPreview.conflictCount }}</dd></div
-          >
+          <div>
+            <dt>Конфликтные префиксы</dt><dd>{{ promotionPreview.conflictCount }}</dd>
+          </div>
         </dl>
 
         <section
           v-if="promotionPreview.toPromote.length"
           aria-labelledby="admin-groups-promotion-next-title"
         >
-          <h3 id="admin-groups-promotion-next-title"> Перевод на следующий курс </h3>
+          <h3 id="admin-groups-promotion-next-title">
+            Перевод на следующий курс
+          </h3>
           <ul class="admin-groups-promotion__list">
             <li
               v-for="item in promotionPreview.toPromote"
@@ -1988,7 +1966,9 @@ onBeforeUnmount(() => {
           v-if="promotionPreview.toArchive.length"
           aria-labelledby="admin-groups-promotion-archive-title"
         >
-          <h3 id="admin-groups-promotion-archive-title"> Архивация выпускных групп </h3>
+          <h3 id="admin-groups-promotion-archive-title">
+            Архивация выпускных групп
+          </h3>
           <ul class="admin-groups-promotion__list">
             <li
               v-for="item in promotionPreview.toArchive"
@@ -2004,7 +1984,9 @@ onBeforeUnmount(() => {
           v-if="promotionPreview.skipped.length"
           aria-labelledby="admin-groups-promotion-skipped-title"
         >
-          <h3 id="admin-groups-promotion-skipped-title"> Группы без изменений </h3>
+          <h3 id="admin-groups-promotion-skipped-title">
+            Группы без изменений
+          </h3>
           <ul class="admin-groups-promotion__list">
             <li
               v-for="item in promotionPreview.skipped"
@@ -2027,7 +2009,9 @@ onBeforeUnmount(() => {
           v-if="promotionPreview.conflicts.length"
           aria-labelledby="admin-groups-promotion-conflicts-title"
         >
-          <h3 id="admin-groups-promotion-conflicts-title"> Нужна проверка данных </h3>
+          <h3 id="admin-groups-promotion-conflicts-title">
+            Нужна проверка данных
+          </h3>
           <ul class="admin-groups-promotion__list">
             <li
               v-for="(conflict, index) in promotionPreview.conflicts"
@@ -2055,8 +2039,8 @@ onBeforeUnmount(() => {
           type="button"
           :disabled="
             promotionMutationPending ||
-            promotionLoading ||
-            (promotionPreview.toPromote.length === 0 && promotionPreview.toArchive.length === 0)
+              promotionLoading ||
+              (promotionPreview.toPromote.length === 0 && promotionPreview.toArchive.length === 0)
           "
           @click="requestPromotionConfirmation"
         >
@@ -2070,7 +2054,9 @@ onBeforeUnmount(() => {
         role="status"
         aria-labelledby="admin-groups-promotion-result-title"
       >
-        <h3 id="admin-groups-promotion-result-title"> История перевода </h3>
+        <h3 id="admin-groups-promotion-result-title">
+          История перевода
+        </h3>
         <ul class="admin-groups-promotion__list">
           <li
             v-for="item in promotionResult.toPromote"
@@ -2091,7 +2077,9 @@ onBeforeUnmount(() => {
           v-if="promotionResult.skipped.length"
           aria-labelledby="admin-groups-promotion-result-skipped-title"
         >
-          <h4 id="admin-groups-promotion-result-skipped-title"> Группы без изменений </h4>
+          <h4 id="admin-groups-promotion-result-skipped-title">
+            Группы без изменений
+          </h4>
           <ul class="admin-groups-promotion__list">
             <li
               v-for="item in promotionResult.skipped"
@@ -2131,8 +2119,7 @@ onBeforeUnmount(() => {
             : renameGroup.trainingDurationYears + ' лет'
         }}
       </p>
-      <label for="admin-groups-rename-name"
-        ><span>Исправить название</span>
+      <label for="admin-groups-rename-name"><span>Исправить название</span>
         <input
           id="admin-groups-rename-name"
           v-model="renameName"
@@ -2141,10 +2128,9 @@ onBeforeUnmount(() => {
           :aria-describedby="renameError ? 'admin-groups-rename-error' : undefined"
           required
           autocomplete="off"
-        />
+        >
       </label>
-      <label for="admin-groups-rename-duration"
-        ><span>Срок обучения, лет</span>
+      <label for="admin-groups-rename-duration"><span>Срок обучения, лет</span>
         <input
           id="admin-groups-rename-duration"
           v-model="renameDuration"
@@ -2155,7 +2141,7 @@ onBeforeUnmount(() => {
           inputmode="numeric"
           :disabled="renameSaving || renameUnknown"
           required
-        />
+        >
       </label>
       <p class="admin-groups-form__hint">
         Формат названия: УИТ-311. Курс 1–5, тип программы 1–9; курс не выше срока обучения.
@@ -2227,9 +2213,7 @@ onBeforeUnmount(() => {
         @submit.prevent="confirmHeadman"
       >
         <div class="admin-groups-headman__current">
-          <span>Текущий староста</span
-          ><strong>{{ headmanRoster.currentHeadmanFio ?? 'Не назначен' }}</strong
-          ><span>{{ headmanRoster.activeAssistantCount }} помощника</span>
+          <span>Текущий староста</span><strong>{{ headmanRoster.currentHeadmanFio ?? 'Не назначен' }}</strong><span>{{ headmanRoster.activeAssistantCount }} помощника</span>
         </div>
         <label for="admin-groups-headman-select">Выбери старосту</label>
         <select
@@ -2274,9 +2258,9 @@ onBeforeUnmount(() => {
           type="submit"
           :disabled="
             headmanSaving ||
-            headmanMutationPending ||
-            selectedStudentId === null ||
-            assignmentPreview === null
+              headmanMutationPending ||
+              selectedStudentId === null ||
+              assignmentPreview === null
           "
           :aria-busy="headmanSaving"
         >
@@ -2291,7 +2275,9 @@ onBeforeUnmount(() => {
       aria-labelledby="admin-groups-promotion-confirm-title"
       aria-describedby="admin-groups-promotion-confirm-detail"
     >
-      <h2 id="admin-groups-promotion-confirm-title"> Подтверди перевод групп </h2>
+      <h2 id="admin-groups-promotion-confirm-title">
+        Подтверди перевод групп
+      </h2>
       <p
         v-if="promotionPreview"
         id="admin-groups-promotion-confirm-detail"

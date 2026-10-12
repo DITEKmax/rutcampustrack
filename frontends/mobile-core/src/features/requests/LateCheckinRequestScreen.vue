@@ -136,7 +136,9 @@ function onSubmit(): void {
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="late-request-title"> Забыл отметиться </h1>
+      <h1 id="late-request-title">
+        Забыл отметиться
+      </h1>
     </header>
 
     <StudentWarningBlock
@@ -197,16 +199,16 @@ function onSubmit(): void {
         <p
           v-if="
             contextLesson &&
-            !props.lessonsLoading &&
-            !props.lessonsError &&
-            (!todaySelectionMatches || !selectedEligible)
+              !props.lessonsLoading &&
+              !props.lessonsError &&
+              (!todaySelectionMatches || !selectedEligible)
           "
           class="request-validation-hint"
           role="alert"
         >
           {{
             selectedOption?.unavailableReason ||
-            'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.'
+              'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.'
           }}
         </p>
         <RequestLessonSelector
@@ -261,7 +263,9 @@ function onSubmit(): void {
         class="request-confirmation-panel"
         aria-labelledby="late-confirmation-title"
       >
-        <h2 id="late-confirmation-title"> Отправить запрос? </h2>
+        <h2 id="late-confirmation-title">
+          Отправить запрос?
+        </h2>
         <p
           v-if="budgetExhausted"
           class="request-validation-hint"

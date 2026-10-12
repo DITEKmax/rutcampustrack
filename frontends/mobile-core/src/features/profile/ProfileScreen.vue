@@ -121,10 +121,8 @@ function logout(): void {
               <template v-if="showActiveRole">
                 {{
                   snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана'
-                }} </template
-              ><span v-if="snapshot.groupLabel"
-                >{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span
-              >
+                }}
+              </template><span v-if="snapshot.groupLabel">{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span>
             </p>
           </div>
         </section>
@@ -145,7 +143,7 @@ function logout(): void {
                 :src="item.icon"
                 alt=""
                 aria-hidden="true"
-              />
+              >
               <span>{{ item.label }}</span>
             </button>
           </div>

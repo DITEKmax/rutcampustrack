@@ -498,7 +498,9 @@ function stateLabel(format: MapFormat): string {
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="admin-map-title"> Корпуса и этажи </h1>
+      <h1 id="admin-map-title">
+        Корпуса и этажи
+      </h1>
     </header>
     <AdminNotice
       v-if="!canManage"
@@ -539,8 +541,8 @@ function stateLabel(format: MapFormat): string {
             :disabled="saving || loading"
             @click="resolveTarget"
           >
-            Проверить текущую схему </button
-          ><button
+            Проверить текущую схему
+          </button><button
             v-if="pendingUpload?.reconciled"
             type="button"
             :disabled="saving || loading"
@@ -562,44 +564,36 @@ function stateLabel(format: MapFormat): string {
         aria-label="Схема корпуса и этажа"
       >
         <div class="admin-map-fields">
-          <label class="admin-map-field"
-            ><span>Номер корпуса</span
-            ><input
-              v-model="buildingCode"
-              data-field="building-code"
-              type="text"
-              inputmode="numeric"
-              maxlength="64"
-              :disabled="controlsLocked || Boolean(pendingUpload)"
-              :aria-invalid="Boolean(fieldErrors.building)"
-              :aria-describedby="fieldErrors.building ? 'admin-map-building-error' : undefined"
-            /><small
-              v-if="fieldErrors.building"
-              id="admin-map-building-error"
-              class="admin-map-field-error"
-              role="alert"
-              >{{ fieldErrors.building }}</small
-            ></label
-          >
-          <label class="admin-map-field"
-            ><span>Номер этажа</span
-            ><input
-              v-model="floorCode"
-              data-field="floor-code"
-              type="text"
-              inputmode="numeric"
-              maxlength="64"
-              :disabled="controlsLocked || Boolean(pendingUpload)"
-              :aria-invalid="Boolean(fieldErrors.floor)"
-              :aria-describedby="fieldErrors.floor ? 'admin-map-floor-error' : undefined"
-            /><small
-              v-if="fieldErrors.floor"
-              id="admin-map-floor-error"
-              class="admin-map-field-error"
-              role="alert"
-              >{{ fieldErrors.floor }}</small
-            ></label
-          >
+          <label class="admin-map-field"><span>Номер корпуса</span><input
+            v-model="buildingCode"
+            data-field="building-code"
+            type="text"
+            inputmode="numeric"
+            maxlength="64"
+            :disabled="controlsLocked || Boolean(pendingUpload)"
+            :aria-invalid="Boolean(fieldErrors.building)"
+            :aria-describedby="fieldErrors.building ? 'admin-map-building-error' : undefined"
+          ><small
+            v-if="fieldErrors.building"
+            id="admin-map-building-error"
+            class="admin-map-field-error"
+            role="alert"
+          >{{ fieldErrors.building }}</small></label>
+          <label class="admin-map-field"><span>Номер этажа</span><input
+            v-model="floorCode"
+            data-field="floor-code"
+            type="text"
+            inputmode="numeric"
+            maxlength="64"
+            :disabled="controlsLocked || Boolean(pendingUpload)"
+            :aria-invalid="Boolean(fieldErrors.floor)"
+            :aria-describedby="fieldErrors.floor ? 'admin-map-floor-error' : undefined"
+          ><small
+            v-if="fieldErrors.floor"
+            id="admin-map-floor-error"
+            class="admin-map-field-error"
+            role="alert"
+          >{{ fieldErrors.floor }}</small></label>
         </div>
         <p
           v-if="loading"
@@ -616,16 +610,14 @@ function stateLabel(format: MapFormat): string {
             :aria-label="format.toUpperCase()"
           >
             <div class="admin-map-format__heading">
-              <h2>{{ format.toUpperCase() }}</h2
-              ><div class="admin-map-format__actions">
+              <h2>{{ format.toUpperCase() }}</h2><div class="admin-map-format__actions">
                 <a
                   v-if="assetUrls[format] && !files[format]"
                   class="admin-map-icon-action"
                   :href="assetUrls[format]"
                   :download="`корпус-${buildingCode}-этаж-${floorCode}.${format}`"
                   :aria-label="`Скачать ${format.toUpperCase()}`"
-                  ><MobileIcon name="download"
-                /></a>
+                ><MobileIcon name="download" /></a>
                 <button
                   v-if="
                     canDelete && floor?.currentPlan?.[format].state === 'ready' && !files[format]
@@ -662,7 +654,7 @@ function stateLabel(format: MapFormat): string {
                 class="admin-map-preview"
                 :src="stagedUrls[format] || assetUrls[format]"
                 :alt="`Схема: корпус ${buildingCode}, этаж ${floorCode}`"
-              />
+              >
             </button>
             <p
               v-if="files[format]"
@@ -688,9 +680,9 @@ function stateLabel(format: MapFormat): string {
             <p
               v-if="
                 !stagedUrls[format] &&
-                !assetUrls[format] &&
-                floor?.currentPlan?.[format].state &&
-                floor.currentPlan[format].state !== 'absent'
+                  !assetUrls[format] &&
+                  floor?.currentPlan?.[format].state &&
+                  floor.currentPlan[format].state !== 'absent'
               "
               class="admin-map-help"
               role="status"
@@ -705,25 +697,23 @@ function stateLabel(format: MapFormat): string {
               }"
               @dragover.prevent
               @drop.prevent="dropFile(format, $event)"
-              ><MobileIcon name="plus" /><strong>{{
-                assetUrls[format] || stagedUrls[format]
-                  ? 'Выбрать другой файл'
-                  : `Добавить ${format.toUpperCase()}`
-              }}</strong
-              ><input
-                type="file"
-                :accept="format === 'png' ? 'image/png,.png' : 'image/svg+xml,.svg'"
-                :aria-label="`Выбрать ${format.toUpperCase()}`"
-                :disabled="controlsLocked || Boolean(pendingUpload)"
-                @change="chooseFile(format, $event)"
-            /></label>
+            ><MobileIcon name="plus" /><strong>{{
+              assetUrls[format] || stagedUrls[format]
+                ? 'Выбрать другой файл'
+                : `Добавить ${format.toUpperCase()}`
+            }}</strong><input
+              type="file"
+              :accept="format === 'png' ? 'image/png,.png' : 'image/svg+xml,.svg'"
+              :aria-label="`Выбрать ${format.toUpperCase()}`"
+              :disabled="controlsLocked || Boolean(pendingUpload)"
+              @change="chooseFile(format, $event)"
+            ></label>
           </section>
           <small
             v-if="filesError"
             class="admin-map-field-error"
             role="alert"
-            >{{ filesError }}</small
-          >
+          >{{ filesError }}</small>
           <button
             v-if="files.png || files.svg"
             type="button"
@@ -752,30 +742,26 @@ function stateLabel(format: MapFormat): string {
           Формат исчезнет из текущей схемы. Этаж и история схем сохранятся.
         </p>
         <dl class="admin-map-slots">
-          <div
-            ><dt>Файлов</dt><dd>{{ deletion.preview.files }}</dd></div
-          ><div
-            ><dt>Объём, байт</dt><dd>{{ deletion.preview.bytes }}</dd></div
-          >
+          <div>
+            <dt>Файлов</dt><dd>{{ deletion.preview.files }}</dd>
+          </div><div>
+            <dt>Объём, байт</dt><dd>{{ deletion.preview.bytes }}</dd>
+          </div>
         </dl>
-        <label class="admin-map-field"
-          ><span>Пароль текущего администратора</span
-          ><input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            maxlength="256"
-            :disabled="saving"
-            :aria-invalid="Boolean(passwordError)"
-            :aria-describedby="passwordError ? 'admin-map-password-error' : undefined"
-          /><small
-            v-if="passwordError"
-            id="admin-map-password-error"
-            class="admin-map-field-error"
-            role="alert"
-            >{{ passwordError }}</small
-          ></label
-        >
+        <label class="admin-map-field"><span>Пароль текущего администратора</span><input
+          v-model="password"
+          type="password"
+          autocomplete="current-password"
+          maxlength="256"
+          :disabled="saving"
+          :aria-invalid="Boolean(passwordError)"
+          :aria-describedby="passwordError ? 'admin-map-password-error' : undefined"
+        ><small
+          v-if="passwordError"
+          id="admin-map-password-error"
+          class="admin-map-field-error"
+          role="alert"
+        >{{ passwordError }}</small></label>
         <button
           class="admin-map-danger"
           type="button"
@@ -810,12 +796,12 @@ function stateLabel(format: MapFormat): string {
         autofocus
         @click="closePreview"
       >
-        <MobileIcon name="close" /> </button
-      ><img
+        <MobileIcon name="close" />
+      </button><img
         class="admin-map-preview"
         :src="stagedUrls[previewFormat] || assetUrls[previewFormat]"
         :alt="`Схема: корпус ${buildingCode}, этаж ${floorCode}`"
-      />
+      >
     </dialog>
   </main>
 </template>

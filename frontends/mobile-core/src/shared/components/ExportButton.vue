@@ -156,60 +156,51 @@ async function download(): Promise<void> {
       v-if="open"
       class="rct-export__options"
     >
-      <label
-        >Формат выгрузки<select
-          v-model="selected"
-          :disabled="busy"
-          ><option
-            v-for="format in formatOptions"
-            :key="format.code"
-            :value="format.code"
-            >{{ format.label }}</option
-          ></select
-        ></label
-      >
+      <label>Формат выгрузки<select
+        v-model="selected"
+        :disabled="busy"
+      ><option
+        v-for="format in formatOptions"
+        :key="format.code"
+        :value="format.code"
+      >{{ format.label }}</option></select></label>
       <fieldset
         v-if="weeks"
         :disabled="busy"
         class="rct-export__weeks"
       >
         <legend>Период журнала</legend>
-        <label class="rct-export__choice"
-          ><input
-            v-model="period"
-            type="radio"
-            :name="periodName"
-            value="semester"
-          />С начала семестра по текущую неделю</label
-        >
-        <label class="rct-export__choice"
-          ><input
-            v-model="period"
-            type="radio"
-            :name="periodName"
-            value="weeks"
-          />Выбранные недели</label
-        >
+        <label class="rct-export__choice"><input
+          v-model="period"
+          type="radio"
+          :name="periodName"
+          value="semester"
+        >С начала семестра по текущую неделю</label>
+        <label class="rct-export__choice"><input
+          v-model="period"
+          type="radio"
+          :name="periodName"
+          value="weeks"
+        >Выбранные недели</label>
         <template v-if="period === 'weeks'">
           <label
             v-for="week in availableWeeks"
             :key="week.weekStart"
             class="rct-export__choice"
-            ><input
-              v-model="selectedWeeks"
-              type="checkbox"
-              :value="week.weekStart"
-            />{{ week.label }} · {{ week.weekStart }} — {{ week.weekEnd }}</label
-          >
+          ><input
+            v-model="selectedWeeks"
+            type="checkbox"
+            :value="week.weekStart"
+          >{{ week.label }} · {{ week.weekStart }} — {{ week.weekEnd }}</label>
         </template>
       </fieldset>
       <button
         type="button"
         :disabled="
           busy ||
-          !selected ||
-          disabled ||
-          (!!weeks && period === 'weeks' && selectedWeeks.length === 0)
+            !selected ||
+            disabled ||
+            (!!weeks && period === 'weeks' && selectedWeeks.length === 0)
         "
         @click="download"
       >
@@ -237,8 +228,8 @@ async function download(): Promise<void> {
       v-if="error"
       role="alert"
     >
-      {{ error }} </p
-    ><p
+      {{ error }}
+    </p><p
       v-else-if="status"
       role="status"
     >

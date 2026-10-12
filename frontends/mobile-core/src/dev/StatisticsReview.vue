@@ -246,9 +246,9 @@ onBeforeUnmount(() => {
     class="statistics-review-catalog"
   >
     <h1>Статистика · {{ shell.toUpperCase() }}</h1>
-    <p
-      >{{ "Синтетические ответы StudentApi, настоящие Vue-компоненты и useStatistics. Сервер, БД и native Telegram не вызываются." }}</p
-    >
+    <p>
+      {{ "Синтетические ответы StudentApi, настоящие Vue-компоненты и useStatistics. Сервер, БД и native Telegram не вызываются." }}
+    </p>
     <ul>
       <li
         v-for="item in scenarios"

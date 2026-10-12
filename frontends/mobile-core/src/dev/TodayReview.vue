@@ -199,16 +199,15 @@ function retryOptions(): void {
       class="today-review-catalog"
     >
       <h1>StudentToday · {{ shell.toUpperCase() }}</h1>
-      <p
-        >{{ "Визуальные симуляции: " }}{{ scenarios.length }}{{ " состояний реальных компонентов. Действия и отправки не вызывают API. TMA здесь — локальный браузерный preview без подключения Telegram." }}</p
-      >
+      <p>
+        {{ "Визуальные симуляции: " }}{{ scenarios.length }}{{ " состояний реальных компонентов. Действия и отправки не вызывают API. TMA здесь — локальный браузерный preview без подключения Telegram." }}
+      </p>
       <ul>
         <li
           v-for="item in scenarios"
           :key="item.id"
         >
-          <a :href="sceneHref(item.id)">{{ item.label }}</a
-          ><small>{{ item.id }} · {{ item.kind }}</small>
+          <a :href="sceneHref(item.id)">{{ item.label }}</a><small>{{ item.id }} · {{ item.kind }}</small>
         </li>
       </ul>
     </main>

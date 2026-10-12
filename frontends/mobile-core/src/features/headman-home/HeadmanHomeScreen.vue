@@ -415,14 +415,13 @@ onBeforeUnmount(() => {
       >
         <MobileIcon name="back" />
       </button>
-      <output
-        >{{
-          new Date((weekDays[0]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', {
-            day: 'numeric',
-            month: 'short',
-            timeZone: 'UTC',
-          })
-        }}
+      <output>{{
+        new Date((weekDays[0]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'short',
+          timeZone: 'UTC',
+        })
+      }}
         —
         {{
           new Date((weekDays[6]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', {
@@ -436,8 +435,7 @@ onBeforeUnmount(() => {
             : weekLoading
               ? 'Загружаем чётность…'
               : 'Чётность недоступна'
-        }}</small></output
-      >
+        }}</small></output>
       <button
         type="button"
         aria-label="Следующая неделя"
@@ -468,8 +466,7 @@ onBeforeUnmount(() => {
         :aria-current="day.iso === selectedDate ? 'date' : undefined"
         @click="selectDate(day.iso)"
       >
-        <span>{{ day.name }}</span
-        ><strong>{{ day.number }}</strong>
+        <span>{{ day.name }}</span><strong>{{ day.number }}</strong>
       </button>
     </nav>
 
@@ -517,10 +514,8 @@ onBeforeUnmount(() => {
           :disabled="lessonIndex === 0"
           @click="pageLesson(-1)"
         >
-          <MobileIcon name="back" /> </button
-        ><span
-          >{{ selectedLesson.lessonNumber ?? '—' }} пара · {{ lessonStatus(selectedLesson) }}</span
-        ><button
+          <MobileIcon name="back" />
+        </button><span>{{ selectedLesson.lessonNumber ?? '—' }} пара · {{ lessonStatus(selectedLesson) }}</span><button
           type="button"
           aria-label="Следующая пара"
           :disabled="lessonIndex === lessons.length - 1"
@@ -539,12 +534,7 @@ onBeforeUnmount(() => {
         aria-label="Открыть учёт выбранной пары"
         @click="emit('openLesson', selectedLesson)"
       >
-        <span class="headman-home__time">{{ timeRange(selectedLesson) }}</span
-        ><strong>{{ subjectName }}</strong
-        ><span class="headman-home__meta"
-          ><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span
-          ><span><MobileIcon name="lesson" />{{ typeLabel(selectedLesson.lessonType) }}</span></span
-        >
+        <span class="headman-home__time">{{ timeRange(selectedLesson) }}</span><strong>{{ subjectName }}</strong><span class="headman-home__meta"><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeLabel(selectedLesson.lessonType) }}</span></span>
       </button>
       <StudentWarningBlock
         v-if="detailError"
@@ -564,24 +554,21 @@ onBeforeUnmount(() => {
             class="headman-home__circle"
             data-status="present"
             aria-label="Были"
-            >+</span
-          ><strong>{{ presentCount ?? '—' }}</strong> </div
-        ><div>
+          >+</span><strong>{{ presentCount ?? '—' }}</strong>
+        </div><div>
           <span
             class="headman-home__circle"
             aria-label="Без отметки"
-            >—</span
-          ><strong>{{ emptyCount ?? '—' }}</strong> </div
-        ><div
-          ><MobileIcon name="geo-approved" /><strong
+          >—</span><strong>{{ emptyCount ?? '—' }}</strong>
+        </div><div>
+          <MobileIcon name="geo-approved" /><strong
             :aria-label="
               geoMetric
                 ? `Геолокацией подтверждено ${geoMetric.numerator} из ${geoMetric.denominator} отметок присутствия, ${geoMetric.percent}%`
                 : 'Доля подтверждённых геоотметок неизвестна: нет присутствующих или известного источника каждой отметки'
             "
-            >{{ geoMetric ? `${geoMetric.percent}%` : '—' }}</strong
-          ></div
-        >
+          >{{ geoMetric ? `${geoMetric.percent}%` : '—' }}</strong>
+        </div>
       </div>
 
       <button
@@ -590,22 +577,15 @@ onBeforeUnmount(() => {
         type="button"
         @click="emit('openLesson', selectedLesson)"
       >
-        <span class="headman-home__excused-count"
-          ><span
-            class="headman-home__circle"
-            data-status="excused"
-            >у</span
-          ><strong>{{ excused.length }}</strong></span
-        ><span class="headman-home__excused-list"
-          ><span
-            v-for="entry in excused"
-            :key="entry.userId"
-            ><strong>{{ entry.displayName }}</strong
-            ><small>{{
-              entry.excuseReason ?? entry.excuseType ?? 'Уважительная причина'
-            }}</small></span
-          ><span v-if="excused.length === 0">Уважительных причин нет</span></span
-        >
+        <span class="headman-home__excused-count"><span
+          class="headman-home__circle"
+          data-status="excused"
+        >у</span><strong>{{ excused.length }}</strong></span><span class="headman-home__excused-list"><span
+          v-for="entry in excused"
+          :key="entry.userId"
+        ><strong>{{ entry.displayName }}</strong><small>{{
+          entry.excuseReason ?? entry.excuseType ?? 'Уважительная причина'
+        }}</small></span><span v-if="excused.length === 0">Уважительных причин нет</span></span>
       </button>
       <section
         class="headman-home__homework"
@@ -619,42 +599,38 @@ onBeforeUnmount(() => {
           :disabled="!homeworks.length"
           @click="homeworkExpanded = !homeworkExpanded"
         >
-          <MobileIcon name="homework" /><span
-            ><strong>{{
-              homeworkError
-                ? 'ДЗ недоступно'
-                : detailLoading
-                  ? 'Загружаем ДЗ…'
-                  : !homeworkLoaded
-                    ? 'ДЗ недоступно'
-                    : homeworks.length
-                      ? 'Домашнее задание'
-                      : 'ДЗ нет'
-            }}</strong
-            ><small v-if="!homeworkExpanded && homeworks.length">{{
-              homeworks.map((item) => item.title).join(' · ')
-            }}</small></span
-          ><MobileIcon
+          <MobileIcon name="homework" /><span><strong>{{
+            homeworkError
+              ? 'ДЗ недоступно'
+              : detailLoading
+                ? 'Загружаем ДЗ…'
+                : !homeworkLoaded
+                  ? 'ДЗ недоступно'
+                  : homeworks.length
+                    ? 'Домашнее задание'
+                    : 'ДЗ нет'
+          }}</strong><small v-if="!homeworkExpanded && homeworks.length">{{
+            homeworks.map((item) => item.title).join(' · ')
+          }}</small></span><MobileIcon
             v-if="homeworks.length"
             class="headman-home__next"
             name="back"
-          /> </button
-        ><template v-if="homeworkExpanded">
+          />
+        </button><template v-if="homeworkExpanded">
           <article
             v-for="item in homeworks"
             :key="item.id"
           >
-            <h2>{{ item.title }}</h2
-            ><p v-if="item.description"> {{ item.description }} </p
-            ><a
+            <h2>{{ item.title }}</h2><p v-if="item.description">
+              {{ item.description }}
+            </p><a
               v-if="safeHomeworkLink(item.link)"
               :href="safeHomeworkLink(item.link)!"
               target="_blank"
               rel="noopener noreferrer"
-              >Материалы</a
-            >
-          </article> </template
-        ><p
+            >Материалы</a>
+          </article>
+        </template><p
           v-if="homeworkError"
           role="alert"
         >
@@ -670,14 +646,14 @@ onBeforeUnmount(() => {
           "
           @click="emit('openLesson', selectedLesson)"
         >
-          {{ selectedLesson.status === 'ACTIVE' ? 'Пара открыта' : 'Управление парой' }} </button
-        ><button
+          {{ selectedLesson.status === 'ACTIVE' ? 'Пара открыта' : 'Управление парой' }}
+        </button><button
           type="button"
           :disabled="offline || !homeworkEnabled"
           @click="emit('openHomework')"
         >
-          Выдать ДЗ </button
-        ><button
+          Выдать ДЗ
+        </button><button
           type="button"
           :disabled="offline || !logEnabled"
           @click="emit('openLog', selectedLesson)"

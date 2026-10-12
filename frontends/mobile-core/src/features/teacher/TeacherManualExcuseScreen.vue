@@ -89,7 +89,9 @@ async function load(): Promise<void> {
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="teacher-manual-excuse-title"> Причина отсутствия </h1>
+      <h1 id="teacher-manual-excuse-title">
+        Причина отсутствия
+      </h1>
     </header>
     <p
       v-if="loading"
@@ -109,12 +111,12 @@ async function load(): Promise<void> {
     <template v-else-if="state && entry">
       <article class="teacher-screen__ticket">
         <dl class="teacher-screen__details">
-          <div
-            ><dt>Студент</dt><dd>{{ entry.displayName }}</dd></div
-          >
-          <div
-            ><dt>Причина</dt><dd>{{ reasonLabel }}</dd></div
-          >
+          <div>
+            <dt>Студент</dt><dd>{{ entry.displayName }}</dd>
+          </div>
+          <div>
+            <dt>Причина</dt><dd>{{ reasonLabel }}</dd>
+          </div>
           <div v-if="entry.excuseReason && entry.excuseReason.trim() !== reasonLabel.trim()">
             <dt>Описание</dt><dd>{{ entry.excuseReason }}</dd>
           </div>

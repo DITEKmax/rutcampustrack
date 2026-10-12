@@ -423,18 +423,16 @@ onBeforeUnmount(() => {
     />
   </MobileShell>
   <aside v-if="params.get('controls') === '1'">
-    <p>API fixture, actual Vue · {{ shell }} · запросы {{ requests }}</p
-    ><a
+    <p>API fixture, actual Vue · {{ shell }} · запросы {{ requests }}</p><a
       v-for="id in HEADMAN_STATS_REVIEW_STATES"
       :key="id"
       :href="href(id)"
-      >{{ id }} </a
-    ><button
+    >{{ id }} </a><button
       type="button"
       @click="failures = false"
     >
-      Восстановить сервер </button
-    ><button
+      Восстановить сервер
+    </button><button
       type="button"
       @click="invokeHostBack"
     >

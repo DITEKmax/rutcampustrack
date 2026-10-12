@@ -358,18 +358,14 @@ onBeforeUnmount(() => {
       v-if="query.get('capture') !== '1'"
       class="admin-academic-review__toolbar"
     >
-      <label
-        >Состояние
+      <label>Состояние
         <select
           :value="state"
           @change="chooseState"
-          ><option
-            v-for="item in adminSemesterStates"
-            :key="item"
-            >{{ item }}</option
-          ></select
-        ></label
-      ><button
+        ><option
+          v-for="item in adminSemesterStates"
+          :key="item"
+        >{{ item }}</option></select></label><button
         v-if="tma"
         type="button"
         @click="screen?.back()"

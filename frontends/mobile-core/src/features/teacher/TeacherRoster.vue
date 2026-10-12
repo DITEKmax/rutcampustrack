@@ -91,9 +91,9 @@ function open(row: TeacherRosterRow): void {
         :role="canOpen(row.attendance) || manual(row.attendance) ? undefined : 'group'"
         :aria-label="
           row.displayName +
-          ': ' +
-          label(row.attendance) +
-          (canOpen(row.attendance) || manual(row.attendance) ? '. Открыть причину отсутствия' : '')
+            ': ' +
+            label(row.attendance) +
+            (canOpen(row.attendance) || manual(row.attendance) ? '. Открыть причину отсутствия' : '')
         "
         :data-teacher-action="
           canOpen(row.attendance)
@@ -107,21 +107,18 @@ function open(row: TeacherRosterRow): void {
         <span
           class="teacher-roster__name"
           aria-hidden="true"
-          >{{ row.displayName }}</span
-        >
+        >{{ row.displayName }}</span>
         <span
           v-if="row.attendance?.pendingTicket"
           class="teacher-roster__pending"
           aria-hidden="true"
-          >Ожидает решения</span
-        >
+        >Ожидает решения</span>
         <span
           v-else
           class="teacher-roster__status"
           :data-tone="tone(row.attendance)"
           aria-hidden="true"
-          >{{ symbol(row.attendance) }}</span
-        >
+        >{{ symbol(row.attendance) }}</span>
         <MobileIcon
           v-if="canOpen(row.attendance) || manual(row.attendance)"
           name="back"

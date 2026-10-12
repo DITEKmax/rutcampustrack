@@ -235,7 +235,7 @@ function removeFile(id: string): void {
         :multiple="(props.limits?.maxFiles ?? 2) !== 1"
         :disabled="props.disabled"
         @change="onPick"
-      />
+      >
     </label>
 
     <p
@@ -292,7 +292,7 @@ function removeFile(id: string): void {
               :src="previewUrl(file) ?? undefined"
               :alt="'Предварительный просмотр изображения: ' + file.name"
               @error="markPreviewError(file.id, $event)"
-            />
+            >
           </template>
 
           <template

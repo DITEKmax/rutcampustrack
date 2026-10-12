@@ -684,8 +684,8 @@ defineExpose({ openNotificationAction });
       <TeacherLessonScreen
         v-if="
           route.id === 'teacher-home/lesson' ||
-          route.id === 'teacher-attendance/lesson' ||
-          route.id.endsWith('/journal/lesson')
+            route.id === 'teacher-attendance/lesson' ||
+            route.id.endsWith('/journal/lesson')
         "
         :api="api"
         :lesson-id="lessonId"

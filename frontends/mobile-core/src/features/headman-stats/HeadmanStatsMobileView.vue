@@ -135,7 +135,7 @@ function toggleType(code: string): void {
           :src="spring ? springArtwork : autumnArtwork"
           alt=""
           aria-hidden="true"
-        />
+        >
         <div>
           <HeadmanStatsSelect
             v-if="semesterCatalog?.semesters.length"
@@ -150,8 +150,7 @@ function toggleType(code: string): void {
             "
             @update:model-value="emit('semester', $event)"
           />
-          <strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong
-          ><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
+          <strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
         </div>
       </section>
       <nav
@@ -163,8 +162,8 @@ function toggleType(code: string): void {
           :aria-pressed="block === 'group'"
           @click="emit('block', 'group')"
         >
-          Индивидуально </button
-        ><button
+          Индивидуально
+        </button><button
           type="button"
           :aria-pressed="block === 'subject'"
           @click="emit('block', 'subject')"
@@ -182,8 +181,8 @@ function toggleType(code: string): void {
           v-if="trendLoading"
           role="status"
         >
-          Загружаем график… </p
-        ><StudentWarningBlock
+          Загружаем график…
+        </p><StudentWarningBlock
           v-else-if="trendError"
           title="График недоступен"
           :message="trendError"
@@ -207,8 +206,8 @@ function toggleType(code: string): void {
             :aria-pressed="range === 'days'"
             @click="emit('range', 'days')"
           >
-            Дни </button
-          ><button
+            Дни
+          </button><button
             type="button"
             :aria-pressed="range === 'weeks'"
             @click="emit('range', 'weeks')"
@@ -221,8 +220,7 @@ function toggleType(code: string): void {
         v-if="block === 'group' && metrics"
         class="headman-stats-mobile__card"
       >
-        <h2>Состав посещаемости</h2
-        ><div
+        <h2>Состав посещаемости</h2><div
           class="headman-stats-mobile__composition"
           role="img"
           :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
@@ -232,17 +230,15 @@ function toggleType(code: string): void {
             :key="kind"
             :class="'headman-stats-mobile__composition--' + kind"
             :style="{ flexGrow: metrics[kind].numerator }"
-          /> </div
-        ><div class="headman-stats-mobile__status-cards">
+          />
+        </div><div class="headman-stats-mobile__status-cards">
           <article
             v-for="kind in ['present', 'excused', 'absent'] as const"
             :key="kind"
           >
             <span :class="'headman-stats-mobile__status headman-stats-mobile__status--' + kind">{{
               { present: '+', excused: 'у', absent: 'н' }[kind]
-            }}</span
-            ><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong
-            ><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
+            }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
           </article>
         </div>
       </section>
@@ -259,11 +255,9 @@ function toggleType(code: string): void {
           :key="item.label"
           class="headman-stats-mobile__card headman-stats-mobile__metric"
         >
-          <p>{{ item.label }}</p
-          ><div
-            ><strong>{{ headmanStatsPercent(item.metric) }}</strong
-            ><span>{{ item.hint }}</span></div
-          >
+          <p>{{ item.label }}</p><div>
+            <strong>{{ headmanStatsPercent(item.metric) }}</strong><span>{{ item.hint }}</span>
+          </div>
           <progress
             :value="item.metric.denominator ? (item.metric.percent ?? 0) : 0"
             max="100"
@@ -274,13 +268,10 @@ function toggleType(code: string): void {
           v-if="overview"
           class="headman-stats-mobile__card headman-stats-mobile__metric"
         >
-          <p>Посещаемость группы сегодня</p
-          ><div
-            ><strong
-              >{{ overview.today.present.numerator }} из {{ overview.today.present.denominator }} ·
-              {{ headmanStatsPercent(overview.today.present) }}</strong
-            ></div
-          ><progress
+          <p>Посещаемость группы сегодня</p><div>
+            <strong>{{ overview.today.present.numerator }} из {{ overview.today.present.denominator }} ·
+              {{ headmanStatsPercent(overview.today.present) }}</strong>
+          </div><progress
             :value="overview.today.present.percent ?? 0"
             max="100"
             aria-label="Посещаемость группы сегодня"
@@ -305,9 +296,7 @@ function toggleType(code: string): void {
                 type="button"
                 @click="emit('subject', String(option.id))"
               >
-                <strong>{{ option.label }}</strong
-                ><div>{{ option.lessonTypes.map((type) => type.label).join(' · ') }}</div
-                ><MobileIcon name="back" />
+                <strong>{{ option.label }}</strong><div>{{ option.lessonTypes.map((type) => type.label).join(' · ') }}</div><MobileIcon name="back" />
               </button>
             </li>
           </ul>
@@ -352,11 +341,12 @@ function toggleType(code: string): void {
           >
             <table class="headman-stats-mobile__table">
               <caption class="statistics-visually-hidden">
-                Посещаемость студентов по выбранному предмету, проценты </caption
-              ><thead>
+                Посещаемость студентов по выбранному предмету, проценты
+              </caption><thead>
                 <tr>
-                  <th scope="col"> Студент </th
-                  ><th
+                  <th scope="col">
+                    Студент
+                  </th><th
                     v-for="kind in ['present', 'excused', 'absent']"
                     :key="kind"
                     scope="col"
@@ -366,11 +356,12 @@ function toggleType(code: string): void {
                         'headman-stats-mobile__status',
                         'headman-stats-mobile__status--' + kind,
                       ]"
-                      >{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span
-                    > </th
-                  ><th scope="col"> тик. н </th>
-                </tr> </thead
-              ><tbody>
+                    >{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span>
+                  </th><th scope="col">
+                    тик. н
+                  </th>
+                </tr>
+              </thead><tbody>
                 <tr
                   v-for="row in rows"
                   :key="row.studentId"
@@ -381,14 +372,14 @@ function toggleType(code: string): void {
                       @click="emit('student', row.studentId, $event)"
                     >
                       {{ row.displayName }}
-                    </button> </th
-                  ><td class="headman-stats-mobile__present">
-                    {{ headmanStatsPercent(row.metrics.present) }} </td
-                  ><td class="headman-stats-mobile__excused">
-                    {{ headmanStatsPercent(row.metrics.excused) }} </td
-                  ><td class="headman-stats-mobile__absent">
-                    {{ headmanStatsPercent(row.metrics.absent) }} </td
-                  ><td>{{ row.lateCheckin.submitted }}</td>
+                    </button>
+                  </th><td class="headman-stats-mobile__present">
+                    {{ headmanStatsPercent(row.metrics.present) }}
+                  </td><td class="headman-stats-mobile__excused">
+                    {{ headmanStatsPercent(row.metrics.excused) }}
+                  </td><td class="headman-stats-mobile__absent">
+                    {{ headmanStatsPercent(row.metrics.absent) }}
+                  </td><td>{{ row.lateCheckin.submitted }}</td>
                 </tr>
               </tbody>
             </table>
@@ -412,20 +403,17 @@ function toggleType(code: string): void {
               class="headman-stats-mobile__student"
               @click="emit('student', row.studentId, $event)"
             >
-              <strong>{{ row.displayName }}</strong
-              ><div>
+              <strong>{{ row.displayName }}</strong><div>
                 <span
                   v-for="kind in ['present', 'excused', 'absent'] as const"
                   :key="kind"
-                  ><span
-                    :class="[
-                      'headman-stats-mobile__status',
-                      'headman-stats-mobile__status--' + kind,
-                    ]"
-                    >{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span
-                  >{{ headmanStatsPercent(row.metrics[kind]) }}</span
-                > </div
-              ><MobileIcon name="back" />
+                ><span
+                  :class="[
+                    'headman-stats-mobile__status',
+                    'headman-stats-mobile__status--' + kind,
+                  ]"
+                >{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span>{{ headmanStatsPercent(row.metrics[kind]) }}</span>
+              </div><MobileIcon name="back" />
             </button>
           </li>
         </ul>
@@ -448,23 +436,19 @@ function toggleType(code: string): void {
       <template v-else-if="detail && metrics">
         <div class="headman-stats-mobile__personal-intro">
           <p class="headman-stats-mobile__person-name headman-stats-mobile__person-name--center">
-            <span>{{ personName[0] }}</span
-            ><span>{{ personName[1] }}</span>
+            <span>{{ personName[0] }}</span><span>{{ personName[1] }}</span>
           </p>
           <slot name="toolbar" />
         </div>
         <section class="headman-stats-mobile__card headman-stats-mobile__personal">
-          <h2>Посещаемость</h2><p>{{ detail.context.semesterName }}</p
-          ><div
+          <h2>Посещаемость</h2><p>{{ detail.context.semesterName }}</p><div
             v-for="item in [
               { label: 'Чистая «+»', metric: metrics.present },
               { label: 'С учётом «у»', metric: metrics.presentOrExcused },
             ]"
             :key="item.label"
           >
-            <span>{{ item.label }}</span
-            ><strong>{{ headmanStatsPercent(item.metric) }}</strong
-            ><progress
+            <span>{{ item.label }}</span><strong>{{ headmanStatsPercent(item.metric) }}</strong><progress
               :value="item.metric.denominator ? (item.metric.percent ?? 0) : 0"
               max="100"
               :aria-label="item.label"
@@ -472,19 +456,16 @@ function toggleType(code: string): void {
           </div>
         </section>
         <section class="headman-stats-mobile__card">
-          <h2>Статусы и тикеты</h2
-          ><div class="headman-stats-mobile__status-cards">
+          <h2>Статусы и тикеты</h2><div class="headman-stats-mobile__status-cards">
             <article
               v-for="kind in ['present', 'excused', 'absent'] as const"
               :key="kind"
             >
               <span
                 :class="['headman-stats-mobile__status', 'headman-stats-mobile__status--' + kind]"
-                >{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span
-              ><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong
-              ><small>{{ metrics[kind].numerator }} пар</small>
-            </article> </div
-          ><div class="headman-stats-mobile__ticket-cards">
+              >{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} пар</small>
+            </article>
+          </div><div class="headman-stats-mobile__ticket-cards">
             <article
               v-for="item in [
                 { label: 'Тикеты «н»', value: detail.lateCheckin },
@@ -492,16 +473,16 @@ function toggleType(code: string): void {
               ]"
               :key="item.label"
             >
-              <h3>{{ item.label }}</h3
-              ><dl>
+              <h3>{{ item.label }}</h3><dl>
                 <div
                   v-for="counter in ['submitted', 'approved', 'rejected'] as const"
                   :key="counter"
                 >
-                  <dt>{{
-                    { submitted: 'Подано', approved: 'Принято', rejected: 'Откл.' }[counter]
-                  }}</dt
-                  ><dd>{{ item.value?.[counter] ?? '—' }}</dd>
+                  <dt>
+                    {{
+                      { submitted: 'Подано', approved: 'Принято', rejected: 'Откл.' }[counter]
+                    }}
+                  </dt><dd>{{ item.value?.[counter] ?? '—' }}</dd>
                 </div>
               </dl>
             </article>
@@ -517,16 +498,14 @@ function toggleType(code: string): void {
       v-if="!historyOpen && detail"
       class="headman-stats-mobile__card headman-stats-mobile__sources"
     >
-      <h2>Источники отметок «+»</h2
-      ><p v-if="detail && !detail.sources">
-        Сервер не передал источники отметок за выбранный семестр. </p
-      ><dl>
+      <h2>Источники отметок «+»</h2><p v-if="detail && !detail.sources">
+        Сервер не передал источники отметок за выбранный семестр.
+      </p><dl>
         <div
           v-for="source in sources"
           :key="source.label"
         >
-          <dt>{{ source.label }}</dt
-          ><dd>{{ source.percent === null ? '—' : Math.round(source.percent) + '%' }}</dd>
+          <dt>{{ source.label }}</dt><dd>{{ source.percent === null ? '—' : Math.round(source.percent) + '%' }}</dd>
         </div>
       </dl>
     </section>
@@ -535,8 +514,7 @@ function toggleType(code: string): void {
       v-if="!historyOpen && metrics && (subjectId !== null || detail)"
       class="headman-stats-mobile__card"
     >
-      <h2>Состав посещаемости</h2
-      ><div
+      <h2>Состав посещаемости</h2><div
         class="headman-stats-mobile__composition"
         role="img"
         :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
@@ -546,17 +524,15 @@ function toggleType(code: string): void {
           :key="kind"
           :class="'headman-stats-mobile__composition--' + kind"
           :style="{ flexGrow: metrics[kind].numerator }"
-        /> </div
-      ><div class="headman-stats-mobile__status-cards">
+        />
+      </div><div class="headman-stats-mobile__status-cards">
         <article
           v-for="kind in ['present', 'excused', 'absent'] as const"
           :key="kind"
         >
           <span :class="'headman-stats-mobile__status headman-stats-mobile__status--' + kind">{{
             { present: '+', excused: 'у', absent: 'н' }[kind]
-          }}</span
-          ><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong
-          ><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
+          }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
         </article>
       </div>
     </section>

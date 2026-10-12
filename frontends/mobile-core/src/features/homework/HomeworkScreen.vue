@@ -327,7 +327,9 @@ onBeforeUnmount(() => {
       aria-labelledby="homework-title"
     >
       <div class="homework-content">
-        <h1 id="homework-title"> Задания </h1>
+        <h1 id="homework-title">
+          Задания
+        </h1>
 
         <StudentWarningBlock
           v-if="offline || readOnly"

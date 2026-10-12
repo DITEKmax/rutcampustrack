@@ -46,7 +46,7 @@ function chooseTheme(theme: ProfileTheme): void {
             :src="appearancePrevious"
             alt=""
             aria-hidden="true"
-          />
+          >
         </button>
         <h1
           id="profile-appearance-title"
@@ -69,7 +69,7 @@ function chooseTheme(theme: ProfileTheme): void {
             :value="option.value"
             :checked="theme === option.value"
             @change="chooseTheme(option.value)"
-          />
+          >
           <span>{{ option.label }}</span>
         </label>
       </fieldset>

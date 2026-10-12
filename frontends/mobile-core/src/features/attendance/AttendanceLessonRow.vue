@@ -101,8 +101,7 @@ function optionLabel(option: AttendanceRequestOption): string {
           :class="`attendance-status-badge attendance-status-badge--${statusTone(lesson.status)}`"
           role="img"
           :aria-label="`Статус: ${lessonStatusLabel(lesson.status)}`"
-          >{{ statusSymbol(lesson.status) }}</span
-        >
+        >{{ statusSymbol(lesson.status) }}</span>
       </header>
       <div class="attendance-lesson-row__metadata">
         <span>
@@ -110,7 +109,7 @@ function optionLabel(option: AttendanceRequestOption): string {
             :src="roomIcon"
             alt=""
             aria-hidden="true"
-          />
+          >
           {{ lesson.schedule.room ?? 'Аудитория уточняется' }}
         </span>
         <span>
@@ -118,7 +117,7 @@ function optionLabel(option: AttendanceRequestOption): string {
             :src="lessonTypeIcon"
             alt=""
             aria-hidden="true"
-          />
+          >
           {{ lessonTypeLabel(lesson.type) }}
         </span>
       </div>

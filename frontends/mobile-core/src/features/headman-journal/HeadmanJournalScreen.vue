@@ -2285,12 +2285,9 @@ onBeforeUnmount(() => {
       >
         <MobileIcon name="back" />
       </button>
-      <output
-        >{{ formatShortDate(selectedDate)
-        }}<template v-if="selectedLesson">
-          · {{ selectedLesson.lessonNumber ?? '—' }} пара</template
-        ></output
-      >
+      <output>{{ formatShortDate(selectedDate)
+      }}<template v-if="selectedLesson">
+        · {{ selectedLesson.lessonNumber ?? '—' }} пара</template></output>
       <button
         type="button"
         aria-label="Следующая пара или день"
@@ -2377,11 +2374,11 @@ onBeforeUnmount(() => {
       aria-label="Выбранная пара"
     >
       <h2>{{ subjectName() }}</h2>
-      <p
-        ><MobileIcon name="clock" />{{ formatTime(selectedLesson.startTime) }}–{{
+      <p>
+        <MobileIcon name="clock" />{{ formatTime(selectedLesson.startTime) }}–{{
           formatTime(selectedLesson.endTime)
-        }}</p
-      ><p><MobileIcon name="lesson" />{{ lessonTypeLabel(selectedLesson.lessonType) }}</p>
+        }}
+      </p><p><MobileIcon name="lesson" />{{ lessonTypeLabel(selectedLesson.lessonType) }}</p>
     </section>
 
     <section
@@ -2425,7 +2422,7 @@ onBeforeUnmount(() => {
           <template
             v-else-if="
               pendingLessonActionConfirmation?.action === 'transfer' &&
-              pendingLessonActionConfirmation.transferRequest
+                pendingLessonActionConfirmation.transferRequest
             "
           >
             {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара
@@ -2493,16 +2490,12 @@ onBeforeUnmount(() => {
               class="headman-journal__status-circle"
               data-status="excused"
               aria-label="Уважительная причина, ещё не сохранена"
-              >у</span
-            >
-            <span class="headman-journal__row-name"
-              >{{ entry.displayName }}
+            >у</span>
+            <span class="headman-journal__row-name">{{ entry.displayName }}
               <small
                 v-if="excuseUserId === null && entry.source && sourceLabel(entry.source)"
                 class="headman-journal__source"
-                >{{ sourceLabel(entry.source) }}</small
-              ></span
-            >
+              >{{ sourceLabel(entry.source) }}</small></span>
             <span
               v-if="excuseUserId === null"
               class="headman-journal__row-meta"
@@ -2539,8 +2532,7 @@ onBeforeUnmount(() => {
                 <span v-if="entry.attachmentName">
                   {{ entry.attachmentName
                   }}<span v-if="entry.attachmentSize !== null">
-                    ({{ formatFileSize(entry.attachmentSize) }})</span
-                  >
+                    ({{ formatFileSize(entry.attachmentSize) }})</span>
                 </span>
                 <span
                   v-if="attachmentState(entry)?.status === 'error'"
@@ -2575,8 +2567,8 @@ onBeforeUnmount(() => {
               type="button"
               :disabled="
                 pendingUserId !== null ||
-                !canWrite(entry) ||
-                (choice === 'EXCUSED' && !canManageExcuses())
+                  !canWrite(entry) ||
+                  (choice === 'EXCUSED' && !canManageExcuses())
               "
               :aria-label="`${statusLabel(choice)}: ${entry.displayName}`"
               @click="onStatusClick(entry, choice)"
@@ -2584,8 +2576,7 @@ onBeforeUnmount(() => {
               <span
                 class="headman-journal__status-circle"
                 data-status="empty"
-                >{{ statusSymbol(choice) }}</span
-              >
+              >{{ statusSymbol(choice) }}</span>
             </button>
           </div>
           <button
@@ -2605,8 +2596,7 @@ onBeforeUnmount(() => {
             <span
               class="headman-journal__status-circle"
               :data-status="entry.status.toLowerCase()"
-              >{{ statusSymbol(entry.status) }}</span
-            >
+            >{{ statusSymbol(entry.status) }}</span>
           </button>
 
           <button
@@ -2632,8 +2622,7 @@ onBeforeUnmount(() => {
                 <option
                   value=""
                   disabled
-                  >Выбери причину</option
-                >
+                >Выбери причину</option>
                 <option
                   v-for="item in excuseTypes"
                   :key="item.value"
@@ -2656,7 +2645,7 @@ onBeforeUnmount(() => {
                 type="file"
                 accept="image/jpeg,image/png,application/pdf"
                 @change="chooseExcuseFile"
-              />
+              >
               <MobileIcon name="homework" /><span>{{
                 excuseFile ? 'Заменить файл' : 'Прикрепить файл'
               }}</span>
@@ -2684,7 +2673,7 @@ onBeforeUnmount(() => {
                 :src="manualPreview.url"
                 alt="Вложение к причине"
                 @error="manualPreview.error = 'Не удалось показать изображение.'"
-              />
+              >
               <AttachmentPdfPreview
                 v-else-if="manualPreview.url"
                 :url="manualPreview.url"
@@ -2730,9 +2719,9 @@ onBeforeUnmount(() => {
           <span
             v-else-if="
               entry.status !== 'EXCUSED' &&
-              entry.status !== 'CANCELLED' &&
-              entry.status !== 'UNSUPPORTED' &&
-              !canWrite(entry)
+                entry.status !== 'CANCELLED' &&
+                entry.status !== 'UNSUPPORTED' &&
+                !canWrite(entry)
             "
             class="headman-journal__row-status"
           >
@@ -2777,16 +2766,16 @@ onBeforeUnmount(() => {
                 lessonActionBusy || offline || readOnly || isLessonTransferLocked(selectedLesson)
               "
               placeholder="Например, преподаватель болен"
-            />
+            >
           </label>
           <button
             type="button"
             :disabled="
               lessonActionBusy ||
-              offline ||
-              readOnly ||
-              !cancelReason.trim() ||
-              isLessonTransferLocked(selectedLesson)
+                offline ||
+                readOnly ||
+                !cancelReason.trim() ||
+                isLessonTransferLocked(selectedLesson)
             "
             data-action="delete"
             @click="requestCancelSelectedLesson"
@@ -2808,7 +2797,9 @@ onBeforeUnmount(() => {
           class="headman-journal__transfer-task"
           aria-labelledby="headman-journal-transfer-title"
         >
-          <h4 id="headman-journal-transfer-title"> Новая дата и номер пары </h4>
+          <h4 id="headman-journal-transfer-title">
+            Новая дата и номер пары
+          </h4>
           <p>
             {{ formatShortDate(selectedLesson.date) }} · пара
             {{ selectedLesson.lessonNumber ?? '—' }}
@@ -2820,7 +2811,7 @@ onBeforeUnmount(() => {
               type="date"
               :min="transferTargetDateMin"
               :disabled="lessonActionBusy || offline || readOnly"
-            />
+            >
           </label>
           <label>
             <span>Номер пары</span>
@@ -2828,11 +2819,11 @@ onBeforeUnmount(() => {
               v-model.number="transferTargetLessonNumber"
               :disabled="
                 lessonActionBusy ||
-                offline ||
-                readOnly ||
-                transferTargetLoading ||
-                transferTargetLessonsDate !== transferTargetDate ||
-                transferTargetError !== null
+                  offline ||
+                  readOnly ||
+                  transferTargetLoading ||
+                  transferTargetLessonsDate !== transferTargetDate ||
+                  transferTargetError !== null
               "
             >
               <option
@@ -2873,7 +2864,7 @@ onBeforeUnmount(() => {
           <p
             v-else-if="
               transferTargetLessonsDate === transferTargetDate &&
-              availableTransferTargetSlots.length === 0
+                availableTransferTargetSlots.length === 0
             "
             role="status"
           >
@@ -2900,13 +2891,15 @@ onBeforeUnmount(() => {
         <section
           v-if="
             isHeadmanContext() &&
-            (selectedTransferOperation ||
-              (selectedLesson.status === 'TRANSFERRED' && selectedServerTransferState !== null))
+              (selectedTransferOperation ||
+                (selectedLesson.status === 'TRANSFERRED' && selectedServerTransferState !== null))
           "
           class="headman-journal__transfer-status"
           aria-labelledby="headman-journal-transfer-status-title"
         >
-          <h4 id="headman-journal-transfer-status-title"> Состояние переноса </h4>
+          <h4 id="headman-journal-transfer-status-title">
+            Состояние переноса
+          </h4>
           <p role="status">
             {{
               selectedTransferOperation
@@ -2917,7 +2910,7 @@ onBeforeUnmount(() => {
           <p
             v-if="
               selectedTransferOperation?.targetDate ||
-              selectedTransferOperation?.response?.targetDate
+                selectedTransferOperation?.response?.targetDate
             "
           >
             Новая дата:
@@ -2934,10 +2927,10 @@ onBeforeUnmount(() => {
             type="button"
             :disabled="
               offline ||
-              readOnly ||
-              lessonActionBusy ||
-              selectedTransferOperation?.phase === 'submitting' ||
-              selectedTransferOperation?.phase === 'checking'
+                readOnly ||
+                lessonActionBusy ||
+                selectedTransferOperation?.phase === 'submitting' ||
+                selectedTransferOperation?.phase === 'checking'
             "
             @click="resumeTransferForSelectedLesson(false)"
           >
@@ -2989,7 +2982,9 @@ onBeforeUnmount(() => {
               class="headman-journal__weekly-weeks"
               :disabled="weeklyExportBusy"
             >
-              <legend class="headman-journal__visually-hidden"> Выбери недели </legend>
+              <legend class="headman-journal__visually-hidden">
+                Выбери недели
+              </legend>
               <label
                 v-for="week in weeklyExportOptions.weeks"
                 :key="week.weekStart"
@@ -3002,7 +2997,7 @@ onBeforeUnmount(() => {
                   @change="
                     toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)
                   "
-                />
+                >
                 <span>
                   {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{
                     formatShortDate(week.weekEnd)
@@ -3068,7 +3063,9 @@ onBeforeUnmount(() => {
       @close="clearConfirmation = null"
       @cancel="closeClearConfirmation"
     >
-      <h2 id="headman-journal-clear-title"> Снять отметку «у»? </h2>
+      <h2 id="headman-journal-clear-title">
+        Снять отметку «у»?
+      </h2>
       <p v-if="clearConfirmation">
         {{ clearConfirmation.entry.displayName }} · {{ formatShortDate(selectedDate) }} · пара
         {{ selectedLesson?.lessonNumber ?? '—' }}

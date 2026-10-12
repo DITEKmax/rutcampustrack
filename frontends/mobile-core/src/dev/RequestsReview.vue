@@ -400,10 +400,9 @@ onBeforeUnmount(() => {
     v-if="catalog"
     class="requests-review-catalog"
   >
-    <h1>Заявки · {{ shell.toUpperCase() }}</h1
-    ><p
-      >{{ "Синтетический API: настоящие StudentApi, useRequests и MobileShell. Сервер, БД и Telegram не подключены." }}</p
-    ><ul>
+    <h1>Заявки · {{ shell.toUpperCase() }}</h1><p>
+      {{ "Синтетический API: настоящие StudentApi, useRequests и MobileShell. Сервер, БД и Telegram не подключены." }}
+    </p><ul>
       <li
         v-for="item in requestsReviewScenarios"
         :key="item[0]"

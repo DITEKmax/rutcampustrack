@@ -32,7 +32,7 @@ function change(event: Event): void {
       :disabled="disabled"
       :data-permission="code || undefined"
       @change="change"
-    />
+    >
     <span
       class="admin-checkbox__control"
       aria-hidden="true"
@@ -41,7 +41,7 @@ function change(event: Event): void {
         v-if="modelValue"
         :src="checkIcon"
         alt=""
-      />
+      >
     </span>
     <span class="admin-checkbox__label">{{ label }}</span>
   </label>

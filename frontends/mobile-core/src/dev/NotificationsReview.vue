@@ -265,29 +265,23 @@ onBeforeUnmount(() => {
       type="button"
       @click="toggleTheme"
     >
-      Тема </button
-    ><button
+      Тема
+    </button><button
       type="button"
       @click="open = true"
     >
       Открыть
     </button>
-    <label
-      ><input
-        v-model="offline"
-        type="checkbox"
-      />Офлайн</label
-    ><label
-      ><input
-        v-model="failure"
-        type="checkbox"
-      />503</label
-    ><label
-      ><input
-        v-model="conflictNext"
-        type="checkbox"
-      />Следующее сохранение: 409</label
-    >
+    <label><input
+      v-model="offline"
+      type="checkbox"
+    >Офлайн</label><label><input
+      v-model="failure"
+      type="checkbox"
+    >503</label><label><input
+      v-model="conflictNext"
+      type="checkbox"
+    >Следующее сохранение: 409</label>
     <NotificationsEntryButton
       :count="unread.count"
       @click="open = true"

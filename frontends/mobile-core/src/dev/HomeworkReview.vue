@@ -199,9 +199,9 @@ onBeforeUnmount(() => {
     class="homework-review-catalog"
   >
     <h1>Задания · {{ shell.toUpperCase() }}</h1>
-    <p
-      >{{ "Синтетические API fixtures. Настоящие Vue-компоненты и useHomework. Сервер и БД не вызываются." }}</p
-    >
+    <p>
+      {{ "Синтетические API fixtures. Настоящие Vue-компоненты и useHomework. Сервер и БД не вызываются." }}
+    </p>
     <ul>
       <li
         v-for="item in scenarios"

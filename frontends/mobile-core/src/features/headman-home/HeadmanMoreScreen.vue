@@ -108,7 +108,9 @@ function select(destination: HeadmanMoreDestination): void {
     aria-labelledby="headman-more-title"
   >
     <header class="headman-more__header">
-      <h1 id="headman-more-title"> Ещё </h1>
+      <h1 id="headman-more-title">
+        Ещё
+      </h1>
     </header>
     <section
       v-for="section in sections"
@@ -136,22 +138,21 @@ function select(destination: HeadmanMoreDestination): void {
                 :src="item.icon"
                 alt=""
                 aria-hidden="true"
-              />
+              >
             </span>
             <span class="headman-more__copy">
               <span class="headman-more__label">{{ item.label }}</span>
               <span
                 v-if="!availability[item.id]"
                 class="headman-more__status"
-                >Недоступно</span
-              >
+              >Недоступно</span>
             </span>
             <img
               class="headman-more__next"
               :src="nextIcon"
               alt=""
               aria-hidden="true"
-            />
+            >
           </button>
           <p
             v-if="!availability[item.id]"

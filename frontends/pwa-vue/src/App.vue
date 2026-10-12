@@ -2134,10 +2134,10 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-      !studentViewVisible &&
-      !headmanViewVisible &&
-      !teacherViewVisible &&
-      !adminHomeViewVisible
+        !studentViewVisible &&
+        !headmanViewVisible &&
+        !teacherViewVisible &&
+        !adminHomeViewVisible
     "
     floating
     :count="notificationUnread.count"

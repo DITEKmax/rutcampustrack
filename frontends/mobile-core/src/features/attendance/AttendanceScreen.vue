@@ -270,7 +270,7 @@ function dateLabel(date: string): string {
             :src="chevronDown"
             alt=""
             aria-hidden="true"
-          />
+          >
         </button>
         <h1 id="attendance-title">
           {{ selectedRequestOption?.label ?? 'Форма заявки' }}
@@ -309,7 +309,9 @@ function dateLabel(date: string): string {
 
     <template v-else>
       <header class="attendance-screen__header">
-        <h1 id="attendance-title"> Посещаемость </h1>
+        <h1 id="attendance-title">
+          Посещаемость
+        </h1>
       </header>
 
       <StudentWarningBlock
@@ -354,34 +356,25 @@ function dateLabel(date: string): string {
             <span
               class="attendance-metric__symbol"
               aria-hidden="true"
-              >+</span
-            >
+            >+</span>
             <span>{{ displayPercent(readyData.metrics.present.percent) }}</span>
-            <span class="attendance-visually-hidden"
-              >был, {{ readyData.metrics.present.count }}</span
-            >
+            <span class="attendance-visually-hidden">был, {{ readyData.metrics.present.count }}</span>
           </article>
           <article class="attendance-metric attendance-metric--absent">
             <span
               class="attendance-metric__symbol"
               aria-hidden="true"
-              >н</span
-            >
+            >н</span>
             <span>{{ displayPercent(readyData.metrics.absent.percent) }}</span>
-            <span class="attendance-visually-hidden"
-              >не был, {{ readyData.metrics.absent.count }}</span
-            >
+            <span class="attendance-visually-hidden">не был, {{ readyData.metrics.absent.count }}</span>
           </article>
           <article class="attendance-metric attendance-metric--excused">
             <span
               class="attendance-metric__symbol"
               aria-hidden="true"
-              >у</span
-            >
+            >у</span>
             <span>{{ displayPercent(readyData.metrics.excused.percent) }}</span>
-            <span class="attendance-visually-hidden"
-              >уважительная причина, {{ readyData.metrics.excused.count }}</span
-            >
+            <span class="attendance-visually-hidden">уважительная причина, {{ readyData.metrics.excused.count }}</span>
           </article>
         </section>
 
@@ -490,9 +483,7 @@ function dateLabel(date: string): string {
             >
               ‹
             </button>
-            <span role="status"
-              >{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span
-            >
+            <span role="status">{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span>
             <button
               type="button"
               aria-label="Следующая неделя"
@@ -530,60 +521,55 @@ function dateLabel(date: string): string {
         class="attendance-dock__item"
         aria-label="Сегодня"
       >
-        <span class="attendance-dock__icon"
-          ><img
-            :src="scheduleTab"
-            alt=""
-            aria-hidden="true"
-        /></span>
+        <span class="attendance-dock__icon"><img
+          :src="scheduleTab"
+          alt=""
+          aria-hidden="true"
+        ></span>
         <span>Сегодня</span>
       </span>
       <span
         class="attendance-dock__item"
         aria-label="Задания"
       >
-        <span class="attendance-dock__icon"
-          ><img
-            :src="moreTab"
-            alt=""
-            aria-hidden="true"
-        /></span>
+        <span class="attendance-dock__icon"><img
+          :src="moreTab"
+          alt=""
+          aria-hidden="true"
+        ></span>
         <span>Задания</span>
       </span>
       <span
         class="attendance-dock__item attendance-dock__item--active"
         aria-current="page"
       >
-        <span class="attendance-dock__icon"
-          ><img
-            :src="attendanceTab"
-            alt=""
-            aria-hidden="true"
-        /></span>
+        <span class="attendance-dock__icon"><img
+          :src="attendanceTab"
+          alt=""
+          aria-hidden="true"
+        ></span>
         <span>Учёт</span>
       </span>
       <span
         class="attendance-dock__item"
         aria-label="Ещё"
       >
-        <span class="attendance-dock__icon"
-          ><img
-            :src="moreTab"
-            alt=""
-            aria-hidden="true"
-        /></span>
+        <span class="attendance-dock__icon"><img
+          :src="moreTab"
+          alt=""
+          aria-hidden="true"
+        ></span>
         <span>Ещё</span>
       </span>
       <span
         class="attendance-dock__item"
         aria-label="Профиль"
       >
-        <span class="attendance-dock__icon"
-          ><img
-            :src="profileTab"
-            alt=""
-            aria-hidden="true"
-        /></span>
+        <span class="attendance-dock__icon"><img
+          :src="profileTab"
+          alt=""
+          aria-hidden="true"
+        ></span>
         <span>Профиль</span>
       </span>
     </nav>

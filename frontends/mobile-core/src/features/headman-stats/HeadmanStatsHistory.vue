@@ -269,22 +269,18 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back });
       :key="group.date"
       class="headman-stats-history__day"
     >
-      <h3>{{ dateText(group.date) }}</h3
-      ><ul>
+      <h3>{{ dateText(group.date) }}</h3><ul>
         <li
           v-for="lesson in group.lessons"
           :key="lesson.lessonId"
           class="headman-stats-history__lesson"
         >
           <div class="headman-stats-history__lesson-main">
-            <strong>{{ lesson.subjectName }}</strong
-            ><span
-              >{{ timeText(lesson.startsAt) }} · {{ lesson.room || 'Аудитория не указана' }} ·
-              {{ typeText(lesson.lessonType) }}</span
-            ><small v-if="!lesson.editable">{{
+            <strong>{{ lesson.subjectName }}</strong><span>{{ timeText(lesson.startsAt) }} · {{ lesson.room || 'Аудитория не указана' }} ·
+              {{ typeText(lesson.lessonType) }}</span><small v-if="!lesson.editable">{{
               lesson.blockedReason || 'Только просмотр'
-            }}</small> </div
-          ><div
+            }}</small>
+          </div><div
             class="headman-stats-history__choices"
             role="group"
             :aria-label="`Отметка: ${lesson.subjectName}, ${dateText(lesson.lessonDate)}`"
@@ -301,9 +297,9 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back });
               ]"
               :disabled="
                 !writable ||
-                !lesson.editable ||
-                (status === 'EXCUSED' ? !excuseAllowed : !markAllowed) ||
-                (lesson.status !== null && !lesson.markRevision)
+                  !lesson.editable ||
+                  (status === 'EXCUSED' ? !excuseAllowed : !markAllowed) ||
+                  (lesson.status !== null && !lesson.markRevision)
               "
               :aria-label="
                 lesson.status
@@ -339,22 +335,22 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back });
               v-if="ticketBusy"
               role="status"
             >
-              Загружаем… </p
-            ><p
+              Загружаем…
+            </p><p
               v-if="ticketError"
               role="alert"
             >
-              {{ ticketError }} </p
-            ><template v-if="ticket">
+              {{ ticketError }}
+            </p><template v-if="ticket">
               <span
                 class="request-status-badge"
                 :data-status="ticket.summary.status"
-                >{{
-                  ticket.summary.status === 'APPROVED' ? 'Одобрена' : ticket.summary.status
-                }}</span
-              >
-              <p v-if="ticket.summary.reason"> {{ ticket.summary.reason }} </p
-              ><p v-if="ticket.summary.comment">
+              >{{
+                ticket.summary.status === 'APPROVED' ? 'Одобрена' : ticket.summary.status
+              }}</span>
+              <p v-if="ticket.summary.reason">
+                {{ ticket.summary.reason }}
+              </p><p v-if="ticket.summary.comment">
                 {{ ticket.summary.comment }}
               </p>
               <RequestAttachmentPreview
@@ -384,9 +380,8 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back });
         :disabled="!data.hasPrevious || loading || pending !== null"
         @click="controller.changePage(data.page - 1)"
       >
-        Назад </button
-      ><span>{{ data.page + 1 }} из {{ data.totalPages }}</span
-      ><button
+        Назад
+      </button><span>{{ data.page + 1 }} из {{ data.totalPages }}</span><button
         type="button"
         :disabled="!data.hasNext || loading || pending !== null"
         @click="controller.changePage(data.page + 1)"
@@ -402,56 +397,46 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back });
     >
       <template v-if="intent">
         <h2 id="headman-stats-confirm-title">
-          {{ confirmation ? 'Снять уважительную отметку?' : 'Уважительная причина' }} </h2
-        ><p>{{ dateText(intent.lesson.lessonDate) }} · {{ intent.lesson.subjectName }}</p
-        ><template v-if="confirmation">
-          <p
-            >{{ "Если у отметки есть файл, добавленный старостой, он будет удалён. Принятая заявка студента и её файлы сохранятся." }}</p
-          ><div class="headman-stats-history__dialog-actions">
+          {{ confirmation ? 'Снять уважительную отметку?' : 'Уважительная причина' }}
+        </h2><p>{{ dateText(intent.lesson.lessonDate) }} · {{ intent.lesson.subjectName }}</p><template v-if="confirmation">
+          <p>
+            {{ "Если у отметки есть файл, добавленный старостой, он будет удалён. Принятая заявка студента и её файлы сохранятся." }}
+          </p><div class="headman-stats-history__dialog-actions">
             <button
               type="button"
               autofocus
               data-action="cancel"
               @click="controller.cancel"
             >
-              Отмена </button
-            ><button
+              Отмена
+            </button><button
               type="button"
               data-action="clear"
               @click="controller.confirm"
             >
               Очистить
             </button>
-          </div> </template
-        ><form
+          </div>
+        </template><form
           v-else
           @submit.prevent="saveExcuse"
         >
-          <label
-            >Причина<select v-model="excuseType"
-              ><option
-                v-for="reason in reasons"
-                :key="reason.value"
-                :value="reason.value"
-                >{{ reason.label }}</option
-              ></select
-            ></label
-          ><label>Комментарий<textarea v-model="comment" /></label
-          ><label class="mobile-upload"
-            ><input
-              type="file"
-              accept="image/jpeg,image/png,application/pdf"
-              @change="readFile"
-            /><MobileIcon name="homework" /><span>{{ file ? file.name : 'Прикрепить файл' }}</span
-            ><small>JPEG, PNG или PDF · до 10 МиБ</small></label
-          ><div class="headman-stats-history__dialog-actions">
+          <label>Причина<select v-model="excuseType"><option
+            v-for="reason in reasons"
+            :key="reason.value"
+            :value="reason.value"
+          >{{ reason.label }}</option></select></label><label>Комментарий<textarea v-model="comment" /></label><label class="mobile-upload"><input
+            type="file"
+            accept="image/jpeg,image/png,application/pdf"
+            @change="readFile"
+          ><MobileIcon name="homework" /><span>{{ file ? file.name : 'Прикрепить файл' }}</span><small>JPEG, PNG или PDF · до 10 МиБ</small></label><div class="headman-stats-history__dialog-actions">
             <button
               type="button"
               data-action="cancel"
               @click="controller.cancel"
             >
-              Отмена </button
-            ><button
+              Отмена
+            </button><button
               type="submit"
               data-action="confirm"
             >

@@ -262,7 +262,7 @@ function onSubmit(): void {
         >
           {{
             todayOption?.unavailableReason ||
-            'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.'
+              'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.'
           }}
         </p>
         <RequestLessonSelector
@@ -302,8 +302,7 @@ function onSubmit(): void {
         <label
           class="request-field__label"
           for="request-excuse-reason"
-          >Причина</label
-        >
+        >Причина</label>
         <ReasonSelect
           id="request-excuse-reason"
           :model-value="props.reason"

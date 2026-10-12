@@ -1464,13 +1464,11 @@ defineExpose({
           class="headman-stats__search"
           @submit.prevent="applyMobileSearch"
         >
-          <label
-            ><span class="statistics-visually-hidden">Найти студента</span
-            ><input
-              v-model="searchText"
-              type="search"
-              placeholder="Найти студента"
-          /></label>
+          <label><span class="statistics-visually-hidden">Найти студента</span><input
+            v-model="searchText"
+            type="search"
+            placeholder="Найти студента"
+          ></label>
           <button
             type="submit"
             aria-label="Найти студента"
@@ -1576,8 +1574,8 @@ defineExpose({
           aria-label="Назад"
           @click="back"
         >
-          <MobileIcon name="back" /> </button
-        ><h1 id="headman-stats-title">
+          <MobileIcon name="back" />
+        </button><h1 id="headman-stats-title">
           {{ analyticsPage === 'trend' ? 'Динамика посещаемости' : 'Аналитика тикетов' }}
         </h1>
       </header>
@@ -1622,24 +1620,20 @@ defineExpose({
           >
             <MobileIcon name="back" />
           </button>
-          <span
-            ><strong>{{ trendWeekDates || 'Неделя недоступна' }}</strong
-            ><small
-              :data-parity-number="trendWeekPolicy?.parityNumber"
-              :data-week-ordinal="trendWeekOrdinal"
-              >{{
-                trendWeekPolicy
-                  ? 'неделя ' +
-                    trendWeekPolicy.parityNumber +
-                    (trendWeekOrdinal ? ' · №' + trendWeekOrdinal : '')
-                  : trendWeekPolicyError
-                    ? 'Чётность недоступна'
-                    : weekBounds
-                      ? 'Загружаем чётность…'
-                      : 'Семестр ещё не начался'
-              }}</small
-            ></span
-          >
+          <span><strong>{{ trendWeekDates || 'Неделя недоступна' }}</strong><small
+            :data-parity-number="trendWeekPolicy?.parityNumber"
+            :data-week-ordinal="trendWeekOrdinal"
+          >{{
+            trendWeekPolicy
+              ? 'неделя ' +
+                trendWeekPolicy.parityNumber +
+                (trendWeekOrdinal ? ' · №' + trendWeekOrdinal : '')
+              : trendWeekPolicyError
+                ? 'Чётность недоступна'
+                : weekBounds
+                  ? 'Загружаем чётность…'
+                  : 'Семестр ещё не начался'
+          }}</small></span>
           <button
             type="button"
             aria-label="Следующая неделя"
@@ -1661,8 +1655,7 @@ defineExpose({
             "
             @update:model-value="selectTrendSubject"
           /><fieldset class="headman-stats__types">
-            <legend>Типы занятий</legend
-            ><button
+            <legend>Типы занятий</legend><button
               v-for="type in selectedTrendSubject?.lessonTypes ?? []"
               :key="type.code"
               type="button"
@@ -1683,8 +1676,8 @@ defineExpose({
           v-if="trendLoading"
           role="status"
         >
-          Загружаем динамику… </p
-        ><StudentWarningBlock
+          Загружаем динамику…
+        </p><StudentWarningBlock
           v-if="trendError"
           title="График недоступен"
           :message="trendError"
@@ -1752,8 +1745,8 @@ defineExpose({
           v-if="trendExportStatus"
           role="status"
         >
-          {{ trendExportStatus }} </p
-        ><p
+          {{ trendExportStatus }}
+        </p><p
           v-if="trendExportError"
           role="alert"
         >
@@ -1766,46 +1759,42 @@ defineExpose({
           role="status"
         >
           Сводка тикетов за выбранный период недоступна. Обнови статистику, чтобы получить полные
-          данные. </p
-        ><section
+          данные.
+        </p><section
           v-for="item in ticketCounters
             ? [
-                { label: 'Тикеты «н»', counts: ticketCounters.lateCheckin },
-                { label: 'Тикеты «у»', counts: ticketCounters.excuse },
-              ]
+              { label: 'Тикеты «н»', counts: ticketCounters.lateCheckin },
+              { label: 'Тикеты «у»', counts: ticketCounters.excuse },
+            ]
             : []"
           :key="item.label"
           class="headman-stats-mobile__card"
         >
-          <h2>{{ item.label }}</h2
-          ><dl class="headman-stats__ticket-metrics">
-            <div
-              ><dt>Подано</dt><dd>{{ item.counts.submitted }}</dd></div
-            ><div
-              ><dt>Одобрено</dt
-              ><dd
-                >{{ item.counts.approved }} ·
-                {{ ticketRatio(item.counts.approved, item.counts.submitted) }}</dd
-              ></div
-            ><div
-              ><dt>Отклонено</dt
-              ><dd
-                >{{ item.counts.rejected }} ·
-                {{ ticketRatio(item.counts.rejected, item.counts.submitted) }}</dd
-              ></div
-            ><div
-              ><dt>Ожидают</dt
-              ><dd
-                >{{ item.counts.submitted - item.counts.approved - item.counts.rejected }} ·
+          <h2>{{ item.label }}</h2><dl class="headman-stats__ticket-metrics">
+            <div>
+              <dt>Подано</dt><dd>{{ item.counts.submitted }}</dd>
+            </div><div>
+              <dt>Одобрено</dt><dd>
+                {{ item.counts.approved }} ·
+                {{ ticketRatio(item.counts.approved, item.counts.submitted) }}
+              </dd>
+            </div><div>
+              <dt>Отклонено</dt><dd>
+                {{ item.counts.rejected }} ·
+                {{ ticketRatio(item.counts.rejected, item.counts.submitted) }}
+              </dd>
+            </div><div>
+              <dt>Ожидают</dt><dd>
+                {{ item.counts.submitted - item.counts.approved - item.counts.rejected }} ·
                 {{
                   ticketRatio(
                     item.counts.submitted - item.counts.approved - item.counts.rejected,
                     item.counts.submitted,
                   )
-                }}</dd
-              ></div
-            > </dl
-          ><div
+                }}
+              </dd>
+            </div>
+          </dl><div
             class="headman-stats__decision-bar"
             role="img"
             :aria-label="`${item.label}: одобрено ${item.counts.approved}, отклонено ${item.counts.rejected}, ожидают ${item.counts.submitted - item.counts.approved - item.counts.rejected}`"
@@ -1840,8 +1829,8 @@ defineExpose({
             :aria-pressed="filterBlock === 'group'"
             @click="filterBlock = 'group'"
           >
-            {{ detailStudentId === null ? 'Вся группа' : 'Весь семестр' }} </button
-          ><button
+            {{ detailStudentId === null ? 'Вся группа' : 'Весь семестр' }}
+          </button><button
             type="button"
             :aria-pressed="filterBlock === 'subject'"
             @click="
@@ -1864,8 +1853,7 @@ defineExpose({
             "
             @update:model-value="changeFilterSubject"
           /><fieldset class="headman-stats__types">
-            <legend>Типы занятий</legend
-            ><button
+            <legend>Типы занятий</legend><button
               v-for="type in response.subjects.find((item) => item.id === Number(filterSubjectId))
                 ?.lessonTypes ?? []"
               :key="type.code"
@@ -1890,27 +1878,26 @@ defineExpose({
             v-for="column in controlResponse?.columns ?? []"
             :key="column.field"
           >
-            <legend>{{ column.label }}</legend
-            ><input
+            <legend>{{ column.label }}</legend><input
               v-if="column.filterKind === 'TEXT'"
               v-model="filterDraft(column).contains"
               type="search"
               :aria-label="`Фильтр: ${column.label}`"
               placeholder="Содержит"
-            /><template v-else>
+            ><template v-else>
               <input
                 v-model="filterDraft(column).minimum"
                 type="number"
                 min="0"
                 placeholder="От"
                 :aria-label="`От: ${column.label}`"
-              /><input
+              ><input
                 v-model="filterDraft(column).maximum"
                 type="number"
                 min="0"
                 placeholder="До"
                 :aria-label="`До: ${column.label}`"
-              />
+              >
             </template>
           </fieldset>
         </div>
@@ -1920,8 +1907,8 @@ defineExpose({
             aria-label="Сбросить фильтры"
             @click="resetToolFilters"
           >
-            <MobileIcon name="retry" /> </button
-          ><button
+            <MobileIcon name="retry" />
+          </button><button
             type="button"
             :disabled="
               loading || (filterBlock === 'subject' && (!filterSubjectId || !filterTypes.length))
@@ -1978,9 +1965,9 @@ defineExpose({
           :scope-key="JSON.stringify([selectedSubjectId, selectedTypes, semesterId])"
           :disabled="
             offline ||
-            !canView ||
-            selectedTypes.length === 0 ||
-            semesterId !== semesterCatalog?.activeSemesterId
+              !canView ||
+              selectedTypes.length === 0 ||
+              semesterId !== semesterCatalog?.activeSemesterId
           "
           @error="emit('error', $event)"
         />
@@ -2011,8 +1998,8 @@ defineExpose({
             >
               <path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5" />
             </svg>
-          </button> </div
-        ><p
+          </button>
+        </div><p
           v-if="exportStatus"
           role="status"
         >
@@ -2023,9 +2010,9 @@ defineExpose({
     <nav
       v-if="
         displayedResponse &&
-        displayedResponse.totalPages > 1 &&
-        analyticsPage === null &&
-        detailStudentId === null
+          displayedResponse.totalPages > 1 &&
+          analyticsPage === null &&
+          detailStudentId === null
       "
       class="headman-stats__pagination"
       aria-label="Страницы студентов"
@@ -2035,9 +2022,8 @@ defineExpose({
         :disabled="!displayedResponse.hasPrevious || loading"
         @click="changePage(page - 1)"
       >
-        Назад </button
-      ><span>{{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span
-      ><button
+        Назад
+      </button><span>{{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span><button
         type="button"
         :disabled="!displayedResponse.hasNext || loading"
         @click="changePage(page + 1)"

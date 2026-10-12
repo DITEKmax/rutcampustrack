@@ -1723,12 +1723,12 @@ defineExpose({ openNotificationAction });
       <button
         v-if="
           visible &&
-          route.root !== 'profile' &&
-          !groupOpen &&
-          !subjectsOpen &&
-          !requestsOpen &&
-          route.id !== lessonManagementRouteId &&
-          !formOpen
+            route.root !== 'profile' &&
+            !groupOpen &&
+            !subjectsOpen &&
+            !requestsOpen &&
+            route.id !== lessonManagementRouteId &&
+            !formOpen
         "
         class="mobile-shell__back"
         aria-label="Назад"
@@ -1740,8 +1740,10 @@ defineExpose({ openNotificationAction });
           v-if="route.id === homeworkRouteId"
           :src="homeworkBackIcon"
           alt="Назад"
-        />
-        <template v-else> Назад </template>
+        >
+        <template v-else>
+          Назад
+        </template>
       </button>
       <span
         v-else
@@ -1933,7 +1935,7 @@ defineExpose({ openNotificationAction });
         :loading="profileView.snapshotStatus === 'loading'"
         :offline="
           offline ||
-          (profilePort === null && profileRoleSelect === undefined && onRoleSwitch === undefined)
+            (profilePort === null && profileRoleSelect === undefined && onRoleSwitch === undefined)
         "
         :theme="resolvedTheme"
         :on-back="handleTaskBack"
@@ -2007,9 +2009,11 @@ defineExpose({ openNotificationAction });
         >
           <MobileIcon name="back" />
         </button>
-        <h1>{{
-          formOpen ? (editTarget ? 'Изменить пару' : 'Добавить пару') : 'Конструктор расписания'
-        }}</h1>
+        <h1>
+          {{
+            formOpen ? (editTarget ? 'Изменить пару' : 'Добавить пару') : 'Конструктор расписания'
+          }}
+        </h1>
         <p
           v-if="!formOpen"
           class="headman-schedule__context"
@@ -2088,10 +2092,7 @@ defineExpose({ openNotificationAction });
           <span
             class="headman-schedule__plus"
             aria-hidden="true"
-            >+</span
-          ><h2>На {{ days.find((d) => d.value === selectedDay)?.accusative }} пар пока нет</h2
-          ><p>Добавь пару для выбранной недели или сразу для обеих</p
-          ><button
+          >+</span><h2>На {{ days.find((d) => d.value === selectedDay)?.accusative }} пар пока нет</h2><p>Добавь пару для выбранной недели или сразу для обеих</p><button
             class="headman-schedule__primary"
             type="button"
             :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked"
@@ -2104,10 +2105,10 @@ defineExpose({ openNotificationAction });
           v-if="visibleDayItems.length"
           class="headman-schedule__list"
         >
-          <h2
-            >{{ days.find((d) => d.value === selectedDay)?.name }} ·
-            {{ parityOptions.find((option) => option.weekType === constructorWeek)?.label }}</h2
-          ><button
+          <h2>
+            {{ days.find((d) => d.value === selectedDay)?.name }} ·
+            {{ parityOptions.find((option) => option.weekType === constructorWeek)?.label }}
+          </h2><button
             v-for="item in visibleDayItems"
             :key="item.id"
             type="button"
@@ -2115,20 +2116,13 @@ defineExpose({ openNotificationAction });
             :disabled="!headmanOwner || offline || formBusy || intentRecoveryBlocked"
             @click="editRecurring(item)"
           >
-            <small>{{ item.lessonNumber }} пара</small
-            ><strong>{{
+            <small>{{ item.lessonNumber }} пара</small><strong>{{
               assignments.find((a) => a.id === item.assignmentId)?.subjectName || 'Предмет'
-            }}</strong
-            ><span
-              ><MobileIcon name="clock" />{{ item.startTime?.slice(0, 5) }}–{{
-                item.endTime?.slice(0, 5)
-              }}</span
-            ><span><MobileIcon name="room" />{{ item.room || 'Аудитория не указана' }}</span
-            ><span
-              ><MobileIcon name="lesson" />{{
-                scheduleTypeName(assignments.find((a) => a.id === item.assignmentId)?.lessonType)
-              }}</span
-            ><MobileIcon
+            }}</strong><span><MobileIcon name="clock" />{{ item.startTime?.slice(0, 5) }}–{{
+              item.endTime?.slice(0, 5)
+            }}</span><span><MobileIcon name="room" />{{ item.room || 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{
+              scheduleTypeName(assignments.find((a) => a.id === item.assignmentId)?.lessonType)
+            }}</span><MobileIcon
               name="back"
               class="headman-schedule__chevron"
             />
@@ -2158,8 +2152,7 @@ defineExpose({ openNotificationAction });
           }}</small>
         </p>
         <fieldset class="headman-schedule__field">
-          <legend>Учебные недели</legend
-          ><div class="headman-schedule__parity">
+          <legend>Учебные недели</legend><div class="headman-schedule__parity">
             <button
               v-for="option in parityOptions"
               :key="option.weekType"
@@ -2173,8 +2166,8 @@ defineExpose({ openNotificationAction });
               }}<small>{{
                 selectedWeekTypes.includes(option.weekType) ? 'Выбрана' : 'Можно добавить'
               }}</small>
-            </button> </div
-          ><small>Выбери одну или обе недели</small>
+            </button>
+          </div><small>Выбери одну или обе недели</small>
         </fieldset>
         <StudentWarningBlock
           v-if="weekPolicyError"
@@ -2183,22 +2176,19 @@ defineExpose({ openNotificationAction });
           action-label="Повторить"
           @action="loadWeekPolicy"
         />
-        <label class="headman-schedule__field headman-schedule__field-card"
-          ><span class="headman-schedule__field-caption">Номер пары</span
-          ><button
-            type="button"
-            class="headman-schedule__select"
-            :aria-label="
-              lessonNumber
-                ? `Номер пары: ${lessonNumber} пара · ${startTime}–${endTime}`
-                : 'Номер пары: выбери номер пары'
-            "
-            :disabled="!!editTarget || formLocked || offline || !headmanOwner"
-            @click="slotPickerOpen = !slotPickerOpen"
-            >{{
-              lessonNumber ? `${lessonNumber} пара · ${startTime}–${endTime}` : 'Выбери номер пары'
-            }}<MobileIcon name="chevron-down" /></button
-        ></label>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Номер пары</span><button
+          type="button"
+          class="headman-schedule__select"
+          :aria-label="
+            lessonNumber
+              ? `Номер пары: ${lessonNumber} пара · ${startTime}–${endTime}`
+              : 'Номер пары: выбери номер пары'
+          "
+          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+          @click="slotPickerOpen = !slotPickerOpen"
+        >{{
+          lessonNumber ? `${lessonNumber} пара · ${startTime}–${endTime}` : 'Выбери номер пары'
+        }}<MobileIcon name="chevron-down" /></button></label>
         <div
           v-if="slotPickerOpen && !editTarget"
           class="headman-schedule__slot-picker"
@@ -2212,53 +2202,37 @@ defineExpose({ openNotificationAction });
             :aria-pressed="lessonNumber === slot.lessonNumber"
             @click="selectConstructorSlot(slot.lessonNumber)"
           >
-            <strong>{{ slot.lessonNumber }} пара</strong
-            ><small>{{ slot.startTime.slice(0, 5) }}–{{ slot.endTime.slice(0, 5) }}</small>
+            <strong>{{ slot.lessonNumber }} пара</strong><small>{{ slot.startTime.slice(0, 5) }}–{{ slot.endTime.slice(0, 5) }}</small>
           </button>
         </div>
-        <label class="headman-schedule__field headman-schedule__field-card"
-          ><span class="headman-schedule__field-caption">Предмет</span
-          ><span class="headman-schedule__select-wrap"
-            ><select
-              v-model.number="constructorSubjectId"
-              :disabled="!!editTarget || formLocked || offline || !headmanOwner"
-              ><option
-                v-for="item in constructorSubjects"
-                :key="item.subjectId"
-                :value="item.subjectId"
-                >{{ item.subjectName }}</option
-              ></select
-            ><MobileIcon name="chevron-down" /></span
-        ></label>
-        <label class="headman-schedule__field headman-schedule__field-card"
-          ><span class="headman-schedule__field-caption">Тип занятия</span
-          ><span class="headman-schedule__select-wrap"
-            ><select
-              v-model.number="assignmentId"
-              :disabled="!!editTarget || formLocked || offline || !headmanOwner"
-              ><option
-                v-for="item in constructorAssignments"
-                :key="item.id"
-                :value="item.id"
-                >{{ scheduleTypeName(item.lessonType) }}</option
-              ></select
-            ><MobileIcon name="chevron-down" /></span
-        ></label>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Предмет</span><span class="headman-schedule__select-wrap"><select
+          v-model.number="constructorSubjectId"
+          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+        ><option
+          v-for="item in constructorSubjects"
+          :key="item.subjectId"
+          :value="item.subjectId"
+        >{{ item.subjectName }}</option></select><MobileIcon name="chevron-down" /></span></label>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Тип занятия</span><span class="headman-schedule__select-wrap"><select
+          v-model.number="assignmentId"
+          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+        ><option
+          v-for="item in constructorAssignments"
+          :key="item.id"
+          :value="item.id"
+        >{{ scheduleTypeName(item.lessonType) }}</option></select><MobileIcon name="chevron-down" /></span></label>
         <div class="headman-schedule__field headman-schedule__field-card">
-          <span class="headman-schedule__field-caption">Преподаватель</span
-          ><strong class="headman-schedule__readout">{{
+          <span class="headman-schedule__field-caption">Преподаватель</span><strong class="headman-schedule__readout">{{
             selectedAssignment?.teacherName || 'Нет действующего назначения'
           }}</strong>
         </div>
-        <label class="headman-schedule__field headman-schedule__field-card"
-          ><span class="headman-schedule__field-caption">Аудитория</span
-          ><input
-            v-model="room"
-            type="text"
-            maxlength="64"
-            :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
-            placeholder="Не указана"
-        /></label>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Аудитория</span><input
+          v-model="room"
+          type="text"
+          maxlength="64"
+          :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
+          placeholder="Не указана"
+        ></label>
         <StudentWarningBlock
           v-if="formError"
           :severity="recurringCreateIntent || recurringIntent ? 'warning' : 'error'"
@@ -2271,13 +2245,13 @@ defineExpose({ openNotificationAction });
             type="button"
             :disabled="
               formBusy ||
-              offline ||
-              readOnly ||
-              !headmanOwner ||
-              intentRecoveryBlocked ||
-              !weekPolicy ||
-              !selectedWeekTypes.length ||
-              (!editTarget && !recurringCreateIntent && (!lessonNumber || !selectedAssignment))
+                offline ||
+                readOnly ||
+                !headmanOwner ||
+                intentRecoveryBlocked ||
+                !weekPolicy ||
+                !selectedWeekTypes.length ||
+                (!editTarget && !recurringCreateIntent && (!lessonNumber || !selectedAssignment))
             "
             @click="save"
           >

@@ -168,7 +168,9 @@ function description(point: GraphPoint): string {
     class="attendance-graph"
     aria-labelledby="attendance-graph-title"
   >
-    <h2 id="attendance-graph-title"> Посещаемость за семестр </h2>
+    <h2 id="attendance-graph-title">
+      Посещаемость за семестр
+    </h2>
     <div
       class="attendance-graph__range"
       role="group"
@@ -195,10 +197,8 @@ function description(point: GraphPoint): string {
       >
         ‹
       </button>
-      <span role="status"
-        >{{ visible[0] ? shortDate(visible[0].dateFrom) : 'Нет периодов'
-        }}{{ visible.length ? ` — ${shortDate(visible[visible.length - 1]!.dateTo)}` : '' }}</span
-      >
+      <span role="status">{{ visible[0] ? shortDate(visible[0].dateFrom) : 'Нет периодов'
+      }}{{ visible.length ? ` — ${shortDate(visible[visible.length - 1]!.dateTo)}` : '' }}</span>
       <button
         type="button"
         aria-label="Следующие периоды"
@@ -266,15 +266,12 @@ function description(point: GraphPoint): string {
             <span
               v-if="!hasMarks(point)"
               class="attendance-graph__neutral-label"
-              >{{ point.state === 'FUTURE' ? '›' : '—' }}</span
-            >
+            >{{ point.state === 'FUTURE' ? '›' : '—' }}</span>
           </span>
-          <span class="attendance-graph__date"
-            >{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom)
-            }}<br v-if="range === 'days'" />{{
-              range === 'days' ? point.dateFrom.slice(8) : ''
-            }}</span
-          >
+          <span class="attendance-graph__date">{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom)
+          }}<br v-if="range === 'days'">{{
+            range === 'days' ? point.dateFrom.slice(8) : ''
+          }}</span>
         </button>
       </div>
     </div>
@@ -291,17 +288,17 @@ function description(point: GraphPoint): string {
       aria-label="Выбранный период"
       aria-live="polite"
     >
-      <h3
-        >{{ shortDate(selected.dateFrom)
-        }}{{ selected.dateTo !== selected.dateFrom ? ` — ${shortDate(selected.dateTo)}` : '' }}</h3
-      >
+      <h3>
+        {{ shortDate(selected.dateFrom)
+        }}{{ selected.dateTo !== selected.dateFrom ? ` — ${shortDate(selected.dateTo)}` : '' }}
+      </h3>
       <p v-if="selectedState">
         {{ selectedState }}
       </p>
       <template
         v-if="
           !('missing' in selected && selected.missing) &&
-          !('outsideSemester' in selected && selected.outsideSemester)
+            !('outsideSemester' in selected && selected.outsideSemester)
         "
       >
         <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
@@ -341,8 +338,7 @@ function description(point: GraphPoint): string {
             v-for="metric in statusMetrics"
             :key="metric"
             :class="`attendance-graph__detail-percentage--${metric}`"
-            >{{ displayPercent(selected.metrics[metric].percent) }}</span
-          >
+          >{{ displayPercent(selected.metrics[metric].percent) }}</span>
         </div>
       </template>
     </section>

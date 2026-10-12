@@ -513,9 +513,9 @@ onBeforeUnmount(() => {
         <template
           v-else-if="
             catalog &&
-            preferences &&
-            notificationCatalogMatchesPreferences(catalog, preferences) &&
-            (!draft || notificationCatalogMatchesPreferences(catalog, draft))
+              preferences &&
+              notificationCatalogMatchesPreferences(catalog, preferences) &&
+              (!draft || notificationCatalogMatchesPreferences(catalog, draft))
           "
         >
           <NotificationSettings
@@ -558,8 +558,9 @@ onBeforeUnmount(() => {
             class="notifications-screen__device"
             aria-labelledby="notifications-device-title"
           >
-            <h2 id="notifications-device-title"> Уведомления на устройстве </h2
-            ><p role="status">
+            <h2 id="notifications-device-title">
+              Уведомления на устройстве
+            </h2><p role="status">
               {{ pushState.message }}
             </p>
             <button

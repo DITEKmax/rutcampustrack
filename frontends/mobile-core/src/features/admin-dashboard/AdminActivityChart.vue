@@ -229,8 +229,7 @@ function pointer(event: PointerEvent): void {
             <span
               v-for="label in labels"
               :key="label"
-              >{{ label }}</span
-            >
+            >{{ label }}</span>
           </div>
           <span
             v-for="tick in axis.ticks"
@@ -238,8 +237,7 @@ function pointer(event: PointerEvent): void {
             class="admin-activity-chart__tick"
             :style="{ left: `${(axis.gutter + tick.position * axis.plotWidth) / rootFont}rem` }"
             :title="tick.description"
-            >{{ tick.label }}</span
-          >
+          >{{ tick.label }}</span>
         </div>
       </div>
       <div
@@ -248,28 +246,34 @@ function pointer(event: PointerEvent): void {
         role="status"
         data-admin-chart-readout
       >
-        <span>{{ adminActivityPointDate(selected.point) }}</span
-        ><strong>{{ valueLabel(selected.point.value) }}</strong>
+        <span>{{ adminActivityPointDate(selected.point) }}</span><strong>{{ valueLabel(selected.point.value) }}</strong>
         <p v-if="selected.point.detail">
           {{ selected.point.detail }}
         </p>
       </div>
       <div class="admin-activity-chart__alternative">
-        <p
-          >{{ "Временные опоры шкалы: " }}{{ axis.ticks.map((tick) => tick.description).join('; ') }}{{ ". Значения есть только у измеренных точек." }}</p
-        >
+        <p>
+          {{ "Временные опоры шкалы: " }}{{ axis.ticks.map((tick) => tick.description).join('; ') }}{{ ". Значения есть только у измеренных точек." }}
+        </p>
         <table>
           <caption>{{ title }}: значения графика</caption>
           <thead>
-            <tr> <th scope="col"> Период </th><th scope="col"> Значение </th> </tr>
+            <tr>
+              <th scope="col">
+                Период
+              </th><th scope="col">
+                Значение
+              </th>
+            </tr>
           </thead>
           <tbody>
             <tr
               v-for="cell in geometry.cells"
               :key="cell.point.id"
             >
-              <th scope="row"> {{ adminActivityPointDate(cell.point) }} </th
-              ><td>{{ valueLabel(cell.point.value) }} {{ cell.point.detail }}</td>
+              <th scope="row">
+                {{ adminActivityPointDate(cell.point) }}
+              </th><td>{{ valueLabel(cell.point.value) }} {{ cell.point.detail }}</td>
             </tr>
           </tbody>
         </table>

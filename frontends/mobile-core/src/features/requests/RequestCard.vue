@@ -215,7 +215,9 @@ watch(
     </p>
 
     <template v-if="detail.decisionSelection && detail.decisionSelection.excludedLessons.length">
-      <p class="request-card__reason"> Исключённые пары — одобрение не изменило их отметки </p>
+      <p class="request-card__reason">
+        Исключённые пары — одобрение не изменило их отметки
+      </p>
       <ul
         class="request-card__lessons"
         aria-label="Исключённые пары"
@@ -225,9 +227,7 @@ watch(
           :key="lesson.occurrenceId ?? lesson.id"
           class="request-lesson-card"
         >
-          <h3>{{ subjectName(lesson) }}</h3
-          ><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p
-          ><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
+          <h3>{{ subjectName(lesson) }}</h3><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
         </li>
       </ul>
     </template>
@@ -245,9 +245,7 @@ watch(
           :key="lesson.id"
           class="request-lesson-card"
         >
-          <h3>{{ subjectName(lesson) }}</h3
-          ><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p
-          ><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
+          <h3>{{ subjectName(lesson) }}</h3><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
         </li>
       </ul>
     </details>
@@ -281,13 +279,11 @@ watch(
         <span
           v-if="attachmentIsExpired(attachment)"
           class="request-card__attachment-state"
-          >Срок истёк</span
-        >
+        >Срок истёк</span>
         <span
           v-else-if="attachment.state !== 'ACTIVE'"
           class="request-card__attachment-state"
-          >Недоступно</span
-        >
+        >Недоступно</span>
         <span
           v-else
           class="request-card__attachment-actions"

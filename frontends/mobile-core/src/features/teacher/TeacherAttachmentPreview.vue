@@ -57,8 +57,7 @@ function imageError(event: Event): void {
     :aria-busy="state.status === 'loading'"
   >
     <div class="teacher-attachment__heading">
-      <strong>{{ attachment.fileName }}</strong
-      ><span class="teacher-screen__muted">{{ Math.ceil(attachment.size / 1024) }} КБ</span>
+      <strong>{{ attachment.fileName }}</strong><span class="teacher-screen__muted">{{ Math.ceil(attachment.size / 1024) }} КБ</span>
     </div>
     <p
       v-if="state.status === 'loading'"
@@ -86,8 +85,8 @@ function imageError(event: Event): void {
           :src="state.url"
           :alt="attachment.fileName"
           @error="imageError"
-        /> </button
-      ><AttachmentPdfPreview
+        >
+      </button><AttachmentPdfPreview
         v-else
         :url="state.url"
         :open-file="open"

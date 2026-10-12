@@ -2291,8 +2291,8 @@ onBeforeUnmount(() => {
         class="admin-semester-form__types"
         :disabled="
           mutationBusy ||
-          formLoading ||
-          (editingSnapshot?.archived && editingSnapshot.semesterType !== null)
+            formLoading ||
+            (editingSnapshot?.archived && editingSnapshot.semesterType !== null)
         "
         :aria-describedby="formErrors.type ? 'admin-semester-type-error' : undefined"
         :aria-invalid="!!formErrors.type || undefined"
@@ -2306,7 +2306,7 @@ onBeforeUnmount(() => {
               required
               type="radio"
               value="AUTUMN"
-            />
+            >
             <span>Осенний</span>
           </label>
           <label class="admin-semester-form__type-option">
@@ -2316,7 +2316,7 @@ onBeforeUnmount(() => {
               required
               type="radio"
               value="SPRING"
-            />
+            >
             <span>Весенний</span>
           </label>
         </div>
@@ -2343,13 +2343,12 @@ onBeforeUnmount(() => {
           :aria-invalid="!!formErrors.year || undefined"
           :aria-describedby="formErrors.year ? 'admin-semester-year-error' : undefined"
           @input="setAcademicYear"
-        />
+        >
         <span
           v-if="!formLoading && formErrors.year"
           id="admin-semester-year-error"
           class="admin-semester-field-error"
-          >{{ formErrors.year }}</span
-        >
+        >{{ formErrors.year }}</span>
       </label>
       <p
         v-if="editingSnapshot?.archived"
@@ -2377,8 +2376,7 @@ onBeforeUnmount(() => {
             <span
               id="admin-semester-from-label"
               class="admin-semester-date__label"
-              >Начало</span
-            >
+            >Начало</span>
             <span id="admin-semester-from-value">{{
               dateFrom ? formatDate(dateFrom) : 'Выбери дату'
             }}</span>
@@ -2413,8 +2411,7 @@ onBeforeUnmount(() => {
             <span
               id="admin-semester-to-label"
               class="admin-semester-date__label"
-              >Окончание</span
-            >
+            >Окончание</span>
             <span id="admin-semester-to-value">{{
               dateTo ? formatDate(dateTo) : 'Выбери дату'
             }}</span>
@@ -2468,7 +2465,9 @@ onBeforeUnmount(() => {
       aria-labelledby="admin-semester-deletion-progress-title"
       :aria-busy="deletionCommand.phase === 'SUBMITTING' || deletionCommand.phase === 'PENDING'"
     >
-      <h2 id="admin-semester-deletion-progress-title"> Удаление семестра </h2>
+      <h2 id="admin-semester-deletion-progress-title">
+        Удаление семестра
+      </h2>
       <h3>{{ deletionCommand.preview.semesterName }}</h3>
       <p
         v-if="visibleDeletionOperation"
@@ -2545,7 +2544,7 @@ onBeforeUnmount(() => {
         <button
           v-if="
             visibleDeletionOperation?.phase === 'CANCELLED' &&
-            !visibleDeletionOperation.refreshedPreview
+              !visibleDeletionOperation.refreshedPreview
           "
           class="admin-semester-action admin-semester-action--secondary"
           type="button"
@@ -2572,7 +2571,9 @@ onBeforeUnmount(() => {
       aria-labelledby="admin-semester-deletion-confirmation-title"
       @submit.prevent="confirmSemesterDeletion"
     >
-      <h2 id="admin-semester-deletion-confirmation-title"> Проверь последствия удаления </h2>
+      <h2 id="admin-semester-deletion-confirmation-title">
+        Проверь последствия удаления
+      </h2>
       <h3>{{ deletionPreview.semesterName }}</h3>
       <p>
         Состояние: {{ deletionPriorStateLabel(deletionPreview.priorState) }}. После подтверждения
@@ -2606,7 +2607,7 @@ onBeforeUnmount(() => {
           required
           type="password"
           :disabled="deletionCommand?.phase === 'SUBMITTING'"
-        />
+        >
       </label>
       <p
         v-if="deletionPasswordInvalid"
@@ -2644,9 +2645,9 @@ onBeforeUnmount(() => {
           type="submit"
           :disabled="
             deletionPassword.length === 0 ||
-            !deletionStorageAvailable ||
-            deletionPreviewLoading ||
-            deletionCommand?.phase === 'SUBMITTING'
+              !deletionStorageAvailable ||
+              deletionPreviewLoading ||
+              deletionCommand?.phase === 'SUBMITTING'
           "
           :aria-busy="deletionCommand?.phase === 'SUBMITTING'"
         >
@@ -2654,9 +2655,9 @@ onBeforeUnmount(() => {
             deletionCommand?.phase === 'UNCERTAIN' || deletionCommand?.phase === 'PASSWORD_REQUIRED'
               ? 'Повторить тот же запрос'
               : deletionCommand?.phase === 'TERMINAL' &&
-                  deletionCommand.operation?.phase === 'CANCELLED' &&
-                  deletionCommand.operation.refreshedPreview?.previewDigest ===
-                    deletionPreview.previewDigest
+                deletionCommand.operation?.phase === 'CANCELLED' &&
+                deletionCommand.operation.refreshedPreview?.previewDigest ===
+                deletionPreview.previewDigest
                 ? 'Подтвердить по обновлённым числам'
                 : 'Удалить семестр безвозвратно'
           }}
@@ -2757,15 +2758,17 @@ onBeforeUnmount(() => {
         class="admin-semester-group admin-semester-archive-status"
         aria-labelledby="admin-semester-archive-status-title"
       >
-        <h2 id="admin-semester-archive-status-title"> Архивация и восстановление </h2>
+        <h2 id="admin-semester-archive-status-title">
+          Архивация и восстановление
+        </h2>
         <article
           v-for="semester in archiveSemestersVisible"
           :key="semester.id"
           class="admin-semester-card"
           :aria-busy="
             archiveStatusLoadingIds.has(semester.id) ||
-            archiveCommandFor(semester.id)?.phase === 'SUBMITTING' ||
-            archiveSettlingOperationIds[semester.id] !== undefined
+              archiveCommandFor(semester.id)?.phase === 'SUBMITTING' ||
+              archiveSettlingOperationIds[semester.id] !== undefined
           "
         >
           <div class="admin-semester-card__heading">
@@ -2801,7 +2804,7 @@ onBeforeUnmount(() => {
           <p
             v-else-if="
               archiveCommandFor(semester.id)?.phase === 'PENDING' ||
-              archiveOperationFor(semester.id)?.operationState === 'PENDING'
+                archiveOperationFor(semester.id)?.operationState === 'PENDING'
             "
             class="admin-semester-archive-progress"
             role="status"
@@ -2857,15 +2860,15 @@ onBeforeUnmount(() => {
               — {{ operationStateLabel(archiveOperationFor(semester.id)!.operationState) }}.
             </p>
             <ul>
-              <li
-                >{{ "Учебные данные: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.academic) }}</li
-              >
-              <li
-                >{{ "Расписание: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.schedule) }}</li
-              >
-              <li
-                >{{ "Посещаемость: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.attendance) }}</li
-              >
+              <li>
+                {{ "Учебные данные: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.academic) }}
+              </li>
+              <li>
+                {{ "Расписание: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.schedule) }}
+              </li>
+              <li>
+                {{ "Посещаемость: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.attendance) }}
+              </li>
             </ul>
           </div>
           <AdminNotice
@@ -2896,7 +2899,7 @@ onBeforeUnmount(() => {
             <button
               v-else-if="
                 archiveCommandFor(semester.id)?.phase === 'PENDING' ||
-                archiveCommandFor(semester.id)?.phase === 'SETTLING'
+                  archiveCommandFor(semester.id)?.phase === 'SETTLING'
               "
               class="admin-semester-action admin-semester-action--secondary"
               type="button"

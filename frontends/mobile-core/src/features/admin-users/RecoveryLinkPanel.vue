@@ -156,21 +156,19 @@ onBeforeUnmount(() => {
       >
         Передай её пользователю, чтобы он задал новый пароль.
       </AdminNotice>
-      <label class="recovery-link-panel__field"
-        ><span>Одноразовая ссылка</span
-        ><input
-          type="text"
-          readonly
-          :value="link.url"
-          autocomplete="off"
-          spellcheck="false"
-          @focus="($event.target as HTMLInputElement).select()" /><button
-          type="button"
-          aria-label="Скопировать ссылку"
-          :disabled="disabled"
-          @click="copy"
-          ><MobileIcon name="copy" /></button
-      ></label>
+      <label class="recovery-link-panel__field"><span>Одноразовая ссылка</span><input
+        type="text"
+        readonly
+        :value="link.url"
+        autocomplete="off"
+        spellcheck="false"
+        @focus="($event.target as HTMLInputElement).select()"
+      ><button
+        type="button"
+        aria-label="Скопировать ссылку"
+        :disabled="disabled"
+        @click="copy"
+      ><MobileIcon name="copy" /></button></label>
       <p class="admin-users-muted">
         Действует до {{ expiryLabel }}. Осталось {{ remaining }} сек.
       </p>
@@ -227,8 +225,8 @@ onBeforeUnmount(() => {
       <template v-else>
         <p class="admin-users-muted">
           Создай одноразовую ссылку и передай её пользователю. Новая выдача аннулирует прежние
-          ссылки. </p
-        ><button
+          ссылки.
+        </p><button
           class="admin-users-action"
           type="button"
           :disabled="busy || disabled"

@@ -82,9 +82,8 @@ async function move(event: KeyboardEvent, day: string): Promise<void> {
         aria-label="Предыдущий месяц"
         @click="stepMonth(-1)"
       >
-        <MobileIcon name="back" /> </button
-      ><strong>{{ monthLabel }}</strong
-      ><button
+        <MobileIcon name="back" />
+      </button><strong>{{ monthLabel }}</strong><button
         type="button"
         :disabled="disabled"
         aria-label="Следующий месяц"
@@ -107,8 +106,7 @@ async function move(event: KeyboardEvent, day: string): Promise<void> {
         v-for="day in ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']"
         :key="day"
         aria-hidden="true"
-        >{{ day }}</span
-      ><button
+      >{{ day }}</span><button
         v-for="day in days"
         :key="day"
         type="button"

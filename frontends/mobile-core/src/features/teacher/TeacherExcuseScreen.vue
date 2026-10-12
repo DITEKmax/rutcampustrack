@@ -101,8 +101,10 @@ function decisionName(value: TeacherExcuseResponse): string | null {
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" /> </button
-      ><h1 id="teacher-excuse-title"> Причина отсутствия </h1>
+        <MobileIcon name="back" />
+      </button><h1 id="teacher-excuse-title">
+        Причина отсутствия
+      </h1>
     </header>
     <p
       v-if="loading"
@@ -122,35 +124,37 @@ function decisionName(value: TeacherExcuseResponse): string | null {
     <template v-else-if="state">
       <article class="teacher-screen__ticket">
         <dl class="teacher-screen__details">
-          <div
-            ><dt>Автор</dt><dd>{{ state.studentName }}</dd></div
-          ><div
-            ><dt>Заявление</dt><dd>{{ kind(state.kind) }} · {{ status(state.status) }}</dd></div
-          ><div
-            ><dt>Подана</dt><dd>{{ instant(state.createdAt) }}</dd></div
-          ><div>
-            <dt>Решение старосты</dt
-            ><dd v-if="state.decisionAt">
-              <template v-if="decisionName(state)"> {{ decisionName(state) }} · </template
-              >{{ instant(state.decisionAt) }} </dd
-            ><dd v-else> Решение ещё не принято </dd> </div
-          ><div v-if="state.decisionComment">
+          <div>
+            <dt>Автор</dt><dd>{{ state.studentName }}</dd>
+          </div><div>
+            <dt>Заявление</dt><dd>{{ kind(state.kind) }} · {{ status(state.status) }}</dd>
+          </div><div>
+            <dt>Подана</dt><dd>{{ instant(state.createdAt) }}</dd>
+          </div><div>
+            <dt>Решение старосты</dt><dd v-if="state.decisionAt">
+              <template v-if="decisionName(state)">
+                {{ decisionName(state) }} ·
+              </template>{{ instant(state.decisionAt) }}
+            </dd><dd v-else>
+              Решение ещё не принято
+            </dd>
+          </div><div v-if="state.decisionComment">
             <dt>Комментарий к решению</dt><dd>{{ state.decisionComment }}</dd>
           </div>
         </dl>
       </article>
       <article class="teacher-screen__ticket">
         <dl class="teacher-screen__details">
-          <div
-            ><dt>Причина</dt><dd>{{ teacherExcuseTypeLabel(state.excuseType) }}</dd></div
-          ><div
+          <div>
+            <dt>Причина</dt><dd>{{ teacherExcuseTypeLabel(state.excuseType) }}</dd>
+          </div><div
             v-if="
               state.reason &&
-              state.reason.trim() !== teacherExcuseTypeLabel(state.excuseType).trim()
+                state.reason.trim() !== teacherExcuseTypeLabel(state.excuseType).trim()
             "
           >
-            <dt>Описание</dt><dd>{{ state.reason }}</dd> </div
-          ><div v-if="state.comment">
+            <dt>Описание</dt><dd>{{ state.reason }}</dd>
+          </div><div v-if="state.comment">
             <dt>Комментарий</dt><dd>{{ state.comment }}</dd>
           </div>
         </dl>
@@ -163,8 +167,8 @@ function decisionName(value: TeacherExcuseResponse): string | null {
           id="teacher-excuse-lessons"
           class="teacher-screen__section-title"
         >
-          Пары заявления </h2
-        ><ul class="teacher-screen__list">
+          Пары заявления
+        </h2><ul class="teacher-screen__list">
           <li
             v-for="lesson in state.lessons"
             :key="lesson.id"
@@ -186,8 +190,8 @@ function decisionName(value: TeacherExcuseResponse): string | null {
           id="teacher-excuse-files"
           class="teacher-screen__section-title"
         >
-          Справка и вложения </h2
-        ><TeacherAttachmentPreview
+          Справка и вложения
+        </h2><TeacherAttachmentPreview
           v-for="attachment in state.attachments"
           :key="attachment.id"
           :api="api"

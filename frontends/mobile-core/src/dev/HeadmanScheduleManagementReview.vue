@@ -354,8 +354,9 @@ onBeforeUnmount(() => {
     :nav-items="createHeadmanNavigationItems()"
     :host="host"
   >
-    <template #back> <span hidden /> </template
-    ><HeadmanLessonManagementScreen
+    <template #back>
+      <span hidden />
+    </template><HeadmanLessonManagementScreen
       ref="screen"
       :journal-api="apis.journal"
       :schedule-api="apis.schedule"

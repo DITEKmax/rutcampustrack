@@ -246,8 +246,7 @@ onBeforeUnmount(() => {
       v-for="id in headmanReviewStates"
       :key="id"
       :href="`?state=${id}&shell=${shell}&catalog=1`"
-      >{{ id }}</a
-    >
+    >{{ id }}</a>
     <button
       v-if="shell === 'tma' && hostBackVisible"
       type="button"

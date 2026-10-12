@@ -70,7 +70,9 @@ function updateSelection(value: string[] | string | null): void {
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="request-selection-title"> Выбери {{ props.kind === 'EXCUSE' ? 'пары' : 'пару' }} </h1>
+      <h1 id="request-selection-title">
+        Выбери {{ props.kind === 'EXCUSE' ? 'пары' : 'пару' }}
+      </h1>
     </header>
     <div class="requests-form requests-selection-scroll">
       <p class="requests-screen__description">
@@ -126,12 +128,12 @@ function updateSelection(value: string[] | string | null): void {
         :model-value="props.kind === 'EXCUSE' ? props.lessonIds : (props.lessonIds[0] ?? null)"
         :disabled="
           props.disabled ||
-          props.readOnly ||
-          props.offline ||
-          props.access !== 'allowed' ||
-          props.loading ||
-          Boolean(props.error) ||
-          !optionsResolved
+            props.readOnly ||
+            props.offline ||
+            props.access !== 'allowed' ||
+            props.loading ||
+            Boolean(props.error) ||
+            !optionsResolved
         "
         @update:model-value="updateSelection"
       />

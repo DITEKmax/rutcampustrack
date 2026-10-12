@@ -1023,8 +1023,8 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 <img
                   :src="previousIcon"
                   alt=""
-                /> </button
-              ><button
+                >
+              </button><button
                 type="button"
                 aria-label="Следующая неделя"
                 @click="shiftCalendar(1)"
@@ -1032,7 +1032,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 <img
                   :src="nextIcon"
                   alt=""
-                />
+                >
               </button>
             </div>
           </div>
@@ -1046,8 +1046,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               :aria-label="formatDate(date)"
               @click="selectRootDate(date)"
             >
-              <span>{{ shortWeekday(date) }}</span
-              ><strong>{{ Number(date.slice(8)) }}</strong>
+              <span>{{ shortWeekday(date) }}</span><strong>{{ Number(date.slice(8)) }}</strong>
             </button>
           </div>
         </section>
@@ -1081,27 +1080,24 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           type="button"
           @click="openDetail(item)"
         >
-          <span
-            ><strong>{{ subjectName(item.subjectId) }}</strong
-            ><span>{{ item.title }}</span></span
-          ><img
+          <span><strong>{{ subjectName(item.subjectId) }}</strong><span>{{ item.title }}</span></span><img
             :src="nextIcon"
             alt=""
-          />
+          >
         </button>
       </template>
       <template v-else-if="view === 'detail' && detail">
         <section class="headman-homework__context">
-          <p>{{ formatDate(detail.lessonDate) }}</p
-          ><h2>{{ subjectName(detail.subjectId) }}</h2
-          ><p>
+          <p>{{ formatDate(detail.lessonDate) }}</p><h2>{{ subjectName(detail.subjectId) }}</h2><p>
             {{ detailType(detail)
             }}<template v-if="itemLesson(detail)">
               · {{ itemLesson(detail)?.startTime?.slice(0, 5)
               }}<template v-if="itemLesson(detail)?.room">
                 · {{ itemLesson(detail)?.room }}
-              </template> </template
-            ><template v-else-if="detail.bindingMode === 'DATE'"> · На дату </template>
+              </template>
+            </template><template v-else-if="detail.bindingMode === 'DATE'">
+              · На дату
+            </template>
           </p>
         </section>
         <article class="headman-homework__detail">
@@ -1117,8 +1113,8 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 type="button"
                 @click="openUrl(segment.url)"
               >
-                {{ segment.text }} </button
-              ><template v-else>
+                {{ segment.text }}
+              </button><template v-else>
                 {{ segment.text }}
               </template>
             </template>
@@ -1135,16 +1131,18 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               <img
                 :src="linkIcon"
                 alt=""
-              />Материалы </button
-            ><p v-else> Материал сейчас недоступен. </p>
+              >Материалы
+            </button><p v-else>
+              Материал сейчас недоступен.
+            </p>
           </div>
         </article>
         <button
           v-if="
             writeAllowed &&
-            detail.semesterId === semester?.id &&
-            !detail.archived &&
-            detail.revision !== null
+              detail.semesterId === semester?.id &&
+              !detail.archived &&
+              detail.revision !== null
           "
           class="headman-homework__primary"
           type="button"
@@ -1174,8 +1172,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           v-if="detail"
           class="headman-homework__context"
         >
-          <h2>{{ detail.title }}</h2
-          ><p>{{ subjectName(detail.subjectId) }}</p>
+          <h2>{{ detail.title }}</h2><p>{{ subjectName(detail.subjectId) }}</p>
         </section>
         <section
           v-if="detail"
@@ -1185,9 +1182,10 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             v-if="historyLoading"
             role="status"
           >
-            Загружаем историю… </p
-          ><p v-else-if="history.length === 0"> История изменений пуста. </p
-          ><ol
+            Загружаем историю…
+          </p><p v-else-if="history.length === 0">
+            История изменений пуста.
+          </p><ol
             v-else
             class="headman-homework__history"
           >
@@ -1199,8 +1197,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })
               }}
               · {{ homeworkHistoryLabel(entry.action)
-              }}<p> {{ entry.actorDisplayName?.trim() || 'Автор не указан' }} </p
-              ><p v-if="homeworkHistoryChanges(entry)">
+              }}<p> {{ entry.actorDisplayName?.trim() || 'Автор не указан' }} </p><p v-if="homeworkHistoryChanges(entry)">
                 {{ homeworkHistoryChanges(entry) }}
               </p>
             </li>
@@ -1209,8 +1206,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
       </template>
       <template v-else-if="view === 'wizard'">
         <div class="headman-homework__progress">
-          <p>Шаг {{ step + 1 }} из 4 · {{ stepNames[step] }}</p
-          ><progress
+          <p>Шаг {{ step + 1 }} из 4 · {{ stepNames[step] }}</p><progress
             :value="step + 1"
             max="4"
             :aria-label="`Шаг ${step + 1} из 4`"
@@ -1224,12 +1220,11 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             :aria-expanded="subjectListOpen"
             @click="subjectListOpen = !subjectListOpen"
           >
-            <span><small>Предмет</small>{{ selectedSubject?.name ?? 'Выбери предмет' }}</span
-            ><img
+            <span><small>Предмет</small>{{ selectedSubject?.name ?? 'Выбери предмет' }}</span><img
               :src="downIcon"
               alt=""
               :class="{ 'headman-homework__up': subjectListOpen }"
-            />
+            >
           </button>
           <p
             v-if="editing"
@@ -1249,8 +1244,10 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               :aria-pressed="subjectId === item.id"
               @click="selectSubject(item.id)"
             >
-              {{ item.name }} </button
-            ><p v-if="!availableSubjects.length"> Нет предметов с действующими назначениями. </p>
+              {{ item.name }}
+            </button><p v-if="!availableSubjects.length">
+              Нет предметов с действующими назначениями.
+            </p>
           </div>
           <template v-if="step === 1">
             <button
@@ -1260,14 +1257,11 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               :aria-expanded="typeListOpen"
               @click="typeListOpen = !typeListOpen"
             >
-              <span
-                ><small>Тип занятия</small
-                >{{ lessonType ? typeName(lessonType) : 'Выбери тип' }}</span
-              ><img
+              <span><small>Тип занятия</small>{{ lessonType ? typeName(lessonType) : 'Выбери тип' }}</span><img
                 :src="downIcon"
                 alt=""
                 :class="{ 'headman-homework__up': typeListOpen }"
-              />
+              >
             </button>
             <div
               v-if="typeListOpen"
@@ -1278,8 +1272,8 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 v-if="nextLoading"
                 role="status"
               >
-                Ищем ближайшие пары… </p
-              ><button
+                Ищем ближайшие пары…
+              </p><button
                 v-for="type in availableTypes"
                 :key="type"
                 type="button"
@@ -1287,8 +1281,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 :disabled="nextLoading"
                 @click="selectType(type)"
               >
-                <span>{{ typeName(type) }}</span
-                ><small>{{ nextSummary(type) }}</small>
+                <span>{{ typeName(type) }}</span><small>{{ nextSummary(type) }}</small>
               </button>
             </div>
           </template>
@@ -1298,16 +1291,17 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             class="headman-homework__context"
             :class="{ 'headman-homework__context--chosen': step === 3 }"
           >
-            <h2>{{ selectedSubject?.name }} · {{ typeName(lessonType) }}</h2
-            ><p>{{
-              step === 3
-                ? formatDate(chosenDate)
-                : anyDate
-                  ? 'Свободная дата включена'
-                  : chosenLesson
-                    ? `Ближайшая: ${formatDate(chosenLesson.date)}, ${chosenLesson.startTime?.slice(0, 5) ?? 'время не указано'}`
-                    : 'Выбери актуальную пару или разреши любую дату'
-            }}</p>
+            <h2>{{ selectedSubject?.name }} · {{ typeName(lessonType) }}</h2><p>
+              {{
+                step === 3
+                  ? formatDate(chosenDate)
+                  : anyDate
+                    ? 'Свободная дата включена'
+                    : chosenLesson
+                      ? `Ближайшая: ${formatDate(chosenLesson.date)}, ${chosenLesson.startTime?.slice(0, 5) ?? 'время не указано'}`
+                      : 'Выбери актуальную пару или разреши любую дату'
+              }}
+            </p>
           </section>
           <template v-if="step === 2">
             <section
@@ -1315,8 +1309,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               aria-label="Дата задания"
             >
               <div class="headman-homework__calendar-heading">
-                <h2>{{ monthLabel(monthDate) }}</h2
-                ><div>
+                <h2>{{ monthLabel(monthDate) }}</h2><div>
                   <button
                     type="button"
                     aria-label="Предыдущий месяц"
@@ -1326,8 +1319,8 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                     <img
                       :src="previousIcon"
                       alt=""
-                    /> </button
-                  ><button
+                    >
+                  </button><button
                     type="button"
                     aria-label="Следующий месяц"
                     :disabled="retryLocked"
@@ -1336,7 +1329,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                     <img
                       :src="nextIcon"
                       alt=""
-                    />
+                    >
                   </button>
                 </div>
               </div>
@@ -1344,8 +1337,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 <span
                   v-for="day in ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']"
                   :key="day"
-                  >{{ day }}</span
-                >
+                >{{ day }}</span>
               </div>
               <div
                 class="headman-homework__month"
@@ -1399,8 +1391,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               :disabled="retryLocked"
               @click="toggleAnyDate"
             >
-              <span>Разрешить любую пару</span
-              ><span
+              <span>Разрешить любую пару</span><span
                 class="headman-homework__switch"
                 aria-hidden="true"
               />
@@ -1411,34 +1402,28 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             class="headman-homework__content"
             @submit.prevent="primaryAction"
           >
-            <label class="headman-homework__field"
-              ><span>Название</span
-              ><input
-                v-model="title"
-                maxlength="255"
-                required
-                :disabled="busy || retryLocked"
-                aria-describedby="headman-homework-validation"
-            /></label>
-            <label class="headman-homework__field headman-homework__field--text"
-              ><span>Полный текст</span
-              ><textarea
-                v-model="description"
-                maxlength="4000"
-                :disabled="busy || retryLocked"
-                aria-describedby="headman-homework-validation"
-              />
+            <label class="headman-homework__field"><span>Название</span><input
+              v-model="title"
+              maxlength="255"
+              required
+              :disabled="busy || retryLocked"
+              aria-describedby="headman-homework-validation"
+            ></label>
+            <label class="headman-homework__field headman-homework__field--text"><span>Полный текст</span><textarea
+              v-model="description"
+              maxlength="4000"
+              :disabled="busy || retryLocked"
+              aria-describedby="headman-homework-validation"
+            />
             </label>
-            <label class="headman-homework__field headman-homework__field--link"
-              ><span>Основная ссылка</span
-              ><input
-                v-model="link"
-                type="url"
-                maxlength="2048"
-                :disabled="busy || retryLocked"
-                aria-describedby="headman-homework-validation"
-                placeholder="https://"
-            /></label>
+            <label class="headman-homework__field headman-homework__field--link"><span>Основная ссылка</span><input
+              v-model="link"
+              type="url"
+              maxlength="2048"
+              :disabled="busy || retryLocked"
+              aria-describedby="headman-homework-validation"
+              placeholder="https://"
+            ></label>
             <p
               v-if="!contentValid"
               id="headman-homework-validation"

@@ -39,8 +39,10 @@ function dateLabel(date: string): string {
         aria-label="Вернуться в Ещё"
         @click="emit('back')"
       >
-        <MobileIcon name="back" /> </button
-      ><h1 id="semester-title"> Расписание семестра </h1>
+        <MobileIcon name="back" />
+      </button><h1 id="semester-title">
+        Расписание семестра
+      </h1>
     </header>
     <p
       v-if="loading"
@@ -74,18 +76,14 @@ function dateLabel(date: string): string {
         message="Ты офлайн. Показаны последние сохранённые данные семестра."
       />
       <h2>{{ schedule.semester.name }}</h2>
-      <label v-if="dates.length"
-        >Дата<select
-          :value="selectedDate"
-          @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
-          ><option
-            v-for="date in dates"
-            :key="date"
-            :value="date"
-            >{{ dateLabel(date) }}</option
-          ></select
-        ></label
-      >
+      <label v-if="dates.length">Дата<select
+        :value="selectedDate"
+        @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
+      ><option
+        v-for="date in dates"
+        :key="date"
+        :value="date"
+      >{{ dateLabel(date) }}</option></select></label>
       <p
         v-if="lessons.length === 0"
         role="status"
@@ -98,12 +96,11 @@ function dateLabel(date: string): string {
           :key="lesson.id"
           :data-cancelled="lesson.status === 'CANCELLED'"
         >
-          <p>{{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }}</p
-          ><h3>{{ lesson.subject.name }}</h3
-          ><p>{{
-            { LECTURE: 'Лекция', PRACTICE: 'Практика', LAB: 'Лабораторная' }[lesson.subject.type]
-          }}</p
-          ><p
+          <p>{{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }}</p><h3>{{ lesson.subject.name }}</h3><p>
+            {{
+              { LECTURE: 'Лекция', PRACTICE: 'Практика', LAB: 'Лабораторная' }[lesson.subject.type]
+            }}
+          </p><p
             v-if="lesson.status === 'CANCELLED'"
             class="semester-screen__cancelled"
           >

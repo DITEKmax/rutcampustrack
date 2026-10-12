@@ -428,8 +428,7 @@ onBeforeUnmount(() => {
       v-for="id in adminShellStates"
       :key="id"
       :href="`?state=${id}&shell=${shell}`"
-      >{{ id }}</a
-    >
+    >{{ id }}</a>
     <button
       v-if="hostBackVisible"
       type="button"
@@ -449,9 +448,9 @@ onBeforeUnmount(() => {
     <div
       v-if="
         view === 'profile' &&
-        (authorityStatus !== 'ready' ||
-          !authority?.assigned ||
-          firstAdminRoute(authority) === 'profile')
+          (authorityStatus !== 'ready' ||
+            !authority?.assigned ||
+            firstAdminRoute(authority) === 'profile')
       "
       class="admin-shell__access-state"
     >
@@ -466,11 +465,15 @@ onBeforeUnmount(() => {
         "
         :aria-busy="authorityStatus === 'loading'"
       >
-        <p v-if="authorityStatus === 'loading'"> Проверяем доступ к администрированию… </p>
+        <p v-if="authorityStatus === 'loading'">
+          Проверяем доступ к администрированию…
+        </p>
         <p v-else-if="authorityStatus === 'error'">
           Доступен только твой профиль. Попробуй проверить права ещё раз.
         </p>
-        <p v-else> Ты можешь пользоваться своим профилем. </p>
+        <p v-else>
+          Ты можешь пользоваться своим профилем.
+        </p>
         <template
           v-if="authorityStatus === 'error'"
           #actions

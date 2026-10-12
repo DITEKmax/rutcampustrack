@@ -103,11 +103,13 @@ function save(): void {
       class="notification-colors__notice"
       role="alert"
     >
-      <p>{{
-        catalogChanged
-          ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.'
-          : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.'
-      }}</p>
+      <p>
+        {{
+          catalogChanged
+            ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.'
+            : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.'
+        }}
+      </p>
       <button
         type="button"
         :disabled="busy || offline"
@@ -173,12 +175,10 @@ function save(): void {
             :style="dotStyle(type.preferences.colorId)"
             aria-hidden="true"
           />
-          <span class="notification-colors__type-text"
-            >{{ type.label
-            }}<span class="notification-colors__current">{{
-              paletteLabel(type.preferences.colorId)
-            }}</span></span
-          >
+          <span class="notification-colors__type-text">{{ type.label
+          }}<span class="notification-colors__current">{{
+            paletteLabel(type.preferences.colorId)
+          }}</span></span>
           <span aria-hidden="true">{{ selectedType === type.id ? '⌃' : '⌄' }}</span>
         </button>
         <fieldset
@@ -202,12 +202,10 @@ function save(): void {
                 :style="dotStyle(color.id)"
                 aria-hidden="true"
               />
-              <span>{{ color.label }}</span
-              ><span
+              <span>{{ color.label }}</span><span
                 class="notification-colors__selected"
                 aria-hidden="true"
-                >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span
-              >
+              >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span>
             </button>
           </div>
           <button

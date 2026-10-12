@@ -43,7 +43,9 @@ const emit = defineEmits<{
           />
         </svg>
       </button>
-      <h1 id="request-type-title"> Новая заявка </h1>
+      <h1 id="request-type-title">
+        Новая заявка
+      </h1>
     </header>
 
     <StudentWarningBlock
@@ -91,8 +93,7 @@ const emit = defineEmits<{
             v-else
             class="requests-type-choice__symbol requests-type-choice__symbol--excuse"
             aria-hidden="true"
-            >{{ choice.symbol }}</span
-          >
+          >{{ choice.symbol }}</span>
           <span class="requests-type-choice__label">{{ choice.label }}</span>
         </button>
         <p

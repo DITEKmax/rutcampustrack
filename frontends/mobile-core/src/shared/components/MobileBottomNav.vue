@@ -65,8 +65,7 @@ function navigate(item: MobileBottomNavItem): void {
         v-if="item.badge !== undefined"
         class="mobile-bottom-nav__badge"
         aria-hidden="true"
-        >{{ item.badge }}</span
-      >
+      >{{ item.badge }}</span>
     </button>
   </nav>
 </template>

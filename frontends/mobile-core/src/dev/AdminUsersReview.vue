@@ -489,8 +489,7 @@ onBeforeUnmount(() => {
         v-for="item in adminUsersReviewStates"
         :key="item.state"
         :href="`?state=${item.state}&shell=${shell}`"
-        >{{ item.label }}</a
-      >
+      >{{ item.label }}</a>
     </nav>
     <button
       v-if="shell === 'tma' && !navigationVisible && !capture"

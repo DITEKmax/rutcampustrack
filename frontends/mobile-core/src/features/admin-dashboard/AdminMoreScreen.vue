@@ -15,12 +15,16 @@ const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statisti
     class="admin-more"
     aria-labelledby="admin-more-title"
   >
-    <h1 id="admin-more-title"> Ещё </h1>
+    <h1 id="admin-more-title">
+      Ещё
+    </h1>
     <section
       v-if="adminCanNavigate(authority, 'semesters')"
       aria-labelledby="admin-more-academic"
     >
-      <h2 id="admin-more-academic"> Учебный процесс </h2>
+      <h2 id="admin-more-academic">
+        Учебный процесс
+      </h2>
       <button
         type="button"
         class="admin-more__row"
@@ -30,19 +34,20 @@ const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statisti
           :src="semesterIcon"
           alt=""
           aria-hidden="true"
-        /><span>Семестры</span
-        ><img
+        ><span>Семестры</span><img
           :src="nextIcon"
           alt=""
           aria-hidden="true"
-        />
+        >
       </button>
     </section>
     <section
       v-if="adminCanNavigate(authority, 'map')"
       aria-labelledby="admin-more-campus"
     >
-      <h2 id="admin-more-campus"> Кампус </h2>
+      <h2 id="admin-more-campus">
+        Кампус
+      </h2>
       <button
         type="button"
         class="admin-more__row"
@@ -52,24 +57,22 @@ const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statisti
           :src="mapIcon"
           alt=""
           aria-hidden="true"
-        /><span>Корпуса и этажи</span
-        ><img
+        ><span>Корпуса и этажи</span><img
           :src="nextIcon"
           alt=""
           aria-hidden="true"
-        />
+        >
       </button>
       <button
         type="button"
         class="admin-more__row"
         @click="emit('navigate', 'map-statistics')"
       >
-        <MobileIcon name="attendance-graph" /><span>Статистика карты</span
-        ><img
+        <MobileIcon name="attendance-graph" /><span>Статистика карты</span><img
           :src="nextIcon"
           alt=""
           aria-hidden="true"
-        />
+        >
       </button>
     </section>
   </main>

@@ -158,7 +158,9 @@ function openAssignment(assignment: TeacherAssignment): void {
     aria-label="Сегодня у преподавателя"
     :aria-busy="loading"
   >
-    <h1 class="teacher-screen__sr"> Сегодня </h1>
+    <h1 class="teacher-screen__sr">
+      Сегодня
+    </h1>
     <header class="teacher-home__role-header notifications-role-header">
       <button
         v-if="roleSwitchEnabled"
@@ -172,8 +174,7 @@ function openAssignment(assignment: TeacherAssignment): void {
       <span
         v-else
         class="teacher-home__role"
-        >Преподаватель</span
-      >
+      >Преподаватель</span>
       <NotificationsEntryButton
         v-if="onNotifications"
         :count="unreadCount ?? null"
@@ -276,8 +277,7 @@ function openAssignment(assignment: TeacherAssignment): void {
           <span
             v-else
             class="teacher-home__window"
-            >{{ item.slot.startTime.slice(0, 5) }}–{{ item.slot.endTime.slice(0, 5) }}</span
-          >
+          >{{ item.slot.startTime.slice(0, 5) }}–{{ item.slot.endTime.slice(0, 5) }}</span>
         </li>
       </ol>
     </template>
@@ -303,13 +303,8 @@ function openAssignment(assignment: TeacherAssignment): void {
             data-teacher-action="journal-open"
             @click="openAssignment(assignment)"
           >
-            <span
-              ><strong>{{ assignment.subjectName }}</strong
-              ><small
-                >{{ assignment.groupName }} ·
-                {{ teacherLessonTypeLabel(assignment.lessonType) }}</small
-              ></span
-            ><MobileIcon
+            <span><strong>{{ assignment.subjectName }}</strong><small>{{ assignment.groupName }} ·
+              {{ teacherLessonTypeLabel(assignment.lessonType) }}</small></span><MobileIcon
               name="back"
               class="teacher-screen__next"
             />

@@ -39,7 +39,7 @@ defineProps<{
     :src="copyIcon"
     alt=""
     aria-hidden="true"
-  />
+  >
   <svg
     v-else
     class="mobile-icon"

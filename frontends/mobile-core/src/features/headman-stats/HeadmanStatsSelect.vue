@@ -111,16 +111,15 @@ onBeforeUnmount(() => {
       <span
         :id="id + '-value'"
         :aria-label="selected?.label"
-        ><span
-          v-if="selected?.markers"
-          class="headman-stats-select__markers"
-          aria-hidden="true"
-          ><i
-            v-for="marker in selected.markers"
-            :key="marker"
-            :class="'headman-stats-select__marker headman-stats-select__marker--' + marker" /></span
-        >{{ selected?.displayLabel ?? selected?.label ?? placeholder }}</span
-      ><MobileIcon name="chevron-down" />
+      ><span
+        v-if="selected?.markers"
+        class="headman-stats-select__markers"
+        aria-hidden="true"
+      ><i
+        v-for="marker in selected.markers"
+        :key="marker"
+        :class="'headman-stats-select__marker headman-stats-select__marker--' + marker"
+      /></span>{{ selected?.displayLabel ?? selected?.label ?? placeholder }}</span><MobileIcon name="chevron-down" />
     </button>
     <div
       v-if="open"
@@ -144,11 +143,11 @@ onBeforeUnmount(() => {
           v-if="option.markers"
           class="headman-stats-select__markers"
           aria-hidden="true"
-          ><i
-            v-for="marker in option.markers"
-            :key="marker"
-            :class="'headman-stats-select__marker headman-stats-select__marker--' + marker" /></span
-        >{{ option.displayLabel ?? option.label }}
+        ><i
+          v-for="marker in option.markers"
+          :key="marker"
+          :class="'headman-stats-select__marker headman-stats-select__marker--' + marker"
+        /></span>{{ option.displayLabel ?? option.label }}
       </button>
     </div>
   </div>

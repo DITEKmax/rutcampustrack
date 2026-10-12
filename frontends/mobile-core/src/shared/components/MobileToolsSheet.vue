@@ -43,8 +43,7 @@ onBeforeUnmount(() => {
     @close="close"
   >
     <header>
-      <h2>{{ title }}</h2
-      ><button
+      <h2>{{ title }}</h2><button
         type="button"
         :class="{ 'mobile-tools-sheet__icon-close': iconClose }"
         aria-label="Закрыть настройки"
@@ -60,7 +59,9 @@ onBeforeUnmount(() => {
         >
           <path d="m4 4 8 8M12 4l-8 8" />
         </svg>
-        <template v-else> Закрыть </template>
+        <template v-else>
+          Закрыть
+        </template>
       </button>
     </header>
     <div class="mobile-tools-sheet__content">

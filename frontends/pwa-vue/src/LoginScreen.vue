@@ -40,9 +40,15 @@ function submit(event: SubmitEvent): void {
       class="login-card"
       @submit.prevent="submit"
     >
-      <p class="login-card__eyebrow"> RutCampusTrack </p>
-      <h1 id="login-title"> Войти в приложение </h1>
-      <p class="login-card__hint"> Введи логин и пароль, чтобы открыть расписание и задания. </p>
+      <p class="login-card__eyebrow">
+        RutCampusTrack
+      </p>
+      <h1 id="login-title">
+        Войти в приложение
+      </h1>
+      <p class="login-card__hint">
+        Введи логин и пароль, чтобы открыть расписание и задания.
+      </p>
 
       <label class="login-field">
         <span>Логин</span>
@@ -52,7 +58,7 @@ function submit(event: SubmitEvent): void {
           autocomplete="username"
           required
           :disabled="loading"
-        />
+        >
       </label>
       <label class="login-field">
         <span>Пароль</span>
@@ -62,7 +68,7 @@ function submit(event: SubmitEvent): void {
           autocomplete="current-password"
           required
           :disabled="loading"
-        />
+        >
       </label>
 
       <p

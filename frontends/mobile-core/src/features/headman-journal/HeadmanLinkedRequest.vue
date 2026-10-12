@@ -113,8 +113,7 @@ onBeforeUnmount(() => {
         <span
           class="request-status-badge"
           :data-status="detail.summary.status"
-          >{{ detail.summary.status === 'APPROVED' ? 'Одобрено' : detail.summary.status }}</span
-        >
+        >{{ detail.summary.status === 'APPROVED' ? 'Одобрено' : detail.summary.status }}</span>
         <span class="headman-journal__request-tag">{{
           detail.summary.kind === 'EXCUSE' ? 'Заявка на пропуск' : 'Заявка на опоздание'
         }}</span>
@@ -147,7 +146,9 @@ onBeforeUnmount(() => {
         :offline="offline"
         :allowed="allowed"
       />
-      <p v-if="!detail.attachments.length"> В заявке нет доступных вложений. </p>
+      <p v-if="!detail.attachments.length">
+        В заявке нет доступных вложений.
+      </p>
     </template>
   </section>
 </template>

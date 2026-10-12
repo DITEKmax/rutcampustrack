@@ -21,7 +21,7 @@ defineProps<{ tone: 'success' | 'warning' | 'danger'; title: string }>();
           v-if="tone === 'success'"
           :src="checkIcon"
           alt=""
-        />
+        >
         <MobileIcon
           v-else
           name="warning"

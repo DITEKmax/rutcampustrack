@@ -356,7 +356,9 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="map-screen-title"> Карта кампуса </h1>
+      <h1 id="map-screen-title">
+        Карта кампуса
+      </h1>
     </header>
     <div class="map-screen__content">
       <StudentWarningBlock
@@ -385,8 +387,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           <label
             class="map-field"
             for="map-building"
-            ><span>Корпус</span></label
-          >
+          ><span>Корпус</span></label>
           <MapSelect
             id="map-building"
             v-model="selectedBuildingId"
@@ -395,8 +396,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           <label
             class="map-field"
             for="map-floor"
-            ><span>Этаж</span></label
-          >
+          ><span>Этаж</span></label>
           <MapSelect
             id="map-floor"
             v-model="selectedFloorId"
@@ -417,14 +417,14 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           >
             <div class="map-card__heading">
               <div>
-                <h2>{{ selectedPlan.label }}</h2
-                ><p v-if="!compactPresentation"> Версия {{ selectedPlan.version }} </p>
+                <h2>{{ selectedPlan.label }}</h2><p v-if="!compactPresentation">
+                  Версия {{ selectedPlan.version }}
+                </p>
               </div>
               <span
                 v-if="loadingAsset"
                 class="map-card__status"
-                >Загружаем…</span
-              >
+              >Загружаем…</span>
             </div>
             <component
               :is="compactPresentation ? 'a' : 'div'"
@@ -441,7 +441,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 :src="previewUrl"
                 alt="Схема выбранного этажа"
                 @load="handleSvgLoaded"
-              />
+              >
             </component>
             <div
               v-else-if="!loadingAsset && !error"
@@ -460,23 +460,20 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 :href="previewUrl"
                 target="_blank"
                 rel="noopener"
-                >Открыть схему</a
-              >
+              >Открыть схему</a>
               <a
                 v-if="pngUrl && selectedPlan.png.state === 'ready'"
                 class="map-download"
                 :href="pngUrl"
                 :download="pngFilename"
                 @click="guardPngDownload"
-                >Скачать PNG</a
-              >
+              >Скачать PNG</a>
               <a
                 v-if="svgUrl"
                 class="map-open"
                 :href="svgUrl"
                 download="campus-map.svg"
-                >Скачать SVG</a
-              >
+              >Скачать SVG</a>
             </div>
             <StudentWarningBlock
               v-for="format in unavailableFormats"
@@ -496,12 +493,13 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
             class="map-empty"
             role="status"
           >
-            <p>{{
-              floors.length
-                ? 'Для этого этажа схема не загружена'
-                : 'В этом корпусе нет доступных этажей'
-            }}</p
-            ><p>{{ floors.length ? 'Выбери другой этаж' : 'Выбери другой корпус' }}</p>
+            <p>
+              {{
+                floors.length
+                  ? 'Для этого этажа схема не загружена'
+                  : 'В этом корпусе нет доступных этажей'
+              }}
+            </p><p>{{ floors.length ? 'Выбери другой этаж' : 'Выбери другой корпус' }}</p>
           </div>
         </template>
         <div

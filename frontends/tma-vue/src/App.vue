@@ -1363,10 +1363,10 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-      !studentViewVisible &&
-      !headmanViewVisible &&
-      !teacherViewVisible &&
-      !adminHomeViewVisible
+        !studentViewVisible &&
+        !headmanViewVisible &&
+        !teacherViewVisible &&
+        !adminHomeViewVisible
     "
     floating
     :count="notificationUnread.count"
@@ -1720,7 +1720,9 @@ onBeforeUnmount(() => {
       class="today-state__spinner"
       aria-hidden="true"
     />
-    <h2 v-if="error"> Не удалось открыть приложение </h2>
+    <h2 v-if="error">
+      Не удалось открыть приложение
+    </h2>
     <p>{{ error ?? 'Подключаемся к Telegram…' }}</p>
     <button
       v-if="error && !offline"

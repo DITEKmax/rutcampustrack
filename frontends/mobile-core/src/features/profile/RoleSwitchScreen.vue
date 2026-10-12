@@ -71,7 +71,7 @@ async function selectRole(role: ProfileRole): Promise<void> {
             :src="rolePrevious"
             alt=""
             aria-hidden="true"
-          />
+          >
         </button>
         <h1
           id="profile-role-title"
@@ -126,40 +126,36 @@ async function selectRole(role: ProfileRole): Promise<void> {
             v-if="!compact"
             class="profile-role-card__avatar"
             aria-hidden="true"
-            >{{ roleInitial(grant.role) }}</span
-          >
+          >{{ roleInitial(grant.role) }}</span>
           <span class="profile-role-card__copy">
             <span class="profile-role-card__title">{{ roleLabel(grant.role) }}</span>
             <span
               v-if="!compact && grant.contextLabel"
               class="profile-role-card__meta"
-              >{{ grant.contextLabel }}</span
-            >
+            >{{ grant.contextLabel }}</span>
             <span
               v-if="grant.status !== 'ACTIVE' || grant.readOnly"
               class="profile-role-card__meta"
-              >{{ grant.status !== 'ACTIVE' ? statusLabel(grant.status) : ''
-              }}{{
-                grant.readOnly
-                  ? grant.status !== 'ACTIVE'
-                    ? ' · только чтение'
-                    : 'Только чтение'
-                  : ''
-              }}</span
-            >
+            >{{ grant.status !== 'ACTIVE' ? statusLabel(grant.status) : ''
+            }}{{
+              grant.readOnly
+                ? grant.status !== 'ACTIVE'
+                  ? ' · только чтение'
+                  : 'Только чтение'
+                : ''
+            }}</span>
           </span>
           <img
             v-if="compact && snapshot.activeRole === grant.role && pendingRole === null"
             class="profile-role-card__check"
             :src="currentCheck"
             alt="Текущая роль"
-          />
+          >
           <span
             v-if="pendingRole === grant.role"
             class="profile-role-card__status"
             role="status"
-            >Сохраняем…</span
-          >
+          >Сохраняем…</span>
         </button>
         <p
           v-if="snapshot.roles.length === 0"

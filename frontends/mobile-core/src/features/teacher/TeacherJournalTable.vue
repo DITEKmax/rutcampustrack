@@ -58,30 +58,28 @@ function date(value: string): string {
     aria-label="Журнал посещаемости. Таблицу можно прокрутить вправо."
   >
     <table class="teacher-journal__table">
-      <caption class="teacher-journal__sr"> Посещаемость прошедших занятий </caption>
+      <caption class="teacher-journal__sr">
+        Посещаемость прошедших занятий
+      </caption>
       <thead>
         <tr>
           <th
             scope="col"
             class="teacher-journal__name"
           >
-            ФИО </th
-          ><th
+            ФИО
+          </th><th
             scope="col"
             class="teacher-journal__percent-heading"
           >
             %
-            <span class="teacher-journal__sr"
-              >Присутствия, уважительные причины, отсутствия</span
-            > </th
-          ><th
+            <span class="teacher-journal__sr">Присутствия, уважительные причины, отсутствия</span>
+          </th><th
             v-for="lesson in lessons"
             :key="lesson.id"
             scope="col"
           >
-            <time :datetime="lesson.date">{{ date(lesson.date) }}</time
-            ><span>{{ teacherLessonTypeLabel(lesson.lessonType) }}</span
-            ><span class="teacher-journal__sr">{{ lesson.lessonNumber }}-я пара</span>
+            <time :datetime="lesson.date">{{ date(lesson.date) }}</time><span>{{ teacherLessonTypeLabel(lesson.lessonType) }}</span><span class="teacher-journal__sr">{{ lesson.lessonNumber }}-я пара</span>
           </th>
         </tr>
       </thead>
@@ -94,31 +92,28 @@ function date(value: string): string {
             scope="row"
             class="teacher-journal__name"
           >
-            {{ student.displayName }} </th
-          ><td class="teacher-journal__percent">
+            {{ student.displayName }}
+          </th><td class="teacher-journal__percent">
             <span
               class="teacher-journal__present"
               :aria-label="`Присутствия: ${student.counts.present} из ${student.counts.denominator}`"
-              ><span
-                class="teacher-journal__metric-mark teacher-journal__metric-mark--present"
-                aria-hidden="true"
-              />{{ journalPercent(student.counts.present, student.counts.denominator) }}</span
             ><span
+              class="teacher-journal__metric-mark teacher-journal__metric-mark--present"
+              aria-hidden="true"
+            />{{ journalPercent(student.counts.present, student.counts.denominator) }}</span><span
               class="teacher-journal__excused"
               :aria-label="`Уважительные причины: ${student.counts.excused} из ${student.counts.denominator}`"
-              ><span
-                class="teacher-journal__metric-mark teacher-journal__metric-mark--excused"
-                aria-hidden="true"
-              />{{ journalPercent(student.counts.excused, student.counts.denominator) }}</span
             ><span
+              class="teacher-journal__metric-mark teacher-journal__metric-mark--excused"
+              aria-hidden="true"
+            />{{ journalPercent(student.counts.excused, student.counts.denominator) }}</span><span
               class="teacher-journal__absent"
               :aria-label="`Отсутствия: ${student.counts.absent} из ${student.counts.denominator}`"
-              ><span
-                class="teacher-journal__metric-mark teacher-journal__metric-mark--absent"
-                aria-hidden="true"
-              />{{ journalPercent(student.counts.absent, student.counts.denominator) }}</span
-            > </td
-          ><td
+            ><span
+              class="teacher-journal__metric-mark teacher-journal__metric-mark--absent"
+              aria-hidden="true"
+            />{{ journalPercent(student.counts.absent, student.counts.denominator) }}</span>
+          </td><td
             v-for="lesson in lessons"
             :key="lesson.id"
           >
@@ -132,19 +127,16 @@ function date(value: string): string {
               <span
                 class="teacher-journal__cell-circle"
                 aria-hidden="true"
-                >у</span
-              > </button
-            ><span
+              >у</span>
+            </button><span
               v-else
               class="teacher-journal__mark"
               :class="`teacher-journal__mark--${journalMark(student.cellsById.get(lesson.id)) ?? 'none'}`"
               :aria-label="label(student.cellsById.get(lesson.id))"
-              ><span
-                class="teacher-journal__cell-circle"
-                aria-hidden="true"
-                >{{ symbol(student.cellsById.get(lesson.id)) }}</span
-              ></span
-            >
+            ><span
+              class="teacher-journal__cell-circle"
+              aria-hidden="true"
+            >{{ symbol(student.cellsById.get(lesson.id)) }}</span></span>
           </td>
         </tr>
       </tbody>

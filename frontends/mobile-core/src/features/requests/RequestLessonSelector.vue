@@ -233,7 +233,7 @@ function onLateChange(event: Event): void {
                   !isEligible(option) ? optionId(option, index) + '-reason' : undefined
                 "
                 @change="onExcuseChange($event, lessonId(option))"
-              />
+              >
               <span class="request-lesson-option__copy">
                 <span class="request-lesson-option__subject">{{
                   lessonFor(option)?.subjectName || 'Предмет не указан'
@@ -265,13 +265,11 @@ function onLateChange(event: Event): void {
                 class="request-lesson-option__absence"
                 role="img"
                 aria-label="Не был"
-                >н</span
-              >
+              >н</span>
               <span
                 v-else-if="props.grouped && lifecycleLabel(option)"
                 class="request-lesson-option__lifecycle"
-                >{{ lifecycleLabel(option) }}</span
-              >
+              >{{ lifecycleLabel(option) }}</span>
             </label>
             <button
               v-if="isSelected(option) && !isEligible(option)"

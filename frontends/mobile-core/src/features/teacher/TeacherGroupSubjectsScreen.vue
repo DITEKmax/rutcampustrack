@@ -31,8 +31,8 @@ const subjects = computed(() =>
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" /> </button
-      ><h1 id="teacher-subjects-title">
+        <MobileIcon name="back" />
+      </button><h1 id="teacher-subjects-title">
         {{ groupName }}
       </h1>
     </header>

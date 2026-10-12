@@ -205,8 +205,7 @@ onBeforeUnmount(() => {
   <pre
     hidden
     data-test="requests-review-log"
-    >{{ logs.join('\n') }}</pre
-  >
+  >{{ logs.join('\n') }}</pre>
   <button
     v-if="shell === 'tma' && hostVisible && query.get('controls') === '1'"
     type="button"

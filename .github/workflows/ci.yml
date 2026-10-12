@@ -348,7 +348,10 @@ jobs:
           mkdir -m 700 -- "$RCT_FOCUS3_RUN/artifacts" "$RCT_FOCUS3_RUN/supervision"
           chmod +x gradlew
           ./gradlew e2eClockFixtureJar e2eClockFixtureControl --no-daemon --max-workers=1
-          node tests/e2e/backend-clock/prepare-clock.mjs "$RCT_E2E_TEACHING_CLOCK_DIR" "$PWD/build/e2e-clock/clock-fixture.jar"
+          (
+            umask 022
+            node tests/e2e/backend-clock/prepare-clock.mjs "$RCT_E2E_TEACHING_CLOCK_DIR" "$PWD/build/e2e-clock/clock-fixture.jar"
+          )
 
       # M13 G25.3 — buildx нужен для BuildKit cache mount
       # (`--mount=type=cache,target=/root/.gradle` в backend Dockerfile'ах).

@@ -17,7 +17,7 @@ from aiogram.filters import Command
 from aiogram.types import Update
 
 from bot.grpc_client import academic_pb2 as pb
-from bot.grpc_client.bot_credentials_client import BotCredentialRequestDenied
+from bot.grpc_client.bot_credentials_client import BotCredentialRequestDenied, BotCredentialsGrpcClient
 from bot.handlers.start import cmd_start
 from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
@@ -234,7 +234,8 @@ async def test_register_fence_keeps_nonsecret_placeholder_and_never_edits():
 
 @pytest.mark.asyncio
 async def test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc():
-    authority = SimpleNamespace(configured=False, read=AsyncMock())
+    authority = BotCredentialsGrpcClient("academic.test", 19491)
+    authority.read = AsyncMock(wraps=authority.read)
     bot = SimpleNamespace(edit_message_text=AsyncMock())
     incoming = SimpleNamespace(
         from_user=SimpleNamespace(id=42), chat=SimpleNamespace(id=42, type="private"), answer=AsyncMock(),

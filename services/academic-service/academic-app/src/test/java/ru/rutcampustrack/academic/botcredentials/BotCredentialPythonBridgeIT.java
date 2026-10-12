@@ -67,7 +67,7 @@ class BotCredentialPythonBridgeIT {
         String serviceToken = token();
         String sharedSecret = UUID.randomUUID().toString();
         String controlToken = token();
-        try (var postgres = new PostgreSQLContainer<>("postgres:16")
+        try (var postgres = new PostgreSQLContainer<>("postgres:16-alpine")
                 .withDatabaseName("rct_np01_bridge").withUsername("rct_np01_bridge")
                 .withPassword("rct_np01_disposable").withReuse(false)) {
             postgres.start();
@@ -217,7 +217,8 @@ class BotCredentialPythonBridgeIT {
     private Map<String, Map<String, Object>> fixtures(JdbcTemplate jdbc) {
         Map<String, Map<String, Object>> result = new LinkedHashMap<>();
         for (String role : List.of("student", "teacher", "headman", "FULL", "LIMITED", "foreign")) {
-            long group = jdbc.queryForObject("INSERT INTO groups(name) VALUES(?) RETURNING id", Long.class, "NP01 " + UUID.randomUUID());
+            long group = jdbc.queryForObject("INSERT INTO groups(name) VALUES(?) RETURNING id", Long.class,
+                    "NP01 " + UUID.randomUUID().toString().substring(0, 20));
             String login = "np" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
             String initial = UUID.randomUUID().toString();
             long id = jdbc.queryForObject("INSERT INTO users(login,password_hash,last_name,first_name,initial_password,group_id) VALUES(?,?,'NP01','Own',?,?) RETURNING id",
@@ -226,11 +227,14 @@ class BotCredentialPythonBridgeIT {
             jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, id);
             if (role.equals("FULL") || role.equals("LIMITED")) {
                 jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) VALUES(?,true,?,?::text[],1)", id, role, role.equals("FULL") ? "{}" : "{USERS_VIEW}");
-                jdbc.update("INSERT INTO user_role_grants(user_id,role,status) VALUES(?,'admin','active')", id);
+                jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) "
+                        + "VALUES(?,'admin','active',NOW(),NOW())", id);
             } else {
                 String base = role.equals("teacher") || role.equals("foreign") ? "teacher" : "student";
-                jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES(?,?,'active',?)", id, base, base.equals("teacher") ? null : group);
-                if (role.equals("headman")) jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES(?,'headman','active',?)", id, group);
+                jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                        + "VALUES(?,?,'active',?,NOW(),NOW())", id, base, base.equals("teacher") ? null : group);
+                if (role.equals("headman")) jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                        + "VALUES(?,'headman','active',?,NOW(),NOW())", id, group);
             }
             result.put(role, Map.of("uid", id, "chat", chat, "login", login, "initial", initial));
         }

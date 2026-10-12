@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Real PostgreSQL authority/generation/CAS evidence, separate from the provider transport bridge. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BotCredentialLifecycleIT {
-    private final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
+    private final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("rct_np01_domain").withUsername("rct_np01_domain")
             .withPassword("rct_np01_disposable").withReuse(false);
     private JdbcTemplate jdbc;
@@ -260,7 +260,8 @@ class BotCredentialLifecycleIT {
     }
 
     private Fixture user(String role) {
-        long group = jdbc.queryForObject("INSERT INTO groups(name) VALUES(?) RETURNING id", Long.class, "NP01 " + UUID.randomUUID());
+        long group = jdbc.queryForObject("INSERT INTO groups(name) VALUES(?) RETURNING id", Long.class,
+                "NP01 " + UUID.randomUUID().toString().substring(0, 20));
         String login = "np" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         String initial = UUID.randomUUID().toString();
         long id = jdbc.queryForObject("""
@@ -281,7 +282,8 @@ class BotCredentialLifecycleIT {
     }
 
     private void grant(long user, String role, Long group) {
-        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES(?,?,'active',?)", user, role, group);
+        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                + "VALUES(?,?,'active',?,NOW(),NOW())", user, role, group);
     }
     private void change(Fixture user) {
         jdbc.update("UPDATE users SET password_hash=?, password_changed=true, initial_password=NULL WHERE id=?", UUID.randomUUID().toString(), user.id);

@@ -1,28 +1,18 @@
 package ru.rutcampustrack.academic.group;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.context.ApplicationEventPublisher;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem.Action;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.contract.enums.SemesterType;
-import ru.rutcampustrack.academic.event.GroupArchivedEvent;
-import ru.rutcampustrack.academic.event.GroupRenamedEvent;
-import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository;
-import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,21 +20,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem.Action;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.event.GroupArchivedEvent;
+import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository;
+import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
 
 /** Unit tests for prefix planning within a completed spring promotion cycle. */
 class GroupPromotionServiceTest {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(
-            Instant.parse("2026-09-01T00:00:00Z"), ZoneOffset.UTC);
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-09-01T00:00:00Z"), ZoneOffset.UTC);
 
     private GroupRepository groupRepository;
     private SemesterRepository semesterRepository;
@@ -71,13 +69,24 @@ class GroupPromotionServiceTest {
         when(cycle.getId()).thenReturn(1L);
         when(cycle.getDateTo()).thenReturn(LocalDate.of(2026, 6, 30));
         when(cycle.getSemesterType()).thenReturn(SemesterType.SPRING);
-        when(semesterRepository.findLatestCompletedSpringPromotionCycle(any(LocalDate.class))).thenReturn(Optional.of(cycle));
+        when(semesterRepository.findLatestCompletedSpringPromotionCycle(any(LocalDate.class)))
+                .thenReturn(Optional.of(cycle));
         when(semesterRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(cycle));
-        when(cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(1L)).thenReturn(List.of());
-        when(registryReadRepository.countActiveStudentsByGroupIds(anyCollection())).thenReturn(Map.of());
-        service = new GroupPromotionService(
-                groupRepository, semesterRepository, cycleRecordRepository, registryReadRepository,
-                new GroupNameParser(), archivalService, publisher, FIXED_CLOCK, jdbc);
+        when(cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(1L))
+                .thenReturn(List.of());
+        when(registryReadRepository.countActiveStudentsByGroupIds(anyCollection()))
+                .thenReturn(Map.of());
+        service =
+                new GroupPromotionService(
+                        groupRepository,
+                        semesterRepository,
+                        cycleRecordRepository,
+                        registryReadRepository,
+                        new GroupNameParser(),
+                        archivalService,
+                        publisher,
+                        FIXED_CLOCK,
+                        jdbc);
     }
 
     private Group group(String name) {
@@ -131,16 +140,22 @@ class GroupPromotionServiceTest {
     void automaticExecutionWaitsForMoscowAugustEighteenthAndACompletedSpringCycle() {
         Group group = group("УИТ-111");
         seed(group);
-        Clock beforeDue = Clock.fixed(
-                Instant.parse("2026-08-17T20:59:59Z"), java.time.ZoneId.of("Europe/Moscow"));
+        Clock beforeDue =
+                Clock.fixed(
+                        Instant.parse("2026-08-17T20:59:59Z"),
+                        java.time.ZoneId.of("Europe/Moscow"));
         GroupPromotionService beforeDueService = serviceWithClock(beforeDue);
 
         assertThat(beforeDueService.executeAutomaticallyIfDue()).isEmpty();
         assertThat(group.getName()).isEqualTo("УИТ-111");
 
-        when(semesterRepository.findLatestCompletedSpringPromotionCycle(any(LocalDate.class))).thenReturn(Optional.empty());
-        GroupPromotionService noCycleService = serviceWithClock(Clock.fixed(
-                Instant.parse("2026-08-17T21:00:00Z"), java.time.ZoneId.of("Europe/Moscow")));
+        when(semesterRepository.findLatestCompletedSpringPromotionCycle(any(LocalDate.class)))
+                .thenReturn(Optional.empty());
+        GroupPromotionService noCycleService =
+                serviceWithClock(
+                        Clock.fixed(
+                                Instant.parse("2026-08-17T21:00:00Z"),
+                                java.time.ZoneId.of("Europe/Moscow")));
 
         assertThat(noCycleService.executeAutomaticallyIfDue()).isEmpty();
         assertThat(group.getName()).isEqualTo("УИТ-111");
@@ -151,8 +166,10 @@ class GroupPromotionServiceTest {
     void automaticExecutionStartsAtMidnightAugustEighteenthInMoscow() {
         Group group = group("УИТ-111");
         seed(group);
-        Clock dueAtMidnight = Clock.fixed(
-                Instant.parse("2026-08-17T21:00:00Z"), java.time.ZoneId.of("Europe/Moscow"));
+        Clock dueAtMidnight =
+                Clock.fixed(
+                        Instant.parse("2026-08-17T21:00:00Z"),
+                        java.time.ZoneId.of("Europe/Moscow"));
         GroupPromotionService dueService = serviceWithClock(dueAtMidnight);
 
         Optional<PromotionSummary> result = dueService.executeAutomaticallyIfDue();
@@ -164,8 +181,15 @@ class GroupPromotionServiceTest {
 
     private GroupPromotionService serviceWithClock(Clock selectedClock) {
         return new GroupPromotionService(
-                groupRepository, semesterRepository, cycleRecordRepository, registryReadRepository,
-                new GroupNameParser(), new GroupArchivalService(publisher, selectedClock), publisher, selectedClock, jdbc);
+                groupRepository,
+                semesterRepository,
+                cycleRecordRepository,
+                registryReadRepository,
+                new GroupNameParser(),
+                new GroupArchivalService(publisher, selectedClock),
+                publisher,
+                selectedClock,
+                jdbc);
     }
 
     @Test
@@ -177,8 +201,13 @@ class GroupPromotionServiceTest {
         PromotionSummary s = preview();
 
         assertThat(s.getToPromote())
-                .extracting(PromotionPreviewItem::getFrom, PromotionPreviewItem::getTo, PromotionPreviewItem::getAction)
-                .containsExactly(org.assertj.core.api.Assertions.tuple("УИТ-111", "УИТ-211", Action.PROMOTE));
+                .extracting(
+                        PromotionPreviewItem::getFrom,
+                        PromotionPreviewItem::getTo,
+                        PromotionPreviewItem::getAction)
+                .containsExactly(
+                        org.assertj.core.api.Assertions.tuple(
+                                "УИТ-111", "УИТ-211", Action.PROMOTE));
         assertThat(s.getToArchive())
                 .extracting(PromotionPreviewItem::getFrom, PromotionPreviewItem::getAction)
                 .containsExactly(org.assertj.core.api.Assertions.tuple("УИТ-411", Action.ARCHIVE));
@@ -193,7 +222,8 @@ class GroupPromotionServiceTest {
         //   делает её abort для всего префикса через unknown_type ДО проверки name_conflict.
         // Значит «name_conflict в одном префиксе без unknown_type» не достижим в валидных
         // данных (цепочки курсов всегда разрешаются сортировкой). Проверяем, что логика
-        // при этом остаётся корректной: при наличии группы с unknown type — всё падает в unknown_type.
+        // при этом остаётся корректной: при наличии группы с unknown type — всё падает в
+        // unknown_type.
         Group g1 = group("УИТ-111");
         Group g2 = group("УИТ-201"); // type=0, неизвестен
         seed(g1, g2);
@@ -265,8 +295,7 @@ class GroupPromotionServiceTest {
         assertThat(s.getToArchive()).isEmpty();
         assertThat(s.getConflicts()).hasSize(1);
         assertThat(s.getConflicts().get(0).getReason()).isEqualTo("parse_error");
-        assertThat(s.getConflicts().get(0).getMessage())
-                .contains("УИТ-611");
+        assertThat(s.getConflicts().get(0).getMessage()).contains("УИТ-611");
     }
 
     // ---- execute --------------------------------------------------------
@@ -285,8 +314,7 @@ class GroupPromotionServiceTest {
                 ArgumentCaptor.forClass(org.springframework.context.ApplicationEvent.class);
         org.mockito.Mockito.verify(publisher, org.mockito.Mockito.atLeastOnce())
                 .publishEvent(events.capture());
-        assertThat(events.getAllValues())
-                .anyMatch(e -> e instanceof GroupRenamedEvent);
+        assertThat(events.getAllValues()).anyMatch(e -> e instanceof GroupRenamedEvent);
     }
 
     @Test
@@ -308,8 +336,7 @@ class GroupPromotionServiceTest {
                 ArgumentCaptor.forClass(org.springframework.context.ApplicationEvent.class);
         org.mockito.Mockito.verify(publisher, org.mockito.Mockito.atLeastOnce())
                 .publishEvent(events.capture());
-        assertThat(events.getAllValues())
-                .anyMatch(e -> e instanceof GroupArchivedEvent);
+        assertThat(events.getAllValues()).anyMatch(e -> e instanceof GroupArchivedEvent);
     }
 
     @Test

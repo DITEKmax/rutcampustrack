@@ -27,24 +27,24 @@ public final class TeacherAttendanceGrpcIdentityInterceptor implements ServerInt
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-            ServerCall<ReqT, RespT> call,
-            Metadata headers,
-            ServerCallHandler<ReqT, RespT> next) {
-        if (!TeacherAttendanceReadServiceGrpc.SERVICE_NAME
-                .equals(call.getMethodDescriptor().getServiceName())) {
+            ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        if (!TeacherAttendanceReadServiceGrpc.SERVICE_NAME.equals(
+                call.getMethodDescriptor().getServiceName())) {
             return next.startCall(call, headers);
         }
         try {
             String token = headers.get(INTERNAL_TOKEN);
             InternalJwtClaims claims = validator.validate(token);
-            Context context = Context.current()
-                    .withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims)
-                    .withValue(TeacherAttendanceGrpcIdentity.SIGNED_TOKEN, token);
+            Context context =
+                    Context.current()
+                            .withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims)
+                            .withValue(TeacherAttendanceGrpcIdentity.SIGNED_TOKEN, token);
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
-            call.close(Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),
+            call.close(
+                    Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),
                     new Metadata());
-            return new ServerCall.Listener<>() { };
+            return new ServerCall.Listener<>() {};
         }
     }
 }

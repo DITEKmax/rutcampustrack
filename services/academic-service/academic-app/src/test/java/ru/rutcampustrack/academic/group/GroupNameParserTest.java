@@ -1,13 +1,11 @@
 package ru.rutcampustrack.academic.group;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Unit tests для {@link GroupNameParser} и {@link ProgramType} (BUG-006-6 / план 58-06).
- */
+import org.junit.jupiter.api.Test;
+
+/** Unit tests для {@link GroupNameParser} и {@link ProgramType} (BUG-006-6 / план 58-06). */
 class GroupNameParserTest {
 
     private final GroupNameParser parser = new GroupNameParser();
@@ -79,14 +77,12 @@ class GroupNameParserTest {
 
     @Test
     void parse_null_throws() {
-        assertThatThrownBy(() -> parser.parse(null))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> parser.parse(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void parse_empty_throws() {
-        assertThatThrownBy(() -> parser.parse(""))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> parser.parse("")).isInstanceOf(IllegalArgumentException.class);
     }
 
     // ---- promote --------------------------------------------------------
@@ -116,10 +112,12 @@ class GroupNameParserTest {
         assertThat(r).isInstanceOf(GroupNameParser.PromoteResult.Renamed.class);
         assertThat(((GroupNameParser.PromoteResult.Renamed) r).newName()).isEqualTo("УИТ-271");
     }
+
     @Test
     void parse_rejectsZeroAndCourseSix() {
-        assertThatThrownBy(() -> parser.parse("УИТ-011")).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> parser.parse("УИТ-611")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> parser.parse("УИТ-011"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> parser.parse("УИТ-611"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
-
 }

@@ -1,13 +1,5 @@
 package ru.rutcampustrack.attendance.grpc;
 
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -17,6 +9,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class AttendanceSemesterDeletionGrpcSecurityTest {
 
@@ -30,7 +30,8 @@ class AttendanceSemesterDeletionGrpcSecurityTest {
 
     @Test
     void semesterDeletionPreviewRejectsMissingAndWrongSecretBeforeService() {
-        ServerCall<Object, Object> call = callFor(AttendanceRequestBotGrpcSecretInterceptor.SEMESTER_DELETION_SERVICE);
+        ServerCall<Object, Object> call =
+                callFor(AttendanceRequestBotGrpcSecretInterceptor.SEMESTER_DELETION_SERVICE);
         ServerCallHandler<Object, Object> next = mock(ServerCallHandler.class);
 
         interceptor.interceptCall(call, new Metadata(), next);
@@ -39,16 +40,19 @@ class AttendanceSemesterDeletionGrpcSecurityTest {
         wrongSecret.put(AttendanceRequestBotGrpcSecretInterceptor.SECRET_KEY, "wrong-secret");
         interceptor.interceptCall(call, wrongSecret, next);
 
-        verify(call, org.mockito.Mockito.times(2)).close(
-                argThat(status -> status.getCode() == io.grpc.Status.Code.UNAUTHENTICATED), any());
+        verify(call, org.mockito.Mockito.times(2))
+                .close(
+                        argThat(status -> status.getCode() == io.grpc.Status.Code.UNAUTHENTICATED),
+                        any());
         verifyNoInteractions(next);
     }
 
     @Test
     void semesterDeletionPreviewAcceptsOnlyConfiguredSharedSecret() {
-        ServerCall<Object, Object> call = callFor(AttendanceRequestBotGrpcSecretInterceptor.SEMESTER_DELETION_SERVICE);
+        ServerCall<Object, Object> call =
+                callFor(AttendanceRequestBotGrpcSecretInterceptor.SEMESTER_DELETION_SERVICE);
         ServerCallHandler<Object, Object> next = mock(ServerCallHandler.class);
-        ServerCall.Listener<Object> listener = new ServerCall.Listener<>() { };
+        ServerCall.Listener<Object> listener = new ServerCall.Listener<>() {};
         when(next.startCall(eq(call), any())).thenReturn(listener);
         Metadata headers = new Metadata();
         headers.put(AttendanceRequestBotGrpcSecretInterceptor.SECRET_KEY, "test-internal-secret");
@@ -63,7 +67,7 @@ class AttendanceSemesterDeletionGrpcSecurityTest {
     void unrelatedServiceKeepsExistingAuthenticationFlow() {
         ServerCall<Object, Object> call = callFor("rutcampustrack.schedule.ScheduleService");
         ServerCallHandler<Object, Object> next = mock(ServerCallHandler.class);
-        ServerCall.Listener<Object> listener = new ServerCall.Listener<>() { };
+        ServerCall.Listener<Object> listener = new ServerCall.Listener<>() {};
         when(next.startCall(eq(call), any())).thenReturn(listener);
 
         assertThat(interceptor.interceptCall(call, new Metadata(), next)).isSameAs(listener);

@@ -1,11 +1,11 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "subjects")

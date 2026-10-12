@@ -1,5 +1,8 @@
 package ru.rutcampustrack.mobilebff.teacher;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -14,13 +17,9 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseRespons
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SearchResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
-import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SearchResponse;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 public final class TeacherApiController implements TeacherApi {
@@ -32,7 +31,9 @@ public final class TeacherApiController implements TeacherApi {
 
     @Override
     public ResponseEntity<SearchResponse> search(String semesterId, String q) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.search(parseId(semesterId), q));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(facade.search(parseId(semesterId), q));
     }
 
     @Override
@@ -42,112 +43,168 @@ public final class TeacherApiController implements TeacherApi {
 
     @Override
     public ResponseEntity<CatalogResponse> catalog(String semesterId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.catalog(parseId(semesterId)));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(facade.catalog(parseId(semesterId)));
     }
 
     @Override
-    public ResponseEntity<List<Assignment>> assignments(String semesterId, String dateFrom, String dateTo) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
-                .body(facade.assignments(parseId(semesterId), parseDate(dateFrom), parseDate(dateTo)));
+    public ResponseEntity<List<Assignment>> assignments(
+            String semesterId, String dateFrom, String dateTo) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(
+                        facade.assignments(
+                                parseId(semesterId), parseDate(dateFrom), parseDate(dateTo)));
     }
 
     @Override
     public ResponseEntity<DayResponse> day(String semesterId, String date) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(facade.day(parseId(semesterId), parseDate(date)));
     }
 
     @Override
     public ResponseEntity<LessonResponse> lesson(String lessonId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(facade.lesson(parseId(lessonId)));
     }
 
     @Override
-    public ResponseEntity<JournalResponse> journal(String semesterId,
-                                                   String groupId,
-                                                   String subjectId,
-                                                   List<String> lessonTypes,
-                                                   String dateFrom,
-                                                   String dateTo,
-                                                   String page,
-                                                   String pageSize, boolean pastOnly) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.journal(
-                parseId(semesterId),
-                parseId(groupId),
-                parseId(subjectId),
-                lessonTypes,
-                parseOptionalDate(dateFrom),
-                parseOptionalDate(dateTo),
-                parsePage(page, "page", 0),
-                parsePage(pageSize, "pageSize", 100), pastOnly));
+    public ResponseEntity<JournalResponse> journal(
+            String semesterId,
+            String groupId,
+            String subjectId,
+            List<String> lessonTypes,
+            String dateFrom,
+            String dateTo,
+            String page,
+            String pageSize,
+            boolean pastOnly) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(
+                        facade.journal(
+                                parseId(semesterId),
+                                parseId(groupId),
+                                parseId(subjectId),
+                                lessonTypes,
+                                parseOptionalDate(dateFrom),
+                                parseOptionalDate(dateTo),
+                                parsePage(page, "page", 0),
+                                parsePage(pageSize, "pageSize", 100),
+                                pastOnly));
     }
 
     @Override
     public ResponseEntity<ExportFormatsResponse> journalExportFormats() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.journalExportFormats());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(facade.journalExportFormats());
     }
 
     @Override
-    public ResponseEntity<byte[]> exportJournal(String semesterId,
-                                                String groupId,
-                                                String subjectId,
-                                                List<String> lessonTypes,
-                                                String dateFrom,
-                                                String dateTo,
-                                                String format, boolean pastOnly, String lessonId) {
-        TeacherReadFacade.Download download = facade.exportJournal(
-                parseId(semesterId), parseId(groupId), parseId(subjectId), lessonTypes,
-                parseOptionalDate(dateFrom), parseOptionalDate(dateTo),
-                parseText(format, "format"), pastOnly, lessonId == null ? null : parseId(lessonId));
+    public ResponseEntity<byte[]> exportJournal(
+            String semesterId,
+            String groupId,
+            String subjectId,
+            List<String> lessonTypes,
+            String dateFrom,
+            String dateTo,
+            String format,
+            boolean pastOnly,
+            String lessonId) {
+        TeacherReadFacade.Download download =
+                facade.exportJournal(
+                        parseId(semesterId),
+                        parseId(groupId),
+                        parseId(subjectId),
+                        lessonTypes,
+                        parseOptionalDate(dateFrom),
+                        parseOptionalDate(dateTo),
+                        parseText(format, "format"),
+                        pastOnly,
+                        lessonId == null ? null : parseId(lessonId));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(download.contentType()));
         headers.setContentLength(download.bytes().length);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename(download.filename(), StandardCharsets.UTF_8).build());
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename(download.filename(), StandardCharsets.UTF_8)
+                        .build());
         headers.setCacheControl(CacheControl.noStore());
-        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>(
+                download.bytes(), headers, org.springframework.http.HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<StatsResponse> stats(String semesterId, String scope, String groupId,
-                                               String subjectId, List<String> lessonTypes,
-                                               List<String> sorts, List<String> filters) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.stats(
-                parseId(semesterId), parseText(scope, "scope"), parseOptionalId(groupId, "groupId"),
-                parseOptionalId(subjectId, "subjectId"), lessonTypes, sorts, filters));
+    public ResponseEntity<StatsResponse> stats(
+            String semesterId,
+            String scope,
+            String groupId,
+            String subjectId,
+            List<String> lessonTypes,
+            List<String> sorts,
+            List<String> filters) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(
+                        facade.stats(
+                                parseId(semesterId),
+                                parseText(scope, "scope"),
+                                parseOptionalId(groupId, "groupId"),
+                                parseOptionalId(subjectId, "subjectId"),
+                                lessonTypes,
+                                sorts,
+                                filters));
     }
 
     @Override
     public ResponseEntity<ExportFormatsResponse> statsExportFormats() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.statsExportFormats());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(facade.statsExportFormats());
     }
 
     @Override
-    public ResponseEntity<byte[]> exportStats(String semesterId,
-                                              String scope,
-                                              String groupId,
-                                              String subjectId,
-                                              List<String> lessonTypes,
-                                              List<String> sorts,
-                                              List<String> filters,
-                                              String format) {
-        TeacherReadFacade.Download download = facade.exportStats(
-                parseId(semesterId), parseText(scope, "scope"), parseOptionalId(groupId, "groupId"),
-                parseOptionalId(subjectId, "subjectId"), lessonTypes, sorts, filters,
-                parseText(format, "format"));
+    public ResponseEntity<byte[]> exportStats(
+            String semesterId,
+            String scope,
+            String groupId,
+            String subjectId,
+            List<String> lessonTypes,
+            List<String> sorts,
+            List<String> filters,
+            String format) {
+        TeacherReadFacade.Download download =
+                facade.exportStats(
+                        parseId(semesterId),
+                        parseText(scope, "scope"),
+                        parseOptionalId(groupId, "groupId"),
+                        parseOptionalId(subjectId, "subjectId"),
+                        lessonTypes,
+                        sorts,
+                        filters,
+                        parseText(format, "format"));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(download.contentType()));
         headers.setContentLength(download.bytes().length);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename(download.filename(), StandardCharsets.UTF_8).build());
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename(download.filename(), StandardCharsets.UTF_8)
+                        .build());
         headers.setCacheControl(CacheControl.noStore());
-        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>(
+                download.bytes(), headers, org.springframework.http.HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<ExcuseResponse> excuse(String requestId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.excuse(requestId));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(facade.excuse(requestId));
     }
 
     @Override
@@ -162,10 +219,13 @@ public final class TeacherApiController implements TeacherApi {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(contentType);
         headers.setContentLength(download.bytes().length);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename(download.filename(), StandardCharsets.UTF_8).build());
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename(download.filename(), StandardCharsets.UTF_8)
+                        .build());
         headers.setCacheControl(CacheControl.noStore());
-        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>(
+                download.bytes(), headers, org.springframework.http.HttpStatus.OK);
     }
 
     private static long parseId(String value) {
@@ -176,7 +236,8 @@ public final class TeacherApiController implements TeacherApi {
         } catch (RuntimeException error) {
             throw new ru.rutcampustrack.mobilebff.error.MobileBffException(
                     org.springframework.http.HttpStatus.BAD_REQUEST,
-                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.INVALID_REQUEST,
+                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode
+                            .INVALID_REQUEST,
                     "ID должен быть положительным числом");
         }
     }
@@ -192,7 +253,8 @@ public final class TeacherApiController implements TeacherApi {
         } catch (RuntimeException error) {
             throw new ru.rutcampustrack.mobilebff.error.MobileBffException(
                     org.springframework.http.HttpStatus.BAD_REQUEST,
-                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.INVALID_REQUEST,
+                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode
+                            .INVALID_REQUEST,
                     "Дата должна быть в формате ISO-8601");
         }
     }
@@ -205,7 +267,8 @@ public final class TeacherApiController implements TeacherApi {
         if (value == null || value.isBlank()) {
             throw new ru.rutcampustrack.mobilebff.error.MobileBffException(
                     org.springframework.http.HttpStatus.BAD_REQUEST,
-                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.INVALID_REQUEST,
+                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode
+                            .INVALID_REQUEST,
                     field + " не должен быть пустым");
         }
         return value.trim();
@@ -215,7 +278,8 @@ public final class TeacherApiController implements TeacherApi {
         if (value == null || value.isBlank()) return defaultValue;
         try {
             int parsed = Integer.parseInt(value);
-            if (parsed < 0 || ("pageSize".equals(field) && parsed > 100)
+            if (parsed < 0
+                    || ("pageSize".equals(field) && parsed > 100)
                     || ("pageSize".equals(field) && parsed == 0)) {
                 throw new NumberFormatException();
             }
@@ -223,7 +287,8 @@ public final class TeacherApiController implements TeacherApi {
         } catch (RuntimeException error) {
             throw new ru.rutcampustrack.mobilebff.error.MobileBffException(
                     org.springframework.http.HttpStatus.BAD_REQUEST,
-                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.INVALID_REQUEST,
+                    ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode
+                            .INVALID_REQUEST,
                     field + " имеет недопустимое значение");
         }
     }

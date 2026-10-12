@@ -4,12 +4,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /** Durable cross-service state for one teacher replacement request. */
 @Entity
@@ -70,16 +69,17 @@ public class AssignmentReplacementOperation {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    public AssignmentReplacementOperation(UUID operationId,
-                                          Long actorId,
-                                          UUID requestKey,
-                                          byte[] payloadHash,
-                                          Long sourceAssignmentId,
-                                          Long targetAssignmentId,
-                                          LocalDate effectiveFrom,
-                                          LocalDate sourceValidUntil,
-                                          LocalDate targetValidUntil,
-                                          String state) {
+    public AssignmentReplacementOperation(
+            UUID operationId,
+            Long actorId,
+            UUID requestKey,
+            byte[] payloadHash,
+            Long sourceAssignmentId,
+            Long targetAssignmentId,
+            LocalDate effectiveFrom,
+            LocalDate sourceValidUntil,
+            LocalDate targetValidUntil,
+            String state) {
         this.operationId = operationId;
         this.actorId = actorId;
         this.requestKey = requestKey;
@@ -102,16 +102,32 @@ public class AssignmentReplacementOperation {
     }
 
     public static AssignmentReplacementOperation lifecycle(
-            UUID operationId, Long actorId, UUID requestKey, byte[] payloadHash,
-            Long sourceId, Long targetId, LocalDate effectiveFrom, LocalDate originalEnd,
-            String kind, LocalDate requestedCutoff) {
+            UUID operationId,
+            Long actorId,
+            UUID requestKey,
+            byte[] payloadHash,
+            Long sourceId,
+            Long targetId,
+            LocalDate effectiveFrom,
+            LocalDate originalEnd,
+            String kind,
+            LocalDate requestedCutoff) {
         if (!("CLOSE_UNASSIGN".equals(kind) && sourceId != null && targetId == null)
                 && !("ADOPT_UNASSIGNED".equals(kind) && sourceId == null && targetId != null)) {
             throw new IllegalArgumentException("Invalid assignment lifecycle discriminator");
         }
-        AssignmentReplacementOperation operation = new AssignmentReplacementOperation(
-                operationId, actorId, requestKey, payloadHash, sourceId, targetId,
-                effectiveFrom, originalEnd, originalEnd, "PREPARED");
+        AssignmentReplacementOperation operation =
+                new AssignmentReplacementOperation(
+                        operationId,
+                        actorId,
+                        requestKey,
+                        payloadHash,
+                        sourceId,
+                        targetId,
+                        effectiveFrom,
+                        originalEnd,
+                        originalEnd,
+                        "PREPARED");
         operation.operationKind = kind;
         operation.requestedCutoff = requestedCutoff;
         return operation;

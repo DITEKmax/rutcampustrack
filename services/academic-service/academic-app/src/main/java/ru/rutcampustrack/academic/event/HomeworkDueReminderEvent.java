@@ -10,18 +10,19 @@ public class HomeworkDueReminderEvent extends DomainEvent {
             @JsonProperty("semester_id") Long semesterId,
             @JsonProperty("days_before_due") Integer daysBeforeDue,
             @JsonProperty("due_date") String dueDate,
-            HomeworkNotificationItem homework
-    ) {
-    }
+            HomeworkNotificationItem homework) {}
 
-    public HomeworkDueReminderEvent(Object source,
-                                    Long userId,
-                                    Long groupId,
-                                    Long semesterId,
-                                    Integer daysBeforeDue,
-                                    String dueDate,
-                                    HomeworkNotificationItem homework) {
-        super(source, "homework.due_reminder",
+    public HomeworkDueReminderEvent(
+            Object source,
+            Long userId,
+            Long groupId,
+            Long semesterId,
+            Integer daysBeforeDue,
+            String dueDate,
+            HomeworkNotificationItem homework) {
+        super(
+                source,
+                "homework.due_reminder",
                 new Payload(userId, groupId, semesterId, daysBeforeDue, dueDate, homework));
     }
 }

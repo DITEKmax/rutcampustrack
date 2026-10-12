@@ -17,8 +17,10 @@ public class RequestAttachmentRetentionJob {
     }
 
     @Scheduled(cron = "${attendance.request-attachments.expiry-cron:0 15 2 * * *}", zone = "UTC")
-    @SchedulerLock(name = "RequestAttachmentRetentionJob-expire",
-            lockAtMostFor = "PT10M", lockAtLeastFor = "PT30S")
+    @SchedulerLock(
+            name = "RequestAttachmentRetentionJob-expire",
+            lockAtMostFor = "PT10M",
+            lockAtLeastFor = "PT30S")
     public void expire() {
         service.expireAttachments();
     }

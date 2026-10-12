@@ -13,20 +13,22 @@ import ru.rutcampustrack.auth.dto.WsTicketResponse;
 /**
  * M12 G3 — REST API contract для WebSocket ticket issuance.
  *
- * <p>Отдельный interface от {@link AuthApi}: другая категория endpoints,
- * требует Bearer access-JWT (не через cookie) и выдаёт short-lived WS-ticket.</p>
+ * <p>Отдельный interface от {@link AuthApi}: другая категория endpoints, требует Bearer access-JWT
+ * (не через cookie) и выдаёт short-lived WS-ticket.
  */
 @Tag(name = "Authentication", description = "JWT authentication endpoints")
 @RequestMapping("/auth")
 public interface WsTicketApi {
 
-    @Operation(summary = "Issue WebSocket ticket",
-            description = "Generate short-lived (30s, single-use) ticket for WebSocket handshake. "
-                    + "Client uses it as `?ticket=<value>` query param. Replaces legacy "
-                    + "`?token=<access_jwt>` pattern which leaked JWT into nginx/Gateway logs.")
+    @Operation(
+            summary = "Issue WebSocket ticket",
+            description =
+                    "Generate short-lived (30s, single-use) ticket for WebSocket handshake. "
+                            + "Client uses it as `?ticket=<value>` query param. Replaces legacy "
+                            + "`?token=<access_jwt>` pattern which leaked JWT into nginx/Gateway logs.")
     @ApiResponse(responseCode = "200", description = "Ticket issued")
     @ApiResponse(responseCode = "401", description = "Missing or invalid access token")
     @PostMapping("/ws-ticket")
-    ResponseEntity<WsTicketResponse> issueTicket(Authentication authentication,
-                                                 HttpServletRequest request);
+    ResponseEntity<WsTicketResponse> issueTicket(
+            Authentication authentication, HttpServletRequest request);
 }

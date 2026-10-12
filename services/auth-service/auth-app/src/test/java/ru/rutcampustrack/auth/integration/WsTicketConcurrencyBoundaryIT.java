@@ -1,5 +1,14 @@
 package ru.rutcampustrack.auth.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -14,16 +23,6 @@ import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 /** NEW race/real expiry/logout boundaries, separate from existing sequential ticket checks. */
 class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
@@ -42,19 +41,26 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
             var ready = new CountDownLatch(2);
             var start = new CountDownLatch(1);
             try (var workers = Executors.newFixedThreadPool(2)) {
-                var first = workers.submit(() -> {
-                    ready.countDown();
-                    assertThat(start.await(5, TimeUnit.SECONDS)).isTrue();
-                    return consume(ticket);
-                });
-                var second = workers.submit(() -> {
-                    ready.countDown();
-                    assertThat(start.await(5, TimeUnit.SECONDS)).isTrue();
-                    return consume(ticket);
-                });
+                var first =
+                        workers.submit(
+                                () -> {
+                                    ready.countDown();
+                                    assertThat(start.await(5, TimeUnit.SECONDS)).isTrue();
+                                    return consume(ticket);
+                                });
+                var second =
+                        workers.submit(
+                                () -> {
+                                    ready.countDown();
+                                    assertThat(start.await(5, TimeUnit.SECONDS)).isTrue();
+                                    return consume(ticket);
+                                });
                 assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
                 start.countDown();
-                assertThat(List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS)))
+                assertThat(
+                                List.of(
+                                        first.get(10, TimeUnit.SECONDS),
+                                        second.get(10, TimeUnit.SECONDS)))
                         .containsExactlyInAnyOrder(HttpStatus.OK, HttpStatus.NOT_FOUND);
             }
             assertThat(redis.hasKey("ws_ticket:" + ticket)).isFalse();
@@ -77,20 +83,31 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
             WsTicketResponse issued = issue(access);
             Instant issuanceReturned = Instant.now();
             Long remaining = redis.getExpire("ws_ticket:" + issued.ticket(), TimeUnit.MILLISECONDS);
-            long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - observationStarted);
-            assertThat(elapsedMillis).as("bounded issuance-to-Redis observation interval")
+            long elapsedMillis =
+                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - observationStarted);
+            assertThat(elapsedMillis)
+                    .as("bounded issuance-to-Redis observation interval")
                     .isLessThanOrEqualTo(observationBudget.toMillis());
-            long minimumRemaining = expectedLifetime.toMillis() - elapsedMillis - observationSlack.toMillis();
-            System.out.printf("WS ticket TTL remaining_ms=%d issue_read_ms=%d minimum_ms=%d%n",
+            long minimumRemaining =
+                    expectedLifetime.toMillis() - elapsedMillis - observationSlack.toMillis();
+            System.out.printf(
+                    "WS ticket TTL remaining_ms=%d issue_read_ms=%d minimum_ms=%d%n",
                     remaining, elapsedMillis, minimumRemaining);
-            assertThat(issued.expiresAt()).as("advertised independent 30-second issuance window")
-                    .isBetween(issuanceStarted.plus(expectedLifetime).minus(observationSlack),
+            assertThat(issued.expiresAt())
+                    .as("advertised independent 30-second issuance window")
+                    .isBetween(
+                            issuanceStarted.plus(expectedLifetime).minus(observationSlack),
                             issuanceReturned.plus(expectedLifetime).plus(observationSlack));
-            assertThat(remaining).as("Redis retains the accepted 30-second issuance window")
+            assertThat(remaining)
+                    .as("Redis retains the accepted 30-second issuance window")
                     .isBetween(minimumRemaining, expectedLifetime.toMillis());
             // Real Redis/security clock; no shortened production TTL or teaching Clock.
-            await().atMost(Duration.ofSeconds(32)).pollInterval(Duration.ofMillis(100))
-                    .until(() -> !Boolean.TRUE.equals(redis.hasKey("ws_ticket:" + issued.ticket())));
+            await().atMost(Duration.ofSeconds(32))
+                    .pollInterval(Duration.ofMillis(100))
+                    .until(
+                            () ->
+                                    !Boolean.TRUE.equals(
+                                            redis.hasKey("ws_ticket:" + issued.ticket())));
             assertThat(consume(issued.ticket())).isEqualTo(HttpStatus.NOT_FOUND);
         } finally {
             logout(access);
@@ -107,7 +124,11 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
     }
 
     private String login() {
-        var response = http.postForEntity("/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
+        var response =
+                http.postForEntity(
+                        "/auth/login",
+                        new LoginRequest("student", "password"),
+                        TokenResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody() != null && response.getBody().accessToken() != null).isTrue();
         return response.getBody().accessToken();
@@ -116,8 +137,12 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
     private WsTicketResponse issue(String access) {
         var headers = new HttpHeaders();
         headers.setBearerAuth(access);
-        var response = http.exchange("/auth/ws-ticket", HttpMethod.POST,
-                new HttpEntity<>(null, headers), WsTicketResponse.class);
+        var response =
+                http.exchange(
+                        "/auth/ws-ticket",
+                        HttpMethod.POST,
+                        new HttpEntity<>(null, headers),
+                        WsTicketResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody() != null).isTrue();
         return response.getBody();
@@ -127,8 +152,12 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Internal-Issuer-Secret", INTERNAL_SECRET);
-        var response = http.exchange("/internal/consume-ws-ticket", HttpMethod.POST,
-                new HttpEntity<>(new ConsumeWsTicketRequest(ticket), headers), ConsumeWsTicketResponse.class);
+        var response =
+                http.exchange(
+                        "/internal/consume-ws-ticket",
+                        HttpMethod.POST,
+                        new HttpEntity<>(new ConsumeWsTicketRequest(ticket), headers),
+                        ConsumeWsTicketResponse.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             assertThat(response.getBody() != null && response.getBody().userId() > 0).isTrue();
         }
@@ -138,7 +167,12 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
     private void logout(String access) {
         var headers = new HttpHeaders();
         headers.setBearerAuth(access);
-        var response = http.exchange("/auth/logout", HttpMethod.POST, new HttpEntity<>(null, headers), Void.class);
+        var response =
+                http.exchange(
+                        "/auth/logout",
+                        HttpMethod.POST,
+                        new HttpEntity<>(null, headers),
+                        Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 }

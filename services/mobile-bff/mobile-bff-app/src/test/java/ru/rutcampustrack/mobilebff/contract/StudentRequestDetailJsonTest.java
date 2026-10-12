@@ -1,23 +1,23 @@
 package ru.rutcampustrack.mobilebff.contract;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
 
-import java.time.Instant;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class StudentRequestDetailJsonTest {
 
-    private final ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private final ObjectMapper mapper =
+            new ObjectMapper()
+                    .registerModule(new JavaTimeModule())
+                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Test
     void absentDetailPropertiesRemainPresentAsNull() throws Exception {
@@ -35,10 +35,16 @@ class StudentRequestDetailJsonTest {
 
     @Test
     void populatedDetailPropertiesAreSerializedUnchanged() throws Exception {
-        StudentRequestApiModels.Decision decision = new StudentRequestApiModels.Decision(
-                "Принято", Instant.parse("2026-09-08T12:34:56Z"));
-        JsonNode json = mapper.readTree(mapper.writeValueAsString(
-                detail(StudentRequestApiModels.ExcuseReason.ILLNESS, "Комментарий", decision)));
+        StudentRequestApiModels.Decision decision =
+                new StudentRequestApiModels.Decision(
+                        "Принято", Instant.parse("2026-09-08T12:34:56Z"));
+        JsonNode json =
+                mapper.readTree(
+                        mapper.writeValueAsString(
+                                detail(
+                                        StudentRequestApiModels.ExcuseReason.ILLNESS,
+                                        "Комментарий",
+                                        decision)));
 
         assertThat(json.get("reason").asText()).isEqualTo("ILLNESS");
         assertThat(json.get("comment").asText()).isEqualTo("Комментарий");
@@ -51,20 +57,26 @@ class StudentRequestDetailJsonTest {
     @Test
     void eligibilityReasonsHaveExactPublicWireNamesInCanonicalOrder() throws Exception {
         assertThat(mapper.writeValueAsString(StudentApiModels.EligibilityReason.values()))
-                .isEqualTo("[\"ELIGIBLE\",\"ALREADY_PRESENT\",\"LESSON_CANCELLED\",\"TOO_EARLY\","
-                        + "\"WINDOW_CLOSED\",\"GEO_BLOCKED\",\"PENDING_CONFIRMATION\",\"COOLDOWN\","
-                        + "\"HEADMAN_ABSENT_REQUIRES_APPEAL\",\"HEADMAN_USES_JOURNAL\","
-                        + "\"DEPENDENCY_UNAVAILABLE\"]");
+                .isEqualTo(
+                        "[\"ELIGIBLE\",\"ALREADY_PRESENT\",\"LESSON_CANCELLED\",\"TOO_EARLY\","
+                                + "\"WINDOW_CLOSED\",\"GEO_BLOCKED\",\"PENDING_CONFIRMATION\",\"COOLDOWN\","
+                                + "\"HEADMAN_ABSENT_REQUIRES_APPEAL\",\"HEADMAN_USES_JOURNAL\","
+                                + "\"DEPENDENCY_UNAVAILABLE\"]");
     }
 
     private static StudentRequestApiModels.Detail detail(
             StudentRequestApiModels.ExcuseReason reason,
             String comment,
             StudentRequestApiModels.Decision decision) {
-        StudentRequestApiModels.Summary summary = new StudentRequestApiModels.Summary(
-                "request-1", StudentRequestApiModels.Kind.EXCUSE,
-                StudentRequestApiModels.Status.PENDING, StudentRequestApiModels.Origin.MANUAL,
-                List.of(), null, null);
+        StudentRequestApiModels.Summary summary =
+                new StudentRequestApiModels.Summary(
+                        "request-1",
+                        StudentRequestApiModels.Kind.EXCUSE,
+                        StudentRequestApiModels.Status.PENDING,
+                        StudentRequestApiModels.Origin.MANUAL,
+                        List.of(),
+                        null,
+                        null);
         return new StudentRequestApiModels.Detail(summary, reason, comment, decision, null);
     }
 }

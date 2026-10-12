@@ -1,11 +1,23 @@
 package ru.rutcampustrack.attendance.semester;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,29 +51,19 @@ import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.LessonSn
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLateCheckinBudgetDocument;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-/** Actual cache/client and request domain with Mongo; the Academic server is a controlled RPC seam. */
+/**
+ * Actual cache/client and request domain with Mongo; the Academic server is a controlled RPC seam.
+ */
 @DataMongoTest
 @Testcontainers
 @Import(MongoConvertersConfig.class)
 class SemesterCacheRequestOptionsIT {
 
-    private static final String DATABASE = "delivery_semester_" + UUID.randomUUID().toString().replace("-", "");
+    private static final String DATABASE =
+            "delivery_semester_" + UUID.randomUUID().toString().replace("-", "");
     private static final Identity STUDENT = new Identity(100L, UserRole.STUDENT, 10L, false);
-    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-09-07T08:00:00Z"),
-            ZoneId.of("Europe/Moscow"));
+    private static final Clock CLOCK =
+            Clock.fixed(Instant.parse("2026-09-07T08:00:00Z"), ZoneId.of("Europe/Moscow"));
 
     @Container
     static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0").withReuse(false);
@@ -89,39 +91,89 @@ class SemesterCacheRequestOptionsIT {
     void currentStudentScope() throws Exception {
         authoritative.set(semester(11L, "2026-02-01", "2026-08-31"));
         unavailable = false;
-        server = ServerBuilder.forPort(0).addService(new AcademicGrpcServiceGrpc.AcademicGrpcServiceImplBase() {
-            @Override
-            public void getActiveSemester(Empty request, StreamObserver<SemesterResponse> observer) {
-                if (unavailable) {
-                    observer.onError(Status.UNAVAILABLE.asRuntimeException());
-                } else if (authoritative.get() == null) {
-                    observer.onError(Status.NOT_FOUND.asRuntimeException());
-                } else {
-                    observer.onNext(authoritative.get());
-                    observer.onCompleted();
-                }
-            }
+        server =
+                ServerBuilder.forPort(0)
+                        .addService(
+                                new AcademicGrpcServiceGrpc.AcademicGrpcServiceImplBase() {
+                                    @Override
+                                    public void getActiveSemester(
+                                            Empty request,
+                                            StreamObserver<SemesterResponse> observer) {
+                                        if (unavailable) {
+                                            observer.onError(
+                                                    Status.UNAVAILABLE.asRuntimeException());
+                                        } else if (authoritative.get() == null) {
+                                            observer.onError(Status.NOT_FOUND.asRuntimeException());
+                                        } else {
+                                            observer.onNext(authoritative.get());
+                                            observer.onCompleted();
+                                        }
+                                    }
 
-            @Override
-            public void getSubjectsByIds(SubjectsByIdsRequest request,
-                                         StreamObserver<SubjectsByIdsResponse> observer) {
-                observer.onNext(SubjectsByIdsResponse.newBuilder().addSubjects(SubjectInfo.newBuilder()
-                        .setSubjectId(5L).setSubjectName("Математика").setSubjectType("lecture")).build());
-                observer.onCompleted();
-            }
-        }).build().start();
-        channel = ManagedChannelBuilder.forAddress("127.0.0.1", server.getPort()).usePlaintext().build();
+                                    @Override
+                                    public void getSubjectsByIds(
+                                            SubjectsByIdsRequest request,
+                                            StreamObserver<SubjectsByIdsResponse> observer) {
+                                        observer.onNext(
+                                                SubjectsByIdsResponse.newBuilder()
+                                                        .addSubjects(
+                                                                SubjectInfo.newBuilder()
+                                                                        .setSubjectId(5L)
+                                                                        .setSubjectName(
+                                                                                "Математика")
+                                                                        .setSubjectType("lecture"))
+                                                        .build());
+                                        observer.onCompleted();
+                                    }
+                                })
+                        .build()
+                        .start();
+        channel =
+                ManagedChannelBuilder.forAddress("127.0.0.1", server.getPort())
+                        .usePlaintext()
+                        .build();
         AcademicGrpcClient academic = new AcademicGrpcClient();
-        ReflectionTestUtils.setField(academic, "stub", AcademicGrpcServiceGrpc.newBlockingStub(channel));
+        ReflectionTestUtils.setField(
+                academic, "stub", AcademicGrpcServiceGrpc.newBlockingStub(channel));
         cache = new SemesterCacheService(academic);
         cache.init();
-        requests = new StudentRequestService(excuses, lateCheckins, attendance, null, budgets, null,
-                null, academic, cache, null, null, null, mongo, null, CLOCK, null);
+        requests =
+                new StudentRequestService(
+                        excuses,
+                        lateCheckins,
+                        attendance,
+                        null,
+                        budgets,
+                        null,
+                        null,
+                        academic,
+                        cache,
+                        null,
+                        null,
+                        null,
+                        mongo,
+                        null,
+                        CLOCK,
+                        null);
         budgets.deleteAll();
-        budgets.save(StudentLateCheckinBudgetDocument.builder().id("old").studentId(100L)
-                .semesterId(11L).limit(5).used(4).updatedAt(CLOCK.instant()).build());
-        budgets.save(StudentLateCheckinBudgetDocument.builder().id("current").studentId(100L)
-                .semesterId(12L).limit(5).used(1).updatedAt(CLOCK.instant()).build());
+        budgets.save(
+                StudentLateCheckinBudgetDocument.builder()
+                        .id("old")
+                        .studentId(100L)
+                        .semesterId(11L)
+                        .limit(5)
+                        .used(4)
+                        .updatedAt(CLOCK.instant())
+                        .build());
+        budgets.save(
+                StudentLateCheckinBudgetDocument.builder()
+                        .id("current")
+                        .studentId(100L)
+                        .semesterId(12L)
+                        .limit(5)
+                        .used(1)
+                        .updatedAt(CLOCK.instant())
+                        .build());
     }
 
     @AfterEach
@@ -170,8 +222,18 @@ class SemesterCacheRequestOptionsIT {
     }
 
     private static LessonSnapshot lesson(long semesterId) {
-        return new LessonSnapshot(41L, 10L, 5L, "Математика", "lecture", semesterId, 1,
+        return new LessonSnapshot(
+                41L,
+                10L,
+                5L,
+                "Математика",
+                "lecture",
+                semesterId,
+                1,
                 semesterId == 11L ? LocalDate.of(2026, 8, 31) : LocalDate.of(2026, 9, 8),
-                LocalTime.of(8, 30), LocalTime.of(10, 0), "planned", false);
+                LocalTime.of(8, 30),
+                LocalTime.of(10, 0),
+                "planned",
+                false);
     }
 }

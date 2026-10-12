@@ -9,25 +9,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse;
+import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
 
-/**
- * REST API contract for admin dashboard statistics.
- */
+/** REST API contract for admin dashboard statistics. */
 @Tag(name = "Dashboard", description = "Сводная статистика для администратора")
 @RequestMapping("/academic/dashboard")
 public interface DashboardApi {
 
-    @Operation(summary = "Сводная статистика системы (ADMIN)", description = "Возвращает число пользователей с активной ролью, число действующих групп и название активного семестра.")
+    @Operation(
+            summary = "Сводная статистика системы (ADMIN)",
+            description =
+                    "Возвращает число пользователей с активной ролью, число действующих групп и название активного семестра.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Статистика получена"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+        @ApiResponse(responseCode = "200", description = "Статистика получена"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа")
     })
     @GetMapping("/stats")
     ResponseEntity<EntityModel<DashboardStatsResponse>> getStats();
 
-    @Operation(summary = "Реальная активность системы (ADMIN)", description = "Требуется DASHBOARD_VIEW. Московские сутки/недели; история ограничена сохранёнными действиями. Недоступные зависимости и неполная история обозначаются явно.")
+    @Operation(
+            summary = "Реальная активность системы (ADMIN)",
+            description =
+                    "Требуется DASHBOARD_VIEW. Московские сутки/недели; история ограничена сохранёнными действиями. Недоступные зависимости и неполная история обозначаются явно.")
     @GetMapping("/activity")
     ResponseEntity<DashboardActivityResponse> getActivity(
             @RequestParam(defaultValue = "today") String period,

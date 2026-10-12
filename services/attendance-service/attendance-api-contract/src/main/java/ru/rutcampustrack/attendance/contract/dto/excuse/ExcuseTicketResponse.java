@@ -1,20 +1,20 @@
 package ru.rutcampustrack.attendance.contract.dto.excuse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
+import java.util.List;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
-import java.time.Instant;
-import java.util.List;
-
 /**
- * HATEOAS response for an excuse ticket (D-04..D-08).
- * Extends RepresentationModel for _links support.
- * Plain Java class — no Lombok (contract module rule).
+ * HATEOAS response for an excuse ticket (D-04..D-08). Extends RepresentationModel for _links
+ * support. Plain Java class — no Lombok (contract module rule).
  *
- * status is exposed as a lowercase string matching Mongo storage and event payloads.
+ * <p>status is exposed as a lowercase string matching Mongo storage and event payloads.
  */
-@Schema(description = "Excuse-тикет студента: ID, связанные пары, тип, комментарий, статус, метаданные решения")
+@Schema(
+        description =
+                "Excuse-тикет студента: ID, связанные пары, тип, комментарий, статус, метаданные решения")
 public class ExcuseTicketResponse extends RepresentationModel<ExcuseTicketResponse> {
 
     private final String id;
@@ -44,8 +44,7 @@ public class ExcuseTicketResponse extends RepresentationModel<ExcuseTicketRespon
             String decisionComment,
             Instant decisionAt,
             Instant createdAt,
-            Instant updatedAt
-    ) {
+            Instant updatedAt) {
         this.id = id;
         this.studentId = studentId;
         this.groupId = groupId;
@@ -61,17 +60,55 @@ public class ExcuseTicketResponse extends RepresentationModel<ExcuseTicketRespon
         this.updatedAt = updatedAt;
     }
 
-    public String getId() { return id; }
-    public Long getStudentId() { return studentId; }
-    public Long getGroupId() { return groupId; }
-    public String getStudentName() { return studentName; }
-    public List<Long> getLessonIds() { return lessonIds; }
-    public ExcuseType getExcuseType() { return excuseType; }
-    public String getComment() { return comment; }
-    public String getStatus() { return status; }
-    public Long getDecisionBy() { return decisionBy; }
-    public String getDecisionComment() { return decisionComment; }
-    public Instant getDecisionAt() { return decisionAt; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public String getId() {
+        return id;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public List<Long> getLessonIds() {
+        return lessonIds;
+    }
+
+    public ExcuseType getExcuseType() {
+        return excuseType;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Long getDecisionBy() {
+        return decisionBy;
+    }
+
+    public String getDecisionComment() {
+        return decisionComment;
+    }
+
+    public Instant getDecisionAt() {
+        return decisionAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 }

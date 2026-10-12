@@ -1,5 +1,10 @@
 package ru.rutcampustrack.schedule.migration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -12,12 +17,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import javax.sql.DataSource;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Flyway V1-V21 migration and source-preservation checks for schedule_db. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -60,9 +59,13 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion()).isEqualTo(java.util.Arrays.stream(flyway.info().all())
-                .map(MigrationInfo::getVersion).filter(java.util.Objects::nonNull)
-                .max(java.util.Comparator.naturalOrder()).orElseThrow());
+        assertThat(current.getVersion())
+                .isEqualTo(
+                        java.util.Arrays.stream(flyway.info().all())
+                                .map(MigrationInfo::getVersion)
+                                .filter(java.util.Objects::nonNull)
+                                .max(java.util.Comparator.naturalOrder())
+                                .orElseThrow());
         assertThat(tableCount(schema, "lesson_transfer_operations")).isEqualTo(1);
         assertThat(tableCount(schema, "lesson_transfer_binding_batches")).isEqualTo(1);
         assertThat(tableCount(schema, "lesson_transfer_participant_receipts")).isEqualTo(1);
@@ -83,23 +86,39 @@ class FlywayMigrationIT {
         String schema = newSchema();
         flyway(schema, "1").migrate();
 
-        Long rowId = jdbc.queryForObject("INSERT INTO " + table(schema, "schedule_items")
-                        + " (group_id, subject_id, teacher_id, semester_id, day_of_week, lesson_number,"
-                        + " start_time, end_time, week_type, room)"
-                        + " VALUES (100, 200, 300, 1, 1, 1, '09:00'::time, '10:30'::time, 'all'::week_type, 'A101')"
-                        + " RETURNING id", Long.class);
+        Long rowId =
+                jdbc.queryForObject(
+                        "INSERT INTO "
+                                + table(schema, "schedule_items")
+                                + " (group_id, subject_id, teacher_id, semester_id, day_of_week, lesson_number,"
+                                + " start_time, end_time, week_type, room)"
+                                + " VALUES (100, 200, 300, 1, 1, 1, '09:00'::time, '10:30'::time, 'all'::week_type, 'A101')"
+                                + " RETURNING id",
+                        Long.class);
         flyway(schema, "16").migrate();
 
         assertThat(columnCount(schema, "schedule_items", "assignment_id")).isZero();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + table(schema, "schedule_items")
-                        + " WHERE id = ?", Integer.class, rowId)).isEqualTo(1);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM "
+                                        + table(schema, "schedule_items")
+                                        + " WHERE id = ?",
+                                Integer.class,
+                                rowId))
+                .isEqualTo(1);
 
         assertThatThrownBy(() -> flyway(schema, null).migrate())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("V17");
 
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + table(schema, "schedule_items")
-                        + " WHERE id = ?", Integer.class, rowId)).isEqualTo(1);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM "
+                                        + table(schema, "schedule_items")
+                                        + " WHERE id = ?",
+                                Integer.class,
+                                rowId))
+                .isEqualTo(1);
         assertThat(columnCount(schema, "schedule_items", "assignment_id")).isZero();
         assertThat(columnCount(schema, "lessons", "occurrence_id")).isZero();
         assertThat(historyCount(schema, "17")).isZero();
@@ -128,12 +147,13 @@ class FlywayMigrationIT {
     }
 
     private Flyway flyway(String schema, String target) {
-        var configuration = Flyway.configure()
-                .dataSource(dataSource)
-                .locations("classpath:db/migration")
-                .schemas(schema)
-                .defaultSchema(schema)
-                .cleanDisabled(true);
+        var configuration =
+                Flyway.configure()
+                        .dataSource(dataSource)
+                        .locations("classpath:db/migration")
+                        .schemas(schema)
+                        .defaultSchema(schema)
+                        .cleanDisabled(true);
         if (target != null) {
             configuration.target(target);
         }
@@ -141,20 +161,31 @@ class FlywayMigrationIT {
     }
 
     private int historyCount(String schema, String version) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM " + table(schema, "flyway_schema_history")
-                + " WHERE version = ?", Integer.class, version);
+        return jdbc.queryForObject(
+                "SELECT COUNT(*) FROM "
+                        + table(schema, "flyway_schema_history")
+                        + " WHERE version = ?",
+                Integer.class,
+                version);
     }
 
     private int columnCount(String schema, String table, String column) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.columns"
+        return jdbc.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns"
                         + " WHERE table_schema = ? AND table_name = ? AND column_name = ?",
-                Integer.class, schema, table, column);
+                Integer.class,
+                schema,
+                table,
+                column);
     }
 
     private int tableCount(String schema, String table) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.tables"
+        return jdbc.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables"
                         + " WHERE table_schema = ? AND table_name = ?",
-                Integer.class, schema, table);
+                Integer.class,
+                schema,
+                table);
     }
 
     private static String table(String schema, String table) {

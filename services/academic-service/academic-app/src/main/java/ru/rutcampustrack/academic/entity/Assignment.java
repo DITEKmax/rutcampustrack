@@ -6,12 +6,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
-
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 /** Immutable effective-dated assignment row from V25. */
 @Entity
@@ -36,7 +35,10 @@ public class Assignment {
     @Column(name = "semester_id", nullable = false, updatable = false)
     private Long semesterId;
 
-    @Column(name = "lesson_type", nullable = false, updatable = false,
+    @Column(
+            name = "lesson_type",
+            nullable = false,
+            updatable = false,
             columnDefinition = "subject_type")
     private SubjectType lessonType;
 
@@ -52,25 +54,34 @@ public class Assignment {
     @Column(name = "lifecycle_state", nullable = false, updatable = false)
     private String lifecycleState = "ACTIVE";
 
-    public Assignment(Long teacherId,
-                      Long subjectId,
-                      Long groupId,
-                      Long semesterId,
-                      SubjectType lessonType,
-                      LocalDate validFrom,
-                      LocalDate validUntilExclusive) {
-        this(teacherId, subjectId, groupId, semesterId, lessonType,
-                validFrom, validUntilExclusive, "ACTIVE");
+    public Assignment(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive) {
+        this(
+                teacherId,
+                subjectId,
+                groupId,
+                semesterId,
+                lessonType,
+                validFrom,
+                validUntilExclusive,
+                "ACTIVE");
     }
 
-    public Assignment(Long teacherId,
-                      Long subjectId,
-                      Long groupId,
-                      Long semesterId,
-                      SubjectType lessonType,
-                      LocalDate validFrom,
-                      LocalDate validUntilExclusive,
-                      String lifecycleState) {
+    public Assignment(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive,
+            String lifecycleState) {
         this.teacherId = teacherId;
         this.subjectId = subjectId;
         this.groupId = groupId;

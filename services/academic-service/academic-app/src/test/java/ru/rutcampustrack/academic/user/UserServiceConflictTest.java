@@ -1,5 +1,16 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,23 +32,11 @@ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
 /**
  * Unit test for UserService.createUser pre-check behavior (BUG-006 / D-07).
  *
- * Verifies that explicit existsByXxx checks throw ConflictException with the
- * correct field name BEFORE a save() call is attempted.
+ * <p>Verifies that explicit existsByXxx checks throw ConflictException with the correct field name
+ * BEFORE a save() call is attempted.
  */
 @ExtendWith(MockitoExtension.class)
 class UserServiceConflictTest {
@@ -53,16 +52,17 @@ class UserServiceConflictTest {
     @Mock private SemesterRepository semesterRepository;
     @Mock private GroupHistoryCoverageRepository coverageRepository;
 
-    @InjectMocks
-    private UserService service;
+    @InjectMocks private UserService service;
 
     @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
 
     @org.junit.jupiter.api.BeforeEach
     void managedEnrollmentFixture() {
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "adminAccessService", adminAccessService);
         Group group = org.mockito.Mockito.mock(Group.class);
         lenient().when(group.getId()).thenReturn(1L);
         lenient().when(group.isActive()).thenReturn(true);
@@ -73,7 +73,8 @@ class UserServiceConflictTest {
         lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
         lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
         lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
-        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
+        lenient()
+                .when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
                 .thenReturn(List.of(semester));
         lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
     }
@@ -82,40 +83,39 @@ class UserServiceConflictTest {
         // telegramId is mandatory for STUDENT since BUG-006-3; use a placeholder
         // value so this fixture exercises the happy path.
         return new CreateUserRequest(
-                "Иванов", "Иван", "Иванович",
-                UserRole.STUDENT, 1L, null, 123456789L
-        );
+                "Иванов", "Иван", "Иванович", UserRole.STUDENT, 1L, null, 123456789L);
     }
 
     @Test
     void existingTelegramIdThrowsConflictWithFieldTelegramId() {
         // Request with telegramId that already exists
-        CreateUserRequest req = new CreateUserRequest(
-                "Петров", "Пётр", null,
-                UserRole.STUDENT, 1L, null, 55555L
-        );
+        CreateUserRequest req =
+                new CreateUserRequest("Петров", "Пётр", null, UserRole.STUDENT, 1L, null, 55555L);
         when(userRepository.existsByTelegramId(55555L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(ConflictException.class, ex -> {
-                    assertThat(ex.getField()).isEqualTo("telegramId");
-                });
+                .isInstanceOfSatisfying(
+                        ConflictException.class,
+                        ex -> {
+                            assertThat(ex.getField()).isEqualTo("telegramId");
+                        });
 
         verify(userRepository, never()).save(any());
     }
 
     @Test
     void existingEmployeeNumberThrowsConflictWithFieldEmployeeNumber() {
-        CreateUserRequest req = new CreateUserRequest(
-                "Учителев", "Учитель", null,
-                UserRole.TEACHER, null, "EMP-001", null
-        );
+        CreateUserRequest req =
+                new CreateUserRequest(
+                        "Учителев", "Учитель", null, UserRole.TEACHER, null, "EMP-001", null);
         when(userRepository.existsByEmployeeNumber("EMP-001")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(ConflictException.class, ex -> {
-                    assertThat(ex.getField()).isEqualTo("employeeNumber");
-                });
+                .isInstanceOfSatisfying(
+                        ConflictException.class,
+                        ex -> {
+                            assertThat(ex.getField()).isEqualTo("employeeNumber");
+                        });
 
         verify(userRepository, never()).save(any());
     }

@@ -1,8 +1,7 @@
 package ru.rutcampustrack.schedule.exception;
 
 /**
- * Thrown when a requested resource does not exist.
- * Mapped to HTTP 404 by GlobalExceptionHandler.
+ * Thrown when a requested resource does not exist. Mapped to HTTP 404 by GlobalExceptionHandler.
  */
 public class ResourceNotFoundException extends RuntimeException {
 

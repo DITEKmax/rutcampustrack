@@ -16,9 +16,11 @@ public class GroupPromotionJob {
         this.promotionService = promotionService;
     }
 
-    @Scheduled(cron = "${rutcampustrack.academic.group-promotion.cron:0 0 3 * * *}",
+    @Scheduled(
+            cron = "${rutcampustrack.academic.group-promotion.cron:0 0 3 * * *}",
             zone = "Europe/Moscow")
-    @SchedulerLock(name = "academic-group-promotion-job",
+    @SchedulerLock(
+            name = "academic-group-promotion-job",
             lockAtMostFor = "PT10M",
             lockAtLeastFor = "PT30S")
     public void checkDueSpringCycle() {
@@ -26,18 +28,29 @@ public class GroupPromotionJob {
     }
 
     private void logResult(PromotionSummary summary) {
-        boolean hasWork = !summary.getToPromote().isEmpty()
-                || !summary.getToArchive().isEmpty()
-                || !summary.getConflicts().isEmpty();
+        boolean hasWork =
+                !summary.getToPromote().isEmpty()
+                        || !summary.getToArchive().isEmpty()
+                        || !summary.getConflicts().isEmpty();
         if (!hasWork) {
             return;
         }
 
-        log.info("Automatic group promotion cycle={} promoted={} archived={} skipped={} conflicts={}",
-                summary.getCycleSemesterId(), summary.getToPromote().size(), summary.getToArchive().size(),
-                summary.getSkipped().size(), summary.getConflicts().size());
-        summary.getConflicts().forEach(conflict -> log.warn(
-                "Automatic group promotion conflict cycle={} prefix={} reason={} groupIds={}",
-                summary.getCycleSemesterId(), conflict.getPrefix(), conflict.getReason(), conflict.getGroupIds()));
+        log.info(
+                "Automatic group promotion cycle={} promoted={} archived={} skipped={} conflicts={}",
+                summary.getCycleSemesterId(),
+                summary.getToPromote().size(),
+                summary.getToArchive().size(),
+                summary.getSkipped().size(),
+                summary.getConflicts().size());
+        summary.getConflicts()
+                .forEach(
+                        conflict ->
+                                log.warn(
+                                        "Automatic group promotion conflict cycle={} prefix={} reason={} groupIds={}",
+                                        summary.getCycleSemesterId(),
+                                        conflict.getPrefix(),
+                                        conflict.getReason(),
+                                        conflict.getGroupIds()));
     }
 }

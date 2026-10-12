@@ -1,11 +1,11 @@
 package ru.rutcampustrack.shared.observability;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class BusinessMetricsTest {
 
@@ -41,8 +41,10 @@ class BusinessMetricsTest {
     void internalJwtFallbackCounter_twoTags() {
         metrics.internalJwtFallbackCounter("internal-jwt", "legacy-headers").increment();
 
-        MetricsTestSupport.assertCounter(registry, MetricNames.INTERNAL_JWT_FALLBACK, "from", "internal-jwt", 1);
-        MetricsTestSupport.assertCounter(registry, MetricNames.INTERNAL_JWT_FALLBACK, "to", "legacy-headers", 1);
+        MetricsTestSupport.assertCounter(
+                registry, MetricNames.INTERNAL_JWT_FALLBACK, "from", "internal-jwt", 1);
+        MetricsTestSupport.assertCounter(
+                registry, MetricNames.INTERNAL_JWT_FALLBACK, "to", "legacy-headers", 1);
     }
 
     @Test
@@ -51,8 +53,10 @@ class BusinessMetricsTest {
         metrics.checkinCounter("present").increment();
         metrics.checkinCounter("late").increment();
 
-        MetricsTestSupport.assertCounter(registry, MetricNames.ATTENDANCE_CHECKIN, "status", "present", 2);
-        MetricsTestSupport.assertCounter(registry, MetricNames.ATTENDANCE_CHECKIN, "status", "late", 1);
+        MetricsTestSupport.assertCounter(
+                registry, MetricNames.ATTENDANCE_CHECKIN, "status", "present", 2);
+        MetricsTestSupport.assertCounter(
+                registry, MetricNames.ATTENDANCE_CHECKIN, "status", "late", 1);
     }
 
     @Test

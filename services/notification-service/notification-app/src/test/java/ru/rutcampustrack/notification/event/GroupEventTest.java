@@ -1,16 +1,18 @@
 package ru.rutcampustrack.notification.event;
 
+import static org.mockito.Mockito.*;
+
+import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import ru.rutcampustrack.notification.history.*;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.push.*;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
-import java.util.*;
-import static org.mockito.Mockito.*;
 
 class GroupEventTest {
-    @Test void groupFactsUseSealedRoleAudienceAndNeverUnprotectedGroupBroadcast() {
+    @Test
+    void groupFactsUseSealedRoleAudienceAndNeverUnprotectedGroupBroadcast() {
         var messaging = mock(SimpMessagingTemplate.class);
         var push = mock(WebPushDeliveryService.class);
         var guard = mock(IdempotencyGuard.class);
@@ -19,9 +21,13 @@ class GroupEventTest {
         var intents = mock(NotificationPushIntentStore.class);
         var prefs = mock(NotificationPreferencesService.class);
         when(guard.tryClaim(anyString(), anyMap())).thenReturn(true);
-        var consumer = new EventConsumer(messaging, push, guard, null, audience, history, intents, prefs);
+        var consumer =
+                new EventConsumer(messaging, push, guard, null, audience, history, intents, prefs);
         for (String type : List.of("group.renamed", "group.archived")) {
-            var event = EventConsumerTest.event(type, Map.of("group_id", 7L, "notification_cause", "AUTOMATIC_GROUP_CYCLE"));
+            var event =
+                    EventConsumerTest.event(
+                            type,
+                            Map.of("group_id", 7L, "notification_cause", "AUTOMATIC_GROUP_CYCLE"));
             var admitted = Map.of(11L, Set.of("STUDENT", "HEADMAN"));
             when(audience.snapshot(event)).thenReturn(admitted);
             consumer.onEvent(event);

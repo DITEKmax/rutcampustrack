@@ -33,7 +33,8 @@ public final class FileClock extends Clock {
     public Instant instant() {
         try {
             if (!Files.isRegularFile(file) || Files.size(file) > 128) {
-                throw new IllegalStateException("Teaching clock fixture requires a bounded instant file");
+                throw new IllegalStateException(
+                        "Teaching clock fixture requires a bounded instant file");
             }
             return Instant.parse(Files.readString(file).strip());
         } catch (IOException | DateTimeParseException error) {

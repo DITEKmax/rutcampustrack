@@ -1,7 +1,6 @@
 package ru.rutcampustrack.shared.security.grpc;
 
 import io.grpc.Metadata;
-
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Base64;
@@ -10,9 +9,9 @@ import java.util.Optional;
 /**
  * A configured opaque credential directed from one service to one receiver.
  *
- * <p>The wire representation is exactly 32 bytes encoded as unpadded
- * URL-safe base64 (43 ASCII characters). The encoded value is never included
- * in this type's error messages or {@link #toString()}.</p>
+ * <p>The wire representation is exactly 32 bytes encoded as unpadded URL-safe base64 (43 ASCII
+ * characters). The encoded value is never included in this type's error messages or {@link
+ * #toString()}.
  */
 public final class DirectedServiceCredential {
 
@@ -26,7 +25,8 @@ public final class DirectedServiceCredential {
     private final String encodedToken;
     private final byte[] tokenBytes;
 
-    public DirectedServiceCredential(ServicePrincipal source, ServicePrincipal target, String encodedToken) {
+    public DirectedServiceCredential(
+            ServicePrincipal source, ServicePrincipal target, String encodedToken) {
         if (source == null || target == null) {
             throw new IllegalArgumentException("Service credential direction is required");
         }
@@ -41,14 +41,11 @@ public final class DirectedServiceCredential {
     }
 
     /**
-     * Parses externally supplied configuration without turning malformed
-     * configuration into a permissive boundary. Empty is an explicit
-     * fail-closed state for the receiver.
+     * Parses externally supplied configuration without turning malformed configuration into a
+     * permissive boundary. Empty is an explicit fail-closed state for the receiver.
      */
     public static Optional<DirectedServiceCredential> tryCreate(
-            ServicePrincipal source,
-            ServicePrincipal target,
-            String encodedToken) {
+            ServicePrincipal source, ServicePrincipal target, String encodedToken) {
         if (source == null || target == null || decodeCanonical(encodedToken) == null) {
             return Optional.empty();
         }
@@ -73,9 +70,8 @@ public final class DirectedServiceCredential {
     }
 
     /**
-     * Compares a received token without converting an accepted token into a
-     * caller-controlled principal. Invalid encodings are rejected before the
-     * constant-time byte comparison.
+     * Compares a received token without converting an accepted token into a caller-controlled
+     * principal. Invalid encodings are rejected before the constant-time byte comparison.
      */
     boolean matches(String candidate) {
         byte[] candidateBytes = decodeCanonical(candidate);
@@ -107,7 +103,8 @@ public final class DirectedServiceCredential {
     }
 
     private static byte[] decodeCanonical(String encodedToken) {
-        if (encodedToken == null || encodedToken.length() != TOKEN_CHARACTERS
+        if (encodedToken == null
+                || encodedToken.length() != TOKEN_CHARACTERS
                 || !encodedToken.matches("[A-Za-z0-9_-]{43}")) {
             return null;
         }

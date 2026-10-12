@@ -1,14 +1,5 @@
 package ru.rutcampustrack.academic.studentprojection;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-import ru.rutcampustrack.shared.web.time.EducationalTime;
-
 import java.time.Clock;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -24,13 +15,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /**
  * Resolves the signed student's own semester projection and rank cohort.
  *
- * <p>All reads happen in one read-only transaction.  Authorization is
- * re-read before semester, history, subject, or roster data is disclosed.  A
- * response is assembled only after every required source has succeeded.</p>
+ * <p>All reads happen in one read-only transaction. Authorization is re-read before semester,
+ * history, subject, or roster data is disclosed. A response is assembled only after every required
+ * source has succeeded.
  */
 @Service
 public class StudentProjectionScopeService {
@@ -38,7 +37,8 @@ public class StudentProjectionScopeService {
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
     private static final String STUDENT_ROLE = "STUDENT";
     private static final String ACTIVE_STATUS = "ACTIVE";
-    private static final Set<String> TERMINAL_STATUSES = Set.of("EXPELLED", "GRADUATED", "ARCHIVED");
+    private static final Set<String> TERMINAL_STATUSES =
+            Set.of("EXPELLED", "GRADUATED", "ARCHIVED");
 
     private final StudentProjectionQuery query;
     private final Clock clock;
@@ -49,13 +49,15 @@ public class StudentProjectionScopeService {
     }
 
     @Autowired
-    public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock,
+    public StudentProjectionScopeService(
+            StudentProjectionQuery query,
+            Clock clock,
             ObjectProvider<EducationalTime> educationalTime) {
         this(query, clock, educationalTime.getIfAvailable(() -> new EducationalTime(clock)));
     }
 
-    public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock,
-            EducationalTime educationalTime) {
+    public StudentProjectionScopeService(
+            StudentProjectionQuery query, Clock clock, EducationalTime educationalTime) {
         this.query = Objects.requireNonNull(query, "query");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.educationalClock = educationalTime.clock();
@@ -72,21 +74,28 @@ public class StudentProjectionScopeService {
         } catch (StudentProjectionException error) {
             throw error;
         } catch (DataAccessException error) {
-            throw StudentProjectionException.dependency("Academic projection data is unavailable", error);
+            throw StudentProjectionException.dependency(
+                    "Academic projection data is unavailable", error);
         } catch (DateTimeException error) {
-            throw StudentProjectionException.inconsistent("Academic projection contains an invalid date");
+            throw StudentProjectionException.inconsistent(
+                    "Academic projection contains an invalid date");
         }
     }
 
     private StudentProjectionScope resolveInternal(long semesterId, InternalJwtClaims claims) {
         Authorization authorization = authorize(claims);
 
-        Optional<StudentProjectionQuery.SemesterSnapshot> semesterResult = query.findSemester(semesterId);
+        Optional<StudentProjectionQuery.SemesterSnapshot> semesterResult =
+                query.findSemester(semesterId);
         if (semesterResult == null) {
-            throw StudentProjectionException.dependency("Academic semester data is unavailable", null);
+            throw StudentProjectionException.dependency(
+                    "Academic semester data is unavailable", null);
         }
-        StudentProjectionQuery.SemesterSnapshot semester = semesterResult
-                .orElseThrow(() -> StudentProjectionException.unresolved("Requested semester is unavailable"));
+        StudentProjectionQuery.SemesterSnapshot semester =
+                semesterResult.orElseThrow(
+                        () ->
+                                StudentProjectionException.unresolved(
+                                        "Requested semester is unavailable"));
         validateSemester(semesterId, semester);
         LocalDate dateUntilExclusive = exclusiveEnd(semester.dateTo());
         LocalDate serverDate = LocalDate.now(educationalClock.withZone(MOSCOW));
@@ -97,21 +106,24 @@ public class StudentProjectionScopeService {
         List<StudentProjectionScope.MembershipSegment> clippedSegments =
                 history.clip(semester.dateFrom(), dateUntilExclusive);
         if (clippedSegments.isEmpty()) {
-            throw StudentProjectionException.unresolved("Student has no valid membership in the semester");
+            throw StudentProjectionException.unresolved(
+                    "Student has no valid membership in the semester");
         }
 
-        SubjectResolution subjects = resolveSubjects(
-                semesterId, semester.dateFrom(), dateUntilExclusive, clippedSegments);
-        RankDecision rank = resolveRank(
-                authorization,
-                history,
-                semesterId,
-                semester.dateFrom(),
-                dateUntilExclusive,
-                semester.dateTo(),
-                serverDate);
-        List<StudentProjectionScope.Subject> rankSubjects = resolveRankSubjects(
-                semesterId, semester.dateFrom(), dateUntilExclusive, rank);
+        SubjectResolution subjects =
+                resolveSubjects(
+                        semesterId, semester.dateFrom(), dateUntilExclusive, clippedSegments);
+        RankDecision rank =
+                resolveRank(
+                        authorization,
+                        history,
+                        semesterId,
+                        semester.dateFrom(),
+                        dateUntilExclusive,
+                        semester.dateTo(),
+                        serverDate);
+        List<StudentProjectionScope.Subject> rankSubjects =
+                resolveRankSubjects(semesterId, semester.dateFrom(), dateUntilExclusive, rank);
 
         return new StudentProjectionScope(
                 authorization.userId(),
@@ -138,7 +150,8 @@ public class StudentProjectionScopeService {
             return List.of();
         }
         if (rank.groupId() == null || rank.groupId() <= 0) {
-            throw StudentProjectionException.inconsistent("Eligible rank scope has no authoritative group");
+            throw StudentProjectionException.inconsistent(
+                    "Eligible rank scope has no authoritative group");
         }
 
         // Ranking uses the whole semester cohort, not only the student's own
@@ -147,49 +160,63 @@ public class StudentProjectionScopeService {
         StudentProjectionScope.MembershipSegment semesterGroup =
                 new StudentProjectionScope.MembershipSegment(
                         rank.groupId(), semesterFrom, semesterUntilExclusive, List.of());
-        return resolveSubjects(semesterId, semesterFrom, semesterUntilExclusive, List.of(semesterGroup))
+        return resolveSubjects(
+                        semesterId, semesterFrom, semesterUntilExclusive, List.of(semesterGroup))
                 .subjects();
     }
 
     private Authorization authorize(InternalJwtClaims claims) {
-        if (claims == null || claims.userId() <= 0 || claims.sessionId() == null
-                || claims.sessionVersion() <= 0 || claims.rolesVersion() <= 0) {
+        if (claims == null
+                || claims.userId() <= 0
+                || claims.sessionId() == null
+                || claims.sessionVersion() <= 0
+                || claims.rolesVersion() <= 0) {
             throw StudentProjectionException.invalidSession("Signed student identity is required");
         }
         if (!STUDENT_ROLE.equals(normalize(claims.domainRole()))) {
-            throw StudentProjectionException.wrongRole("Student projection requires a signed STUDENT identity");
+            throw StudentProjectionException.wrongRole(
+                    "Student projection requires a signed STUDENT identity");
         }
 
         Optional<StudentProjectionQuery.AuthoritySnapshot> authorityResult =
                 query.findAuthority(claims.userId());
         if (authorityResult == null) {
-            throw StudentProjectionException.dependency("Academic authority data is unavailable", null);
+            throw StudentProjectionException.dependency(
+                    "Academic authority data is unavailable", null);
         }
-        StudentProjectionQuery.AuthoritySnapshot authority = authorityResult
-                .orElseThrow(() -> StudentProjectionException.invalidSession("Signed student authority is unavailable"));
+        StudentProjectionQuery.AuthoritySnapshot authority =
+                authorityResult.orElseThrow(
+                        () ->
+                                StudentProjectionException.invalidSession(
+                                        "Signed student authority is unavailable"));
         if (authority.userId() != claims.userId()) {
-            throw StudentProjectionException.inconsistent("Authority user identity is inconsistent");
+            throw StudentProjectionException.inconsistent(
+                    "Authority user identity is inconsistent");
         }
         if (authority.rolesVersion() <= 0 || authority.rolesVersion() != claims.rolesVersion()) {
             throw StudentProjectionException.invalidSession("Signed student authority is stale");
         }
 
         List<StudentProjectionQuery.RoleGrantSnapshot> grants = authority.grants();
-        List<StudentProjectionQuery.RoleGrantSnapshot> studentGrants = grants.stream()
-                .filter(Objects::nonNull)
-                .filter(grant -> STUDENT_ROLE.equals(normalize(grant.role())))
-                .toList();
+        List<StudentProjectionQuery.RoleGrantSnapshot> studentGrants =
+                grants.stream()
+                        .filter(Objects::nonNull)
+                        .filter(grant -> STUDENT_ROLE.equals(normalize(grant.role())))
+                        .toList();
         if (studentGrants.size() != 1) {
-            throw StudentProjectionException.invalidSession("Signed student role grant is unavailable");
+            throw StudentProjectionException.invalidSession(
+                    "Signed student role grant is unavailable");
         }
         StudentProjectionQuery.RoleGrantSnapshot studentGrant = studentGrants.get(0);
         String accountStatus = normalize(studentGrant.status());
         String authorityStatus = normalize(authority.accountStatus());
         if (!isKnownStatus(accountStatus) || !authorityStatus.equals(accountStatus)) {
-            throw StudentProjectionException.inconsistent("Student role grant disagrees with account authority");
+            throw StudentProjectionException.inconsistent(
+                    "Student role grant disagrees with account authority");
         }
         if (studentGrant.id() <= 0) {
-            throw StudentProjectionException.inconsistent("Student role grant has no durable identity");
+            throw StudentProjectionException.inconsistent(
+                    "Student role grant has no durable identity");
         }
         if (!accountStatus.equals(normalize(claims.status()))) {
             throw StudentProjectionException.invalidSession("Signed student status is stale");
@@ -198,11 +225,14 @@ public class StudentProjectionScopeService {
         Optional<StudentProjectionQuery.SessionSnapshot> sessionResult =
                 query.findSession(claims.userId(), claims.sessionId());
         if (sessionResult == null) {
-            throw StudentProjectionException.dependency("Academic session authority is unavailable", null);
+            throw StudentProjectionException.dependency(
+                    "Academic session authority is unavailable", null);
         }
-        StudentProjectionQuery.SessionSnapshot session = sessionResult
-                .orElseThrow(() -> StudentProjectionException.invalidSession(
-                        "Signed student session is unavailable"));
+        StudentProjectionQuery.SessionSnapshot session =
+                sessionResult.orElseThrow(
+                        () ->
+                                StudentProjectionException.invalidSession(
+                                        "Signed student session is unavailable"));
         boolean terminal = TERMINAL_STATUSES.contains(accountStatus);
         if (!session.sessionId().equals(claims.sessionId())
                 || session.userId() != claims.userId()
@@ -211,20 +241,21 @@ public class StudentProjectionScopeService {
                 || !Objects.equals(session.activeRoleGrantId(), studentGrant.id())) {
             throw StudentProjectionException.invalidSession("Signed student session is stale");
         }
-        if (!Objects.equals(claims.groupId(), studentGrant.groupId())
-                || claims.isHeadman()) {
+        if (!Objects.equals(claims.groupId(), studentGrant.groupId()) || claims.isHeadman()) {
             throw StudentProjectionException.invalidSession("Signed student identity is stale");
         }
 
         if ("SUSPENDED".equals(accountStatus)) {
-            throw StudentProjectionException.outOfScope("Suspended students have no projection scope");
+            throw StudentProjectionException.outOfScope(
+                    "Suspended students have no projection scope");
         }
         if (claims.readOnly() != terminal) {
             throw StudentProjectionException.invalidSession("Signed student identity is stale");
         }
         if (ACTIVE_STATUS.equals(accountStatus)
                 && (studentGrant.groupId() == null || studentGrant.groupId() <= 0)) {
-            throw StudentProjectionException.inconsistent("Active student grant has no authoritative group");
+            throw StudentProjectionException.inconsistent(
+                    "Active student grant has no authoritative group");
         }
         return new Authorization(claims.userId(), studentGrant, terminal && claims.readOnly());
     }
@@ -238,13 +269,15 @@ public class StudentProjectionScopeService {
             return new SubjectResolution(List.of(), List.of());
         }
 
-        Set<Long> groupIds = segments.stream()
-                .map(StudentProjectionScope.MembershipSegment::groupId)
-                .collect(java.util.stream.Collectors.toCollection(TreeSet::new));
-        List<StudentProjectionQuery.AssignmentSnapshot> assignments = query.findAssignments(
-                semesterId, groupIds, dateFrom, dateUntilExclusive);
+        Set<Long> groupIds =
+                segments.stream()
+                        .map(StudentProjectionScope.MembershipSegment::groupId)
+                        .collect(java.util.stream.Collectors.toCollection(TreeSet::new));
+        List<StudentProjectionQuery.AssignmentSnapshot> assignments =
+                query.findAssignments(semesterId, groupIds, dateFrom, dateUntilExclusive);
         if (assignments == null) {
-            throw StudentProjectionException.dependency("Academic assignments are unavailable", null);
+            throw StudentProjectionException.dependency(
+                    "Academic assignments are unavailable", null);
         }
 
         List<Set<Long>> subjectIdsBySegment = new ArrayList<>(segments.size());
@@ -261,8 +294,11 @@ public class StudentProjectionScopeService {
             for (int i = 0; i < segments.size(); i++) {
                 StudentProjectionScope.MembershipSegment segment = segments.get(i);
                 if (segment.groupId() != assignment.groupId()
-                        || !overlaps(segment.dateFrom(), segment.dateUntilExclusive(),
-                        assignment.validFrom(), assignment.validUntilExclusive())) {
+                        || !overlaps(
+                                segment.dateFrom(),
+                                segment.dateUntilExclusive(),
+                                assignment.validFrom(),
+                                assignment.validUntilExclusive())) {
                     continue;
                 }
                 matched = true;
@@ -275,9 +311,11 @@ public class StudentProjectionScopeService {
             lessonTypesBySubject
                     .computeIfAbsent(assignment.subjectId(), ignored -> new TreeSet<>())
                     .add(normalize(assignment.lessonType()).toLowerCase(Locale.ROOT));
-            Long previousGroup = groupBySubject.putIfAbsent(assignment.subjectId(), assignment.groupId());
+            Long previousGroup =
+                    groupBySubject.putIfAbsent(assignment.subjectId(), assignment.groupId());
             if (previousGroup != null && previousGroup.longValue() != assignment.groupId()) {
-                throw StudentProjectionException.inconsistent("A subject is assigned to multiple groups");
+                throw StudentProjectionException.inconsistent(
+                        "A subject is assigned to multiple groups");
             }
         }
 
@@ -290,28 +328,34 @@ public class StudentProjectionScopeService {
         for (Long subjectId : subjectIds) {
             StudentProjectionQuery.SubjectSnapshot source = sourceSubjects.get(subjectId);
             if (source == null || source.id() != subjectId) {
-                throw StudentProjectionException.inconsistent("Effective assignment refers to a missing subject");
+                throw StudentProjectionException.inconsistent(
+                        "Effective assignment refers to a missing subject");
             }
-            if (source.groupId() <= 0 || source.groupId() != groupBySubject.get(subjectId)
-                    || source.name() == null || source.name().isBlank()
+            if (source.groupId() <= 0
+                    || source.groupId() != groupBySubject.get(subjectId)
+                    || source.name() == null
+                    || source.name().isBlank()
                     || normalize(source.type()).isBlank()) {
                 throw StudentProjectionException.inconsistent("Subject source is inconsistent");
             }
-            resultSubjects.add(new StudentProjectionScope.Subject(
-                    source.id(),
-                    source.name(),
-                    normalize(source.type()).toLowerCase(Locale.ROOT),
-                    source.groupId(),
-                    List.copyOf(lessonTypesBySubject.get(subjectId))));
+            resultSubjects.add(
+                    new StudentProjectionScope.Subject(
+                            source.id(),
+                            source.name(),
+                            normalize(source.type()).toLowerCase(Locale.ROOT),
+                            source.groupId(),
+                            List.copyOf(lessonTypesBySubject.get(subjectId))));
         }
 
-        List<StudentProjectionScope.MembershipSegment> enrichedSegments = new ArrayList<>(segments.size());
+        List<StudentProjectionScope.MembershipSegment> enrichedSegments =
+                new ArrayList<>(segments.size());
         for (int i = 0; i < segments.size(); i++) {
-            enrichedSegments.add(new StudentProjectionScope.MembershipSegment(
-                    segments.get(i).groupId(),
-                    segments.get(i).dateFrom(),
-                    segments.get(i).dateUntilExclusive(),
-                    List.copyOf(subjectIdsBySegment.get(i))));
+            enrichedSegments.add(
+                    new StudentProjectionScope.MembershipSegment(
+                            segments.get(i).groupId(),
+                            segments.get(i).dateFrom(),
+                            segments.get(i).dateUntilExclusive(),
+                            List.copyOf(subjectIdsBySegment.get(i))));
         }
         return new SubjectResolution(List.copyOf(enrichedSegments), List.copyOf(resultSubjects));
     }
@@ -335,7 +379,8 @@ public class StudentProjectionScopeService {
 
         Long grantGroupId = authorization.studentGrant().groupId();
         if (grantGroupId == null || grantGroupId <= 0) {
-            throw StudentProjectionException.inconsistent("Active student grant has no authoritative group");
+            throw StudentProjectionException.inconsistent(
+                    "Active student grant has no authoritative group");
         }
 
         Optional<Long> currentGroup = history.currentGroupAt(serverDate);
@@ -346,11 +391,15 @@ public class StudentProjectionScopeService {
 
         long rankGroupId;
         if (past) {
-            rankGroupId = history.soleHistoricalGroup()
-                    .orElseThrow(() -> StudentProjectionException.unresolved(
-                        "Untransferred past scope has no historical group"));
+            rankGroupId =
+                    history.soleHistoricalGroup()
+                            .orElseThrow(
+                                    () ->
+                                            StudentProjectionException.unresolved(
+                                                    "Untransferred past scope has no historical group"));
             if (rankGroupId != grantGroupId) {
-                throw StudentProjectionException.inconsistent("Current student grant disagrees with history");
+                throw StudentProjectionException.inconsistent(
+                        "Current student grant disagrees with history");
             }
         } else {
             rankGroupId = grantGroupId;
@@ -360,21 +409,27 @@ public class StudentProjectionScopeService {
             return RankDecision.visible(null, false, List.of());
         }
 
-        List<Long> roster = query.findActiveStudentIds(
-                rankGroupId, semesterId, semesterFrom, semesterUntilExclusive);
+        List<Long> roster =
+                query.findActiveStudentIds(
+                        rankGroupId, semesterId, semesterFrom, semesterUntilExclusive);
         if (roster == null || roster.stream().anyMatch(Objects::isNull)) {
-            throw StudentProjectionException.dependency("Academic rank cohort is unavailable", null);
+            throw StudentProjectionException.dependency(
+                    "Academic rank cohort is unavailable", null);
         }
         if (roster.stream().anyMatch(id -> id <= 0)) {
-            throw StudentProjectionException.inconsistent("Rank cohort contains an invalid student id");
+            throw StudentProjectionException.inconsistent(
+                    "Rank cohort contains an invalid student id");
         }
         List<Long> orderedRoster = roster.stream().distinct().sorted().toList();
         return RankDecision.visible(rankGroupId, true, orderedRoster);
     }
 
-    private static void validateSemester(long requestedId, StudentProjectionQuery.SemesterSnapshot semester) {
-        if (semester.id() != requestedId || semester.id() <= 0
-                || semester.dateFrom() == null || semester.dateTo() == null
+    private static void validateSemester(
+            long requestedId, StudentProjectionQuery.SemesterSnapshot semester) {
+        if (semester.id() != requestedId
+                || semester.id() <= 0
+                || semester.dateFrom() == null
+                || semester.dateTo() == null
                 || semester.dateTo().isBefore(semester.dateFrom())) {
             throw StudentProjectionException.inconsistent("Semester source is inconsistent");
         }
@@ -384,16 +439,20 @@ public class StudentProjectionScopeService {
         try {
             return dateTo.plusDays(1);
         } catch (DateTimeException error) {
-            throw StudentProjectionException.inconsistent("Semester date range cannot be made half-open");
+            throw StudentProjectionException.inconsistent(
+                    "Semester date range cannot be made half-open");
         }
     }
 
     private static void validateAssignment(
-            StudentProjectionQuery.AssignmentSnapshot assignment,
-            long semesterId) {
-        if (assignment == null || assignment.id() <= 0 || assignment.subjectId() <= 0
-                || assignment.groupId() <= 0 || assignment.semesterId() != semesterId
-                || assignment.validFrom() == null || normalize(assignment.lessonType()).isBlank()) {
+            StudentProjectionQuery.AssignmentSnapshot assignment, long semesterId) {
+        if (assignment == null
+                || assignment.id() <= 0
+                || assignment.subjectId() <= 0
+                || assignment.groupId() <= 0
+                || assignment.semesterId() != semesterId
+                || assignment.validFrom() == null
+                || normalize(assignment.lessonType()).isBlank()) {
             throw StudentProjectionException.inconsistent("Assignment source is inconsistent");
         }
         if (assignment.validUntilExclusive() != null
@@ -428,13 +487,11 @@ public class StudentProjectionScopeService {
     private record Authorization(
             long userId,
             StudentProjectionQuery.RoleGrantSnapshot studentGrant,
-            boolean terminalReadOnly) {
-    }
+            boolean terminalReadOnly) {}
 
     private record SubjectResolution(
             List<StudentProjectionScope.MembershipSegment> segments,
-            List<StudentProjectionScope.Subject> subjects) {
-    }
+            List<StudentProjectionScope.Subject> subjects) {}
 
     private record RankDecision(
             StudentProjectionScope.RankVisibility visibility,
@@ -446,12 +503,17 @@ public class StudentProjectionScopeService {
         }
 
         private static RankDecision hidden() {
-            return new RankDecision(StudentProjectionScope.RankVisibility.HIDDEN, null, false, List.of());
+            return new RankDecision(
+                    StudentProjectionScope.RankVisibility.HIDDEN, null, false, List.of());
         }
 
-        private static RankDecision visible(Long groupId, boolean eligible, List<Long> rosterUserIds) {
-            return new RankDecision(StudentProjectionScope.RankVisibility.VISIBLE,
-                    groupId, eligible, rosterUserIds);
+        private static RankDecision visible(
+                Long groupId, boolean eligible, List<Long> rosterUserIds) {
+            return new RankDecision(
+                    StudentProjectionScope.RankVisibility.VISIBLE,
+                    groupId,
+                    eligible,
+                    rosterUserIds);
         }
     }
 
@@ -470,33 +532,42 @@ public class StudentProjectionScopeService {
         }
 
         private static HistoryTimeline validate(
-                List<StudentProjectionQuery.GroupHistorySnapshot> sourceRows,
-                long expectedUserId) {
+                List<StudentProjectionQuery.GroupHistorySnapshot> sourceRows, long expectedUserId) {
             if (sourceRows == null || sourceRows.isEmpty()) {
                 throw StudentProjectionException.unresolved("Student group history is unavailable");
             }
             if (sourceRows.stream().anyMatch(Objects::isNull)) {
-                throw StudentProjectionException.inconsistent("Student group history is inconsistent");
+                throw StudentProjectionException.inconsistent(
+                        "Student group history is inconsistent");
             }
-            List<StudentProjectionQuery.GroupHistorySnapshot> rows = sourceRows.stream()
-                    .sorted(Comparator
-                            .comparing(StudentProjectionQuery.GroupHistorySnapshot::joinedAt,
-                                    Comparator.nullsFirst(Comparator.naturalOrder()))
-                            .thenComparingLong(StudentProjectionQuery.GroupHistorySnapshot::id))
-                    .toList();
+            List<StudentProjectionQuery.GroupHistorySnapshot> rows =
+                    sourceRows.stream()
+                            .sorted(
+                                    Comparator.comparing(
+                                                    StudentProjectionQuery.GroupHistorySnapshot
+                                                            ::joinedAt,
+                                                    Comparator.nullsFirst(
+                                                            Comparator.naturalOrder()))
+                                            .thenComparingLong(
+                                                    StudentProjectionQuery.GroupHistorySnapshot
+                                                            ::id))
+                            .toList();
             LinkedHashSet<Long> groups = new LinkedHashSet<>();
             boolean transferred = false;
             StudentProjectionQuery.GroupHistorySnapshot previous = null;
             for (StudentProjectionQuery.GroupHistorySnapshot row : rows) {
-                if (row.id() <= 0 || row.userId() != expectedUserId
-                        || row.groupId() <= 0 || row.joinedAt() == null
+                if (row.id() <= 0
+                        || row.userId() != expectedUserId
+                        || row.groupId() <= 0
+                        || row.joinedAt() == null
                         || (row.leftAt() != null && row.leftAt().isBefore(row.joinedAt()))) {
-                    throw StudentProjectionException.inconsistent("Student group history is inconsistent");
+                    throw StudentProjectionException.inconsistent(
+                            "Student group history is inconsistent");
                 }
                 if (previous != null) {
-                    if (previous.leftAt() == null
-                            || row.joinedAt().isBefore(previous.leftAt())) {
-                        throw StudentProjectionException.inconsistent("Student group history overlaps");
+                    if (previous.leftAt() == null || row.joinedAt().isBefore(previous.leftAt())) {
+                        throw StudentProjectionException.inconsistent(
+                                "Student group history overlaps");
                     }
                     if (previous.groupId() != row.groupId()) {
                         transferred = true;
@@ -522,12 +593,14 @@ public class StudentProjectionScopeService {
             Long current = null;
             for (StudentProjectionQuery.GroupHistorySnapshot row : rows) {
                 boolean positive = row.leftAt() == null || row.leftAt().isAfter(row.joinedAt());
-                if (!positive || row.joinedAt().isAfter(date)
+                if (!positive
+                        || row.joinedAt().isAfter(date)
                         || (row.leftAt() != null && !date.isBefore(row.leftAt()))) {
                     continue;
                 }
                 if (current != null) {
-                    throw StudentProjectionException.inconsistent("Student group history is ambiguous");
+                    throw StudentProjectionException.inconsistent(
+                            "Student group history is ambiguous");
                 }
                 current = row.groupId();
             }
@@ -535,29 +608,34 @@ public class StudentProjectionScopeService {
         }
 
         private boolean hasMembership(long groupId, LocalDate from, LocalDate untilExclusive) {
-            return rows.stream().anyMatch(row -> {
-                if (row.groupId() != groupId
-                        || (row.leftAt() != null && !row.leftAt().isAfter(row.joinedAt()))) {
-                    return false;
-                }
-                LocalDate rowUntil = row.leftAt() == null ? untilExclusive : row.leftAt();
-                return overlaps(row.joinedAt(), rowUntil, from, untilExclusive);
-            });
+            return rows.stream()
+                    .anyMatch(
+                            row -> {
+                                if (row.groupId() != groupId
+                                        || (row.leftAt() != null
+                                                && !row.leftAt().isAfter(row.joinedAt()))) {
+                                    return false;
+                                }
+                                LocalDate rowUntil =
+                                        row.leftAt() == null ? untilExclusive : row.leftAt();
+                                return overlaps(row.joinedAt(), rowUntil, from, untilExclusive);
+                            });
         }
 
         private List<StudentProjectionScope.MembershipSegment> clip(
-                LocalDate from,
-                LocalDate untilExclusive) {
+                LocalDate from, LocalDate untilExclusive) {
             List<StudentProjectionScope.MembershipSegment> clipped = new ArrayList<>();
             for (StudentProjectionQuery.GroupHistorySnapshot row : rows) {
                 LocalDate rowUntil = row.leftAt() == null ? untilExclusive : row.leftAt();
                 LocalDate segmentFrom = row.joinedAt().isAfter(from) ? row.joinedAt() : from;
-                LocalDate segmentUntil = rowUntil.isBefore(untilExclusive) ? rowUntil : untilExclusive;
+                LocalDate segmentUntil =
+                        rowUntil.isBefore(untilExclusive) ? rowUntil : untilExclusive;
                 if (!segmentUntil.isAfter(segmentFrom)) {
                     continue;
                 }
-                clipped.add(new StudentProjectionScope.MembershipSegment(
-                        row.groupId(), segmentFrom, segmentUntil, List.of()));
+                clipped.add(
+                        new StudentProjectionScope.MembershipSegment(
+                                row.groupId(), segmentFrom, segmentUntil, List.of()));
             }
             return List.copyOf(clipped);
         }

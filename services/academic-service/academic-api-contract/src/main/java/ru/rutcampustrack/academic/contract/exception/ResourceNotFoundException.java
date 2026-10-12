@@ -1,8 +1,7 @@
 package ru.rutcampustrack.academic.contract.exception;
 
 /**
- * Бросается когда ресурс не найден по ID.
- * GlobalExceptionHandler перехватывает и возвращает 404.
+ * Бросается когда ресурс не найден по ID. GlobalExceptionHandler перехватывает и возвращает 404.
  */
 public class ResourceNotFoundException extends RuntimeException {
 

@@ -11,6 +11,4 @@ public record HeadmanRequestAttachmentResponse(
         String state,
         Instant uploadedAt,
         Instant expiresAt,
-        String downloadUrl
-) {
-}
+        String downloadUrl) {}

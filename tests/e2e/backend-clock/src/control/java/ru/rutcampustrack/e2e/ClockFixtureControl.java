@@ -28,10 +28,15 @@ public final class ClockFixtureControl {
 
     private static GenericApplicationContext context(String service) {
         GenericApplicationContext context = new GenericApplicationContext();
-        context.getEnvironment().getPropertySources().addFirst(
-                new MapPropertySource("control", Map.of("spring.application.name", service)));
+        context.getEnvironment()
+                .getPropertySources()
+                .addFirst(
+                        new MapPropertySource(
+                                "control", Map.of("spring.application.name", service)));
         context.registerBean("systemClock", Clock.class, Clock::systemUTC);
-        context.registerBean("educationalTime", EducationalTime.class,
+        context.registerBean(
+                "educationalTime",
+                EducationalTime.class,
                 () -> new EducationalTime(context.getBean("systemClock", Clock.class)));
         return context;
     }
@@ -64,19 +69,28 @@ public final class ClockFixtureControl {
                     rejects(() -> new ClockInitializer().initialize(forbidden));
                 }
             }
-            for (String service : new String[] {"academic-service", "schedule-service", "attendance-service", "mobile-bff"}) {
+            for (String service :
+                    new String[] {
+                        "academic-service", "schedule-service", "attendance-service", "mobile-bff"
+                    }) {
                 try (var allowed = context(service)) {
                     new ClockInitializer().initialize(allowed);
                     allowed.refresh();
                     Clock injected = allowed.getBean(EducationalTime.class).clock();
-                    require(allowed.getBean(Clock.class) == allowed.getBean("systemClock", Clock.class));
+                    require(
+                            allowed.getBean(Clock.class)
+                                    == allowed.getBean("systemClock", Clock.class));
                     require(!(allowed.getBean("systemClock", Clock.class) instanceof FileClock));
                     require(injected.instant().equals(first));
                     require(injected.getZone().equals(ZoneId.of("Europe/Moscow")));
                     Clock utc = injected.withZone(ZoneId.of("UTC"));
                     Path next = directory.resolve("next-instant");
                     Files.writeString(next, second.toString());
-                    Files.move(next, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                    Files.move(
+                            next,
+                            file,
+                            StandardCopyOption.ATOMIC_MOVE,
+                            StandardCopyOption.REPLACE_EXISTING);
                     require(injected.instant().equals(second) && utc.instant().equals(second));
                     require(utc.getZone().equals(ZoneId.of("UTC")));
                     Files.writeString(file, first.toString());
@@ -84,7 +98,8 @@ public final class ClockFixtureControl {
             }
             Files.delete(file);
             rejects(() -> new FileClock(file, ZoneId.of("Europe/Moscow")).instant());
-            System.out.println("Typed teaching-time context controls PASS; mixed-consumer isolation requires its own tests");
+            System.out.println(
+                    "Typed teaching-time context controls PASS; mixed-consumer isolation requires its own tests");
         } finally {
             if (oldEnabled == null) System.clearProperty("rct.e2e.clock.enabled");
             else System.setProperty("rct.e2e.clock.enabled", oldEnabled);

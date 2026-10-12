@@ -1,22 +1,5 @@
 package ru.rutcampustrack.academic.semester;
 
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import ru.rutcampustrack.academic.contract.enums.SemesterType;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.jdbc.core.JdbcTemplate;
-import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
-import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.repository.AssignmentRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
@@ -24,6 +7,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
+import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
+import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.AssignmentRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
 
 /** The semester date guard must share the row lock protocol with assignment create. */
 class SemesterAssignmentLockContractTest {
@@ -37,7 +36,6 @@ class SemesterAssignmentLockContractTest {
         TransactionSynchronizationManager.setActualTransactionActive(false);
     }
 
-
     @Test
     void referencedSemesterCannotChangeDatesAfterRowLock() {
         SemesterRepository semesters = mock(SemesterRepository.class);
@@ -50,17 +48,31 @@ class SemesterAssignmentLockContractTest {
         when(assignments.existsBySemesterId(41L)).thenReturn(true);
         SemesterService service = service(semesters, assignments);
 
-        assertThatThrownBy(() -> service.updateSemester(41L,
-                new UpdateSemesterRequest("Autumn", existingFrom.plusDays(1), existingTo, SemesterType.AUTUMN, 2026)))
+        assertThatThrownBy(
+                        () ->
+                                service.updateSemester(
+                                        41L,
+                                        new UpdateSemesterRequest(
+                                                "Autumn",
+                                                existingFrom.plusDays(1),
+                                                existingTo,
+                                                SemesterType.AUTUMN,
+                                                2026)))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("Нельзя изменить даты");
         verify(semesters, never()).save(any(Semester.class));
         inOrder(semesters, assignments).verify(semesters).findByIdForUpdate(41L);
     }
 
-    private static SemesterService service(SemesterRepository semesters, AssignmentRepository assignments) {
-        return new SemesterService(semesters, mock(SemesterAssembler.class), mock(EntityManager.class),
-                mock(ApplicationEventPublisher.class), assignments, mock(JdbcTemplate.class));
+    private static SemesterService service(
+            SemesterRepository semesters, AssignmentRepository assignments) {
+        return new SemesterService(
+                semesters,
+                mock(SemesterAssembler.class),
+                mock(EntityManager.class),
+                mock(ApplicationEventPublisher.class),
+                assignments,
+                mock(JdbcTemplate.class));
     }
 
     private static Semester semester(Long id, LocalDate from, LocalDate to) {

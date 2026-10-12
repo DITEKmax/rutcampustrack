@@ -1,13 +1,34 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.ObjectProvider;
 import com.mongodb.MongoException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -48,8 +69,8 @@ import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
-import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.student.EffectiveAttendance;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDescriptor;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentInput;
@@ -68,54 +89,32 @@ import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestD
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestOptions;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestPage;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestSummary;
+import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLateCheckinBudgetDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentRequestReceiptDocument;
-import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Supplier;
-
 /**
  * Student request domain boundary for EXCUSE and manual LATE_CHECKIN.
  *
- * <p>Transport adapters call this class later.  All command writes use the
- * attendance Mongo transaction, pair fences and a durable receipt.  External
- * schedule/academic reads happen before the transaction; local state is then
- * re-read after the sorted pair locks are acquired.
+ * <p>Transport adapters call this class later. All command writes use the attendance Mongo
+ * transaction, pair fences and a durable receipt. External schedule/academic reads happen before
+ * the transaction; local state is then re-read after the sorted pair locks are acquired.
  */
 @Service
 public class StudentRequestService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
-    @Autowired
-    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
 
+    @Autowired
+    public void setRequestActions(
+            ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) {
+        this.requestActions = actions;
+    }
 
     private static final Logger log = LoggerFactory.getLogger(StudentRequestService.class);
 
@@ -132,21 +131,22 @@ public class StudentRequestService {
 
     private static final int MAX_TRANSACTION_ATTEMPTS = 10;
     private static final long RETRY_BACKOFF_MILLIS = 25L;
-    private static final List<ExcuseType> STUDENT_REASONS = List.of(
-            ExcuseType.ILLNESS,
-            ExcuseType.MEDICAL_EXAMINATION,
-            ExcuseType.COMPETITION_PARTICIPATION,
-            ExcuseType.FAMILY_CIRCUMSTANCES,
-            ExcuseType.OTHER
-    );
-    private static final Map<ExcuseType, String> REASON_LABELS = Map.of(
-            ExcuseType.ILLNESS, "Болезнь",
-            ExcuseType.MEDICAL_EXAMINATION, "Медицинское обследование",
-            ExcuseType.COMPETITION_PARTICIPATION, "Участие в соревнованиях",
-            ExcuseType.FAMILY_CIRCUMSTANCES, "Семейные обстоятельства",
-            ExcuseType.OTHER, "Другое"
-    );
-    private static final Set<String> ALLOWED_MIME_TYPES = Set.copyOf(ALLOWED_ATTACHMENT_CONTENT_TYPES);
+    private static final List<ExcuseType> STUDENT_REASONS =
+            List.of(
+                    ExcuseType.ILLNESS,
+                    ExcuseType.MEDICAL_EXAMINATION,
+                    ExcuseType.COMPETITION_PARTICIPATION,
+                    ExcuseType.FAMILY_CIRCUMSTANCES,
+                    ExcuseType.OTHER);
+    private static final Map<ExcuseType, String> REASON_LABELS =
+            Map.of(
+                    ExcuseType.ILLNESS, "Болезнь",
+                    ExcuseType.MEDICAL_EXAMINATION, "Медицинское обследование",
+                    ExcuseType.COMPETITION_PARTICIPATION, "Участие в соревнованиях",
+                    ExcuseType.FAMILY_CIRCUMSTANCES, "Семейные обстоятельства",
+                    ExcuseType.OTHER, "Другое");
+    private static final Set<String> ALLOWED_MIME_TYPES =
+            Set.copyOf(ALLOWED_ATTACHMENT_CONTENT_TYPES);
     private static final Set<String> ALLOWED_EXTENSIONS = Set.copyOf(ALLOWED_ATTACHMENT_EXTENSIONS);
     private static final Comparator<Long> LESSON_ORDER = Comparator.naturalOrder();
 
@@ -168,8 +168,11 @@ public class StudentRequestService {
     private final Clock retentionClock;
     private final JournalAttachmentPort journalAttachmentPort;
     private ru.rutcampustrack.attendance.audit.LessonActionService actions;
+
     @Autowired
-    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
+    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) {
+        this.actions = actions;
+    }
 
     public StudentRequestService(
             ExcuseRepository excuseRepository,
@@ -187,12 +190,25 @@ public class StudentRequestService {
             MongoTemplate mongoTemplate,
             TransactionTemplate transactionTemplate,
             Clock clock,
-            JournalAttachmentPort journalAttachmentPort
-    ) {
-        this(excuseRepository, lateCheckinRepository, attendanceRepository, receiptRepository,
-                budgetRepository, attachmentRepository, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, pairWriteCoordinator, excuseEventPublisher, lateCheckinEventPublisher,
-                mongoTemplate, transactionTemplate, clock, journalAttachmentPort, new EducationalTime(clock));
+            JournalAttachmentPort journalAttachmentPort) {
+        this(
+                excuseRepository,
+                lateCheckinRepository,
+                attendanceRepository,
+                receiptRepository,
+                budgetRepository,
+                attachmentRepository,
+                scheduleGrpcClient,
+                academicGrpcClient,
+                semesterCacheService,
+                pairWriteCoordinator,
+                excuseEventPublisher,
+                lateCheckinEventPublisher,
+                mongoTemplate,
+                transactionTemplate,
+                clock,
+                journalAttachmentPort,
+                new EducationalTime(clock));
     }
 
     @Autowired
@@ -214,10 +230,23 @@ public class StudentRequestService {
             Clock clock,
             JournalAttachmentPort journalAttachmentPort,
             ObjectProvider<EducationalTime> educationalTime) {
-        this(excuseRepository, lateCheckinRepository, attendanceRepository, receiptRepository,
-                budgetRepository, attachmentRepository, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, pairWriteCoordinator, excuseEventPublisher, lateCheckinEventPublisher,
-                mongoTemplate, transactionTemplate, clock, journalAttachmentPort,
+        this(
+                excuseRepository,
+                lateCheckinRepository,
+                attendanceRepository,
+                receiptRepository,
+                budgetRepository,
+                attachmentRepository,
+                scheduleGrpcClient,
+                academicGrpcClient,
+                semesterCacheService,
+                pairWriteCoordinator,
+                excuseEventPublisher,
+                lateCheckinEventPublisher,
+                mongoTemplate,
+                transactionTemplate,
+                clock,
+                journalAttachmentPort,
                 educationalTime.getIfAvailable(() -> new EducationalTime(clock)));
     }
 
@@ -265,7 +294,8 @@ public class StudentRequestService {
         String key = command.idempotencyKey();
         String payloadHash = excusePayloadHash(command, files);
 
-        RequestDetail replay = replay(identity, studentId, StudentRequestKind.EXCUSE, key, payloadHash);
+        RequestDetail replay =
+                replay(identity, studentId, StudentRequestKind.EXCUSE, key, payloadHash);
         if (replay != null) {
             return replay;
         }
@@ -273,15 +303,29 @@ public class StudentRequestService {
         Long semesterId = requireCurrentSemester();
         List<ResolvedLesson> lessons = resolveLessons(identity, command.lessonIds(), semesterId);
         String studentName = academicGrpcClient.getUserDisplayName(studentId);
-        return executeWithRetry(() -> transactionTemplate.execute(status ->
-                submitExcuseInTransaction(identity, command, files, payloadHash, semesterId, lessons, studentName)));
+        return executeWithRetry(
+                () ->
+                        transactionTemplate.execute(
+                                status ->
+                                        submitExcuseInTransaction(
+                                                identity,
+                                                command,
+                                                files,
+                                                payloadHash,
+                                                semesterId,
+                                                lessons,
+                                                studentName)));
     }
 
     /** Submit an EXCUSE package and expose the persisted legacy ticket to a bridge adapter. */
     public ExcuseTicket submitExcuseTicket(Identity identity, ExcuseSubmission command) {
         RequestDetail detail = submitExcuse(identity, command);
-        return excuseRepository.findById(detail.summary().id()).orElseThrow(
-                () -> new ResourceNotFoundException("ExcuseTicket", "id", detail.summary().id()));
+        return excuseRepository
+                .findById(detail.summary().id())
+                .orElseThrow(
+                        () ->
+                                new ResourceNotFoundException(
+                                        "ExcuseTicket", "id", detail.summary().id()));
     }
 
     /** Submit one manual LATE_CHECKIN request and charge the current semester budget. */
@@ -290,28 +334,44 @@ public class StudentRequestService {
         long studentId = requireStudentIdentity(identity);
         String key = command.idempotencyKey();
         String payloadHash = latePayloadHash(command.lessonId());
-        RequestDetail replay = replay(identity, studentId, StudentRequestKind.LATE_CHECKIN, key, payloadHash);
+        RequestDetail replay =
+                replay(identity, studentId, StudentRequestKind.LATE_CHECKIN, key, payloadHash);
         if (replay != null) {
             return replay;
         }
 
         Long semesterId = requireCurrentSemester();
-        ResolvedLesson lesson = resolveLessons(identity, List.of(command.lessonId()), semesterId).get(0);
+        ResolvedLesson lesson =
+                resolveLessons(identity, List.of(command.lessonId()), semesterId).get(0);
         String studentName = academicGrpcClient.getUserDisplayName(studentId);
-        return executeWithRetry(() -> transactionTemplate.execute(status ->
-                submitLateInTransaction(identity, command, payloadHash, semesterId, lesson, studentName)));
+        return executeWithRetry(
+                () ->
+                        transactionTemplate.execute(
+                                status ->
+                                        submitLateInTransaction(
+                                                identity,
+                                                command,
+                                                payloadHash,
+                                                semesterId,
+                                                lesson,
+                                                studentName)));
     }
 
     /** Submit one manual LATE_CHECKIN and expose its persisted legacy request. */
-    public LateCheckinRequest submitLateCheckinRequest(Identity identity, LateCheckinSubmission command) {
+    public LateCheckinRequest submitLateCheckinRequest(
+            Identity identity, LateCheckinSubmission command) {
         RequestDetail detail = submitLateCheckin(identity, command);
-        return lateCheckinRepository.findById(detail.summary().id()).orElseThrow(
-                () -> new ResourceNotFoundException("LateCheckinRequest", "id", detail.summary().id()));
+        return lateCheckinRepository
+                .findById(detail.summary().id())
+                .orElseThrow(
+                        () ->
+                                new ResourceNotFoundException(
+                                        "LateCheckinRequest", "id", detail.summary().id()));
     }
 
     /**
-     * Owner-scoped union view over excuse_tickets and late_checkin_requests.
-     * Sorting is stable: updatedAt DESC, kind ASC, id ASC.
+     * Owner-scoped union view over excuse_tickets and late_checkin_requests. Sorting is stable:
+     * updatedAt DESC, kind ASC, id ASC.
      */
     public RequestPage list(Identity identity, RequestBucket bucket, Integer page, Integer size) {
         long studentId = requireStudentIdentity(identity);
@@ -321,15 +381,17 @@ public class StudentRequestService {
 
         List<Document> countPipeline = unionPipeline(studentId, bucket, false);
         countPipeline.add(new Document("$count", "total"));
-        Document count = firstDocument(mongoTemplate.getCollection("excuse_tickets")
-                .aggregate(countPipeline));
+        Document count =
+                firstDocument(
+                        mongoTemplate.getCollection("excuse_tickets").aggregate(countPipeline));
         long total = count == null ? 0L : numberAsLong(count.get("total"));
 
         List<Document> dataPipeline = unionPipeline(studentId, bucket, true);
         dataPipeline.add(new Document("$skip", (long) effectivePage * effectiveSize));
         dataPipeline.add(new Document("$limit", effectiveSize));
         List<RequestSummary> content = new ArrayList<>();
-        for (Document document : mongoTemplate.getCollection("excuse_tickets").aggregate(dataPipeline)) {
+        for (Document document :
+                mongoTemplate.getCollection("excuse_tickets").aggregate(dataPipeline)) {
             content.add(summaryFromUnionDocument(document));
         }
         int totalPages = total == 0 ? 0 : (int) ((total + effectiveSize - 1) / effectiveSize);
@@ -357,21 +419,24 @@ public class StudentRequestService {
     }
 
     /**
-     * Build options from the current group schedule.  Schedule/academic errors
-     * are intentionally allowed to fail closed through their client exceptions.
+     * Build options from the current group schedule. Schedule/academic errors are intentionally
+     * allowed to fail closed through their client exceptions.
      */
     public RequestOptions options(Identity identity) {
         long studentId = requireStudentIdentity(identity);
         Long semesterId = requireCurrentSemester();
         Instant now = clock.instant();
-        var response = scheduleGrpcClient.getLessonsByGroup(
-                identity.groupId(), semesterId,
-                now.atZone(ZoneOffset.UTC).toLocalDate().minusMonths(12).toString(),
-                now.atZone(ZoneOffset.UTC).toLocalDate().plusMonths(12).toString());
-        List<LessonSnapshot> lessons = response.getLessonsList().stream()
-                .map(item -> toSnapshot(item, semesterId))
-                .filter(Objects::nonNull)
-                .toList();
+        var response =
+                scheduleGrpcClient.getLessonsByGroup(
+                        identity.groupId(),
+                        semesterId,
+                        now.atZone(ZoneOffset.UTC).toLocalDate().minusMonths(12).toString(),
+                        now.atZone(ZoneOffset.UTC).toLocalDate().plusMonths(12).toString());
+        List<LessonSnapshot> lessons =
+                response.getLessonsList().stream()
+                        .map(item -> toSnapshot(item, semesterId))
+                        .filter(Objects::nonNull)
+                        .toList();
         validateOptionSnapshots(identity, lessons, semesterId);
         return optionsFor(studentId, semesterId, enrichSnapshots(lessons));
     }
@@ -381,62 +446,111 @@ public class StudentRequestService {
         long studentId = requireStudentIdentity(identity);
         Long semesterId = requireCurrentSemester();
         validateOptionSnapshots(identity, lessons, semesterId);
-        return optionsFor(studentId, semesterId,
-                enrichSnapshots(lessons == null ? List.of() : lessons));
+        return optionsFor(
+                studentId, semesterId, enrichSnapshots(lessons == null ? List.of() : lessons));
     }
 
-    /** Owner-only cancellation.  It is idempotent for an already-cancelled request. */
+    /** Owner-only cancellation. It is idempotent for an already-cancelled request. */
     public RequestDetail cancel(Identity identity, String requestId) {
         long studentId = requireStudentIdentity(identity);
-        return executeWithRetry(() -> transactionTemplate.execute(status -> {
-            ExcuseTicket excuse = excuseRepository.findById(requestId).orElse(null);
-            if (excuse != null) {
-                requireOwner(identity, excuse.getStudentId());
-                List<Long> lessonIds = sortedLessonIds(excuse.getLessonIds());
-                lockPairs(excuse.getSemesterId(), studentId, excuse.getGroupId(), lessonIds);
-                ExcuseTicket current = excuseRepository.findById(requestId).orElseThrow(
-                        () -> new ResourceNotFoundException("ExcuseTicket", "id", requestId));
-                if (current.getStatus() == ExcuseTicketStatus.CANCELLED) {
-                    return toDetail(current);
-                }
-                if (current.getStatus() != ExcuseTicketStatus.SUBMITTED) {
-                    throw new ConflictException("Решение по тикету уже принято");
-                }
-                Instant now = clock.instant();
-                Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
-            current.setStatus(ExcuseTicketStatus.CANCELLED);
-                current.setDecisionAt(now);
-                current.setUpdatedAt(now);
-                ExcuseTicket saved = excuseRepository.save(current);
-                if (requestActions != null) requestActions.excuse(saved, auditBefore, studentId, "STUDENT", now);
-                excuseEventPublisher.publishDecided(saved);
-                return toDetail(saved);
-            }
+        return executeWithRetry(
+                () ->
+                        transactionTemplate.execute(
+                                status -> {
+                                    ExcuseTicket excuse =
+                                            excuseRepository.findById(requestId).orElse(null);
+                                    if (excuse != null) {
+                                        requireOwner(identity, excuse.getStudentId());
+                                        List<Long> lessonIds =
+                                                sortedLessonIds(excuse.getLessonIds());
+                                        lockPairs(
+                                                excuse.getSemesterId(),
+                                                studentId,
+                                                excuse.getGroupId(),
+                                                lessonIds);
+                                        ExcuseTicket current =
+                                                excuseRepository
+                                                        .findById(requestId)
+                                                        .orElseThrow(
+                                                                () ->
+                                                                        new ResourceNotFoundException(
+                                                                                "ExcuseTicket",
+                                                                                "id",
+                                                                                requestId));
+                                        if (current.getStatus() == ExcuseTicketStatus.CANCELLED) {
+                                            return toDetail(current);
+                                        }
+                                        if (current.getStatus() != ExcuseTicketStatus.SUBMITTED) {
+                                            throw new ConflictException(
+                                                    "Решение по тикету уже принято");
+                                        }
+                                        Instant now = clock.instant();
+                                        Map<String, Object> auditBefore =
+                                                ru.rutcampustrack.attendance.audit
+                                                        .RequestActionRecorder.snapshot(current);
+                                        current.setStatus(ExcuseTicketStatus.CANCELLED);
+                                        current.setDecisionAt(now);
+                                        current.setUpdatedAt(now);
+                                        ExcuseTicket saved = excuseRepository.save(current);
+                                        if (requestActions != null)
+                                            requestActions.excuse(
+                                                    saved, auditBefore, studentId, "STUDENT", now);
+                                        excuseEventPublisher.publishDecided(saved);
+                                        return toDetail(saved);
+                                    }
 
-            LateCheckinRequest late = lateCheckinRepository.findById(requestId).orElseThrow(
-                    () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
-            requireOwner(identity, late.getStudentId());
-            lockPairs(late.getSemesterId(), studentId, late.getGroupId(), List.of(late.getLessonId()));
-            LateCheckinRequest current = lateCheckinRepository.findById(requestId).orElseThrow(
-                    () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
-            if (current.getStatus() == LateCheckinRequestStatus.CANCELLED) {
-                return toDetail(current);
-            }
-            if (current.getStatus() != LateCheckinRequestStatus.PENDING) {
-                throw new ConflictException("Решение по запросу уже принято");
-            }
-            Instant now = clock.instant();
-            Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
-            current.setStatus(LateCheckinRequestStatus.CANCELLED);
-            current.setResolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT);
-            current.setDecisionAt(now);
-            current.setUpdatedAt(now);
-            LateCheckinRequest saved = lateCheckinRepository.save(current);
-            if (requestActions != null) requestActions.late(saved, auditBefore, studentId, "STUDENT", now);
-            lateCheckinEventPublisher.publishDecided(saved, saved.getLessonDate(), saved.getLessonNumber(),
-                    saved.getSubjectId(), null);
-            return toDetail(saved);
-        }));
+                                    LateCheckinRequest late =
+                                            lateCheckinRepository
+                                                    .findById(requestId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new ResourceNotFoundException(
+                                                                            "StudentRequest",
+                                                                            "id",
+                                                                            requestId));
+                                    requireOwner(identity, late.getStudentId());
+                                    lockPairs(
+                                            late.getSemesterId(),
+                                            studentId,
+                                            late.getGroupId(),
+                                            List.of(late.getLessonId()));
+                                    LateCheckinRequest current =
+                                            lateCheckinRepository
+                                                    .findById(requestId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new ResourceNotFoundException(
+                                                                            "LateCheckinRequest",
+                                                                            "id",
+                                                                            requestId));
+                                    if (current.getStatus() == LateCheckinRequestStatus.CANCELLED) {
+                                        return toDetail(current);
+                                    }
+                                    if (current.getStatus() != LateCheckinRequestStatus.PENDING) {
+                                        throw new ConflictException(
+                                                "Решение по запросу уже принято");
+                                    }
+                                    Instant now = clock.instant();
+                                    Map<String, Object> auditBefore =
+                                            ru.rutcampustrack.attendance.audit.RequestActionRecorder
+                                                    .snapshot(current);
+                                    current.setStatus(LateCheckinRequestStatus.CANCELLED);
+                                    current.setResolutionReason(
+                                            LateCheckinResolutionReason.CANCELLED_BY_STUDENT);
+                                    current.setDecisionAt(now);
+                                    current.setUpdatedAt(now);
+                                    LateCheckinRequest saved = lateCheckinRepository.save(current);
+                                    if (requestActions != null)
+                                        requestActions.late(
+                                                saved, auditBefore, studentId, "STUDENT", now);
+                                    lateCheckinEventPublisher.publishDecided(
+                                            saved,
+                                            saved.getLessonDate(),
+                                            saved.getLessonNumber(),
+                                            saved.getSubjectId(),
+                                            null);
+                                    return toDetail(saved);
+                                }));
     }
 
     /** Download after owner/request binding and logical expiry checks. */
@@ -446,8 +560,13 @@ public class StudentRequestService {
         if (request.summary().kind() != StudentRequestKind.EXCUSE) {
             throw new ResourceNotFoundException("Attachment", "id", attachmentId);
         }
-        RequestAttachmentDocument document = attachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Attachment", "id", attachmentId));
+        RequestAttachmentDocument document =
+                attachmentRepository
+                        .findById(attachmentId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Attachment", "id", attachmentId));
         if (!Objects.equals(document.getRequestId(), requestId)
                 || !Objects.equals(document.getOwnerStudentId(), studentId)) {
             throw new AccessDeniedException("Доступ к вложению запрещён");
@@ -461,28 +580,38 @@ public class StudentRequestService {
         if (document.getData() == null) {
             throw new ResponseStatusException(HttpStatus.GONE, "Вложение больше недоступно");
         }
-        return new AttachmentDownload(document.getData().getData(), document.getContentType(), document.getName());
+        return new AttachmentDownload(
+                document.getData().getData(), document.getContentType(), document.getName());
     }
 
     /**
-     * Read one retained excuse attachment for the trusted notification bot.
-     * The actor is an internal Academic user id, never a Telegram id or an
-     * event supplied group.  The persisted request group is loaded first and
-     * a current Academic headman check is performed for every non-owner read.
+     * Read one retained excuse attachment for the trusted notification bot. The actor is an
+     * internal Academic user id, never a Telegram id or an event supplied group. The persisted
+     * request group is loaded first and a current Academic headman check is performed for every
+     * non-owner read.
      */
-    public AttachmentDownload fetchExcuseAttachmentForBot(long actorUserId,
-                                                           String requestId,
-                                                           String attachmentId) {
+    public AttachmentDownload fetchExcuseAttachmentForBot(
+            long actorUserId, String requestId, String attachmentId) {
         if (actorUserId <= 0) {
             throw new AccessDeniedException("Внутренний actor_user_id должен быть положительным");
         }
         validateObjectId(requestId, "request_id");
         validateObjectId(attachmentId, "attachment_id");
-        ExcuseTicket ticket = excuseRepository.findById(requestId).orElseThrow(
-                () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
+        ExcuseTicket ticket =
+                excuseRepository
+                        .findById(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "StudentRequest", "id", requestId));
         authorizeBotAttachmentActor(actorUserId, ticket);
-        RequestAttachmentDocument document = attachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Attachment", "id", attachmentId));
+        RequestAttachmentDocument document =
+                attachmentRepository
+                        .findById(attachmentId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Attachment", "id", attachmentId));
         if (!Objects.equals(document.getRequestId(), requestId)
                 || !Objects.equals(document.getOwnerStudentId(), ticket.getStudentId())) {
             throw new AccessDeniedException("Доступ к вложению запрещён");
@@ -496,39 +625,56 @@ public class StudentRequestService {
         if (document.getData() == null) {
             throw new ResponseStatusException(HttpStatus.GONE, "Вложение больше недоступно");
         }
-        return new AttachmentDownload(document.getData().getData(), document.getContentType(), document.getName());
+        return new AttachmentDownload(
+                document.getData().getData(), document.getContentType(), document.getName());
     }
 
     /**
      * Resolve all private notification data from the persisted request.
      *
-     * <p>The event envelope is deliberately absent from this method: callers
-     * receive the request's stored group, student and full detail projection.
-     * Status is checked before {@link #toDetail(ExcuseTicket)} or
-     * {@link #toDetail(LateCheckinRequest)} so a corrupt/null persisted value
-     * cannot be normalized to PENDING by the public projection mapper.
+     * <p>The event envelope is deliberately absent from this method: callers receive the request's
+     * stored group, student and full detail projection. Status is checked before {@link
+     * #toDetail(ExcuseTicket)} or {@link #toDetail(LateCheckinRequest)} so a corrupt/null persisted
+     * value cannot be normalized to PENDING by the public projection mapper.
      */
-    public NotificationResolution resolveRequestNotification(StudentRequestKind kind, String requestId) {
+    public NotificationResolution resolveRequestNotification(
+            StudentRequestKind kind, String requestId) {
         if (kind == null) {
             throw new BadRequestException("Вид заявки обязателен");
         }
         validateObjectId(requestId, "request_id");
         return switch (kind) {
             case EXCUSE -> {
-                ExcuseTicket ticket = excuseRepository.findById(requestId).orElseThrow(
-                        () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
+                ExcuseTicket ticket =
+                        excuseRepository
+                                .findById(requestId)
+                                .orElseThrow(
+                                        () ->
+                                                new ResourceNotFoundException(
+                                                        "StudentRequest", "id", requestId));
                 validateNotificationStatus(ticket.getStatus());
                 RequestDetail detail = toNotificationDetail(ticket);
-                yield canonicalNotification(ticket.getGroupId(), ticket.getStudentId(),
-                        ticket.getStudentName(), detail);
+                yield canonicalNotification(
+                        ticket.getGroupId(),
+                        ticket.getStudentId(),
+                        ticket.getStudentName(),
+                        detail);
             }
             case LATE_CHECKIN -> {
-                LateCheckinRequest request = lateCheckinRepository.findById(requestId).orElseThrow(
-                        () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
+                LateCheckinRequest request =
+                        lateCheckinRepository
+                                .findById(requestId)
+                                .orElseThrow(
+                                        () ->
+                                                new ResourceNotFoundException(
+                                                        "StudentRequest", "id", requestId));
                 validateNotificationStatus(request.getStatus());
                 RequestDetail detail = toDetail(request);
-                yield canonicalNotification(request.getGroupId(), request.getStudentId(),
-                        request.getStudentName(), detail);
+                yield canonicalNotification(
+                        request.getGroupId(),
+                        request.getStudentId(),
+                        request.getStudentName(),
+                        detail);
             }
         };
     }
@@ -555,11 +701,14 @@ public class StudentRequestService {
         }
     }
 
-    private NotificationResolution canonicalNotification(Long groupId, Long studentId,
-                                                          String storedStudentName,
-                                                          RequestDetail detail) {
-        if (groupId == null || groupId <= 0 || studentId == null || studentId <= 0
-                || detail == null || detail.summary() == null) {
+    private NotificationResolution canonicalNotification(
+            Long groupId, Long studentId, String storedStudentName, RequestDetail detail) {
+        if (groupId == null
+                || groupId <= 0
+                || studentId == null
+                || studentId <= 0
+                || detail == null
+                || detail.summary() == null) {
             throw new BadRequestException("Канонический контекст заявки неполон");
         }
         String studentName = storedStudentName;
@@ -576,23 +725,29 @@ public class StudentRequestService {
         List<RequestAttachmentDocument> storedAttachments =
                 attachmentRepository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
                         ticket.getId(), ticket.getStudentId());
-        List<AttachmentDescriptor> attachments = reconcileNotificationAttachments(ticket, storedAttachments);
+        List<AttachmentDescriptor> attachments =
+                reconcileNotificationAttachments(ticket, storedAttachments);
         return toDetail(ticket, attachments);
     }
 
     private List<AttachmentDescriptor> reconcileNotificationAttachments(
             ExcuseTicket ticket, List<RequestAttachmentDocument> storedAttachments) {
-        if (ticket.getId() == null || ticket.getId().isBlank()
-                || ticket.getStudentId() == null || ticket.getStudentId() <= 0
+        if (ticket.getId() == null
+                || ticket.getId().isBlank()
+                || ticket.getStudentId() == null
+                || ticket.getStudentId() <= 0
                 || storedAttachments == null) {
             throw new BadRequestException("Канонический инвентарь вложений недоступен");
         }
 
         Set<String> embeddedIds = new HashSet<>();
-        List<RequestAttachmentDescriptorDocument> embeddedDescriptors = ticket.getAttachmentDescriptors();
+        List<RequestAttachmentDescriptorDocument> embeddedDescriptors =
+                ticket.getAttachmentDescriptors();
         if (embeddedDescriptors != null) {
             for (RequestAttachmentDescriptorDocument descriptor : embeddedDescriptors) {
-                if (descriptor == null || descriptor.getId() == null || descriptor.getId().isBlank()
+                if (descriptor == null
+                        || descriptor.getId() == null
+                        || descriptor.getId().isBlank()
                         || !embeddedIds.add(descriptor.getId())) {
                     throw new BadRequestException("Канонический инвентарь вложений некорректен");
                 }
@@ -601,7 +756,9 @@ public class StudentRequestService {
 
         Set<String> storedIds = new HashSet<>();
         for (RequestAttachmentDocument document : storedAttachments) {
-            if (document == null || document.getId() == null || document.getId().isBlank()
+            if (document == null
+                    || document.getId() == null
+                    || document.getId().isBlank()
                     || !Objects.equals(document.getRequestId(), ticket.getId())
                     || !Objects.equals(document.getOwnerStudentId(), ticket.getStudentId())
                     || !storedIds.add(document.getId())) {
@@ -609,25 +766,31 @@ public class StudentRequestService {
             }
         }
         if (!embeddedIds.equals(storedIds)) {
-            throw new BadRequestException("Канонический и сохранённый инвентари вложений не совпадают");
+            throw new BadRequestException(
+                    "Канонический и сохранённый инвентари вложений не совпадают");
         }
         return storedAttachments.stream().map(this::toDescriptor).toList();
     }
 
     /**
-     * Apply an authenticated bot excuse decision.  A matching terminal
-     * command is a semantic duplicate and returns the persisted detail without
-     * taking locks or publishing a second event.  A conflicting terminal
-     * command remains a conflict so the broker can route it for inspection.
+     * Apply an authenticated bot excuse decision. A matching terminal command is a semantic
+     * duplicate and returns the persisted detail without taking locks or publishing a second event.
+     * A conflicting terminal command remains a conflict so the broker can route it for inspection.
      */
-    public RequestDetail decideExcuseFromBot(String ticketId, long actorUserId,
-                                              boolean approved, String decisionComment) {
+    public RequestDetail decideExcuseFromBot(
+            String ticketId, long actorUserId, boolean approved, String decisionComment) {
         validateObjectId(ticketId, "ticket_id");
         String normalizedComment = validateDecisionComment(decisionComment);
-        ExcuseTicket ticket = excuseRepository.findById(ticketId).orElseThrow(
-                () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
+        ExcuseTicket ticket =
+                excuseRepository
+                        .findById(ticketId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "ExcuseTicket", "id", ticketId));
         authorizeBotDecisionActor(actorUserId, ticket);
-        ExcuseTicketStatus expected = approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
+        ExcuseTicketStatus expected =
+                approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
         if (ticket.getStatus() == expected
                 && Objects.equals(ticket.getDecisionBy(), actorUserId)
                 && Objects.equals(ticket.getDecisionComment(), normalizedComment)) {
@@ -637,26 +800,38 @@ public class StudentRequestService {
                 && ticket.getStatus() != ExcuseTicketStatus.DRAFT) {
             throw new ConflictException("Решение по тикету уже принято");
         }
-        return decideExcuse(new Identity(actorUserId, UserRole.STUDENT, ticket.getGroupId(), true),
-                ticketId, approved, normalizedComment);
+        return decideExcuse(
+                new Identity(actorUserId, UserRole.STUDENT, ticket.getGroupId(), true),
+                ticketId,
+                approved,
+                normalizedComment);
     }
 
     /** Same semantic-duplicate/stale handling for bot late-checkin decisions. */
-    public RequestDetail decideLateCheckinFromBot(String requestId, long actorUserId, boolean approved) {
+    public RequestDetail decideLateCheckinFromBot(
+            String requestId, long actorUserId, boolean approved) {
         validateObjectId(requestId, "request_id");
-        LateCheckinRequest request = lateCheckinRepository.findById(requestId).orElseThrow(
-                () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        LateCheckinRequest request =
+                lateCheckinRepository
+                        .findById(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "LateCheckinRequest", "id", requestId));
         authorizeBotDecisionActor(actorUserId, request.getGroupId());
-        LateCheckinRequestStatus expected = approved
-                ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED;
-        if (request.getStatus() == expected && Objects.equals(request.getDecisionBy(), actorUserId)) {
+        LateCheckinRequestStatus expected =
+                approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED;
+        if (request.getStatus() == expected
+                && Objects.equals(request.getDecisionBy(), actorUserId)) {
             return toDetail(request);
         }
         if (request.getStatus() != LateCheckinRequestStatus.PENDING) {
             throw new ConflictException("Решение по запросу уже принято");
         }
-        return decideLateCheckin(new Identity(actorUserId, UserRole.STUDENT, request.getGroupId(), true),
-                requestId, approved);
+        return decideLateCheckin(
+                new Identity(actorUserId, UserRole.STUDENT, request.getGroupId(), true),
+                requestId,
+                approved);
     }
 
     private void authorizeBotAttachmentActor(long actorUserId, ExcuseTicket ticket) {
@@ -686,9 +861,14 @@ public class StudentRequestService {
     /** Logical expiry plus byte clearing for the task-owned collection only. */
     public long expireAttachments() {
         Instant now = retentionClock.instant();
-        Query due = Query.query(Criteria.where("state").is(AttachmentState.ACTIVE.name())
-                .and("expires_at").lte(now));
-        List<RequestAttachmentDocument> candidates = mongoTemplate.find(due, RequestAttachmentDocument.class);
+        Query due =
+                Query.query(
+                        Criteria.where("state")
+                                .is(AttachmentState.ACTIVE.name())
+                                .and("expires_at")
+                                .lte(now));
+        List<RequestAttachmentDocument> candidates =
+                mongoTemplate.find(due, RequestAttachmentDocument.class);
         long expired = 0;
         for (RequestAttachmentDocument candidate : candidates) {
             long semesterId = attachmentSemester(candidate);
@@ -705,32 +885,52 @@ public class StudentRequestService {
         if (attachment.getRequestId() == null || attachment.getRequestId().isBlank()) {
             throw new IllegalStateException("Expired attachment has no owning request identity");
         }
-        String[] pairKey = attachment.getRequestId() == null ? new String[0] : attachment.getRequestId().split(":", -1);
+        String[] pairKey =
+                attachment.getRequestId() == null
+                        ? new String[0]
+                        : attachment.getRequestId().split(":", -1);
         if (pairKey.length == 2) {
             long studentId = parsePositiveLong(pairKey[0]);
             long lessonId = parsePositiveLong(pairKey[1]);
-            if (studentId <= 0 || lessonId <= 0 || !Objects.equals(attachment.getOwnerStudentId(), studentId)
-                    || attachment.getGroupId() == null || attachment.getGroupId() <= 0) {
-                throw new IllegalStateException("Expired journal attachment has no valid pair scope");
+            if (studentId <= 0
+                    || lessonId <= 0
+                    || !Objects.equals(attachment.getOwnerStudentId(), studentId)
+                    || attachment.getGroupId() == null
+                    || attachment.getGroupId() <= 0) {
+                throw new IllegalStateException(
+                        "Expired journal attachment has no valid pair scope");
             }
             Long semesterId = attachment.getSemesterId();
             if (semesterId == null || semesterId <= 0) {
-                AttendanceDocument mark = attendanceRepository.findByLessonIdAndUserId(lessonId, studentId)
-                        .orElseThrow(() -> new IllegalStateException(
-                                "Expired journal attachment semester cannot be resolved from its exact attendance row"));
+                AttendanceDocument mark =
+                        attendanceRepository
+                                .findByLessonIdAndUserId(lessonId, studentId)
+                                .orElseThrow(
+                                        () ->
+                                                new IllegalStateException(
+                                                        "Expired journal attachment semester cannot be resolved from its exact attendance row"));
                 if (!Objects.equals(mark.getGroupId(), attachment.getGroupId())
-                        || mark.getSemesterId() == null || mark.getSemesterId() <= 0) {
-                    throw new IllegalStateException("Expired journal attachment has ambiguous attendance scope");
+                        || mark.getSemesterId() == null
+                        || mark.getSemesterId() <= 0) {
+                    throw new IllegalStateException(
+                            "Expired journal attachment has ambiguous attendance scope");
                 }
                 semesterId = mark.getSemesterId();
             }
             return semesterId;
         }
-        ExcuseTicket ticket = excuseRepository.findById(attachment.getRequestId()).orElseThrow(
-                () -> new IllegalStateException("Expired attachment has no owning excuse ticket"));
+        ExcuseTicket ticket =
+                excuseRepository
+                        .findById(attachment.getRequestId())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Expired attachment has no owning excuse ticket"));
         long semesterId = requireAttachmentSemester(ticket);
-        if (attachment.getSemesterId() != null && !Objects.equals(attachment.getSemesterId(), semesterId)) {
-            throw new IllegalStateException("Expired attachment semester does not match its ticket");
+        if (attachment.getSemesterId() != null
+                && !Objects.equals(attachment.getSemesterId(), semesterId)) {
+            throw new IllegalStateException(
+                    "Expired attachment semester does not match its ticket");
         }
         return semesterId;
     }
@@ -741,56 +941,89 @@ public class StudentRequestService {
             long studentId = parsePositiveLong(pairKey[0]);
             long lessonId = parsePositiveLong(pairKey[1]);
             long groupId = candidate.getGroupId();
-            Integer changed = transactionTemplate.execute(status -> {
-                RequestAttachmentDocument current = currentDueAttachment(candidate.getId());
-                if (current == null) return 0;
-                if (!Objects.equals(current.getRequestId(), candidate.getRequestId())
-                        || !Objects.equals(current.getOwnerStudentId(), studentId)
-                        || !Objects.equals(current.getGroupId(), groupId)
-                        || (current.getSemesterId() != null && !Objects.equals(current.getSemesterId(), semesterId))) {
-                    throw new IllegalStateException("Expired journal attachment scope changed");
-                }
-                pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, retentionClock.instant());
-                expireOne(current, retentionClock.instant());
-                return 1;
-            });
+            Integer changed =
+                    transactionTemplate.execute(
+                            status -> {
+                                RequestAttachmentDocument current =
+                                        currentDueAttachment(candidate.getId());
+                                if (current == null) return 0;
+                                if (!Objects.equals(
+                                                current.getRequestId(), candidate.getRequestId())
+                                        || !Objects.equals(current.getOwnerStudentId(), studentId)
+                                        || !Objects.equals(current.getGroupId(), groupId)
+                                        || (current.getSemesterId() != null
+                                                && !Objects.equals(
+                                                        current.getSemesterId(), semesterId))) {
+                                    throw new IllegalStateException(
+                                            "Expired journal attachment scope changed");
+                                }
+                                pairWriteCoordinator.lock(
+                                        semesterId,
+                                        studentId,
+                                        lessonId,
+                                        groupId,
+                                        retentionClock.instant());
+                                expireOne(current, retentionClock.instant());
+                                return 1;
+                            });
             return changed == null ? 0 : changed;
         }
 
-        Integer changed = transactionTemplate.execute(status -> {
-            RequestAttachmentDocument current = currentDueAttachment(candidate.getId());
-            if (current == null) return 0;
-            ExcuseTicket ticket = excuseRepository.findById(current.getRequestId()).orElseThrow(
-                    () -> new IllegalStateException("Expired attachment owner disappeared"));
-            if (requireAttachmentSemester(ticket) != semesterId
-                    || !Objects.equals(ticket.getStudentId(), current.getOwnerStudentId())
-                    || !Objects.equals(ticket.getGroupId(), current.getGroupId())
-                    || ticket.getStudentId() == null || ticket.getStudentId() <= 0
-                    || ticket.getGroupId() == null || ticket.getGroupId() <= 0
-                    || (current.getSemesterId() != null && !Objects.equals(current.getSemesterId(), semesterId))) {
-                throw new IllegalStateException("Expired attachment owner scope changed");
-            }
-            List<Long> lessonIds = sortedLessonIds(ticket.getLessonIds());
-            if (ticket.getStudentId() == null || ticket.getStudentId() <= 0 || lessonIds.isEmpty()) {
-                throw new IllegalStateException("Expired attachment owner has no authoritative lesson scope");
-            }
-            Instant updateAt = retentionClock.instant();
-            // Retention clears only this request's bytes, not attendance.
-            // The semester and physical lesson fences serialize it with archive
-            // and transfer. A terminal ticket keeps its original lesson ids,
-            // so a student/pair mutation lock would incorrectly reject cleanup
-            // once that historical source lesson has been transferred.
-            pairWriteCoordinator.lockLessons(semesterId, lessonIds, ticket.getGroupId(), updateAt);
-            expireOne(current, updateAt);
-            return 1;
-        });
+        Integer changed =
+                transactionTemplate.execute(
+                        status -> {
+                            RequestAttachmentDocument current =
+                                    currentDueAttachment(candidate.getId());
+                            if (current == null) return 0;
+                            ExcuseTicket ticket =
+                                    excuseRepository
+                                            .findById(current.getRequestId())
+                                            .orElseThrow(
+                                                    () ->
+                                                            new IllegalStateException(
+                                                                    "Expired attachment owner disappeared"));
+                            if (requireAttachmentSemester(ticket) != semesterId
+                                    || !Objects.equals(
+                                            ticket.getStudentId(), current.getOwnerStudentId())
+                                    || !Objects.equals(ticket.getGroupId(), current.getGroupId())
+                                    || ticket.getStudentId() == null
+                                    || ticket.getStudentId() <= 0
+                                    || ticket.getGroupId() == null
+                                    || ticket.getGroupId() <= 0
+                                    || (current.getSemesterId() != null
+                                            && !Objects.equals(
+                                                    current.getSemesterId(), semesterId))) {
+                                throw new IllegalStateException(
+                                        "Expired attachment owner scope changed");
+                            }
+                            List<Long> lessonIds = sortedLessonIds(ticket.getLessonIds());
+                            if (ticket.getStudentId() == null
+                                    || ticket.getStudentId() <= 0
+                                    || lessonIds.isEmpty()) {
+                                throw new IllegalStateException(
+                                        "Expired attachment owner has no authoritative lesson scope");
+                            }
+                            Instant updateAt = retentionClock.instant();
+                            // Retention clears only this request's bytes, not attendance.
+                            // The semester and physical lesson fences serialize it with archive
+                            // and transfer. A terminal ticket keeps its original lesson ids,
+                            // so a student/pair mutation lock would incorrectly reject cleanup
+                            // once that historical source lesson has been transferred.
+                            pairWriteCoordinator.lockLessons(
+                                    semesterId, lessonIds, ticket.getGroupId(), updateAt);
+                            expireOne(current, updateAt);
+                            return 1;
+                        });
         return changed == null ? 0 : changed;
     }
 
     private RequestAttachmentDocument currentDueAttachment(String attachmentId) {
-        RequestAttachmentDocument current = attachmentRepository.findById(attachmentId).orElse(null);
-        if (current == null || current.getState() != AttachmentState.ACTIVE
-                || current.getExpiresAt() == null || retentionClock.instant().isBefore(current.getExpiresAt())) {
+        RequestAttachmentDocument current =
+                attachmentRepository.findById(attachmentId).orElse(null);
+        if (current == null
+                || current.getState() != AttachmentState.ACTIVE
+                || current.getExpiresAt() == null
+                || retentionClock.instant().isBefore(current.getExpiresAt())) {
             return null;
         }
         return current;
@@ -812,85 +1045,101 @@ public class StudentRequestService {
             String payloadHash,
             Long semesterId,
             List<ResolvedLesson> lessons,
-            String studentName
-    ) {
+            String studentName) {
         long studentId = identity.userId();
-        OptionalReceipt previous = findReceipt(studentId, StudentRequestKind.EXCUSE, command.idempotencyKey());
+        OptionalReceipt previous =
+                findReceipt(studentId, StudentRequestKind.EXCUSE, command.idempotencyKey());
         if (previous.present()) {
             return replayOrMismatch(identity, previous.document(), payloadHash);
         }
 
-        Map<Long, LessonResponse> writeLessons = lockPairs(semesterId, studentId, identity.groupId(), lessons.stream()
-                .map(ResolvedLesson::lessonId).sorted(LESSON_ORDER).toList());
+        Map<Long, LessonResponse> writeLessons =
+                lockPairs(
+                        semesterId,
+                        studentId,
+                        identity.groupId(),
+                        lessons.stream()
+                                .map(ResolvedLesson::lessonId)
+                                .sorted(LESSON_ORDER)
+                                .toList());
         for (ResolvedLesson lesson : lessons) {
-            AttendanceDocument attendance = attendanceRepository
-                    .findByLessonIdAndUserId(lesson.lessonId(), studentId).orElse(null);
-            validateExcuseEligibility(withCurrentLifecycle(lesson, writeLessons.get(lesson.lessonId())), attendance, studentId);
+            AttendanceDocument attendance =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(lesson.lessonId(), studentId)
+                            .orElse(null);
+            validateExcuseEligibility(
+                    withCurrentLifecycle(lesson, writeLessons.get(lesson.lessonId())),
+                    attendance,
+                    studentId);
         }
 
-            Instant now = clock.instant();
-            ExcuseTicket ticket = ExcuseTicket.builder()
-                .id(new ObjectId().toHexString())
-                .studentId(studentId)
-                .groupId(identity.groupId())
-                .studentName(studentName)
-                .lessonIds(lessons.stream().map(ResolvedLesson::lessonId).sorted().toList())
-                .semesterId(semesterId)
-                .lessonSnapshots(lessons.stream().map(ResolvedLesson::document).toList())
-                .excuseType(command.reason())
-                .comment(normalizeComment(command.comment()))
-                .attachmentDescriptors(new ArrayList<>())
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        Instant now = clock.instant();
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .id(new ObjectId().toHexString())
+                        .studentId(studentId)
+                        .groupId(identity.groupId())
+                        .studentName(studentName)
+                        .lessonIds(lessons.stream().map(ResolvedLesson::lessonId).sorted().toList())
+                        .semesterId(semesterId)
+                        .lessonSnapshots(lessons.stream().map(ResolvedLesson::document).toList())
+                        .excuseType(command.reason())
+                        .comment(normalizeComment(command.comment()))
+                        .attachmentDescriptors(new ArrayList<>())
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
         ExcuseTicket saved = excuseRepository.save(ticket);
 
         List<RequestAttachmentDescriptorDocument> descriptors = new ArrayList<>();
         for (int position = 0; position < files.items().size(); position++) {
             ValidatedAttachment file = files.items().get(position);
-                Instant uploadedAt = retentionClock.instant();
-                Instant expiresAt = uploadedAt.atZone(ZoneOffset.UTC).plusYears(1).toInstant();
-            RequestAttachmentDocument attachment = RequestAttachmentDocument.builder()
-                    .id(new ObjectId().toHexString())
-                    .requestId(saved.getId())
-                    .ownerStudentId(studentId)
-                    .groupId(identity.groupId())
-                    .semesterId(semesterId)
-                    .position(position)
-                    .name(file.safeName())
-                    .contentType(file.detectedContentType())
-                    .size((long) file.bytes().length)
-                    .sha256(file.sha256())
-                    .state(AttachmentState.ACTIVE)
-                    .data(new Binary(file.bytes()))
-                    .uploadedAt(uploadedAt)
-                    .expiresAt(expiresAt)
-                    .build();
+            Instant uploadedAt = retentionClock.instant();
+            Instant expiresAt = uploadedAt.atZone(ZoneOffset.UTC).plusYears(1).toInstant();
+            RequestAttachmentDocument attachment =
+                    RequestAttachmentDocument.builder()
+                            .id(new ObjectId().toHexString())
+                            .requestId(saved.getId())
+                            .ownerStudentId(studentId)
+                            .groupId(identity.groupId())
+                            .semesterId(semesterId)
+                            .position(position)
+                            .name(file.safeName())
+                            .contentType(file.detectedContentType())
+                            .size((long) file.bytes().length)
+                            .sha256(file.sha256())
+                            .state(AttachmentState.ACTIVE)
+                            .data(new Binary(file.bytes()))
+                            .uploadedAt(uploadedAt)
+                            .expiresAt(expiresAt)
+                            .build();
             RequestAttachmentDocument persisted = attachmentRepository.save(attachment);
-            descriptors.add(RequestAttachmentDescriptorDocument.builder()
-                    .id(persisted.getId())
-                    .name(persisted.getName())
-                    .contentType(persisted.getContentType())
-                    .size(persisted.getSize())
-                    .sha256(persisted.getSha256())
-                    .state(persisted.getState())
-                    .uploadedAt(persisted.getUploadedAt())
-                    .expiresAt(persisted.getExpiresAt())
-                    .build());
+            descriptors.add(
+                    RequestAttachmentDescriptorDocument.builder()
+                            .id(persisted.getId())
+                            .name(persisted.getName())
+                            .contentType(persisted.getContentType())
+                            .size(persisted.getSize())
+                            .sha256(persisted.getSha256())
+                            .state(persisted.getState())
+                            .uploadedAt(persisted.getUploadedAt())
+                            .expiresAt(persisted.getExpiresAt())
+                            .build());
         }
         saved.setAttachmentDescriptors(descriptors);
         saved = excuseRepository.save(saved);
 
         excuseEventPublisher.publishRequested(saved, lessonDetails(lessons), descriptors);
-        receiptRepository.save(StudentRequestReceiptDocument.builder()
-                .studentId(studentId)
-                .commandKind(StudentRequestKind.EXCUSE.name())
-                .idempotencyKey(command.idempotencyKey())
-                .payloadHash(payloadHash)
-                .requestId(saved.getId())
-                .createdAt(now)
-                .build());
+        receiptRepository.save(
+                StudentRequestReceiptDocument.builder()
+                        .studentId(studentId)
+                        .commandKind(StudentRequestKind.EXCUSE.name())
+                        .idempotencyKey(command.idempotencyKey())
+                        .payloadHash(payloadHash)
+                        .requestId(saved.getId())
+                        .createdAt(now)
+                        .build());
         return toDetail(saved);
     }
 
@@ -900,80 +1149,101 @@ public class StudentRequestService {
             String payloadHash,
             Long semesterId,
             ResolvedLesson lesson,
-            String studentName
-    ) {
+            String studentName) {
         long studentId = identity.userId();
-        OptionalReceipt previous = findReceipt(studentId, StudentRequestKind.LATE_CHECKIN,
-                command.idempotencyKey());
+        OptionalReceipt previous =
+                findReceipt(studentId, StudentRequestKind.LATE_CHECKIN, command.idempotencyKey());
         if (previous.present()) {
             return replayOrMismatch(identity, previous.document(), payloadHash);
         }
 
-        Map<Long, LessonResponse> writeLessons = lockPairs(semesterId, studentId, identity.groupId(), List.of(lesson.lessonId()));
-        AttendanceDocument attendance = attendanceRepository
-                .findByLessonIdAndUserId(lesson.lessonId(), studentId).orElse(null);
-        validateLateEligibility(withCurrentLifecycle(lesson, writeLessons.get(lesson.lessonId())), attendance, studentId);
-        if (lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
-                studentId, lesson.lessonId(), LateCheckinRequestStatus.PENDING).isPresent()) {
+        Map<Long, LessonResponse> writeLessons =
+                lockPairs(semesterId, studentId, identity.groupId(), List.of(lesson.lessonId()));
+        AttendanceDocument attendance =
+                attendanceRepository
+                        .findByLessonIdAndUserId(lesson.lessonId(), studentId)
+                        .orElse(null);
+        validateLateEligibility(
+                withCurrentLifecycle(lesson, writeLessons.get(lesson.lessonId())),
+                attendance,
+                studentId);
+        if (lateCheckinRepository
+                .findFirstByStudentIdAndLessonIdAndStatus(
+                        studentId, lesson.lessonId(), LateCheckinRequestStatus.PENDING)
+                .isPresent()) {
             throw new ConflictException("Запрос на эту пару уже отправлен");
         }
         consumeBudget(studentId, semesterId, clock.instant());
 
         Instant now = clock.instant();
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .id(new ObjectId().toHexString())
-                .studentId(studentId)
-                .groupId(identity.groupId())
-                .lessonId(lesson.lessonId())
-                .subjectId(lesson.subjectId())
-                .subjectName(lesson.subjectName())
-                .subjectType(lesson.subjectType())
-                .semesterId(semesterId)
-                .lessonNumber(lesson.lessonNumber())
-                .lessonDate(lesson.date())
-                .studentName(studentName)
-                .status(LateCheckinRequestStatus.PENDING)
-                .origin(LateCheckinRequestOrigin.MANUAL)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .id(new ObjectId().toHexString())
+                        .studentId(studentId)
+                        .groupId(identity.groupId())
+                        .lessonId(lesson.lessonId())
+                        .subjectId(lesson.subjectId())
+                        .subjectName(lesson.subjectName())
+                        .subjectType(lesson.subjectType())
+                        .semesterId(semesterId)
+                        .lessonNumber(lesson.lessonNumber())
+                        .lessonDate(lesson.date())
+                        .studentName(studentName)
+                        .status(LateCheckinRequestStatus.PENDING)
+                        .origin(LateCheckinRequestOrigin.MANUAL)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
         LateCheckinRequest saved = lateCheckinRepository.save(request);
-        lateCheckinEventPublisher.publishRequested(saved, saved.getLessonDate(), saved.getLessonNumber(),
-                saved.getSubjectId(), null);
-        receiptRepository.save(StudentRequestReceiptDocument.builder()
-                .studentId(studentId)
-                .commandKind(StudentRequestKind.LATE_CHECKIN.name())
-                .idempotencyKey(command.idempotencyKey())
-                .payloadHash(payloadHash)
-                .requestId(saved.getId())
-                .createdAt(now)
-                .build());
+        lateCheckinEventPublisher.publishRequested(
+                saved, saved.getLessonDate(), saved.getLessonNumber(), saved.getSubjectId(), null);
+        receiptRepository.save(
+                StudentRequestReceiptDocument.builder()
+                        .studentId(studentId)
+                        .commandKind(StudentRequestKind.LATE_CHECKIN.name())
+                        .idempotencyKey(command.idempotencyKey())
+                        .payloadHash(payloadHash)
+                        .requestId(saved.getId())
+                        .createdAt(now)
+                        .build());
         return toDetail(saved);
     }
 
-    private static ResolvedLesson withCurrentLifecycle(ResolvedLesson lesson, LessonResponse current) {
-        return new ResolvedLesson(lesson.lessonId(), lesson.groupId(), lesson.subjectId(),
-                lesson.lessonNumber(), lesson.date(), normalizeStatus(current.getStatus()),
-                current.getIsBlockedByHeadman(), lesson.subjectName(), lesson.subjectType(), lesson.document());
+    private static ResolvedLesson withCurrentLifecycle(
+            ResolvedLesson lesson, LessonResponse current) {
+        return new ResolvedLesson(
+                lesson.lessonId(),
+                lesson.groupId(),
+                lesson.subjectId(),
+                lesson.lessonNumber(),
+                lesson.date(),
+                normalizeStatus(current.getStatus()),
+                current.getIsBlockedByHeadman(),
+                lesson.subjectName(),
+                lesson.subjectType(),
+                lesson.document());
     }
 
     private static void requireApprovableLesson(LessonResponse lesson) {
-        if (lesson == null || !Set.of("planned", "active", "closed").contains(normalizeStatus(lesson.getStatus()))) {
+        if (lesson == null
+                || !Set.of("planned", "active", "closed")
+                        .contains(normalizeStatus(lesson.getStatus()))) {
             throw new ConflictException("Пара отменена или недоступна для отметки");
         }
     }
 
-    private void validateExcuseEligibility(ResolvedLesson lesson, AttendanceDocument attendance,
-                                           long studentId) {
+    private void validateExcuseEligibility(
+            ResolvedLesson lesson, AttendanceDocument attendance, long studentId) {
         requireAttendanceScope(attendance, lesson.groupId(), lesson.document().getSemesterId());
         String status = lesson.status();
         if ("cancelled".equals(status)) {
             throw new BadRequestException("Пара отменена");
         }
-        if (attendance != null && (attendance.getStatus() == AttendanceStatus.PRESENT
-                || attendance.getStatus() == AttendanceStatus.EXCUSED
-                || attendance.getStatus() == AttendanceStatus.FREE_ATTENDANCE
-                || attendance.getStatus() == AttendanceStatus.CANCELLED)) {
+        if (attendance != null
+                && (attendance.getStatus() == AttendanceStatus.PRESENT
+                        || attendance.getStatus() == AttendanceStatus.EXCUSED
+                        || attendance.getStatus() == AttendanceStatus.FREE_ATTENDANCE
+                        || attendance.getStatus() == AttendanceStatus.CANCELLED)) {
             throw new ConflictException("На выбранной паре уже есть итоговая отметка");
         }
         if ("closed".equals(status)
@@ -984,14 +1254,15 @@ public class StudentRequestService {
             throw new BadRequestException("Неизвестное состояние пары");
         }
         if (excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
-                studentId, List.of(lesson.lessonId()),
+                studentId,
+                List.of(lesson.lessonId()),
                 List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED))) {
             throw new ConflictException("На выбранной паре уже есть активная уважительная заявка");
         }
     }
 
-    private void validateLateEligibility(ResolvedLesson lesson, AttendanceDocument attendance,
-                                          long studentId) {
+    private void validateLateEligibility(
+            ResolvedLesson lesson, AttendanceDocument attendance, long studentId) {
         requireAttendanceScope(attendance, lesson.groupId(), lesson.document().getSemesterId());
         if (!"closed".equals(lesson.status())) {
             throw new BadRequestException("Запрос можно создать только по закрытой паре");
@@ -1000,52 +1271,63 @@ public class StudentRequestService {
             throw new ConflictException("Пара заблокирована");
         }
         if (effectiveAttendanceStatus(lesson, attendance) != AttendanceStatus.ABSENT) {
-            throw new ConflictException("Поздняя отметка доступна только для собственной отметки «н»");
+            throw new ConflictException(
+                    "Поздняя отметка доступна только для собственной отметки «н»");
         }
-        if (lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
-                studentId, lesson.lessonId(), LateCheckinRequestStatus.PENDING).isPresent()) {
+        if (lateCheckinRepository
+                .findFirstByStudentIdAndLessonIdAndStatus(
+                        studentId, lesson.lessonId(), LateCheckinRequestStatus.PENDING)
+                .isPresent()) {
             throw new ConflictException("На выбранной паре уже есть активный запрос");
         }
     }
 
     private static AttendanceStatus effectiveAttendanceStatus(
             ResolvedLesson lesson, AttendanceDocument attendance) {
-        return EffectiveAttendance.resolve(lesson.status(), attendance != null,
-                attendance == null ? null : attendance.getStatus(),
-                attendance == null ? null : attendance.getSource()).status();
+        return EffectiveAttendance.resolve(
+                        lesson.status(),
+                        attendance != null,
+                        attendance == null ? null : attendance.getStatus(),
+                        attendance == null ? null : attendance.getSource())
+                .status();
     }
 
     private void consumeBudget(long studentId, long semesterId, Instant now) {
-        Criteria identity = Criteria.where("student_id").is(studentId)
-                .and("semester_id").is(semesterId);
-        StudentLateCheckinBudgetDocument current = mongoTemplate.findOne(
-                Query.query(identity), StudentLateCheckinBudgetDocument.class);
+        Criteria identity =
+                Criteria.where("student_id").is(studentId).and("semester_id").is(semesterId);
+        StudentLateCheckinBudgetDocument current =
+                mongoTemplate.findOne(
+                        Query.query(identity), StudentLateCheckinBudgetDocument.class);
         int effectiveLimit = effectiveBudgetLimit(current);
-        if (current != null && current.getUsed() != null
-                && current.getUsed() >= effectiveLimit) {
+        if (current != null && current.getUsed() != null && current.getUsed() >= effectiveLimit) {
             throw new ConflictException("Лимит ручных запросов за семестр исчерпан");
         }
-        Criteria underPersistedLimit = current == null
-                ? Criteria.where("used").lt(MANUAL_LATE_LIMIT)
-                : Criteria.where("used").lt(effectiveLimit);
+        Criteria underPersistedLimit =
+                current == null
+                        ? Criteria.where("used").lt(MANUAL_LATE_LIMIT)
+                        : Criteria.where("used").lt(effectiveLimit);
         Query query = Query.query(new Criteria().andOperator(identity, underPersistedLimit));
-        Update update = new Update()
-                .inc("used", 1)
-                .setOnInsert("student_id", studentId)
-                .setOnInsert("semester_id", semesterId)
-                .setOnInsert("limit", MANUAL_LATE_LIMIT)
-                .set("updated_at", now);
-        StudentLateCheckinBudgetDocument result = mongoTemplate.findAndModify(
-                query, update, FindAndModifyOptions.options().upsert(true).returnNew(true),
-                StudentLateCheckinBudgetDocument.class);
+        Update update =
+                new Update()
+                        .inc("used", 1)
+                        .setOnInsert("student_id", studentId)
+                        .setOnInsert("semester_id", semesterId)
+                        .setOnInsert("limit", MANUAL_LATE_LIMIT)
+                        .set("updated_at", now);
+        StudentLateCheckinBudgetDocument result =
+                mongoTemplate.findAndModify(
+                        query,
+                        update,
+                        FindAndModifyOptions.options().upsert(true).returnNew(true),
+                        StudentLateCheckinBudgetDocument.class);
         if (result == null) {
             throw new ConflictException("Лимит ручных запросов за семестр исчерпан");
         }
     }
 
     private boolean hasRemainingBudget(long studentId, long semesterId) {
-        StudentLateCheckinBudgetDocument budget = budgetRepository
-                .findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
+        StudentLateCheckinBudgetDocument budget =
+                budgetRepository.findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
         int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
         return used < effectiveBudgetLimit(budget);
     }
@@ -1054,7 +1336,8 @@ public class StudentRequestService {
         return budget == null || budget.getLimit() == null ? MANUAL_LATE_LIMIT : budget.getLimit();
     }
 
-    private List<ResolvedLesson> resolveLessons(Identity identity, List<Long> requestedIds, long semesterId) {
+    private List<ResolvedLesson> resolveLessons(
+            Identity identity, List<Long> requestedIds, long semesterId) {
         List<Long> ids = normalizeLessonIds(requestedIds);
         List<LessonInfo> compact = scheduleGrpcClient.getLessonsByIds(ids);
         Map<Long, LessonInfo> compactById = new HashMap<>();
@@ -1068,13 +1351,17 @@ public class StudentRequestService {
         // GetLessonsByIds has no semester field.  The semester-scoped schedule
         // query is the authoritative guard against submitting an old lesson ID.
         Instant now = clock.instant();
-        Set<Long> currentSemesterIds = scheduleGrpcClient.getLessonsByGroup(
-                        identity.groupId(), semesterId,
-                        now.atZone(ZoneOffset.UTC).toLocalDate().minusYears(2).toString(),
-                        now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(2).toString())
-                .getLessonsList().stream()
-                .map(LessonResponse::getId)
-                .collect(java.util.stream.Collectors.toSet());
+        Set<Long> currentSemesterIds =
+                scheduleGrpcClient
+                        .getLessonsByGroup(
+                                identity.groupId(),
+                                semesterId,
+                                now.atZone(ZoneOffset.UTC).toLocalDate().minusYears(2).toString(),
+                                now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(2).toString())
+                        .getLessonsList()
+                        .stream()
+                        .map(LessonResponse::getId)
+                        .collect(java.util.stream.Collectors.toSet());
         if (!currentSemesterIds.containsAll(ids)) {
             throw new BadRequestException("Все пары должны относиться к текущему семестру");
         }
@@ -1094,7 +1381,8 @@ public class StudentRequestService {
             if (!Objects.equals(groupId, identity.groupId())) {
                 throw new AccessDeniedException("Пара принадлежит другой группе");
             }
-            String status = full.getStatus() == null ? "" : full.getStatus().toLowerCase(Locale.ROOT);
+            String status =
+                    full.getStatus() == null ? "" : full.getStatus().toLowerCase(Locale.ROOT);
             if (status.isBlank()) {
                 throw new BadRequestException("Состояние пары недоступно");
             }
@@ -1109,25 +1397,43 @@ public class StudentRequestService {
             if (subject == null) {
                 throw new ResourceNotFoundException("Subject", "id", subjectId);
             }
-            int lessonNumber = full.getLessonNumber() > 0 ? full.getLessonNumber() : info.getLessonNumber();
-            StudentLessonSnapshotDocument snapshot = StudentLessonSnapshotDocument.builder()
-                    .lessonId(id)
-                    .groupId(groupId)
-                    .subjectId(subjectId)
-                    .subjectName(subject.name())
-                    .subjectType(subject.type())
-                    .semesterId(semesterId)
-                    .lessonNumber(lessonNumber)
-                    .date(date)
-                    .startsAt(startsAt)
-                    .endsAt(endsAt)
-                    .status(status)
-                    .blocked(full.getIsBlockedByHeadman())
-                    .occurrenceId(full.getOccurrenceId() > 0 ? Long.toString(full.getOccurrenceId()) : null)
-                    .occurrenceRevision(full.getOccurrenceRevision() > 0 ? Long.toString(full.getOccurrenceRevision()) : null)
-                    .build();
-            result.add(new ResolvedLesson(id, groupId, subjectId, lessonNumber, date, status,
-                    full.getIsBlockedByHeadman(), subject.name(), subject.type(), snapshot));
+            int lessonNumber =
+                    full.getLessonNumber() > 0 ? full.getLessonNumber() : info.getLessonNumber();
+            StudentLessonSnapshotDocument snapshot =
+                    StudentLessonSnapshotDocument.builder()
+                            .lessonId(id)
+                            .groupId(groupId)
+                            .subjectId(subjectId)
+                            .subjectName(subject.name())
+                            .subjectType(subject.type())
+                            .semesterId(semesterId)
+                            .lessonNumber(lessonNumber)
+                            .date(date)
+                            .startsAt(startsAt)
+                            .endsAt(endsAt)
+                            .status(status)
+                            .blocked(full.getIsBlockedByHeadman())
+                            .occurrenceId(
+                                    full.getOccurrenceId() > 0
+                                            ? Long.toString(full.getOccurrenceId())
+                                            : null)
+                            .occurrenceRevision(
+                                    full.getOccurrenceRevision() > 0
+                                            ? Long.toString(full.getOccurrenceRevision())
+                                            : null)
+                            .build();
+            result.add(
+                    new ResolvedLesson(
+                            id,
+                            groupId,
+                            subjectId,
+                            lessonNumber,
+                            date,
+                            status,
+                            full.getIsBlockedByHeadman(),
+                            subject.name(),
+                            subject.type(),
+                            snapshot));
         }
         return result;
     }
@@ -1148,43 +1454,76 @@ public class StudentRequestService {
         return LocalTime.parse(value);
     }
 
-    private RequestOptions optionsFor(long studentId, long semesterId, List<LessonSnapshot> lessons) {
+    private RequestOptions optionsFor(
+            long studentId, long semesterId, List<LessonSnapshot> lessons) {
         List<LessonOption> options = new ArrayList<>();
         for (LessonSnapshot lesson : lessons) {
-            AttendanceDocument attendance = attendanceRepository
-                    .findByLessonIdAndUserId(lesson.lessonId(), studentId).orElse(null);
+            AttendanceDocument attendance =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(lesson.lessonId(), studentId)
+                            .orElse(null);
             boolean excuseEligible;
             try {
-                validateExcuseEligibility(new ResolvedLesson(lesson.lessonId(), lesson.groupId(),
-                        lesson.subjectId(), lesson.lessonNumber(), lesson.date(),
-                        normalizeStatus(lesson.status()), lesson.blocked(), toDocument(lesson)),
-                        attendance, studentId);
+                validateExcuseEligibility(
+                        new ResolvedLesson(
+                                lesson.lessonId(),
+                                lesson.groupId(),
+                                lesson.subjectId(),
+                                lesson.lessonNumber(),
+                                lesson.date(),
+                                normalizeStatus(lesson.status()),
+                                lesson.blocked(),
+                                toDocument(lesson)),
+                        attendance,
+                        studentId);
                 excuseEligible = true;
             } catch (RuntimeException rejected) {
                 excuseEligible = false;
             }
             boolean lateEligible;
             try {
-                validateLateEligibility(new ResolvedLesson(lesson.lessonId(), lesson.groupId(),
-                        lesson.subjectId(), lesson.lessonNumber(), lesson.date(),
-                        normalizeStatus(lesson.status()), lesson.blocked(), toDocument(lesson)),
-                        attendance, studentId);
+                validateLateEligibility(
+                        new ResolvedLesson(
+                                lesson.lessonId(),
+                                lesson.groupId(),
+                                lesson.subjectId(),
+                                lesson.lessonNumber(),
+                                lesson.date(),
+                                normalizeStatus(lesson.status()),
+                                lesson.blocked(),
+                                toDocument(lesson)),
+                        attendance,
+                        studentId);
                 lateEligible = hasRemainingBudget(studentId, semesterId);
             } catch (RuntimeException rejected) {
                 lateEligible = false;
             }
-            options.add(new LessonOption(lesson, excuseEligible, lateEligible,
-                    pendingForLesson(studentId, lesson.lessonId())));
+            options.add(
+                    new LessonOption(
+                            lesson,
+                            excuseEligible,
+                            lateEligible,
+                            pendingForLesson(studentId, lesson.lessonId())));
         }
-        StudentLateCheckinBudgetDocument budget = budgetRepository
-                .findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
+        StudentLateCheckinBudgetDocument budget =
+                budgetRepository.findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
         int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
         int limit = effectiveBudgetLimit(budget);
         return new RequestOptions(
                 STUDENT_REASONS.stream()
-                        .map(reason -> new ReasonOption(reason, REASON_LABELS.get(reason), commentRequired(reason))).toList(),
-                new FileLimits(MAX_ATTACHMENTS, MAX_ATTACHMENT_BYTES, MAX_TOTAL_ATTACHMENT_BYTES,
-                        ALLOWED_MIME_TYPES.stream().sorted().toList(), ALLOWED_EXTENSIONS.stream().sorted().toList()),
+                        .map(
+                                reason ->
+                                        new ReasonOption(
+                                                reason,
+                                                REASON_LABELS.get(reason),
+                                                commentRequired(reason)))
+                        .toList(),
+                new FileLimits(
+                        MAX_ATTACHMENTS,
+                        MAX_ATTACHMENT_BYTES,
+                        MAX_TOTAL_ATTACHMENT_BYTES,
+                        ALLOWED_MIME_TYPES.stream().sorted().toList(),
+                        ALLOWED_EXTENSIONS.stream().sorted().toList()),
                 new Budget(semesterId, limit, used, Math.max(0, limit - used)),
                 options);
     }
@@ -1194,31 +1533,55 @@ public class StudentRequestService {
         if (lessons == null || lessons.isEmpty()) {
             return List.of();
         }
-        List<Long> subjectIds = lessons.stream()
-                .map(LessonSnapshot::subjectId)
-                .filter(id -> id > 0)
-                .distinct()
-                .toList();
+        List<Long> subjectIds =
+                lessons.stream()
+                        .map(LessonSnapshot::subjectId)
+                        .filter(id -> id > 0)
+                        .distinct()
+                        .toList();
         Map<Long, AcademicGrpcClient.SubjectDetails> details =
                 academicGrpcClient.getSubjectDetailsByIds(subjectIds);
-        return lessons.stream().map(lesson -> {
-            AcademicGrpcClient.SubjectDetails subject = details.get(lesson.subjectId());
-            String name = lesson.subjectName() != null
-                    ? lesson.subjectName() : subject == null ? null : subject.name();
-            String type = lesson.subjectType() != null
-                    ? lesson.subjectType() : subject == null ? null : subject.type();
-            return new LessonSnapshot(lesson.lessonId(), lesson.groupId(), lesson.subjectId(),
-                    name, type, lesson.semesterId(), lesson.lessonNumber(), lesson.date(),
-                    lesson.startsAt(), lesson.endsAt(), lesson.status(), lesson.blocked(), lesson.occurrenceId(), lesson.occurrenceRevision());
-        }).toList();
+        return lessons.stream()
+                .map(
+                        lesson -> {
+                            AcademicGrpcClient.SubjectDetails subject =
+                                    details.get(lesson.subjectId());
+                            String name =
+                                    lesson.subjectName() != null
+                                            ? lesson.subjectName()
+                                            : subject == null ? null : subject.name();
+                            String type =
+                                    lesson.subjectType() != null
+                                            ? lesson.subjectType()
+                                            : subject == null ? null : subject.type();
+                            return new LessonSnapshot(
+                                    lesson.lessonId(),
+                                    lesson.groupId(),
+                                    lesson.subjectId(),
+                                    name,
+                                    type,
+                                    lesson.semesterId(),
+                                    lesson.lessonNumber(),
+                                    lesson.date(),
+                                    lesson.startsAt(),
+                                    lesson.endsAt(),
+                                    lesson.status(),
+                                    lesson.blocked(),
+                                    lesson.occurrenceId(),
+                                    lesson.occurrenceRevision());
+                        })
+                .toList();
     }
 
-    private void validateOptionSnapshots(Identity identity, List<LessonSnapshot> lessons, long semesterId) {
+    private void validateOptionSnapshots(
+            Identity identity, List<LessonSnapshot> lessons, long semesterId) {
         if (lessons == null) {
             return;
         }
         for (LessonSnapshot lesson : lessons) {
-            if (lesson == null || lesson.lessonId() <= 0 || lesson.groupId() <= 0
+            if (lesson == null
+                    || lesson.lessonId() <= 0
+                    || lesson.groupId() <= 0
                     || lesson.subjectId() <= 0) {
                 throw new BadRequestException("Некорректный snapshot пары");
             }
@@ -1233,57 +1596,121 @@ public class StudentRequestService {
 
     private List<PendingRequestRef> pendingForLesson(long studentId, long lessonId) {
         List<PendingRequestRef> refs = new ArrayList<>();
-        Query excuseQuery = Query.query(Criteria.where("student_id").is(studentId)
-                .and("lesson_ids").is(lessonId)
-                .and("status").is(ExcuseTicketStatus.SUBMITTED));
+        Query excuseQuery =
+                Query.query(
+                        Criteria.where("student_id")
+                                .is(studentId)
+                                .and("lesson_ids")
+                                .is(lessonId)
+                                .and("status")
+                                .is(ExcuseTicketStatus.SUBMITTED));
         for (ExcuseTicket ticket : mongoTemplate.find(excuseQuery, ExcuseTicket.class)) {
-            refs.add(new PendingRequestRef(ticket.getId(), StudentRequestKind.EXCUSE,
-                    StudentRequestOrigin.MANUAL));
+            refs.add(
+                    new PendingRequestRef(
+                            ticket.getId(),
+                            StudentRequestKind.EXCUSE,
+                            StudentRequestOrigin.MANUAL));
         }
-        Query lateQuery = Query.query(Criteria.where("student_id").is(studentId)
-                .and("lesson_id").is(lessonId)
-                .and("status").is(LateCheckinRequestStatus.PENDING.name()));
+        Query lateQuery =
+                Query.query(
+                        Criteria.where("student_id")
+                                .is(studentId)
+                                .and("lesson_id")
+                                .is(lessonId)
+                                .and("status")
+                                .is(LateCheckinRequestStatus.PENDING.name()));
         for (LateCheckinRequest request : mongoTemplate.find(lateQuery, LateCheckinRequest.class)) {
-            refs.add(new PendingRequestRef(request.getId(), StudentRequestKind.LATE_CHECKIN,
-                    request.getOrigin() == null ? StudentRequestOrigin.MANUAL
-                            : StudentRequestOrigin.valueOf(request.getOrigin().name())));
+            refs.add(
+                    new PendingRequestRef(
+                            request.getId(),
+                            StudentRequestKind.LATE_CHECKIN,
+                            request.getOrigin() == null
+                                    ? StudentRequestOrigin.MANUAL
+                                    : StudentRequestOrigin.valueOf(request.getOrigin().name())));
         }
-        return refs.stream().sorted(Comparator.comparing(PendingRequestRef::kind)
-                .thenComparing(PendingRequestRef::id)).toList();
+        return refs.stream()
+                .sorted(
+                        Comparator.comparing(PendingRequestRef::kind)
+                                .thenComparing(PendingRequestRef::id))
+                .toList();
     }
 
     private List<Document> unionPipeline(long studentId, RequestBucket bucket, boolean sort) {
         String bucketStatus = bucket == null || bucket == RequestBucket.OPEN ? "PENDING" : null;
         List<Document> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("student_id", studentId)));
-        pipeline.add(new Document("$project", new Document("_id", 1)
-                .append("request_kind", "EXCUSE")
-                .append("origin", "MANUAL")
-                .append("status", new Document("$switch", new Document("branches", List.of(
-                        new Document("case", new Document("$eq", List.of(
-                                new Document("$toUpper", "$status"), "SUBMITTED")))
-                                .append("then", "PENDING"),
-                        new Document("case", new Document("$eq", List.of(
-                                new Document("$toUpper", "$status"), "DRAFT")))
-                                .append("then", "PENDING")
-                )).append("default", new Document("$toUpper", "$status"))))
-                .append("lesson_snapshots", 1)
-                .append("lesson_ids", 1)
-                .append("original_lesson_ids", 1)
-                .append("semester_id", 1)
-                .append("created_at", 1)
-                .append("updated_at", 1)));
+        pipeline.add(
+                new Document(
+                        "$project",
+                        new Document("_id", 1)
+                                .append("request_kind", "EXCUSE")
+                                .append("origin", "MANUAL")
+                                .append(
+                                        "status",
+                                        new Document(
+                                                "$switch",
+                                                new Document(
+                                                                "branches",
+                                                                List.of(
+                                                                        new Document(
+                                                                                        "case",
+                                                                                        new Document(
+                                                                                                "$eq",
+                                                                                                List
+                                                                                                        .of(
+                                                                                                                new Document(
+                                                                                                                        "$toUpper",
+                                                                                                                        "$status"),
+                                                                                                                "SUBMITTED")))
+                                                                                .append(
+                                                                                        "then",
+                                                                                        "PENDING"),
+                                                                        new Document(
+                                                                                        "case",
+                                                                                        new Document(
+                                                                                                "$eq",
+                                                                                                List
+                                                                                                        .of(
+                                                                                                                new Document(
+                                                                                                                        "$toUpper",
+                                                                                                                        "$status"),
+                                                                                                                "DRAFT")))
+                                                                                .append(
+                                                                                        "then",
+                                                                                        "PENDING")))
+                                                        .append(
+                                                                "default",
+                                                                new Document(
+                                                                        "$toUpper", "$status"))))
+                                .append("lesson_snapshots", 1)
+                                .append("lesson_ids", 1)
+                                .append("original_lesson_ids", 1)
+                                .append("semester_id", 1)
+                                .append("created_at", 1)
+                                .append("updated_at", 1)));
         if (bucketStatus != null) {
             pipeline.add(new Document("$match", new Document("status", bucketStatus)));
         } else {
-            pipeline.add(new Document("$match", new Document("status",
-                    new Document("$in", List.of("APPROVED", "REJECTED", "CANCELLED")))));
+            pipeline.add(
+                    new Document(
+                            "$match",
+                            new Document(
+                                    "status",
+                                    new Document(
+                                            "$in", List.of("APPROVED", "REJECTED", "CANCELLED")))));
         }
-        pipeline.add(new Document("$unionWith", new Document("coll", "late_checkin_requests")
-                .append("pipeline", lateUnionPipeline(studentId, bucketStatus))));
+        pipeline.add(
+                new Document(
+                        "$unionWith",
+                        new Document("coll", "late_checkin_requests")
+                                .append("pipeline", lateUnionPipeline(studentId, bucketStatus))));
         if (sort) {
-            pipeline.add(new Document("$sort", new Document("updated_at", -1)
-                    .append("request_kind", 1).append("_id", 1)));
+            pipeline.add(
+                    new Document(
+                            "$sort",
+                            new Document("updated_at", -1)
+                                    .append("request_kind", 1)
+                                    .append("_id", 1)));
         }
         return pipeline;
     }
@@ -1291,37 +1718,56 @@ public class StudentRequestService {
     private List<Document> lateUnionPipeline(long studentId, String bucketStatus) {
         List<Document> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("student_id", studentId)));
-        pipeline.add(new Document("$project", new Document("_id", 1)
-                .append("request_kind", "LATE_CHECKIN")
-                .append("origin", new Document("$ifNull", List.of(
-                        new Document("$toUpper", "$origin"), "MANUAL")))
-                .append("status", new Document("$toUpper", "$status"))
-                .append("late_lesson_id", "$lesson_id")
-                .append("late_group_id", "$group_id")
-                .append("late_subject_id", "$subject_id")
-                .append("late_subject_name", "$subject_name")
-                .append("late_subject_type", "$subject_type")
-                .append("late_semester_id", "$semester_id")
-                .append("late_lesson_number", "$lesson_number")
-                .append("late_lesson_date", "$lesson_date")
-                .append("late_starts_at", "$starts_at")
-                .append("late_ends_at", "$ends_at")
-                .append("created_at", 1)
-                .append("updated_at", 1)));
+        pipeline.add(
+                new Document(
+                        "$project",
+                        new Document("_id", 1)
+                                .append("request_kind", "LATE_CHECKIN")
+                                .append(
+                                        "origin",
+                                        new Document(
+                                                "$ifNull",
+                                                List.of(
+                                                        new Document("$toUpper", "$origin"),
+                                                        "MANUAL")))
+                                .append("status", new Document("$toUpper", "$status"))
+                                .append("late_lesson_id", "$lesson_id")
+                                .append("late_group_id", "$group_id")
+                                .append("late_subject_id", "$subject_id")
+                                .append("late_subject_name", "$subject_name")
+                                .append("late_subject_type", "$subject_type")
+                                .append("late_semester_id", "$semester_id")
+                                .append("late_lesson_number", "$lesson_number")
+                                .append("late_lesson_date", "$lesson_date")
+                                .append("late_starts_at", "$starts_at")
+                                .append("late_ends_at", "$ends_at")
+                                .append("created_at", 1)
+                                .append("updated_at", 1)));
         if (bucketStatus != null) {
-            pipeline.add(new Document("$match", new Document("status", bucketStatus.toUpperCase(Locale.ROOT))));
+            pipeline.add(
+                    new Document(
+                            "$match",
+                            new Document("status", bucketStatus.toUpperCase(Locale.ROOT))));
         } else {
-            pipeline.add(new Document("$match", new Document("status",
-                    new Document("$in", List.of("APPROVED", "REJECTED", "CANCELLED")))));
+            pipeline.add(
+                    new Document(
+                            "$match",
+                            new Document(
+                                    "status",
+                                    new Document(
+                                            "$in", List.of("APPROVED", "REJECTED", "CANCELLED")))));
         }
         return pipeline;
     }
 
     private RequestSummary summaryFromUnionDocument(Document document) {
         String id = valueAsString(document.get("_id"));
-        StudentRequestKind kind = StudentRequestKind.valueOf(valueAsString(document.get("request_kind")));
-        StudentRequestStatus status = StudentRequestStatus.valueOf(valueAsString(document.get("status")));
-        StudentRequestOrigin origin = StudentRequestOrigin.valueOf(valueAsString(document.get("origin")));
+        StudentRequestKind kind =
+                StudentRequestKind.valueOf(valueAsString(document.get("request_kind")));
+        StudentRequestStatus status =
+                StudentRequestStatus.valueOf(valueAsString(document.get("status")));
+        StudentRequestOrigin origin =
+                StudentRequestOrigin.valueOf(valueAsString(document.get("origin")));
         List<LessonSnapshot> lessons = new ArrayList<>();
         if (kind == StudentRequestKind.EXCUSE) {
             Object raw = document.get("lesson_snapshots");
@@ -1332,35 +1778,55 @@ public class StudentRequestService {
                     }
                 }
             }
-            Object originalIds = document.get("original_lesson_ids") == null ? document.get("lesson_ids") : document.get("original_lesson_ids");
+            Object originalIds =
+                    document.get("original_lesson_ids") == null
+                            ? document.get("lesson_ids")
+                            : document.get("original_lesson_ids");
             if (lessons.isEmpty() && originalIds instanceof Collection<?> ids) {
                 for (Object idValue : ids) {
-                    lessons.add(new LessonSnapshot(numberAsLong(idValue), 0, 0,
-                            numberAsLong(document.get("semester_id")), 0, null, null, null,
-                            "unknown", false));
+                    lessons.add(
+                            new LessonSnapshot(
+                                    numberAsLong(idValue),
+                                    0,
+                                    0,
+                                    numberAsLong(document.get("semester_id")),
+                                    0,
+                                    null,
+                                    null,
+                                    null,
+                                    "unknown",
+                                    false));
                 }
             }
         } else {
-            lessons.add(snapshotFromDocument(new Document("lesson_id", document.get("late_lesson_id"))
-                    .append("group_id", document.get("late_group_id"))
-                    .append("subject_id", document.get("late_subject_id"))
-                    .append("subject_name", document.get("late_subject_name"))
-                    .append("subject_type", document.get("late_subject_type"))
-                    .append("semester_id", document.get("late_semester_id"))
-                    .append("lesson_number", document.get("late_lesson_number"))
-                    .append("date", document.get("late_lesson_date"))
-                    .append("starts_at", document.get("late_starts_at"))
-                    .append("ends_at", document.get("late_ends_at"))
-                    .append("status", "closed")
-                    .append("blocked", false)));
+            lessons.add(
+                    snapshotFromDocument(
+                            new Document("lesson_id", document.get("late_lesson_id"))
+                                    .append("group_id", document.get("late_group_id"))
+                                    .append("subject_id", document.get("late_subject_id"))
+                                    .append("subject_name", document.get("late_subject_name"))
+                                    .append("subject_type", document.get("late_subject_type"))
+                                    .append("semester_id", document.get("late_semester_id"))
+                                    .append("lesson_number", document.get("late_lesson_number"))
+                                    .append("date", document.get("late_lesson_date"))
+                                    .append("starts_at", document.get("late_starts_at"))
+                                    .append("ends_at", document.get("late_ends_at"))
+                                    .append("status", "closed")
+                                    .append("blocked", false)));
         }
-        return new RequestSummary(id, kind, status, origin, lessons,
-                instant(document.get("created_at")), instant(document.get("updated_at")));
+        return new RequestSummary(
+                id,
+                kind,
+                status,
+                origin,
+                lessons,
+                instant(document.get("created_at")),
+                instant(document.get("updated_at")));
     }
 
     private LessonSnapshot snapshotFromDocument(Document document) {
-        StudentLessonSnapshotDocument snapshot = mongoTemplate.getConverter()
-                .read(StudentLessonSnapshotDocument.class, document);
+        StudentLessonSnapshotDocument snapshot =
+                mongoTemplate.getConverter().read(StudentLessonSnapshotDocument.class, document);
         return new LessonSnapshot(
                 snapshot.getLessonId() == null ? 0 : snapshot.getLessonId(),
                 snapshot.getGroupId() == null ? 0 : snapshot.getGroupId(),
@@ -1373,7 +1839,9 @@ public class StudentRequestService {
                 snapshot.getStartsAt(),
                 snapshot.getEndsAt(),
                 snapshot.getStatus(),
-                snapshot.isBlocked(), snapshot.getOccurrenceId(), snapshot.getOccurrenceRevision());
+                snapshot.isBlocked(),
+                snapshot.getOccurrenceId(),
+                snapshot.getOccurrenceRevision());
     }
 
     private static Document firstDocument(Iterable<Document> documents) {
@@ -1387,65 +1855,124 @@ public class StudentRequestService {
         List<RequestAttachmentDocument> storedAttachments =
                 attachmentRepository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
                         ticket.getId(), ticket.getStudentId());
-        List<AttachmentDescriptor> attachments = !storedAttachments.isEmpty()
-                ? storedAttachments.stream().map(this::toDescriptor).toList()
-                : ticket.getAttachmentDescriptors() == null
-                ? List.of()
-                : ticket.getAttachmentDescriptors().stream().map(StudentRequestService::toDescriptor).toList();
+        List<AttachmentDescriptor> attachments =
+                !storedAttachments.isEmpty()
+                        ? storedAttachments.stream().map(this::toDescriptor).toList()
+                        : ticket.getAttachmentDescriptors() == null
+                                ? List.of()
+                                : ticket.getAttachmentDescriptors().stream()
+                                        .map(StudentRequestService::toDescriptor)
+                                        .toList();
         return toDetail(ticket, attachments);
     }
 
     private RequestDetail toDetail(ExcuseTicket ticket, List<AttachmentDescriptor> attachments) {
-        RequestSummary summary = new RequestSummary(
-                ticket.getId(), StudentRequestKind.EXCUSE,
-                mapStatus(ticket.getStatus()), StudentRequestOrigin.MANUAL,
-                snapshots(ticket.getLessonSnapshots(), ticket.getOriginalLessonIds() == null
-                        ? ticket.getLessonIds() : ticket.getOriginalLessonIds(), ticket.getSemesterId()),
-                ticket.getCreatedAt(), ticket.getUpdatedAt());
-        Decision decision = ticket.getDecisionBy() == null && ticket.getDecisionComment() == null
-                && ticket.getDecisionAt() == null
-                ? null
-                : new Decision(ticket.getDecisionBy(), ticket.getDecisionComment(), ticket.getDecisionAt());
+        RequestSummary summary =
+                new RequestSummary(
+                        ticket.getId(),
+                        StudentRequestKind.EXCUSE,
+                        mapStatus(ticket.getStatus()),
+                        StudentRequestOrigin.MANUAL,
+                        snapshots(
+                                ticket.getLessonSnapshots(),
+                                ticket.getOriginalLessonIds() == null
+                                        ? ticket.getLessonIds()
+                                        : ticket.getOriginalLessonIds(),
+                                ticket.getSemesterId()),
+                        ticket.getCreatedAt(),
+                        ticket.getUpdatedAt());
+        Decision decision =
+                ticket.getDecisionBy() == null
+                                && ticket.getDecisionComment() == null
+                                && ticket.getDecisionAt() == null
+                        ? null
+                        : new Decision(
+                                ticket.getDecisionBy(),
+                                ticket.getDecisionComment(),
+                                ticket.getDecisionAt());
         ExcuseDecisionSelectionDocument saved = ticket.getDecisionSelection();
-        StudentRequestModels.DecisionSelection selection = saved == null ? null : new StudentRequestModels.DecisionSelection(
-                saved.getRequestKey(), saved.getExpectedRevision(),
-                saved.getIncludedLessons().stream().map(StudentRequestService::toSnapshot).toList(),
-                saved.getExcludedLessons().stream().map(StudentRequestService::toSnapshot).toList());
-        return new RequestDetail(summary, ticket.getExcuseType(), ticket.getComment(), attachments, decision, selection);
+        StudentRequestModels.DecisionSelection selection =
+                saved == null
+                        ? null
+                        : new StudentRequestModels.DecisionSelection(
+                                saved.getRequestKey(),
+                                saved.getExpectedRevision(),
+                                saved.getIncludedLessons().stream()
+                                        .map(StudentRequestService::toSnapshot)
+                                        .toList(),
+                                saved.getExcludedLessons().stream()
+                                        .map(StudentRequestService::toSnapshot)
+                                        .toList());
+        return new RequestDetail(
+                summary,
+                ticket.getExcuseType(),
+                ticket.getComment(),
+                attachments,
+                decision,
+                selection);
     }
 
     private RequestDetail toDetail(LateCheckinRequest request) {
-        LessonSnapshot snapshot = new LessonSnapshot(
-                request.getLessonId() == null ? 0 : request.getLessonId(),
-                request.getGroupId() == null ? 0 : request.getGroupId(),
-                request.getSubjectId() == null ? 0 : request.getSubjectId(),
-                request.getSubjectName(), request.getSubjectType(),
-                request.getSemesterId() == null ? 0 : request.getSemesterId(),
-                request.getLessonNumber() == null ? 0 : request.getLessonNumber(),
-                request.getLessonDate(), request.getStartsAt(), request.getEndsAt(), "closed", false);
-        RequestSummary summary = new RequestSummary(
-                request.getId(), StudentRequestKind.LATE_CHECKIN,
-                mapStatus(request.getStatus()), request.getOrigin() == null
-                        ? StudentRequestOrigin.MANUAL
-                        : StudentRequestOrigin.valueOf(request.getOrigin().name()),
-                List.of(snapshot), request.getCreatedAt(), request.getUpdatedAt());
-        Decision decision = request.getDecisionBy() == null && request.getDecisionComment() == null
-                && request.getDecisionAt() == null
-                ? null : new Decision(request.getDecisionBy(), request.getDecisionComment(), request.getDecisionAt());
+        LessonSnapshot snapshot =
+                new LessonSnapshot(
+                        request.getLessonId() == null ? 0 : request.getLessonId(),
+                        request.getGroupId() == null ? 0 : request.getGroupId(),
+                        request.getSubjectId() == null ? 0 : request.getSubjectId(),
+                        request.getSubjectName(),
+                        request.getSubjectType(),
+                        request.getSemesterId() == null ? 0 : request.getSemesterId(),
+                        request.getLessonNumber() == null ? 0 : request.getLessonNumber(),
+                        request.getLessonDate(),
+                        request.getStartsAt(),
+                        request.getEndsAt(),
+                        "closed",
+                        false);
+        RequestSummary summary =
+                new RequestSummary(
+                        request.getId(),
+                        StudentRequestKind.LATE_CHECKIN,
+                        mapStatus(request.getStatus()),
+                        request.getOrigin() == null
+                                ? StudentRequestOrigin.MANUAL
+                                : StudentRequestOrigin.valueOf(request.getOrigin().name()),
+                        List.of(snapshot),
+                        request.getCreatedAt(),
+                        request.getUpdatedAt());
+        Decision decision =
+                request.getDecisionBy() == null
+                                && request.getDecisionComment() == null
+                                && request.getDecisionAt() == null
+                        ? null
+                        : new Decision(
+                                request.getDecisionBy(),
+                                request.getDecisionComment(),
+                                request.getDecisionAt());
         return new RequestDetail(summary, null, null, List.of(), decision);
     }
 
-    private static List<LessonSnapshot> snapshots(List<StudentLessonSnapshotDocument> documents,
-                                                   List<Long> ids, Long semesterId) {
+    private static List<LessonSnapshot> snapshots(
+            List<StudentLessonSnapshotDocument> documents, List<Long> ids, Long semesterId) {
         if (documents != null && !documents.isEmpty()) {
             return documents.stream().map(StudentRequestService::toSnapshot).toList();
         }
         if (ids == null) {
             return List.of();
         }
-        return ids.stream().map(id -> new LessonSnapshot(id, 0, 0,
-                semesterId == null ? 0 : semesterId, 0, null, null, null,
-                "unknown", false)).toList();
+        return ids.stream()
+                .map(
+                        id ->
+                                new LessonSnapshot(
+                                        id,
+                                        0,
+                                        0,
+                                        semesterId == null ? 0 : semesterId,
+                                        0,
+                                        null,
+                                        null,
+                                        null,
+                                        "unknown",
+                                        false))
+                .toList();
     }
 
     private static LessonSnapshot toSnapshot(StudentLessonSnapshotDocument document) {
@@ -1453,17 +1980,30 @@ public class StudentRequestService {
                 document.getLessonId() == null ? 0 : document.getLessonId(),
                 document.getGroupId() == null ? 0 : document.getGroupId(),
                 document.getSubjectId() == null ? 0 : document.getSubjectId(),
-                document.getSubjectName(), document.getSubjectType(),
+                document.getSubjectName(),
+                document.getSubjectType(),
                 document.getSemesterId() == null ? 0 : document.getSemesterId(),
                 document.getLessonNumber() == null ? 0 : document.getLessonNumber(),
-                document.getDate(), document.getStartsAt(), document.getEndsAt(),
-                document.getStatus(), document.isBlocked(), document.getOccurrenceId(), document.getOccurrenceRevision());
+                document.getDate(),
+                document.getStartsAt(),
+                document.getEndsAt(),
+                document.getStatus(),
+                document.isBlocked(),
+                document.getOccurrenceId(),
+                document.getOccurrenceRevision());
     }
 
-    private static AttachmentDescriptor toDescriptor(RequestAttachmentDescriptorDocument descriptor) {
-        return new AttachmentDescriptor(descriptor.getId(), descriptor.getName(), descriptor.getContentType(),
-                descriptor.getSize() == null ? 0 : descriptor.getSize(), descriptor.getSha256(),
-                descriptor.getState(), descriptor.getUploadedAt(), descriptor.getExpiresAt(),
+    private static AttachmentDescriptor toDescriptor(
+            RequestAttachmentDescriptorDocument descriptor) {
+        return new AttachmentDescriptor(
+                descriptor.getId(),
+                descriptor.getName(),
+                descriptor.getContentType(),
+                descriptor.getSize() == null ? 0 : descriptor.getSize(),
+                descriptor.getSha256(),
+                descriptor.getState(),
+                descriptor.getUploadedAt(),
+                descriptor.getExpiresAt(),
                 descriptor.getExpiredAt());
     }
 
@@ -1477,152 +2017,300 @@ public class StudentRequestService {
                 expiredAt = now;
             }
         }
-        return new AttachmentDescriptor(document.getId(), document.getName(), document.getContentType(),
-                document.getSize() == null ? 0 : document.getSize(), document.getSha256(),
-                state, document.getUploadedAt(), document.getExpiresAt(), expiredAt);
+        return new AttachmentDescriptor(
+                document.getId(),
+                document.getName(),
+                document.getContentType(),
+                document.getSize() == null ? 0 : document.getSize(),
+                document.getSha256(),
+                state,
+                document.getUploadedAt(),
+                document.getExpiresAt(),
+                expiredAt);
     }
 
     private static StudentRequestStatus mapStatus(ExcuseTicketStatus status) {
-        if (status == null || status == ExcuseTicketStatus.SUBMITTED || status == ExcuseTicketStatus.DRAFT) {
+        if (status == null
+                || status == ExcuseTicketStatus.SUBMITTED
+                || status == ExcuseTicketStatus.DRAFT) {
             return StudentRequestStatus.PENDING;
         }
         return StudentRequestStatus.valueOf(status.name());
     }
 
     private static StudentRequestStatus mapStatus(LateCheckinRequestStatus status) {
-        return status == null ? StudentRequestStatus.PENDING : StudentRequestStatus.valueOf(status.name());
+        return status == null
+                ? StudentRequestStatus.PENDING
+                : StudentRequestStatus.valueOf(status.name());
     }
 
     /**
-     * Atomic approval/rejection path for a student excuse.  Headman adapters
-     * can call it later; PRESENT always wins the per-pair race.
+     * Atomic approval/rejection path for a student excuse. Headman adapters can call it later;
+     * PRESENT always wins the per-pair race.
      */
-    public RequestDetail decideExcuse(Identity identity, String ticketId, boolean approved,
-                                      String decisionComment) {
+    public RequestDetail decideExcuse(
+            Identity identity, String ticketId, boolean approved, String decisionComment) {
         return decideExcuse(identity, ticketId, approved, decisionComment, null, null, null);
     }
 
-    public RequestDetail decideExcuse(Identity identity, String ticketId, boolean approved,
-                                      String decisionComment, String expectedRevision,
-                                      List<String> excludedOccurrenceIds, String requestKey) {
+    public RequestDetail decideExcuse(
+            Identity identity,
+            String ticketId,
+            boolean approved,
+            String decisionComment,
+            String expectedRevision,
+            List<String> excludedOccurrenceIds,
+            String requestKey) {
         String normalizedComment = validateDecisionComment(decisionComment);
-        ExcuseDecisionSelections.Intent intent = ExcuseDecisionSelections.Intent.parse(
-                expectedRevision, excludedOccurrenceIds, requestKey, approved);
-        return executeDecisionWithRetry(() -> transactionTemplate.execute(status -> {
-            ExcuseTicket ticket = excuseRepository.findById(ticketId).orElseThrow(
-                    () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
-            long actor = requireDecisionAuthority(identity, ticket.getGroupId());
-            if (Objects.equals(ticket.getStudentId(), actor)) {
-                throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
-            }
-            if (!ExcuseDecisionSelections.open(ticket) && (intent != null || ticket.getDecisionSelection() != null)) {
-                // Exact saved intent needs no fresh Schedule read, but live archive and authority fences still apply.
-                pairWriteCoordinator.lockSemesterForWrite(requireAttachmentSemester(ticket), clock.instant());
-                ExcuseTicket terminal = excuseRepository.findById(ticketId).orElseThrow(
-                        () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
-                long currentActor = requireDecisionAuthority(identity, terminal.getGroupId());
-                if (Objects.equals(terminal.getStudentId(), currentActor)) throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
-                if (matchesSelectedExcuseDecision(terminal, currentActor, approved, normalizedComment, intent)) return toDetail(terminal);
-                throw new ConflictException("Решение по тикету уже принято с другим составом или intent");
-            }
-            Map<Long, LessonResponse> writeLessons = lockPairs(ticket.getSemesterId(), ticket.getStudentId(), ticket.getGroupId(),
-                    sortedLessonIds(ticket.getLessonIds()));
-            ExcuseTicket current = excuseRepository.findById(ticketId).orElseThrow(
-                    () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
-            if (!Objects.equals(ticket, current)) throw new ConflictException("Заявка изменилась; обнови данные");
-            if (current.getStatus() == ExcuseTicketStatus.CANCELLED
-                    || current.getStatus() == ExcuseTicketStatus.APPROVED
-                    || current.getStatus() == ExcuseTicketStatus.REJECTED) {
-                if (matchesExcuseDecision(current, actor, approved, normalizedComment)) {
-                    return toDetail(current);
-                }
-                throw new ConflictException("Решение по тикету уже принято");
-            }
-            List<Long> allIds = sortedLessonIds(current.getLessonIds());
-            List<Long> includedIds = intent == null ? allIds : ExcuseDecisionSelections.included(current, writeLessons, intent);
-            Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
-            Instant now = clock.instant();
-            if (approved) {
-                for (Long lessonId : includedIds) {
-                    requireApprovableLesson(writeLessons.get(lessonId));
-                    AttendanceDocument attendance = attendanceRepository
-                            .findByLessonIdAndUserId(lessonId, current.getStudentId()).orElse(null);
-                    if (attendance != null && attendance.getStatus() == AttendanceStatus.CANCELLED) {
-                        throw new ConflictException("Пара отменена");
-                    }
-                    if (attendance != null && attendance.getStatus() == AttendanceStatus.PRESENT) {
-                        continue;
-                    }
-                    // A transfer moves mutable lessonIds while keeping the original
-                    // request snapshots as evidence. Attendance belongs to the
-                    // current physical lesson validated inside its fence.
-                    StudentLessonSnapshotDocument snapshot = toDocument(
-                            toSnapshot(writeLessons.get(lessonId), current.getSemesterId()));
-                    saveExcusedAttendance(current, snapshot, attendance, now, actor, identity.headman() ? "HEADMAN" : "ASSISTANT");
-                }
-            }
-            if (intent != null) {
-                if (current.getOriginalLessonIds() == null) current.setOriginalLessonIds(List.copyOf(allIds));
-                List<StudentLessonSnapshotDocument> included = new ArrayList<>();
-                List<StudentLessonSnapshotDocument> excluded = new ArrayList<>();
-                for (Long id : allIds) {
-                    StudentLessonSnapshotDocument snapshot = decisionSnapshot(current, writeLessons.get(id));
-                    (includedIds.contains(id) ? included : excluded).add(snapshot);
-                }
-                current.setDecisionSelection(new ExcuseDecisionSelectionDocument(intent.requestKey(), intent.expectedRevision(), included, excluded));
-                if (approved) current.setLessonIds(includedIds);
-            }
-            current.setStatus(approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED);
-            current.setDecisionBy(actor);
-            current.setDecisionComment(normalizedComment);
-            current.setDecisionAt(now);
-            current.setUpdatedAt(now);
-            ExcuseTicket saved = excuseRepository.save(current);
-            if (requestActions != null) requestActions.excuse(saved, auditBefore, actor, identity.headman() ? "HEADMAN" : "ASSISTANT", now);
-            excuseEventPublisher.publishDecided(saved);
-            return toDetail(saved);
-        }), () -> intent == null ? recoverExcuseDecision(identity, ticketId, approved, normalizedComment)
-                : recoverSelectedExcuseDecision(identity, ticketId, approved, normalizedComment, intent));
+        ExcuseDecisionSelections.Intent intent =
+                ExcuseDecisionSelections.Intent.parse(
+                        expectedRevision, excludedOccurrenceIds, requestKey, approved);
+        return executeDecisionWithRetry(
+                () ->
+                        transactionTemplate.execute(
+                                status -> {
+                                    ExcuseTicket ticket =
+                                            excuseRepository
+                                                    .findById(ticketId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new ResourceNotFoundException(
+                                                                            "ExcuseTicket",
+                                                                            "id",
+                                                                            ticketId));
+                                    long actor =
+                                            requireDecisionAuthority(identity, ticket.getGroupId());
+                                    if (Objects.equals(ticket.getStudentId(), actor)) {
+                                        throw new AccessDeniedException(
+                                                "Нельзя принимать решение по собственной заявке");
+                                    }
+                                    if (!ExcuseDecisionSelections.open(ticket)
+                                            && (intent != null
+                                                    || ticket.getDecisionSelection() != null)) {
+                                        // Exact saved intent needs no fresh Schedule read, but live
+                                        // archive and authority fences still apply.
+                                        pairWriteCoordinator.lockSemesterForWrite(
+                                                requireAttachmentSemester(ticket), clock.instant());
+                                        ExcuseTicket terminal =
+                                                excuseRepository
+                                                        .findById(ticketId)
+                                                        .orElseThrow(
+                                                                () ->
+                                                                        new ResourceNotFoundException(
+                                                                                "ExcuseTicket",
+                                                                                "id",
+                                                                                ticketId));
+                                        long currentActor =
+                                                requireDecisionAuthority(
+                                                        identity, terminal.getGroupId());
+                                        if (Objects.equals(terminal.getStudentId(), currentActor))
+                                            throw new AccessDeniedException(
+                                                    "Нельзя принимать решение по собственной заявке");
+                                        if (matchesSelectedExcuseDecision(
+                                                terminal,
+                                                currentActor,
+                                                approved,
+                                                normalizedComment,
+                                                intent)) return toDetail(terminal);
+                                        throw new ConflictException(
+                                                "Решение по тикету уже принято с другим составом или intent");
+                                    }
+                                    Map<Long, LessonResponse> writeLessons =
+                                            lockPairs(
+                                                    ticket.getSemesterId(),
+                                                    ticket.getStudentId(),
+                                                    ticket.getGroupId(),
+                                                    sortedLessonIds(ticket.getLessonIds()));
+                                    ExcuseTicket current =
+                                            excuseRepository
+                                                    .findById(ticketId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new ResourceNotFoundException(
+                                                                            "ExcuseTicket",
+                                                                            "id",
+                                                                            ticketId));
+                                    if (!Objects.equals(ticket, current))
+                                        throw new ConflictException(
+                                                "Заявка изменилась; обнови данные");
+                                    if (current.getStatus() == ExcuseTicketStatus.CANCELLED
+                                            || current.getStatus() == ExcuseTicketStatus.APPROVED
+                                            || current.getStatus() == ExcuseTicketStatus.REJECTED) {
+                                        if (matchesExcuseDecision(
+                                                current, actor, approved, normalizedComment)) {
+                                            return toDetail(current);
+                                        }
+                                        throw new ConflictException(
+                                                "Решение по тикету уже принято");
+                                    }
+                                    List<Long> allIds = sortedLessonIds(current.getLessonIds());
+                                    List<Long> includedIds =
+                                            intent == null
+                                                    ? allIds
+                                                    : ExcuseDecisionSelections.included(
+                                                            current, writeLessons, intent);
+                                    Map<String, Object> auditBefore =
+                                            ru.rutcampustrack.attendance.audit.RequestActionRecorder
+                                                    .snapshot(current);
+                                    Instant now = clock.instant();
+                                    if (approved) {
+                                        for (Long lessonId : includedIds) {
+                                            requireApprovableLesson(writeLessons.get(lessonId));
+                                            AttendanceDocument attendance =
+                                                    attendanceRepository
+                                                            .findByLessonIdAndUserId(
+                                                                    lessonId,
+                                                                    current.getStudentId())
+                                                            .orElse(null);
+                                            if (attendance != null
+                                                    && attendance.getStatus()
+                                                            == AttendanceStatus.CANCELLED) {
+                                                throw new ConflictException("Пара отменена");
+                                            }
+                                            if (attendance != null
+                                                    && attendance.getStatus()
+                                                            == AttendanceStatus.PRESENT) {
+                                                continue;
+                                            }
+                                            // A transfer moves mutable lessonIds while keeping the
+                                            // original
+                                            // request snapshots as evidence. Attendance belongs to
+                                            // the
+                                            // current physical lesson validated inside its fence.
+                                            StudentLessonSnapshotDocument snapshot =
+                                                    toDocument(
+                                                            toSnapshot(
+                                                                    writeLessons.get(lessonId),
+                                                                    current.getSemesterId()));
+                                            saveExcusedAttendance(
+                                                    current,
+                                                    snapshot,
+                                                    attendance,
+                                                    now,
+                                                    actor,
+                                                    identity.headman() ? "HEADMAN" : "ASSISTANT");
+                                        }
+                                    }
+                                    if (intent != null) {
+                                        if (current.getOriginalLessonIds() == null)
+                                            current.setOriginalLessonIds(List.copyOf(allIds));
+                                        List<StudentLessonSnapshotDocument> included =
+                                                new ArrayList<>();
+                                        List<StudentLessonSnapshotDocument> excluded =
+                                                new ArrayList<>();
+                                        for (Long id : allIds) {
+                                            StudentLessonSnapshotDocument snapshot =
+                                                    decisionSnapshot(current, writeLessons.get(id));
+                                            (includedIds.contains(id) ? included : excluded)
+                                                    .add(snapshot);
+                                        }
+                                        current.setDecisionSelection(
+                                                new ExcuseDecisionSelectionDocument(
+                                                        intent.requestKey(),
+                                                        intent.expectedRevision(),
+                                                        included,
+                                                        excluded));
+                                        if (approved) current.setLessonIds(includedIds);
+                                    }
+                                    current.setStatus(
+                                            approved
+                                                    ? ExcuseTicketStatus.APPROVED
+                                                    : ExcuseTicketStatus.REJECTED);
+                                    current.setDecisionBy(actor);
+                                    current.setDecisionComment(normalizedComment);
+                                    current.setDecisionAt(now);
+                                    current.setUpdatedAt(now);
+                                    ExcuseTicket saved = excuseRepository.save(current);
+                                    if (requestActions != null)
+                                        requestActions.excuse(
+                                                saved,
+                                                auditBefore,
+                                                actor,
+                                                identity.headman() ? "HEADMAN" : "ASSISTANT",
+                                                now);
+                                    excuseEventPublisher.publishDecided(saved);
+                                    return toDetail(saved);
+                                }),
+                () ->
+                        intent == null
+                                ? recoverExcuseDecision(
+                                        identity, ticketId, approved, normalizedComment)
+                                : recoverSelectedExcuseDecision(
+                                        identity, ticketId, approved, normalizedComment, intent));
     }
 
-    private StudentLessonSnapshotDocument decisionSnapshot(ExcuseTicket ticket, LessonResponse lesson) {
-        StudentLessonSnapshotDocument snapshot = toDocument(toSnapshot(lesson, ticket.getSemesterId()));
+    private StudentLessonSnapshotDocument decisionSnapshot(
+            ExcuseTicket ticket, LessonResponse lesson) {
+        StudentLessonSnapshotDocument snapshot =
+                toDocument(toSnapshot(lesson, ticket.getSemesterId()));
         if (snapshot == null || snapshot.getStartsAt() == null || snapshot.getEndsAt() == null) {
             throw new ConflictException("Снимок текущей пары недоступен; обнови заявку");
         }
-        if (ticket.getLessonSnapshots() != null) ticket.getLessonSnapshots().stream()
-                .filter(original -> Objects.equals(original.getGroupId(), ticket.getGroupId())
-                        && Objects.equals(original.getSemesterId(), ticket.getSemesterId())
-                        && Objects.equals(original.getSubjectId(), lesson.getSubjectId()))
-                .findFirst().ifPresent(original -> snapshot.setSubjectName(original.getSubjectName()));
+        if (ticket.getLessonSnapshots() != null)
+            ticket.getLessonSnapshots().stream()
+                    .filter(
+                            original ->
+                                    Objects.equals(original.getGroupId(), ticket.getGroupId())
+                                            && Objects.equals(
+                                                    original.getSemesterId(),
+                                                    ticket.getSemesterId())
+                                            && Objects.equals(
+                                                    original.getSubjectId(), lesson.getSubjectId()))
+                    .findFirst()
+                    .ifPresent(original -> snapshot.setSubjectName(original.getSubjectName()));
         snapshot.setSubjectType(lesson.getLessonType().isBlank() ? null : lesson.getLessonType());
-        AttendanceDocument mark = attendanceRepository.findByLessonIdAndUserId(lesson.getId(), ticket.getStudentId()).orElse(null);
+        AttendanceDocument mark =
+                attendanceRepository
+                        .findByLessonIdAndUserId(lesson.getId(), ticket.getStudentId())
+                        .orElse(null);
         requireAttendanceScope(mark, ticket.getGroupId(), ticket.getSemesterId());
-        snapshot.setAttendanceStatus(mark == null || mark.getStatus() == null ? null : mark.getStatus().name());
-        snapshot.setAttendanceSource(mark == null || mark.getSource() == null ? null : mark.getSource().name());
+        snapshot.setAttendanceStatus(
+                mark == null || mark.getStatus() == null ? null : mark.getStatus().name());
+        snapshot.setAttendanceSource(
+                mark == null || mark.getSource() == null ? null : mark.getSource().name());
         return snapshot;
     }
 
-    private RequestDetail recoverSelectedExcuseDecision(Identity identity, String ticketId, boolean approved,
-                                                       String comment, ExcuseDecisionSelections.Intent intent) {
+    private RequestDetail recoverSelectedExcuseDecision(
+            Identity identity,
+            String ticketId,
+            boolean approved,
+            String comment,
+            ExcuseDecisionSelections.Intent intent) {
         ExcuseTicket ticket = excuseRepository.findById(ticketId).orElse(null);
         if (ticket == null) return null;
         long actor = requireDecisionAuthority(identity, ticket.getGroupId());
-        if (Objects.equals(ticket.getStudentId(), actor)) throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
-        var fence = mongoTemplate.findById(Long.toString(requireAttachmentSemester(ticket)),
-                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
-        if (fence == null || !("OPEN".equals(fence.getBarrierState()) || "RELEASED".equals(fence.getBarrierState()))
-                || mongoTemplate.exists(Query.query(Criteria.where("_id").is(Long.toString(ticket.getSemesterId()))),
-                ru.rutcampustrack.attendance.event.SemesterDeletionTombstoneDocument.class)) {
+        if (Objects.equals(ticket.getStudentId(), actor))
+            throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
+        var fence =
+                mongoTemplate.findById(
+                        Long.toString(requireAttachmentSemester(ticket)),
+                        ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
+        if (fence == null
+                || !("OPEN".equals(fence.getBarrierState())
+                        || "RELEASED".equals(fence.getBarrierState()))
+                || mongoTemplate.exists(
+                        Query.query(
+                                Criteria.where("_id").is(Long.toString(ticket.getSemesterId()))),
+                        ru.rutcampustrack.attendance.event.SemesterDeletionTombstoneDocument
+                                .class)) {
             throw new ConflictException("Семестр архивируется или архивирован");
         }
-        return matchesSelectedExcuseDecision(ticket, actor, approved, comment, intent) ? toDetail(ticket) : null;
+        return matchesSelectedExcuseDecision(ticket, actor, approved, comment, intent)
+                ? toDetail(ticket)
+                : null;
     }
 
-    private static boolean matchesSelectedExcuseDecision(ExcuseTicket ticket, long actor, boolean approved,
-                                                         String comment, ExcuseDecisionSelections.Intent intent) {
-        return ticket.getStatus() == (approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED)
-                && Objects.equals(ticket.getDecisionBy(), actor) && Objects.equals(ticket.getDecisionComment(), comment)
+    private static boolean matchesSelectedExcuseDecision(
+            ExcuseTicket ticket,
+            long actor,
+            boolean approved,
+            String comment,
+            ExcuseDecisionSelections.Intent intent) {
+        return ticket.getStatus()
+                        == (approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED)
+                && Objects.equals(ticket.getDecisionBy(), actor)
+                && Objects.equals(ticket.getDecisionComment(), comment)
                 && ExcuseDecisionSelections.matches(ticket.getDecisionSelection(), intent);
     }
 
@@ -1632,69 +2320,131 @@ public class StudentRequestService {
     }
 
     /** Atomic approval/rejection path for either manual or automatic late check-in. */
-    public RequestDetail decideLateCheckin(Identity identity, String requestId, boolean approved,
-                                           String decisionComment) {
+    public RequestDetail decideLateCheckin(
+            Identity identity, String requestId, boolean approved, String decisionComment) {
         String normalizedComment = validateDecisionComment(decisionComment);
-        return executeDecisionWithRetry(() -> transactionTemplate.execute(status -> {
-            LateCheckinRequest request = lateCheckinRepository.findById(requestId).orElseThrow(
-                    () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
-            long actor = requireDecisionAuthority(identity, request.getGroupId());
-            if (Objects.equals(request.getStudentId(), actor)) {
-                throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
-            }
-            Map<Long, LessonResponse> writeLessons = lockPairs(request.getSemesterId(), request.getStudentId(), request.getGroupId(),
-                    List.of(request.getLessonId()));
-            LateCheckinRequest current = lateCheckinRepository.findById(requestId).orElseThrow(
-                    () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
-            if (current.getStatus() != LateCheckinRequestStatus.PENDING) {
-                if (matchesLateCheckinDecision(current, actor, approved, normalizedComment)) {
-                    return toDetail(current);
-                }
-                throw new ConflictException("Решение по запросу уже принято");
-            }
-            if (approved) {
-                requireApprovableLesson(writeLessons.get(current.getLessonId()));
-            }
-            Instant now = clock.instant();
-            Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
-            current.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
-            current.setResolutionReason(approved
-                    ? LateCheckinResolutionReason.HEADMAN_APPROVED
-                    : LateCheckinResolutionReason.HEADMAN_REJECTED);
-            current.setDecisionBy(actor);
-            current.setDecisionComment(normalizedComment);
-            current.setDecisionAt(now);
-            current.setUpdatedAt(now);
-            if (approved) {
-                AttendanceDocument attendance = attendanceRepository
-                        .findByLessonIdAndUserId(current.getLessonId(), current.getStudentId()).orElse(null);
-                if (attendance != null && attendance.getStatus() == AttendanceStatus.CANCELLED) {
-                    throw new ConflictException("Пара отменена");
-                }
-                if (attendance == null || attendance.getStatus() != AttendanceStatus.PRESENT) {
-                    StudentLessonSnapshotDocument snapshot = toDocument(
-                            toSnapshot(writeLessons.get(current.getLessonId()), current.getSemesterId()));
-                    savePresentAttendance(current, snapshot, attendance, now, actor, identity.headman() ? "HEADMAN" : "ASSISTANT");
-                } else {
-                    current.setResolutionReason(LateCheckinResolutionReason.PRESENT_PRIORITY);
-                }
-            }
-            LateCheckinRequest saved = lateCheckinRepository.save(current);
-            if (requestActions != null) requestActions.late(saved, auditBefore, actor, identity.headman() ? "HEADMAN" : "ASSISTANT", now);
-            lateCheckinEventPublisher.publishDecided(saved, saved.getLessonDate(), saved.getLessonNumber(),
-                    saved.getSubjectId(), null);
-            return toDetail(saved);
-        }), () -> recoverLateCheckinDecision(identity, requestId, approved, normalizedComment));
+        return executeDecisionWithRetry(
+                () ->
+                        transactionTemplate.execute(
+                                status -> {
+                                    LateCheckinRequest request =
+                                            lateCheckinRepository
+                                                    .findById(requestId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new ResourceNotFoundException(
+                                                                            "LateCheckinRequest",
+                                                                            "id",
+                                                                            requestId));
+                                    long actor =
+                                            requireDecisionAuthority(
+                                                    identity, request.getGroupId());
+                                    if (Objects.equals(request.getStudentId(), actor)) {
+                                        throw new AccessDeniedException(
+                                                "Нельзя принимать решение по собственной заявке");
+                                    }
+                                    Map<Long, LessonResponse> writeLessons =
+                                            lockPairs(
+                                                    request.getSemesterId(),
+                                                    request.getStudentId(),
+                                                    request.getGroupId(),
+                                                    List.of(request.getLessonId()));
+                                    LateCheckinRequest current =
+                                            lateCheckinRepository
+                                                    .findById(requestId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new ResourceNotFoundException(
+                                                                            "LateCheckinRequest",
+                                                                            "id",
+                                                                            requestId));
+                                    if (current.getStatus() != LateCheckinRequestStatus.PENDING) {
+                                        if (matchesLateCheckinDecision(
+                                                current, actor, approved, normalizedComment)) {
+                                            return toDetail(current);
+                                        }
+                                        throw new ConflictException(
+                                                "Решение по запросу уже принято");
+                                    }
+                                    if (approved) {
+                                        requireApprovableLesson(
+                                                writeLessons.get(current.getLessonId()));
+                                    }
+                                    Instant now = clock.instant();
+                                    Map<String, Object> auditBefore =
+                                            ru.rutcampustrack.attendance.audit.RequestActionRecorder
+                                                    .snapshot(current);
+                                    current.setStatus(
+                                            approved
+                                                    ? LateCheckinRequestStatus.APPROVED
+                                                    : LateCheckinRequestStatus.REJECTED);
+                                    current.setResolutionReason(
+                                            approved
+                                                    ? LateCheckinResolutionReason.HEADMAN_APPROVED
+                                                    : LateCheckinResolutionReason.HEADMAN_REJECTED);
+                                    current.setDecisionBy(actor);
+                                    current.setDecisionComment(normalizedComment);
+                                    current.setDecisionAt(now);
+                                    current.setUpdatedAt(now);
+                                    if (approved) {
+                                        AttendanceDocument attendance =
+                                                attendanceRepository
+                                                        .findByLessonIdAndUserId(
+                                                                current.getLessonId(),
+                                                                current.getStudentId())
+                                                        .orElse(null);
+                                        if (attendance != null
+                                                && attendance.getStatus()
+                                                        == AttendanceStatus.CANCELLED) {
+                                            throw new ConflictException("Пара отменена");
+                                        }
+                                        if (attendance == null
+                                                || attendance.getStatus()
+                                                        != AttendanceStatus.PRESENT) {
+                                            StudentLessonSnapshotDocument snapshot =
+                                                    toDocument(
+                                                            toSnapshot(
+                                                                    writeLessons.get(
+                                                                            current.getLessonId()),
+                                                                    current.getSemesterId()));
+                                            savePresentAttendance(
+                                                    current,
+                                                    snapshot,
+                                                    attendance,
+                                                    now,
+                                                    actor,
+                                                    identity.headman() ? "HEADMAN" : "ASSISTANT");
+                                        } else {
+                                            current.setResolutionReason(
+                                                    LateCheckinResolutionReason.PRESENT_PRIORITY);
+                                        }
+                                    }
+                                    LateCheckinRequest saved = lateCheckinRepository.save(current);
+                                    if (requestActions != null)
+                                        requestActions.late(
+                                                saved,
+                                                auditBefore,
+                                                actor,
+                                                identity.headman() ? "HEADMAN" : "ASSISTANT",
+                                                now);
+                                    lateCheckinEventPublisher.publishDecided(
+                                            saved,
+                                            saved.getLessonDate(),
+                                            saved.getLessonNumber(),
+                                            saved.getSubjectId(),
+                                            null);
+                                    return toDetail(saved);
+                                }),
+                () -> recoverLateCheckinDecision(identity, requestId, approved, normalizedComment));
     }
 
     /**
-     * Recover a decision whose transaction committed but whose acknowledgement
-     * was lost.  The read is deliberately outside a second transaction: a
-     * matching terminal document already contains the durable event, so
-     * re-running the decision body could publish a duplicate event.
+     * Recover a decision whose transaction committed but whose acknowledgement was lost. The read
+     * is deliberately outside a second transaction: a matching terminal document already contains
+     * the durable event, so re-running the decision body could publish a duplicate event.
      */
-    private RequestDetail recoverExcuseDecision(Identity identity, String ticketId,
-                                                boolean approved, String decisionComment) {
+    private RequestDetail recoverExcuseDecision(
+            Identity identity, String ticketId, boolean approved, String decisionComment) {
         ExcuseTicket ticket = excuseRepository.findById(ticketId).orElse(null);
         if (ticket == null) {
             return null;
@@ -1709,8 +2459,8 @@ public class StudentRequestService {
         return toDetail(ticket);
     }
 
-    private RequestDetail recoverLateCheckinDecision(Identity identity, String requestId, boolean approved,
-                                                    String decisionComment) {
+    private RequestDetail recoverLateCheckinDecision(
+            Identity identity, String requestId, boolean approved, String decisionComment) {
         LateCheckinRequest request = lateCheckinRepository.findById(requestId).orElse(null);
         if (request == null) {
             return null;
@@ -1725,39 +2475,50 @@ public class StudentRequestService {
         return toDetail(request);
     }
 
-    private static boolean matchesExcuseDecision(ExcuseTicket ticket, long actor,
-                                                  boolean approved, String comment) {
+    private static boolean matchesExcuseDecision(
+            ExcuseTicket ticket, long actor, boolean approved, String comment) {
         return ticket.getDecisionSelection() == null
-                && ticket.getStatus() == (approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED)
+                && ticket.getStatus()
+                        == (approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED)
                 && Objects.equals(ticket.getDecisionBy(), actor)
                 && Objects.equals(ticket.getDecisionComment(), comment);
     }
 
-    private static boolean matchesLateCheckinDecision(LateCheckinRequest request, long actor,
-                                                       boolean approved, String comment) {
-        return request.getStatus() == (approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED)
+    private static boolean matchesLateCheckinDecision(
+            LateCheckinRequest request, long actor, boolean approved, String comment) {
+        return request.getStatus()
+                        == (approved
+                                ? LateCheckinRequestStatus.APPROVED
+                                : LateCheckinRequestStatus.REJECTED)
                 && Objects.equals(request.getDecisionBy(), actor)
                 && Objects.equals(request.getDecisionComment(), comment);
     }
 
-    private void saveExcusedAttendance(ExcuseTicket ticket,
-                                       StudentLessonSnapshotDocument snapshot,
-                                       AttendanceDocument current,
-                                       Instant now, long actor, String actorRole) {
+    private void saveExcusedAttendance(
+            ExcuseTicket ticket,
+            StudentLessonSnapshotDocument snapshot,
+            AttendanceDocument current,
+            Instant now,
+            long actor,
+            String actorRole) {
         long semesterId = requireAttachmentSemester(ticket);
-        if (snapshot != null && snapshot.getSemesterId() != null
+        if (snapshot != null
+                && snapshot.getSemesterId() != null
                 && !Objects.equals(snapshot.getSemesterId(), semesterId)) {
             throw new ConflictException("Снимок урока не совпадает с семестром заявки");
         }
         requireAttendanceScope(current, ticket.getGroupId(), semesterId);
-        AttendanceDocument beforeMark = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
+        AttendanceDocument beforeMark =
+                ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
         AttendanceStatus previousStatus = document.getStatus();
         if (document.getCreatedAt() == null) {
             document.setCreatedAt(now);
         }
-        document.setLessonId(ticket.getLessonIds().contains(document.getLessonId())
-                ? document.getLessonId() : snapshot == null ? null : snapshot.getLessonId());
+        document.setLessonId(
+                ticket.getLessonIds().contains(document.getLessonId())
+                        ? document.getLessonId()
+                        : snapshot == null ? null : snapshot.getLessonId());
         if (document.getLessonId() == null && snapshot != null) {
             document.setLessonId(snapshot.getLessonId());
         }
@@ -1777,25 +2538,38 @@ public class StudentRequestService {
         document.setMarkedBy(actor);
         applyJournalAttachmentTransition(document, previousStatus, AttendanceStatus.EXCUSED);
         document.setUpdatedAt(now);
-        if (ru.rutcampustrack.attendance.checkin.AttendanceRevisions.sameMeaning(beforeMark, document)) return;
+        if (ru.rutcampustrack.attendance.checkin.AttendanceRevisions.sameMeaning(
+                beforeMark, document)) return;
         document.setMarkRevision(java.util.UUID.randomUUID().toString());
         attendanceRepository.save(document);
-        if (actions != null) actions.mark("ATTENDANCE_SET", beforeMark, document, actor, actorRole,
-                ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference("EXCUSE", ticket.getId(), "APPROVED"));
+        if (actions != null)
+            actions.mark(
+                    "ATTENDANCE_SET",
+                    beforeMark,
+                    document,
+                    actor,
+                    actorRole,
+                    ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference(
+                            "EXCUSE", ticket.getId(), "APPROVED"));
     }
 
-    private void savePresentAttendance(LateCheckinRequest request,
-                                       StudentLessonSnapshotDocument snapshot,
-                                       AttendanceDocument current,
-                                       Instant now,
-                                       Long markedBy, String actorRole) {
-        if (request.getSemesterId() == null || request.getSemesterId() <= 0
-                || (snapshot != null && snapshot.getSemesterId() != null
-                && !Objects.equals(snapshot.getSemesterId(), request.getSemesterId()))) {
+    private void savePresentAttendance(
+            LateCheckinRequest request,
+            StudentLessonSnapshotDocument snapshot,
+            AttendanceDocument current,
+            Instant now,
+            Long markedBy,
+            String actorRole) {
+        if (request.getSemesterId() == null
+                || request.getSemesterId() <= 0
+                || (snapshot != null
+                        && snapshot.getSemesterId() != null
+                        && !Objects.equals(snapshot.getSemesterId(), request.getSemesterId()))) {
             throw new ConflictException("Снимок урока не совпадает с семестром заявки");
         }
         requireAttendanceScope(current, request.getGroupId(), request.getSemesterId());
-        AttendanceDocument beforeMark = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
+        AttendanceDocument beforeMark =
+                ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
         if (document.getCreatedAt() == null) {
             document.setCreatedAt(now);
@@ -1814,31 +2588,46 @@ public class StudentRequestService {
         document.setExcuseType(null);
         document.setExcuseComment(null);
         if (journalAttachmentPort != null) {
-            journalAttachmentPort.delete(request.getSemesterId(), request.getLessonId(),
-                    request.getStudentId(), request.getGroupId());
+            journalAttachmentPort.delete(
+                    request.getSemesterId(),
+                    request.getLessonId(),
+                    request.getStudentId(),
+                    request.getGroupId());
         }
         clearJournalAttachmentMetadata(document);
         document.setUpdatedAt(now);
-        if (ru.rutcampustrack.attendance.checkin.AttendanceRevisions.sameMeaning(beforeMark, document)) return;
+        if (ru.rutcampustrack.attendance.checkin.AttendanceRevisions.sameMeaning(
+                beforeMark, document)) return;
         document.setMarkRevision(java.util.UUID.randomUUID().toString());
         attendanceRepository.save(document);
-        if (actions != null) actions.mark("ATTENDANCE_SET", beforeMark, document, markedBy, actorRole,
-                ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference("LATE_CHECKIN", request.getId(), "APPROVED"));
+        if (actions != null)
+            actions.mark(
+                    "ATTENDANCE_SET",
+                    beforeMark,
+                    document,
+                    markedBy,
+                    actorRole,
+                    ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference(
+                            "LATE_CHECKIN", request.getId(), "APPROVED"));
     }
 
-    private void applyJournalAttachmentTransition(AttendanceDocument document,
-                                                  AttendanceStatus previousStatus,
-                                                  AttendanceStatus nextStatus) {
+    private void applyJournalAttachmentTransition(
+            AttendanceDocument document,
+            AttendanceStatus previousStatus,
+            AttendanceStatus nextStatus) {
         long lessonId = document.getLessonId() == null ? 0L : document.getLessonId();
         long studentId = document.getUserId() == null ? 0L : document.getUserId();
-        boolean retain = nextStatus == AttendanceStatus.EXCUSED
-                && previousStatus == AttendanceStatus.EXCUSED
-                && document.getAttachmentId() != null
-                && journalAttachmentPort != null
-                && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
+        boolean retain =
+                nextStatus == AttendanceStatus.EXCUSED
+                        && previousStatus == AttendanceStatus.EXCUSED
+                        && document.getAttachmentId() != null
+                        && journalAttachmentPort != null
+                        && journalAttachmentPort.isAvailable(
+                                lessonId, studentId, document.getAttachmentId());
         if (!retain) {
             if (journalAttachmentPort != null && lessonId > 0 && studentId > 0) {
-                journalAttachmentPort.delete(document.getSemesterId(), lessonId, studentId, document.getGroupId());
+                journalAttachmentPort.delete(
+                        document.getSemesterId(), lessonId, studentId, document.getGroupId());
             }
             clearJournalAttachmentMetadata(document);
         }
@@ -1852,7 +2641,8 @@ public class StudentRequestService {
     }
 
     private static String reasonText(ExcuseTicket ticket) {
-        if (ticket.getExcuseType() == ExcuseType.OTHER && ticket.getComment() != null
+        if (ticket.getExcuseType() == ExcuseType.OTHER
+                && ticket.getComment() != null
                 && !ticket.getComment().isBlank()) {
             String value = ticket.getComment().strip();
             return value.length() > 80 ? value.substring(0, 80) + "…" : value;
@@ -1882,7 +2672,10 @@ public class StudentRequestService {
     }
 
     private long requireAuthenticatedScope(Identity identity) {
-        if (identity == null || identity.userId() <= 0 || identity.groupId() == null || identity.groupId() <= 0) {
+        if (identity == null
+                || identity.userId() <= 0
+                || identity.groupId() == null
+                || identity.groupId() <= 0) {
             throw new AccessDeniedException("Не хватает authenticated user/group scope");
         }
         if (identity.role() != UserRole.STUDENT) {
@@ -1891,7 +2684,8 @@ public class StudentRequestService {
         return identity.userId();
     }
 
-    private Map<Long, LessonResponse> lockPairs(Long semesterId, long studentId, long groupId, List<Long> lessonIds) {
+    private Map<Long, LessonResponse> lockPairs(
+            Long semesterId, long studentId, long groupId, List<Long> lessonIds) {
         if (semesterId == null || semesterId <= 0) {
             throw new ConflictException("В запросе отсутствует подтверждённый семестр");
         }
@@ -1905,9 +2699,11 @@ public class StudentRequestService {
         // cannot admit or approve a request after a cancellation won the race.
         Map<Long, LessonResponse> lessons = new HashMap<>();
         for (Long lessonId : orderedIds) {
-            LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
+            LessonResponse lesson =
+                    scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
             if (lesson.getSemesterId() != semesterId) {
-                throw new ConflictException("Урок изменил семестр; обнови данные и повтори действие");
+                throw new ConflictException(
+                        "Урок изменил семестр; обнови данные и повтори действие");
             }
             lessons.put(lessonId, lesson);
         }
@@ -1921,9 +2717,12 @@ public class StudentRequestService {
         return ticket.getSemesterId();
     }
 
-    private static void requireAttendanceScope(AttendanceDocument document, long groupId, Long semesterId) {
-        if (document != null && ((document.getGroupId() != null && document.getGroupId() != groupId)
-                || (document.getSemesterId() != null && !Objects.equals(document.getSemesterId(), semesterId)))) {
+    private static void requireAttendanceScope(
+            AttendanceDocument document, long groupId, Long semesterId) {
+        if (document != null
+                && ((document.getGroupId() != null && document.getGroupId() != groupId)
+                        || (document.getSemesterId() != null
+                                && !Objects.equals(document.getSemesterId(), semesterId)))) {
             throw new ConflictException("Отметка посещаемости не совпадает с семестром урока");
         }
     }
@@ -1936,7 +2735,10 @@ public class StudentRequestService {
     }
 
     private long requireStudentIdentity(Identity identity) {
-        if (identity == null || identity.userId() <= 0 || identity.groupId() == null || identity.groupId() <= 0) {
+        if (identity == null
+                || identity.userId() <= 0
+                || identity.groupId() == null
+                || identity.groupId() <= 0) {
             throw new AccessDeniedException("Не хватает student/group scope");
         }
         if (identity.role() != UserRole.STUDENT) {
@@ -1981,7 +2783,8 @@ public class StudentRequestService {
         if (commentRequired(command.reason()) && (comment == null || comment.isBlank())) {
             throw new BadRequestException("Для причины OTHER нужен комментарий");
         }
-        List<AttachmentInput> inputs = command.attachments() == null ? List.of() : command.attachments();
+        List<AttachmentInput> inputs =
+                command.attachments() == null ? List.of() : command.attachments();
         if (inputs.size() > MAX_ATTACHMENTS) {
             throw new BadRequestException("Можно приложить не более двух файлов");
         }
@@ -2006,7 +2809,9 @@ public class StudentRequestService {
     }
 
     private static void validateKey(String key) {
-        if (key == null || key.length() < 16 || key.length() > 128
+        if (key == null
+                || key.length() < 16
+                || key.length() > 128
                 || key.chars().anyMatch(c -> c < 0x21 || c > 0x7e)) {
             throw new InvalidIdempotencyKeyException();
         }
@@ -2060,8 +2865,10 @@ public class StudentRequestService {
         if (bytes.length > MAX_ATTACHMENT_BYTES) {
             throw new PayloadTooLargeException("Размер одного файла не должен превышать 10 МБ");
         }
-        String contentType = input.declaredContentType() == null
-                ? "" : input.declaredContentType().strip().toLowerCase(Locale.ROOT);
+        String contentType =
+                input.declaredContentType() == null
+                        ? ""
+                        : input.declaredContentType().strip().toLowerCase(Locale.ROOT);
         String safeName = safeFilename(input.originalFilename());
         String extension = extension(safeName);
         if (!ALLOWED_MIME_TYPES.contains(contentType) || !ALLOWED_EXTENSIONS.contains(extension)) {
@@ -2101,18 +2908,20 @@ public class StudentRequestService {
     }
 
     private static boolean mimeExtensionMatches(String mime, String extension) {
-        return (mime.equals("image/jpeg") && (extension.equals(".jpg") || extension.equals(".jpeg")))
+        return (mime.equals("image/jpeg")
+                        && (extension.equals(".jpg") || extension.equals(".jpeg")))
                 || (mime.equals("image/png") && extension.equals(".png"))
                 || (mime.equals("application/pdf") && extension.equals(".pdf"));
     }
 
     private static String detectType(byte[] bytes) {
-        if (bytes.length >= 3 && (bytes[0] & 0xff) == 0xff
-                && (bytes[1] & 0xff) == 0xd8 && (bytes[2] & 0xff) == 0xff) {
+        if (bytes.length >= 3
+                && (bytes[0] & 0xff) == 0xff
+                && (bytes[1] & 0xff) == 0xd8
+                && (bytes[2] & 0xff) == 0xff) {
             return "image/jpeg";
         }
-        byte[] png = new byte[]{
-                (byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
+        byte[] png = new byte[] {(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
         if (bytes.length >= png.length) {
             boolean matches = true;
             for (int i = 0; i < png.length; i++) {
@@ -2144,8 +2953,8 @@ public class StudentRequestService {
     private String excusePayloadHash(ExcuseSubmission command, ValidatedAttachments files) {
         StringBuilder canonical = new StringBuilder();
         appendCanonicalTag(canonical, "EXCUSE");
-        normalizeLessonIds(command.lessonIds()).forEach(id ->
-                appendCanonicalField(canonical, "lesson_id", Long.toString(id)));
+        normalizeLessonIds(command.lessonIds())
+                .forEach(id -> appendCanonicalField(canonical, "lesson_id", Long.toString(id)));
         appendCanonicalField(canonical, "reason", command.reason().name());
         appendCanonicalField(canonical, "comment", normalizeComment(command.comment()));
         for (ValidatedAttachment file : files.items()) {
@@ -2177,20 +2986,27 @@ public class StudentRequestService {
         return sha256("LATE_CHECKIN\n" + lessonId);
     }
 
-    private RequestDetail replay(Identity identity, long studentId, StudentRequestKind kind, String key,
-                                 String payloadHash) {
+    private RequestDetail replay(
+            Identity identity,
+            long studentId,
+            StudentRequestKind kind,
+            String key,
+            String payloadHash) {
         OptionalReceipt receipt = findReceipt(studentId, kind, key);
-        return receipt.present() ? replayOrMismatch(identity, receipt.document(), payloadHash) : null;
+        return receipt.present()
+                ? replayOrMismatch(identity, receipt.document(), payloadHash)
+                : null;
     }
 
     private OptionalReceipt findReceipt(long studentId, StudentRequestKind kind, String key) {
-        return new OptionalReceipt(receiptRepository
-                .findByStudentIdAndCommandKindAndIdempotencyKey(studentId, kind.name(), key)
-                .orElse(null));
+        return new OptionalReceipt(
+                receiptRepository
+                        .findByStudentIdAndCommandKindAndIdempotencyKey(studentId, kind.name(), key)
+                        .orElse(null));
     }
 
-    private RequestDetail replayOrMismatch(Identity identity, StudentRequestReceiptDocument receipt,
-                                           String payloadHash) {
+    private RequestDetail replayOrMismatch(
+            Identity identity, StudentRequestReceiptDocument receipt, String payloadHash) {
         if (!Objects.equals(receipt.getPayloadHash(), payloadHash)) {
             throw new ConflictException("Idempotency-Key уже использован с другим запросом");
         }
@@ -2213,21 +3029,36 @@ public class StudentRequestService {
     }
 
     private static List<Long> sortedLessonIds(Collection<Long> lessonIds) {
-        return lessonIds == null ? List.of() : lessonIds.stream()
-                .filter(Objects::nonNull).distinct().sorted().toList();
+        return lessonIds == null
+                ? List.of()
+                : lessonIds.stream().filter(Objects::nonNull).distinct().sorted().toList();
     }
 
     private static LessonSnapshot toSnapshot(LessonResponse response, long semesterId) {
-        if (response == null || response.getId() <= 0 || response.getDate() == null
+        if (response == null
+                || response.getId() <= 0
+                || response.getDate() == null
                 || response.getDate().isBlank()) {
             return null;
         }
         LocalDate date = LocalDate.parse(response.getDate());
-        return new LessonSnapshot(response.getId(), response.getGroupId(), response.getSubjectId(), null, null, semesterId,
-                response.getLessonNumber(), date, parseTime(response.getStartTime(), null, false),
-                parseTime(response.getEndTime(), null, true), normalizeStatus(response.getStatus()),
-                response.getIsBlockedByHeadman(), response.getOccurrenceId() > 0 ? Long.toString(response.getOccurrenceId()) : null,
-                response.getOccurrenceRevision() > 0 ? Long.toString(response.getOccurrenceRevision()) : null);
+        return new LessonSnapshot(
+                response.getId(),
+                response.getGroupId(),
+                response.getSubjectId(),
+                null,
+                null,
+                semesterId,
+                response.getLessonNumber(),
+                date,
+                parseTime(response.getStartTime(), null, false),
+                parseTime(response.getEndTime(), null, true),
+                normalizeStatus(response.getStatus()),
+                response.getIsBlockedByHeadman(),
+                response.getOccurrenceId() > 0 ? Long.toString(response.getOccurrenceId()) : null,
+                response.getOccurrenceRevision() > 0
+                        ? Long.toString(response.getOccurrenceRevision())
+                        : null);
     }
 
     private static String normalizeStatus(String status) {
@@ -2236,11 +3067,21 @@ public class StudentRequestService {
 
     private static StudentLessonSnapshotDocument toDocument(LessonSnapshot lesson) {
         return StudentLessonSnapshotDocument.builder()
-                .lessonId(lesson.lessonId()).groupId(lesson.groupId()).subjectId(lesson.subjectId())
-                .subjectName(lesson.subjectName()).subjectType(lesson.subjectType())
-                .semesterId(lesson.semesterId()).lessonNumber(lesson.lessonNumber()).date(lesson.date())
-                .startsAt(lesson.startsAt()).endsAt(lesson.endsAt()).status(lesson.status())
-                .blocked(lesson.blocked()).occurrenceId(lesson.occurrenceId()).occurrenceRevision(lesson.occurrenceRevision()).build();
+                .lessonId(lesson.lessonId())
+                .groupId(lesson.groupId())
+                .subjectId(lesson.subjectId())
+                .subjectName(lesson.subjectName())
+                .subjectType(lesson.subjectType())
+                .semesterId(lesson.semesterId())
+                .lessonNumber(lesson.lessonNumber())
+                .date(lesson.date())
+                .startsAt(lesson.startsAt())
+                .endsAt(lesson.endsAt())
+                .status(lesson.status())
+                .blocked(lesson.blocked())
+                .occurrenceId(lesson.occurrenceId())
+                .occurrenceRevision(lesson.occurrenceRevision())
+                .build();
     }
 
     private void expireOne(RequestAttachmentDocument document, Instant now) {
@@ -2319,7 +3160,8 @@ public class StudentRequestService {
             try {
                 T value = action.get();
                 if (value == null) {
-                    throw new IllegalStateException("Student request transaction returned no result");
+                    throw new IllegalStateException(
+                            "Student request transaction returned no result");
                 }
                 return value;
             } catch (RuntimeException error) {
@@ -2328,22 +3170,25 @@ public class StudentRequestService {
                     throw error;
                 }
                 try {
-                    Thread.sleep(RETRY_BACKOFF_MILLIS * attempt
-                            + java.util.concurrent.ThreadLocalRandom.current()
-                            .nextLong(RETRY_BACKOFF_MILLIS));
+                    Thread.sleep(
+                            RETRY_BACKOFF_MILLIS * attempt
+                                    + java.util.concurrent.ThreadLocalRandom.current()
+                                            .nextLong(RETRY_BACKOFF_MILLIS));
                 } catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
                     throw error;
                 }
             }
         }
-        throw last == null ? new IllegalStateException("Student request transaction did not execute") : last;
+        throw last == null
+                ? new IllegalStateException("Student request transaction did not execute")
+                : last;
     }
 
     /**
-     * Decision-only retry path.  An unknown commit result is first resolved by
-     * the caller-specific exact-match recovery read; only an unresolved result
-     * is retried as an ordinary transaction error.
+     * Decision-only retry path. An unknown commit result is first resolved by the caller-specific
+     * exact-match recovery read; only an unresolved result is retried as an ordinary transaction
+     * error.
      */
     private <T> T executeDecisionWithRetry(Supplier<T> action, Supplier<T> recovery) {
         RuntimeException last = null;
@@ -2351,7 +3196,8 @@ public class StudentRequestService {
             try {
                 T value = action.get();
                 if (value == null) {
-                    throw new IllegalStateException("Student request transaction returned no result");
+                    throw new IllegalStateException(
+                            "Student request transaction returned no result");
                 }
                 return value;
             } catch (RuntimeException error) {
@@ -2366,22 +3212,26 @@ public class StudentRequestService {
                     throw error;
                 }
                 try {
-                    Thread.sleep(RETRY_BACKOFF_MILLIS * attempt
-                            + java.util.concurrent.ThreadLocalRandom.current()
-                            .nextLong(RETRY_BACKOFF_MILLIS));
+                    Thread.sleep(
+                            RETRY_BACKOFF_MILLIS * attempt
+                                    + java.util.concurrent.ThreadLocalRandom.current()
+                                            .nextLong(RETRY_BACKOFF_MILLIS));
                 } catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
                     throw error;
                 }
             }
         }
-        throw last == null ? new IllegalStateException("Student request transaction did not execute") : last;
+        throw last == null
+                ? new IllegalStateException("Student request transaction did not execute")
+                : last;
     }
 
     private static boolean isUnknownCommitResult(Throwable error) {
         for (Throwable current = error; current != null; current = current.getCause()) {
             if (current instanceof MongoException mongo
-                    && mongo.hasErrorLabel(MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL)) {
+                    && mongo.hasErrorLabel(
+                            MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL)) {
                 return true;
             }
         }
@@ -2395,7 +3245,8 @@ public class StudentRequestService {
             }
             if (current instanceof MongoException mongo
                     && (mongo.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)
-                    || mongo.hasErrorLabel(MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL))) {
+                            || mongo.hasErrorLabel(
+                                    MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL))) {
                 return true;
             }
             if (current instanceof TransactionException
@@ -2417,27 +3268,34 @@ public class StudentRequestService {
             boolean blocked,
             String subjectName,
             String subjectType,
-            StudentLessonSnapshotDocument document
-    ) {
-        private ResolvedLesson(long lessonId, long groupId, long subjectId, int lessonNumber,
-                               LocalDate date, String status, boolean blocked,
-                               StudentLessonSnapshotDocument document) {
-            this(lessonId, groupId, subjectId, lessonNumber, date, status, blocked,
+            StudentLessonSnapshotDocument document) {
+        private ResolvedLesson(
+                long lessonId,
+                long groupId,
+                long subjectId,
+                int lessonNumber,
+                LocalDate date,
+                String status,
+                boolean blocked,
+                StudentLessonSnapshotDocument document) {
+            this(
+                    lessonId,
+                    groupId,
+                    subjectId,
+                    lessonNumber,
+                    date,
+                    status,
+                    blocked,
                     document == null ? null : document.getSubjectName(),
-                    document == null ? null : document.getSubjectType(), document);
+                    document == null ? null : document.getSubjectType(),
+                    document);
         }
     }
 
     private record ValidatedAttachment(
-            String safeName,
-            String detectedContentType,
-            byte[] bytes,
-            String sha256
-    ) {
-    }
+            String safeName, String detectedContentType, byte[] bytes, String sha256) {}
 
-    private record ValidatedAttachments(List<ValidatedAttachment> items) {
-    }
+    private record ValidatedAttachments(List<ValidatedAttachment> items) {}
 
     private record OptionalReceipt(StudentRequestReceiptDocument document) {
         boolean present() {

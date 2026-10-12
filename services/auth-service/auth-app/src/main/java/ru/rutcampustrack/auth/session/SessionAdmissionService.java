@@ -2,6 +2,12 @@ package ru.rutcampustrack.auth.session;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
@@ -13,16 +19,9 @@ import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
-
 /**
- * Exchanges one original session-bound access token for a live internal JWT.
- * Authority is read exactly once per call and no successful result is cached.
+ * Exchanges one original session-bound access token for a live internal JWT. Authority is read
+ * exactly once per call and no successful result is cached.
  */
 @Service
 public final class SessionAdmissionService {
@@ -36,8 +35,7 @@ public final class SessionAdmissionService {
     public SessionAdmissionService(
             JwtService jwtService,
             SessionStatePort sessionStatePort,
-            InternalIssuerProperties issuerProperties
-    ) {
+            InternalIssuerProperties issuerProperties) {
         this(jwtService, sessionStatePort, issuerProperties, Clock.systemUTC());
     }
 
@@ -45,8 +43,7 @@ public final class SessionAdmissionService {
             JwtService jwtService,
             SessionStatePort sessionStatePort,
             InternalIssuerProperties issuerProperties,
-            Clock clock
-    ) {
+            Clock clock) {
         this.jwtService = Objects.requireNonNull(jwtService, "jwtService");
         this.sessionStatePort = Objects.requireNonNull(sessionStatePort, "sessionStatePort");
         this.issuerProperties = Objects.requireNonNull(issuerProperties, "issuerProperties");
@@ -85,17 +82,16 @@ public final class SessionAdmissionService {
 
         SessionStatePort.SnapshotResult result;
         try {
-            result = sessionStatePort.snapshot(
-                    new SessionStatePort.SnapshotCommand(userId, sessionId, initialNow)
-            );
+            result =
+                    sessionStatePort.snapshot(
+                            new SessionStatePort.SnapshotCommand(userId, sessionId, initialNow));
         } catch (RuntimeException exception) {
             throw new SessionAdmissionException(
-                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE,
-                    exception
-            );
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
         }
         if (!result.succeeded()) {
             throw mapFailure(result.failureCode());
@@ -103,7 +99,8 @@ public final class SessionAdmissionService {
 
         SessionSnapshot snapshot = result.snapshot();
         if (snapshot == null) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
         }
         if (snapshot.userId() != userId || !snapshot.sessionId().equals(sessionId)) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
@@ -116,12 +113,16 @@ public final class SessionAdmissionService {
         RoleGrant activeRole = snapshot.activeRole();
         if (activeRole == null) {
             String requestedRole = stringClaim(claims, "role");
-            boolean requestedGrantIsUnselectable = snapshot.roles().stream()
-                    .anyMatch(grant -> grant.role().name().equals(requestedRole)
-                            && !grant.isSelectable());
-            throw new SessionAdmissionException(requestedGrantIsUnselectable
-                    ? SessionAdmissionException.Code.ROLE_NOT_SELECTABLE
-                    : SessionAdmissionException.Code.ROLE_NOT_GRANTED);
+            boolean requestedGrantIsUnselectable =
+                    snapshot.roles().stream()
+                            .anyMatch(
+                                    grant ->
+                                            grant.role().name().equals(requestedRole)
+                                                    && !grant.isSelectable());
+            throw new SessionAdmissionException(
+                    requestedGrantIsUnselectable
+                            ? SessionAdmissionException.Code.ROLE_NOT_SELECTABLE
+                            : SessionAdmissionException.Code.ROLE_NOT_GRANTED);
         }
         if (!activeRole.isSelectable() || activeRole.status() == RoleStatus.SUSPENDED) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
@@ -129,7 +130,8 @@ public final class SessionAdmissionService {
         if (activeRole.userId() != userId) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
         }
-        if (snapshot.sessionVersion() != sessionVersion || snapshot.rolesVersion() != rolesVersion) {
+        if (snapshot.sessionVersion() != sessionVersion
+                || snapshot.rolesVersion() != rolesVersion) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.SESSION_STATE_STALE);
         }
         requireIdentityMatch(claims, activeRole, snapshot);
@@ -140,8 +142,10 @@ public final class SessionAdmissionService {
 
         Instant issuedAt = freshNow.truncatedTo(ChronoUnit.SECONDS);
         Instant ttlDeadline = freshNow.plusSeconds(issuerProperties.getTokenTtlSeconds());
-        Instant internalExpiration = originalAccessExpiration
-                .isBefore(ttlDeadline) ? originalAccessExpiration : ttlDeadline;
+        Instant internalExpiration =
+                originalAccessExpiration.isBefore(ttlDeadline)
+                        ? originalAccessExpiration
+                        : ttlDeadline;
         internalExpiration = internalExpiration.truncatedTo(ChronoUnit.SECONDS);
         if (!issuedAt.isBefore(internalExpiration) || !freshNow.isBefore(internalExpiration)) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
@@ -149,12 +153,11 @@ public final class SessionAdmissionService {
 
         String internalToken;
         try {
-            internalToken = jwtService.generateInternalToken(snapshot, issuedAt, internalExpiration);
+            internalToken =
+                    jwtService.generateInternalToken(snapshot, issuedAt, internalExpiration);
         } catch (RuntimeException exception) {
             throw new SessionAdmissionException(
-                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE,
-                    exception
-            );
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         Instant returnNow = clock.instant();
         if (!snapshot.isLiveAt(returnNow)) {
@@ -175,39 +178,45 @@ public final class SessionAdmissionService {
                 activeRole.status().name(),
                 activeRole.groupId() == null ? null : Long.toString(activeRole.groupId()),
                 activeRole.role() == AuthRole.HEADMAN,
-                activeRole.isReadOnly()
-        );
+                activeRole.isReadOnly());
     }
 
     private static SessionAdmissionException mapFailure(SessionStatePort.FailureCode failureCode) {
         if (failureCode == null) {
-            return new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            return new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
         }
         return switch (failureCode) {
-            case INVALID_SESSION -> new SessionAdmissionException(
-                    SessionAdmissionException.Code.INVALID_SESSION);
-            case SESSION_REVOKED -> new SessionAdmissionException(
-                    SessionAdmissionException.Code.SESSION_REVOKED);
-            case ROLE_NOT_GRANTED -> new SessionAdmissionException(
-                    SessionAdmissionException.Code.ROLE_NOT_GRANTED);
-            case ROLE_NOT_SELECTABLE -> new SessionAdmissionException(
-                    SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
-            case SESSION_STATE_STALE -> new SessionAdmissionException(
-                    SessionAdmissionException.Code.SESSION_STATE_STALE);
-            case AUTHORITY_UNAVAILABLE -> new SessionAdmissionException(
-                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
-            default -> new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            case INVALID_SESSION ->
+                    new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
+            case SESSION_REVOKED ->
+                    new SessionAdmissionException(SessionAdmissionException.Code.SESSION_REVOKED);
+            case ROLE_NOT_GRANTED ->
+                    new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_GRANTED);
+            case ROLE_NOT_SELECTABLE ->
+                    new SessionAdmissionException(
+                            SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
+            case SESSION_STATE_STALE ->
+                    new SessionAdmissionException(
+                            SessionAdmissionException.Code.SESSION_STATE_STALE);
+            case AUTHORITY_UNAVAILABLE ->
+                    new SessionAdmissionException(
+                            SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            default ->
+                    new SessionAdmissionException(
+                            SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
         };
     }
 
-    private static void requireIdentityMatch(Claims claims, RoleGrant activeRole, SessionSnapshot snapshot) {
+    private static void requireIdentityMatch(
+            Claims claims, RoleGrant activeRole, SessionSnapshot snapshot) {
         String role = stringClaim(claims, "role");
         String status = stringClaim(claims, "status");
         String groupId = optionalStringClaim(claims, "group_id");
         boolean isHeadman = booleanClaim(claims, "is_headman");
         boolean readOnly = booleanClaim(claims, "readOnly");
-        String expectedGroupId = activeRole.groupId() == null
-                ? null : Long.toString(activeRole.groupId());
+        String expectedGroupId =
+                activeRole.groupId() == null ? null : Long.toString(activeRole.groupId());
         if (!activeRole.role().name().equals(role)
                 || !activeRole.status().name().equals(status)
                 || !Objects.equals(expectedGroupId, groupId)

@@ -1,12 +1,5 @@
 package ru.rutcampustrack.shared.outbox;
 
-import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,9 +9,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
+
 /**
- * M02 Группа 4 — unit-тесты {@link OutboxPublisherJob} с mock Storage и Sender.
- * Проверяется только логика tick'а (read → send → mark), без Spring-контекста.
+ * M02 Группа 4 — unit-тесты {@link OutboxPublisherJob} с mock Storage и Sender. Проверяется только
+ * логика tick'а (read → send → mark), без Spring-контекста.
  */
 class OutboxPublisherJobTest {
 
@@ -40,9 +39,10 @@ class OutboxPublisherJobTest {
     void allSuccess_marksEachSent() throws Exception {
         OutboxStorage storage = mock(OutboxStorage.class);
         OutboxEventSender sender = mock(OutboxEventSender.class);
-        List<OutboxRecord> batch = List.of(
-                new OutboxRecord(1L, "lesson.started", "{\"id\":1}", Instant.now()),
-                new OutboxRecord(2L, "lesson.closed", "{\"id\":2}", Instant.now()));
+        List<OutboxRecord> batch =
+                List.of(
+                        new OutboxRecord(1L, "lesson.started", "{\"id\":1}", Instant.now()),
+                        new OutboxRecord(2L, "lesson.closed", "{\"id\":2}", Instant.now()));
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(batch);
 
         OutboxPublisherJob job = new OutboxPublisherJob(storage, sender);
@@ -62,7 +62,8 @@ class OutboxPublisherJobTest {
         OutboxEventSender sender = mock(OutboxEventSender.class);
         OutboxRecord rec = new OutboxRecord(42L, "attendance.marked", "{}", Instant.now());
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(List.of(rec));
-        doThrow(new RuntimeException("rabbit unavailable")).when(sender)
+        doThrow(new RuntimeException("rabbit unavailable"))
+                .when(sender)
                 .send("attendance.marked", "{}");
 
         OutboxPublisherJob job = new OutboxPublisherJob(storage, sender);
@@ -79,10 +80,11 @@ class OutboxPublisherJobTest {
     void partialFailure_stopsAndLeavesWholeBatchPending() throws Exception {
         OutboxStorage storage = mock(OutboxStorage.class);
         OutboxEventSender sender = mock(OutboxEventSender.class);
-        List<OutboxRecord> batch = List.of(
-                new OutboxRecord(1L, "ok", "{}", Instant.now()),
-                new OutboxRecord(2L, "bad", "{}", Instant.now()),
-                new OutboxRecord(3L, "later", "{}", Instant.now()));
+        List<OutboxRecord> batch =
+                List.of(
+                        new OutboxRecord(1L, "ok", "{}", Instant.now()),
+                        new OutboxRecord(2L, "bad", "{}", Instant.now()),
+                        new OutboxRecord(3L, "later", "{}", Instant.now()));
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(batch);
         doThrow(new RuntimeException("broken payload")).when(sender).send("bad", "{}");
 
@@ -104,13 +106,15 @@ class OutboxPublisherJobTest {
         OutboxStorage storage = mock(OutboxStorage.class);
         AtomicInteger callOrder = new AtomicInteger();
         List<Integer> sendOrder = new ArrayList<>();
-        OutboxEventSender sender = (type, payload) -> {
-            sendOrder.add(callOrder.incrementAndGet());
-        };
-        List<OutboxRecord> batch = List.of(
-                new OutboxRecord(10L, "a", "{}", Instant.now()),
-                new OutboxRecord(20L, "b", "{}", Instant.now()),
-                new OutboxRecord(30L, "c", "{}", Instant.now()));
+        OutboxEventSender sender =
+                (type, payload) -> {
+                    sendOrder.add(callOrder.incrementAndGet());
+                };
+        List<OutboxRecord> batch =
+                List.of(
+                        new OutboxRecord(10L, "a", "{}", Instant.now()),
+                        new OutboxRecord(20L, "b", "{}", Instant.now()),
+                        new OutboxRecord(30L, "c", "{}", Instant.now()));
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(batch);
 
         new OutboxPublisherJob(storage, sender).publishBatch();

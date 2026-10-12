@@ -1,28 +1,30 @@
 package ru.rutcampustrack.schedule.recurring;
 
-import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
-import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
 
 /** Pure ISO-parity range calculation for the canonical recurring writer. */
 public final class RecurringDateCalculator {
 
     private RecurringDateCalculator() {}
 
-    public static List<LocalDate> compute(CreateScheduleItemRequest request,
-                                          RecurringAssignmentAuthority authority,
-                                          LocalDate semesterStart,
-                                          LocalDate semesterEnd,
-                                          LocalDate fenceCap) {
-        LocalDate from = semesterStart.isAfter(authority.validFrom())
-                ? semesterStart : authority.validFrom();
+    public static List<LocalDate> compute(
+            CreateScheduleItemRequest request,
+            RecurringAssignmentAuthority authority,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            LocalDate fenceCap) {
+        LocalDate from =
+                semesterStart.isAfter(authority.validFrom())
+                        ? semesterStart
+                        : authority.validFrom();
         LocalDate semesterExclusiveEnd = semesterEnd.plusDays(1);
-        LocalDate exclusiveEnd = semesterExclusiveEnd.isBefore(fenceCap)
-                ? semesterExclusiveEnd : fenceCap;
+        LocalDate exclusiveEnd =
+                semesterExclusiveEnd.isBefore(fenceCap) ? semesterExclusiveEnd : fenceCap;
         if (!from.isBefore(exclusiveEnd)) return List.of();
 
         List<LocalDate> dates = new ArrayList<>();

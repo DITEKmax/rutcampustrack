@@ -1,5 +1,12 @@
 package ru.rutcampustrack.schedule.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +16,6 @@ import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
@@ -17,23 +23,15 @@ import ru.rutcampustrack.schedule.lesson.LessonService;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
 /**
- * Integration test verifying that cancelling a lesson publishes a LessonCancelledEvent
- * to the outbox (EVNT-03).
+ * Integration test verifying that cancelling a lesson publishes a LessonCancelledEvent to the
+ * outbox (EVNT-03).
  *
- * M02 Группа 5: listener теперь пишет в schedule_outbox (BEFORE_COMMIT),
- * а не напрямую в Rabbit. Тест проверяет запись в outbox — это эквивалент
- * гарантии «событие не теряется, даже если Rabbit недоступен».
+ * <p>M02 Группа 5: listener теперь пишет в schedule_outbox (BEFORE_COMMIT), а не напрямую в Rabbit.
+ * Тест проверяет запись в outbox — это эквивалент гарантии «событие не теряется, даже если Rabbit
+ * недоступен».
  */
 class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
 
@@ -41,26 +39,24 @@ class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
     private static final Long SUBJECT_ID = 200L;
     private static final Long USER_ID = 999L;
 
-    @Autowired
-    LessonService lessonService;
+    @Autowired LessonService lessonService;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @MockitoBean
-    RequestContext requestContext;
+    @MockitoBean RequestContext requestContext;
 
     @BeforeEach
     void fixtureAuthority() {
         resetScheduleData();
-        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L)).thenReturn(
-                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(1L).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(1L)
+                                .build());
     }
 
     @AfterEach
@@ -90,8 +86,7 @@ class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
         // Assert: LessonCancelledEvent записано в outbox (в той же tx что и
         // доменная операция). Publisher async, в тестах не тикает.
         List<OutboxRecord> pending = outboxStorage.findPending(10);
-        assertThat(pending)
-                .anyMatch(r -> "lesson.cancelled".equals(r.eventType()));
+        assertThat(pending).anyMatch(r -> "lesson.cancelled".equals(r.eventType()));
     }
 
     // =========================================================================

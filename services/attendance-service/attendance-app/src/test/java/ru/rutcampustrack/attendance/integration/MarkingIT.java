@@ -1,6 +1,20 @@
 package ru.rutcampustrack.attendance.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -8,8 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -22,39 +36,21 @@ import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
- * Integration tests for manual attendance marking write path.
- * Proves MARK-01, MARK-02, INFRA-06 requirements via full HTTP stack with real MongoDB.
+ * Integration tests for manual attendance marking write path. Proves MARK-01, MARK-02, INFRA-06
+ * requirements via full HTTP stack with real MongoDB.
  *
- * All tests use MockMvc performing HTTP PUT to /attendance/lessons/{lessonId}/students/{userId}.
- * GeofenceService is mocked to prevent @PostConstruct gRPC calls.
- * AttendanceEventPublisher is spied to verify event publication.
+ * <p>All tests use MockMvc performing HTTP PUT to /attendance/lessons/{lessonId}/students/{userId}.
+ * GeofenceService is mocked to prevent @PostConstruct gRPC calls. AttendanceEventPublisher is spied
+ * to verify event publication.
  */
 class MarkingIT extends AbstractAttendanceIntegrationTest {
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @Autowired
-    private RequestAttachmentRepository requestAttachmentRepository;
+    @Autowired private RequestAttachmentRepository requestAttachmentRepository;
 
-    @MockitoSpyBean
-    protected AttendanceEventPublisher attendanceEventPublisher;
+    @MockitoSpyBean protected AttendanceEventPublisher attendanceEventPublisher;
 
     private static final Long LESSON_ID = 42L;
     private static final Long USER_ID = 99L;
@@ -66,14 +62,21 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void setUp() {
         mongoTemplate.remove(new Query(), AttendanceDocument.class);
         requestAttachmentRepository.deleteAll();
-        Mockito.reset(scheduleGrpcClient, academicGrpcClient, semesterCacheService, geofenceService);
+        Mockito.reset(
+                scheduleGrpcClient, academicGrpcClient, semesterCacheService, geofenceService);
         when(scheduleGrpcClient.requireAttendanceMutationReady(
-                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.eq(GROUP_ID)))
+                        org.mockito.ArgumentMatchers.anyLong(),
+                        org.mockito.ArgumentMatchers.eq(GROUP_ID)))
                 .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
-        when(academicGrpcClient.isHeadman(HEADMAN_USER_ID, GROUP_ID)).thenReturn(
-                ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        when(academicGrpcClient.isHeadman(HEADMAN_USER_ID, GROUP_ID))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder()
+                                .setIsHeadman(true)
+                                .build());
         when(academicGrpcClient.hasAssistantPermission(
-                org.mockito.ArgumentMatchers.eq(GROUP_ID), org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
+                        org.mockito.ArgumentMatchers.eq(GROUP_ID),
+                        org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn(true);
     }
 
     // -------------------------------------------------------------------------
@@ -117,9 +120,10 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     }
 
     private GroupMembersResponse buildHistoricalGroupMembers(Long semesterId, Long... userIds) {
-        GroupMembersResponse.Builder builder = GroupMembersResponse.newBuilder()
-                .setAsOfDate("2026-04-01")
-                .setSemesterId(semesterId);
+        GroupMembersResponse.Builder builder =
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(semesterId);
         for (Long uid : userIds) {
             builder.addStudents(StudentInfo.newBuilder().setUserId(uid).build());
         }
@@ -128,22 +132,22 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
 
     private void mockHappyPath() {
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(GROUP_ID));
-        when(academicGrpcClient.getGroupMembers(
-                GROUP_ID, LocalDate.of(2026, 4, 1), 1L))
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), 1L))
                 .thenReturn(buildHistoricalGroupMembers(1L, USER_ID, 100L));
         when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder headmanRequest(
-            AttendanceStatus status) throws Exception {
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            headmanRequest(AttendanceStatus status) throws Exception {
         return headmanRequest(LESSON_ID, USER_ID, status);
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder headmanRequest(
-            Long lessonId, Long userId, AttendanceStatus status) throws Exception {
-        MarkRequest request = status == AttendanceStatus.EXCUSED
-                ? new MarkRequest(status, ExcuseType.ILLNESS, "test reason")
-                : new MarkRequest(status);
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            headmanRequest(Long lessonId, Long userId, AttendanceStatus status) throws Exception {
+        MarkRequest request =
+                status == AttendanceStatus.EXCUSED
+                        ? new MarkRequest(status, ExcuseType.ILLNESS, "test reason")
+                        : new MarkRequest(status);
         return put("/attendance/lessons/{lessonId}/students/{userId}", lessonId, userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
@@ -153,10 +157,11 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .header("X-Is-Headman", "true");
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder headmanHeaders(
-            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
-        return request
-                .header("X-User-Id", HEADMAN_USER_ID.toString())
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            headmanHeaders(
+                    org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+                            request) {
+        return request.header("X-User-Id", HEADMAN_USER_ID.toString())
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", GROUP_ID.toString())
                 .header("X-Is-Headman", "true");
@@ -197,13 +202,11 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void mark_studentNotInGroup_returns403() throws Exception {
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(GROUP_ID));
         // Group members does NOT include userId 99
-        when(academicGrpcClient.getGroupMembers(
-                GROUP_ID, LocalDate.of(2026, 4, 1), 1L))
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), 1L))
                 .thenReturn(buildHistoricalGroupMembers(1L, 100L, 101L));
         when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
 
-        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT)).andExpect(status().isForbidden());
 
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
     }
@@ -215,23 +218,30 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     @Test
     void mark_notHeadman_returns403() throws Exception {
         mockHappyPath();
-        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE")).thenReturn(false);
-        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES")).thenReturn(false);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE"))
+                .thenReturn(false);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
+                .thenReturn(false);
 
-        mockMvc.perform(put("/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new MarkRequest(AttendanceStatus.PRESENT)))
-                        .header("X-User-Id", HEADMAN_USER_ID.toString())
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", GROUP_ID.toString())
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        put("/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new MarkRequest(AttendanceStatus.PRESENT)))
+                                .header("X-User-Id", HEADMAN_USER_ID.toString())
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", GROUP_ID.toString())
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.detail").value("Отсутствует право MARK_ATTENDANCE"));
 
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
         assertThat(requestAttachmentRepository.findAll()).isEmpty();
-        verify(attendanceEventPublisher, Mockito.never()).publishMarked(
-                Mockito.any(AttendanceDocument.class), org.mockito.ArgumentMatchers.nullable(String.class));
+        verify(attendanceEventPublisher, Mockito.never())
+                .publishMarked(
+                        Mockito.any(AttendanceDocument.class),
+                        org.mockito.ArgumentMatchers.nullable(String.class));
     }
 
     // -------------------------------------------------------------------------
@@ -244,8 +254,7 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(20L));
         when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
 
-        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT)).andExpect(status().isForbidden());
 
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
     }
@@ -259,8 +268,7 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
         mockHappyPath();
 
         // First mark: PRESENT
-        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT))
-                .andExpect(status().isOk());
+        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT)).andExpect(status().isOk());
 
         // Second mark: ABSENT
         mockMvc.perform(headmanRequest(AttendanceStatus.ABSENT))
@@ -293,20 +301,19 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void mark_successfulMark_publishesAttendanceMarkedEvent() throws Exception {
         mockHappyPath();
 
-        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT))
-                .andExpect(status().isOk());
+        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT)).andExpect(status().isOk());
 
         // Verify AttendanceEventPublisher.publishMarked was called with a valid document.
         // NOTIF unification: 2-arg form (subjectName может быть null если gRPC mock'а нет).
-        verify(attendanceEventPublisher).publishMarked(
-                org.mockito.ArgumentMatchers.argThat(doc ->
-                        doc.getLessonId().equals(LESSON_ID)
-                                && doc.getUserId().equals(USER_ID)
-                                && doc.getStatus() == AttendanceStatus.PRESENT
-                                && doc.getSource() == AttendanceSource.HEADMAN
-                ),
-                org.mockito.ArgumentMatchers.any()
-        );
+        verify(attendanceEventPublisher)
+                .publishMarked(
+                        org.mockito.ArgumentMatchers.argThat(
+                                doc ->
+                                        doc.getLessonId().equals(LESSON_ID)
+                                                && doc.getUserId().equals(USER_ID)
+                                                && doc.getStatus() == AttendanceStatus.PRESENT
+                                                && doc.getSource() == AttendanceSource.HEADMAN),
+                        org.mockito.ArgumentMatchers.any());
     }
 
     // -------------------------------------------------------------------------
@@ -318,22 +325,30 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
         mockHappyPath();
 
         // First mark
-        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT))
-                .andExpect(status().isOk());
+        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT)).andExpect(status().isOk());
 
-        AttendanceDocument first = mongoTemplate.findOne(
-                Query.query(Criteria.where("lesson_id").is(LESSON_ID).and("user_id").is(USER_ID)),
-                AttendanceDocument.class);
+        AttendanceDocument first =
+                mongoTemplate.findOne(
+                        Query.query(
+                                Criteria.where("lesson_id")
+                                        .is(LESSON_ID)
+                                        .and("user_id")
+                                        .is(USER_ID)),
+                        AttendanceDocument.class);
         assertThat(first).isNotNull();
         String originalId = first.getId();
 
         // Second mark with different status
-        mockMvc.perform(headmanRequest(AttendanceStatus.EXCUSED))
-                .andExpect(status().isOk());
+        mockMvc.perform(headmanRequest(AttendanceStatus.EXCUSED)).andExpect(status().isOk());
 
-        AttendanceDocument second = mongoTemplate.findOne(
-                Query.query(Criteria.where("lesson_id").is(LESSON_ID).and("user_id").is(USER_ID)),
-                AttendanceDocument.class);
+        AttendanceDocument second =
+                mongoTemplate.findOne(
+                        Query.query(
+                                Criteria.where("lesson_id")
+                                        .is(LESSON_ID)
+                                        .and("user_id")
+                                        .is(USER_ID)),
+                        AttendanceDocument.class);
         assertThat(second).isNotNull();
         // Same MongoDB _id — same document updated, not new one created
         assertThat(second.getId()).isEqualTo(originalId);
@@ -348,32 +363,41 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void journal_historicalRoster_authorizedFileAndClear() throws Exception {
         long semesterId = 7L;
         byte[] pdf = "%PDF-1.7\nheadman-journal\n".getBytes(StandardCharsets.US_ASCII);
-        when(academicGrpcClient.getSemesterState(semesterId)).thenReturn(
-                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(semesterId).build());
+        when(academicGrpcClient.getSemesterState(semesterId))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(semesterId)
+                                .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID))
                 .thenReturn(buildHistoricalLesson(GROUP_ID, semesterId));
-        when(academicGrpcClient.getGroupMembers(
-                GROUP_ID, LocalDate.of(2026, 4, 1), semesterId))
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), semesterId))
                 .thenReturn(buildHistoricalGroupMembers(semesterId, USER_ID, 100L));
 
         // The server checks the historical roster before any write.
         mockMvc.perform(headmanRequest(LESSON_ID, 101L, AttendanceStatus.PRESENT))
                 .andExpect(status().isForbidden());
 
-        MockMultipartFile requestPart = new MockMultipartFile(
-                "request", "request.json", MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(
-                        new MarkRequest(AttendanceStatus.EXCUSED, ExcuseType.ILLNESS, "doctor note")));
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "medical.pdf", MediaType.APPLICATION_PDF_VALUE, pdf);
-        MockMultipartHttpServletRequestBuilder mark = multipart(
-                "/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID);
+        MockMultipartFile requestPart =
+                new MockMultipartFile(
+                        "request",
+                        "request.json",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        objectMapper.writeValueAsBytes(
+                                new MarkRequest(
+                                        AttendanceStatus.EXCUSED,
+                                        ExcuseType.ILLNESS,
+                                        "doctor note")));
+        MockMultipartFile file =
+                new MockMultipartFile("file", "medical.pdf", MediaType.APPLICATION_PDF_VALUE, pdf);
+        MockMultipartHttpServletRequestBuilder mark =
+                multipart("/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID);
         mark.file(requestPart);
         mark.file(file);
-        mark.with(request -> {
-            request.setMethod("PUT");
-            return request;
-        });
+        mark.with(
+                request -> {
+                    request.setMethod("PUT");
+                    return request;
+                });
         mockMvc.perform(headmanHeaders(mark))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("EXCUSED"));
@@ -387,15 +411,22 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(jsonPath("$.entries[0].attachmentName").value("medical.pdf"))
                 .andExpect(jsonPath("$.entries[1].status").doesNotExist());
 
-        mockMvc.perform(headmanHeaders(get(
-                        "/attendance/lessons/{lessonId}/students/{userId}/attachment",
-                        LESSON_ID, USER_ID)))
+        mockMvc.perform(
+                        headmanHeaders(
+                                get(
+                                        "/attendance/lessons/{lessonId}/students/{userId}/attachment",
+                                        LESSON_ID,
+                                        USER_ID)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
                 .andExpect(content().bytes(pdf));
 
-        mockMvc.perform(headmanHeaders(delete(
-                        "/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID)))
+        mockMvc.perform(
+                        headmanHeaders(
+                                delete(
+                                        "/attendance/lessons/{lessonId}/students/{userId}",
+                                        LESSON_ID,
+                                        USER_ID)))
                 .andExpect(status().isNoContent());
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
         assertThat(requestAttachmentRepository.findAll()).isEmpty();

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.config;
 
+import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
@@ -9,11 +10,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.sql.DataSource;
-
 /**
- * Activates Spring @Scheduled cron jobs + ShedLock distributed locking (M02).
- * Guarded with @Profile("!test") so cron jobs do NOT fire during integration tests
+ * Activates Spring @Scheduled cron jobs + ShedLock distributed locking (M02). Guarded
+ * with @Profile("!test") so cron jobs do NOT fire during integration tests
  * (AbstractScheduleIntegrationTest uses @ActiveProfiles("test")).
  */
 @Configuration

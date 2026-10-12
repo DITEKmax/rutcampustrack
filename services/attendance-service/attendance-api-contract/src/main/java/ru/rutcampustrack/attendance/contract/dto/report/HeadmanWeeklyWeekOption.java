@@ -1,7 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.LocalDate;
 
 @Schema(description = "Academic week available for headman weekly report export")
@@ -14,12 +13,13 @@ public class HeadmanWeeklyWeekOption {
     private final LocalDate weekEnd;
     private final boolean current;
 
-    public HeadmanWeeklyWeekOption(int weekOfSemester,
-                                   int isoWeek,
-                                   String label,
-                                   LocalDate weekStart,
-                                   LocalDate weekEnd,
-                                   boolean current) {
+    public HeadmanWeeklyWeekOption(
+            int weekOfSemester,
+            int isoWeek,
+            String label,
+            LocalDate weekStart,
+            LocalDate weekEnd,
+            boolean current) {
         this.weekOfSemester = weekOfSemester;
         this.isoWeek = isoWeek;
         this.label = label;

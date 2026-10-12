@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.subject;
 
+import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -20,8 +21,6 @@ import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.security.RequireRole;
 
-import java.time.LocalDate;
-
 @RestController
 public class SubjectController implements SubjectApi {
     @org.springframework.beans.factory.annotation.Autowired
@@ -31,9 +30,10 @@ public class SubjectController implements SubjectApi {
     private final SubjectAssembler subjectAssembler;
     private final AssignmentAssembler assignmentAssembler;
 
-    public SubjectController(SubjectService subjectService,
-                             SubjectAssembler subjectAssembler,
-                             AssignmentAssembler assignmentAssembler) {
+    public SubjectController(
+            SubjectService subjectService,
+            SubjectAssembler subjectAssembler,
+            AssignmentAssembler assignmentAssembler) {
         this.subjectService = subjectService;
         this.subjectAssembler = subjectAssembler;
         this.assignmentAssembler = assignmentAssembler;
@@ -41,14 +41,16 @@ public class SubjectController implements SubjectApi {
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<SubjectResponse>> createSubject(CreateSubjectRequest request) {
+    public ResponseEntity<EntityModel<SubjectResponse>> createSubject(
+            CreateSubjectRequest request) {
         Subject subject = subjectService.createSubject(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(subjectAssembler.toModel(subject));
     }
 
     @Override
     public ResponseEntity<EntityModel<SubjectResponse>> getSubject(Long id) {
-        EntityModel<SubjectResponse> result = subjectAssembler.toModel(subjectService.getSubjectForRead(id));
+        EntityModel<SubjectResponse> result =
+                subjectAssembler.toModel(subjectService.getSubjectForRead(id));
         result.getContent().setPendingAdoptions(closureService.pendingSubject(id));
         result.getContent().setPendingClosures(closureService.pendingClosures(id));
         return ResponseEntity.ok(result);
@@ -56,17 +58,18 @@ public class SubjectController implements SubjectApi {
 
     @Override
     public ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(
-            Pageable pageable,
-            PagedResourcesAssembler<SubjectResponse> assembler) {
-        Page<SubjectResponse> responsePage = subjectService.listSubjects(pageable)
-                .map(subjectAssembler::toResponse);
+            Pageable pageable, PagedResourcesAssembler<SubjectResponse> assembler) {
+        Page<SubjectResponse> responsePage =
+                subjectService.listSubjects(pageable).map(subjectAssembler::toResponse);
         return ResponseEntity.ok(assembler.toModel(responsePage, EntityModel::of));
     }
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<SubjectResponse>> updateSubject(Long id, UpdateSubjectRequest request) {
-        return ResponseEntity.ok(subjectAssembler.toModel(subjectService.updateSubject(id, request)));
+    public ResponseEntity<EntityModel<SubjectResponse>> updateSubject(
+            Long id, UpdateSubjectRequest request) {
+        return ResponseEntity.ok(
+                subjectAssembler.toModel(subjectService.updateSubject(id, request)));
     }
 
     @Override
@@ -81,15 +84,18 @@ public class SubjectController implements SubjectApi {
     public ResponseEntity<EntityModel<AssignmentResponse>> addTeacher(
             Long id, Long teacherId, AddSubjectTeacherRequest request) {
         Assignment assignment = subjectService.addTeacher(id, teacherId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assignmentAssembler.toModel(assignment));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(assignmentAssembler.toModel(assignment));
     }
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<Void> removeTeacher(Long id,
-                                               Long teacherId,
-                                               Long assignmentId,
-                                               LocalDate validUntilExclusive, java.util.UUID requestKey) {
+    public ResponseEntity<Void> removeTeacher(
+            Long id,
+            Long teacherId,
+            Long assignmentId,
+            LocalDate validUntilExclusive,
+            java.util.UUID requestKey) {
         subjectService.removeTeacher(id, teacherId, assignmentId, validUntilExclusive, requestKey);
         return ResponseEntity.noContent().build();
     }

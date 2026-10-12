@@ -1,101 +1,23 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
-import com.mongodb.client.model.Filters;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+import static ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcServiceTest.teacherContext;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import com.mongodb.client.model.Filters;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import org.bson.Document;
-import org.bson.types.Binary;
-import org.bson.types.ObjectId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.MongoTransactionManager;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.index.Index;
-import org.springframework.data.mongodb.core.index.PartialIndexFilter;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.rutcampustrack.attendance.config.MongoConvertersConfig;
-import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
-import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
-import ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
-import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
-import ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin;
-import ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus;
-import ru.rutcampustrack.attendance.contract.enums.UserRole;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecision;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
-import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.attendance.exception.ConflictException;
-import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
-import ru.rutcampustrack.attendance.excuse.ExcuseEventPublisher;
-import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
-import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
-import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcService;
-import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
-import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
-import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
-import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
-import ru.rutcampustrack.attendance.report.ReportService;
-import ru.rutcampustrack.attendance.security.RequestContext;
-import ru.rutcampustrack.attendance.semester.SemesterCacheService;
-import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
-import ru.rutcampustrack.attendance.events.EventSchemaValidator;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentInput;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.ExcuseSubmission;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.LateCheckinSubmission;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.LessonSnapshot;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestDetail;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestPage;
-import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
-import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
-import ru.rutcampustrack.attendance.studentrequest.entity.StudentLateCheckinBudgetDocument;
-import ru.rutcampustrack.attendance.studentrequest.entity.StudentRequestReceiptDocument;
-import ru.rutcampustrack.schedule.grpc.LessonInfo;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-import ru.rutcampustrack.schedule.grpc.LessonsResponse;
-import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
-import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
-import ru.rutcampustrack.academic.grpc.StudentInfo;
-import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
-import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
-import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
-import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
-import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
-import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
-import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
-import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
-import ru.rutcampustrack.shared.outbox.OutboxRecord;
-import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -121,31 +43,111 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcServiceTest.teacherContext;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.doAnswer;
+import org.bson.Document;
+import org.bson.types.Binary;
+import org.bson.types.ObjectId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.MongoTransactionManager;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.PartialIndexFilter;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+import ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl;
+import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.config.MongoConvertersConfig;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecision;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
+import ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.UserRole;
+import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.attendance.events.EventSchemaValidator;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
+import ru.rutcampustrack.attendance.excuse.ExcuseEventPublisher;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
+import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcService;
+import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
+import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
+import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
+import ru.rutcampustrack.attendance.report.ReportService;
+import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentInput;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.ExcuseSubmission;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.LateCheckinSubmission;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.LessonSnapshot;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestDetail;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestPage;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLateCheckinBudgetDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
+import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
+import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 
 /**
- * Domain-level Mongo replica-set checks for the frozen student request contract.
- * The container and database are task-owned and receive a unique name/database
- * on every class run; this test never cleans an existing runtime.
+ * Domain-level Mongo replica-set checks for the frozen student request contract. The container and
+ * database are task-owned and receive a unique name/database on every class run; this test never
+ * cleans an existing runtime.
  */
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({ru.rutcampustrack.attendance.audit.LessonActionService.class,
-        ru.rutcampustrack.attendance.audit.RequestActionRecorder.class, StudentRequestService.class, HeadmanRequestService.class, MongoConvertersConfig.class,
-        StudentRequestDomainIT.TestConfig.class})
+@Import({
+    ru.rutcampustrack.attendance.audit.LessonActionService.class,
+    ru.rutcampustrack.attendance.audit.RequestActionRecorder.class,
+    StudentRequestService.class,
+    HeadmanRequestService.class,
+    MongoConvertersConfig.class,
+    StudentRequestDomainIT.TestConfig.class
+})
 class StudentRequestDomainIT {
 
     private static final String RUN_ID = UUID.randomUUID().toString().replace("-", "");
@@ -156,12 +158,14 @@ class StudentRequestDomainIT {
     private static final long SEMESTER_ID = 30L;
     private static final String OUTBOX_COLLECTION = "student_request_test_outbox";
     private static final Instant START = Instant.parse("2026-09-07T08:00:00Z");
-    private static final Identity STUDENT = new Identity(STUDENT_ID, UserRole.STUDENT, GROUP_ID, false);
+    private static final Identity STUDENT =
+            new Identity(STUDENT_ID, UserRole.STUDENT, GROUP_ID, false);
     private static final Identity HEADMAN = new Identity(777L, UserRole.STUDENT, GROUP_ID, true);
 
     @Container
-    static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0")
-            .withCreateContainerCmdModifier(command -> command.withName(CONTAINER_NAME));
+    static final MongoDBContainer MONGO =
+            new MongoDBContainer("mongo:7.0")
+                    .withCreateContainerCmdModifier(command -> command.withName(CONTAINER_NAME));
 
     @DynamicPropertySource
     static void mongo(DynamicPropertyRegistry registry) {
@@ -201,19 +205,19 @@ class StudentRequestDomainIT {
 
         @Bean
         AttendanceAttachmentService attendanceAttachmentService(
-                RequestAttachmentRepository attachmentRepository,
-                MutableClock clock) {
+                RequestAttachmentRepository attachmentRepository, MutableClock clock) {
             return new AttendanceAttachmentService(attachmentRepository, clock);
         }
 
         @Bean
-        ExcuseEventPublisher excuseEventPublisher(MongoOutboxStorage outboxStorage, ObjectMapper objectMapper) {
+        ExcuseEventPublisher excuseEventPublisher(
+                MongoOutboxStorage outboxStorage, ObjectMapper objectMapper) {
             return new ExcuseEventPublisher(outboxStorage, objectMapper);
         }
 
         @Bean
-        LateCheckinEventPublisher lateCheckinEventPublisher(MongoOutboxStorage outboxStorage,
-                                                            ObjectMapper objectMapper) {
+        LateCheckinEventPublisher lateCheckinEventPublisher(
+                MongoOutboxStorage outboxStorage, ObjectMapper objectMapper) {
             return new LateCheckinEventPublisher(outboxStorage, objectMapper);
         }
 
@@ -275,8 +279,11 @@ class StudentRequestDomainIT {
         }
 
         @Override
-        public void lockLessons(Collection<Long> semesterIds, Collection<Long> lessonIds,
-                                Long groupId, Instant now) {
+        public void lockLessons(
+                Collection<Long> semesterIds,
+                Collection<Long> lessonIds,
+                Long groupId,
+                Instant now) {
             CyclicBarrier active = barrier;
             // Synchronize first attempts before either writer holds the shared
             // semester fence; waiting at lock(pair) would deadlock the fixture.
@@ -329,8 +336,7 @@ class StudentRequestDomainIT {
             transactionExecutions.incrementAndGet();
             T result = super.execute(action);
             Fault after = nextFault.get();
-            if (after == Fault.UNKNOWN_COMMIT_RESULT
-                    && nextFault.compareAndSet(after, null)) {
+            if (after == Fault.UNKNOWN_COMMIT_RESULT && nextFault.compareAndSet(after, null)) {
                 throw labelled(after);
             }
             return result;
@@ -354,41 +360,26 @@ class StudentRequestDomainIT {
         }
     }
 
-    @jakarta.annotation.Resource
-    StudentRequestService service;
-    @jakarta.annotation.Resource
-    HeadmanRequestService headmanRequestService;
-    @jakarta.annotation.Resource
-    MongoTemplate mongoTemplate;
-    @jakarta.annotation.Resource
-    AttendanceRepository attendanceRepository;
-    @jakarta.annotation.Resource
-    ExcuseRepository excuseRepository;
-    @jakarta.annotation.Resource
-    LateCheckinRepository lateCheckinRepository;
-    @jakarta.annotation.Resource
-    StudentRequestReceiptRepository receiptRepository;
-    @jakarta.annotation.Resource
-    StudentLateCheckinBudgetRepository budgetRepository;
-    @jakarta.annotation.Resource
-    RequestAttachmentRepository attachmentRepository;
-    @jakarta.annotation.Resource
-    MutableClock clock;
-    @jakarta.annotation.Resource
-    TransactionTemplate transactionTemplate;
-    @jakarta.annotation.Resource
-    BarrierPairWriteCoordinator pairWriteCoordinator;
-    @jakarta.annotation.Resource
-    MongoOutboxStorage outboxStorage;
+    @jakarta.annotation.Resource StudentRequestService service;
+    @jakarta.annotation.Resource HeadmanRequestService headmanRequestService;
+    @jakarta.annotation.Resource MongoTemplate mongoTemplate;
+    @jakarta.annotation.Resource AttendanceRepository attendanceRepository;
+    @jakarta.annotation.Resource ExcuseRepository excuseRepository;
+    @jakarta.annotation.Resource LateCheckinRepository lateCheckinRepository;
+    @jakarta.annotation.Resource StudentRequestReceiptRepository receiptRepository;
+    @jakarta.annotation.Resource StudentLateCheckinBudgetRepository budgetRepository;
+    @jakarta.annotation.Resource RequestAttachmentRepository attachmentRepository;
+    @jakarta.annotation.Resource MutableClock clock;
+    @jakarta.annotation.Resource TransactionTemplate transactionTemplate;
+    @jakarta.annotation.Resource BarrierPairWriteCoordinator pairWriteCoordinator;
+    @jakarta.annotation.Resource MongoOutboxStorage outboxStorage;
+
     @jakarta.annotation.Resource
     FaultInjectingTransactionTemplate faultInjectingTransactionTemplate;
 
-    @MockitoBean
-    ScheduleGrpcClient scheduleGrpcClient;
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
-    @MockitoBean
-    SemesterCacheService semesterCacheService;
+    @MockitoBean ScheduleGrpcClient scheduleGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
+    @MockitoBean SemesterCacheService semesterCacheService;
     private final Set<Long> currentLessonIds = ConcurrentHashMap.newKeySet();
     private final Map<Long, String> lessonStatuses = new ConcurrentHashMap<>();
     private final Set<Long> blockedLessonIds = ConcurrentHashMap.newKeySet();
@@ -402,34 +393,48 @@ class StudentRequestDomainIT {
         currentLessonIds.clear();
         lessonStatuses.clear();
         blockedLessonIds.clear();
-        IntStream.rangeClosed(1, 100).forEach(id -> {
-            currentLessonIds.add((long) id);
-            lessonStatuses.put((long) id, "closed");
-        });
+        IntStream.rangeClosed(1, 100)
+                .forEach(
+                        id -> {
+                            currentLessonIds.add((long) id);
+                            lessonStatuses.put((long) id, "closed");
+                        });
         clock.set(START);
         reset(scheduleGrpcClient, academicGrpcClient, semesterCacheService);
         pairWriteCoordinator.clearBarrier();
         when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
         when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Student 100");
-        when(academicGrpcClient.isHeadman(anyLong(), anyLong())).thenReturn(
-                HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
-        when(academicGrpcClient.getSubjectDetailsByIds(anyList())).thenAnswer(invocation -> {
-            List<Long> subjectIds = invocation.getArgument(0);
-            Map<Long, AcademicGrpcClient.SubjectDetails> result = new HashMap<>();
-            for (Long subjectId : subjectIds) {
-                result.put(subjectId, new AcademicGrpcClient.SubjectDetails(
-                        "Subject " + subjectId, "LECTURE"));
-            }
-            return result;
-        });
-        when(scheduleGrpcClient.getLessonsByIds(anyList())).thenAnswer(invocation -> {
-            List<Long> ids = invocation.getArgument(0);
-            return ids.stream().map(this::compactLesson).toList();
-        });
+        when(academicGrpcClient.isHeadman(anyLong(), anyLong()))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        when(academicGrpcClient.getSubjectDetailsByIds(anyList()))
+                .thenAnswer(
+                        invocation -> {
+                            List<Long> subjectIds = invocation.getArgument(0);
+                            Map<Long, AcademicGrpcClient.SubjectDetails> result = new HashMap<>();
+                            for (Long subjectId : subjectIds) {
+                                result.put(
+                                        subjectId,
+                                        new AcademicGrpcClient.SubjectDetails(
+                                                "Subject " + subjectId, "LECTURE"));
+                            }
+                            return result;
+                        });
+        when(scheduleGrpcClient.getLessonsByIds(anyList()))
+                .thenAnswer(
+                        invocation -> {
+                            List<Long> ids = invocation.getArgument(0);
+                            return ids.stream().map(this::compactLesson).toList();
+                        });
         when(scheduleGrpcClient.getLessonsByGroup(anyLong(), anyLong(), anyString(), anyString()))
-                .thenAnswer(invocation -> LessonsResponse.newBuilder()
-                        .addAllLessons(currentLessonIds.stream().sorted().map(this::fullLesson).toList())
-                        .build());
+                .thenAnswer(
+                        invocation ->
+                                LessonsResponse.newBuilder()
+                                        .addAllLessons(
+                                                currentLessonIds.stream()
+                                                        .sorted()
+                                                        .map(this::fullLesson)
+                                                        .toList())
+                                        .build());
         when(scheduleGrpcClient.getLessonById(anyLong()))
                 .thenAnswer(invocation -> fullLesson(invocation.getArgument(0)));
         when(scheduleGrpcClient.getScopedLessonById(anyLong(), anyLong(), anyLong()))
@@ -441,23 +446,28 @@ class StudentRequestDomainIT {
     @Test
     void closedMissingMarksOfferSubmitAndApproveBothRequestKinds() {
         var available = service.options(STUDENT, List.of(snapshot(71L), snapshot(72L)));
-        assertThat(available.lessons()).allSatisfy(option -> {
-            assertThat(option.excuseEligible()).isTrue();
-            assertThat(option.lateCheckinEligible()).isTrue();
-        });
+        assertThat(available.lessons())
+                .allSatisfy(
+                        option -> {
+                            assertThat(option.excuseEligible()).isTrue();
+                            assertThat(option.lateCheckinEligible()).isTrue();
+                        });
         assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();
         assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();
 
-        RequestDetail excuse = service.submitExcuse(STUDENT,
-                excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
-        RequestDetail late = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(72L, "closed-missing-late-72"));
+        RequestDetail excuse =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
+        RequestDetail late =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(72L, "closed-missing-late-72"));
         assertThat(excuseRepository.findById(excuse.summary().id())).isPresent();
         assertThat(lateCheckinRepository.findById(late.summary().id())).isPresent();
         long dashboardSignals = actualOutboxEvents("dashboard.invalidated").size();
         assertThat(dashboardSignals).isGreaterThanOrEqualTo(2);
         service.submitExcuse(STUDENT, excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
-        service.submitLateCheckin(STUDENT, new LateCheckinSubmission(72L, "closed-missing-late-72"));
+        service.submitLateCheckin(
+                STUDENT, new LateCheckinSubmission(72L, "closed-missing-late-72"));
         assertThat(actualOutboxEvents("dashboard.invalidated")).hasSize((int) dashboardSignals);
         assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();
         assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();
@@ -465,22 +475,28 @@ class StudentRequestDomainIT {
         assertThat(pending.lessons().get(0).excuseEligible()).isFalse();
         assertThat(pending.lessons().get(1).lateCheckinEligible()).isFalse();
         assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
-                .get().satisfies(budget -> assertThat(budget.getUsed()).isEqualTo(1));
+                .get()
+                .satisfies(budget -> assertThat(budget.getUsed()).isEqualTo(1));
 
         service.decideExcuse(HEADMAN, excuse.summary().id(), true, "Подтверждено");
         service.decideLateCheckin(HEADMAN, late.summary().id(), true);
-        assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).get()
-                .satisfies(mark -> {
-                    assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
-                    assertThat(mark.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
-                });
-        assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).get()
-                .satisfies(mark -> assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.PRESENT));
+        assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID))
+                .get()
+                .satisfies(
+                        mark -> {
+                            assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
+                            assertThat(mark.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+                        });
+        assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID))
+                .get()
+                .satisfies(
+                        mark -> assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.PRESENT));
         assertThat(service.options(STUDENT, List.of(snapshot(71L), snapshot(72L))).lessons())
-                .allSatisfy(option -> {
-                    assertThat(option.excuseEligible()).isFalse();
-                    assertThat(option.lateCheckinEligible()).isFalse();
-                });
+                .allSatisfy(
+                        option -> {
+                            assertThat(option.excuseEligible()).isFalse();
+                            assertThat(option.lateCheckinEligible()).isFalse();
+                        });
     }
 
     @Test
@@ -488,23 +504,37 @@ class StudentRequestDomainIT {
         for (boolean late : List.of(false, true)) {
             long lessonId = late ? 74L : 73L;
             var offered = service.options(STUDENT, List.of(snapshot(lessonId)));
-            assertThat(offered.lessons()).singleElement().satisfies(option -> {
-                assertThat(option.excuseEligible()).isTrue();
-                assertThat(option.lateCheckinEligible()).isTrue();
-            });
+            assertThat(offered.lessons())
+                    .singleElement()
+                    .satisfies(
+                            option -> {
+                                assertThat(option.excuseEligible()).isTrue();
+                                assertThat(option.lateCheckinEligible()).isTrue();
+                            });
             when(scheduleGrpcClient.requireAttendanceMutationReady(lessonId, GROUP_ID))
-                    .thenAnswer(invocation -> {
-                        lessonStatuses.put(lessonId, "cancelled");
-                        return fullLesson(lessonId);
-                    });
+                    .thenAnswer(
+                            invocation -> {
+                                lessonStatuses.put(lessonId, "cancelled");
+                                return fullLesson(lessonId);
+                            });
 
-            assertThatThrownBy(() -> {
-                if (late) {
-                    service.submitLateCheckin(STUDENT, new LateCheckinSubmission(lessonId, "cancel-admission-late-74"));
-                } else {
-                    service.submitExcuse(STUDENT, excuse(List.of(lessonId), "cancel-admission-excuse-73", List.of()));
-                }
-            }).isInstanceOf(BadRequestException.class);
+            assertThatThrownBy(
+                            () -> {
+                                if (late) {
+                                    service.submitLateCheckin(
+                                            STUDENT,
+                                            new LateCheckinSubmission(
+                                                    lessonId, "cancel-admission-late-74"));
+                                } else {
+                                    service.submitExcuse(
+                                            STUDENT,
+                                            excuse(
+                                                    List.of(lessonId),
+                                                    "cancel-admission-excuse-73",
+                                                    List.of()));
+                                }
+                            })
+                    .isInstanceOf(BadRequestException.class);
 
             assertThat(attendanceRepository.findAll()).isEmpty();
             assertThat(excuseRepository.findAll()).isEmpty();
@@ -520,36 +550,62 @@ class StudentRequestDomainIT {
     void cancellationAfterSubmissionRejectsBothMissingMarkApprovalsWithoutNewSideEffects() {
         for (boolean late : List.of(false, true)) {
             long lessonId = late ? 76L : 75L;
-            RequestDetail submitted = late
-                    ? service.submitLateCheckin(STUDENT, new LateCheckinSubmission(lessonId, "cancel-approval-late-76"))
-                    : service.submitExcuse(STUDENT, excuse(List.of(lessonId), "cancel-approval-excuse-75", List.of()));
+            RequestDetail submitted =
+                    late
+                            ? service.submitLateCheckin(
+                                    STUDENT,
+                                    new LateCheckinSubmission(lessonId, "cancel-approval-late-76"))
+                            : service.submitExcuse(
+                                    STUDENT,
+                                    excuse(
+                                            List.of(lessonId),
+                                            "cancel-approval-excuse-75",
+                                            List.of()));
             long receipts = receiptRepository.count();
             long events = mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments();
             lessonStatuses.put(lessonId, "cancelled");
 
-            assertThatThrownBy(() -> {
-                if (late) {
-                    service.decideLateCheckin(HEADMAN, submitted.summary().id(), true);
-                } else {
-                    service.decideExcuse(HEADMAN, submitted.summary().id(), true, "Подтверждено");
-                }
-            }).isInstanceOf(ConflictException.class);
+            assertThatThrownBy(
+                            () -> {
+                                if (late) {
+                                    service.decideLateCheckin(
+                                            HEADMAN, submitted.summary().id(), true);
+                                } else {
+                                    service.decideExcuse(
+                                            HEADMAN,
+                                            submitted.summary().id(),
+                                            true,
+                                            "Подтверждено");
+                                }
+                            })
+                    .isInstanceOf(ConflictException.class);
 
-            assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)).isEmpty();
+            assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID))
+                    .isEmpty();
             assertThat(receiptRepository.count()).isEqualTo(receipts);
-            assertThat(mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments()).isEqualTo(events);
+            assertThat(mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments())
+                    .isEqualTo(events);
             if (late) {
-                assertThat(lateCheckinRepository.findById(submitted.summary().id())).get().satisfies(request -> {
-                    assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);
-                    assertThat(request.getDecisionAt()).isNull();
-                });
-                assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID)).get()
+                assertThat(lateCheckinRepository.findById(submitted.summary().id()))
+                        .get()
+                        .satisfies(
+                                request -> {
+                                    assertThat(request.getStatus())
+                                            .isEqualTo(LateCheckinRequestStatus.PENDING);
+                                    assertThat(request.getDecisionAt()).isNull();
+                                });
+                assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
+                        .get()
                         .satisfies(budget -> assertThat(budget.getUsed()).isEqualTo(1));
             } else {
-                assertThat(excuseRepository.findById(submitted.summary().id())).get().satisfies(ticket -> {
-                    assertThat(ticket.getStatus()).isEqualTo(ExcuseTicketStatus.SUBMITTED);
-                    assertThat(ticket.getDecisionAt()).isNull();
-                });
+                assertThat(excuseRepository.findById(submitted.summary().id()))
+                        .get()
+                        .satisfies(
+                                ticket -> {
+                                    assertThat(ticket.getStatus())
+                                            .isEqualTo(ExcuseTicketStatus.SUBMITTED);
+                                    assertThat(ticket.getDecisionAt()).isNull();
+                                });
                 assertThat(budgetRepository.findAll()).isEmpty();
             }
         }
@@ -569,10 +625,13 @@ class StudentRequestDomainIT {
             for (int index = 0; index < count; index++) {
                 long lessonId = index + 1L;
                 String key = "manual-budget-key-" + lessonId;
-                pending.add(executor.submit(() -> {
-                    start.await();
-                    return service.submitLateCheckin(STUDENT, new LateCheckinSubmission(lessonId, key));
-                }));
+                pending.add(
+                        executor.submit(
+                                () -> {
+                                    start.await();
+                                    return service.submitLateCheckin(
+                                            STUDENT, new LateCheckinSubmission(lessonId, key));
+                                }));
             }
             start.countDown();
             futures = pending;
@@ -595,7 +654,9 @@ class StudentRequestDomainIT {
         assertThat(conflicts).isEqualTo(1);
         assertThat(lateCheckinRepository.findAll()).hasSize(5);
         assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
-                .get().extracting(StudentLateCheckinBudgetDocument::getUsed).isEqualTo(5);
+                .get()
+                .extracting(StudentLateCheckinBudgetDocument::getUsed)
+                .isEqualTo(5);
     }
 
     @Test
@@ -606,19 +667,28 @@ class StudentRequestDomainIT {
         int count = 6;
         CountDownLatch start = new CountDownLatch(1);
         try (var executor = Executors.newFixedThreadPool(count)) {
-            List<Future<RequestDetail>> futures = IntStream.range(0, count)
-                    .mapToObj(index -> executor.submit(() -> {
-                        start.await();
-                        return service.submitExcuse(STUDENT, command);
-                    }))
-                    .toList();
+            List<Future<RequestDetail>> futures =
+                    IntStream.range(0, count)
+                            .mapToObj(
+                                    index ->
+                                            executor.submit(
+                                                    () -> {
+                                                        start.await();
+                                                        return service.submitExcuse(
+                                                                STUDENT, command);
+                                                    }))
+                            .toList();
             start.countDown();
             List<RequestDetail> results = new ArrayList<>();
             for (Future<RequestDetail> future : futures) {
                 results.add(future.get(45, TimeUnit.SECONDS));
             }
-            assertThat(results).allMatch(result -> result.summary().id()
-                    .equals(results.getFirst().summary().id()));
+            assertThat(results)
+                    .allMatch(
+                            result ->
+                                    result.summary()
+                                            .id()
+                                            .equals(results.getFirst().summary().id()));
         }
 
         assertThat(excuseRepository.findAll()).hasSize(1);
@@ -629,10 +699,13 @@ class StudentRequestDomainIT {
     void exactExcuseRetryKeepsSingleRequestReceiptAndOutboxButFilenameChangeConflicts() {
         seedAbsent(11L);
         byte[] proof = pdfBytes(64);
-        ExcuseSubmission original = new ExcuseSubmission(
-                List.of(11L), ExcuseType.ILLNESS, null,
-                List.of(new AttachmentInput("proof.pdf", "application/pdf", proof)),
-                "fingerprint-filename-key");
+        ExcuseSubmission original =
+                new ExcuseSubmission(
+                        List.of(11L),
+                        ExcuseType.ILLNESS,
+                        null,
+                        List.of(new AttachmentInput("proof.pdf", "application/pdf", proof)),
+                        "fingerprint-filename-key");
 
         RequestDetail first = service.submitExcuse(STUDENT, original);
         RequestDetail replay = service.submitExcuse(STUDENT, original);
@@ -642,10 +715,13 @@ class StudentRequestDomainIT {
         assertThat(receiptRepository.findAll()).hasSize(1);
         assertThat(actualOutboxEvents("excuse.requested")).hasSize(1);
 
-        ExcuseSubmission renamed = new ExcuseSubmission(
-                List.of(11L), ExcuseType.ILLNESS, null,
-                List.of(new AttachmentInput("renamed.pdf", "application/pdf", proof)),
-                original.idempotencyKey());
+        ExcuseSubmission renamed =
+                new ExcuseSubmission(
+                        List.of(11L),
+                        ExcuseType.ILLNESS,
+                        null,
+                        List.of(new AttachmentInput("renamed.pdf", "application/pdf", proof)),
+                        original.idempotencyKey());
 
         assertThatThrownBy(() -> service.submitExcuse(STUDENT, renamed))
                 .isInstanceOf(ConflictException.class);
@@ -658,13 +734,13 @@ class StudentRequestDomainIT {
     void excuseIdempotencyFingerprintDistinguishesNullCommentFromLiteralNull() {
         seedAbsent(12L);
         String key = "fingerprint-comment-key";
-        ExcuseSubmission withoutComment = new ExcuseSubmission(
-                List.of(12L), ExcuseType.ILLNESS, null, List.of(), key);
+        ExcuseSubmission withoutComment =
+                new ExcuseSubmission(List.of(12L), ExcuseType.ILLNESS, null, List.of(), key);
 
         service.submitExcuse(STUDENT, withoutComment);
 
-        ExcuseSubmission literalNull = new ExcuseSubmission(
-                List.of(12L), ExcuseType.ILLNESS, "null", List.of(), key);
+        ExcuseSubmission literalNull =
+                new ExcuseSubmission(List.of(12L), ExcuseType.ILLNESS, "null", List.of(), key);
 
         assertThatThrownBy(() -> service.submitExcuse(STUDENT, literalNull))
                 .isInstanceOf(ConflictException.class);
@@ -679,11 +755,15 @@ class StudentRequestDomainIT {
         // A missing mark on a closed lesson is effectively ABSENT. Use a real
         // ineligible final mark so this scenario still proves package atomicity.
         seedAbsent(21L);
-        AttendanceDocument finalMark = attendanceRepository.findByLessonIdAndUserId(21L, STUDENT_ID).orElseThrow();
+        AttendanceDocument finalMark =
+                attendanceRepository.findByLessonIdAndUserId(21L, STUDENT_ID).orElseThrow();
         finalMark.setStatus(AttendanceStatus.PRESENT);
         attendanceRepository.save(finalMark);
-        ExcuseSubmission command = excuse(List.of(20L, 21L), "rollback-package-key", List.of(
-                new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64))));
+        ExcuseSubmission command =
+                excuse(
+                        List.of(20L, 21L),
+                        "rollback-package-key",
+                        List.of(new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64))));
 
         assertThatThrownBy(() -> service.submitExcuse(STUDENT, command))
                 .isInstanceOf(ConflictException.class);
@@ -703,14 +783,18 @@ class StudentRequestDomainIT {
 
         CountDownLatch start = new CountDownLatch(1);
         try (var executor = Executors.newFixedThreadPool(2)) {
-            Future<RequestDetail> firstFuture = executor.submit(() -> {
-                start.await();
-                return service.submitExcuse(STUDENT, first);
-            });
-            Future<RequestDetail> secondFuture = executor.submit(() -> {
-                start.await();
-                return service.submitExcuse(STUDENT, second);
-            });
+            Future<RequestDetail> firstFuture =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return service.submitExcuse(STUDENT, first);
+                            });
+            Future<RequestDetail> secondFuture =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return service.submitExcuse(STUDENT, second);
+                            });
             start.countDown();
             List<Future<RequestDetail>> futures = List.of(firstFuture, secondFuture);
             int succeeded = 0;
@@ -736,26 +820,39 @@ class StudentRequestDomainIT {
         byte[] first = pdfBytes((int) StudentRequestService.MAX_ATTACHMENT_BYTES);
         byte[] second = pdfBytes((int) StudentRequestService.MAX_ATTACHMENT_BYTES);
 
-        RequestDetail detail = service.submitExcuse(STUDENT, excuse(List.of(40L), "attachment-bound-key",
-                List.of(new AttachmentInput("../first.pdf", "application/pdf", first),
-                        new AttachmentInput("second.pdf", "application/pdf", second))));
+        RequestDetail detail =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(40L),
+                                "attachment-bound-key",
+                                List.of(
+                                        new AttachmentInput(
+                                                "../first.pdf", "application/pdf", first),
+                                        new AttachmentInput(
+                                                "second.pdf", "application/pdf", second))));
 
-        List<RequestAttachmentDocument> stored = attachmentRepository
-                .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(detail.summary().id(), STUDENT_ID);
+        List<RequestAttachmentDocument> stored =
+                attachmentRepository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
+                        detail.summary().id(), STUDENT_ID);
         assertThat(stored).hasSize(2);
-        assertThat(stored).extracting(RequestAttachmentDocument::getSize)
+        assertThat(stored)
+                .extracting(RequestAttachmentDocument::getSize)
                 .containsExactly((long) first.length, (long) second.length);
-        assertThat(stored).allSatisfy(document ->
-                assertThat(document.getData()).isNotNull());
+        assertThat(stored).allSatisfy(document -> assertThat(document.getData()).isNotNull());
 
-        Document ticket = mongoTemplate.getCollection("excuse_tickets")
-                .find(Filters.eq("_id", new ObjectId(detail.summary().id()))).first();
+        Document ticket =
+                mongoTemplate
+                        .getCollection("excuse_tickets")
+                        .find(Filters.eq("_id", new ObjectId(detail.summary().id())))
+                        .first();
         assertThat(ticket).isNotNull();
         assertThat(ticket.toJson()).doesNotContain("data", "file_payload_b64", "payload_b64");
 
         RequestDetail cancelled = service.cancel(STUDENT, detail.summary().id());
-        assertThat(cancelled.summary().status()).isEqualTo(
-                ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.CANCELLED);
+        assertThat(cancelled.summary().status())
+                .isEqualTo(
+                        ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.CANCELLED);
         assertThat(attachmentRepository.findById(stored.getFirst().getId()).orElseThrow().getData())
                 .isNotNull();
     }
@@ -764,20 +861,42 @@ class StudentRequestDomainIT {
     void attachmentSpoofThirdAndOversizeInputsRejectBeforeAnyWrite() {
         seedAbsent(41L);
         AttachmentInput spoof = new AttachmentInput("proof.jpg", "image/jpeg", pdfBytes(64));
-        assertThatThrownBy(() -> service.submitExcuse(STUDENT, excuse(List.of(41L), "spoof-file-key-0001",
-                List.of(spoof)))).isInstanceOf(BadRequestException.class);
+        assertThatThrownBy(
+                        () ->
+                                service.submitExcuse(
+                                        STUDENT,
+                                        excuse(
+                                                List.of(41L),
+                                                "spoof-file-key-0001",
+                                                List.of(spoof))))
+                .isInstanceOf(BadRequestException.class);
         assertThat(excuseRepository.findAll()).isEmpty();
 
-        List<AttachmentInput> third = List.of(
-                new AttachmentInput("one.pdf", "application/pdf", pdfBytes(16)),
-                new AttachmentInput("two.pdf", "application/pdf", pdfBytes(16)),
-                new AttachmentInput("three.pdf", "application/pdf", pdfBytes(16)));
-        assertThatThrownBy(() -> service.submitExcuse(STUDENT, excuse(List.of(41L), "third-file-key-0001", third)))
+        List<AttachmentInput> third =
+                List.of(
+                        new AttachmentInput("one.pdf", "application/pdf", pdfBytes(16)),
+                        new AttachmentInput("two.pdf", "application/pdf", pdfBytes(16)),
+                        new AttachmentInput("three.pdf", "application/pdf", pdfBytes(16)));
+        assertThatThrownBy(
+                        () ->
+                                service.submitExcuse(
+                                        STUDENT,
+                                        excuse(List.of(41L), "third-file-key-0001", third)))
                 .isInstanceOf(BadRequestException.class);
 
         byte[] oversize = pdfBytes((int) StudentRequestService.MAX_ATTACHMENT_BYTES + 1);
-        assertThatThrownBy(() -> service.submitExcuse(STUDENT, excuse(List.of(41L), "oversize-file-key", List.of(
-                new AttachmentInput("oversize.pdf", "application/pdf", oversize)))))
+        assertThatThrownBy(
+                        () ->
+                                service.submitExcuse(
+                                        STUDENT,
+                                        excuse(
+                                                List.of(41L),
+                                                "oversize-file-key",
+                                                List.of(
+                                                        new AttachmentInput(
+                                                                "oversize.pdf",
+                                                                "application/pdf",
+                                                                oversize)))))
                 .isInstanceOf(BadRequestException.class);
         assertThat(excuseRepository.findAll()).isEmpty();
         assertThat(receiptRepository.findAll()).isEmpty();
@@ -787,31 +906,52 @@ class StudentRequestDomainIT {
     @Test
     void attachmentReadProjectsExpiryButRetentionClearsBytesUnderTheSemesterFence() {
         seedAbsent(42L);
-        RequestDetail detail = service.submitExcuse(STUDENT, excuse(List.of(42L), "expiry-file-key-0001", List.of(
-                new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
+        RequestDetail detail =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(42L),
+                                "expiry-file-key-0001",
+                                List.of(
+                                        new AttachmentInput(
+                                                "proof.pdf", "application/pdf", pdfBytes(64)))));
         String attachmentId = attachmentRepository.findAll().getFirst().getId();
 
-        assertThat(service.download(STUDENT, detail.summary().id(), attachmentId).bytes()).hasSize(64);
+        assertThat(service.download(STUDENT, detail.summary().id(), attachmentId).bytes())
+                .hasSize(64);
 
         clock.set(detail.attachments().getFirst().expiresAt());
         RequestDetail logicallyExpired = service.get(STUDENT, detail.summary().id());
-        assertThat(logicallyExpired.attachments()).singleElement().satisfies(attachment ->
-                assertThat(attachment.state()).isEqualTo(AttachmentState.EXPIRED));
+        assertThat(logicallyExpired.attachments())
+                .singleElement()
+                .satisfies(
+                        attachment ->
+                                assertThat(attachment.state()).isEqualTo(AttachmentState.EXPIRED));
         assertThat(attachmentRepository.findById(attachmentId).orElseThrow())
-                .satisfies(attachment -> {
-                    assertThat(attachment.getState()).isEqualTo(AttachmentState.ACTIVE);
-                    assertThat(attachment.getData()).isNotNull();
-                });
+                .satisfies(
+                        attachment -> {
+                            assertThat(attachment.getState()).isEqualTo(AttachmentState.ACTIVE);
+                            assertThat(attachment.getData()).isNotNull();
+                        });
         assertThatThrownBy(() -> service.download(STUDENT, detail.summary().id(), attachmentId))
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
-                .satisfies(error -> assertThat(((org.springframework.web.server.ResponseStatusException) error)
-                        .getStatusCode().value()).isEqualTo(410));
-        RequestAttachmentDocument stillStored = attachmentRepository.findById(attachmentId).orElseThrow();
+                .satisfies(
+                        error ->
+                                assertThat(
+                                                ((org.springframework.web.server
+                                                                        .ResponseStatusException)
+                                                                error)
+                                                        .getStatusCode()
+                                                        .value())
+                                        .isEqualTo(410));
+        RequestAttachmentDocument stillStored =
+                attachmentRepository.findById(attachmentId).orElseThrow();
         assertThat(stillStored.getState()).isEqualTo(AttachmentState.ACTIVE);
         assertThat(stillStored.getData()).isNotNull();
 
         assertThat(service.expireAttachments()).isEqualTo(1);
-        RequestAttachmentDocument expired = attachmentRepository.findById(attachmentId).orElseThrow();
+        RequestAttachmentDocument expired =
+                attachmentRepository.findById(attachmentId).orElseThrow();
         assertThat(expired.getState()).isEqualTo(AttachmentState.EXPIRED);
         assertThat(expired.getData()).isNull();
     }
@@ -819,38 +959,61 @@ class StudentRequestDomainIT {
     @Test
     void terminalAttachmentRetentionAfterTransferWaitsForArchiveRestoreThenClearsBytesOnce() {
         seedAbsent(95L);
-        RequestDetail detail = service.submitExcuse(STUDENT,
-                excuse(List.of(95L), "terminal-transfer-file", List.of(
-                        new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
+        RequestDetail detail =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(95L),
+                                "terminal-transfer-file",
+                                List.of(
+                                        new AttachmentInput(
+                                                "proof.pdf", "application/pdf", pdfBytes(64)))));
         service.decideExcuse(HEADMAN, detail.summary().id(), false, "Не подтверждено");
-        ExcuseTicket originalTicket = excuseRepository.findById(detail.summary().id()).orElseThrow();
+        ExcuseTicket originalTicket =
+                excuseRepository.findById(detail.summary().id()).orElseThrow();
         RequestAttachmentDocument attachment = attachmentRepository.findAll().getFirst();
-        mongoTemplate.save(ru.rutcampustrack.attendance.event.LessonTransferFenceDocument.builder()
-                .id("95").sourceLessonId(95L).targetLessonId(195L).groupId(GROUP_ID).build());
-        mongoTemplate.save(ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
-                .id(Long.toString(SEMESTER_ID)).semesterId(SEMESTER_ID).barrierState("ARCHIVED").build());
+        mongoTemplate.save(
+                ru.rutcampustrack.attendance.event.LessonTransferFenceDocument.builder()
+                        .id("95")
+                        .sourceLessonId(95L)
+                        .targetLessonId(195L)
+                        .groupId(GROUP_ID)
+                        .build());
+        mongoTemplate.save(
+                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
+                        .id(Long.toString(SEMESTER_ID))
+                        .semesterId(SEMESTER_ID)
+                        .barrierState("ARCHIVED")
+                        .build());
         clock.set(attachment.getExpiresAt());
 
         assertThat(service.expireAttachments()).isZero();
-        assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow()).satisfies(stored -> {
-            assertThat(stored.getState()).isEqualTo(AttachmentState.ACTIVE);
-            assertThat(stored.getData()).isNotNull();
-        });
-        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(Long.toString(SEMESTER_ID))),
-                new org.springframework.data.mongodb.core.query.Update().set("barrier_state", "RELEASED"),
+        assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow())
+                .satisfies(
+                        stored -> {
+                            assertThat(stored.getState()).isEqualTo(AttachmentState.ACTIVE);
+                            assertThat(stored.getData()).isNotNull();
+                        });
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(Long.toString(SEMESTER_ID))),
+                new org.springframework.data.mongodb.core.query.Update()
+                        .set("barrier_state", "RELEASED"),
                 ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
 
         assertThat(service.expireAttachments()).isEqualTo(1);
         assertThat(service.expireAttachments()).isZero();
-        assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow()).satisfies(stored -> {
-            assertThat(stored.getState()).isEqualTo(AttachmentState.EXPIRED);
-            assertThat(stored.getData()).isNull();
-            assertThat(stored.getRequestId()).isEqualTo(detail.summary().id());
-            assertThat(stored.getOwnerStudentId()).isEqualTo(STUDENT_ID);
-            assertThat(stored.getExpiredAt()).isEqualTo(clock.instant());
-        });
+        assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow())
+                .satisfies(
+                        stored -> {
+                            assertThat(stored.getState()).isEqualTo(AttachmentState.EXPIRED);
+                            assertThat(stored.getData()).isNull();
+                            assertThat(stored.getRequestId()).isEqualTo(detail.summary().id());
+                            assertThat(stored.getOwnerStudentId()).isEqualTo(STUDENT_ID);
+                            assertThat(stored.getExpiredAt()).isEqualTo(clock.instant());
+                        });
         assertThat(excuseRepository.findById(detail.summary().id()).orElseThrow())
-                .usingRecursiveComparison().isEqualTo(originalTicket);
+                .usingRecursiveComparison()
+                .isEqualTo(originalTicket);
     }
 
     @Test
@@ -861,91 +1024,129 @@ class StudentRequestDomainIT {
             assertThat(TimeZone.getDefault().toZoneId()).isEqualTo(ZoneId.of("Europe/Moscow"));
             seedAbsent(50L);
             seedAbsent(51L);
-            RequestDetail excuse = service.submitExcuse(STUDENT,
-                    excuse(List.of(50L), "mixed-excuse-key-01", List.of()));
-            LateCheckinRequest autoLate = lateCheckinRepository.save(LateCheckinRequest.builder()
-                    .id("62a000000000000000000051")
-                    .studentId(STUDENT_ID)
-                    .groupId(GROUP_ID)
-                    .lessonId(51L)
-                    .subjectId(1051L)
-                    .subjectName("Алгебра")
-                    .subjectType("SEMINAR")
-                    .semesterId(SEMESTER_ID)
-                    .lessonNumber(51)
-                    .lessonDate(LocalDate.of(2026, 9, 7))
-                    .startsAt(LocalTime.of(10, 0))
-                    .endsAt(LocalTime.of(11, 0))
-                    .studentName("Иванов Иван")
-                    .status(LateCheckinRequestStatus.PENDING)
-                    .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
-                    .createdAt(START)
-                    .updatedAt(START)
-                    .build());
+            RequestDetail excuse =
+                    service.submitExcuse(
+                            STUDENT, excuse(List.of(50L), "mixed-excuse-key-01", List.of()));
+            LateCheckinRequest autoLate =
+                    lateCheckinRepository.save(
+                            LateCheckinRequest.builder()
+                                    .id("62a000000000000000000051")
+                                    .studentId(STUDENT_ID)
+                                    .groupId(GROUP_ID)
+                                    .lessonId(51L)
+                                    .subjectId(1051L)
+                                    .subjectName("Алгебра")
+                                    .subjectType("SEMINAR")
+                                    .semesterId(SEMESTER_ID)
+                                    .lessonNumber(51)
+                                    .lessonDate(LocalDate.of(2026, 9, 7))
+                                    .startsAt(LocalTime.of(10, 0))
+                                    .endsAt(LocalTime.of(11, 0))
+                                    .studentName("Иванов Иван")
+                                    .status(LateCheckinRequestStatus.PENDING)
+                                    .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
+                                    .createdAt(START)
+                                    .updatedAt(START)
+                                    .build());
             RequestDetail mappedLate = service.get(STUDENT, autoLate.getId());
 
-            Document storedExcuse = mongoTemplate.getCollection("excuse_tickets")
-                    .find(Filters.eq("_id", new ObjectId(excuse.summary().id()))).first();
+            Document storedExcuse =
+                    mongoTemplate
+                            .getCollection("excuse_tickets")
+                            .find(Filters.eq("_id", new ObjectId(excuse.summary().id())))
+                            .first();
             assertThat(storedExcuse).isNotNull();
             assertThat(storedExcuse.getString("status")).isEqualTo("submitted");
 
             RequestPage ownerPage = service.list(STUDENT, RequestBucket.OPEN, 0, 20);
             assertThat(ownerPage.totalElements()).isEqualTo(2);
-            assertThat(ownerPage.content()).extracting(summary -> summary.kind())
-                    .containsExactlyInAnyOrder(StudentRequestKind.EXCUSE, StudentRequestKind.LATE_CHECKIN);
+            assertThat(ownerPage.content())
+                    .extracting(summary -> summary.kind())
+                    .containsExactlyInAnyOrder(
+                            StudentRequestKind.EXCUSE, StudentRequestKind.LATE_CHECKIN);
             RequestDetail mappedExcuse = service.get(STUDENT, excuse.summary().id());
-            var listedExcuse = ownerPage.content().stream()
-                    .filter(summary -> summary.id().equals(excuse.summary().id()))
-                    .findFirst().orElseThrow();
+            var listedExcuse =
+                    ownerPage.content().stream()
+                            .filter(summary -> summary.id().equals(excuse.summary().id()))
+                            .findFirst()
+                            .orElseThrow();
             assertThat(listedExcuse.status()).isEqualTo(StudentRequestStatus.PENDING);
-            assertThat(listedExcuse.lessons()).containsExactlyElementsOf(mappedExcuse.summary().lessons());
-            assertThat(listedExcuse.lessons()).singleElement().satisfies(lesson -> {
-                assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 7));
-                assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(10, 0));
-                assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
-            });
-            var listedLate = ownerPage.content().stream()
-                    .filter(summary -> summary.id().equals(autoLate.getId()))
-                    .findFirst().orElseThrow();
+            assertThat(listedExcuse.lessons())
+                    .containsExactlyElementsOf(mappedExcuse.summary().lessons());
+            assertThat(listedExcuse.lessons())
+                    .singleElement()
+                    .satisfies(
+                            lesson -> {
+                                assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 7));
+                                assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(10, 0));
+                                assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
+                            });
+            var listedLate =
+                    ownerPage.content().stream()
+                            .filter(summary -> summary.id().equals(autoLate.getId()))
+                            .findFirst()
+                            .orElseThrow();
             assertThat(listedLate.origin()).isEqualTo(StudentRequestOrigin.AUTO_GEO_FAILURE);
-            assertThat(listedLate.lessons()).containsExactlyElementsOf(mappedLate.summary().lessons());
-            assertThat(listedLate.lessons()).singleElement().satisfies(lesson -> {
-                assertThat(lesson.subjectName()).isEqualTo("Алгебра");
-                assertThat(lesson.subjectType()).isEqualTo("SEMINAR");
-                assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(10, 0));
-                assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
-            });
+            assertThat(listedLate.lessons())
+                    .containsExactlyElementsOf(mappedLate.summary().lessons());
+            assertThat(listedLate.lessons())
+                    .singleElement()
+                    .satisfies(
+                            lesson -> {
+                                assertThat(lesson.subjectName()).isEqualTo("Алгебра");
+                                assertThat(lesson.subjectType()).isEqualTo("SEMINAR");
+                                assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(10, 0));
+                                assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
+                            });
 
             RequestPage firstPage = service.list(STUDENT, RequestBucket.OPEN, 0, 1);
             RequestPage secondPage = service.list(STUDENT, RequestBucket.OPEN, 1, 1);
             assertThat(firstPage.totalElements()).isEqualTo(2);
             assertThat(firstPage.totalPages()).isEqualTo(2);
-            assertThat(List.of(firstPage.content().getFirst().id(), secondPage.content().getFirst().id()))
+            assertThat(
+                            List.of(
+                                    firstPage.content().getFirst().id(),
+                                    secondPage.content().getFirst().id()))
                     .containsExactlyInAnyOrder(excuse.summary().id(), autoLate.getId());
 
             assertThatThrownBy(() -> service.get(student(200L), excuse.summary().id()))
-                    .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+                    .isInstanceOf(
+                            ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
             assertThat(service.list(student(200L), RequestBucket.OPEN, 0, 20).content()).isEmpty();
 
             var options = service.options(STUDENT, List.of(snapshot(50L)));
-            assertThat(options.lessons()).singleElement().satisfies(option -> {
-                assertThat(option.pendingRequests()).singleElement().satisfies(ref -> {
-                    assertThat(ref.id()).isEqualTo(excuse.summary().id());
-                    assertThat(ref.kind()).isEqualTo(StudentRequestKind.EXCUSE);
-                    assertThat(ref.origin()).isEqualTo(StudentRequestOrigin.MANUAL);
-                });
-                assertThat(option.excuseEligible()).isFalse();
-            });
+            assertThat(options.lessons())
+                    .singleElement()
+                    .satisfies(
+                            option -> {
+                                assertThat(option.pendingRequests())
+                                        .singleElement()
+                                        .satisfies(
+                                                ref -> {
+                                                    assertThat(ref.id())
+                                                            .isEqualTo(excuse.summary().id());
+                                                    assertThat(ref.kind())
+                                                            .isEqualTo(StudentRequestKind.EXCUSE);
+                                                    assertThat(ref.origin())
+                                                            .isEqualTo(StudentRequestOrigin.MANUAL);
+                                                });
+                                assertThat(option.excuseEligible()).isFalse();
+                            });
 
             seedAbsent(52L);
-            RequestDetail approved = service.submitExcuse(STUDENT,
-                    excuse(List.of(52L), "mixed-approved-key-01", List.of()));
+            RequestDetail approved =
+                    service.submitExcuse(
+                            STUDENT, excuse(List.of(52L), "mixed-approved-key-01", List.of()));
             service.decideExcuse(headman(777L), approved.summary().id(), true, "approved");
             RequestPage archivePage = service.list(STUDENT, RequestBucket.ARCHIVE, 0, 20);
-            assertThat(archivePage.content()).singleElement().satisfies(summary -> {
-                assertThat(summary.id()).isEqualTo(approved.summary().id());
-                assertThat(summary.status()).isEqualTo(StudentRequestStatus.APPROVED);
-            });
+            assertThat(archivePage.content())
+                    .singleElement()
+                    .satisfies(
+                            summary -> {
+                                assertThat(summary.id()).isEqualTo(approved.summary().id());
+                                assertThat(summary.status())
+                                        .isEqualTo(StudentRequestStatus.APPROVED);
+                            });
         } finally {
             TimeZone.setDefault(previousTimeZone);
         }
@@ -955,26 +1156,42 @@ class StudentRequestDomainIT {
     void commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict() {
         var options = service.options(STUDENT, List.of(snapshot(90L)));
 
-        var other = options.reasons().stream()
-                .filter(reason -> reason.code() == ExcuseType.OTHER)
-                .findFirst().orElseThrow();
+        var other =
+                options.reasons().stream()
+                        .filter(reason -> reason.code() == ExcuseType.OTHER)
+                        .findFirst()
+                        .orElseThrow();
         assertThat(other.commentRequired()).isTrue();
-        assertThat(options.reasons().stream()
-                .filter(reason -> reason.code() != ExcuseType.OTHER)
-                .map(StudentRequestModels.ReasonOption::commentRequired))
+        assertThat(
+                        options.reasons().stream()
+                                .filter(reason -> reason.code() != ExcuseType.OTHER)
+                                .map(StudentRequestModels.ReasonOption::commentRequired))
                 .containsOnly(false);
 
         for (String comment : Arrays.asList(null, "", " \t\r\n")) {
-            assertThatThrownBy(() -> service.submitExcuse(STUDENT,
-                    new ExcuseSubmission(List.of(90L), ExcuseType.OTHER, comment, List.of(),
-                            "other-invalid-" + UUID.randomUUID())))
+            assertThatThrownBy(
+                            () ->
+                                    service.submitExcuse(
+                                            STUDENT,
+                                            new ExcuseSubmission(
+                                                    List.of(90L),
+                                                    ExcuseType.OTHER,
+                                                    comment,
+                                                    List.of(),
+                                                    "other-invalid-" + UUID.randomUUID())))
                     .isInstanceOf(BadRequestException.class);
         }
 
         seedAbsent(91L);
-        RequestDetail accepted = service.submitExcuse(STUDENT,
-                new ExcuseSubmission(List.of(91L), ExcuseType.OTHER, "  custom reason  ", List.of(),
-                        "other-nonblank-accepted-key"));
+        RequestDetail accepted =
+                service.submitExcuse(
+                        STUDENT,
+                        new ExcuseSubmission(
+                                List.of(91L),
+                                ExcuseType.OTHER,
+                                "  custom reason  ",
+                                List.of(),
+                                "other-nonblank-accepted-key"));
         assertThat(accepted.reason()).isEqualTo(ExcuseType.OTHER);
         assertThat(accepted.comment()).isEqualTo("custom reason");
     }
@@ -984,13 +1201,24 @@ class StudentRequestDomainIT {
         seedAbsent(74L);
         seedAbsent(75L);
         seedAbsent(76L);
-        budgetRepository.save(StudentLateCheckinBudgetDocument.builder()
-                .studentId(STUDENT_ID).semesterId(SEMESTER_ID).limit(7).used(5).updatedAt(START).build());
+        budgetRepository.save(
+                StudentLateCheckinBudgetDocument.builder()
+                        .studentId(STUDENT_ID)
+                        .semesterId(SEMESTER_ID)
+                        .limit(7)
+                        .used(5)
+                        .updatedAt(START)
+                        .build());
 
         var available = service.options(STUDENT, List.of(snapshot(74L)));
-        assertThat(available.budget()).extracting(budget -> budget.limit(), budget -> budget.used(),
-                budget -> budget.remaining()).containsExactly(7, 5, 2);
-        assertThat(available.lessons()).singleElement()
+        assertThat(available.budget())
+                .extracting(
+                        budget -> budget.limit(),
+                        budget -> budget.used(),
+                        budget -> budget.remaining())
+                .containsExactly(7, 5, 2);
+        assertThat(available.lessons())
+                .singleElement()
                 .satisfies(option -> assertThat(option.lateCheckinEligible()).isTrue());
 
         service.submitLateCheckin(STUDENT, new LateCheckinSubmission(74L, "limit-seven-key-0001"));
@@ -998,47 +1226,71 @@ class StudentRequestDomainIT {
 
         var exhausted = service.options(STUDENT, List.of(snapshot(76L)));
         assertThat(exhausted.budget().remaining()).isZero();
-        assertThat(exhausted.lessons()).singleElement()
+        assertThat(exhausted.lessons())
+                .singleElement()
                 .satisfies(option -> assertThat(option.lateCheckinEligible()).isFalse());
-        assertThatThrownBy(() -> service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(76L, "limit-seven-key-0003")))
+        assertThatThrownBy(
+                        () ->
+                                service.submitLateCheckin(
+                                        STUDENT,
+                                        new LateCheckinSubmission(76L, "limit-seven-key-0003")))
                 .isInstanceOf(ConflictException.class);
     }
 
     @Test
     void presentPriorityKeepsExistingAttendanceDuringExcuseApproval() {
         seedAbsent(60L);
-        RequestDetail detail = service.submitExcuse(STUDENT, excuse(List.of(60L), "present-race-key-0001", List.of()));
-        AttendanceDocument current = attendanceRepository.findByLessonIdAndUserId(60L, STUDENT_ID).orElseThrow();
+        RequestDetail detail =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(60L), "present-race-key-0001", List.of()));
+        AttendanceDocument current =
+                attendanceRepository.findByLessonIdAndUserId(60L, STUDENT_ID).orElseThrow();
         current.setStatus(AttendanceStatus.PRESENT);
         current.setSource(AttendanceSource.STUDENT_GEO);
         attendanceRepository.save(current);
 
-        RequestDetail decided = service.decideExcuse(headman(777L), detail.summary().id(), true, "already present");
+        RequestDetail decided =
+                service.decideExcuse(headman(777L), detail.summary().id(), true, "already present");
 
-        assertThat(decided.summary().status()).isEqualTo(
-                ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);
+        assertThat(decided.summary().status())
+                .isEqualTo(
+                        ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);
         assertThat(attendanceRepository.findByLessonIdAndUserId(60L, STUDENT_ID).orElseThrow())
-                .satisfies(attendance -> {
-                    assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
-                    assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
-        });
+                .satisfies(
+                        attendance -> {
+                            assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+                            assertThat(attendance.getSource())
+                                    .isEqualTo(AttendanceSource.STUDENT_GEO);
+                        });
     }
 
     @Test
     void headmanOpenUnionNormalizesSubmittedAndExcludesDraft() {
-        seedHeadmanTicket("headman-submitted", ExcuseTicketStatus.SUBMITTED,
-                List.of(LocalDate.of(2026, 9, 7)), START, START, null);
-        seedHeadmanTicket("headman-draft", ExcuseTicketStatus.DRAFT,
-                List.of(LocalDate.of(2026, 9, 8)), START.plusSeconds(1), START.plusSeconds(1), null);
+        seedHeadmanTicket(
+                "headman-submitted",
+                ExcuseTicketStatus.SUBMITTED,
+                List.of(LocalDate.of(2026, 9, 7)),
+                START,
+                START,
+                null);
+        seedHeadmanTicket(
+                "headman-draft",
+                ExcuseTicketStatus.DRAFT,
+                List.of(LocalDate.of(2026, 9, 8)),
+                START.plusSeconds(1),
+                START.plusSeconds(1),
+                null);
 
-        HeadmanRequestPageResponse page = headmanRequestService.list(
-                HEADMAN, "OPEN", 0, 20, "EXCUSE", null, null, null);
+        HeadmanRequestPageResponse page =
+                headmanRequestService.list(HEADMAN, "OPEN", 0, 20, "EXCUSE", null, null, null);
 
-        assertThat(page.content()).singleElement().satisfies(summary -> {
-            assertThat(summary.id()).isEqualTo("headman-submitted");
-            assertThat(summary.status()).isEqualTo("PENDING");
-        });
+        assertThat(page.content())
+                .singleElement()
+                .satisfies(
+                        summary -> {
+                            assertThat(summary.id()).isEqualTo("headman-submitted");
+                            assertThat(summary.status()).isEqualTo("PENDING");
+                        });
         assertThat(page.totalElements()).isEqualTo(1);
     }
 
@@ -1048,32 +1300,72 @@ class StudentRequestDomainIT {
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
         try {
             LocalDate lessonDate = LocalDate.of(2026, 10, 1);
-            ExcuseTicket ticket = seedHeadmanTicket("62a000000000000000000101", ExcuseTicketStatus.SUBMITTED,
-                    List.of(lessonDate), START, START, null);
+            ExcuseTicket ticket =
+                    seedHeadmanTicket(
+                            "62a000000000000000000101",
+                            ExcuseTicketStatus.SUBMITTED,
+                            List.of(lessonDate),
+                            START,
+                            START,
+                            null);
             ticket.setExcuseType(ExcuseType.OTHER);
             excuseRepository.save(ticket);
-            Document stored = mongoTemplate.getCollection("excuse_tickets")
-                    .find(Filters.eq("_id", new ObjectId(ticket.getId()))).first();
+            Document stored =
+                    mongoTemplate
+                            .getCollection("excuse_tickets")
+                            .find(Filters.eq("_id", new ObjectId(ticket.getId())))
+                            .first();
             assertThat(stored).isNotNull();
-            assertThat(stored.getList("lesson_snapshots", Document.class).getFirst().getDate("date").toInstant())
+            assertThat(
+                            stored.getList("lesson_snapshots", Document.class)
+                                    .getFirst()
+                                    .getDate("date")
+                                    .toInstant())
                     .isEqualTo(Instant.parse("2026-09-30T21:00:00Z"));
             assertThat(stored.getString("excuse_type")).isEqualTo("other");
 
             var detail = headmanRequestService.get(HEADMAN, ticket.getId());
-            assertThat(detail.lessons()).singleElement().satisfies(lesson ->
-                    assertThat(lesson.date()).isEqualTo(lessonDate));
-            HeadmanRequestPageResponse page = headmanRequestService.list(
-                    HEADMAN, "OPEN", 0, 20, "EXCUSE", null, "2026-10-01", "2026-10-01");
-            assertThat(page.content()).singleElement().satisfies(summary -> {
-                assertThat(summary.coverageStart()).isEqualTo(lessonDate);
-                assertThat(summary.coverageEnd()).isEqualTo(lessonDate);
-                assertThat(summary.reason()).isEqualTo("OTHER");
-                assertThat(summary).isEqualTo(detail.summary());
-            });
-            assertThat(headmanRequestService.list(HEADMAN, "OPEN", 0, 20, "EXCUSE", null,
-                    "2026-09-30", "2026-09-30").content()).isEmpty();
-            assertThat(headmanRequestService.list(HEADMAN, "OPEN", 0, 20, "EXCUSE", null,
-                    "2026-10-02", "2026-10-02").content()).isEmpty();
+            assertThat(detail.lessons())
+                    .singleElement()
+                    .satisfies(lesson -> assertThat(lesson.date()).isEqualTo(lessonDate));
+            HeadmanRequestPageResponse page =
+                    headmanRequestService.list(
+                            HEADMAN, "OPEN", 0, 20, "EXCUSE", null, "2026-10-01", "2026-10-01");
+            assertThat(page.content())
+                    .singleElement()
+                    .satisfies(
+                            summary -> {
+                                assertThat(summary.coverageStart()).isEqualTo(lessonDate);
+                                assertThat(summary.coverageEnd()).isEqualTo(lessonDate);
+                                assertThat(summary.reason()).isEqualTo("OTHER");
+                                assertThat(summary).isEqualTo(detail.summary());
+                            });
+            assertThat(
+                            headmanRequestService
+                                    .list(
+                                            HEADMAN,
+                                            "OPEN",
+                                            0,
+                                            20,
+                                            "EXCUSE",
+                                            null,
+                                            "2026-09-30",
+                                            "2026-09-30")
+                                    .content())
+                    .isEmpty();
+            assertThat(
+                            headmanRequestService
+                                    .list(
+                                            HEADMAN,
+                                            "OPEN",
+                                            0,
+                                            20,
+                                            "EXCUSE",
+                                            null,
+                                            "2026-10-02",
+                                            "2026-10-02")
+                                    .content())
+                    .isEmpty();
         } finally {
             TimeZone.setDefault(previousTimeZone);
         }
@@ -1081,71 +1373,103 @@ class StudentRequestDomainIT {
 
     @Test
     void headmanCoverageFilterMatchesCoverageIntervalGap() {
-        seedHeadmanTicket("headman-gap", ExcuseTicketStatus.APPROVED,
+        seedHeadmanTicket(
+                "headman-gap",
+                ExcuseTicketStatus.APPROVED,
                 List.of(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10)),
-                START, START.plusSeconds(2), START.plusSeconds(1));
-        seedHeadmanTicket("headman-after", ExcuseTicketStatus.APPROVED,
+                START,
+                START.plusSeconds(2),
+                START.plusSeconds(1));
+        seedHeadmanTicket(
+                "headman-after",
+                ExcuseTicketStatus.APPROVED,
                 List.of(LocalDate.of(2026, 9, 20), LocalDate.of(2026, 9, 21)),
-                START.plusSeconds(3), START.plusSeconds(5), START.plusSeconds(4));
-        seedHeadmanTicket("headman-empty", ExcuseTicketStatus.APPROVED,
-                List.of(), START.plusSeconds(6), START.plusSeconds(8), START.plusSeconds(7));
+                START.plusSeconds(3),
+                START.plusSeconds(5),
+                START.plusSeconds(4));
+        seedHeadmanTicket(
+                "headman-empty",
+                ExcuseTicketStatus.APPROVED,
+                List.of(),
+                START.plusSeconds(6),
+                START.plusSeconds(8),
+                START.plusSeconds(7));
 
-        HeadmanRequestPageResponse page = headmanRequestService.list(
-                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
-                "2026-09-05", "2026-09-05");
+        HeadmanRequestPageResponse page =
+                headmanRequestService.list(
+                        HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, "2026-09-05", "2026-09-05");
 
-        assertThat(page.content()).extracting(summary -> summary.id())
+        assertThat(page.content())
+                .extracting(summary -> summary.id())
                 .containsExactly("headman-gap");
         assertThat(page.totalElements()).isEqualTo(1);
 
-        HeadmanRequestPageResponse fromOnly = headmanRequestService.list(
-                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
-                "2026-09-15", null);
-        assertThat(fromOnly.content()).extracting(summary -> summary.id())
+        HeadmanRequestPageResponse fromOnly =
+                headmanRequestService.list(
+                        HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, "2026-09-15", null);
+        assertThat(fromOnly.content())
+                .extracting(summary -> summary.id())
                 .containsExactly("headman-after");
         assertThat(fromOnly.totalElements()).isEqualTo(1);
 
-        HeadmanRequestPageResponse toOnly = headmanRequestService.list(
-                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
-                null, "2026-09-05");
-        assertThat(toOnly.content()).extracting(summary -> summary.id())
+        HeadmanRequestPageResponse toOnly =
+                headmanRequestService.list(
+                        HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, null, "2026-09-05");
+        assertThat(toOnly.content())
+                .extracting(summary -> summary.id())
                 .containsExactly("headman-gap");
         assertThat(toOnly.totalElements()).isEqualTo(1);
 
-        HeadmanRequestPageResponse emptyRange = headmanRequestService.list(
-                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
-                null, "2026-08-31");
+        HeadmanRequestPageResponse emptyRange =
+                headmanRequestService.list(
+                        HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, null, "2026-08-31");
         assertThat(emptyRange.content()).isEmpty();
         assertThat(emptyRange.totalElements()).isZero();
     }
 
     @Test
     void headmanArchiveSortUsesDecisionTimeBeforeStableKindAndIdTieBreakers() {
-        seedHeadmanTicket("headman-decision-old", ExcuseTicketStatus.REJECTED,
-                List.of(LocalDate.of(2026, 9, 7)), START.plusSeconds(1), START.plusSeconds(30),
+        seedHeadmanTicket(
+                "headman-decision-old",
+                ExcuseTicketStatus.REJECTED,
+                List.of(LocalDate.of(2026, 9, 7)),
+                START.plusSeconds(1),
+                START.plusSeconds(30),
                 START.plusSeconds(2));
-        seedHeadmanTicket("headman-decision-new", ExcuseTicketStatus.APPROVED,
-                List.of(LocalDate.of(2026, 9, 8)), START.plusSeconds(2), START.plusSeconds(3),
+        seedHeadmanTicket(
+                "headman-decision-new",
+                ExcuseTicketStatus.APPROVED,
+                List.of(LocalDate.of(2026, 9, 8)),
+                START.plusSeconds(2),
+                START.plusSeconds(3),
                 START.plusSeconds(4));
 
-        HeadmanRequestPageResponse page = headmanRequestService.list(
-                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, null, null);
+        HeadmanRequestPageResponse page =
+                headmanRequestService.list(HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, null, null);
 
-        assertThat(page.content()).extracting(summary -> summary.id())
+        assertThat(page.content())
+                .extracting(summary -> summary.id())
                 .containsExactly("headman-decision-new", "headman-decision-old");
     }
 
     @Test
     void approvalChangesFreeAttendanceToExcused() {
         seedAbsent(61L);
-        RequestDetail detail = service.submitExcuse(STUDENT, excuse(List.of(61L), "free-attendance-key", List.of()));
-        AttendanceDocument current = attendanceRepository.findByLessonIdAndUserId(61L, STUDENT_ID).orElseThrow();
+        RequestDetail detail =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(61L), "free-attendance-key", List.of()));
+        AttendanceDocument current =
+                attendanceRepository.findByLessonIdAndUserId(61L, STUDENT_ID).orElseThrow();
         current.setStatus(AttendanceStatus.FREE_ATTENDANCE);
         attendanceRepository.save(current);
 
         service.decideExcuse(headman(777L), detail.summary().id(), true, null);
 
-        assertThat(attendanceRepository.findByLessonIdAndUserId(61L, STUDENT_ID).orElseThrow().getStatus())
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(61L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
                 .isEqualTo(AttendanceStatus.EXCUSED);
     }
 
@@ -1155,68 +1479,181 @@ class StudentRequestDomainIT {
             seedAbsent(id);
             stubCanonicalLesson(canonicalLesson(id, 10000L + id));
         }
-        RequestDetail submitted = service.submitExcuse(STUDENT, excuse(List.of(41L, 42L, 43L),
-                "partial-lost-ack", List.of(new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
+        RequestDetail submitted =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(41L, 42L, 43L),
+                                "partial-lost-ack",
+                                List.of(
+                                        new AttachmentInput(
+                                                "proof.pdf", "application/pdf", pdfBytes(64)))));
         String id = submitted.summary().id();
         ExcuseTicket original = excuseRepository.findById(id).orElseThrow();
         String revision = headmanRequestService.get(headman(777L), id).decisionRevision();
         assertThat(revision).matches("[0-9a-f]{64}");
         assertThat(headmanRequestService.get(headman(STUDENT_ID), id).decisionRevision()).isNull();
-        assertThatThrownBy(() -> service.decideExcuse(headman(STUDENT_ID), id, true, null, revision, List.of("10043"),
-                "11111111-1111-4111-8111-111111111111"))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(STUDENT_ID),
+                                        id,
+                                        true,
+                                        null,
+                                        revision,
+                                        List.of("10043"),
+                                        "11111111-1111-4111-8111-111111111111"))
                 .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
-        AttendanceDocument excludedBefore = attendanceRepository.findByLessonIdAndUserId(43L, STUDENT_ID).orElseThrow();
-        writePresentThroughPairCoordinator(42L); // Marks change after preview without invalidating its CAS.
+        AttendanceDocument excludedBefore =
+                attendanceRepository.findByLessonIdAndUserId(43L, STUDENT_ID).orElseThrow();
+        writePresentThroughPairCoordinator(
+                42L); // Marks change after preview without invalidating its CAS.
         clearOutbox();
         faultInjectingTransactionTemplate.failNextCommitAck();
         String key = "11111111-1111-4111-8111-111111111111";
 
-        RequestDetail decided = service.decideExcuse(headman(777L), id, true, " accepted ", revision, List.of("10043"), key);
+        RequestDetail decided =
+                service.decideExcuse(
+                        headman(777L), id, true, " accepted ", revision, List.of("10043"), key);
 
-        assertThat(decided.summary().lessons()).extracting(LessonSnapshot::lessonId).containsExactly(41L, 42L, 43L);
+        assertThat(decided.summary().lessons())
+                .extracting(LessonSnapshot::lessonId)
+                .containsExactly(41L, 42L, 43L);
         assertThat(decided.attachments()).isEqualTo(submitted.attachments());
-        assertThat(decided.decisionSelection().includedLessons()).extracting(LessonSnapshot::lessonId).containsExactly(41L, 42L);
-        assertThat(decided.decisionSelection().excludedLessons()).extracting(LessonSnapshot::occurrenceId).containsExactly("10043");
+        assertThat(decided.decisionSelection().includedLessons())
+                .extracting(LessonSnapshot::lessonId)
+                .containsExactly(41L, 42L);
+        assertThat(decided.decisionSelection().excludedLessons())
+                .extracting(LessonSnapshot::occurrenceId)
+                .containsExactly("10043");
         ExcuseTicket saved = excuseRepository.findById(id).orElseThrow();
         assertThat(saved.getLessonIds()).containsExactly(41L, 42L);
         assertThat(saved.getLessonSnapshots()).isEqualTo(original.getLessonSnapshots());
-        assertThat(attendanceRepository.findByLessonIdAndUserId(41L, STUDENT_ID).orElseThrow().getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
-        assertThat(attendanceRepository.findByLessonIdAndUserId(42L, STUDENT_ID).orElseThrow().getStatus()).isEqualTo(AttendanceStatus.PRESENT);
-        assertThat(attendanceRepository.findByLessonIdAndUserId(43L, STUDENT_ID).orElseThrow()).isEqualTo(excludedBefore);
-        assertThat(saved.getDecisionSelection().getIncludedLessons()).extracting(StudentLessonSnapshotDocument::getAttendanceStatus)
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(41L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
+                .isEqualTo(AttendanceStatus.EXCUSED);
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(42L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
+                .isEqualTo(AttendanceStatus.PRESENT);
+        assertThat(attendanceRepository.findByLessonIdAndUserId(43L, STUDENT_ID).orElseThrow())
+                .isEqualTo(excludedBefore);
+        assertThat(saved.getDecisionSelection().getIncludedLessons())
+                .extracting(StudentLessonSnapshotDocument::getAttendanceStatus)
                 .containsExactly("EXCUSED", "PRESENT");
-        assertThat(mongoTemplate.getCollection("lesson_actions").countDocuments(new Document("lesson_id", 43L)
-                .append("payload.action", "ATTENDANCE_SET"))).isZero();
-        assertThat(mongoTemplate.getCollection("lesson_actions").countDocuments(new Document("lesson_id", 43L)
-                .append("payload.action", "REQUEST_DECIDED"))).isEqualTo(1);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("lesson_actions")
+                                .countDocuments(
+                                        new Document("lesson_id", 43L)
+                                                .append("payload.action", "ATTENDANCE_SET")))
+                .isZero();
+        assertThat(
+                        mongoTemplate
+                                .getCollection("lesson_actions")
+                                .countDocuments(
+                                        new Document("lesson_id", 43L)
+                                                .append("payload.action", "REQUEST_DECIDED")))
+                .isEqualTo(1);
         List<OutboxRecord> events = actualOutboxEvents("excuse.decided");
         assertThat(events).hasSize(1);
-        assertThat(EventSchemaValidator.validate("excuse.decided.json", events.getFirst().payload())).isEmpty();
-        assertThat(events.getFirst().payload()).contains("\"included_lesson_ids\":[41,42]", "\"excluded_lesson_ids\":[43]");
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "excuse.decided.json", events.getFirst().payload()))
+                .isEmpty();
+        assertThat(events.getFirst().payload())
+                .contains("\"included_lesson_ids\":[41,42]", "\"excluded_lesson_ids\":[43]");
 
         doThrow(new ScheduleServiceUnavailableException("offline after commit"))
-                .when(scheduleGrpcClient).requireAttendanceMutationReady(anyLong(), anyLong());
-        assertThat(service.decideExcuse(headman(777L), id, true, "accepted", revision, List.of("10043"), key)).isEqualTo(decided);
-        assertThat(service.get(STUDENT, id).decisionSelection()).isEqualTo(decided.decisionSelection());
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, "accepted", revision, List.of("10042"), key))
+                .when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(anyLong(), anyLong());
+        assertThat(
+                        service.decideExcuse(
+                                headman(777L),
+                                id,
+                                true,
+                                "accepted",
+                                revision,
+                                List.of("10043"),
+                                key))
+                .isEqualTo(decided);
+        assertThat(service.get(STUDENT, id).decisionSelection())
+                .isEqualTo(decided.decisionSelection());
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        "accepted",
+                                        revision,
+                                        List.of("10042"),
+                                        key))
                 .isInstanceOf(ConflictException.class);
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, "different", revision, List.of("10043"), key))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        "different",
+                                        revision,
+                                        List.of("10043"),
+                                        key))
                 .isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, "accepted"))
                 .isInstanceOf(ConflictException.class);
         assertThat(actualOutboxEvents("excuse.decided")).hasSize(1);
-        assertThat(service.options(STUDENT, List.of(snapshot(43L))).lessons()).singleElement()
-                .extracting(StudentRequestModels.LessonOption::excuseEligible).isEqualTo(true);
+        assertThat(service.options(STUDENT, List.of(snapshot(43L))).lessons())
+                .singleElement()
+                .extracting(StudentRequestModels.LessonOption::excuseEligible)
+                .isEqualTo(true);
         stubCanonicalLesson(canonicalLesson(43L, 10043L));
-        assertThat(service.submitExcuse(STUDENT, excuse(List.of(43L), "excluded-can-submit", List.of())).summary().status())
+        assertThat(
+                        service.submitExcuse(
+                                        STUDENT,
+                                        excuse(List.of(43L), "excluded-can-submit", List.of()))
+                                .summary()
+                                .status())
                 .isEqualTo(StudentRequestStatus.PENDING);
-        doReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build()).when(academicGrpcClient).isHeadman(777L, GROUP_ID);
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, "accepted", revision, List.of("10043"), key))
+        doReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build())
+                .when(academicGrpcClient)
+                .isHeadman(777L, GROUP_ID);
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        "accepted",
+                                        revision,
+                                        List.of("10043"),
+                                        key))
                 .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
-        doReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build()).when(academicGrpcClient).isHeadman(777L, GROUP_ID);
-        mongoTemplate.save(ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
-                .id(Long.toString(SEMESTER_ID)).semesterId(SEMESTER_ID).barrierState("ARCHIVED").build());
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, "accepted", revision, List.of("10043"), key))
+        doReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build())
+                .when(academicGrpcClient)
+                .isHeadman(777L, GROUP_ID);
+        mongoTemplate.save(
+                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
+                        .id(Long.toString(SEMESTER_ID))
+                        .semesterId(SEMESTER_ID)
+                        .barrierState("ARCHIVED")
+                        .build());
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        "accepted",
+                                        revision,
+                                        List.of("10043"),
+                                        key))
                 .isInstanceOf(ConflictException.class);
     }
 
@@ -1226,44 +1663,105 @@ class StudentRequestDomainIT {
             seedAbsent(id);
             stubCanonicalLesson(canonicalLesson(id, 10000L + id));
         }
-        String id = service.submitExcuse(STUDENT, excuse(List.of(51L, 52L, 53L), "partial-transfer", List.of())).summary().id();
+        String id =
+                service.submitExcuse(
+                                STUDENT,
+                                excuse(List.of(51L, 52L, 53L), "partial-transfer", List.of()))
+                        .summary()
+                        .id();
         String oldRevision = headmanRequestService.get(headman(777L), id).decisionRevision();
         ExcuseTicket moved = excuseRepository.findById(id).orElseThrow();
         moved.setLessonIds(List.of(151L, 52L, 53L));
-        excuseRepository.save(moved); // Transfer's durable request projection; originals deliberately remain 51/52/53.
-        AttendanceDocument transferred = attendanceRepository.findByLessonIdAndUserId(51L, STUDENT_ID).orElseThrow();
+        excuseRepository.save(
+                moved); // Transfer's durable request projection; originals deliberately remain
+        // 51/52/53.
+        AttendanceDocument transferred =
+                attendanceRepository.findByLessonIdAndUserId(51L, STUDENT_ID).orElseThrow();
         transferred.setLessonId(151L);
         attendanceRepository.save(transferred);
-        stubCanonicalLesson(canonicalLesson(151L, 10051L).toBuilder().setSubjectId(1051L)
-                .setRevision(2).setGeneration(2).setOccurrenceRevision(2).setDate("2026-09-09").build());
+        stubCanonicalLesson(
+                canonicalLesson(151L, 10051L).toBuilder()
+                        .setSubjectId(1051L)
+                        .setRevision(2)
+                        .setGeneration(2)
+                        .setOccurrenceRevision(2)
+                        .setDate("2026-09-09")
+                        .build());
         String key = "22222222-2222-4222-8222-222222222222";
         clearOutbox();
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, oldRevision, List.of("10051"), key))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        null,
+                                        oldRevision,
+                                        List.of("10051"),
+                                        key))
                 .isInstanceOf(ConflictException.class);
         String revision = headmanRequestService.get(headman(777L), id).decisionRevision();
         assertThat(revision).isNotEqualTo(oldRevision);
-        for (List<String> invalid : List.of(List.of("151"), List.of("99999"), List.of("10051", "10051"),
-                List.of("10051", "10052", "10053"))) {
-            assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, invalid, key))
+        for (List<String> invalid :
+                List.of(
+                        List.of("151"),
+                        List.of("99999"),
+                        List.of("10051", "10051"),
+                        List.of("10051", "10052", "10053"))) {
+            assertThatThrownBy(
+                            () ->
+                                    service.decideExcuse(
+                                            headman(777L), id, true, null, revision, invalid, key))
                     .isInstanceOf(BadRequestException.class);
         }
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, false, "rejected", revision, List.of("10051"), key))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        false,
+                                        "rejected",
+                                        revision,
+                                        List.of("10051"),
+                                        key))
                 .isInstanceOf(BadRequestException.class);
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, null, key))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L), id, true, null, revision, null, key))
                 .isInstanceOf(BadRequestException.class);
         assertThat(excuseRepository.findById(id).orElseThrow()).isEqualTo(moved);
-        for (long lesson : List.of(151L, 52L, 53L)) assertThat(attendanceRepository.findByLessonIdAndUserId(lesson, STUDENT_ID).orElseThrow().getStatus())
-                .isEqualTo(AttendanceStatus.ABSENT);
+        for (long lesson : List.of(151L, 52L, 53L))
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(lesson, STUDENT_ID)
+                                    .orElseThrow()
+                                    .getStatus())
+                    .isEqualTo(AttendanceStatus.ABSENT);
         assertThat(actualOutboxEvents("excuse.decided")).isEmpty();
 
-        RequestDetail result = service.decideExcuse(headman(777L), id, true, null, revision, List.of("10051"), key);
-        assertThat(result.summary().lessons()).extracting(LessonSnapshot::lessonId).containsExactly(51L, 52L, 53L);
-        assertThat(result.decisionSelection().excludedLessons()).singleElement()
-                .satisfies(lesson -> { assertThat(lesson.lessonId()).isEqualTo(151L);
-                    assertThat(lesson.occurrenceId()).isEqualTo("10051");
-                    assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 9)); });
-        assertThat(excuseRepository.findById(id).orElseThrow().getLessonIds()).containsExactly(52L, 53L);
-        assertThat(attendanceRepository.findByLessonIdAndUserId(151L, STUDENT_ID).orElseThrow().getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+        RequestDetail result =
+                service.decideExcuse(
+                        headman(777L), id, true, null, revision, List.of("10051"), key);
+        assertThat(result.summary().lessons())
+                .extracting(LessonSnapshot::lessonId)
+                .containsExactly(51L, 52L, 53L);
+        assertThat(result.decisionSelection().excludedLessons())
+                .singleElement()
+                .satisfies(
+                        lesson -> {
+                            assertThat(lesson.lessonId()).isEqualTo(151L);
+                            assertThat(lesson.occurrenceId()).isEqualTo("10051");
+                            assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 9));
+                        });
+        assertThat(excuseRepository.findById(id).orElseThrow().getLessonIds())
+                .containsExactly(52L, 53L);
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(151L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
+                .isEqualTo(AttendanceStatus.ABSENT);
     }
 
     @Test
@@ -1275,42 +1773,113 @@ class StudentRequestDomainIT {
                 seedAbsent(lesson);
                 stubCanonicalLesson(canonicalLesson(lesson, 10000 + lesson));
             }
-            ExcuseTicket ticket = excuseRepository.save(ExcuseTicket.builder().studentId(STUDENT_ID).groupId(GROUP_ID)
-                    .studentName("Legacy").semesterId(SEMESTER_ID).lessonIds(ids).lessonSnapshots(missing ? null : List.of())
-                    .excuseType(ExcuseType.ILLNESS).status(ExcuseTicketStatus.SUBMITTED).createdAt(START).updatedAt(START).build());
+            ExcuseTicket ticket =
+                    excuseRepository.save(
+                            ExcuseTicket.builder()
+                                    .studentId(STUDENT_ID)
+                                    .groupId(GROUP_ID)
+                                    .studentName("Legacy")
+                                    .semesterId(SEMESTER_ID)
+                                    .lessonIds(ids)
+                                    .lessonSnapshots(missing ? null : List.of())
+                                    .excuseType(ExcuseType.ILLNESS)
+                                    .status(ExcuseTicketStatus.SUBMITTED)
+                                    .createdAt(START)
+                                    .updatedAt(START)
+                                    .build());
             RequestDetail original = service.get(STUDENT, ticket.getId());
             var preview = headmanRequestService.get(HEADMAN, ticket.getId());
-            assertThat(original.summary().lessons()).extracting(LessonSnapshot::lessonId).containsExactlyElementsOf(ids);
-            assertThat(preview.lessons()).extracting(HeadmanRequestLessonResponse::lessonId).containsExactlyElementsOf(ids);
-            assertThat(original.summary().lessons()).allSatisfy(lesson -> {
-                assertThat(lesson.date()).isNull(); assertThat(lesson.subjectName()).isNull();
-            });
-            AttendanceDocument excluded = attendanceRepository.findByLessonIdAndUserId(first + 1, STUDENT_ID).orElseThrow();
-            String key = missing ? "44444444-4444-4444-8444-444444444444" : "55555555-5555-4555-8555-555555555555";
+            assertThat(original.summary().lessons())
+                    .extracting(LessonSnapshot::lessonId)
+                    .containsExactlyElementsOf(ids);
+            assertThat(preview.lessons())
+                    .extracting(HeadmanRequestLessonResponse::lessonId)
+                    .containsExactlyElementsOf(ids);
+            assertThat(original.summary().lessons())
+                    .allSatisfy(
+                            lesson -> {
+                                assertThat(lesson.date()).isNull();
+                                assertThat(lesson.subjectName()).isNull();
+                            });
+            AttendanceDocument excluded =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(first + 1, STUDENT_ID)
+                            .orElseThrow();
+            String key =
+                    missing
+                            ? "44444444-4444-4444-8444-444444444444"
+                            : "55555555-5555-4555-8555-555555555555";
             List<String> selection = List.of(Long.toString(10000 + first + 1));
 
-            RequestDetail result = service.decideExcuse(HEADMAN, ticket.getId(), true, null, preview.decisionRevision(), selection, key);
+            RequestDetail result =
+                    service.decideExcuse(
+                            HEADMAN,
+                            ticket.getId(),
+                            true,
+                            null,
+                            preview.decisionRevision(),
+                            selection,
+                            key);
 
             ExcuseTicket saved = excuseRepository.findById(ticket.getId()).orElseThrow();
             assertThat(saved.getOriginalLessonIds()).containsExactlyElementsOf(ids);
             assertThat(saved.getLessonIds()).containsExactly(first, first + 2);
             assertThat(saved.getLessonSnapshots()).isEqualTo(ticket.getLessonSnapshots());
             assertThat(result.summary().lessons()).isEqualTo(original.summary().lessons());
-            assertThat(headmanRequestService.get(HEADMAN, ticket.getId()).lessons()).extracting(HeadmanRequestLessonResponse::lessonId)
+            assertThat(headmanRequestService.get(HEADMAN, ticket.getId()).lessons())
+                    .extracting(HeadmanRequestLessonResponse::lessonId)
                     .containsExactlyElementsOf(ids);
-            assertThat(service.list(STUDENT, RequestBucket.ARCHIVE, 0, 20).content().stream()
-                    .filter(summary -> summary.id().equals(ticket.getId())).findFirst().orElseThrow().lessons())
+            assertThat(
+                            service.list(STUDENT, RequestBucket.ARCHIVE, 0, 20).content().stream()
+                                    .filter(summary -> summary.id().equals(ticket.getId()))
+                                    .findFirst()
+                                    .orElseThrow()
+                                    .lessons())
                     .isEqualTo(original.summary().lessons());
-            assertThat(headmanRequestService.list(HEADMAN, "ARCHIVE", 0, 20, null, null, null, null).content().stream()
-                    .filter(summary -> summary.id().equals(ticket.getId())).findFirst().orElseThrow().lessonCount()).isEqualTo(3);
-            assertThat(attendanceRepository.findByLessonIdAndUserId(first + 1, STUDENT_ID).orElseThrow()).isEqualTo(excluded);
-            assertThat(service.options(STUDENT, List.of(snapshot(first + 1))).lessons().getFirst().excuseEligible()).isTrue();
-            assertThat(result.decisionSelection().excludedLessons()).extracting(LessonSnapshot::lessonId).containsExactly(first + 1);
+            assertThat(
+                            headmanRequestService
+                                    .list(HEADMAN, "ARCHIVE", 0, 20, null, null, null, null)
+                                    .content()
+                                    .stream()
+                                    .filter(summary -> summary.id().equals(ticket.getId()))
+                                    .findFirst()
+                                    .orElseThrow()
+                                    .lessonCount())
+                    .isEqualTo(3);
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(first + 1, STUDENT_ID)
+                                    .orElseThrow())
+                    .isEqualTo(excluded);
+            assertThat(
+                            service.options(STUDENT, List.of(snapshot(first + 1)))
+                                    .lessons()
+                                    .getFirst()
+                                    .excuseEligible())
+                    .isTrue();
+            assertThat(result.decisionSelection().excludedLessons())
+                    .extracting(LessonSnapshot::lessonId)
+                    .containsExactly(first + 1);
             doThrow(new ScheduleServiceUnavailableException("offline after legacy decision"))
-                    .when(scheduleGrpcClient).requireAttendanceMutationReady(anyLong(), anyLong());
-            assertThat(service.decideExcuse(HEADMAN, ticket.getId(), true, null, preview.decisionRevision(), selection, key)).isEqualTo(result);
-            assertThat(actualOutboxEvents("excuse.decided").stream().filter(event -> event.payload().contains(key)).toList()).hasSize(1);
-            // Restore only this narrow fixture boundary for the next independent null/empty legacy case.
+                    .when(scheduleGrpcClient)
+                    .requireAttendanceMutationReady(anyLong(), anyLong());
+            assertThat(
+                            service.decideExcuse(
+                                    HEADMAN,
+                                    ticket.getId(),
+                                    true,
+                                    null,
+                                    preview.decisionRevision(),
+                                    selection,
+                                    key))
+                    .isEqualTo(result);
+            assertThat(
+                            actualOutboxEvents("excuse.decided").stream()
+                                    .filter(event -> event.payload().contains(key))
+                                    .toList())
+                    .hasSize(1);
+            // Restore only this narrow fixture boundary for the next independent null/empty legacy
+            // case.
             for (long lesson : ids) stubCanonicalLesson(canonicalLesson(lesson, 10000 + lesson));
         }
     }
@@ -1321,106 +1890,199 @@ class StudentRequestDomainIT {
             seedAbsent(lesson);
             stubCanonicalLesson(canonicalLesson(lesson, 10000L + lesson));
         }
-        String id = service.submitExcuse(STUDENT, excuse(List.of(61L, 62L), "partial-cas-failures", List.of())).summary().id();
+        String id =
+                service.submitExcuse(
+                                STUDENT,
+                                excuse(List.of(61L, 62L), "partial-cas-failures", List.of()))
+                        .summary()
+                        .id();
         String revision = headmanRequestService.get(headman(777L), id).decisionRevision();
         ExcuseTicket original = excuseRepository.findById(id).orElseThrow();
         String key = "33333333-3333-4333-8333-333333333333";
         clearOutbox();
-        for (LessonResponse changed : List.of(canonicalLesson(62L, 10062L).toBuilder().setGeneration(2).build(),
-                canonicalLesson(62L, 10062L).toBuilder().setCurrent(false).build(),
-                canonicalLesson(62L, 10062L).toBuilder().setTransferState("PENDING").build(),
-                canonicalLesson(62L, 10062L).toBuilder().setGroupId(GROUP_ID + 1).build())) {
-            doReturn(changed).when(scheduleGrpcClient).requireAttendanceMutationReady(62L, GROUP_ID);
-            assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, List.of("10062"), key))
+        for (LessonResponse changed :
+                List.of(
+                        canonicalLesson(62L, 10062L).toBuilder().setGeneration(2).build(),
+                        canonicalLesson(62L, 10062L).toBuilder().setCurrent(false).build(),
+                        canonicalLesson(62L, 10062L).toBuilder()
+                                .setTransferState("PENDING")
+                                .build(),
+                        canonicalLesson(62L, 10062L).toBuilder()
+                                .setGroupId(GROUP_ID + 1)
+                                .build())) {
+            doReturn(changed)
+                    .when(scheduleGrpcClient)
+                    .requireAttendanceMutationReady(62L, GROUP_ID);
+            assertThatThrownBy(
+                            () ->
+                                    service.decideExcuse(
+                                            headman(777L),
+                                            id,
+                                            true,
+                                            null,
+                                            revision,
+                                            List.of("10062"),
+                                            key))
                     .isInstanceOf(ConflictException.class);
         }
         doThrow(new ScheduleServiceUnavailableException("second target unavailable"))
-                .when(scheduleGrpcClient).requireAttendanceMutationReady(62L, GROUP_ID);
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, List.of("10062"), key))
+                .when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(62L, GROUP_ID);
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        null,
+                                        revision,
+                                        List.of("10062"),
+                                        key))
                 .isInstanceOf(ScheduleServiceUnavailableException.class);
-        doAnswer(invocation -> {
-            ExcuseTicket concurrent = excuseRepository.findById(id).orElseThrow();
-            concurrent.setLessonIds(List.of(61L));
-            excuseRepository.save(concurrent);
-            return canonicalLesson(62L, 10062L);
-        }).when(scheduleGrpcClient).requireAttendanceMutationReady(62L, GROUP_ID);
-        assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, List.of("10062"), key))
+        doAnswer(
+                        invocation -> {
+                            ExcuseTicket concurrent = excuseRepository.findById(id).orElseThrow();
+                            concurrent.setLessonIds(List.of(61L));
+                            excuseRepository.save(concurrent);
+                            return canonicalLesson(62L, 10062L);
+                        })
+                .when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(62L, GROUP_ID);
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        id,
+                                        true,
+                                        null,
+                                        revision,
+                                        List.of("10062"),
+                                        key))
                 .isInstanceOf(ConflictException.class);
-        assertThat(excuseRepository.findById(id).orElseThrow()).isEqualTo(original); // Transaction rolls back the interleaving too.
-        for (long lesson : List.of(61L, 62L)) assertThat(attendanceRepository.findByLessonIdAndUserId(lesson, STUDENT_ID).orElseThrow().getStatus())
-                .isEqualTo(AttendanceStatus.ABSENT);
+        assertThat(excuseRepository.findById(id).orElseThrow())
+                .isEqualTo(original); // Transaction rolls back the interleaving too.
+        for (long lesson : List.of(61L, 62L))
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(lesson, STUDENT_ID)
+                                    .orElseThrow()
+                                    .getStatus())
+                    .isEqualTo(AttendanceStatus.ABSENT);
         assertThat(actualOutboxEvents("excuse.decided")).isEmpty();
         seedAbsent(63L);
-        String lateId = service.submitLateCheckin(STUDENT, new LateCheckinSubmission(63L, "late-no-selection")).summary().id();
+        String lateId =
+                service.submitLateCheckin(
+                                STUDENT, new LateCheckinSubmission(63L, "late-no-selection"))
+                        .summary()
+                        .id();
         assertThat(headmanRequestService.get(headman(777L), lateId).decisionRevision()).isNull();
-        assertThatThrownBy(() -> headmanRequestService.decide(headman(777L), lateId,
-                new HeadmanRequestDecisionRequest(HeadmanRequestDecision.APPROVED, null, revision, List.of(), key)))
+        assertThatThrownBy(
+                        () ->
+                                headmanRequestService.decide(
+                                        headman(777L),
+                                        lateId,
+                                        new HeadmanRequestDecisionRequest(
+                                                HeadmanRequestDecision.APPROVED,
+                                                null,
+                                                revision,
+                                                List.of(),
+                                                key)))
                 .isInstanceOf(BadRequestException.class);
-        assertThat(lateCheckinRepository.findById(lateId).orElseThrow().getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);
+        assertThat(lateCheckinRepository.findById(lateId).orElseThrow().getStatus())
+                .isEqualTo(LateCheckinRequestStatus.PENDING);
     }
 
     @Test
     void ambiguousExcuseCommitRecoversPersistedDecisionWithoutDuplicateEvent() throws Exception {
         seedAbsent(82L);
-        RequestDetail ticket = service.submitExcuse(STUDENT,
-                excuse(List.of(82L), "ambiguous-excuse-key-0001", List.of()));
+        RequestDetail ticket =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(82L), "ambiguous-excuse-key-0001", List.of()));
         clearOutbox();
         faultInjectingTransactionTemplate.resetTransactionExecutionCount();
         faultInjectingTransactionTemplate.failNextCommitAck();
 
-        RequestDetail recovered = service.decideExcuse(headman(777L), ticket.summary().id(), true,
-                "  accepted  ");
+        RequestDetail recovered =
+                service.decideExcuse(headman(777L), ticket.summary().id(), true, "  accepted  ");
 
         assertThat(recovered.summary().status())
-                .isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);
-        assertThat(recovered.decision()).extracting(
-                StudentRequestModels.Decision::decidedBy, StudentRequestModels.Decision::comment)
+                .isEqualTo(
+                        ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);
+        assertThat(recovered.decision())
+                .extracting(
+                        StudentRequestModels.Decision::decidedBy,
+                        StudentRequestModels.Decision::comment)
                 .containsExactly(777L, "accepted");
         assertThat(faultInjectingTransactionTemplate.transactionExecutionCount()).isEqualTo(1);
-        assertThat(attendanceRepository.findByLessonIdAndUserId(82L, STUDENT_ID).orElseThrow().getStatus())
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(82L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
                 .isEqualTo(AttendanceStatus.EXCUSED);
         List<OutboxRecord> events = actualOutboxEvents("excuse.decided");
         assertThat(events).hasSize(1);
-        assertThat(EventSchemaValidator.validate("excuse.decided.json", events.getFirst().payload())).isEmpty();
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "excuse.decided.json", events.getFirst().payload()))
+                .isEmpty();
     }
 
     @Test
-    void ambiguousLateCheckinCommitRecoversPersistedDecisionWithoutDuplicateEvent() throws Exception {
+    void ambiguousLateCheckinCommitRecoversPersistedDecisionWithoutDuplicateEvent()
+            throws Exception {
         seedAbsent(83L);
-        RequestDetail request = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(83L, "ambiguous-late-key-0001"));
+        RequestDetail request =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(83L, "ambiguous-late-key-0001"));
         clearOutbox();
         faultInjectingTransactionTemplate.resetTransactionExecutionCount();
         faultInjectingTransactionTemplate.failNextCommitAck();
 
-        RequestDetail recovered = service.decideLateCheckin(headman(777L), request.summary().id(), true);
+        RequestDetail recovered =
+                service.decideLateCheckin(headman(777L), request.summary().id(), true);
 
         assertThat(recovered.summary().status())
-                .isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);
+                .isEqualTo(
+                        ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);
         assertThat(recovered.decision().decidedBy()).isEqualTo(777L);
         assertThat(faultInjectingTransactionTemplate.transactionExecutionCount()).isEqualTo(1);
-        assertThat(attendanceRepository.findByLessonIdAndUserId(83L, STUDENT_ID).orElseThrow().getStatus())
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(83L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
                 .isEqualTo(AttendanceStatus.PRESENT);
         List<OutboxRecord> events = actualOutboxEvents("late_checkin.decided");
         assertThat(events).hasSize(1);
-        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", events.getFirst().payload())).isEmpty();
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "late_checkin.decided.json", events.getFirst().payload()))
+                .isEmpty();
     }
 
     @Test
     void uncommittedTransientDecisionFailureStillRetriesOnce() {
         seedAbsent(84L);
-        RequestDetail request = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(84L, "transient-late-key-0001"));
+        RequestDetail request =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(84L, "transient-late-key-0001"));
         clearOutbox();
         faultInjectingTransactionTemplate.failNextBeforeTransaction();
 
-        RequestDetail decided = service.decideLateCheckin(headman(777L), request.summary().id(), false,
-                "Не подтверждено старостой");
+        RequestDetail decided =
+                service.decideLateCheckin(
+                        headman(777L), request.summary().id(), false, "Не подтверждено старостой");
 
         assertThat(decided.summary().status())
-                .isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.REJECTED);
+                .isEqualTo(
+                        ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.REJECTED);
         assertThat(decided.decision().comment()).isEqualTo("Не подтверждено старостой");
-        assertThat(lateCheckinRepository.findById(request.summary().id()).orElseThrow().getDecisionComment())
+        assertThat(
+                        lateCheckinRepository
+                                .findById(request.summary().id())
+                                .orElseThrow()
+                                .getDecisionComment())
                 .isEqualTo("Не подтверждено старостой");
         assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
     }
@@ -1433,75 +2095,144 @@ class StudentRequestDomainIT {
         long activeTeacher = 72L;
         byte[] proof = pdfBytes(64);
         seedAbsent(lessonId);
-        RequestDetail submitted = service.submitExcuse(STUDENT,
-                excuse(List.of(lessonId), "teacher-group-historical-read",
-                        List.of(new AttachmentInput("proof.pdf", "application/pdf", proof))));
+        RequestDetail submitted =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(lessonId),
+                                "teacher-group-historical-read",
+                                List.of(
+                                        new AttachmentInput(
+                                                "proof.pdf", "application/pdf", proof))));
         ExcuseTicket ticket = excuseRepository.findById(submitted.summary().id()).orElseThrow();
         // A retained mixed ticket must expose only lessons in currently authorized groups.
         ticket.setLessonIds(List.of(lessonId, foreignLessonId));
         excuseRepository.save(ticket);
-        RequestAttachmentDocument attachment = attachmentRepository
-                .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(ticket.getId(), STUDENT_ID)
-                .getFirst();
+        RequestAttachmentDocument attachment =
+                attachmentRepository
+                        .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
+                                ticket.getId(), STUDENT_ID)
+                        .getFirst();
 
-        LessonResponse historical = fullLesson(lessonId).toBuilder().setAssignmentId(501L)
-                .setAssignedTeacherId(formerTeacher).setLessonType("LECTURE").build();
+        LessonResponse historical =
+                fullLesson(lessonId).toBuilder()
+                        .setAssignmentId(501L)
+                        .setAssignedTeacherId(formerTeacher)
+                        .setLessonType("LECTURE")
+                        .build();
         when(scheduleGrpcClient.getLessonById(lessonId)).thenReturn(historical);
-        when(scheduleGrpcClient.getLessonById(foreignLessonId)).thenReturn(
-                fullLesson(foreignLessonId).toBuilder().setGroupId(GROUP_ID + 1)
-                        .setAssignmentId(502L).setAssignedTeacherId(activeTeacher)
-                        .setLessonType("LECTURE").build());
-        when(academicGrpcClient.getCurrentTeacherSubjects(activeTeacher)).thenReturn(
-                TeacherSubjectsResponse.newBuilder().addSubjects(TeacherSubjectInfo.newBuilder()
-                        .setGroupId(GROUP_ID).setAssignmentId(503L).setSubjectId(2000L)
-                        .setSemesterId(SEMESTER_ID).setLessonType("PRACTICE")
-                        .setValidFrom("2026-09-08").setValidUntilExclusive("2026-12-31")).build());
+        when(scheduleGrpcClient.getLessonById(foreignLessonId))
+                .thenReturn(
+                        fullLesson(foreignLessonId).toBuilder()
+                                .setGroupId(GROUP_ID + 1)
+                                .setAssignmentId(502L)
+                                .setAssignedTeacherId(activeTeacher)
+                                .setLessonType("LECTURE")
+                                .build());
+        when(academicGrpcClient.getCurrentTeacherSubjects(activeTeacher))
+                .thenReturn(
+                        TeacherSubjectsResponse.newBuilder()
+                                .addSubjects(
+                                        TeacherSubjectInfo.newBuilder()
+                                                .setGroupId(GROUP_ID)
+                                                .setAssignmentId(503L)
+                                                .setSubjectId(2000L)
+                                                .setSemesterId(SEMESTER_ID)
+                                                .setLessonType("PRACTICE")
+                                                .setValidFrom("2026-09-08")
+                                                .setValidUntilExclusive("2026-12-31"))
+                                .build());
         when(academicGrpcClient.getCurrentTeacherSubjects(formerTeacher))
                 .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
-        when(academicGrpcClient.getGroup(GROUP_ID)).thenReturn(
-                GroupResponse.newBuilder().setId(GROUP_ID).setName("УИТ-311").build());
+        when(academicGrpcClient.getGroup(GROUP_ID))
+                .thenReturn(GroupResponse.newBuilder().setId(GROUP_ID).setName("УИТ-311").build());
         when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 9, 7), SEMESTER_ID))
-                .thenReturn(GroupMembersResponse.newBuilder().setAsOfDate("2026-09-07")
-                        .setSemesterId(SEMESTER_ID).addStudents(StudentInfo.newBuilder()
-                                .setUserId(STUDENT_ID).setDisplayName("Student 100")).build());
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .setAsOfDate("2026-09-07")
+                                .setSemesterId(SEMESTER_ID)
+                                .addStudents(
+                                        StudentInfo.newBuilder()
+                                                .setUserId(STUDENT_ID)
+                                                .setDisplayName("Student 100"))
+                                .build());
         clock.set(START.plusSeconds(3 * 86400));
-        AttendanceAttachmentService journalAttachments = new AttendanceAttachmentService(attachmentRepository, clock);
-        ReportService report = new ReportService(new AttendanceReadPortImpl(mongoTemplate), academicGrpcClient,
-                scheduleGrpcClient, semesterCacheService, new RequestContext(), clock, journalAttachments);
-        TeacherAttendanceReadGrpcService reader = new TeacherAttendanceReadGrpcService(
-                report, scheduleGrpcClient, academicGrpcClient, excuseRepository, attachmentRepository, clock);
-        TeacherExcuseRequest cardRequest = TeacherExcuseRequest.newBuilder().setRequestId(ticket.getId()).build();
-        TeacherExcuseAttachmentRequest fileRequest = TeacherExcuseAttachmentRequest.newBuilder()
-                .setRequestId(ticket.getId()).setAttachmentId(attachment.getId()).build();
+        AttendanceAttachmentService journalAttachments =
+                new AttendanceAttachmentService(attachmentRepository, clock);
+        ReportService report =
+                new ReportService(
+                        new AttendanceReadPortImpl(mongoTemplate),
+                        academicGrpcClient,
+                        scheduleGrpcClient,
+                        semesterCacheService,
+                        new RequestContext(),
+                        clock,
+                        journalAttachments);
+        TeacherAttendanceReadGrpcService reader =
+                new TeacherAttendanceReadGrpcService(
+                        report,
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        excuseRepository,
+                        attachmentRepository,
+                        clock);
+        TeacherExcuseRequest cardRequest =
+                TeacherExcuseRequest.newBuilder().setRequestId(ticket.getId()).build();
+        TeacherExcuseAttachmentRequest fileRequest =
+                TeacherExcuseAttachmentRequest.newBuilder()
+                        .setRequestId(ticket.getId())
+                        .setAttachmentId(attachment.getId())
+                        .build();
 
         RecordingTeacherObserver<TeacherLessonResponse> lesson = new RecordingTeacherObserver<>();
-        teacherContext(activeTeacher).run(() -> reader.getTeacherLesson(
-                TeacherLessonRequest.newBuilder().setLessonId(lessonId).build(), lesson));
+        teacherContext(activeTeacher)
+                .run(
+                        () ->
+                                reader.getTeacherLesson(
+                                        TeacherLessonRequest.newBuilder()
+                                                .setLessonId(lessonId)
+                                                .build(),
+                                        lesson));
         assertThat(lesson.error).isNull();
-        assertThat(lesson.value.getRosterList()).singleElement()
+        assertThat(lesson.value.getRosterList())
+                .singleElement()
                 .satisfies(row -> assertThat(row.getTicketId()).isEqualTo(ticket.getId()));
         RecordingTeacherObserver<TeacherExcuseResponse> card = new RecordingTeacherObserver<>();
         teacherContext(activeTeacher).run(() -> reader.getTeacherExcuse(cardRequest, card));
         assertThat(card.error).isNull();
-        assertThat(card.value.getLessonsList()).singleElement()
+        assertThat(card.value.getLessonsList())
+                .singleElement()
                 .satisfies(value -> assertThat(value.getLessonId()).isEqualTo(lessonId));
-        assertThat(card.value.getAttachmentsList()).singleElement()
-                .satisfies(value -> assertThat(value.getAttachmentId()).isEqualTo(attachment.getId()));
-        RecordingTeacherObserver<TeacherAttachmentDownload> download = new RecordingTeacherObserver<>();
-        teacherContext(activeTeacher).run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, download));
+        assertThat(card.value.getAttachmentsList())
+                .singleElement()
+                .satisfies(
+                        value -> assertThat(value.getAttachmentId()).isEqualTo(attachment.getId()));
+        RecordingTeacherObserver<TeacherAttachmentDownload> download =
+                new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher)
+                .run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, download));
         assertThat(download.error).isNull();
         assertThat(download.value.getData().toByteArray()).isEqualTo(proof);
 
-        RecordingTeacherObserver<TeacherExcuseResponse> deniedCard = new RecordingTeacherObserver<>();
+        RecordingTeacherObserver<TeacherExcuseResponse> deniedCard =
+                new RecordingTeacherObserver<>();
         teacherContext(formerTeacher).run(() -> reader.getTeacherExcuse(cardRequest, deniedCard));
         assertThat(deniedCard.value).isNull();
-        assertThat(Status.fromThrowable(deniedCard.error).getCode()).isEqualTo(Status.Code.NOT_FOUND);
-        RecordingTeacherObserver<TeacherAttachmentDownload> deniedDownload = new RecordingTeacherObserver<>();
-        teacherContext(formerTeacher).run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, deniedDownload));
+        assertThat(Status.fromThrowable(deniedCard.error).getCode())
+                .isEqualTo(Status.Code.NOT_FOUND);
+        RecordingTeacherObserver<TeacherAttachmentDownload> deniedDownload =
+                new RecordingTeacherObserver<>();
+        teacherContext(formerTeacher)
+                .run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, deniedDownload));
         assertThat(deniedDownload.value).isNull();
-        assertThat(Status.fromThrowable(deniedDownload.error).getCode()).isEqualTo(Status.Code.NOT_FOUND);
-        assertThat(attachmentRepository.findById(attachment.getId())).hasValueSatisfying(stored ->
-                assertThat(stored).usingRecursiveComparison().isEqualTo(attachment));
+        assertThat(Status.fromThrowable(deniedDownload.error).getCode())
+                .isEqualTo(Status.Code.NOT_FOUND);
+        assertThat(attachmentRepository.findById(attachment.getId()))
+                .hasValueSatisfying(
+                        stored ->
+                                assertThat(stored)
+                                        .usingRecursiveComparison()
+                                        .isEqualTo(attachment));
     }
 
     private static final class RecordingTeacherObserver<T> implements StreamObserver<T> {
@@ -1509,13 +2240,17 @@ class StudentRequestDomainIT {
         private Throwable error;
 
         @Override
-        public void onNext(T value) { this.value = value; }
+        public void onNext(T value) {
+            this.value = value;
+        }
 
         @Override
-        public void onError(Throwable error) { this.error = error; }
+        public void onError(Throwable error) {
+            this.error = error;
+        }
 
         @Override
-        public void onCompleted() { }
+        public void onCompleted() {}
     }
 
     @Test
@@ -1523,25 +2258,61 @@ class StudentRequestDomainIT {
         for (boolean lateDecision : List.of(false, true)) {
             long lessonId = lateDecision ? 97L : 96L;
             seedAbsent(lessonId);
-            RequestDetail request = lateDecision
-                    ? service.submitLateCheckin(STUDENT,
-                            new LateCheckinSubmission(lessonId, "journal-exact-late-" + lessonId))
-                    : service.submitExcuse(STUDENT, excuse(List.of(lessonId), "journal-exact-excuse-" + lessonId,
-                            List.of(new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
-            RequestAttachmentDocument own = attachmentRepository.save(RequestAttachmentDocument.builder()
-                    .id(new ObjectId().toHexString()).requestId(STUDENT_ID + ":" + lessonId)
-                    .ownerStudentId(STUDENT_ID).groupId(GROUP_ID).semesterId(SEMESTER_ID)
-                    .name("journal.pdf").contentType("application/pdf").size(64L)
-                    .state(AttachmentState.ACTIVE).data(new Binary(pdfBytes(64))).uploadedAt(START)
-                    .expiresAt(lateDecision ? START.plusSeconds(3600) : START.minusSeconds(1)).build());
-            RequestAttachmentDocument other = attachmentRepository.save(RequestAttachmentDocument.builder()
-                    .id(new ObjectId().toHexString()).requestId(lessonId + ":" + STUDENT_ID)
-                    .ownerStudentId(lessonId).groupId(GROUP_ID).semesterId(SEMESTER_ID)
-                    .name("other.pdf").contentType("application/pdf").size(64L)
-                    .state(AttachmentState.ACTIVE).data(new Binary(pdfBytes(64))).uploadedAt(START)
-                    .expiresAt(START.plusSeconds(3600)).build());
-            AttendanceDocument mark = attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)
-                    .orElseThrow();
+            RequestDetail request =
+                    lateDecision
+                            ? service.submitLateCheckin(
+                                    STUDENT,
+                                    new LateCheckinSubmission(
+                                            lessonId, "journal-exact-late-" + lessonId))
+                            : service.submitExcuse(
+                                    STUDENT,
+                                    excuse(
+                                            List.of(lessonId),
+                                            "journal-exact-excuse-" + lessonId,
+                                            List.of(
+                                                    new AttachmentInput(
+                                                            "proof.pdf",
+                                                            "application/pdf",
+                                                            pdfBytes(64)))));
+            RequestAttachmentDocument own =
+                    attachmentRepository.save(
+                            RequestAttachmentDocument.builder()
+                                    .id(new ObjectId().toHexString())
+                                    .requestId(STUDENT_ID + ":" + lessonId)
+                                    .ownerStudentId(STUDENT_ID)
+                                    .groupId(GROUP_ID)
+                                    .semesterId(SEMESTER_ID)
+                                    .name("journal.pdf")
+                                    .contentType("application/pdf")
+                                    .size(64L)
+                                    .state(AttachmentState.ACTIVE)
+                                    .data(new Binary(pdfBytes(64)))
+                                    .uploadedAt(START)
+                                    .expiresAt(
+                                            lateDecision
+                                                    ? START.plusSeconds(3600)
+                                                    : START.minusSeconds(1))
+                                    .build());
+            RequestAttachmentDocument other =
+                    attachmentRepository.save(
+                            RequestAttachmentDocument.builder()
+                                    .id(new ObjectId().toHexString())
+                                    .requestId(lessonId + ":" + STUDENT_ID)
+                                    .ownerStudentId(lessonId)
+                                    .groupId(GROUP_ID)
+                                    .semesterId(SEMESTER_ID)
+                                    .name("other.pdf")
+                                    .contentType("application/pdf")
+                                    .size(64L)
+                                    .state(AttachmentState.ACTIVE)
+                                    .data(new Binary(pdfBytes(64)))
+                                    .uploadedAt(START)
+                                    .expiresAt(START.plusSeconds(3600))
+                                    .build());
+            AttendanceDocument mark =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(lessonId, STUDENT_ID)
+                            .orElseThrow();
             mark.setStatus(AttendanceStatus.EXCUSED);
             mark.setAttachmentId(own.getId());
             mark.setAttachmentName(own.getName());
@@ -1556,18 +2327,30 @@ class StudentRequestDomainIT {
             }
 
             assertThat(attachmentRepository.findById(own.getId())).isEmpty();
-            assertThat(attachmentRepository.findById(other.getId())).hasValueSatisfying(stored ->
-                    assertThat(stored).usingRecursiveComparison().isEqualTo(other));
-            assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID).orElseThrow())
-                    .satisfies(updated -> {
-                        assertThat(updated.getStatus()).isEqualTo(lateDecision
-                                ? AttendanceStatus.PRESENT : AttendanceStatus.EXCUSED);
-                        assertThat(updated.getAttachmentId()).isNull();
-                        assertThat(updated.getAttachmentName()).isNull();
-                    });
+            assertThat(attachmentRepository.findById(other.getId()))
+                    .hasValueSatisfying(
+                            stored ->
+                                    assertThat(stored).usingRecursiveComparison().isEqualTo(other));
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(lessonId, STUDENT_ID)
+                                    .orElseThrow())
+                    .satisfies(
+                            updated -> {
+                                assertThat(updated.getStatus())
+                                        .isEqualTo(
+                                                lateDecision
+                                                        ? AttendanceStatus.PRESENT
+                                                        : AttendanceStatus.EXCUSED);
+                                assertThat(updated.getAttachmentId()).isNull();
+                                assertThat(updated.getAttachmentName()).isNull();
+                            });
             if (!lateDecision) {
-                assertThat(attachmentRepository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
-                        request.summary().id(), STUDENT_ID)).singleElement()
+                assertThat(
+                                attachmentRepository
+                                        .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
+                                                request.summary().id(), STUDENT_ID))
+                        .singleElement()
                         .satisfies(evidence -> assertThat(evidence.getData()).isNotNull());
             }
         }
@@ -1579,8 +2362,10 @@ class StudentRequestDomainIT {
             long sourceId = targetMarkExists ? 88L : 87L;
             long targetId = sourceId + 100L;
             seedAbsent(sourceId);
-            RequestDetail detail = service.submitExcuse(STUDENT,
-                    excuse(List.of(sourceId), "transferred-excuse-" + sourceId, List.of()));
+            RequestDetail detail =
+                    service.submitExcuse(
+                            STUDENT,
+                            excuse(List.of(sourceId), "transferred-excuse-" + sourceId, List.of()));
             ExcuseTicket ticket = excuseRepository.findById(detail.summary().id()).orElseThrow();
             List<StudentLessonSnapshotDocument> originalSnapshots = ticket.getLessonSnapshots();
             ticket.setLessonIds(List.of(targetId));
@@ -1588,93 +2373,143 @@ class StudentRequestDomainIT {
             if (targetMarkExists) {
                 seedAbsent(targetId);
             }
-            LessonResponse currentLesson = fullLesson(targetId).toBuilder().setDate("2026-09-09")
-                    .setStartTime("12:00").setEndTime("13:30")
-                    .setLessonNumber(3).setSubjectId(4321L).setLessonType("PRACTICE").build();
-            when(scheduleGrpcClient.requireAttendanceMutationReady(targetId, GROUP_ID)).thenReturn(currentLesson);
-            doReturn(currentLesson).when(scheduleGrpcClient).getScopedLessonById(targetId, GROUP_ID, SEMESTER_ID);
+            LessonResponse currentLesson =
+                    fullLesson(targetId).toBuilder()
+                            .setDate("2026-09-09")
+                            .setStartTime("12:00")
+                            .setEndTime("13:30")
+                            .setLessonNumber(3)
+                            .setSubjectId(4321L)
+                            .setLessonType("PRACTICE")
+                            .build();
+            when(scheduleGrpcClient.requireAttendanceMutationReady(targetId, GROUP_ID))
+                    .thenReturn(currentLesson);
+            doReturn(currentLesson)
+                    .when(scheduleGrpcClient)
+                    .getScopedLessonById(targetId, GROUP_ID, SEMESTER_ID);
 
             var preview = headmanRequestService.get(HEADMAN, ticket.getId());
-            assertThat(preview.lessons()).singleElement().satisfies(original -> {
-                assertThat(original.lessonId()).isEqualTo(sourceId);
-                assertThat(original.date()).isEqualTo(LocalDate.of(2026, 9, 7));
-                assertThat(original.attendanceStatus()).isEqualTo("ABSENT");
-            });
-            assertThat(preview.currentAffectedLessons()).singleElement().satisfies(current -> {
-                assertThat(current.lessonId()).isEqualTo(targetId);
-                assertThat(current.date()).isEqualTo(LocalDate.of(2026, 9, 9));
-                assertThat(current.startsAt()).isEqualTo(LocalTime.of(12, 0));
-                assertThat(current.endsAt()).isEqualTo(LocalTime.of(13, 30));
-                assertThat(current.lessonNumber()).isEqualTo(3);
-                assertThat(current.subjectId()).isEqualTo(4321L);
-                assertThat(current.subjectName()).isNull(); // Original belongs to a different subject.
-                assertThat(current.subjectType()).isEqualTo("PRACTICE");
-                assertThat(current.attendanceStatus()).isEqualTo(targetMarkExists ? "ABSENT" : null);
-            });
-            var decided = headmanRequestService.decide(HEADMAN, ticket.getId(),
-                    new HeadmanRequestDecisionRequest(HeadmanRequestDecision.APPROVED, null));
-            assertThat(decided.currentAffectedLessons()).singleElement()
-                    .satisfies(current -> assertThat(current.attendanceStatus()).isEqualTo("EXCUSED"));
+            assertThat(preview.lessons())
+                    .singleElement()
+                    .satisfies(
+                            original -> {
+                                assertThat(original.lessonId()).isEqualTo(sourceId);
+                                assertThat(original.date()).isEqualTo(LocalDate.of(2026, 9, 7));
+                                assertThat(original.attendanceStatus()).isEqualTo("ABSENT");
+                            });
+            assertThat(preview.currentAffectedLessons())
+                    .singleElement()
+                    .satisfies(
+                            current -> {
+                                assertThat(current.lessonId()).isEqualTo(targetId);
+                                assertThat(current.date()).isEqualTo(LocalDate.of(2026, 9, 9));
+                                assertThat(current.startsAt()).isEqualTo(LocalTime.of(12, 0));
+                                assertThat(current.endsAt()).isEqualTo(LocalTime.of(13, 30));
+                                assertThat(current.lessonNumber()).isEqualTo(3);
+                                assertThat(current.subjectId()).isEqualTo(4321L);
+                                assertThat(current.subjectName())
+                                        .isNull(); // Original belongs to a different subject.
+                                assertThat(current.subjectType()).isEqualTo("PRACTICE");
+                                assertThat(current.attendanceStatus())
+                                        .isEqualTo(targetMarkExists ? "ABSENT" : null);
+                            });
+            var decided =
+                    headmanRequestService.decide(
+                            HEADMAN,
+                            ticket.getId(),
+                            new HeadmanRequestDecisionRequest(
+                                    HeadmanRequestDecision.APPROVED, null));
+            assertThat(decided.currentAffectedLessons())
+                    .singleElement()
+                    .satisfies(
+                            current -> assertThat(current.attendanceStatus()).isEqualTo("EXCUSED"));
             assertThat(decided.lessons()).isEqualTo(preview.lessons());
 
             assertThat(attendanceRepository.findByLessonIdAndUserId(targetId, STUDENT_ID))
-                    .hasValueSatisfying(mark -> {
-                        assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
-                        assertThat(mark.getLessonDate()).isEqualTo(LocalDate.of(2026, 9, 9));
-                        assertThat(mark.getLessonNumber()).isEqualTo(3);
-                        assertThat(mark.getSubjectId()).isEqualTo(4321L);
-                        assertThat(mark.getSemesterId()).isEqualTo(SEMESTER_ID);
-                    });
-            assertThat(attendanceRepository.findByLessonIdAndUserId(sourceId, STUDENT_ID).orElseThrow()
-                    .getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+                    .hasValueSatisfying(
+                            mark -> {
+                                assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
+                                assertThat(mark.getLessonDate())
+                                        .isEqualTo(LocalDate.of(2026, 9, 9));
+                                assertThat(mark.getLessonNumber()).isEqualTo(3);
+                                assertThat(mark.getSubjectId()).isEqualTo(4321L);
+                                assertThat(mark.getSemesterId()).isEqualTo(SEMESTER_ID);
+                            });
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(sourceId, STUDENT_ID)
+                                    .orElseThrow()
+                                    .getStatus())
+                    .isEqualTo(AttendanceStatus.ABSENT);
             assertThat(excuseRepository.findById(ticket.getId()).orElseThrow().getLessonSnapshots())
-                    .usingRecursiveComparison().isEqualTo(originalSnapshots);
-            assertThat(mongoTemplate.count(Query.query(Criteria.where("lesson_id").is(null)),
-                    AttendanceDocument.class)).isZero();
+                    .usingRecursiveComparison()
+                    .isEqualTo(originalSnapshots);
+            assertThat(
+                            mongoTemplate.count(
+                                    Query.query(Criteria.where("lesson_id").is(null)),
+                                    AttendanceDocument.class))
+                    .isZero();
         }
     }
 
     @Test
-    void headmanCurrentProjectionIsCompleteOrRefusedAndTerminalDependencyFailureKeepsEvidence() throws Exception {
+    void headmanCurrentProjectionIsCompleteOrRefusedAndTerminalDependencyFailureKeepsEvidence()
+            throws Exception {
         seedAbsent(98L);
         seedAbsent(99L);
-        RequestDetail submitted = service.submitExcuse(STUDENT,
-                excuse(List.of(98L, 99L), "current-projection-scoped", List.of()));
+        RequestDetail submitted =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(98L, 99L), "current-projection-scoped", List.of()));
         ExcuseTicket ticket = excuseRepository.findById(submitted.summary().id()).orElseThrow();
         ticket.setLessonIds(List.of(99L, 98L, 99L));
         excuseRepository.save(ticket);
         var original = headmanRequestService.get(HEADMAN, ticket.getId());
-        assertThat(original.currentAffectedLessons()).extracting(HeadmanRequestLessonResponse::lessonId)
+        assertThat(original.currentAffectedLessons())
+                .extracting(HeadmanRequestLessonResponse::lessonId)
                 .containsExactly(98L, 99L);
-        assertThat(original.currentAffectedLessons()).allSatisfy(current -> {
-            assertThat(current.subjectName()).isEqualTo("Subject " + current.subjectId());
-            assertThat(current.attendanceStatus()).isEqualTo("ABSENT");
-        });
+        assertThat(original.currentAffectedLessons())
+                .allSatisfy(
+                        current -> {
+                            assertThat(current.subjectName())
+                                    .isEqualTo("Subject " + current.subjectId());
+                            assertThat(current.attendanceStatus()).isEqualTo("ABSENT");
+                        });
 
-        for (LessonResponse invalid : List.of(
-                fullLesson(99L).toBuilder().setId(199L).build(),
-                fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).build(),
-                fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).setTransferState("PENDING").build(),
-                fullLesson(99L).toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
-                fullLesson(99L).toBuilder().setStatus("transferred").build(),
-                fullLesson(99L).toBuilder().setStatus("cancelled").build())) {
-            doReturn(invalid).when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        for (LessonResponse invalid :
+                List.of(
+                        fullLesson(99L).toBuilder().setId(199L).build(),
+                        fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).build(),
+                        fullLesson(99L).toBuilder()
+                                .setGroupId(GROUP_ID + 1)
+                                .setTransferState("PENDING")
+                                .build(),
+                        fullLesson(99L).toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
+                        fullLesson(99L).toBuilder().setStatus("transferred").build(),
+                        fullLesson(99L).toBuilder().setStatus("cancelled").build())) {
+            doReturn(invalid)
+                    .when(scheduleGrpcClient)
+                    .getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
             assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
                     .isInstanceOf(ConflictException.class);
         }
-        for (LessonResponse unavailable : List.of(
-                fullLesson(99L).toBuilder().setTransferState("PENDING").build(),
-                fullLesson(99L).toBuilder().setDate("").build())) {
-            doReturn(unavailable).when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        for (LessonResponse unavailable :
+                List.of(
+                        fullLesson(99L).toBuilder().setTransferState("PENDING").build(),
+                        fullLesson(99L).toBuilder().setDate("").build())) {
+            doReturn(unavailable)
+                    .when(scheduleGrpcClient)
+                    .getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
             assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
                     .isInstanceOf(ScheduleServiceUnavailableException.class);
         }
         doThrow(new ResourceNotFoundException("Lesson", "id", 99L))
-                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
         assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
                 .isInstanceOf(ResourceNotFoundException.class);
         doThrow(new ScheduleServiceUnavailableException("current lesson dependency unavailable"))
-                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
         assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
                 .isInstanceOf(ScheduleServiceUnavailableException.class);
 
@@ -1683,16 +2518,26 @@ class StudentRequestDomainIT {
         var archived = headmanRequestService.get(HEADMAN, ticket.getId());
         assertThat(archived.currentAffectedLessons()).isNull();
         assertThat(archived.lessons()).isEqualTo(original.lessons());
-        assertThat(new ObjectMapper().findAndRegisterModules().valueToTree(archived)
-                .get("currentAffectedLessons").isNull()).isTrue();
-        doThrow(new ru.rutcampustrack.attendance.exception.AccessDeniedException("Schedule denied access"))
-                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        assertThat(
+                        new ObjectMapper()
+                                .findAndRegisterModules()
+                                .valueToTree(archived)
+                                .get("currentAffectedLessons")
+                                .isNull())
+                .isTrue();
+        doThrow(
+                        new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                                "Schedule denied access"))
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
         assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
                 .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
         doThrow(new ResourceNotFoundException("Lesson", "id", 98L))
-                .when(scheduleGrpcClient).getScopedLessonById(98L, GROUP_ID, SEMESTER_ID);
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(98L, GROUP_ID, SEMESTER_ID);
         doReturn(fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).build())
-                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
         assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
                 .isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> headmanRequestService.get(student(777L), ticket.getId()))
@@ -1706,36 +2551,50 @@ class StudentRequestDomainIT {
     @Test
     void headmanLateCurrentProjectionUsesMovedLessonRatherThanRetainedMetadata() {
         seedAbsent(100L);
-        RequestDetail submitted = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(100L, "current-projection-late"));
+        RequestDetail submitted =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(100L, "current-projection-late"));
         var unchanged = headmanRequestService.get(HEADMAN, submitted.summary().id());
-        assertThat(unchanged.currentAffectedLessons()).singleElement()
+        assertThat(unchanged.currentAffectedLessons())
+                .singleElement()
                 .satisfies(current -> assertThat(current.lessonId()).isEqualTo(100L));
-        LateCheckinRequest request = lateCheckinRepository.findById(submitted.summary().id()).orElseThrow();
+        LateCheckinRequest request =
+                lateCheckinRepository.findById(submitted.summary().id()).orElseThrow();
         request.setLessonId(200L);
         request.setLessonDate(LocalDate.of(2026, 9, 9));
         request.setLessonNumber(3);
         lateCheckinRepository.save(request);
-        LessonResponse moved = fullLesson(200L).toBuilder().setSubjectId(request.getSubjectId())
-                .setDate("2026-09-09").setLessonNumber(3).setLessonType("PRACTICE")
-                .setStartTime("12:00").setEndTime("13:30").build();
+        LessonResponse moved =
+                fullLesson(200L).toBuilder()
+                        .setSubjectId(request.getSubjectId())
+                        .setDate("2026-09-09")
+                        .setLessonNumber(3)
+                        .setLessonType("PRACTICE")
+                        .setStartTime("12:00")
+                        .setEndTime("13:30")
+                        .build();
         doReturn(moved).when(scheduleGrpcClient).getScopedLessonById(200L, GROUP_ID, SEMESTER_ID);
         var current = headmanRequestService.get(HEADMAN, request.getId());
-        assertThat(current.currentAffectedLessons()).singleElement().satisfies(lesson -> {
-            assertThat(lesson.lessonId()).isEqualTo(200L);
-            assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 9));
-            assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(12, 0));
-            assertThat(lesson.subjectName()).isEqualTo(request.getSubjectName());
-            assertThat(lesson.subjectType()).isEqualTo("PRACTICE");
-            assertThat(lesson.attendanceStatus()).isNull();
-        });
+        assertThat(current.currentAffectedLessons())
+                .singleElement()
+                .satisfies(
+                        lesson -> {
+                            assertThat(lesson.lessonId()).isEqualTo(200L);
+                            assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 9));
+                            assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(12, 0));
+                            assertThat(lesson.subjectName()).isEqualTo(request.getSubjectName());
+                            assertThat(lesson.subjectType()).isEqualTo("PRACTICE");
+                            assertThat(lesson.attendanceStatus()).isNull();
+                        });
         doReturn(moved.toBuilder().setTransferState("PENDING").build())
-                .when(scheduleGrpcClient).getScopedLessonById(200L, GROUP_ID, SEMESTER_ID);
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(200L, GROUP_ID, SEMESTER_ID);
         assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, request.getId()))
                 .isInstanceOf(ScheduleServiceUnavailableException.class);
         request.setStatus(LateCheckinRequestStatus.CANCELLED);
         lateCheckinRepository.save(request);
-        assertThat(headmanRequestService.get(HEADMAN, request.getId()).currentAffectedLessons()).isNull();
+        assertThat(headmanRequestService.get(HEADMAN, request.getId()).currentAffectedLessons())
+                .isNull();
     }
 
     @Test
@@ -1744,33 +2603,57 @@ class StudentRequestDomainIT {
             for (int mutation = 0; mutation < 3; mutation++) {
                 long sourceId = (late ? 83L : 73L) + mutation;
                 seedAbsent(sourceId);
-                RequestDetail submitted = late
-                        ? service.submitLateCheckin(STUDENT,
-                                new LateCheckinSubmission(sourceId, "race-projection-late-" + sourceId))
-                        : service.submitExcuse(STUDENT,
-                                excuse(List.of(sourceId), "race-projection-excuse-" + sourceId, List.of()));
+                RequestDetail submitted =
+                        late
+                                ? service.submitLateCheckin(
+                                        STUDENT,
+                                        new LateCheckinSubmission(
+                                                sourceId, "race-projection-late-" + sourceId))
+                                : service.submitExcuse(
+                                        STUDENT,
+                                        excuse(
+                                                List.of(sourceId),
+                                                "race-projection-excuse-" + sourceId,
+                                                List.of()));
                 int change = mutation;
-                doAnswer(invocation -> {
-                            // A transfer can commit after the initial request/source read
-                            // while keeping its historical updatedAt unchanged.
-                            if (late) {
-                                LateCheckinRequest moved = lateCheckinRepository.findById(submitted.summary().id()).orElseThrow();
-                                if (change == 0) moved.setLessonId(sourceId + 100);
-                                if (change == 1) moved.setStatus(LateCheckinRequestStatus.REJECTED);
-                                if (change == 2) moved.setGroupId(GROUP_ID + 1);
-                                lateCheckinRepository.save(moved);
-                            } else {
-                                ExcuseTicket moved = excuseRepository.findById(submitted.summary().id()).orElseThrow();
-                                if (change == 0) moved.setLessonIds(List.of(sourceId + 100));
-                                if (change == 1) moved.setStatus(ExcuseTicketStatus.REJECTED);
-                                if (change == 2) moved.setGroupId(GROUP_ID + 1);
-                                excuseRepository.save(moved);
-                            }
-                            return fullLesson(sourceId);
-                        }).when(scheduleGrpcClient).getScopedLessonById(sourceId, GROUP_ID, SEMESTER_ID);
-                assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, submitted.summary().id()))
+                doAnswer(
+                                invocation -> {
+                                    // A transfer can commit after the initial request/source read
+                                    // while keeping its historical updatedAt unchanged.
+                                    if (late) {
+                                        LateCheckinRequest moved =
+                                                lateCheckinRepository
+                                                        .findById(submitted.summary().id())
+                                                        .orElseThrow();
+                                        if (change == 0) moved.setLessonId(sourceId + 100);
+                                        if (change == 1)
+                                            moved.setStatus(LateCheckinRequestStatus.REJECTED);
+                                        if (change == 2) moved.setGroupId(GROUP_ID + 1);
+                                        lateCheckinRepository.save(moved);
+                                    } else {
+                                        ExcuseTicket moved =
+                                                excuseRepository
+                                                        .findById(submitted.summary().id())
+                                                        .orElseThrow();
+                                        if (change == 0)
+                                            moved.setLessonIds(List.of(sourceId + 100));
+                                        if (change == 1)
+                                            moved.setStatus(ExcuseTicketStatus.REJECTED);
+                                        if (change == 2) moved.setGroupId(GROUP_ID + 1);
+                                        excuseRepository.save(moved);
+                                    }
+                                    return fullLesson(sourceId);
+                                })
+                        .when(scheduleGrpcClient)
+                        .getScopedLessonById(sourceId, GROUP_ID, SEMESTER_ID);
+                assertThatThrownBy(
+                                () -> headmanRequestService.get(HEADMAN, submitted.summary().id()))
                         .isInstanceOf(ConflictException.class);
-                assertThat(attendanceRepository.findByLessonIdAndUserId(sourceId, STUDENT_ID).orElseThrow().getStatus())
+                assertThat(
+                                attendanceRepository
+                                        .findByLessonIdAndUserId(sourceId, STUDENT_ID)
+                                        .orElseThrow()
+                                        .getStatus())
                         .isEqualTo(AttendanceStatus.ABSENT);
             }
         }
@@ -1783,31 +2666,58 @@ class StudentRequestDomainIT {
             long lateLesson = approved ? 91L : 92L;
             seedAbsent(excuseLesson);
             seedAbsent(lateLesson);
-            RequestDetail ticket = service.submitExcuse(STUDENT,
-                    excuse(List.of(excuseLesson), "repeat-excuse-" + excuseLesson, List.of()));
-            RequestDetail late = service.submitLateCheckin(STUDENT,
-                    new LateCheckinSubmission(lateLesson, "repeat-late-key-" + lateLesson));
+            RequestDetail ticket =
+                    service.submitExcuse(
+                            STUDENT,
+                            excuse(
+                                    List.of(excuseLesson),
+                                    "repeat-excuse-" + excuseLesson,
+                                    List.of()));
+            RequestDetail late =
+                    service.submitLateCheckin(
+                            STUDENT,
+                            new LateCheckinSubmission(lateLesson, "repeat-late-key-" + lateLesson));
             clearOutbox();
-            RequestDetail firstExcuse = service.decideExcuse(HEADMAN, ticket.summary().id(), approved, " decided ");
-            RequestDetail firstLate = service.decideLateCheckin(HEADMAN, late.summary().id(), approved, " decided ");
-            AttendanceDocument excuseMark = attendanceRepository
-                    .findByLessonIdAndUserId(excuseLesson, STUDENT_ID).orElseThrow();
-            AttendanceDocument lateMark = attendanceRepository
-                    .findByLessonIdAndUserId(lateLesson, STUDENT_ID).orElseThrow();
-            StudentLateCheckinBudgetDocument budget = budgetRepository
-                    .findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID).orElseThrow();
+            RequestDetail firstExcuse =
+                    service.decideExcuse(HEADMAN, ticket.summary().id(), approved, " decided ");
+            RequestDetail firstLate =
+                    service.decideLateCheckin(HEADMAN, late.summary().id(), approved, " decided ");
+            AttendanceDocument excuseMark =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(excuseLesson, STUDENT_ID)
+                            .orElseThrow();
+            AttendanceDocument lateMark =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(lateLesson, STUDENT_ID)
+                            .orElseThrow();
+            StudentLateCheckinBudgetDocument budget =
+                    budgetRepository
+                            .findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID)
+                            .orElseThrow();
             clock.set(clock.instant().plusSeconds(30));
 
             assertThat(service.decideExcuse(HEADMAN, ticket.summary().id(), approved, "decided"))
                     .isEqualTo(firstExcuse);
             assertThat(service.decideLateCheckin(HEADMAN, late.summary().id(), approved, "decided"))
                     .isEqualTo(firstLate);
-            assertThat(attendanceRepository.findByLessonIdAndUserId(excuseLesson, STUDENT_ID).orElseThrow())
-                    .usingRecursiveComparison().isEqualTo(excuseMark);
-            assertThat(attendanceRepository.findByLessonIdAndUserId(lateLesson, STUDENT_ID).orElseThrow())
-                    .usingRecursiveComparison().isEqualTo(lateMark);
-            assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID).orElseThrow())
-                    .usingRecursiveComparison().isEqualTo(budget);
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(excuseLesson, STUDENT_ID)
+                                    .orElseThrow())
+                    .usingRecursiveComparison()
+                    .isEqualTo(excuseMark);
+            assertThat(
+                            attendanceRepository
+                                    .findByLessonIdAndUserId(lateLesson, STUDENT_ID)
+                                    .orElseThrow())
+                    .usingRecursiveComparison()
+                    .isEqualTo(lateMark);
+            assertThat(
+                            budgetRepository
+                                    .findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID)
+                                    .orElseThrow())
+                    .usingRecursiveComparison()
+                    .isEqualTo(budget);
             assertThat(actualOutboxEvents("excuse.decided")).hasSize(1);
             assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
         }
@@ -1817,23 +2727,29 @@ class StudentRequestDomainIT {
     void decisionRepeatStillRequiresCurrentAuthorityAndWritableSemester() {
         seedAbsent(93L);
         seedAbsent(94L);
-        RequestDetail ticket = service.submitExcuse(STUDENT,
-                excuse(List.of(93L), "repeat-fenced-excuse", List.of()));
-        RequestDetail late = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(94L, "repeat-fenced-late"));
+        RequestDetail ticket =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(93L), "repeat-fenced-excuse", List.of()));
+        RequestDetail late =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(94L, "repeat-fenced-late"));
         service.decideExcuse(HEADMAN, ticket.summary().id(), true, null);
         service.decideLateCheckin(HEADMAN, late.summary().id(), true);
         clearOutbox();
-        when(academicGrpcClient.isHeadman(777L, GROUP_ID)).thenReturn(
-                HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+        when(academicGrpcClient.isHeadman(777L, GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
         assertThatThrownBy(() -> service.decideExcuse(HEADMAN, ticket.summary().id(), true, null))
                 .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
         assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))
                 .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
-        when(academicGrpcClient.isHeadman(777L, GROUP_ID)).thenReturn(
-                HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
-        mongoTemplate.save(ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
-                .id(Long.toString(SEMESTER_ID)).semesterId(SEMESTER_ID).barrierState("ARCHIVED").build());
+        when(academicGrpcClient.isHeadman(777L, GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        mongoTemplate.save(
+                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
+                        .id(Long.toString(SEMESTER_ID))
+                        .semesterId(SEMESTER_ID)
+                        .barrierState("ARCHIVED")
+                        .build());
         assertThatThrownBy(() -> service.decideExcuse(HEADMAN, ticket.summary().id(), true, null))
                 .isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))
@@ -1845,33 +2761,54 @@ class StudentRequestDomainIT {
     @Test
     void terminalDecisionDoesNotReplayForAnotherActorOutcomeOrComment() {
         seedAbsent(85L);
-        RequestDetail ticket = service.submitExcuse(STUDENT,
-                excuse(List.of(85L), "terminal-mismatch-excuse-key", List.of()));
+        RequestDetail ticket =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(85L), "terminal-mismatch-excuse-key", List.of()));
         clearOutbox();
         service.decideExcuse(headman(777L), ticket.summary().id(), true, "matching comment");
 
-        assertThatThrownBy(() -> service.decideExcuse(
-                headman(778L), ticket.summary().id(), true, "matching comment"))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(778L),
+                                        ticket.summary().id(),
+                                        true,
+                                        "matching comment"))
                 .isInstanceOf(ConflictException.class);
-        assertThatThrownBy(() -> service.decideExcuse(
-                headman(777L), ticket.summary().id(), false, "matching comment"))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        ticket.summary().id(),
+                                        false,
+                                        "matching comment"))
                 .isInstanceOf(ConflictException.class);
-        assertThatThrownBy(() -> service.decideExcuse(
-                headman(777L), ticket.summary().id(), true, "different comment"))
+        assertThatThrownBy(
+                        () ->
+                                service.decideExcuse(
+                                        headman(777L),
+                                        ticket.summary().id(),
+                                        true,
+                                        "different comment"))
                 .isInstanceOf(ConflictException.class);
         assertThat(actualOutboxEvents("excuse.decided")).hasSize(1);
 
         seedAbsent(86L);
-        RequestDetail request = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(86L, "terminal-mismatch-late-key"));
+        RequestDetail request =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(86L, "terminal-mismatch-late-key"));
         clearOutbox();
         service.decideLateCheckin(headman(777L), request.summary().id(), true);
 
-        assertThatThrownBy(() -> service.decideLateCheckin(
-                headman(778L), request.summary().id(), true))
+        assertThatThrownBy(
+                        () ->
+                                service.decideLateCheckin(
+                                        headman(778L), request.summary().id(), true))
                 .isInstanceOf(ConflictException.class);
-        assertThatThrownBy(() -> service.decideLateCheckin(
-                headman(777L), request.summary().id(), false))
+        assertThatThrownBy(
+                        () ->
+                                service.decideLateCheckin(
+                                        headman(777L), request.summary().id(), false))
                 .isInstanceOf(ConflictException.class);
         assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
     }
@@ -1879,72 +2816,102 @@ class StudentRequestDomainIT {
     @Test
     void cancelAndDecisionRaceLeaveOneTerminalLateOutcomeAndOneOutboxEvent() throws Exception {
         seedAbsent(80L);
-        RequestDetail request = service.submitLateCheckin(STUDENT,
-                new LateCheckinSubmission(80L, "cancel-decision-race"));
+        RequestDetail request =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(80L, "cancel-decision-race"));
         clearOutbox();
         pairWriteCoordinator.arm(STUDENT_ID, 80L);
         CountDownLatch start = new CountDownLatch(1);
 
         try (var executor = Executors.newFixedThreadPool(2)) {
-            Future<?> cancel = executor.submit(() -> {
-                start.await();
-                return service.cancel(STUDENT, request.summary().id());
-            });
-            Future<?> decide = executor.submit(() -> {
-                start.await();
-                return service.decideLateCheckin(headman(777L), request.summary().id(), true);
-            });
+            Future<?> cancel =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return service.cancel(STUDENT, request.summary().id());
+                            });
+            Future<?> decide =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return service.decideLateCheckin(
+                                        headman(777L), request.summary().id(), true);
+                            });
             start.countDown();
             assertOneSuccessAndOneConflict(List.of(cancel, decide));
         }
 
-        LateCheckinRequest terminal = lateCheckinRepository.findById(request.summary().id()).orElseThrow();
-        assertThat(terminal.getStatus()).isIn(LateCheckinRequestStatus.CANCELLED,
-                LateCheckinRequestStatus.APPROVED);
+        LateCheckinRequest terminal =
+                lateCheckinRepository.findById(request.summary().id()).orElseThrow();
+        assertThat(terminal.getStatus())
+                .isIn(LateCheckinRequestStatus.CANCELLED, LateCheckinRequestStatus.APPROVED);
         List<OutboxRecord> events = actualOutboxEvents("late_checkin.decided");
         assertThat(events).hasSize(1);
-        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", events.getFirst().payload())).isEmpty();
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "late_checkin.decided.json", events.getFirst().payload()))
+                .isEmpty();
     }
 
     @Test
     void approvalAndRealPairWriterRacePreservesPresent() throws Exception {
         seedAbsent(81L);
-        RequestDetail ticket = service.submitExcuse(STUDENT,
-                excuse(List.of(81L), "approval-present-race", List.of()));
+        RequestDetail ticket =
+                service.submitExcuse(
+                        STUDENT, excuse(List.of(81L), "approval-present-race", List.of()));
         clearOutbox();
         pairWriteCoordinator.arm(STUDENT_ID, 81L);
         CountDownLatch start = new CountDownLatch(1);
 
         try (var executor = Executors.newFixedThreadPool(2)) {
-            Future<?> approval = executor.submit(() -> {
-                start.await();
-                return service.decideExcuse(headman(777L), ticket.summary().id(), true, null);
-            });
-            Future<?> presentWriter = executor.submit(() -> {
-                start.await();
-                writePresentThroughPairCoordinator(81L);
-                return null;
-            });
+            Future<?> approval =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return service.decideExcuse(
+                                        headman(777L), ticket.summary().id(), true, null);
+                            });
+            Future<?> presentWriter =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                writePresentThroughPairCoordinator(81L);
+                                return null;
+                            });
             start.countDown();
             approval.get(45, TimeUnit.SECONDS);
             presentWriter.get(45, TimeUnit.SECONDS);
         }
 
-        assertThat(attendanceRepository.findByLessonIdAndUserId(81L, STUDENT_ID).orElseThrow().getStatus())
+        assertThat(
+                        attendanceRepository
+                                .findByLessonIdAndUserId(81L, STUDENT_ID)
+                                .orElseThrow()
+                                .getStatus())
                 .isEqualTo(AttendanceStatus.PRESENT);
         List<OutboxRecord> events = actualOutboxEvents("excuse.decided");
         assertThat(events).hasSize(1);
-        assertThat(EventSchemaValidator.validate("excuse.decided.json", events.getFirst().payload())).isEmpty();
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "excuse.decided.json", events.getFirst().payload()))
+                .isEmpty();
     }
 
     @Test
     void productionMongoOutboxInsertRollsBackWithTransactionFailure() {
         clearOutbox();
 
-        assertThatThrownBy(() -> transactionTemplate.execute(status -> {
-            outboxStorage.save("student_request.rollback_probe", "{\"probe\":true}");
-            throw new IllegalStateException("force rollback after outbox insert");
-        })).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(
+                        () ->
+                                transactionTemplate.execute(
+                                        status -> {
+                                            outboxStorage.save(
+                                                    "student_request.rollback_probe",
+                                                    "{\"probe\":true}");
+                                            throw new IllegalStateException(
+                                                    "force rollback after outbox insert");
+                                        }))
+                .isInstanceOf(IllegalStateException.class);
 
         assertThat(outboxStorage.findPending(10)).isEmpty();
     }
@@ -1955,18 +2922,28 @@ class StudentRequestDomainIT {
         seedAbsent(71L);
         seedAbsent(72L);
         seedAbsent(73L);
-        RequestDetail rejected = service.submitLateCheckin(STUDENT, new LateCheckinSubmission(70L, "reject-late-key-001"));
+        RequestDetail rejected =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(70L, "reject-late-key-001"));
 
         service.decideLateCheckin(headman(777L), rejected.summary().id(), false);
 
         service.submitLateCheckin(STUDENT, new LateCheckinSubmission(71L, "after-reject-key-0001"));
-        RequestDetail cancelled = service.submitLateCheckin(STUDENT, new LateCheckinSubmission(72L, "cancel-late-key-001"));
+        RequestDetail cancelled =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(72L, "cancel-late-key-001"));
         service.cancel(STUDENT, cancelled.summary().id());
         service.submitLateCheckin(STUDENT, new LateCheckinSubmission(73L, "after-cancel-key-001"));
 
         assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
-                .get().extracting(StudentLateCheckinBudgetDocument::getUsed).isEqualTo(4);
-        assertThat(lateCheckinRepository.findById(cancelled.summary().id()).orElseThrow().getStatus())
+                .get()
+                .extracting(StudentLateCheckinBudgetDocument::getUsed)
+                .isEqualTo(4);
+        assertThat(
+                        lateCheckinRepository
+                                .findById(cancelled.summary().id())
+                                .orElseThrow()
+                                .getStatus())
                 .isEqualTo(LateCheckinRequestStatus.CANCELLED);
     }
 
@@ -1992,23 +2969,28 @@ class StudentRequestDomainIT {
 
     private List<OutboxRecord> actualOutboxEvents(String eventType) {
         return outboxStorage.findPending(100).stream()
-                .filter(event -> event.eventType().equals(eventType)).toList();
+                .filter(event -> event.eventType().equals(eventType))
+                .toList();
     }
 
     private void writePresentThroughPairCoordinator(long lessonId) {
         RuntimeException lastFailure = null;
         for (int attempt = 1; attempt <= 4; attempt++) {
             try {
-                transactionTemplate.execute(status -> {
-                    pairWriteCoordinator.lock(SEMESTER_ID, STUDENT_ID, lessonId, GROUP_ID, clock.instant());
-                    AttendanceDocument current = attendanceRepository
-                            .findByLessonIdAndUserId(lessonId, STUDENT_ID).orElseThrow();
-                    current.setStatus(AttendanceStatus.PRESENT);
-                    current.setSource(AttendanceSource.STUDENT_GEO);
-                    current.setUpdatedAt(clock.instant());
-                    attendanceRepository.save(current);
-                    return null;
-                });
+                transactionTemplate.execute(
+                        status -> {
+                            pairWriteCoordinator.lock(
+                                    SEMESTER_ID, STUDENT_ID, lessonId, GROUP_ID, clock.instant());
+                            AttendanceDocument current =
+                                    attendanceRepository
+                                            .findByLessonIdAndUserId(lessonId, STUDENT_ID)
+                                            .orElseThrow();
+                            current.setStatus(AttendanceStatus.PRESENT);
+                            current.setSource(AttendanceSource.STUDENT_GEO);
+                            current.setUpdatedAt(clock.instant());
+                            attendanceRepository.save(current);
+                            return null;
+                        });
                 return;
             } catch (RuntimeException error) {
                 if (!isTransientTransactionError(error) || attempt == 4) {
@@ -2019,7 +3001,8 @@ class StudentRequestDomainIT {
                     Thread.sleep(100L << (attempt - 1));
                 } catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Interrupted while retrying pair writer", interrupted);
+                    throw new IllegalStateException(
+                            "Interrupted while retrying pair writer", interrupted);
                 }
             }
         }
@@ -2037,24 +3020,53 @@ class StudentRequestDomainIT {
     }
 
     private void ensureIndexes() {
-        mongoTemplate.indexOps("attendances").ensureIndex(new Index()
-                .on("lesson_id", Sort.Direction.ASC).on("user_id", Sort.Direction.ASC)
-                .unique().named("uniq_lesson_user"));
-        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
-                .on("student_id", Sort.Direction.ASC).on("lesson_id", Sort.Direction.ASC)
-                .unique().partial(PartialIndexFilter.of(Criteria.where("status")
-                        .is(LateCheckinRequestStatus.PENDING.name())))
-                .named("uniq_lcr_pending_student_lesson"));
-        mongoTemplate.indexOps("student_request_receipts").ensureIndex(new Index()
-                .on("student_id", Sort.Direction.ASC).on("command_kind", Sort.Direction.ASC)
-                .on("idempotency_key", Sort.Direction.ASC).unique()
-                .named("uniq_student_request_receipt"));
-        mongoTemplate.indexOps("student_late_checkin_budgets").ensureIndex(new Index()
-                .on("student_id", Sort.Direction.ASC).on("semester_id", Sort.Direction.ASC)
-                .unique().named("uniq_student_late_budget"));
-        mongoTemplate.indexOps("request_attachments").ensureIndex(new Index()
-                .on("request_id", Sort.Direction.ASC).on("owner_student_id", Sort.Direction.ASC)
-                .on("position", Sort.Direction.ASC).named("idx_request_attachment_owner_position"));
+        mongoTemplate
+                .indexOps("attendances")
+                .ensureIndex(
+                        new Index()
+                                .on("lesson_id", Sort.Direction.ASC)
+                                .on("user_id", Sort.Direction.ASC)
+                                .unique()
+                                .named("uniq_lesson_user"));
+        mongoTemplate
+                .indexOps("late_checkin_requests")
+                .ensureIndex(
+                        new Index()
+                                .on("student_id", Sort.Direction.ASC)
+                                .on("lesson_id", Sort.Direction.ASC)
+                                .unique()
+                                .partial(
+                                        PartialIndexFilter.of(
+                                                Criteria.where("status")
+                                                        .is(
+                                                                LateCheckinRequestStatus.PENDING
+                                                                        .name())))
+                                .named("uniq_lcr_pending_student_lesson"));
+        mongoTemplate
+                .indexOps("student_request_receipts")
+                .ensureIndex(
+                        new Index()
+                                .on("student_id", Sort.Direction.ASC)
+                                .on("command_kind", Sort.Direction.ASC)
+                                .on("idempotency_key", Sort.Direction.ASC)
+                                .unique()
+                                .named("uniq_student_request_receipt"));
+        mongoTemplate
+                .indexOps("student_late_checkin_budgets")
+                .ensureIndex(
+                        new Index()
+                                .on("student_id", Sort.Direction.ASC)
+                                .on("semester_id", Sort.Direction.ASC)
+                                .unique()
+                                .named("uniq_student_late_budget"));
+        mongoTemplate
+                .indexOps("request_attachments")
+                .ensureIndex(
+                        new Index()
+                                .on("request_id", Sort.Direction.ASC)
+                                .on("owner_student_id", Sort.Direction.ASC)
+                                .on("position", Sort.Direction.ASC)
+                                .named("idx_request_attachment_owner_position"));
     }
 
     private static Identity student(long userId) {
@@ -2065,70 +3077,134 @@ class StudentRequestDomainIT {
         return new Identity(userId, UserRole.STUDENT, GROUP_ID, true);
     }
 
-    private ExcuseTicket seedHeadmanTicket(String id, ExcuseTicketStatus status,
-                                           List<LocalDate> dates, Instant createdAt,
-                                           Instant updatedAt, Instant decisionAt) {
-        List<Long> lessonIds = IntStream.range(0, dates.size())
-                .mapToObj(index -> 500L + index)
-                .toList();
-        List<StudentLessonSnapshotDocument> snapshots = IntStream.range(0, dates.size())
-                .mapToObj(index -> StudentLessonSnapshotDocument.builder()
-                        .lessonId(lessonIds.get(index)).groupId(GROUP_ID).subjectId(1000L + index)
-                        .subjectName("Subject " + index).subjectType("LECTURE")
-                        .semesterId(SEMESTER_ID).lessonNumber(index + 1).date(dates.get(index))
-                        .startsAt(LocalTime.of(10, 0)).endsAt(LocalTime.of(11, 0))
-                        .status("closed").build())
-                .toList();
-        return excuseRepository.save(ExcuseTicket.builder()
-                .id(id).studentId(200L).groupId(GROUP_ID).studentName("Иванов Иван")
-                .lessonIds(lessonIds).semesterId(SEMESTER_ID).lessonSnapshots(snapshots)
-                .excuseType(ExcuseType.ILLNESS).status(status).decisionBy(decisionAt == null ? null : 777L)
-                .decisionAt(decisionAt).createdAt(createdAt).updatedAt(updatedAt).build());
+    private ExcuseTicket seedHeadmanTicket(
+            String id,
+            ExcuseTicketStatus status,
+            List<LocalDate> dates,
+            Instant createdAt,
+            Instant updatedAt,
+            Instant decisionAt) {
+        List<Long> lessonIds =
+                IntStream.range(0, dates.size()).mapToObj(index -> 500L + index).toList();
+        List<StudentLessonSnapshotDocument> snapshots =
+                IntStream.range(0, dates.size())
+                        .mapToObj(
+                                index ->
+                                        StudentLessonSnapshotDocument.builder()
+                                                .lessonId(lessonIds.get(index))
+                                                .groupId(GROUP_ID)
+                                                .subjectId(1000L + index)
+                                                .subjectName("Subject " + index)
+                                                .subjectType("LECTURE")
+                                                .semesterId(SEMESTER_ID)
+                                                .lessonNumber(index + 1)
+                                                .date(dates.get(index))
+                                                .startsAt(LocalTime.of(10, 0))
+                                                .endsAt(LocalTime.of(11, 0))
+                                                .status("closed")
+                                                .build())
+                        .toList();
+        return excuseRepository.save(
+                ExcuseTicket.builder()
+                        .id(id)
+                        .studentId(200L)
+                        .groupId(GROUP_ID)
+                        .studentName("Иванов Иван")
+                        .lessonIds(lessonIds)
+                        .semesterId(SEMESTER_ID)
+                        .lessonSnapshots(snapshots)
+                        .excuseType(ExcuseType.ILLNESS)
+                        .status(status)
+                        .decisionBy(decisionAt == null ? null : 777L)
+                        .decisionAt(decisionAt)
+                        .createdAt(createdAt)
+                        .updatedAt(updatedAt)
+                        .build());
     }
 
     private void seedAbsent(long lessonId) {
-        attendanceRepository.save(AttendanceDocument.builder()
-                .lessonId(lessonId).userId(STUDENT_ID).groupId(GROUP_ID)
-                .subjectId(1000L + lessonId).semesterId(SEMESTER_ID)
-                .lessonNumber((int) lessonId).lessonDate(LocalDate.of(2026, 9, 7))
-                .status(AttendanceStatus.ABSENT).source(AttendanceSource.AUTO_SCHEDULER)
-                .createdAt(START).updatedAt(START).build());
+        attendanceRepository.save(
+                AttendanceDocument.builder()
+                        .lessonId(lessonId)
+                        .userId(STUDENT_ID)
+                        .groupId(GROUP_ID)
+                        .subjectId(1000L + lessonId)
+                        .semesterId(SEMESTER_ID)
+                        .lessonNumber((int) lessonId)
+                        .lessonDate(LocalDate.of(2026, 9, 7))
+                        .status(AttendanceStatus.ABSENT)
+                        .source(AttendanceSource.AUTO_SCHEDULER)
+                        .createdAt(START)
+                        .updatedAt(START)
+                        .build());
     }
 
-    private ExcuseSubmission excuse(List<Long> lessonIds, String key, List<AttachmentInput> attachments) {
+    private ExcuseSubmission excuse(
+            List<Long> lessonIds, String key, List<AttachmentInput> attachments) {
         return new ExcuseSubmission(lessonIds, ExcuseType.ILLNESS, "  reason  ", attachments, key);
     }
 
     private LessonSnapshot snapshot(long lessonId) {
-        return new LessonSnapshot(lessonId, GROUP_ID, 1000L + lessonId, "Subject " + (1000L + lessonId),
-                "LECTURE", SEMESTER_ID, (int) lessonId, LocalDate.of(2026, 9, 7),
-                LocalTime.of(10, 0), LocalTime.of(11, 0), "closed", false);
+        return new LessonSnapshot(
+                lessonId,
+                GROUP_ID,
+                1000L + lessonId,
+                "Subject " + (1000L + lessonId),
+                "LECTURE",
+                SEMESTER_ID,
+                (int) lessonId,
+                LocalDate.of(2026, 9, 7),
+                LocalTime.of(10, 0),
+                LocalTime.of(11, 0),
+                "closed",
+                false);
     }
 
     private LessonInfo compactLesson(long lessonId) {
-        return LessonInfo.newBuilder().setLessonId(lessonId).setGroupId(GROUP_ID)
-                .setSubjectId(1000L + lessonId).setLessonNumber((int) lessonId)
-                .setDate("2026-09-07").setStartsAt("2026-09-07T10:00:00").build();
+        return LessonInfo.newBuilder()
+                .setLessonId(lessonId)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(1000L + lessonId)
+                .setLessonNumber((int) lessonId)
+                .setDate("2026-09-07")
+                .setStartsAt("2026-09-07T10:00:00")
+                .build();
     }
 
     private LessonResponse fullLesson(long lessonId) {
-        return LessonResponse.newBuilder().setId(lessonId).setGroupId(GROUP_ID)
-                .setSubjectId(1000L + lessonId).setLessonNumber((int) lessonId)
+        return LessonResponse.newBuilder()
+                .setId(lessonId)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(1000L + lessonId)
+                .setLessonNumber((int) lessonId)
                 .setSemesterId(SEMESTER_ID)
-                .setDate("2026-09-07").setStartTime("10:00").setEndTime("11:00")
+                .setDate("2026-09-07")
+                .setStartTime("10:00")
+                .setEndTime("11:00")
                 .setStatus(lessonStatuses.getOrDefault(lessonId, "closed"))
-                .setIsBlockedByHeadman(blockedLessonIds.contains(lessonId)).build();
+                .setIsBlockedByHeadman(blockedLessonIds.contains(lessonId))
+                .build();
     }
 
     private LessonResponse canonicalLesson(long lessonId, long occurrenceId) {
-        return fullLesson(lessonId).toBuilder().setLessonType("LECTURE").setOccurrenceId(occurrenceId)
-                .setOccurrenceRevision(1).setRevision(1).setGeneration(1).setCurrent(true).build();
+        return fullLesson(lessonId).toBuilder()
+                .setLessonType("LECTURE")
+                .setOccurrenceId(occurrenceId)
+                .setOccurrenceRevision(1)
+                .setRevision(1)
+                .setGeneration(1)
+                .setCurrent(true)
+                .build();
     }
 
     private void stubCanonicalLesson(LessonResponse lesson) {
         doReturn(lesson).when(scheduleGrpcClient).getLessonById(lesson.getId());
-        doReturn(lesson).when(scheduleGrpcClient).getScopedLessonById(lesson.getId(), GROUP_ID, SEMESTER_ID);
-        doReturn(lesson).when(scheduleGrpcClient).requireAttendanceMutationReady(lesson.getId(), GROUP_ID);
+        doReturn(lesson)
+                .when(scheduleGrpcClient)
+                .getScopedLessonById(lesson.getId(), GROUP_ID, SEMESTER_ID);
+        doReturn(lesson)
+                .when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(lesson.getId(), GROUP_ID);
     }
 
     private static byte[] pdfBytes(int size) {

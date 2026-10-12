@@ -1,15 +1,5 @@
 package ru.rutcampustrack.auth.service;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.script.RedisScript;
-import ru.rutcampustrack.auth.exception.OtpRateLimitException;
-
-import java.time.Duration;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,11 +9,22 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.RedisScript;
+import ru.rutcampustrack.auth.exception.OtpRateLimitException;
+
 class LoginRateLimiterTest {
 
     private final StringRedisTemplate redis = mock(StringRedisTemplate.class);
+
     @SuppressWarnings("unchecked")
     private final ValueOperations<String, String> valueOps = mock(ValueOperations.class);
+
     private final LoginRateLimiter limiter = new LoginRateLimiter(redis);
 
     LoginRateLimiterTest() {

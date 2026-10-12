@@ -1,14 +1,15 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 
 /**
- * One row per student in the journal grid (RPRT-02).
- * Plain Java class — no Lombok (contract module rule).
+ * One row per student in the journal grid (RPRT-02). Plain Java class — no Lombok (contract module
+ * rule).
  */
-@Schema(description = "Строка журнала для одного студента: ID, отображаемое имя, последовательность ячеек по датам")
+@Schema(
+        description =
+                "Строка журнала для одного студента: ID, отображаемое имя, последовательность ячеек по датам")
 public class JournalStudentRow {
 
     private final Long userId;

@@ -1,7 +1,17 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,10 +20,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
-import ru.rutcampustrack.academic.grpc.GroupRequest;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.GroupRequest;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -23,22 +33,10 @@ import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 
-import java.time.LocalDate;
-import java.lang.reflect.Field;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class AcademicGrpcClientTest {
 
-    @Mock
-    private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub mockStub;
+    @Mock private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub mockStub;
 
     private AcademicGrpcClient client;
 
@@ -57,23 +55,19 @@ class AcademicGrpcClientTest {
 
         client.getGroup(7L);
 
-        verify(mockStub).getGroup(GroupRequest.newBuilder()
-                .setGroupId(7L)
-                .build());
+        verify(mockStub).getGroup(GroupRequest.newBuilder().setGroupId(7L).build());
     }
 
     @Test
     void getGroup_notFound_throwsResourceNotFoundException() {
-        when(mockStub.getGroup(any()))
-                .thenThrow(new StatusRuntimeException(Status.NOT_FOUND));
+        when(mockStub.getGroup(any())).thenThrow(new StatusRuntimeException(Status.NOT_FOUND));
 
         assertThrows(ResourceNotFoundException.class, () -> client.getGroup(7L));
     }
 
     @Test
     void getGroup_unavailable_throwsAcademicServiceUnavailableException() {
-        when(mockStub.getGroup(any()))
-                .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
+        when(mockStub.getGroup(any())).thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
 
         assertThrows(AcademicServiceUnavailableException.class, () -> client.getGroup(7L));
     }
@@ -84,9 +78,7 @@ class AcademicGrpcClientTest {
 
         client.getGroupMembers(7L);
 
-        verify(mockStub).getGroupMembers(GroupMembersRequest.newBuilder()
-                .setGroupId(7L)
-                .build());
+        verify(mockStub).getGroupMembers(GroupMembersRequest.newBuilder().setGroupId(7L).build());
     }
 
     @Test
@@ -111,11 +103,13 @@ class AcademicGrpcClientTest {
 
         client.getGroupMembers(7L, LocalDate.of(2026, 4, 20), 3L);
 
-        verify(mockStub).getGroupMembers(GroupMembersRequest.newBuilder()
-                .setGroupId(7L)
-                .setAsOfDate("2026-04-20")
-                .setSemesterId(3L)
-                .build());
+        verify(mockStub)
+                .getGroupMembers(
+                        GroupMembersRequest.newBuilder()
+                                .setGroupId(7L)
+                                .setAsOfDate("2026-04-20")
+                                .setSemesterId(3L)
+                                .build());
     }
 
     @Test
@@ -158,76 +152,107 @@ class AcademicGrpcClientTest {
 
         client.isHeadman(100L, 7L);
 
-        verify(mockStub).isHeadman(HeadmanCheckRequest.newBuilder()
-                .setUserId(100L)
-                .setGroupId(7L)
-                .build());
+        verify(mockStub)
+                .isHeadman(HeadmanCheckRequest.newBuilder().setUserId(100L).setGroupId(7L).build());
     }
 
     @Test
     void isHeadman_unavailable_throwsAcademicServiceUnavailableException() {
-        when(mockStub.isHeadman(any()))
-                .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
+        when(mockStub.isHeadman(any())).thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
 
         assertThrows(AcademicServiceUnavailableException.class, () -> client.isHeadman(100L, 7L));
     }
 
     @Test
     void getSubjectDetailsByIds_returnsNamesAndTypes() {
-        when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
-                .addSubjects(SubjectInfo.newBuilder()
-                        .setSubjectId(5L)
-                        .setSubjectName("Math")
-                        .setSubjectType("lab")
-                        .build())
-                .build());
+        when(mockStub.getSubjectsByIds(any()))
+                .thenReturn(
+                        SubjectsByIdsResponse.newBuilder()
+                                .addSubjects(
+                                        SubjectInfo.newBuilder()
+                                                .setSubjectId(5L)
+                                                .setSubjectName("Math")
+                                                .setSubjectType("lab")
+                                                .build())
+                                .build());
 
         var result = client.getSubjectDetailsByIds(List.of(5L));
 
         assertThat(result).containsEntry(5L, new AcademicGrpcClient.SubjectDetails("Math", "lab"));
-        verify(mockStub).getSubjectsByIds(SubjectsByIdsRequest.newBuilder()
-                .addSubjectIds(5L)
-                .build());
+        verify(mockStub)
+                .getSubjectsByIds(SubjectsByIdsRequest.newBuilder().addSubjectIds(5L).build());
     }
 
     @Test
     void subjectOwnerAndActualTypesRemainDistinctFromLegacyPrimaryType() {
-        when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
-                .addSubjects(SubjectInfo.newBuilder().setSubjectId(5).setSubjectName("Math").setSubjectType("lecture")
-                        .setGroupId(10).addAllLessonTypes(List.of("lecture", "practice")).build()).build());
-        assertThat(client.getSubjectDetailsByIds(List.of(5L))).containsEntry(5L,
-                new AcademicGrpcClient.SubjectDetails("Math", "lecture", 10, List.of("lecture", "practice")));
+        when(mockStub.getSubjectsByIds(any()))
+                .thenReturn(
+                        SubjectsByIdsResponse.newBuilder()
+                                .addSubjects(
+                                        SubjectInfo.newBuilder()
+                                                .setSubjectId(5)
+                                                .setSubjectName("Math")
+                                                .setSubjectType("lecture")
+                                                .setGroupId(10)
+                                                .addAllLessonTypes(List.of("lecture", "practice"))
+                                                .build())
+                                .build());
+        assertThat(client.getSubjectDetailsByIds(List.of(5L)))
+                .containsEntry(
+                        5L,
+                        new AcademicGrpcClient.SubjectDetails(
+                                "Math", "lecture", 10, List.of("lecture", "practice")));
     }
 
     @Test
     void getSubjectsByIds_keepsNameOnlyCompatibility() {
-        when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
-                .addSubjects(SubjectInfo.newBuilder()
-                        .setSubjectId(5L)
-                        .setSubjectName("Math")
-                        .setSubjectType("lecture")
-                        .build())
-                .build());
+        when(mockStub.getSubjectsByIds(any()))
+                .thenReturn(
+                        SubjectsByIdsResponse.newBuilder()
+                                .addSubjects(
+                                        SubjectInfo.newBuilder()
+                                                .setSubjectId(5L)
+                                                .setSubjectName("Math")
+                                                .setSubjectType("lecture")
+                                                .build())
+                                .build());
 
         assertThat(client.getSubjectsByIds(List.of(5L))).containsEntry(5L, "Math");
     }
 
     @Test
     void auditNamesRemainOptionalWithinPageDeadlineAndKeepExistingRequestNameSemantics() {
-        when(mockStub.getUserById(any())).thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).build());
+        when(mockStub.getUserById(any()))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).build());
         assertThat(client.getUserDisplayName(8L)).isEqualTo("Студент #8");
         when(mockStub.withDeadline(any())).thenReturn(mockStub);
         when(mockStub.getUserById(any()))
-                .thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).setDisplayName("Иванов Иван Ильич").build())
-                .thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).build())
-                .thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(9).setDisplayName("Другой Автор").build())
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.UserResponse.newBuilder()
+                                .setId(8)
+                                .setDisplayName("Иванов Иван Ильич")
+                                .build())
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).build())
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.UserResponse.newBuilder()
+                                .setId(9)
+                                .setDisplayName("Другой Автор")
+                                .build())
                 .thenThrow(new StatusRuntimeException(Status.NOT_FOUND))
                 .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
         var deadline = io.grpc.Deadline.after(1, java.util.concurrent.TimeUnit.MINUTES);
         assertThat(client.getAuditUserDisplayName(8L, deadline)).isEqualTo("Иванов Иван Ильич");
-        for (int attempt = 0; attempt < 4; attempt++) assertThat(client.getAuditUserDisplayName(8L, deadline)).isNull();
+        for (int attempt = 0; attempt < 4; attempt++)
+            assertThat(client.getAuditUserDisplayName(8L, deadline)).isNull();
         org.mockito.Mockito.clearInvocations(mockStub);
-        assertThat(client.getAuditUserDisplayName(8L, io.grpc.Deadline.after(-1, java.util.concurrent.TimeUnit.NANOSECONDS))).isNull();
+        assertThat(
+                        client.getAuditUserDisplayName(
+                                8L,
+                                io.grpc.Deadline.after(
+                                        -1, java.util.concurrent.TimeUnit.NANOSECONDS)))
+                .isNull();
         org.mockito.Mockito.verify(mockStub, org.mockito.Mockito.never()).getUserById(any());
     }
 }

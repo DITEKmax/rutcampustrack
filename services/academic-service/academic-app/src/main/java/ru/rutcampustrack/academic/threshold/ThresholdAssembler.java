@@ -1,22 +1,25 @@
 package ru.rutcampustrack.academic.threshold;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.contract.dto.threshold.ThresholdResponse;
 import ru.rutcampustrack.academic.entity.AttendanceThreshold;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
 @Component
-public class ThresholdAssembler implements RepresentationModelAssembler<AttendanceThreshold, EntityModel<ThresholdResponse>> {
+public class ThresholdAssembler
+        implements RepresentationModelAssembler<
+                AttendanceThreshold, EntityModel<ThresholdResponse>> {
 
     @Override
     public EntityModel<ThresholdResponse> toModel(AttendanceThreshold threshold) {
         ThresholdResponse response = toResponse(threshold);
-        return EntityModel.of(response,
-                linkTo(methodOn(ThresholdController.class).listThresholds(null, null)).withSelfRel()
-        );
+        return EntityModel.of(
+                response,
+                linkTo(methodOn(ThresholdController.class).listThresholds(null, null))
+                        .withSelfRel());
     }
 
     public ThresholdResponse toResponse(AttendanceThreshold threshold) {

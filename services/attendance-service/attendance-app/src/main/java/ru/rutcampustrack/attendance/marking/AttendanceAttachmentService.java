@@ -1,20 +1,5 @@
 package ru.rutcampustrack.attendance.marking;
 
-import org.bson.types.Binary;
-import org.bson.types.ObjectId;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
-import ru.rutcampustrack.attendance.studentrequest.AttachmentState;
-import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
-import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
-import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -26,12 +11,25 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import org.bson.types.Binary;
+import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
+import ru.rutcampustrack.attendance.studentrequest.AttachmentState;
+import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
 
 /**
- * Stores one manual excuse attachment using the existing request attachment
- * collection and its retention policy. The pair key is deliberately internal;
- * callers receive only a metadata projection and use the authorized stream
- * endpoint rather than a storage URL.
+ * Stores one manual excuse attachment using the existing request attachment collection and its
+ * retention policy. The pair key is deliberately internal; callers receive only a metadata
+ * projection and use the authorized stream endpoint rather than a storage URL.
  */
 @Service
 public class AttendanceAttachmentService implements JournalAttachmentPort {
@@ -49,31 +47,34 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
     }
 
     @Transactional(transactionManager = "mongoTransactionManager")
-    public StoredAttachment replace(long semesterId, long lessonId, long userId, long groupId, MultipartFile file) {
+    public StoredAttachment replace(
+            long semesterId, long lessonId, long userId, long groupId, MultipartFile file) {
         requireSemesterId(semesterId);
         ValidatedFile validated = validate(file);
         String pairKey = PairWriteCoordinator.pairId(userId, lessonId);
         deletePairAttachments(pairKey, userId, groupId, semesterId);
 
         Instant now = clock.instant();
-        RequestAttachmentDocument document = RequestAttachmentDocument.builder()
-                .id(new ObjectId().toHexString())
-                .requestId(pairKey)
-                .ownerStudentId(userId)
-                .groupId(groupId)
-                .semesterId(semesterId)
-                .position(0)
-                .name(validated.name())
-                .contentType(validated.contentType())
-                .size((long) validated.bytes().length)
-                .sha256(validated.sha256())
-                .state(AttachmentState.ACTIVE)
-                .data(new Binary(validated.bytes()))
-                .uploadedAt(now)
-                .expiresAt(now.atZone(ZoneOffset.UTC).plusYears(1).toInstant())
-                .build();
+        RequestAttachmentDocument document =
+                RequestAttachmentDocument.builder()
+                        .id(new ObjectId().toHexString())
+                        .requestId(pairKey)
+                        .ownerStudentId(userId)
+                        .groupId(groupId)
+                        .semesterId(semesterId)
+                        .position(0)
+                        .name(validated.name())
+                        .contentType(validated.contentType())
+                        .size((long) validated.bytes().length)
+                        .sha256(validated.sha256())
+                        .state(AttachmentState.ACTIVE)
+                        .data(new Binary(validated.bytes()))
+                        .uploadedAt(now)
+                        .expiresAt(now.atZone(ZoneOffset.UTC).plusYears(1).toInstant())
+                        .build();
         RequestAttachmentDocument saved = repository.save(document);
-        return new StoredAttachment(saved.getId(), saved.getName(), saved.getContentType(), saved.getSize());
+        return new StoredAttachment(
+                saved.getId(), saved.getName(), saved.getContentType(), saved.getSize());
     }
 
     @Override
@@ -85,26 +86,31 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
     }
 
     /**
-     * Rebinds only the operational user:lesson access key. The attachment id,
-     * descriptor, bytes, ownership and retention timestamps remain unchanged.
-     * Caller holds the source and target lesson fences in the same Mongo tx.
+     * Rebinds only the operational user:lesson access key. The attachment id, descriptor, bytes,
+     * ownership and retention timestamps remain unchanged. Caller holds the source and target
+     * lesson fences in the same Mongo tx.
      */
     @Transactional(transactionManager = "mongoTransactionManager")
-    public void remapLessonAccessKeys(long groupId,
-                                      long semesterId,
-                                      long sourceLessonId,
-                                      long targetLessonId,
-                                      List<RequestAttachmentDocument> attachments) {
+    public void remapLessonAccessKeys(
+            long groupId,
+            long semesterId,
+            long sourceLessonId,
+            long targetLessonId,
+            List<RequestAttachmentDocument> attachments) {
         requireSemesterId(semesterId);
         if (attachments == null || attachments.isEmpty()) return;
         for (RequestAttachmentDocument attachment : attachments) {
             Long owner = attachment.getOwnerStudentId();
-            String sourceKey = owner == null ? null : PairWriteCoordinator.pairId(owner, sourceLessonId);
+            String sourceKey =
+                    owner == null ? null : PairWriteCoordinator.pairId(owner, sourceLessonId);
             if (!Objects.equals(attachment.getGroupId(), groupId)
-                    || (attachment.getSemesterId() != null && attachment.getSemesterId() != semesterId)
-                    || owner == null || owner <= 0
+                    || (attachment.getSemesterId() != null
+                            && attachment.getSemesterId() != semesterId)
+                    || owner == null
+                    || owner <= 0
                     || !Objects.equals(attachment.getRequestId(), sourceKey)) {
-                throw new IllegalStateException("Attendance attachment access reference changed during transfer");
+                throw new IllegalStateException(
+                        "Attendance attachment access reference changed during transfer");
             }
             attachment.setRequestId(PairWriteCoordinator.pairId(owner, targetLessonId));
             attachment.setSemesterId(semesterId);
@@ -131,8 +137,13 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
 
     public AttachmentDownload download(long lessonId, long userId, String attachmentId) {
         String pairKey = PairWriteCoordinator.pairId(userId, lessonId);
-        RequestAttachmentDocument document = repository.findById(attachmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("AttendanceAttachment", "id", attachmentId));
+        RequestAttachmentDocument document =
+                repository
+                        .findById(attachmentId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "AttendanceAttachment", "id", attachmentId));
         if (!Objects.equals(document.getRequestId(), pairKey)
                 || !Objects.equals(document.getOwnerStudentId(), userId)) {
             throw new ResourceNotFoundException("AttendanceAttachment", "id", attachmentId);
@@ -146,7 +157,8 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
         if (document.getData() == null) {
             throw new ResponseStatusException(HttpStatus.GONE, "Вложение больше недоступно");
         }
-        return new AttachmentDownload(document.getData().getData(), document.getContentType(), document.getName());
+        return new AttachmentDownload(
+                document.getData().getData(), document.getContentType(), document.getName());
     }
 
     private static void requireSemesterId(long semesterId) {
@@ -154,12 +166,14 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
     }
 
     private void deletePairAttachments(String pairKey, long userId, long groupId, long semesterId) {
-        List<RequestAttachmentDocument> documents = repository
-                .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(pairKey, userId);
+        List<RequestAttachmentDocument> documents =
+                repository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(pairKey, userId);
         for (RequestAttachmentDocument document : documents) {
             if (!Objects.equals(document.getGroupId(), groupId)
-                    || (document.getSemesterId() != null && document.getSemesterId() != semesterId)) {
-                throw new IllegalStateException("Attendance attachment scope does not match its lesson");
+                    || (document.getSemesterId() != null
+                            && document.getSemesterId() != semesterId)) {
+                throw new IllegalStateException(
+                        "Attendance attachment scope does not match its lesson");
             }
         }
         repository.deleteAll(documents);
@@ -173,8 +187,10 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
             throw new BadRequestException("Размер вложения не должен превышать 10 МБ");
         }
         String name = safeFilename(file.getOriginalFilename());
-        String declared = file.getContentType() == null
-                ? "" : file.getContentType().strip().toLowerCase(Locale.ROOT);
+        String declared =
+                file.getContentType() == null
+                        ? ""
+                        : file.getContentType().strip().toLowerCase(Locale.ROOT);
         String extension = extension(name);
         if (!ALLOWED_TYPES.contains(declared)
                 || !List.of(".jpg", ".jpeg", ".png", ".pdf").contains(extension)) {
@@ -215,20 +231,29 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
         return ("application/pdf".equals(contentType) && ".pdf".equals(extension))
                 || ("image/png".equals(contentType) && ".png".equals(extension))
                 || ("image/jpeg".equals(contentType)
-                && (".jpg".equals(extension) || ".jpeg".equals(extension)));
+                        && (".jpg".equals(extension) || ".jpeg".equals(extension)));
     }
 
     private static String detectType(byte[] bytes) {
-        if (bytes.length >= 5 && new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-")) {
+        if (bytes.length >= 5
+                && new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-")) {
             return "application/pdf";
         }
-        if (bytes.length >= 8 && (bytes[0] & 0xff) == 0x89 && bytes[1] == 0x50
-                && bytes[2] == 0x4e && bytes[3] == 0x47 && bytes[4] == 0x0d
-                && bytes[5] == 0x0a && bytes[6] == 0x1a && bytes[7] == 0x0a) {
+        if (bytes.length >= 8
+                && (bytes[0] & 0xff) == 0x89
+                && bytes[1] == 0x50
+                && bytes[2] == 0x4e
+                && bytes[3] == 0x47
+                && bytes[4] == 0x0d
+                && bytes[5] == 0x0a
+                && bytes[6] == 0x1a
+                && bytes[7] == 0x0a) {
             return "image/png";
         }
-        if (bytes.length >= 3 && (bytes[0] & 0xff) == 0xff
-                && (bytes[1] & 0xff) == 0xd8 && (bytes[2] & 0xff) == 0xff) {
+        if (bytes.length >= 3
+                && (bytes[0] & 0xff) == 0xff
+                && (bytes[1] & 0xff) == 0xd8
+                && (bytes[2] & 0xff) == 0xff) {
             return "image/jpeg";
         }
         return "";

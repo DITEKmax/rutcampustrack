@@ -1,5 +1,10 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,17 +14,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
- * End-to-end тест BUG-006-1: GET /academic/users?search=... case-insensitive
- * фильтрация по login/ФИО/telegramId.
+ * End-to-end тест BUG-006-1: GET /academic/users?search=... case-insensitive фильтрация по
+ * login/ФИО/telegramId.
  *
- * <p>Запускается против Testcontainers PostgreSQL (см. AbstractAcademicIntegrationTest).
- * Каждый тест — @Transactional, автоматический откат.
+ * <p>Запускается против Testcontainers PostgreSQL (см. AbstractAcademicIntegrationTest). Каждый
+ * тест — @Transactional, автоматический откат.
  */
 @AutoConfigureMockMvc
 @Transactional
@@ -32,46 +32,52 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        seedAdminId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        seedAdminId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
 
         // Сидируем предсказуемых пользователей — имена выбраны так, чтобы НЕ
         // пересекаться с BUG-006 seed-юзерами ('admin', 'student', 'teacher').
         jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, " +
-                        "role, status, is_headman, password_changed, created_at, updated_at) VALUES " +
-                        "('srch_ivn1', 'x', 'Иванов', 'Иван',     'Иванович',   'student', 'active', false, false, NOW(), NOW())," +
-                        "('srch_ivn2', 'x', 'Иванова','Ирина',    'Петровна',   'student', 'active', false, false, NOW(), NOW())," +
-                        "('srch_ptrv', 'x', 'Петров', 'Пётр',     'Петрович',   'student', 'active', false, false, NOW(), NOW())," +
-                        "('srch_sdrv', 'x', 'Сидоров','Семён',    NULL,         'student', 'active', false, false, NOW(), NOW())"
-        );
+                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, "
+                        + "role, status, is_headman, password_changed, created_at, updated_at) VALUES "
+                        + "('srch_ivn1', 'x', 'Иванов', 'Иван',     'Иванович',   'student', 'active', false, false, NOW(), NOW()),"
+                        + "('srch_ivn2', 'x', 'Иванова','Ирина',    'Петровна',   'student', 'active', false, false, NOW(), NOW()),"
+                        + "('srch_ptrv', 'x', 'Петров', 'Пётр',     'Петрович',   'student', 'active', false, false, NOW(), NOW()),"
+                        + "('srch_sdrv', 'x', 'Сидоров','Семён',    NULL,         'student', 'active', false, false, NOW(), NOW())");
 
-        Long activeTeacherId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, " +
-                        "role, status, is_headman, employee_number, password_changed, created_at, updated_at) " +
-                        "VALUES ('srch_teacher_active', 'x', 'Иванов', 'Иван', 'Преподаватель', " +
-                        "'student', 'active', false, 'EMP-SRCH-01', false, NOW(), NOW()) RETURNING id",
-                Long.class);
-        Long suspendedTeacherId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, " +
-                        "role, status, is_headman, employee_number, password_changed, created_at, updated_at) " +
-                        "VALUES ('srch_teacher_suspended', 'x', 'Иванов', 'Иван', 'Скрытый', " +
-                        "'teacher', 'active', false, 'EMP-SRCH-02', false, NOW(), NOW()) RETURNING id",
-                Long.class);
+        Long activeTeacherId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, "
+                                + "role, status, is_headman, employee_number, password_changed, created_at, updated_at) "
+                                + "VALUES ('srch_teacher_active', 'x', 'Иванов', 'Иван', 'Преподаватель', "
+                                + "'student', 'active', false, 'EMP-SRCH-01', false, NOW(), NOW()) RETURNING id",
+                        Long.class);
+        Long suspendedTeacherId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, "
+                                + "role, status, is_headman, employee_number, password_changed, created_at, updated_at) "
+                                + "VALUES ('srch_teacher_suspended', 'x', 'Иванов', 'Иван', 'Скрытый', "
+                                + "'teacher', 'active', false, 'EMP-SRCH-02', false, NOW(), NOW()) RETURNING id",
+                        Long.class);
         jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) " +
-                        "VALUES (?, 'teacher', 'active', NULL, NOW(), NOW()), " +
-                        "       (?, 'teacher', 'suspended', NULL, NOW(), NOW())",
-                activeTeacherId, suspendedTeacherId);
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'teacher', 'active', NULL, NOW(), NOW()), "
+                        + "       (?, 'teacher', 'suspended', NULL, NOW(), NOW())",
+                activeTeacherId,
+                suspendedTeacherId);
     }
 
-    private org.springframework.test.web.servlet.ResultActions listAs(String searchParam) throws Exception {
-        var rb = get("/academic/users")
-                .header("X-User-Id", seedAdminId)
-                .header("X-User-Role", "ADMIN").with(signedAdmin())
-                .header("X-Group-Id", "")
-                .header("X-Is-Headman", "false")
-                .param("size", "100");
+    private org.springframework.test.web.servlet.ResultActions listAs(String searchParam)
+            throws Exception {
+        var rb =
+                get("/academic/users")
+                        .header("X-User-Id", seedAdminId)
+                        .header("X-User-Role", "ADMIN")
+                        .with(signedAdmin())
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .param("size", "100");
         if (searchParam != null) {
             rb = rb.param("search", searchParam);
         }
@@ -82,18 +88,24 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
     void search_caseInsensitive_filtersByLastName() throws Exception {
         listAs("иван")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.userResponseList[*].login",
-                        hasItems("srch_ivn1", "srch_ivn2")))
-                .andExpect(jsonPath("$._embedded.userResponseList[*].login",
-                        not(hasItem("srch_ptrv"))));
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.userResponseList[*].login",
+                                hasItems("srch_ivn1", "srch_ivn2")))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.userResponseList[*].login",
+                                not(hasItem("srch_ptrv"))));
     }
 
     @Test
     void search_uppercase_matchesSameResultsAsLowercase() throws Exception {
         listAs("ИВАН")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.userResponseList[*].login",
-                        hasItems("srch_ivn1", "srch_ivn2")));
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.userResponseList[*].login",
+                                hasItems("srch_ivn1", "srch_ivn2")));
     }
 
     @Test
@@ -114,26 +126,32 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void teacherLookup_usesFullNameActiveGrantAndSafePagedDto() throws Exception {
-        Long studentId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'student'", Long.class);
+        Long studentId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'student'", Long.class);
 
-        mockMvc.perform(get("/academic/users/teachers/search")
-                        .header("X-User-Id", studentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false")
-                        .param("search", "Иванов Иван")
-                        .param("size", "100"))
+        mockMvc.perform(
+                        get("/academic/users/teachers/search")
+                                .header("X-User-Id", studentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false")
+                                .param("search", "Иванов Иван")
+                                .param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements", is(1)))
-                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].fullName",
-                        is("Иванов Иван Преподаватель")))
-                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].employeeNumber",
-                        is("EMP-SRCH-01")))
-                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].login")
-                        .doesNotExist())
-                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].roles")
-                        .doesNotExist());
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.teacherLookupResponseList[0].fullName",
+                                is("Иванов Иван Преподаватель")))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.teacherLookupResponseList[0].employeeNumber",
+                                is("EMP-SRCH-01")))
+                .andExpect(
+                        jsonPath("$._embedded.teacherLookupResponseList[0].login").doesNotExist())
+                .andExpect(
+                        jsonPath("$._embedded.teacherLookupResponseList[0].roles").doesNotExist());
     }
 
     @Test
@@ -142,8 +160,10 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
         // Used "SRCH" (no underscore) → должен совпасть с префиксом всех четырёх seed-логинов.
         listAs("SRCH")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.userResponseList[*].login",
-                        hasItems("srch_ivn1", "srch_ivn2", "srch_ptrv", "srch_sdrv")));
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.userResponseList[*].login",
+                                hasItems("srch_ivn1", "srch_ivn2", "srch_ptrv", "srch_sdrv")));
     }
 
     @Test

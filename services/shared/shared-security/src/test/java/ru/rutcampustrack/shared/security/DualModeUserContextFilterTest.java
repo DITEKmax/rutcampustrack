@@ -1,19 +1,18 @@
 package ru.rutcampustrack.shared.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 class DualModeUserContextFilterTest {
 
@@ -29,14 +28,15 @@ class DualModeUserContextFilterTest {
     }
 
     private TestFilter filter(boolean legacyEnabled) {
-        InternalJwtProperties props = new InternalJwtProperties(
-                null, 0, 0, legacyEnabled, null, null, null);
-        PublicKeyProvider keyProvider = new PublicKeyProvider(props) {
-            @Override
-            public java.security.PublicKey getPublicKey() {
-                return factory.publicKey();
-            }
-        };
+        InternalJwtProperties props =
+                new InternalJwtProperties(null, 0, 0, legacyEnabled, null, null, null);
+        PublicKeyProvider keyProvider =
+                new PublicKeyProvider(props) {
+                    @Override
+                    public java.security.PublicKey getPublicKey() {
+                        return factory.publicKey();
+                    }
+                };
         InternalJwtValidator validator = new InternalJwtValidator(keyProvider, props);
         return new TestFilter(validator, props);
     }
@@ -45,15 +45,17 @@ class DualModeUserContextFilterTest {
     void internalToken_applied_chainContinues() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Internal-Token", factory.validToken(
-                42L, SESSION_ID, 1L, 1L, "HEADMAN", "ACTIVE", 7L, true, false));
+        request.addHeader(
+                "X-Internal-Token",
+                factory.validToken(42L, SESSION_ID, 1L, 1L, "HEADMAN", "ACTIVE", 7L, true, false));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, chain);
 
         assertThat(filter.appliedClaims.get())
-                .isEqualTo(new InternalJwtClaims(
-                        42L, SESSION_ID, 1L, 1L, "HEADMAN", "ACTIVE", 7L, true, false));
+                .isEqualTo(
+                        new InternalJwtClaims(
+                                42L, SESSION_ID, 1L, 1L, "HEADMAN", "ACTIVE", 7L, true, false));
         assertThat(filter.legacyApplied).isFalse();
         assertThat(response.getStatus()).isEqualTo(200);
         verify(chain).doFilter(request, response);
@@ -63,12 +65,28 @@ class DualModeUserContextFilterTest {
     void invalidInternalToken_returns401() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Internal-Token", new InternalJwtTestFactory().buildToken(
-                42L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false,
-                java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
-                java.time.Instant.now().plusSeconds(60).truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
-                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal",
-                new InternalJwtTestFactory().keyPair()));
+        request.addHeader(
+                "X-Internal-Token",
+                new InternalJwtTestFactory()
+                        .buildToken(
+                                42L,
+                                SESSION_ID,
+                                1L,
+                                1L,
+                                "ADMIN",
+                                "ACTIVE",
+                                null,
+                                false,
+                                false,
+                                java.time.Instant.now()
+                                        .truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
+                                java.time.Instant.now()
+                                        .plusSeconds(60)
+                                        .truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
+                                InternalJwtTestFactory.ISSUER,
+                                InternalJwtTestFactory.AUDIENCE,
+                                "internal",
+                                new InternalJwtTestFactory().keyPair()));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, chain);
@@ -132,12 +150,16 @@ class DualModeUserContextFilterTest {
 
     @Test
     void infrastructurePath_skipsFilter_evenInStrictMode() throws Exception {
-        TestFilter filter = filter(false);  // strict mode (legacyHeadersEnabled=false)
-        for (String path : new String[]{
-                "/actuator/health", "/actuator/prometheus", "/actuator/info",
-                "/api-docs", "/v3/api-docs/swagger-config",
-                "/swagger-ui/index.html"
-        }) {
+        TestFilter filter = filter(false); // strict mode (legacyHeadersEnabled=false)
+        for (String path :
+                new String[] {
+                    "/actuator/health",
+                    "/actuator/prometheus",
+                    "/actuator/info",
+                    "/api-docs",
+                    "/v3/api-docs/swagger-config",
+                    "/swagger-ui/index.html"
+                }) {
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.setRequestURI(path);
             // no X-Internal-Token, no X-User-* — in strict mode normally → 401,
@@ -158,8 +180,10 @@ class DualModeUserContextFilterTest {
     void internalTokenTakesPrecedence_overLegacyHeaders() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Internal-Token", factory.validToken(
-                99L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false));
+        request.addHeader(
+                "X-Internal-Token",
+                factory.validToken(
+                        99L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false));
         request.addHeader("X-User-Id", "1"); // should be ignored
         request.addHeader("X-User-Role", "ADMIN"); // should be ignored
         MockHttpServletResponse response = new MockHttpServletResponse();

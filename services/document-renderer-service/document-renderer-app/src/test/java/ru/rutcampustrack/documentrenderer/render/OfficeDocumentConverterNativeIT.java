@@ -1,5 +1,8 @@
 package ru.rutcampustrack.documentrenderer.render;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
@@ -9,16 +12,6 @@ import io.grpc.Status;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.MetadataUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.test.util.ReflectionTestUtils;
-import ru.rutcampustrack.documentrenderer.grpc.ConvertDocumentRequest;
-import ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceGrpc;
-import ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImpl;
-import ru.rutcampustrack.documentrenderer.grpc.GrpcAuthInterceptor;
-import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -29,9 +22,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import javax.imageio.ImageIO;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.test.util.ReflectionTestUtils;
+import ru.rutcampustrack.documentrenderer.grpc.ConvertDocumentRequest;
+import ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceGrpc;
+import ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImpl;
+import ru.rutcampustrack.documentrenderer.grpc.GrpcAuthInterceptor;
+import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 
 /** Requires real LibreOffice Writer and Poppler; absent tools are failures, never skips. */
 class OfficeDocumentConverterNativeIT {
@@ -49,12 +48,18 @@ class OfficeDocumentConverterNativeIT {
         Path pdfFile = evidence.resolve("two-pages.pdf");
         Files.write(pdfFile, pdf);
         ProcessRunner parser = new ProcessRunner();
-        var text = parser.run(List.of("pdftotext", "-layout", pdfFile.toString(), "-"),
-                evidence, Duration.ofSeconds(10));
+        var text =
+                parser.run(
+                        List.of("pdftotext", "-layout", pdfFile.toString(), "-"),
+                        evidence,
+                        Duration.ofSeconds(10));
         assertThat(text.exitCode()).isZero();
         assertThat(text.output()).contains("FIRST PAGE", "SECOND PAGE", "Синтетический отчёт");
-        assertThat(text.output().indexOf("FIRST PAGE")).isLessThan(text.output().indexOf("SECOND PAGE"));
-        var info = parser.run(List.of("pdfinfo", pdfFile.toString()), evidence, Duration.ofSeconds(10));
+        assertThat(text.output().indexOf("FIRST PAGE"))
+                .isLessThan(text.output().indexOf("SECOND PAGE"));
+        var info =
+                parser.run(
+                        List.of("pdfinfo", pdfFile.toString()), evidence, Duration.ofSeconds(10));
         assertThat(info.exitCode()).isZero();
         assertThat(info.output()).containsPattern("Pages:\\s+2(?:\\s|$)");
 
@@ -82,7 +87,9 @@ class OfficeDocumentConverterNativeIT {
         assertColorPatch(images.get(1), false);
         assertThat(images.get(0).getWidth()).isEqualTo(single.getWidth());
         assertThat(images.get(0).getHeight()).isEqualTo(single.getHeight());
-        assertThat(runner.directories).isNotEmpty().allSatisfy(path -> assertThat(path).doesNotExist());
+        assertThat(runner.directories)
+                .isNotEmpty()
+                .allSatisfy(path -> assertThat(path).doesNotExist());
     }
 
     private static void retainEvidence(String name, byte[] content) throws Exception {
@@ -99,30 +106,49 @@ class OfficeDocumentConverterNativeIT {
         ObservingProcessRunner runner = new ObservingProcessRunner();
         OfficeDocumentConverter converter = new OfficeDocumentConverter(properties(), runner);
         // A malformed ZIP container cannot be accepted as DOCX.
-        assertThatThrownBy(() -> converter.convertToPdf(new byte[]{'P', 'K', 5, 6}))
+        assertThatThrownBy(() -> converter.convertToPdf(new byte[] {'P', 'K', 5, 6}))
                 .isInstanceOf(DocumentConversionException.class);
-        assertThat(runner.directories).as("invalid input never starts an external converter").isEmpty();
+        assertThat(runner.directories)
+                .as("invalid input never starts an external converter")
+                .isEmpty();
     }
 
-    private static byte[] convertPdfViaAuthenticatedRpc(OfficeDocumentConverter converter, byte[] docx)
-            throws Exception {
+    private static byte[] convertPdfViaAuthenticatedRpc(
+            OfficeDocumentConverter converter, byte[] docx) throws Exception {
         GrpcAuthInterceptor auth = new GrpcAuthInterceptor();
         ReflectionTestUtils.setField(auth, "expectedSecret", "renderer-synthetic-admission");
-        Server server = NettyServerBuilder.forPort(0)
-                .addService(ServerInterceptors.intercept(new DocumentRendererGrpcServiceImpl(converter), auth))
-                .build().start();
-        ManagedChannel channel = NettyChannelBuilder.forAddress("127.0.0.1", server.getPort())
-                .usePlaintext().build();
+        Server server =
+                NettyServerBuilder.forPort(0)
+                        .addService(
+                                ServerInterceptors.intercept(
+                                        new DocumentRendererGrpcServiceImpl(converter), auth))
+                        .build()
+                        .start();
+        ManagedChannel channel =
+                NettyChannelBuilder.forAddress("127.0.0.1", server.getPort())
+                        .usePlaintext()
+                        .build();
         try {
-            var request = ConvertDocumentRequest.newBuilder().setDocx(ByteString.copyFrom(docx))
-                    .setTargetFormat(TargetFormat.PDF).build();
-            var stub = DocumentRendererGrpcServiceGrpc.newBlockingStub(channel).withDeadlineAfter(30, TimeUnit.SECONDS);
-            assertThatThrownBy(() -> stub.convert(request)).satisfies(error ->
-                    assertThat(Status.fromThrowable(error).getCode()).isEqualTo(Status.Code.UNAUTHENTICATED));
+            var request =
+                    ConvertDocumentRequest.newBuilder()
+                            .setDocx(ByteString.copyFrom(docx))
+                            .setTargetFormat(TargetFormat.PDF)
+                            .build();
+            var stub =
+                    DocumentRendererGrpcServiceGrpc.newBlockingStub(channel)
+                            .withDeadlineAfter(30, TimeUnit.SECONDS);
+            assertThatThrownBy(() -> stub.convert(request))
+                    .satisfies(
+                            error ->
+                                    assertThat(Status.fromThrowable(error).getCode())
+                                            .isEqualTo(Status.Code.UNAUTHENTICATED));
             Metadata headers = new Metadata();
-            headers.put(Metadata.Key.of("x-grpc-secret", Metadata.ASCII_STRING_MARSHALLER),
+            headers.put(
+                    Metadata.Key.of("x-grpc-secret", Metadata.ASCII_STRING_MARSHALLER),
                     "renderer-synthetic-admission");
-            var response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers)).convert(request);
+            var response =
+                    stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                            .convert(request);
             assertThat(response.getContentType()).isEqualTo("application/pdf");
             assertThat(response.getExtension()).isEqualTo("pdf");
             return response.getContent().toByteArray();
@@ -156,13 +182,16 @@ class OfficeDocumentConverterNativeIT {
                 if (b > 200 && r < 80 && g < 80) blue++;
             }
         }
-        assertThat(redPage ? red : blue).as("page-specific visible color patch").isGreaterThan(1000);
+        assertThat(redPage ? red : blue)
+                .as("page-specific visible color patch")
+                .isGreaterThan(1000);
         assertThat(redPage ? blue : red).as("other page must not replace this page").isZero();
     }
 
     private static DocumentRendererProperties properties() {
         DocumentRendererProperties properties = new DocumentRendererProperties();
-        properties.setLibreofficeCommand(System.getenv().getOrDefault("LIBREOFFICE_COMMAND", "soffice"));
+        properties.setLibreofficeCommand(
+                System.getenv().getOrDefault("LIBREOFFICE_COMMAND", "soffice"));
         properties.setPdftoppmCommand(System.getenv().getOrDefault("PDFTOPPM_COMMAND", "pdftoppm"));
         return properties;
     }

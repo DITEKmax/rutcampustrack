@@ -1,17 +1,21 @@
 package ru.rutcampustrack.mobilebff.grpc;
 
-import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.io.ByteArrayOutputStream;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.CampusMapAssetChunk;
 import ru.rutcampustrack.academic.grpc.CampusMapAssetRequest;
+import ru.rutcampustrack.academic.grpc.CampusMapFloorRequest;
 import ru.rutcampustrack.academic.grpc.CampusMapFormat;
 import ru.rutcampustrack.academic.grpc.CampusMapFormatSlot;
-import ru.rutcampustrack.academic.grpc.CampusMapFormatState;
-import ru.rutcampustrack.academic.grpc.CampusMapFloorRequest;
 import ru.rutcampustrack.academic.grpc.CampusMapManifestRequest;
 import ru.rutcampustrack.academic.grpc.CampusMapManifestResponse;
 import ru.rutcampustrack.academic.grpc.CampusMapOpenAck;
@@ -21,13 +25,6 @@ import ru.rutcampustrack.academic.grpc.CampusMapPlanResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
-
-import java.io.ByteArrayOutputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /** Dedicated Academic gRPC adapter for the role-scoped campus-map reader. */
 @Component
@@ -45,14 +42,20 @@ public class MapAcademicClient {
 
     public ManifestResult manifest(long knownRevision) {
         if (knownRevision < 0) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST,
+                    ProblemCode.INVALID_REQUEST,
                     "Некорректная ревизия карты");
         }
-        CampusMapManifestResponse response = call(() -> auth.attach(stub)
-                .withDeadlineAfter(5, TimeUnit.SECONDS)
-                .getCampusMapManifest(CampusMapManifestRequest.newBuilder()
-                        .setKnownRevision(knownRevision)
-                        .build()));
+        CampusMapManifestResponse response =
+                call(
+                        () ->
+                                auth.attach(stub)
+                                        .withDeadlineAfter(5, TimeUnit.SECONDS)
+                                        .getCampusMapManifest(
+                                                CampusMapManifestRequest.newBuilder()
+                                                        .setKnownRevision(knownRevision)
+                                                        .build()));
         if (response.hasUnchanged()) {
             return new ManifestResult(true, response.getUnchanged().getRevision(), null);
         }
@@ -71,12 +74,18 @@ public class MapAcademicClient {
     }
 
     public StudentMapModels.PlanResponse floorPlan(String buildingId, String floorId) {
-        CampusMapPlanResponse response = call(() -> auth.attach(stub)
-                .withDeadlineAfter(5, TimeUnit.SECONDS)
-                .getCampusFloorPlan(CampusMapFloorRequest.newBuilder()
-                        .setBuildingId(requiredId(buildingId, "buildingId"))
-                        .setFloorId(requiredId(floorId, "floorId"))
-                        .build()));
+        CampusMapPlanResponse response =
+                call(
+                        () ->
+                                auth.attach(stub)
+                                        .withDeadlineAfter(5, TimeUnit.SECONDS)
+                                        .getCampusFloorPlan(
+                                                CampusMapFloorRequest.newBuilder()
+                                                        .setBuildingId(
+                                                                requiredId(
+                                                                        buildingId, "buildingId"))
+                                                        .setFloorId(requiredId(floorId, "floorId"))
+                                                        .build()));
         if (!response.hasPlan()) {
             return new StudentMapModels.PlanResponse(null);
         }
@@ -89,22 +98,29 @@ public class MapAcademicClient {
         }
     }
 
-    public Download asset(String buildingId,
-                          String floorId,
-                          String version,
-                          StudentMapModels.Format format,
-                          String assetId) {
+    public Download asset(
+            String buildingId,
+            String floorId,
+            String version,
+            StudentMapModels.Format format,
+            String assetId) {
         long versionValue = positiveLong(version, "version");
         CampusMapFormat protoFormat = toProtoFormat(format);
-        Iterator<CampusMapAssetChunk> chunks = call(() -> auth.attach(stub)
-                .withDeadlineAfter(15, TimeUnit.SECONDS)
-                .readCampusMapAsset(CampusMapAssetRequest.newBuilder()
-                        .setBuildingId(requiredId(buildingId, "buildingId"))
-                        .setFloorId(requiredId(floorId, "floorId"))
-                        .setVersion(versionValue)
-                        .setFormat(protoFormat)
-                        .setAssetId(requiredId(assetId, "assetId"))
-                        .build()));
+        Iterator<CampusMapAssetChunk> chunks =
+                call(
+                        () ->
+                                auth.attach(stub)
+                                        .withDeadlineAfter(15, TimeUnit.SECONDS)
+                                        .readCampusMapAsset(
+                                                CampusMapAssetRequest.newBuilder()
+                                                        .setBuildingId(
+                                                                requiredId(
+                                                                        buildingId, "buildingId"))
+                                                        .setFloorId(requiredId(floorId, "floorId"))
+                                                        .setVersion(versionValue)
+                                                        .setFormat(protoFormat)
+                                                        .setAssetId(requiredId(assetId, "assetId"))
+                                                        .build()));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         long expectedOffset = 0;
         try {
@@ -114,7 +130,9 @@ public class MapAcademicClient {
                     throw dependencyFailure("Academic Service вернул повреждённый поток карты");
                 }
                 if (expectedOffset + chunk.getData().size() > MAX_ASSET_BYTES) {
-                    throw new MobileBffException(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
+                    throw new MobileBffException(
+                            HttpStatus.PAYLOAD_TOO_LARGE,
+                            ProblemCode.PAYLOAD_TOO_LARGE,
                             "Файл карты превышает допустимый размер");
                 }
                 bytes.writeBytes(chunk.getData().toByteArray());
@@ -135,18 +153,28 @@ public class MapAcademicClient {
 
     public void recordFloorOpen(String buildingId, String floorId, UUID intentId) {
         if (intentId == null) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST,
+                    ProblemCode.INVALID_REQUEST,
                     "Ключ идемпотентности открытия карты обязателен");
         }
-        CampusMapOpenAck response = call(() -> auth.attach(stub)
-                .withDeadlineAfter(5, TimeUnit.SECONDS)
-                .recordCampusFloorOpen(CampusMapOpenRequest.newBuilder()
-                        .setBuildingId(requiredId(buildingId, "buildingId"))
-                        .setFloorId(requiredId(floorId, "floorId"))
-                        .setIntentId(intentId.toString())
-                        .build()));
+        CampusMapOpenAck response =
+                call(
+                        () ->
+                                auth.attach(stub)
+                                        .withDeadlineAfter(5, TimeUnit.SECONDS)
+                                        .recordCampusFloorOpen(
+                                                CampusMapOpenRequest.newBuilder()
+                                                        .setBuildingId(
+                                                                requiredId(
+                                                                        buildingId, "buildingId"))
+                                                        .setFloorId(requiredId(floorId, "floorId"))
+                                                        .setIntentId(intentId.toString())
+                                                        .build()));
         if (!response.getAccepted()) {
-            throw new MobileBffException(HttpStatus.CONFLICT, ProblemCode.REQUEST_CONFLICT,
+            throw new MobileBffException(
+                    HttpStatus.CONFLICT,
+                    ProblemCode.REQUEST_CONFLICT,
                     "Academic Service не принял открытие карты");
         }
     }
@@ -158,15 +186,23 @@ public class MapAcademicClient {
                 source.getValidationPolicyVersion(),
                 Long.toString(source.getRevision()),
                 source.getBuildingsList().stream()
-                        .map(building -> new StudentMapModels.Building(
-                                building.getId(),
-                                building.getLabel(),
-                                building.getFloorsList().stream()
-                                        .map(floor -> new StudentMapModels.Floor(
-                                                floor.getId(),
-                                                floor.getLabel(),
-                                                floor.hasPlan() ? toPlan(floor.getPlan()) : null))
-                                        .toList()))
+                        .map(
+                                building ->
+                                        new StudentMapModels.Building(
+                                                building.getId(),
+                                                building.getLabel(),
+                                                building.getFloorsList().stream()
+                                                        .map(
+                                                                floor ->
+                                                                        new StudentMapModels.Floor(
+                                                                                floor.getId(),
+                                                                                floor.getLabel(),
+                                                                                floor.hasPlan()
+                                                                                        ? toPlan(
+                                                                                                floor
+                                                                                                        .getPlan())
+                                                                                        : null))
+                                                        .toList()))
                         .toList());
     }
 
@@ -181,18 +217,25 @@ public class MapAcademicClient {
     }
 
     private static StudentMapModels.FormatSlot toSlot(CampusMapFormatSlot source) {
-        StudentMapModels.Format format = switch (source.getFormat()) {
-            case CAMPUS_MAP_FORMAT_PNG -> StudentMapModels.Format.png;
-            case CAMPUS_MAP_FORMAT_SVG -> StudentMapModels.Format.svg;
-            default -> throw dependencyFailure("Academic Service вернул неизвестный формат карты");
-        };
-        StudentMapModels.FormatState state = switch (source.getState()) {
-            case CAMPUS_MAP_FORMAT_STATE_ABSENT -> StudentMapModels.FormatState.absent;
-            case CAMPUS_MAP_FORMAT_STATE_PROCESSING -> StudentMapModels.FormatState.processing;
-            case CAMPUS_MAP_FORMAT_STATE_READY -> StudentMapModels.FormatState.ready;
-            case CAMPUS_MAP_FORMAT_STATE_FAILED -> StudentMapModels.FormatState.failed;
-            default -> throw dependencyFailure("Academic Service вернул неизвестное состояние карты");
-        };
+        StudentMapModels.Format format =
+                switch (source.getFormat()) {
+                    case CAMPUS_MAP_FORMAT_PNG -> StudentMapModels.Format.png;
+                    case CAMPUS_MAP_FORMAT_SVG -> StudentMapModels.Format.svg;
+                    default ->
+                            throw dependencyFailure(
+                                    "Academic Service вернул неизвестный формат карты");
+                };
+        StudentMapModels.FormatState state =
+                switch (source.getState()) {
+                    case CAMPUS_MAP_FORMAT_STATE_ABSENT -> StudentMapModels.FormatState.absent;
+                    case CAMPUS_MAP_FORMAT_STATE_PROCESSING ->
+                            StudentMapModels.FormatState.processing;
+                    case CAMPUS_MAP_FORMAT_STATE_READY -> StudentMapModels.FormatState.ready;
+                    case CAMPUS_MAP_FORMAT_STATE_FAILED -> StudentMapModels.FormatState.failed;
+                    default ->
+                            throw dependencyFailure(
+                                    "Academic Service вернул неизвестное состояние карты");
+                };
         return new StudentMapModels.FormatSlot(
                 format,
                 state,
@@ -207,8 +250,8 @@ public class MapAcademicClient {
 
     private static CampusMapFormat toProtoFormat(StudentMapModels.Format format) {
         if (format == null) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
-                    "Формат карты обязателен");
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST, "Формат карты обязателен");
         }
         return format == StudentMapModels.Format.png
                 ? CampusMapFormat.CAMPUS_MAP_FORMAT_PNG
@@ -221,8 +264,8 @@ public class MapAcademicClient {
 
     private static String requiredId(String value, String field) {
         if (value == null || !value.matches("[1-9][0-9]*")) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
-                    "Некорректный " + field);
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST, "Некорректный " + field);
         }
         return value;
     }
@@ -231,8 +274,8 @@ public class MapAcademicClient {
         try {
             return Long.parseLong(requiredId(value, field));
         } catch (NumberFormatException error) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
-                    "Некорректный " + field);
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST, "Некорректный " + field);
         }
     }
 
@@ -250,31 +293,45 @@ public class MapAcademicClient {
 
     private static MobileBffException mapStatus(StatusRuntimeException error) {
         return switch (error.getStatus().getCode()) {
-            case UNAUTHENTICATED -> new MobileBffException(HttpStatus.UNAUTHORIZED,
-                    ProblemCode.INVALID_SESSION, "Сессия недействительна");
-            case PERMISSION_DENIED -> new MobileBffException(HttpStatus.FORBIDDEN,
-                    ProblemCode.OUT_OF_SCOPE, "Карта недоступна в текущей роли или scope");
-            case INVALID_ARGUMENT -> new MobileBffException(HttpStatus.BAD_REQUEST,
-                    ProblemCode.INVALID_REQUEST, "Academic Service отклонил запрос карты");
-            case NOT_FOUND -> new MobileBffException(HttpStatus.NOT_FOUND,
-                    ProblemCode.OUT_OF_SCOPE, "Карта не найдена");
-            case FAILED_PRECONDITION -> new MobileBffException(HttpStatus.CONFLICT,
-                    ProblemCode.REQUEST_CONFLICT, "Формат карты ещё не опубликован");
-            case RESOURCE_EXHAUSTED -> new MobileBffException(HttpStatus.PAYLOAD_TOO_LARGE,
-                    ProblemCode.PAYLOAD_TOO_LARGE, "Файл карты слишком большой");
+            case UNAUTHENTICATED ->
+                    new MobileBffException(
+                            HttpStatus.UNAUTHORIZED,
+                            ProblemCode.INVALID_SESSION,
+                            "Сессия недействительна");
+            case PERMISSION_DENIED ->
+                    new MobileBffException(
+                            HttpStatus.FORBIDDEN,
+                            ProblemCode.OUT_OF_SCOPE,
+                            "Карта недоступна в текущей роли или scope");
+            case INVALID_ARGUMENT ->
+                    new MobileBffException(
+                            HttpStatus.BAD_REQUEST,
+                            ProblemCode.INVALID_REQUEST,
+                            "Academic Service отклонил запрос карты");
+            case NOT_FOUND ->
+                    new MobileBffException(
+                            HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE, "Карта не найдена");
+            case FAILED_PRECONDITION ->
+                    new MobileBffException(
+                            HttpStatus.CONFLICT,
+                            ProblemCode.REQUEST_CONFLICT,
+                            "Формат карты ещё не опубликован");
+            case RESOURCE_EXHAUSTED ->
+                    new MobileBffException(
+                            HttpStatus.PAYLOAD_TOO_LARGE,
+                            ProblemCode.PAYLOAD_TOO_LARGE,
+                            "Файл карты слишком большой");
             default -> dependencyFailure("Academic Service временно недоступен");
         };
     }
 
     private static MobileBffException dependencyFailure(String message) {
-        return new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
-                ProblemCode.DEPENDENCY_UNAVAILABLE, message);
+        return new MobileBffException(
+                HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE, message);
     }
 
-    public record ManifestResult(boolean unchanged, long revision,
-                                 StudentMapModels.ManifestResponse manifest) {
-    }
+    public record ManifestResult(
+            boolean unchanged, long revision, StudentMapModels.ManifestResponse manifest) {}
 
-    public record Download(String contentType, byte[] bytes) {
-    }
+    public record Download(String contentType, byte[] bytes) {}
 }

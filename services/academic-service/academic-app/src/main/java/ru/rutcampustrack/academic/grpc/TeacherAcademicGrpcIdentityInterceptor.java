@@ -8,10 +8,10 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
-import ru.rutcampustrack.teacher.grpc.TeacherAcademicReadServiceGrpc;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
+import ru.rutcampustrack.teacher.grpc.TeacherAcademicReadServiceGrpc;
 
 /** Authenticates only the dedicated teacher academic read service. */
 @GrpcGlobalServerInterceptor
@@ -27,21 +27,21 @@ public final class TeacherAcademicGrpcIdentityInterceptor implements ServerInter
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-            ServerCall<ReqT, RespT> call,
-            Metadata headers,
-            ServerCallHandler<ReqT, RespT> next) {
-        if (!TeacherAcademicReadServiceGrpc.SERVICE_NAME
-                .equals(call.getMethodDescriptor().getServiceName())) {
+            ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        if (!TeacherAcademicReadServiceGrpc.SERVICE_NAME.equals(
+                call.getMethodDescriptor().getServiceName())) {
             return next.startCall(call, headers);
         }
         try {
             InternalJwtClaims claims = validator.validate(headers.get(INTERNAL_TOKEN));
-            Context context = Context.current().withValue(TeacherAcademicGrpcIdentity.CLAIMS, claims);
+            Context context =
+                    Context.current().withValue(TeacherAcademicGrpcIdentity.CLAIMS, claims);
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
-            call.close(Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),
+            call.close(
+                    Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),
                     new Metadata());
-            return new ServerCall.Listener<>() { };
+            return new ServerCall.Listener<>() {};
         }
     }
 }

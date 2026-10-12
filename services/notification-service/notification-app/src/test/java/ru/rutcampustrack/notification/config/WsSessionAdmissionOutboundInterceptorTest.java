@@ -1,5 +1,11 @@
 package ru.rutcampustrack.notification.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -8,13 +14,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.socket.WebSocketSession;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
-
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class WsSessionAdmissionOutboundInterceptorTest {
 
@@ -58,12 +57,21 @@ class WsSessionAdmissionOutboundInterceptorTest {
     }
 
     private void bind(String sessionId, String role) {
-        Map<String, Object> attributes = Map.of(
-                TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE,
-                new WsSessionAdmissionRequest(7, UUID.randomUUID().toString(), 2, 3,
-                        role, "ACTIVE", "ADMIN".equals(role) ? null : 42L, false, false),
-                TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE,
-                UUID.randomUUID().toString());
+        Map<String, Object> attributes =
+                Map.of(
+                        TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE,
+                        new WsSessionAdmissionRequest(
+                                7,
+                                UUID.randomUUID().toString(),
+                                2,
+                                3,
+                                role,
+                                "ACTIVE",
+                                "ADMIN".equals(role) ? null : 42L,
+                                false,
+                                false),
+                        TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE,
+                        UUID.randomUUID().toString());
         WebSocketSession socket = mock(WebSocketSession.class);
         when(socket.getAttributes()).thenReturn(attributes);
         when(socket.isOpen()).thenReturn(true);
@@ -78,7 +86,8 @@ class WsSessionAdmissionOutboundInterceptorTest {
         StompHeaderAccessor headers = StompHeaderAccessor.create(StompCommand.MESSAGE);
         headers.setSessionId("stomp-admin");
         headers.setDestination("/topic/admin/dashboard");
-        Message<byte[]> message = MessageBuilder.createMessage(new byte[]{1}, headers.getMessageHeaders());
+        Message<byte[]> message =
+                MessageBuilder.createMessage(new byte[] {1}, headers.getMessageHeaders());
         assertThat(interceptor.preSend(message, null)).isSameAs(message);
         assertThat(interceptor.preSend(message, null)).isNull();
         assertThat(interceptor.preSend(message, null)).isNull();
@@ -95,7 +104,9 @@ class WsSessionAdmissionOutboundInterceptorTest {
         UUID job = UUID.randomUUID();
         when(ticketClient.admit(identity)).thenReturn(true);
         when(ticketClient.admitExport(job, identity)).thenReturn(true, false);
-        Message<byte[]> message = exportMessage("stomp-export", "/topic/user/7", job.toString(), identity.sessionId());
+        Message<byte[]> message =
+                exportMessage(
+                        "stomp-export", "/topic/user/7", job.toString(), identity.sessionId());
         assertThat(interceptor.preSend(message, null)).isSameAs(message);
         assertThat(interceptor.preSend(message, null)).isNull();
         verify(ticketClient, times(2)).admitExport(job, identity);
@@ -107,26 +118,59 @@ class WsSessionAdmissionOutboundInterceptorTest {
         bind("stomp-export", "ADMIN");
         interceptor = new WsSessionAdmissionOutboundInterceptor(registry, ticketClient);
         var identity = registry.identity("stomp-export").orElseThrow();
-        UUID job = UUID.randomUUID(); when(ticketClient.admit(identity)).thenReturn(true);
-        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/7", job.toString(), UUID.randomUUID().toString()), null)).isNull();
-        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/8", job.toString(), identity.sessionId()), null)).isNull();
-        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/7", "invalid", identity.sessionId()), null)).isNull();
-        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/7", job.toString(), null), null)).isNull();
+        UUID job = UUID.randomUUID();
+        when(ticketClient.admit(identity)).thenReturn(true);
+        assertThat(
+                        interceptor.preSend(
+                                exportMessage(
+                                        "stomp-export",
+                                        "/topic/user/7",
+                                        job.toString(),
+                                        UUID.randomUUID().toString()),
+                                null))
+                .isNull();
+        assertThat(
+                        interceptor.preSend(
+                                exportMessage(
+                                        "stomp-export",
+                                        "/topic/user/8",
+                                        job.toString(),
+                                        identity.sessionId()),
+                                null))
+                .isNull();
+        assertThat(
+                        interceptor.preSend(
+                                exportMessage(
+                                        "stomp-export",
+                                        "/topic/user/7",
+                                        "invalid",
+                                        identity.sessionId()),
+                                null))
+                .isNull();
+        assertThat(
+                        interceptor.preSend(
+                                exportMessage(
+                                        "stomp-export", "/topic/user/7", job.toString(), null),
+                                null))
+                .isNull();
         verify(ticketClient, never()).admitExport(any(), any());
     }
 
-    private static Message<byte[]> exportMessage(String socket, String destination, String job, String session) {
+    private static Message<byte[]> exportMessage(
+            String socket, String destination, String job, String session) {
         StompHeaderAccessor headers = StompHeaderAccessor.create(StompCommand.MESSAGE);
-        headers.setSessionId(socket); headers.setDestination(destination);
+        headers.setSessionId(socket);
+        headers.setDestination(destination);
         headers.setHeader(WsSessionAdmissionOutboundInterceptor.EXPORT_JOB_HEADER, job);
-        if (session != null) headers.setHeader(WsSessionAdmissionOutboundInterceptor.EXPORT_SESSION_HEADER, session);
-        return MessageBuilder.createMessage(new byte[]{1}, headers.getMessageHeaders());
+        if (session != null)
+            headers.setHeader(WsSessionAdmissionOutboundInterceptor.EXPORT_SESSION_HEADER, session);
+        return MessageBuilder.createMessage(new byte[] {1}, headers.getMessageHeaders());
     }
 
     private static Message<byte[]> outboundMessage(String sessionId) {
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.MESSAGE);
         accessor.setSessionId(sessionId);
         accessor.setDestination("/topic/user/7");
-        return MessageBuilder.createMessage(new byte[]{1}, accessor.getMessageHeaders());
+        return MessageBuilder.createMessage(new byte[] {1}, accessor.getMessageHeaders());
     }
 }

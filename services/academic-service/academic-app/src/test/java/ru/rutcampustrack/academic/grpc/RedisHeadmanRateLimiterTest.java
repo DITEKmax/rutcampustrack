@@ -1,16 +1,5 @@
 package ru.rutcampustrack.academic.grpc;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.RedisConnectionFailureException;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-
-import java.time.Duration;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,11 +10,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.time.Duration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+
 /**
  * M16 G7 — unit-тесты для {@link RedisHeadmanRateLimiter}.
  *
- * <p>Mock'аем {@link StringRedisTemplate} вместо Testcontainers — проверка
- * логики INCR + EXPIRE + fail-open без stretching CI runtime.
+ * <p>Mock'аем {@link StringRedisTemplate} вместо Testcontainers — проверка логики INCR + EXPIRE +
+ * fail-open без stretching CI runtime.
  */
 class RedisHeadmanRateLimiterTest {
 
@@ -41,9 +40,9 @@ class RedisHeadmanRateLimiterTest {
         valueOps = mock(ValueOperations.class);
         when(redis.opsForValue()).thenReturn(valueOps);
         meterRegistry = new SimpleMeterRegistry();
-        limiter = new RedisHeadmanRateLimiter(redis,
-                new HeadmanRateLimitProperties(300, 60),
-                meterRegistry);
+        limiter =
+                new RedisHeadmanRateLimiter(
+                        redis, new HeadmanRateLimitProperties(300, 60), meterRegistry);
     }
 
     @Test
@@ -92,8 +91,7 @@ class RedisHeadmanRateLimiterTest {
         boolean allowed = limiter.tryConsume(42L);
 
         assertThat(allowed).isTrue();
-        assertThat(meterRegistry.counter("headman_rl_redis_failures_total").count())
-                .isEqualTo(1.0);
+        assertThat(meterRegistry.counter("headman_rl_redis_failures_total").count()).isEqualTo(1.0);
     }
 
     @Test

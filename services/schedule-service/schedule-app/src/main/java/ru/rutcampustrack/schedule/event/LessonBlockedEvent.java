@@ -1,14 +1,13 @@
 package ru.rutcampustrack.schedule.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
 /**
- * Domain event published when a headman blocks self check-in for a lesson.
- * Matches event-schemas/lesson.blocked.json contract.
+ * Domain event published when a headman blocks self check-in for a lesson. Matches
+ * event-schemas/lesson.blocked.json contract.
  */
 public class LessonBlockedEvent extends DomainEvent {
 
@@ -22,21 +21,23 @@ public class LessonBlockedEvent extends DomainEvent {
             @JsonProperty("lesson_number") Integer lessonNumber,
             @JsonProperty("room") String room,
             @JsonProperty("blocked_by") Long blockedBy,
-            @JsonProperty("blocked_at") String blockedAt
-    ) {}
+            @JsonProperty("blocked_at") String blockedAt) {}
 
-    public LessonBlockedEvent(Object source,
-                              Long lessonId,
-                              Long groupId,
-                              Long subjectId,
-                              LocalDate date,
-                              LocalTime startTime,
-                              LocalTime endTime,
-                              Integer lessonNumber,
-                              String room,
-                              Long blockedBy,
-                              OffsetDateTime blockedAt) {
-        super(source, "lesson.blocked",
+    public LessonBlockedEvent(
+            Object source,
+            Long lessonId,
+            Long groupId,
+            Long subjectId,
+            LocalDate date,
+            LocalTime startTime,
+            LocalTime endTime,
+            Integer lessonNumber,
+            String room,
+            Long blockedBy,
+            OffsetDateTime blockedAt) {
+        super(
+                source,
+                "lesson.blocked",
                 new Payload(
                         lessonId,
                         groupId,

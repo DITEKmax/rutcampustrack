@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.checkin;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,25 +15,17 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "attendances")
 @CompoundIndexes({
-        @CompoundIndex(
-                name = "uniq_lesson_user",
-                def = "{'lesson_id': 1, 'user_id': 1}",
-                unique = true
-        )
+    @CompoundIndex(name = "uniq_lesson_user", def = "{'lesson_id': 1, 'user_id': 1}", unique = true)
 })
 public class AttendanceDocument {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     @Field("lesson_id")
     private Long lessonId;

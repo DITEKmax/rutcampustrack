@@ -20,45 +20,54 @@ import ru.rutcampustrack.academic.contract.dto.threshold.SetThresholdRequest;
 import ru.rutcampustrack.academic.contract.dto.threshold.ThresholdResponse;
 
 /**
- * REST API contract for attendance threshold configuration.
- * Three-tier hierarchy: global → group → subject (most specific wins).
+ * REST API contract for attendance threshold configuration. Three-tier hierarchy: global → group →
+ * subject (most specific wins).
  */
 @Tag(name = "Thresholds", description = "Управление порогами посещаемости")
 @RequestMapping("/academic/thresholds")
 public interface ThresholdApi {
 
-    @Operation(summary = "Установить глобальный порог посещаемости (ADMIN)", description = "Применяется ко всем группам и предметам, если не переопределён на уровне группы или предмета.")
+    @Operation(
+            summary = "Установить глобальный порог посещаемости (ADMIN)",
+            description =
+                    "Применяется ко всем группам и предметам, если не переопределён на уровне группы или предмета.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Порог установлен"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+        @ApiResponse(responseCode = "200", description = "Порог установлен"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа")
     })
     @PutMapping("/global")
     ResponseEntity<EntityModel<ThresholdResponse>> setGlobalThreshold(
             @Valid @RequestBody SetThresholdRequest request);
 
-    @Operation(summary = "Установить порог для группы (HEADMAN/ADMIN)", description = "Переопределяет глобальный порог для указанной группы.")
+    @Operation(
+            summary = "Установить порог для группы (HEADMAN/ADMIN)",
+            description = "Переопределяет глобальный порог для указанной группы.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Порог установлен"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+        @ApiResponse(responseCode = "200", description = "Порог установлен"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа")
     })
     @PutMapping("/group")
     ResponseEntity<EntityModel<ThresholdResponse>> setGroupThreshold(
             @Valid @RequestBody SetThresholdRequest request);
 
-    @Operation(summary = "Установить порог для предмета в группе (HEADMAN/ADMIN)", description = "Наиболее специфичный порог — переопределяет группу и глобальный.")
+    @Operation(
+            summary = "Установить порог для предмета в группе (HEADMAN/ADMIN)",
+            description = "Наиболее специфичный порог — переопределяет группу и глобальный.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Порог установлен"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+        @ApiResponse(responseCode = "200", description = "Порог установлен"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа")
     })
     @PutMapping("/subject")
     ResponseEntity<EntityModel<ThresholdResponse>> setSubjectThreshold(
-            @Valid @RequestBody SetThresholdRequest request,
-            @RequestParam Long subjectId);
+            @Valid @RequestBody SetThresholdRequest request, @RequestParam Long subjectId);
 
-    @Operation(summary = "Разрешить эффективный порог", description = "Возвращает применяемый порог для комбинации группа/предмет согласно иерархии.")
+    @Operation(
+            summary = "Разрешить эффективный порог",
+            description =
+                    "Возвращает применяемый порог для комбинации группа/предмет согласно иерархии.")
     @ApiResponse(responseCode = "200", description = "Эффективный порог")
     @GetMapping("/resolve")
     ResponseEntity<EntityModel<ResolvedThresholdResponse>> resolveThreshold(
@@ -69,6 +78,5 @@ public interface ThresholdApi {
     @ApiResponse(responseCode = "200", description = "Список порогов")
     @GetMapping
     ResponseEntity<PagedModel<EntityModel<ThresholdResponse>>> listThresholds(
-            Pageable pageable,
-            PagedResourcesAssembler<ThresholdResponse> assembler);
+            Pageable pageable, PagedResourcesAssembler<ThresholdResponse> assembler);
 }

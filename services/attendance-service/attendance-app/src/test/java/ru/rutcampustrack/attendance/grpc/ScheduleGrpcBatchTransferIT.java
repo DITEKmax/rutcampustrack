@@ -1,10 +1,16 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,13 +23,6 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsByIdsRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsByIdsResponse;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Production client over real loopback RPC; Schedule persistence is a controlled seam. */
 class ScheduleGrpcBatchTransferIT {
@@ -39,37 +38,62 @@ class ScheduleGrpcBatchTransferIT {
 
     @BeforeEach
     void startOwnedServer() throws Exception {
-        server = ServerBuilder.forPort(0)
-                .addService(new ScheduleGrpcServiceGrpc.ScheduleGrpcServiceImplBase() {
-                    @Override
-                    public void getLessonsByIds(LessonsByIdsRequest request,
-                                                StreamObserver<LessonsByIdsResponse> observer) {
-                        batchCalls.incrementAndGet();
-                        // The compact snapshot was readable; a transfer starts before later validation RPCs.
-                        pending = startTransferAfterBatch;
-                        observer.onNext(LessonsByIdsResponse.newBuilder()
-                                .addLessons(compact(71L)).addLessons(compact(72L)).build());
-                        observer.onCompleted();
-                    }
+        server =
+                ServerBuilder.forPort(0)
+                        .addService(
+                                new ScheduleGrpcServiceGrpc.ScheduleGrpcServiceImplBase() {
+                                    @Override
+                                    public void getLessonsByIds(
+                                            LessonsByIdsRequest request,
+                                            StreamObserver<LessonsByIdsResponse> observer) {
+                                        batchCalls.incrementAndGet();
+                                        // The compact snapshot was readable; a transfer starts
+                                        // before later validation RPCs.
+                                        pending = startTransferAfterBatch;
+                                        observer.onNext(
+                                                LessonsByIdsResponse.newBuilder()
+                                                        .addLessons(compact(71L))
+                                                        .addLessons(compact(72L))
+                                                        .build());
+                                        observer.onCompleted();
+                                    }
 
-                    @Override
-                    public void getLessonById(LessonByIdRequest request,
-                                              StreamObserver<LessonResponse> observer) {
-                        itemCalls.incrementAndGet();
-                        observer.onNext(LessonResponse.newBuilder()
-                                .setId(request.getLessonId()).setGroupId(10L).setSemesterId(11L)
-                                .setStatus(transferred ? "transferred" : "closed")
-                                .setTransferState(pending && request.getLessonId() == 72L
-                                        ? "PENDING" : "COMPLETED")
-                                .setTransferOperationId("55555555-5555-4555-8555-555555555555")
-                                .build());
-                        observer.onCompleted();
-                    }
-                }).build().start();
-        channel = ManagedChannelBuilder.forAddress("127.0.0.1", server.getPort())
-                .usePlaintext().build();
+                                    @Override
+                                    public void getLessonById(
+                                            LessonByIdRequest request,
+                                            StreamObserver<LessonResponse> observer) {
+                                        itemCalls.incrementAndGet();
+                                        observer.onNext(
+                                                LessonResponse.newBuilder()
+                                                        .setId(request.getLessonId())
+                                                        .setGroupId(10L)
+                                                        .setSemesterId(11L)
+                                                        .setStatus(
+                                                                transferred
+                                                                        ? "transferred"
+                                                                        : "closed")
+                                                        .setTransferState(
+                                                                pending
+                                                                                && request
+                                                                                                .getLessonId()
+                                                                                        == 72L
+                                                                        ? "PENDING"
+                                                                        : "COMPLETED")
+                                                        .setTransferOperationId(
+                                                                "55555555-5555-4555-8555-555555555555")
+                                                        .build());
+                                        observer.onCompleted();
+                                    }
+                                })
+                        .build()
+                        .start();
+        channel =
+                ManagedChannelBuilder.forAddress("127.0.0.1", server.getPort())
+                        .usePlaintext()
+                        .build();
         client = new ScheduleGrpcClient();
-        ReflectionTestUtils.setField(client, "stub", ScheduleGrpcServiceGrpc.newBlockingStub(channel));
+        ReflectionTestUtils.setField(
+                client, "stub", ScheduleGrpcServiceGrpc.newBlockingStub(channel));
     }
 
     @AfterEach
@@ -99,7 +123,8 @@ class ScheduleGrpcBatchTransferIT {
         long started = System.nanoTime();
         assertThatThrownBy(() -> client.getLessonsByIds(ids))
                 .isInstanceOf(ScheduleServiceUnavailableException.class);
-        System.out.printf("L06 pending-batch diagnostics: batch=%d perItem=%d elapsedMicros=%d%n",
+        System.out.printf(
+                "L06 pending-batch diagnostics: batch=%d perItem=%d elapsedMicros=%d%n",
                 batchCalls.get(), itemCalls.get(), (System.nanoTime() - started) / 1_000);
         assertThat(batchCalls.get()).isEqualTo(1);
         assertThat(itemCalls.get()).isEqualTo(2);

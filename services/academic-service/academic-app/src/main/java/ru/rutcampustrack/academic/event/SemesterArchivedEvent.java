@@ -3,11 +3,11 @@ package ru.rutcampustrack.academic.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Published after a semester is deactivated (archived) and the database
- * transaction commits successfully.
- * <p>
- * Per EVENT-02, D-01 (minimal payload): only semester_id is required.
- * Consumers call gRPC GetActiveSemester to get current semester data.
+ * Published after a semester is deactivated (archived) and the database transaction commits
+ * successfully.
+ *
+ * <p>Per EVENT-02, D-01 (minimal payload): only semester_id is required. Consumers call gRPC
+ * GetActiveSemester to get current semester data.
  */
 public class SemesterArchivedEvent extends DomainEvent {
 

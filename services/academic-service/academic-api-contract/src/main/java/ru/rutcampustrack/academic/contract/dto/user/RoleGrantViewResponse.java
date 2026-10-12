@@ -1,7 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 
 /** Additive ADMIN projection of one durable role grant. */
@@ -15,9 +14,9 @@ public record RoleGrantViewResponse(
         boolean readOnly,
         List<String> applicableStatuses,
         boolean canUpdate,
-        String blockedReason
-) {
+        String blockedReason) {
     public RoleGrantViewResponse {
-        applicableStatuses = applicableStatuses == null ? List.of() : List.copyOf(applicableStatuses);
+        applicableStatuses =
+                applicableStatuses == null ? List.of() : List.copyOf(applicableStatuses);
     }
 }

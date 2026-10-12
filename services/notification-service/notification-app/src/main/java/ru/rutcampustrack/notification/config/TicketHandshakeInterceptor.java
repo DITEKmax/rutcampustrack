@@ -1,5 +1,11 @@
 package ru.rutcampustrack.notification.config;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
@@ -10,25 +16,17 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
  * M03b Группа 4: replaces {@link JwtHandshakeInterceptor}.
  *
- * <p>Reads a canonical {@code X-RCT-WS-Ticket} header or legacy
- * {@code ?ticket=<uuid>} query param, exchanges it against
- * auth-service {@code /internal/consume-ws-ticket} atomically (single-use),
- * stores resulting identity in STOMP session attributes. Rejects
- * handshake if ticket missing / invalid / already consumed / expired.</p>
+ * <p>Reads a canonical {@code X-RCT-WS-Ticket} header or legacy {@code ?ticket=<uuid>} query param,
+ * exchanges it against auth-service {@code /internal/consume-ws-ticket} atomically (single-use),
+ * stores resulting identity in STOMP session attributes. Rejects handshake if ticket missing /
+ * invalid / already consumed / expired.
  *
- * <p>Session attributes layout matches legacy {@code JwtHandshakeInterceptor}:
- * {@code user_id}, {@code group_id}, {@code role}, {@code is_headman}.
- * SubscriptionAuthInterceptor продолжает работать без изменений.</p>
+ * <p>Session attributes layout matches legacy {@code JwtHandshakeInterceptor}: {@code user_id},
+ * {@code group_id}, {@code role}, {@code is_headman}. SubscriptionAuthInterceptor продолжает
+ * работать без изменений.
  */
 @Component
 @Slf4j
@@ -45,10 +43,11 @@ public class TicketHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request,
-                                    ServerHttpResponse response,
-                                    WebSocketHandler wsHandler,
-                                    Map<String, Object> attributes) {
+    public boolean beforeHandshake(
+            ServerHttpRequest request,
+            ServerHttpResponse response,
+            WebSocketHandler wsHandler,
+            Map<String, Object> attributes) {
         String ticket = extractTicket(request);
         if (ticket == null) {
             log.debug("WS handshake rejected — missing or ambiguous ticket");
@@ -89,8 +88,11 @@ public class TicketHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     @Override
-    public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                WebSocketHandler handler, Exception exception) {
+    public void afterHandshake(
+            ServerHttpRequest request,
+            ServerHttpResponse response,
+            WebSocketHandler handler,
+            Exception exception) {
         // no-op
     }
 
@@ -103,11 +105,14 @@ public class TicketHandshakeInterceptor implements HandshakeInterceptor {
             for (String param : rawQuery.split("&")) {
                 String[] pair = param.split("=", 2);
                 try {
-                    if (!"ticket".equals(URLDecoder.decode(pair[0], StandardCharsets.UTF_8))) continue;
+                    if (!"ticket".equals(URLDecoder.decode(pair[0], StandardCharsets.UTF_8)))
+                        continue;
                     if (queryTicketPresent) return null;
                     queryTicketPresent = true;
-                    queryTicket = pair.length == 2
-                            ? URLDecoder.decode(pair[1], StandardCharsets.UTF_8) : null;
+                    queryTicket =
+                            pair.length == 2
+                                    ? URLDecoder.decode(pair[1], StandardCharsets.UTF_8)
+                                    : null;
                 } catch (IllegalArgumentException malformedEncoding) {
                     return null;
                 }

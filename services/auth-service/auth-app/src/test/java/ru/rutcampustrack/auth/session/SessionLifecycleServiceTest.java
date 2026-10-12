@@ -1,5 +1,22 @@
 package ru.rutcampustrack.auth.session;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
@@ -10,26 +27,6 @@ import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 class SessionLifecycleServiceTest {
 
@@ -46,16 +43,20 @@ class SessionLifecycleServiceTest {
         port.setRoles(USER_ID, 2, List.of(grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L)));
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
 
-        SessionLifecycleService.CreateSessionRequest stale = request(
-                SESSION_ID, INITIAL_JTI, 1,
-                List.of(grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L),
-                        grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null)),
-                "old-hash"
-        );
+        SessionLifecycleService.CreateSessionRequest stale =
+                request(
+                        SESSION_ID,
+                        INITIAL_JTI,
+                        1,
+                        List.of(
+                                grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L),
+                                grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null)),
+                        "old-hash");
 
         SessionStatePort.CreateSessionResult result = service.createSession(stale);
 
-        assertThat(result.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);
+        assertThat(result.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);
         assertThat(port.sessions).isEmpty();
         assertThat(port.events).isEmpty();
     }
@@ -69,20 +70,28 @@ class SessionLifecycleServiceTest {
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(teacher, student));
 
-        SessionStatePort.CreateSessionResult selected = service.createSession(request(
-                SESSION_ID, INITIAL_JTI, 1, List.of(teacher, student), "old-hash"));
+        SessionStatePort.CreateSessionResult selected =
+                service.createSession(
+                        request(SESSION_ID, INITIAL_JTI, 1, List.of(teacher, student), "old-hash"));
 
         assertThat(selected.succeeded()).isTrue();
         assertThat(selected.snapshot().activeRole()).isEqualTo(student);
 
         UUID neutralSession = UUID.fromString("00000000-0000-0000-0000-000000000008");
-        port.setRoles(USER_ID, 2, List.of(
-                grant(3, AuthRole.ADMIN, RoleStatus.ACTIVE, null),
-                grant(4, AuthRole.HEADMAN, RoleStatus.ACTIVE, 10L)
-        ));
-        SessionStatePort.CreateSessionResult neutral = service.createSession(request(
-                neutralSession, UUID.fromString("00000000-0000-0000-0000-000000000018"),
-                2, port.roles.get(USER_ID), "old-hash"));
+        port.setRoles(
+                USER_ID,
+                2,
+                List.of(
+                        grant(3, AuthRole.ADMIN, RoleStatus.ACTIVE, null),
+                        grant(4, AuthRole.HEADMAN, RoleStatus.ACTIVE, 10L)));
+        SessionStatePort.CreateSessionResult neutral =
+                service.createSession(
+                        request(
+                                neutralSession,
+                                UUID.fromString("00000000-0000-0000-0000-000000000018"),
+                                2,
+                                port.roles.get(USER_ID),
+                                "old-hash"));
 
         assertThat(neutral.succeeded()).isTrue();
         assertThat(neutral.snapshot().activeRole()).isNull();
@@ -96,33 +105,57 @@ class SessionLifecycleServiceTest {
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         RoleGrant teacher = grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null);
         port.setRoles(USER_ID, 1, List.of(student, teacher));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student, teacher), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student, teacher),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
 
-        SessionStatePort.RoleSelectionResult changed = service.selectRole(
-                new SessionLifecycleService.SelectRoleRequest(
-                        USER_ID, SESSION_ID, AuthRole.TEACHER, 1, T0,
-                        AuthMethod.PASSWORD, null, null
-                )
-        );
-        SessionStatePort.RoleSelectionResult same = service.selectRole(
-                new SessionLifecycleService.SelectRoleRequest(
-                        USER_ID, SESSION_ID, AuthRole.TEACHER, 2, T0.plusSeconds(1),
-                        AuthMethod.PASSWORD, null, null
-                )
-        );
-        SessionStatePort.RoleSelectionResult stale = service.selectRole(
-                new SessionLifecycleService.SelectRoleRequest(
-                        USER_ID, SESSION_ID, AuthRole.STUDENT, 1, T0.plusSeconds(2),
-                        AuthMethod.PASSWORD, null, null
-                )
-        );
+        SessionStatePort.RoleSelectionResult changed =
+                service.selectRole(
+                        new SessionLifecycleService.SelectRoleRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                AuthRole.TEACHER,
+                                1,
+                                T0,
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
+        SessionStatePort.RoleSelectionResult same =
+                service.selectRole(
+                        new SessionLifecycleService.SelectRoleRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                AuthRole.TEACHER,
+                                2,
+                                T0.plusSeconds(1),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
+        SessionStatePort.RoleSelectionResult stale =
+                service.selectRole(
+                        new SessionLifecycleService.SelectRoleRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                AuthRole.STUDENT,
+                                1,
+                                T0.plusSeconds(2),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
 
         assertThat(changed.snapshot().activeRole()).isEqualTo(teacher);
         assertThat(changed.snapshot().sessionVersion()).isEqualTo(2);
         assertThat(same.snapshot().activeRole()).isEqualTo(teacher);
         assertThat(same.snapshot().sessionVersion()).isEqualTo(2);
-        assertThat(stale.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
+        assertThat(stale.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
     }
 
     @Test
@@ -132,48 +165,88 @@ class SessionLifecycleServiceTest {
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CyclicBarrier barrier = new CyclicBarrier(2);
         try {
-            Future<SessionStatePort.RefreshResult> first = executor.submit(() -> {
-                barrier.await();
-                return service.refresh(new SessionLifecycleService.RefreshRequest(
-                        USER_ID, SESSION_ID, INITIAL_JTI,
-                        UUID.fromString("00000000-0000-0000-0000-000000000027"), T0.plusSeconds(10)
-                ));
-            });
-            Future<SessionStatePort.RefreshResult> second = executor.submit(() -> {
-                barrier.await();
-                return service.refresh(new SessionLifecycleService.RefreshRequest(
-                        USER_ID, SESSION_ID, INITIAL_JTI,
-                        UUID.fromString("00000000-0000-0000-0000-000000000028"), T0.plusSeconds(10)
-                ));
-            });
+            Future<SessionStatePort.RefreshResult> first =
+                    executor.submit(
+                            () -> {
+                                barrier.await();
+                                return service.refresh(
+                                        new SessionLifecycleService.RefreshRequest(
+                                                USER_ID,
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000027"),
+                                                T0.plusSeconds(10)));
+                            });
+            Future<SessionStatePort.RefreshResult> second =
+                    executor.submit(
+                            () -> {
+                                barrier.await();
+                                return service.refresh(
+                                        new SessionLifecycleService.RefreshRequest(
+                                                USER_ID,
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000028"),
+                                                T0.plusSeconds(10)));
+                            });
 
             SessionStatePort.RefreshResult one = get(first);
             SessionStatePort.RefreshResult two = get(second);
             List<SessionStatePort.RefreshResult> results = List.of(one, two);
-            assertThat(results.stream().filter(SessionStatePort.RefreshResult::succeeded)).hasSize(1);
-            assertThat(results.stream().filter(result -> result.failureCode()
-                    == SessionStatePort.FailureCode.REFRESH_ALREADY_ROTATED)).hasSize(1);
+            assertThat(results.stream().filter(SessionStatePort.RefreshResult::succeeded))
+                    .hasSize(1);
+            assertThat(
+                            results.stream()
+                                    .filter(
+                                            result ->
+                                                    result.failureCode()
+                                                            == SessionStatePort.FailureCode
+                                                                    .REFRESH_ALREADY_ROTATED))
+                    .hasSize(1);
             assertThat(port.sessions.get(SESSION_ID).isRevoked()).isFalse();
-            assertThat(one.succeeded() ? one.snapshot().refreshExpiresAt() : two.snapshot().refreshExpiresAt())
+            assertThat(
+                            one.succeeded()
+                                    ? one.snapshot().refreshExpiresAt()
+                                    : two.snapshot().refreshExpiresAt())
                     .isEqualTo(EXPIRY);
 
             UUID winnerJti = port.sessions.get(SESSION_ID).currentRefreshJti();
-            SessionStatePort.RefreshResult previous = service.refresh(new SessionLifecycleService.RefreshRequest(
-                    USER_ID, SESSION_ID, INITIAL_JTI,
-                    UUID.fromString("00000000-0000-0000-0000-000000000029"), T0.plusSeconds(11)
-            ));
-            SessionStatePort.RefreshResult unknown = service.refresh(new SessionLifecycleService.RefreshRequest(
-                    USER_ID, SESSION_ID, UUID.fromString("00000000-0000-0000-0000-000000009999"),
-                    UUID.fromString("00000000-0000-0000-0000-000000000030"), T0.plusSeconds(11)
-            ));
-            assertThat(previous.failureCode()).isEqualTo(SessionStatePort.FailureCode.REFRESH_ALREADY_ROTATED);
-            assertThat(unknown.failureCode()).isEqualTo(SessionStatePort.FailureCode.REFRESH_REJECTED);
+            SessionStatePort.RefreshResult previous =
+                    service.refresh(
+                            new SessionLifecycleService.RefreshRequest(
+                                    USER_ID,
+                                    SESSION_ID,
+                                    INITIAL_JTI,
+                                    UUID.fromString("00000000-0000-0000-0000-000000000029"),
+                                    T0.plusSeconds(11)));
+            SessionStatePort.RefreshResult unknown =
+                    service.refresh(
+                            new SessionLifecycleService.RefreshRequest(
+                                    USER_ID,
+                                    SESSION_ID,
+                                    UUID.fromString("00000000-0000-0000-0000-000000009999"),
+                                    UUID.fromString("00000000-0000-0000-0000-000000000030"),
+                                    T0.plusSeconds(11)));
+            assertThat(previous.failureCode())
+                    .isEqualTo(SessionStatePort.FailureCode.REFRESH_ALREADY_ROTATED);
+            assertThat(unknown.failureCode())
+                    .isEqualTo(SessionStatePort.FailureCode.REFRESH_REJECTED);
             assertThat(port.sessions.get(SESSION_ID).currentRefreshJti()).isEqualTo(winnerJti);
         } finally {
             executor.shutdownNow();
@@ -189,16 +262,29 @@ class SessionLifecycleServiceTest {
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         RoleGrant teacher = grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null);
         port.setRoles(USER_ID, 1, List.of(student, teacher));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student, teacher), "old-hash")).succeeded()).isTrue();
-        port.setRoles(USER_ID, 2, List.of(
-                grant(1, AuthRole.STUDENT, RoleStatus.SUSPENDED, 10L), teacher
-        ));
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student, teacher),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
+        port.setRoles(
+                USER_ID,
+                2,
+                List.of(grant(1, AuthRole.STUDENT, RoleStatus.SUSPENDED, 10L), teacher));
 
-        SessionStatePort.RefreshResult refreshed = service.refresh(new SessionLifecycleService.RefreshRequest(
-                USER_ID, SESSION_ID, INITIAL_JTI,
-                UUID.fromString("00000000-0000-0000-0000-000000000031"), T0.plusSeconds(12)
-        ));
+        SessionStatePort.RefreshResult refreshed =
+                service.refresh(
+                        new SessionLifecycleService.RefreshRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                INITIAL_JTI,
+                                UUID.fromString("00000000-0000-0000-0000-000000000031"),
+                                T0.plusSeconds(12)));
 
         assertThat(refreshed.succeeded()).isTrue();
         assertThat(refreshed.snapshot().activeRole()).isNull();
@@ -213,30 +299,51 @@ class SessionLifecycleServiceTest {
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
         UUID secondSession = UUID.fromString("00000000-0000-0000-0000-000000000009");
-        assertThat(service.createSession(request(
-                secondSession, UUID.fromString("00000000-0000-0000-0000-000000000019"),
-                1, List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                secondSession,
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000019"),
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
 
-        CredentialSessionTransactionPort.ChangePasswordResult wrong = service.changePassword(
-                passwordRequest("wrong-hash", "new-hash", "abcdefghij1!"));
-        assertThat(wrong.failureCode()).isEqualTo(CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID);
+        CredentialSessionTransactionPort.ChangePasswordResult wrong =
+                service.changePassword(passwordRequest("wrong-hash", "new-hash", "abcdefghij1!"));
+        assertThat(wrong.failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID);
         assertThat(port.sessions.values()).allMatch(state -> !state.isRevoked());
 
-        CredentialSessionTransactionPort.ChangePasswordResult policyFailure = service.changePassword(
-                passwordRequest("old-hash", "new-hash", "short1!"));
-        assertThat(policyFailure.failureCode()).isEqualTo(
-                CredentialSessionTransactionPort.FailureCode.PASSWORD_POLICY_VIOLATION);
+        CredentialSessionTransactionPort.ChangePasswordResult policyFailure =
+                service.changePassword(passwordRequest("old-hash", "new-hash", "short1!"));
+        assertThat(policyFailure.failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.FailureCode.PASSWORD_POLICY_VIOLATION);
         assertThat(credentials.changeCalls).isEqualTo(1);
         assertThat(port.sessions.values()).allMatch(state -> !state.isRevoked());
 
-        SessionStatePort.RevokeAllResult logoutAll = service.revokeAll(
-                new SessionLifecycleService.RevokeAllRequest(
-                        USER_ID, SESSION_ID, T0.plusSeconds(20), AuthMethod.PASSWORD, null, null
-                )
-        );
+        SessionStatePort.RevokeAllResult logoutAll =
+                service.revokeAll(
+                        new SessionLifecycleService.RevokeAllRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                T0.plusSeconds(20),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
         assertThat(logoutAll.succeeded()).isTrue();
         assertThat(logoutAll.revokedSessionCount()).isEqualTo(2);
         assertThat(port.sessions.values()).allMatch(SessionState::isRevoked);
@@ -249,14 +356,26 @@ class SessionLifecycleServiceTest {
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
 
-        SessionStatePort.RevokeResult first = service.revokeCurrent(
-                new SessionLifecycleService.RevokeRequest(
-                        USER_ID, SESSION_ID, T0.plusSeconds(1), AuthMethod.PASSWORD, null, null
-                )
-        );
+        SessionStatePort.RevokeResult first =
+                service.revokeCurrent(
+                        new SessionLifecycleService.RevokeRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                T0.plusSeconds(1),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
 
         assertThat(first.succeeded()).isTrue();
         assertThat(first.alreadyRevoked()).isFalse();
@@ -264,11 +383,15 @@ class SessionLifecycleServiceTest {
         assertThat(port.events).hasSize(2);
         SessionState revoked = port.sessions.get(SESSION_ID);
 
-        SessionStatePort.RevokeResult retry = service.revokeCurrent(
-                new SessionLifecycleService.RevokeRequest(
-                        USER_ID, SESSION_ID, T0.plusSeconds(2), AuthMethod.PASSWORD, null, null
-                )
-        );
+        SessionStatePort.RevokeResult retry =
+                service.revokeCurrent(
+                        new SessionLifecycleService.RevokeRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                T0.plusSeconds(2),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
 
         assertThat(retry.succeeded()).isTrue();
         assertThat(retry.alreadyRevoked()).isTrue();
@@ -284,26 +407,43 @@ class SessionLifecycleServiceTest {
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
         UUID secondSession = UUID.fromString("00000000-0000-0000-0000-000000000010");
-        assertThat(service.createSession(request(
-                secondSession, UUID.fromString("00000000-0000-0000-0000-000000000020"),
-                1, List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                secondSession,
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000020"),
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
 
-        CredentialSessionTransactionPort.ChangePasswordResult changed = service.changePassword(
-                passwordRequest("old-hash", "new-hash", "abcdefghij1!"));
+        CredentialSessionTransactionPort.ChangePasswordResult changed =
+                service.changePassword(passwordRequest("old-hash", "new-hash", "abcdefghij1!"));
         assertThat(changed.succeeded()).isTrue();
         assertThat(changed.revokedSessionCount()).isEqualTo(2);
         assertThat(credentials.hashes.get(USER_ID).value()).isEqualTo("new-hash");
         assertThat(port.sessions.values()).allMatch(SessionState::isRevoked);
 
-        credentials.forcedFailure = CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE;
+        credentials.forcedFailure =
+                CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE;
         int eventCount = port.events.size();
-        CredentialSessionTransactionPort.ChangePasswordResult unavailable = service.changePassword(
-                passwordRequest("new-hash", "newer-hash", "abcdefghij2!"));
-        assertThat(unavailable.failureCode()).isEqualTo(
-                CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
+        CredentialSessionTransactionPort.ChangePasswordResult unavailable =
+                service.changePassword(passwordRequest("new-hash", "newer-hash", "abcdefghij2!"));
+        assertThat(unavailable.failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
         assertThat(credentials.hashes.get(USER_ID).value()).isEqualTo("new-hash");
         assertThat(port.sessions.values()).allMatch(SessionState::isRevoked);
         assertThat(port.events).hasSize(eventCount);
@@ -316,60 +456,93 @@ class SessionLifecycleServiceTest {
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
         SessionState beforeExpiry = port.sessions.get(SESSION_ID);
 
-        SessionStatePort.SnapshotResult expiredSnapshot = service.snapshot(
-                new SessionLifecycleService.SnapshotRequest(USER_ID, SESSION_ID, EXPIRY)
-        );
-        SessionStatePort.RoleSelectionResult expiredSelection = service.selectRole(
-                new SessionLifecycleService.SelectRoleRequest(
-                        USER_ID, SESSION_ID, AuthRole.STUDENT, 1, EXPIRY,
-                        AuthMethod.PASSWORD, null, null
-                )
-        );
-        SessionStatePort.RefreshResult expiredRefresh = service.refresh(
-                new SessionLifecycleService.RefreshRequest(
-                        USER_ID, SESSION_ID, INITIAL_JTI,
-                        UUID.fromString("00000000-0000-0000-0000-000000000032"), EXPIRY
-                )
-        );
+        SessionStatePort.SnapshotResult expiredSnapshot =
+                service.snapshot(
+                        new SessionLifecycleService.SnapshotRequest(USER_ID, SESSION_ID, EXPIRY));
+        SessionStatePort.RoleSelectionResult expiredSelection =
+                service.selectRole(
+                        new SessionLifecycleService.SelectRoleRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                AuthRole.STUDENT,
+                                1,
+                                EXPIRY,
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
+        SessionStatePort.RefreshResult expiredRefresh =
+                service.refresh(
+                        new SessionLifecycleService.RefreshRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                INITIAL_JTI,
+                                UUID.fromString("00000000-0000-0000-0000-000000000032"),
+                                EXPIRY));
 
-        assertThat(expiredSnapshot.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
-        assertThat(expiredSelection.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
-        assertThat(expiredRefresh.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(expiredSnapshot.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(expiredSelection.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(expiredRefresh.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
         assertThat(port.sessions.get(SESSION_ID)).isEqualTo(beforeExpiry);
         assertThat(port.events).hasSize(1);
 
-        SessionStatePort.RevokeResult revokedResult = service.revokeCurrent(
-                new SessionLifecycleService.RevokeRequest(
-                        USER_ID, SESSION_ID, T0.plusSeconds(1), AuthMethod.PASSWORD, null, null
-                )
-        );
+        SessionStatePort.RevokeResult revokedResult =
+                service.revokeCurrent(
+                        new SessionLifecycleService.RevokeRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                T0.plusSeconds(1),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
         assertThat(revokedResult.succeeded()).isTrue();
         SessionState afterRevoke = port.sessions.get(SESSION_ID);
         int eventCount = port.events.size();
 
-        SessionStatePort.SnapshotResult revokedSnapshot = service.snapshot(
-                new SessionLifecycleService.SnapshotRequest(USER_ID, SESSION_ID, T0.plusSeconds(2))
-        );
-        SessionStatePort.RoleSelectionResult revokedSelection = service.selectRole(
-                new SessionLifecycleService.SelectRoleRequest(
-                        USER_ID, SESSION_ID, AuthRole.STUDENT, 1, T0.plusSeconds(2),
-                        AuthMethod.PASSWORD, null, null
-                )
-        );
-        SessionStatePort.RefreshResult revokedRefresh = service.refresh(
-                new SessionLifecycleService.RefreshRequest(
-                        USER_ID, SESSION_ID, INITIAL_JTI,
-                        UUID.fromString("00000000-0000-0000-0000-000000000033"), T0.plusSeconds(2)
-                )
-        );
+        SessionStatePort.SnapshotResult revokedSnapshot =
+                service.snapshot(
+                        new SessionLifecycleService.SnapshotRequest(
+                                USER_ID, SESSION_ID, T0.plusSeconds(2)));
+        SessionStatePort.RoleSelectionResult revokedSelection =
+                service.selectRole(
+                        new SessionLifecycleService.SelectRoleRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                AuthRole.STUDENT,
+                                1,
+                                T0.plusSeconds(2),
+                                AuthMethod.PASSWORD,
+                                null,
+                                null));
+        SessionStatePort.RefreshResult revokedRefresh =
+                service.refresh(
+                        new SessionLifecycleService.RefreshRequest(
+                                USER_ID,
+                                SESSION_ID,
+                                INITIAL_JTI,
+                                UUID.fromString("00000000-0000-0000-0000-000000000033"),
+                                T0.plusSeconds(2)));
 
-        assertThat(revokedSnapshot.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
-        assertThat(revokedSelection.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
-        assertThat(revokedRefresh.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
+        assertThat(revokedSnapshot.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
+        assertThat(revokedSelection.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
+        assertThat(revokedRefresh.failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
         assertThat(port.sessions.get(SESSION_ID)).isEqualTo(afterRevoke);
         assertThat(port.events).hasSize(eventCount);
     }
@@ -381,31 +554,78 @@ class SessionLifecycleServiceTest {
         SessionLifecycleService service = new SessionLifecycleService(port, credentials);
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,
-                List.of(student), "old-hash")).succeeded()).isTrue();
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .succeeded())
+                .isTrue();
         SessionState before = port.sessions.get(SESSION_ID);
         int eventCount = port.events.size();
         port.forcedFailure = SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE;
 
-        assertThat(service.createSession(request(
-                UUID.fromString("00000000-0000-0000-0000-000000000034"),
-                UUID.fromString("00000000-0000-0000-0000-000000000035"),
-                1, List.of(student), "old-hash")).failureCode())
+        assertThat(
+                        service.createSession(
+                                        request(
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000034"),
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000035"),
+                                                1,
+                                                List.of(student),
+                                                "old-hash"))
+                                .failureCode())
                 .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
-        assertThat(service.selectRole(new SessionLifecycleService.SelectRoleRequest(
-                USER_ID, SESSION_ID, AuthRole.STUDENT, 1, T0.plusSeconds(1),
-                AuthMethod.PASSWORD, null, null
-        )).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
-        assertThat(service.refresh(new SessionLifecycleService.RefreshRequest(
-                USER_ID, SESSION_ID, INITIAL_JTI,
-                UUID.fromString("00000000-0000-0000-0000-000000000036"), T0.plusSeconds(1)
-        )).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
-        assertThat(service.revokeCurrent(new SessionLifecycleService.RevokeRequest(
-                USER_ID, SESSION_ID, T0.plusSeconds(1), AuthMethod.PASSWORD, null, null
-        )).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
-        assertThat(service.revokeAll(new SessionLifecycleService.RevokeAllRequest(
-                USER_ID, SESSION_ID, T0.plusSeconds(1), AuthMethod.PASSWORD, null, null
-        )).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
+        assertThat(
+                        service.selectRole(
+                                        new SessionLifecycleService.SelectRoleRequest(
+                                                USER_ID,
+                                                SESSION_ID,
+                                                AuthRole.STUDENT,
+                                                1,
+                                                T0.plusSeconds(1),
+                                                AuthMethod.PASSWORD,
+                                                null,
+                                                null))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
+        assertThat(
+                        service.refresh(
+                                        new SessionLifecycleService.RefreshRequest(
+                                                USER_ID,
+                                                SESSION_ID,
+                                                INITIAL_JTI,
+                                                UUID.fromString(
+                                                        "00000000-0000-0000-0000-000000000036"),
+                                                T0.plusSeconds(1)))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
+        assertThat(
+                        service.revokeCurrent(
+                                        new SessionLifecycleService.RevokeRequest(
+                                                USER_ID,
+                                                SESSION_ID,
+                                                T0.plusSeconds(1),
+                                                AuthMethod.PASSWORD,
+                                                null,
+                                                null))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
+        assertThat(
+                        service.revokeAll(
+                                        new SessionLifecycleService.RevokeAllRequest(
+                                                USER_ID,
+                                                SESSION_ID,
+                                                T0.plusSeconds(1),
+                                                AuthMethod.PASSWORD,
+                                                null,
+                                                null))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
 
         assertThat(port.sessions).containsOnlyKeys(SESSION_ID);
         assertThat(port.sessions.get(SESSION_ID)).isEqualTo(before);
@@ -416,31 +636,97 @@ class SessionLifecycleServiceTest {
     void snapshotBoundaryRejectsSameIdInconsistentRoleAndDuplicateGrants() {
         RoleGrant active = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
         RoleGrant changedStatus = grant(1, AuthRole.STUDENT, RoleStatus.SUSPENDED, 10L);
-        assertThatCode(() -> new SessionSnapshot(
-                SESSION_ID, USER_ID, 1, 1, active, List.of(changedStatus),
-                EXPIRY, T0, T0, null, null, AuthMethod.PASSWORD, null, null
-        )).isInstanceOf(IllegalArgumentException.class);
+        assertThatCode(
+                        () ->
+                                new SessionSnapshot(
+                                        SESSION_ID,
+                                        USER_ID,
+                                        1,
+                                        1,
+                                        active,
+                                        List.of(changedStatus),
+                                        EXPIRY,
+                                        T0,
+                                        T0,
+                                        null,
+                                        null,
+                                        AuthMethod.PASSWORD,
+                                        null,
+                                        null))
+                .isInstanceOf(IllegalArgumentException.class);
         RoleGrant suspended = grant(2, AuthRole.STUDENT, RoleStatus.SUSPENDED, 10L);
-        assertThatCode(() -> new SessionSnapshot(
-                SESSION_ID, USER_ID, 1, 1, suspended, List.of(suspended),
-                EXPIRY, T0, T0, null, null, AuthMethod.PASSWORD, null, null
-        )).isInstanceOf(IllegalArgumentException.class);
-        assertThatCode(() -> new SessionSnapshot(
-                SESSION_ID, USER_ID, 1, 1, null, List.of(active, active),
-                EXPIRY, T0, T0, null, null, AuthMethod.PASSWORD, null, null
-        )).isInstanceOf(IllegalArgumentException.class);
-        SessionSnapshot live = new SessionSnapshot(
-                SESSION_ID, USER_ID, 1, 1, active, List.of(active),
-                EXPIRY, T0, T0, null, null, AuthMethod.PASSWORD, null, null
-        );
+        assertThatCode(
+                        () ->
+                                new SessionSnapshot(
+                                        SESSION_ID,
+                                        USER_ID,
+                                        1,
+                                        1,
+                                        suspended,
+                                        List.of(suspended),
+                                        EXPIRY,
+                                        T0,
+                                        T0,
+                                        null,
+                                        null,
+                                        AuthMethod.PASSWORD,
+                                        null,
+                                        null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatCode(
+                        () ->
+                                new SessionSnapshot(
+                                        SESSION_ID,
+                                        USER_ID,
+                                        1,
+                                        1,
+                                        null,
+                                        List.of(active, active),
+                                        EXPIRY,
+                                        T0,
+                                        T0,
+                                        null,
+                                        null,
+                                        AuthMethod.PASSWORD,
+                                        null,
+                                        null))
+                .isInstanceOf(IllegalArgumentException.class);
+        SessionSnapshot live =
+                new SessionSnapshot(
+                        SESSION_ID,
+                        USER_ID,
+                        1,
+                        1,
+                        active,
+                        List.of(active),
+                        EXPIRY,
+                        T0,
+                        T0,
+                        null,
+                        null,
+                        AuthMethod.PASSWORD,
+                        null,
+                        null);
         assertThatCode(() -> SessionStatePort.RevokeResult.success(live, false))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatCode(() -> SessionStatePort.RevokeResult.success(live, true))
                 .isInstanceOf(IllegalArgumentException.class);
-        SessionState state = new SessionState(
-                SESSION_ID, USER_ID, null, 1, INITIAL_JTI, null,
-                EXPIRY, T0, T0, null, null, AuthMethod.PASSWORD, null, null
-        );
+        SessionState state =
+                new SessionState(
+                        SESSION_ID,
+                        USER_ID,
+                        null,
+                        1,
+                        INITIAL_JTI,
+                        null,
+                        EXPIRY,
+                        T0,
+                        T0,
+                        null,
+                        null,
+                        AuthMethod.PASSWORD,
+                        null,
+                        null);
         assertThat(state.toString()).doesNotContain(INITIAL_JTI.toString());
     }
 
@@ -449,23 +735,33 @@ class SessionLifecycleServiceTest {
             UUID jti,
             long rolesVersion,
             List<RoleGrant> grants,
-            String expectedHash
-    ) {
+            String expectedHash) {
         return new SessionLifecycleService.CreateSessionRequest(
-                USER_ID, sessionId, jti, T0, EXPIRY, AuthMethod.PASSWORD,
-                rolesVersion, grants, expectedHash, null, null
-        );
+                USER_ID,
+                sessionId,
+                jti,
+                T0,
+                EXPIRY,
+                AuthMethod.PASSWORD,
+                rolesVersion,
+                grants,
+                expectedHash,
+                null,
+                null);
     }
 
     private static SessionLifecycleService.ChangePasswordRequest passwordRequest(
-            String expectedHash, String replacementHash, String newPassword
-    ) {
+            String expectedHash, String replacementHash, String newPassword) {
         return new SessionLifecycleService.ChangePasswordRequest(
-                USER_ID, SESSION_ID,
+                USER_ID,
+                SESSION_ID,
                 new CredentialSessionTransactionPort.CredentialHash(expectedHash),
                 new CredentialSessionTransactionPort.CredentialHash(replacementHash),
-                newPassword, T0.plusSeconds(30), AuthMethod.PASSWORD, null, null
-        );
+                newPassword,
+                T0.plusSeconds(30),
+                AuthMethod.PASSWORD,
+                null,
+                null);
     }
 
     private static RoleGrant grant(long id, AuthRole role, RoleStatus status, Long groupId) {
@@ -499,7 +795,8 @@ class SessionLifecycleServiceTest {
                     return CreateSessionResult.failure(forcedFailure);
                 }
                 List<RoleGrant> authoritative = roles.get(command.state().userId());
-                if (!Objects.equals(rolesVersions.get(command.state().userId()), command.rolesVersion())
+                if (!Objects.equals(
+                                rolesVersions.get(command.state().userId()), command.rolesVersion())
                         || !Objects.equals(authoritative, command.grants())) {
                     return CreateSessionResult.failure(FailureCode.SESSION_STATE_STALE);
                 }
@@ -507,8 +804,11 @@ class SessionLifecycleServiceTest {
                     return CreateSessionResult.failure(FailureCode.INVALID_ARGUMENT);
                 }
                 if (command.state().activeRoleGrantId() != null
-                        && authoritative.stream().noneMatch(grant -> grant.grantId()
-                        == command.state().activeRoleGrantId())) {
+                        && authoritative.stream()
+                                .noneMatch(
+                                        grant ->
+                                                grant.grantId()
+                                                        == command.state().activeRoleGrantId())) {
                     return CreateSessionResult.failure(FailureCode.SESSION_STATE_STALE);
                 }
                 sessions.put(command.state().sessionId(), command.state());
@@ -543,16 +843,22 @@ class SessionLifecycleServiceTest {
                 if (state.sessionVersion() != command.expectedSessionVersion()) {
                     return RoleSelectionResult.failure(FailureCode.SESSION_VERSION_CONFLICT);
                 }
-                ActiveRolePolicy.Selection selected = new ActiveRolePolicy().select(
-                        command.userId(), command.role(), roles.get(command.userId())
-                );
+                ActiveRolePolicy.Selection selected =
+                        new ActiveRolePolicy()
+                                .select(
+                                        command.userId(),
+                                        command.role(),
+                                        roles.get(command.userId()));
                 if (!selected.succeeded()) {
                     return RoleSelectionResult.failure(map(selected.code()));
                 }
                 if (Objects.equals(state.activeRoleGrantId(), selected.grant().grantId())) {
-                    return RoleSelectionResult.success(snapshot(state, roles.get(command.userId())));
+                    return RoleSelectionResult.success(
+                            snapshot(state, roles.get(command.userId())));
                 }
-                SessionState changed = state.withActiveRole(selected.grant().grantId(), state.sessionVersion() + 1);
+                SessionState changed =
+                        state.withActiveRole(
+                                selected.grant().grantId(), state.sessionVersion() + 1);
                 sessions.put(command.sessionId(), changed);
                 events.add(command.roleChangedEvent());
                 return RoleSelectionResult.success(snapshot(changed, roles.get(command.userId())));
@@ -584,7 +890,8 @@ class SessionLifecycleServiceTest {
                     rotated = rotated.withActiveRole(null, rotated.sessionVersion() + 1);
                 }
                 sessions.put(command.sessionId(), rotated);
-                return RefreshResult.success(snapshot(rotated, roles.get(command.userId())), command.replacementJti());
+                return RefreshResult.success(
+                        snapshot(rotated, roles.get(command.userId())), command.replacementJti());
             }
         }
 
@@ -601,8 +908,11 @@ class SessionLifecycleServiceTest {
                 if (state.isRevoked()) {
                     return RevokeResult.success(snapshot(state, roles.get(command.userId())), true);
                 }
-                SessionState revoked = state.revokedAt(command.now(),
-                        ru.rutcampustrack.auth.session.model.SessionRevokeReason.CURRENT_LOGOUT);
+                SessionState revoked =
+                        state.revokedAt(
+                                command.now(),
+                                ru.rutcampustrack.auth.session.model.SessionRevokeReason
+                                        .CURRENT_LOGOUT);
                 sessions.put(command.sessionId(), revoked);
                 events.add(command.logoutEvent());
                 return RevokeResult.success(snapshot(revoked, roles.get(command.userId())), false);
@@ -611,7 +921,8 @@ class SessionLifecycleServiceTest {
 
         @Override
         public RevokeResult revokeSelected(RevokeSelectedCommand command) {
-            throw new UnsupportedOperationException("selected revocation is verified against real PostgreSQL");
+            throw new UnsupportedOperationException(
+                    "selected revocation is verified against real PostgreSQL");
         }
 
         @Override
@@ -620,18 +931,23 @@ class SessionLifecycleServiceTest {
                 if (forcedFailure != null) {
                     return RevokeAllResult.failure(forcedFailure);
                 }
-                List<UUID> owned = sessions.entrySet().stream()
-                        .filter(entry -> entry.getValue().userId() == command.userId())
-                        .map(Map.Entry::getKey)
-                        .toList();
+                List<UUID> owned =
+                        sessions.entrySet().stream()
+                                .filter(entry -> entry.getValue().userId() == command.userId())
+                                .map(Map.Entry::getKey)
+                                .toList();
                 if (owned.stream().noneMatch(command.currentSessionId()::equals)) {
                     return RevokeAllResult.failure(FailureCode.INVALID_SESSION);
                 }
                 for (UUID sessionId : owned) {
                     SessionState state = sessions.get(sessionId);
                     if (!state.isRevoked()) {
-                        sessions.put(sessionId, state.revokedAt(command.now(),
-                                ru.rutcampustrack.auth.session.model.SessionRevokeReason.LOGOUT_ALL));
+                        sessions.put(
+                                sessionId,
+                                state.revokedAt(
+                                        command.now(),
+                                        ru.rutcampustrack.auth.session.model.SessionRevokeReason
+                                                .LOGOUT_ALL));
                     }
                 }
                 events.add(command.logoutAllEvent());
@@ -648,12 +964,20 @@ class SessionLifecycleServiceTest {
                 active = null;
             }
             return new SessionSnapshot(
-                    state.sessionId(), state.userId(), state.sessionVersion(),
-                    rolesVersions.get(state.userId()), active, authoritative,
-                    state.refreshExpiresAt(), state.createdAt(), state.lastSeenAt(),
-                    state.revokedAt(), state.revokeReason(), state.authMethod(),
-                    state.clientLabel(), state.locationLabel()
-            );
+                    state.sessionId(),
+                    state.userId(),
+                    state.sessionVersion(),
+                    rolesVersions.get(state.userId()),
+                    active,
+                    authoritative,
+                    state.refreshExpiresAt(),
+                    state.createdAt(),
+                    state.lastSeenAt(),
+                    state.revokedAt(),
+                    state.revokeReason(),
+                    state.authMethod(),
+                    state.clientLabel(),
+                    state.locationLabel());
         }
 
         private static RoleGrant activeGrant(SessionState state, List<RoleGrant> grants) {
@@ -685,7 +1009,9 @@ class SessionLifecycleServiceTest {
                 case ROLE_NOT_SELECTABLE -> FailureCode.ROLE_NOT_SELECTABLE;
                 case FOREIGN_GRANT, INVALID_GRANT -> FailureCode.INVALID_GRANT;
                 case DUPLICATE_GRANT -> FailureCode.DUPLICATE_GRANT;
-                case OK -> throw new IllegalArgumentException("successful selection cannot map to failure");
+                case OK ->
+                        throw new IllegalArgumentException(
+                                "successful selection cannot map to failure");
             };
         }
     }
@@ -716,7 +1042,8 @@ class SessionLifecycleServiceTest {
                     return ChangePasswordResult.failure(FailureCode.SESSION_REVOKED);
                 }
                 CredentialHash actual = hashes.get(command.userId());
-                if (actual == null || !actual.value().equals(command.expectedCurrentHash().value())) {
+                if (actual == null
+                        || !actual.value().equals(command.expectedCurrentHash().value())) {
                     return ChangePasswordResult.failure(FailureCode.CURRENT_PASSWORD_INVALID);
                 }
                 hashes.put(command.userId(), command.replacementHash());
@@ -726,8 +1053,11 @@ class SessionLifecycleServiceTest {
                     if (state.userId() == command.userId()) {
                         if (!state.isRevoked()) {
                             count++;
-                            entry.setValue(state.revokedAt(command.now(),
-                                    ru.rutcampustrack.auth.session.model.SessionRevokeReason.PASSWORD_CHANGED));
+                            entry.setValue(
+                                    state.revokedAt(
+                                            command.now(),
+                                            ru.rutcampustrack.auth.session.model.SessionRevokeReason
+                                                    .PASSWORD_CHANGED));
                         }
                     }
                 }
@@ -738,10 +1068,7 @@ class SessionLifecycleServiceTest {
 
         @Override
         public boolean issuePasswordResetTicket(
-                long userId,
-                CredentialHash ticketHash,
-                Instant expiresAt
-        ) {
+                long userId, CredentialHash ticketHash, Instant expiresAt) {
             throw new UnsupportedOperationException("password reset is outside this test double");
         }
 

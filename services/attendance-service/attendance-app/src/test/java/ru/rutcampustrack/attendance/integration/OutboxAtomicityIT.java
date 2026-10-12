@@ -1,5 +1,10 @@
 package ru.rutcampustrack.attendance.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,38 +18,27 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.excuse.ExcuseEventPublisher;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
-import ru.rutcampustrack.shared.outbox.OutboxStorage;
-
-import java.time.Instant;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * M13 G7 (M02 CRITICAL #1) — IT проверяет, что {@code @Transactional} в связке с
- * {@link org.springframework.data.mongodb.MongoTransactionManager} реально
- * rollback'ает **и** domain-save (excuse_ticket), **и** outbox-save, если
- * transaction коммитит exception'ом после {@code outbox.save}.
+ * M13 G7 (M02 CRITICAL #1) — IT проверяет, что {@code @Transactional} в связке с {@link
+ * org.springframework.data.mongodb.MongoTransactionManager} реально rollback'ает **и** domain-save
+ * (excuse_ticket), **и** outbox-save, если transaction коммитит exception'ом после {@code
+ * outbox.save}.
  *
- * <p>Сценарий M02 CRITICAL #1: "kill publisher между save и publish" —
- * симулируется через `RuntimeException`, выброшенный в {@code @Transactional}
- * методе после обоих save-ов. Без MongoTransactionManager (или на standalone
- * Mongo без replica set) ни один из save не rollback'нется — данные
- * остались бы на disk, нарушая invariant «excuse существует ⇔ event
- * в outbox».
+ * <p>Сценарий M02 CRITICAL #1: "kill publisher между save и publish" — симулируется через
+ * `RuntimeException`, выброшенный в {@code @Transactional} методе после обоих save-ов. Без
+ * MongoTransactionManager (или на standalone Mongo без replica set) ни один из save не
+ * rollback'нется — данные остались бы на disk, нарушая invariant «excuse существует ⇔ event в
+ * outbox».
  */
 @Import(OutboxAtomicityIT.TestTxService.class)
 class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    @Autowired private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private TestTxService txService;
+    @Autowired private TestTxService txService;
 
-    @Autowired
-    private ExcuseRepository excuseRepository;
+    @Autowired private ExcuseRepository excuseRepository;
 
     @BeforeEach
     void clean() {
@@ -55,17 +49,18 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void saveExcuseAndOutbox_thenThrow_bothRolledBack() {
-        ExcuseTicket ticket = ExcuseTicket.builder()
-                .studentId(42L)
-                .groupId(1L)
-                .semesterId(1L)
-                .lessonIds(List.of(10L, 11L))
-                .excuseType(ExcuseType.ILLNESS)
-                .comment("test rollback")
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .studentId(42L)
+                        .groupId(1L)
+                        .semesterId(1L)
+                        .lessonIds(List.of(10L, 11L))
+                        .excuseType(ExcuseType.ILLNESS)
+                        .comment("test rollback")
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build();
 
         assertThatThrownBy(() -> txService.saveAndFail(ticket))
                 .isInstanceOf(IllegalStateException.class);
@@ -87,36 +82,46 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void saveExcuseAndOutbox_withoutThrow_bothCommitted() {
-        ExcuseTicket ticket = ExcuseTicket.builder()
-                .studentId(42L)
-                .groupId(1L)
-                .semesterId(1L)
-                .lessonIds(List.of(20L, 21L))
-                .excuseType(ExcuseType.ILLNESS)
-                .comment("test commit")
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .studentId(42L)
+                        .groupId(1L)
+                        .semesterId(1L)
+                        .lessonIds(List.of(20L, 21L))
+                        .excuseType(ExcuseType.ILLNESS)
+                        .comment("test commit")
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build();
 
         ExcuseTicket saved = txService.saveAndCommit(ticket);
 
         assertThat(saved.getId()).isNotNull();
         assertThat(excuseRepository.count()).isEqualTo(1);
         assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(4);
-        assertThat(mongoTemplate.count(Query.query(
-                org.springframework.data.mongodb.core.query.Criteria.where("event_type").is("excuse.requested")),
-                "attendance_outbox")).isEqualTo(1);
-        assertThat(mongoTemplate.count(Query.query(
-                org.springframework.data.mongodb.core.query.Criteria.where("event_type").is("dashboard.invalidated")),
-                "attendance_outbox")).isEqualTo(3);
+        assertThat(
+                        mongoTemplate.count(
+                                Query.query(
+                                        org.springframework.data.mongodb.core.query.Criteria.where(
+                                                        "event_type")
+                                                .is("excuse.requested")),
+                                "attendance_outbox"))
+                .isEqualTo(1);
+        assertThat(
+                        mongoTemplate.count(
+                                Query.query(
+                                        org.springframework.data.mongodb.core.query.Criteria.where(
+                                                        "event_type")
+                                                .is("dashboard.invalidated")),
+                                "attendance_outbox"))
+                .isEqualTo(3);
         assertThat(mongoTemplate.count(new Query(), "lesson_actions")).isEqualTo(2);
     }
 
     /**
-     * Test-only service: имитирует сценарий save domain + outbox → exception
-     * после обоих save-ов. Если {@code @Transactional} работает — оба
-     * rollback'аются; иначе — оба остаются (fail test).
+     * Test-only service: имитирует сценарий save domain + outbox → exception после обоих save-ов.
+     * Если {@code @Transactional} работает — оба rollback'аются; иначе — оба остаются (fail test).
      */
     @Service
     static class TestTxService {

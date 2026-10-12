@@ -1,5 +1,8 @@
 package ru.rutcampustrack.attendance.latecheckin.entity;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,22 +10,16 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 /**
- * MongoDB document for late-checkin requests.
- * Collection: late_checkin_requests.
- * Lombok allowed in app module.
- * <p>
- * Indexes declared programmatically in {@code MongoConfig.initIndexes()}
- * (proj convention — avoids dependency on
- * {@code spring.data.mongodb.auto-index-creation=true}).
+ * MongoDB document for late-checkin requests. Collection: late_checkin_requests. Lombok allowed in
+ * app module.
+ *
+ * <p>Indexes declared programmatically in {@code MongoConfig.initIndexes()} (proj convention —
+ * avoids dependency on {@code spring.data.mongodb.auto-index-creation=true}).
  */
 @Data
 @Builder
@@ -31,8 +28,7 @@ import java.time.LocalTime;
 @Document(collection = "late_checkin_requests")
 public class LateCheckinRequest {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     @Field("student_id")
     private Long studentId;

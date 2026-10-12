@@ -1,13 +1,12 @@
 package ru.rutcampustrack.shared.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
-
-import java.time.OffsetDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class AbstractEventPublisherTest {
 
@@ -35,7 +34,7 @@ class AbstractEventPublisherTest {
     }
 
     @EventVersion(5)
-    static abstract class BaseVersioned extends DomainEvent {
+    abstract static class BaseVersioned extends DomainEvent {
         BaseVersioned(String type) {
             super(type, null);
         }

@@ -4,22 +4,21 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-
 /**
- * M03a: guards {@code /internal/**} endpoints on auth-service. Verifies the
- * {@code X-Internal-Issuer-Secret} header with timing-safe comparison.
+ * M03a: guards {@code /internal/**} endpoints on auth-service. Verifies the {@code
+ * X-Internal-Issuer-Secret} header with timing-safe comparison.
  *
- * Pattern mirrors {@code GrpcSecretInterceptor} — defence in depth for the
- * token-exchange endpoint (even though it sits inside the docker private-net).
+ * <p>Pattern mirrors {@code GrpcSecretInterceptor} — defence in depth for the token-exchange
+ * endpoint (even though it sits inside the docker private-net).
  */
 @Component
 public class InternalIssuerSecretFilter extends OncePerRequestFilter {
@@ -30,7 +29,8 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
             "/internal/auth/confirm-semester-deletion";
     private static final String MAP_DELETE_CONFIRMATION_PATH =
             "/internal/auth/confirm-map-deletion";
-    private static final String USER_ARCHIVE_CONFIRMATION_PATH = "/internal/auth/confirm-user-archive";
+    private static final String USER_ARCHIVE_CONFIRMATION_PATH =
+            "/internal/auth/confirm-user-archive";
 
     private static final Logger log = LoggerFactory.getLogger(InternalIssuerSecretFilter.class);
 
@@ -46,9 +46,9 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
         if (isPasswordConfirmationRequest(request)) {
             response.setHeader("Cache-Control", "no-store");
         }
@@ -80,7 +80,8 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
                 || (prefix + USER_ARCHIVE_CONFIRMATION_PATH).equals(request.getRequestURI());
     }
 
-    private static void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
+    private static void writeUnauthorized(HttpServletResponse response, String message)
+            throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.getWriter().write("{\"error\":\"" + message + "\"}");

@@ -3,7 +3,6 @@ package ru.rutcampustrack.shared.security;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -22,9 +21,8 @@ import java.util.UUID;
 /**
  * Validates the frozen internal JWT wire produced by auth-service.
  *
- * <p>The validator is deliberately strict about representation as well as
- * signature and time. Downstream code receives only the immutable identity
- * record and never reads raw claims again.</p>
+ * <p>The validator is deliberately strict about representation as well as signature and time.
+ * Downstream code receives only the immutable identity record and never reads raw claims again.
  */
 public class InternalJwtValidator {
 
@@ -42,14 +40,15 @@ public class InternalJwtValidator {
     private final PublicKeyProvider publicKeyProvider;
     private final InternalJwtProperties properties;
 
-    public InternalJwtValidator(PublicKeyProvider publicKeyProvider, InternalJwtProperties properties) {
+    public InternalJwtValidator(
+            PublicKeyProvider publicKeyProvider, InternalJwtProperties properties) {
         this.publicKeyProvider = publicKeyProvider;
         this.properties = properties;
     }
 
     /**
-     * @throws InternalJwtException if any signature, purpose, identity,
-     *                              representation, or time invariant fails.
+     * @throws InternalJwtException if any signature, purpose, identity, representation, or time
+     *     invariant fails.
      */
     public InternalJwtClaims validate(String token) {
         if (token == null || token.isBlank()) {
@@ -71,13 +70,17 @@ public class InternalJwtValidator {
             requireWire(raw.payload());
             long userId = parsePositiveDecimal(raw.payload().requiredPlainString("sub"), "sub");
             UUID sessionId = parseCanonicalUuid(raw.payload().requiredPlainString("sid"), "sid");
-            long sessionVersion = parsePositiveDecimal(raw.payload().requiredPlainString("sv"), "sv");
+            long sessionVersion =
+                    parsePositiveDecimal(raw.payload().requiredPlainString("sv"), "sv");
             long rolesVersion = parsePositiveDecimal(raw.payload().requiredPlainString("rv"), "rv");
             String role = parseEnum(raw.payload().requiredPlainString("role"), "role", ROLES);
-            String status = parseEnum(raw.payload().requiredPlainString("status"), "status", STATUSES);
-            Long groupId = raw.payload().has("group_id")
-                    ? parsePositiveDecimal(raw.payload().requiredPlainString("group_id"), "group_id")
-                    : null;
+            String status =
+                    parseEnum(raw.payload().requiredPlainString("status"), "status", STATUSES);
+            Long groupId =
+                    raw.payload().has("group_id")
+                            ? parsePositiveDecimal(
+                                    raw.payload().requiredPlainString("group_id"), "group_id")
+                            : null;
             boolean isHeadman = raw.payload().requiredBoolean("is_headman");
             boolean readOnly = raw.payload().requiredBoolean("readOnly");
             requireSemanticIdentity(role, status, groupId, isHeadman, readOnly);
@@ -92,8 +95,7 @@ public class InternalJwtValidator {
                     status,
                     groupId,
                     isHeadman,
-                    readOnly
-            );
+                    readOnly);
         } catch (ExpiredJwtException exception) {
             throw new InternalJwtException("Token expired", exception);
         } catch (InternalJwtException exception) {
@@ -118,7 +120,8 @@ public class InternalJwtValidator {
         if (!properties.expectedIssuer().equals(raw.requiredPlainString("iss"))) {
             throw new InternalJwtException("Invalid issuer");
         }
-        if (!Set.of(properties.expectedAudience()).equals(raw.requiredSingletonStringArray("aud"))) {
+        if (!Set.of(properties.expectedAudience())
+                .equals(raw.requiredSingletonStringArray("aud"))) {
             throw new InternalJwtException("Invalid audience");
         }
         if (!"internal".equals(raw.requiredPlainString("token_use"))) {
@@ -157,12 +160,7 @@ public class InternalJwtValidator {
     }
 
     private static void requireSemanticIdentity(
-            String role,
-            String status,
-            Long groupId,
-            boolean isHeadman,
-            boolean readOnly
-    ) {
+            String role, String status, Long groupId, boolean isHeadman, boolean readOnly) {
         if (isHeadman != "HEADMAN".equals(role)
                 || ("HEADMAN".equals(role) && (groupId == null || groupId <= 0))
                 || "SUSPENDED".equals(status)
@@ -215,8 +213,7 @@ public class InternalJwtValidator {
             }
             return new RawJwtToken(
                     RawJwtPayload.parseSection(parts[0], "header"),
-                    RawJwtPayload.parseSection(parts[1], "payload")
-            );
+                    RawJwtPayload.parseSection(parts[1], "payload"));
         }
 
         private RawJwtPayload header() {
@@ -241,13 +238,16 @@ public class InternalJwtValidator {
                 if (decoded.length > MAX_DECODED_JSON_LENGTH) {
                     throw new IllegalArgumentException("JWT " + sectionName + " is too large");
                 }
-                CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
-                        .onMalformedInput(CodingErrorAction.REPORT)
-                        .onUnmappableCharacter(CodingErrorAction.REPORT);
+                CharsetDecoder decoder =
+                        StandardCharsets.UTF_8
+                                .newDecoder()
+                                .onMalformedInput(CodingErrorAction.REPORT)
+                                .onUnmappableCharacter(CodingErrorAction.REPORT);
                 String json = decoder.decode(ByteBuffer.wrap(decoded)).toString();
                 return new RawJwtPayload(new JsonObjectParser(json, sectionName).parse());
             } catch (CharacterCodingException exception) {
-                throw new IllegalArgumentException("JWT " + sectionName + " is not valid UTF-8", exception);
+                throw new IllegalArgumentException(
+                        "JWT " + sectionName + " is not valid UTF-8", exception);
             } catch (IllegalArgumentException exception) {
                 throw exception;
             } catch (RuntimeException exception) {
@@ -282,11 +282,13 @@ public class InternalJwtValidator {
         private Set<String> requiredSingletonStringArray(String name) {
             RawJsonValue value = required(name);
             if (value.kind != RawJsonKind.ARRAY || value.arrayValues.size() != 1) {
-                throw new IllegalArgumentException("JWT " + name + " must be a singleton JSON array");
+                throw new IllegalArgumentException(
+                        "JWT " + name + " must be a singleton JSON array");
             }
             RawJsonValue item = value.arrayValues.get(0);
             if (item.kind != RawJsonKind.STRING || item.escaped) {
-                throw new IllegalArgumentException("JWT " + name + " must contain a plain JSON string");
+                throw new IllegalArgumentException(
+                        "JWT " + name + " must contain a plain JSON string");
             }
             return Set.of(item.stringValue);
         }
@@ -294,7 +296,8 @@ public class InternalJwtValidator {
         private long requiredWholeSecondNumber(String name) {
             RawJsonValue value = required(name);
             if (value.kind != RawJsonKind.NUMBER || !value.raw.matches("[0-9]+")) {
-                throw new IllegalArgumentException("JWT " + name + " must be an integer NumericDate");
+                throw new IllegalArgumentException(
+                        "JWT " + name + " must be an integer NumericDate");
             }
             try {
                 return Long.parseLong(value.raw);
@@ -312,7 +315,14 @@ public class InternalJwtValidator {
         }
     }
 
-    private enum RawJsonKind { STRING, NUMBER, BOOLEAN, NULL, OBJECT, ARRAY }
+    private enum RawJsonKind {
+        STRING,
+        NUMBER,
+        BOOLEAN,
+        NULL,
+        OBJECT,
+        ARRAY
+    }
 
     private static final class RawJsonValue {
         private final RawJsonKind kind;
@@ -328,8 +338,7 @@ public class InternalJwtValidator {
                 String stringValue,
                 boolean escaped,
                 boolean booleanValue,
-                List<RawJsonValue> arrayValues
-        ) {
+                List<RawJsonValue> arrayValues) {
             this.kind = kind;
             this.raw = raw;
             this.stringValue = stringValue;
@@ -347,7 +356,8 @@ public class InternalJwtValidator {
         }
 
         private static RawJsonValue array(String raw, List<RawJsonValue> values) {
-            return new RawJsonValue(RawJsonKind.ARRAY, raw, null, false, false, List.copyOf(values));
+            return new RawJsonValue(
+                    RawJsonKind.ARRAY, raw, null, false, false, List.copyOf(values));
         }
     }
 
@@ -483,7 +493,8 @@ public class InternalJwtValidator {
             }
             if (index < text.length() && (text.charAt(index) == 'e' || text.charAt(index) == 'E')) {
                 index++;
-                if (index < text.length() && (text.charAt(index) == '+' || text.charAt(index) == '-')) {
+                if (index < text.length()
+                        && (text.charAt(index) == '+' || text.charAt(index) == '-')) {
                     index++;
                 }
                 requireDigits();
@@ -499,7 +510,8 @@ public class InternalJwtValidator {
             while (index < text.length()) {
                 char current = text.charAt(index++);
                 if (current == '"') {
-                    return new ParsedString(text.substring(start, index), value.toString(), escaped);
+                    return new ParsedString(
+                            text.substring(start, index), value.toString(), escaped);
                 }
                 if (current < 0x20) {
                     throw error("control character in JSON string");
@@ -588,10 +600,10 @@ public class InternalJwtValidator {
         }
 
         private IllegalArgumentException error(String message) {
-            return new IllegalArgumentException("JWT " + sectionName + " " + message + " at offset " + index);
+            return new IllegalArgumentException(
+                    "JWT " + sectionName + " " + message + " at offset " + index);
         }
 
-        private record ParsedString(String raw, String value, boolean escaped) {
-        }
+        private record ParsedString(String raw, String value, boolean escaped) {}
     }
 }

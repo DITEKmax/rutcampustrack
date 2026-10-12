@@ -2,14 +2,13 @@ package ru.rutcampustrack.shared.web.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.PropertyAccessorFactory;
-
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.PropertyAccessorFactory;
 
 public class DateRangeValidator implements ConstraintValidator<DateRangeValid, Object> {
 
@@ -44,6 +43,8 @@ public class DateRangeValidator implements ConstraintValidator<DateRangeValid, O
         if (from instanceof ZonedDateTime f && to instanceof ZonedDateTime t) return f.isAfter(t);
         throw new IllegalArgumentException(
                 "@DateRangeValid supports LocalDate/LocalDateTime/Instant/OffsetDateTime/ZonedDateTime; got: "
-                        + from.getClass().getName() + " / " + to.getClass().getName());
+                        + from.getClass().getName()
+                        + " / "
+                        + to.getClass().getName());
     }
 }

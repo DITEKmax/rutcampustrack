@@ -72,7 +72,8 @@ public final class PasswordPolicy {
                     Character.MATH_SYMBOL,
                     Character.CURRENCY_SYMBOL,
                     Character.MODIFIER_SYMBOL,
-                    Character.OTHER_SYMBOL -> true;
+                    Character.OTHER_SYMBOL ->
+                    true;
             default -> false;
         };
     }

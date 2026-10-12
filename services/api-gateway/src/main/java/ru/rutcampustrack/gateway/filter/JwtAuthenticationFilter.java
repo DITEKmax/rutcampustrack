@@ -6,6 +6,17 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -23,22 +34,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 
-import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
-
 /**
- * Sanitizes client identity headers and performs the local JWT admission
- * pre-check.  Live session admission is intentionally deferred to
- * {@code InternalJwtIssuerFilter}.
+ * Sanitizes client identity headers and performs the local JWT admission pre-check. Live session
+ * admission is intentionally deferred to {@code InternalJwtIssuerFilter}.
  */
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
@@ -49,9 +47,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     /** Set only by the live admission filter after its response is verified. */
     public static final String AUTHENTICATED_USER_ID_ATTRIBUTE =
             JwtAuthenticationFilter.class.getName() + ".authenticatedUserId";
+
     /** Private exchange attributes shared with the next gateway filter. */
     public static final String ORIGINAL_ACCESS_TOKEN_ATTRIBUTE =
             JwtAuthenticationFilter.class.getName() + ".originalAccessToken";
+
     public static final String EXPECTED_USER_ID_ATTRIBUTE =
             JwtAuthenticationFilter.class.getName() + ".expectedUserId";
     public static final String EXPECTED_SESSION_ID_ATTRIBUTE =
@@ -72,24 +72,24 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final Set<String> ALLOWED_STATUSES =
             Set.of("ACTIVE", "SUSPENDED", "EXPELLED", "GRADUATED", "ARCHIVED");
 
-    private static final Set<String> PUBLIC_PATHS = Set.of(
-            "/api/auth/login",
-            "/api/auth/refresh",
-            "/api/auth/logout",
-            "/api/auth/public-key",
-            "/api/auth/tma",
-            "/api/csp-report",
-            "/swagger-ui.html"
-    );
+    private static final Set<String> PUBLIC_PATHS =
+            Set.of(
+                    "/api/auth/login",
+                    "/api/auth/refresh",
+                    "/api/auth/logout",
+                    "/api/auth/public-key",
+                    "/api/auth/tma",
+                    "/api/csp-report",
+                    "/swagger-ui.html");
 
-    private static final List<String> PUBLIC_PREFIXES = List.of(
-            "/api/auth/otp/",
-            "/api/auth/password-reset/",
-            "/api/ws/",
-            "/swagger-ui/",
-            "/v3/api-docs",
-            "/openapi/"
-    );
+    private static final List<String> PUBLIC_PREFIXES =
+            List.of(
+                    "/api/auth/otp/",
+                    "/api/auth/password-reset/",
+                    "/api/ws/",
+                    "/swagger-ui/",
+                    "/v3/api-docs",
+                    "/openapi/");
 
     private final PublicKeyConfig publicKeyConfig;
 
@@ -100,9 +100,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         clearAuthAttributes(exchange);
-        ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
-                .headers(JwtAuthenticationFilter::removeClientIdentityHeaders)
-                .build();
+        ServerHttpRequest sanitizedRequest =
+                exchange.getRequest()
+                        .mutate()
+                        .headers(JwtAuthenticationFilter::removeClientIdentityHeaders)
+                        .build();
         exchange = exchange.mutate().request(sanitizedRequest).build();
 
         if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
@@ -110,14 +112,20 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         String path = exchange.getRequest().getURI().getPath();
-        String authorization = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authorization == null || !authorization.startsWith("Bearer ")
+        String authorization =
+                exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authorization == null
+                || !authorization.startsWith("Bearer ")
                 || authorization.substring("Bearer ".length()).isBlank()) {
             if (isPublicRoute(exchange.getRequest().getMethod(), path)) {
                 return chain.filter(exchange);
             }
-            return problem(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized",
-                    "Invalid session", "INVALID_SESSION");
+            return problem(
+                    exchange,
+                    HttpStatus.UNAUTHORIZED,
+                    "Unauthorized",
+                    "Invalid session",
+                    "INVALID_SESSION");
         }
 
         String token = authorization.substring("Bearer ".length());
@@ -145,15 +153,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         } catch (JwtException | IllegalArgumentException | IllegalStateException e) {
             log.debug("JWT local validation failed ({})", e.getClass().getSimpleName());
-            return problem(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized",
-                    "Invalid session", "INVALID_SESSION");
+            return problem(
+                    exchange,
+                    HttpStatus.UNAUTHORIZED,
+                    "Unauthorized",
+                    "Invalid session",
+                    "INVALID_SESSION");
         }
     }
 
-    private Mono<Void> handlePublicBearer(ServerWebExchange exchange,
-                                           GatewayFilterChain chain,
-                                           String path,
-                                           String token) {
+    private Mono<Void> handlePublicBearer(
+            ServerWebExchange exchange, GatewayFilterChain chain, String path, String token) {
         try {
             Jws<Claims> parsed = parseAndVerify(token);
             Claims claims = parsed.getPayload();
@@ -179,10 +189,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         if (!(publicKey instanceof RSAPublicKey)) {
             throw new IllegalStateException("Gateway public key is not RSA");
         }
-        Jws<Claims> parsed = Jwts.parser()
-                .verifyWith(publicKey)
-                .build()
-                .parseSignedClaims(token);
+        Jws<Claims> parsed = Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
         if (!"RS256".equals(parsed.getHeader().getAlgorithm())) {
             throw new IllegalArgumentException("JWT algorithm must be RS256");
         }
@@ -205,8 +212,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         optionalPositiveLongStringClaim(claims, originalPayload, "group_id");
         requireBooleanClaim(claims, "is_headman");
         requireBooleanClaim(claims, "readOnly");
-        return new AccessExpectations(userId, sessionId, sessionVersion, rolesVersion,
-                expiry.toInstant());
+        return new AccessExpectations(
+                userId, sessionId, sessionVersion, rolesVersion, expiry.toInstant());
     }
 
     private static void validateBootstrapClaims(Claims claims, String compactToken) {
@@ -226,8 +233,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
         Date issuedAt = claims.getIssuedAt();
         Date expiry = claims.getExpiration();
-        if (issuedAt == null || !isWholeSecond(issuedAt)
-                || expiry == null || !isWholeSecond(expiry)) {
+        if (issuedAt == null
+                || !isWholeSecond(issuedAt)
+                || expiry == null
+                || !isWholeSecond(expiry)) {
             throw new IllegalArgumentException("JWT iat and exp must be whole-second NumericDates");
         }
         Instant now = Instant.now();
@@ -294,9 +303,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return value;
     }
 
-    private static String optionalPositiveLongStringClaim(Claims claims,
-                                                         JsonNode originalPayload,
-                                                         String name) {
+    private static String optionalPositiveLongStringClaim(
+            Claims claims, JsonNode originalPayload, String name) {
         if (!originalPayload.has(name)) {
             return null;
         }
@@ -307,9 +315,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return requirePositiveLongStringClaim(claims, name);
     }
 
-    private static void requireAllowedStringClaim(Claims claims,
-                                                  String name,
-                                                  Set<String> allowed) {
+    private static void requireAllowedStringClaim(Claims claims, String name, Set<String> allowed) {
         String value = requireExactStringClaim(claims, name);
         if (!allowed.contains(value)) {
             throw new IllegalArgumentException(name + " is not recognized");
@@ -343,7 +349,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 throw new IllegalArgumentException("JWT audience is not allowed");
             }
         } else if (raw instanceof Collection<?> values) {
-            if (values.size() != 1 || !(values.iterator().next() instanceof String value)
+            if (values.size() != 1
+                    || !(values.iterator().next() instanceof String value)
                     || !expected.equals(value)) {
                 throw new IllegalArgumentException("JWT audience must be a singleton");
             }
@@ -352,7 +359,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         Set<String> parsedAudience = claims.getAudience();
-        if (parsedAudience == null || parsedAudience.size() != 1
+        if (parsedAudience == null
+                || parsedAudience.size() != 1
                 || !parsedAudience.contains(expected)) {
             throw new IllegalArgumentException("JWT audience must be a singleton");
         }
@@ -362,8 +370,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return (HttpMethod.GET.equals(method) && "/api/auth/session".equals(path))
                 || (HttpMethod.PUT.equals(method) && "/api/auth/session/active-role".equals(path))
                 || (HttpMethod.GET.equals(method) && "/api/auth/sessions".equals(path))
-                || (HttpMethod.DELETE.equals(method)
-                && path.matches("/api/auth/sessions/[^/]+"))
+                || (HttpMethod.DELETE.equals(method) && path.matches("/api/auth/sessions/[^/]+"))
                 || (HttpMethod.POST.equals(method) && "/api/auth/logout".equals(path))
                 || (HttpMethod.POST.equals(method) && "/api/auth/logout-all".equals(path));
     }
@@ -372,22 +379,21 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return HttpMethod.POST.equals(method) && "/api/auth/logout".equals(path);
     }
 
-    private static void putAccessExpectations(ServerWebExchange exchange,
-                                              String token,
-                                              AccessExpectations expectations) {
+    private static void putAccessExpectations(
+            ServerWebExchange exchange, String token, AccessExpectations expectations) {
         exchange.getAttributes().put(ORIGINAL_ACCESS_TOKEN_ATTRIBUTE, token);
         exchange.getAttributes().put(EXPECTED_USER_ID_ATTRIBUTE, expectations.userId());
         exchange.getAttributes().put(EXPECTED_SESSION_ID_ATTRIBUTE, expectations.sessionId());
-        exchange.getAttributes().put(EXPECTED_SESSION_VERSION_ATTRIBUTE,
-                expectations.sessionVersion());
-        exchange.getAttributes().put(EXPECTED_ROLES_VERSION_ATTRIBUTE,
-                expectations.rolesVersion());
-        exchange.getAttributes().put(ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE,
-                expectations.accessExpiry());
+        exchange.getAttributes()
+                .put(EXPECTED_SESSION_VERSION_ATTRIBUTE, expectations.sessionVersion());
+        exchange.getAttributes().put(EXPECTED_ROLES_VERSION_ATTRIBUTE, expectations.rolesVersion());
+        exchange.getAttributes().put(ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE, expectations.accessExpiry());
     }
 
     private static boolean isPublicRoute(HttpMethod method, String path) {
-        if (HttpMethod.POST.equals(method) && Set.of("/api/auth/qr/challenges", "/api/auth/qr/status", "/api/auth/qr/exchange").contains(path)) return true;
+        if (HttpMethod.POST.equals(method)
+                && Set.of("/api/auth/qr/challenges", "/api/auth/qr/status", "/api/auth/qr/exchange")
+                        .contains(path)) return true;
         if (PUBLIC_PATHS.contains(path)) {
             return true;
         }
@@ -421,23 +427,28 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Void> bootstrapScopeDenied(ServerWebExchange exchange) {
-        return problem(exchange, HttpStatus.FORBIDDEN, "Forbidden",
-                "Bootstrap token scope denied", "BOOTSTRAP_SCOPE_DENIED");
+        return problem(
+                exchange,
+                HttpStatus.FORBIDDEN,
+                "Forbidden",
+                "Bootstrap token scope denied",
+                "BOOTSTRAP_SCOPE_DENIED");
     }
 
-    private Mono<Void> problem(ServerWebExchange exchange,
-                               HttpStatus status,
-                               String title,
-                               String detail,
-                               String code) {
+    private Mono<Void> problem(
+            ServerWebExchange exchange,
+            HttpStatus status,
+            String title,
+            String detail,
+            String code) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
         response.getHeaders().setContentType(MediaType.APPLICATION_PROBLEM_JSON);
         response.getHeaders().setCacheControl("no-store");
-        String body = "{\"status\":%d,\"title\":\"%s\",\"detail\":\"%s\",\"code\":\"%s\"}"
-                .formatted(status.value(), title, detail, code);
-        DataBuffer buffer = response.bufferFactory()
-                .wrap(body.getBytes(StandardCharsets.UTF_8));
+        String body =
+                "{\"status\":%d,\"title\":\"%s\",\"detail\":\"%s\",\"code\":\"%s\"}"
+                        .formatted(status.value(), title, detail, code);
+        DataBuffer buffer = response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
         return response.writeWith(Mono.just(buffer));
     }
 
@@ -446,10 +457,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return -100;
     }
 
-    public record AccessExpectations(String userId,
-                                     String sessionId,
-                                     String sessionVersion,
-                                     String rolesVersion,
-                                     Instant accessExpiry) {
-    }
+    public record AccessExpectations(
+            String userId,
+            String sessionId,
+            String sessionVersion,
+            String rolesVersion,
+            Instant accessExpiry) {}
 }

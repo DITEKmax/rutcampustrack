@@ -1,9 +1,8 @@
 package ru.rutcampustrack.attendance.report;
 
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-
 import java.time.LocalDate;
 import java.util.List;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
 public record HeadmanWeeklyReportModel(
         Long groupId,
@@ -15,8 +14,7 @@ public record HeadmanWeeklyReportModel(
         LocalDate weekStart,
         LocalDate weekEnd,
         List<Day> days,
-        List<Student> students
-) {
+        List<Student> students) {
     public static final int MAX_STUDENTS = 35;
     public static final int MAX_LESSONS_PER_DAY = 5;
     public static final int TEMPLATE_DAYS = 6;
@@ -49,23 +47,13 @@ public record HeadmanWeeklyReportModel(
             int lessonNumber,
             Long subjectId,
             String subjectName,
-            String lessonType
-    ) {}
+            String lessonType) {}
 
-    record Student(
-            Long userId,
-            String displayName,
-            List<AttendanceMark> attendance
-    ) {
+    record Student(Long userId, String displayName, List<AttendanceMark> attendance) {
         Student {
             attendance = List.copyOf(attendance);
         }
     }
 
-    record AttendanceMark(
-            Long lessonId,
-            LocalDate date,
-            int lessonNumber,
-            String symbol
-    ) {}
+    record AttendanceMark(Long lessonId, LocalDate date, int lessonNumber, String symbol) {}
 }

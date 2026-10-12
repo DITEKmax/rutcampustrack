@@ -1,9 +1,9 @@
 package ru.rutcampustrack.auth.config;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.Test;
 
 class InternalIssuerPropertiesTest {
 
@@ -19,8 +19,7 @@ class InternalIssuerPropertiesTest {
     void blankSecret_failsFast() {
         InternalIssuerProperties props = new InternalIssuerProperties();
         props.setSecret("   ");
-        assertThatThrownBy(props::validate)
-                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(props::validate).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -44,8 +43,7 @@ class InternalIssuerPropertiesTest {
         InternalIssuerProperties props = new InternalIssuerProperties();
         props.setSecret("a".repeat(32));
         props.setTokenTtlSeconds(0);
-        assertThatThrownBy(props::validate)
-                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(props::validate).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -53,7 +51,6 @@ class InternalIssuerPropertiesTest {
         InternalIssuerProperties props = new InternalIssuerProperties();
         props.setSecret("a".repeat(32));
         props.setTokenTtlSeconds(3601);
-        assertThatThrownBy(props::validate)
-                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(props::validate).isInstanceOf(IllegalStateException.class);
     }
 }

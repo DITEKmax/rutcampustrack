@@ -4,6 +4,7 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
+import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -13,53 +14,78 @@ import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.UserByTelegramIdRequest;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 
-import java.util.concurrent.TimeUnit;
-
 /** Each private prefs operation validates both directions of the current binding. */
 @Component
 public class AcademicTelegramBindingClient {
-    private static final Metadata.Key<String> SECRET = Metadata.Key.of("x-grpc-secret", Metadata.ASCII_STRING_MARSHALLER);
+    private static final Metadata.Key<String> SECRET =
+            Metadata.Key.of("x-grpc-secret", Metadata.ASCII_STRING_MARSHALLER);
+
     @GrpcClient("academic-service")
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
+
     private final String secret;
 
-    public AcademicTelegramBindingClient(@Value("${grpc.auth.secret:}") String secret) { this.secret = secret; }
+    public AcademicTelegramBindingClient(@Value("${grpc.auth.secret:}") String secret) {
+        this.secret = secret;
+    }
 
-    /** Existing authoritative user RPC; null means genuinely unlinked, failures never mean enabled. */
+    /**
+     * Existing authoritative user RPC; null means genuinely unlinked, failures never mean enabled.
+     */
     public Long telegramId(long userId) {
-        if (userId <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Positive identity is required");
-        if (secret == null || secret.isBlank()) throw NotificationPreferencesStore.unavailable("Binding authority is not configured", null);
-        Metadata headers = new Metadata(); headers.put(SECRET, secret);
+        if (userId <= 0)
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Positive identity is required");
+        if (secret == null || secret.isBlank())
+            throw NotificationPreferencesStore.unavailable(
+                    "Binding authority is not configured", null);
+        Metadata headers = new Metadata();
+        headers.put(SECRET, secret);
         try {
-            var user = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers)).withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getUserById(UserRequest.newBuilder().setUserId(userId).build());
+            var user =
+                    stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                            .withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getUserById(UserRequest.newBuilder().setUserId(userId).build());
             if (user.getId() != userId) throw conflict();
             if (user.getTelegramId() <= 0) return null;
             validate(userId, user.getTelegramId());
             return user.getTelegramId();
         } catch (StatusRuntimeException error) {
-            throw NotificationPreferencesStore.unavailable("Binding authority is unavailable", error);
+            throw NotificationPreferencesStore.unavailable(
+                    "Binding authority is unavailable", error);
         }
     }
 
     public void validate(long userId, long telegramId) {
-        if (userId <= 0 || telegramId <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Positive identity is required");
-        if (secret == null || secret.isBlank()) throw NotificationPreferencesStore.unavailable("Binding authority is not configured", null);
+        if (userId <= 0 || telegramId <= 0)
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Positive identity is required");
+        if (secret == null || secret.isBlank())
+            throw NotificationPreferencesStore.unavailable(
+                    "Binding authority is not configured", null);
         Metadata headers = new Metadata();
         headers.put(SECRET, secret);
         var client = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers));
         try {
-            var byTelegram = client.withDeadlineAfter(3, TimeUnit.SECONDS).getUserByTelegramId(
-                    UserByTelegramIdRequest.newBuilder().setTelegramId(telegramId).build());
-            if (!byTelegram.getFound() || byTelegram.getUserId() != userId || byTelegram.getTelegramId() != telegramId) {
+            var byTelegram =
+                    client.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getUserByTelegramId(
+                                    UserByTelegramIdRequest.newBuilder()
+                                            .setTelegramId(telegramId)
+                                            .build());
+            if (!byTelegram.getFound()
+                    || byTelegram.getUserId() != userId
+                    || byTelegram.getTelegramId() != telegramId) {
                 throw conflict();
             }
-            var byUser = client.withDeadlineAfter(3, TimeUnit.SECONDS).getUserById(
-                    UserRequest.newBuilder().setUserId(userId).build());
+            var byUser =
+                    client.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getUserById(UserRequest.newBuilder().setUserId(userId).build());
             if (byUser.getId() != userId || byUser.getTelegramId() != telegramId) throw conflict();
         } catch (StatusRuntimeException error) {
             if (error.getStatus().getCode() == Status.Code.NOT_FOUND) throw conflict();
-            throw NotificationPreferencesStore.unavailable("Binding authority is unavailable", error);
+            throw NotificationPreferencesStore.unavailable(
+                    "Binding authority is unavailable", error);
         }
     }
 

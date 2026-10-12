@@ -1,5 +1,6 @@
 package ru.rutcampustrack.gateway.ratelimit;
 
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.AbstractRateLimiter;
@@ -10,20 +11,18 @@ import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.RedisSystemException;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-
 /**
  * M03a NEW-9: fail-open обёртка над {@link RedisRateLimiter}.
  *
- * <p>При недоступности Redis (connection refused, timeout, system error) возвращает
- * {@code allowed=true} с WARN-логом — запрос проходит. Нормальные 429-отказы от Lua-скрипта
- * Redis идут без изменений.</p>
+ * <p>При недоступности Redis (connection refused, timeout, system error) возвращает {@code
+ * allowed=true} с WARN-логом — запрос проходит. Нормальные 429-отказы от Lua-скрипта Redis идут без
+ * изменений.
  *
- * <p>Регистрируется как {@code @Primary} — Spring Cloud Gateway
- * {@code RequestRateLimiterGatewayFilterFactory} по-умолчанию резолвит {@code RateLimiter}
- * в контексте, поэтому все роуты с фильтром {@code RequestRateLimiter} получают fail-open.
- * Именные ссылки через {@code rate-limiter: "#{@redisRateLimiter}"} в application.yml
- * всё ещё работают с underlying реализацией (без fail-open — для тестов CRITICAL-path).</p>
+ * <p>Регистрируется как {@code @Primary} — Spring Cloud Gateway {@code
+ * RequestRateLimiterGatewayFilterFactory} по-умолчанию резолвит {@code RateLimiter} в контексте,
+ * поэтому все роуты с фильтром {@code RequestRateLimiter} получают fail-open. Именные ссылки через
+ * {@code rate-limiter: "#{@redisRateLimiter}"} в application.yml всё ещё работают с underlying
+ * реализацией (без fail-open — для тестов CRITICAL-path).
  */
 public class FailOpenRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Config> {
 
@@ -32,7 +31,8 @@ public class FailOpenRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Co
 
     private final RedisRateLimiter delegate;
 
-    public FailOpenRateLimiter(RedisRateLimiter delegate, ConfigurationService configurationService) {
+    public FailOpenRateLimiter(
+            RedisRateLimiter delegate, ConfigurationService configurationService) {
         super(RedisRateLimiter.Config.class, CONFIGURATION_PROPERTY_NAME, configurationService);
         this.delegate = delegate;
     }
@@ -50,11 +50,16 @@ public class FailOpenRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Co
                 // browser fetch rejects → login.component "Не удалось подключиться
                 // к серверу". Пустой headers Map обходит mutation.
                 .map(response -> new Response(response.isAllowed(), Map.of()))
-                .onErrorResume(this::isRedisUnavailable, ex -> {
-                    log.warn("Rate-limiter fail-open: Redis unavailable for route={} key={}: {}",
-                            routeId, id, ex.toString());
-                    return Mono.just(new Response(true, Map.of()));
-                });
+                .onErrorResume(
+                        this::isRedisUnavailable,
+                        ex -> {
+                            log.warn(
+                                    "Rate-limiter fail-open: Redis unavailable for route={} key={}: {}",
+                                    routeId,
+                                    id,
+                                    ex.toString());
+                            return Mono.just(new Response(true, Map.of()));
+                        });
     }
 
     @Override

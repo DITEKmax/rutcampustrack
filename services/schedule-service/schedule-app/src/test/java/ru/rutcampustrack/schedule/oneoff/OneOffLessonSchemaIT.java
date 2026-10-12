@@ -1,5 +1,10 @@
 package ru.rutcampustrack.schedule.oneoff;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +13,10 @@ import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
- * Schema-level IT for schedule_one_off_lessons (Flyway V4, D-04/D-21/D-23).
- * Verifies:
- *  - Origins at the same slot are retained; occupancy is enforced on current physical lessons.
- *  - semester_id NOT NULL constraint.
- *  - Round-trip persistence via the JPA repository.
+ * Schema-level IT for schedule_one_off_lessons (Flyway V4, D-04/D-21/D-23). Verifies: - Origins at
+ * the same slot are retained; occupancy is enforced on current physical lessons. - semester_id NOT
+ * NULL constraint. - Round-trip persistence via the JPA repository.
  */
 class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
 
@@ -28,8 +25,7 @@ class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
     private static final Long SEMESTER_ID = 9200L;
     private static final Long CREATED_BY = 9300L;
 
-    @Autowired
-    OneOffLessonRepository repository;
+    @Autowired OneOffLessonRepository repository;
 
     @BeforeEach
     void cleanUp() {
@@ -61,10 +57,14 @@ class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void semesterIdNotNull_rejected() {
-        assertThat(jdbcTemplate.queryForObject("""
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT is_nullable FROM information_schema.columns
                  WHERE table_name = 'schedule_one_off_lessons' AND column_name = 'semester_id'
-                """, String.class)).isEqualTo("NO");
+                """,
+                                String.class))
+                .isEqualTo("NO");
         OneOffLesson bad = newLesson(LocalDate.of(2026, 4, 21), (short) 2);
         bad.setSemesterId(null);
         assertThatThrownBy(() -> repository.saveAndFlush(bad))

@@ -1,37 +1,37 @@
 package ru.rutcampustrack.notification;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
 import ch.qos.logback.core.encoder.Encoder;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * M01 Группа 8 acceptance: logback-spring.xml notification-service
- * (с {@code <include resource="shared/logback-base.xml"/>}) реально
- * собирает pipeline с MaskingJsonProvider и маскирует Bearer в JSON-выводе.
+ * M01 Группа 8 acceptance: logback-spring.xml notification-service (с {@code <include
+ * resource="shared/logback-base.xml"/>}) реально собирает pipeline с MaskingJsonProvider и
+ * маскирует Bearer в JSON-выводе.
  *
- * <p>Тест пишет в тот же ROOT logger что и сервис. SHARED_JSON_STDOUT
- * appender пишет в stdout — мы не перехватываем stdout, а присоединяем
- * свой OutputStreamAppender к ROOT с тем же encoder и проверяем output.
+ * <p>Тест пишет в тот же ROOT logger что и сервис. SHARED_JSON_STDOUT appender пишет в stdout — мы
+ * не перехватываем stdout, а присоединяем свой OutputStreamAppender к ROOT с тем же encoder и
+ * проверяем output.
  *
  * <p>Не требует Spring-контекст — работает с глобальным Logback'ом.
  */
 class NotificationLoggingIT {
 
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(NotificationLoggingIT.class);
+    private static final org.slf4j.Logger log =
+            LoggerFactory.getLogger(NotificationLoggingIT.class);
 
     private ByteArrayOutputStream captured;
     private OutputStreamAppender<ILoggingEvent> captureAppender;
@@ -44,7 +44,9 @@ class NotificationLoggingIT {
         OutputStreamAppender<ILoggingEvent> sharedAppender =
                 (OutputStreamAppender<ILoggingEvent>)
                         ctx.getLogger(Logger.ROOT_LOGGER_NAME).getAppender("SHARED_JSON_STDOUT");
-        assertThat(sharedAppender).as("SHARED_JSON_STDOUT из shared/logback-base.xml должен быть подключён").isNotNull();
+        assertThat(sharedAppender)
+                .as("SHARED_JSON_STDOUT из shared/logback-base.xml должен быть подключён")
+                .isNotNull();
 
         Encoder<ILoggingEvent> encoder = sharedAppender.getEncoder();
         captured = new ByteArrayOutputStream();
@@ -73,7 +75,8 @@ class NotificationLoggingIT {
     }
 
     @Test
-    @DisplayName("JSON-вывод с полями service/level/msg (service=notification-web из logback-spring.xml)")
+    @DisplayName(
+            "JSON-вывод с полями service/level/msg (service=notification-web из logback-spring.xml)")
     void jsonStructure() {
         log.info("simple notification message");
         String out = readOutput();

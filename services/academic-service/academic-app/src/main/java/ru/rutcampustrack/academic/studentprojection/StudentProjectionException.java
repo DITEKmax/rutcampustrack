@@ -3,8 +3,8 @@ package ru.rutcampustrack.academic.studentprojection;
 /**
  * Typed failure for the signed student projection boundary.
  *
- * <p>The gRPC adapter maps {@link Code} to a transport status and a stable
- * protobuf trailer.  Callers must never infer the reason from exception text.
+ * <p>The gRPC adapter maps {@link Code} to a transport status and a stable protobuf trailer.
+ * Callers must never infer the reason from exception text.
  */
 public final class StudentProjectionException extends RuntimeException {
 

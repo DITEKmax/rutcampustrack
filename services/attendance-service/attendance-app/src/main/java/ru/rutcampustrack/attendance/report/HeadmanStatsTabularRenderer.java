@@ -1,12 +1,5 @@
 package ru.rutcampustrack.attendance.report;
 
-import org.springframework.stereotype.Component;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Context;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metric;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.StudentRow;
-import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.RoundingMode;
@@ -19,35 +12,58 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Context;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metric;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.StudentRow;
+import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
 
 /** Escaped HTML and numeric-cell XLSX layouts for the PK-113 statistics block. */
 @Component
 public final class HeadmanStatsTabularRenderer {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-    private static final DateTimeFormatter GENERATED_AT = DateTimeFormatter
-            .ofPattern("dd.MM.uuuu HH:mm 'UTC'").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter GENERATED_AT =
+            DateTimeFormatter.ofPattern("dd.MM.uuuu HH:mm 'UTC'").withZone(ZoneOffset.UTC);
     private static final List<String> METRIC_LABELS = List.of("+", "+ и у", "у", "н");
 
     public byte[] renderHtml(HeadmanStatsExportModel model) {
         Context context = model.context();
         StringBuilder html = new StringBuilder(24_000);
-        html.append("<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
-                .append("<title>Статистика группы</title><style>body{font-family:Arial,sans-serif;color:#202124;margin:1.5rem}h1,h2{margin-block:1rem .5rem}dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1rem}dt{font-weight:700}dd{margin:0}.table-wrap{overflow-x:auto;margin-top:1rem;margin-bottom:1.5rem}table{border-collapse:collapse;min-width:54rem;width:100%}th,td{border:1px solid #c9ced3;padding:.45rem;text-align:left;vertical-align:top}thead{background:#eef1f3}tbody tr:nth-child(even){background:#f8f9fa}.metric{text-align:center;white-space:nowrap}</style></head><body>")
+        html.append(
+                        "<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
+                .append(
+                        "<title>Статистика группы</title><style>body{font-family:Arial,sans-serif;color:#202124;margin:1.5rem}h1,h2{margin-block:1rem .5rem}dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1rem}dt{font-weight:700}dd{margin:0}.table-wrap{overflow-x:auto;margin-top:1rem;margin-bottom:1.5rem}table{border-collapse:collapse;min-width:54rem;width:100%}th,td{border:1px solid #c9ced3;padding:.45rem;text-align:left;vertical-align:top}thead{background:#eef1f3}tbody tr:nth-child(even){background:#f8f9fa}.metric{text-align:center;white-space:nowrap}</style></head><body>")
                 .append("<h1>Статистика посещаемости группы</h1><dl>")
                 .append(contextItem("Группа", context.groupName()))
                 .append(contextItem("Активный семестр", semester(context)))
-                .append(contextItem("Разрез", context.subjectId() == null ? "Вся группа" : context.subjectName()))
-                .append(contextItem("Типы занятий", context.lessonTypes().isEmpty()
-                        ? "Все" : String.join(", ", context.lessonTypes())))
-                .append(contextItem("Завершённых занятий учтено", Integer.toString(context.lessonsCount())))
-                .append(contextItem("Студентов после фильтра", Integer.toString(model.filteredStudents())))
+                .append(
+                        contextItem(
+                                "Разрез",
+                                context.subjectId() == null ? "Вся группа" : context.subjectName()))
+                .append(
+                        contextItem(
+                                "Типы занятий",
+                                context.lessonTypes().isEmpty()
+                                        ? "Все"
+                                        : String.join(", ", context.lessonTypes())))
+                .append(
+                        contextItem(
+                                "Завершённых занятий учтено",
+                                Integer.toString(context.lessonsCount())))
+                .append(
+                        contextItem(
+                                "Студентов после фильтра",
+                                Integer.toString(model.filteredStudents())))
                 .append(contextItem("Фильтры", model.filters()))
                 .append(contextItem("Сортировка", model.sorts()))
                 .append(contextItem("Сформировано", GENERATED_AT.format(context.generatedAt())))
                 .append("</dl><h2>Итоги по выбранному набору студентов</h2>")
                 .append(summaryHtml(model.summary()))
-                .append("<h2>Посещаемость по студентам</h2>").append(attendanceHtml(model.rows()))
-                .append("<h2>Заявки и способ получения отметки «+»</h2>").append(requestsHtml(model.rows()))
+                .append("<h2>Посещаемость по студентам</h2>")
+                .append(attendanceHtml(model.rows()))
+                .append("<h2>Заявки и способ получения отметки «+»</h2>")
+                .append(requestsHtml(model.rows()))
                 .append("</body></html>");
         return html.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -57,30 +73,38 @@ public final class HeadmanStatsTabularRenderer {
         int firstDataRow = headerRow + 1;
         int lastRow = Math.max(headerRow, firstDataRow + model.rows().size() - 1);
         Map<String, String> entries = new LinkedHashMap<>();
-        entries.put("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                + "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
-                + "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
-                + "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
-                + "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
-                + "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
-                + "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
-                + "</Types>");
-        entries.put("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-                + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
-                + "</Relationships>");
-        entries.put("xl/workbook.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                + "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets>"
-                + "<sheet name=\"Статистика\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
-        entries.put("xl/_rels/workbook.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-                + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"
-                + "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
-                + "</Relationships>");
+        entries.put(
+                "[Content_Types].xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
+                        + "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
+                        + "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+                        + "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
+                        + "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
+                        + "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
+                        + "</Types>");
+        entries.put(
+                "_rels/.rels",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                        + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
+                        + "</Relationships>");
+        entries.put(
+                "xl/workbook.xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets>"
+                        + "<sheet name=\"Статистика\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
+        entries.put(
+                "xl/_rels/workbook.xml.rels",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                        + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"
+                        + "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
+                        + "</Relationships>");
         entries.put("xl/styles.xml", stylesXml());
         entries.put("xl/worksheets/sheet1.xml", sheetXml(model, headerRow, firstDataRow, lastRow));
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-             ZipOutputStream zip = new ZipOutputStream(bytes, StandardCharsets.UTF_8)) {
+                ZipOutputStream zip = new ZipOutputStream(bytes, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, String> entry : entries.entrySet()) {
                 zip.putNextEntry(new ZipEntry(entry.getKey()));
                 zip.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
@@ -94,42 +118,77 @@ public final class HeadmanStatsTabularRenderer {
     }
 
     private static String summaryHtml(Metrics summary) {
-        StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table><thead><tr><th>Показатель</th><th>Количество</th><th>Знаменатель</th><th>Процент</th></tr></thead><tbody>");
+        StringBuilder html =
+                new StringBuilder(
+                        "<div class=\"table-wrap\"><table><thead><tr><th>Показатель</th><th>Количество</th><th>Знаменатель</th><th>Процент</th></tr></thead><tbody>");
         for (int index = 0; index < METRIC_LABELS.size(); index++) {
             Metric metric = metricAt(summary, index);
-            html.append("<tr><th scope=\"row\">").append(htmlText(METRIC_LABELS.get(index)))
-                    .append("</th><td>").append(metric.numerator()).append("</td><td>")
-                    .append(metric.denominator()).append("</td><td>").append(htmlText(percentText(metric)))
+            html.append("<tr><th scope=\"row\">")
+                    .append(htmlText(METRIC_LABELS.get(index)))
+                    .append("</th><td>")
+                    .append(metric.numerator())
+                    .append("</td><td>")
+                    .append(metric.denominator())
+                    .append("</td><td>")
+                    .append(htmlText(percentText(metric)))
                     .append("</td></tr>");
         }
         return html.append("</tbody></table></div>").toString();
     }
 
     private static String attendanceHtml(List<StudentRow> rows) {
-        StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table><thead><tr><th>Студент</th>");
-        for (String label : METRIC_LABELS) html.append("<th class=\"metric\">").append(htmlText(label))
-                .append("<br>количество / знаменатель / %</th>");
+        StringBuilder html =
+                new StringBuilder("<div class=\"table-wrap\"><table><thead><tr><th>Студент</th>");
+        for (String label : METRIC_LABELS)
+            html.append("<th class=\"metric\">")
+                    .append(htmlText(label))
+                    .append("<br>количество / знаменатель / %</th>");
         html.append("</tr></thead><tbody>");
-        if (rows.isEmpty()) return html.append("<tr><td colspan=\"5\">По заданным условиям данных нет.</td></tr></tbody></table></div>").toString();
+        if (rows.isEmpty())
+            return html.append(
+                            "<tr><td colspan=\"5\">По заданным условиям данных нет.</td></tr></tbody></table></div>")
+                    .toString();
         for (StudentRow row : rows) {
-            html.append("<tr><th scope=\"row\">").append(htmlText(row.displayName())).append("</th>");
-            for (Metric metric : metrics(row)) html.append("<td class=\"metric\">").append(htmlText(metricText(metric))).append("</td>");
+            html.append("<tr><th scope=\"row\">")
+                    .append(htmlText(row.displayName()))
+                    .append("</th>");
+            for (Metric metric : metrics(row))
+                html.append("<td class=\"metric\">")
+                        .append(htmlText(metricText(metric)))
+                        .append("</td>");
             html.append("</tr>");
         }
         return html.append("</tbody></table></div>").toString();
     }
 
     private static String requestsHtml(List<StudentRow> rows) {
-        StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table><thead><tr><th>Студент</th><th>н: подано</th><th>н: одобрено</th><th>н: отклонено</th><th>у: подано</th><th>у: одобрено</th><th>у: отклонено</th><th>+: гео</th><th>+: заявка</th><th>+: гео неуспех</th><th>+: староста</th></tr></thead><tbody>");
-        if (rows.isEmpty()) return html.append("<tr><td colspan=\"11\">По заданным условиям данных нет.</td></tr></tbody></table></div>").toString();
+        StringBuilder html =
+                new StringBuilder(
+                        "<div class=\"table-wrap\"><table><thead><tr><th>Студент</th><th>н: подано</th><th>н: одобрено</th><th>н: отклонено</th><th>у: подано</th><th>у: одобрено</th><th>у: отклонено</th><th>+: гео</th><th>+: заявка</th><th>+: гео неуспех</th><th>+: староста</th></tr></thead><tbody>");
+        if (rows.isEmpty())
+            return html.append(
+                            "<tr><td colspan=\"11\">По заданным условиям данных нет.</td></tr></tbody></table></div>")
+                    .toString();
         for (StudentRow row : rows) {
             var late = row.lateCheckin();
             var excuse = row.excuse();
             var sources = row.sources();
-            html.append("<tr><th scope=\"row\">").append(htmlText(row.displayName())).append("</th>");
-            for (int value : new int[]{late.submitted(), late.approved(), late.rejected(),
-                    excuse.submitted(), excuse.approved(), excuse.rejected(), sources.studentGeo(),
-                    sources.manualRequest(), sources.autoAfterGeoFailure(), sources.headmanManual()}) {
+            html.append("<tr><th scope=\"row\">")
+                    .append(htmlText(row.displayName()))
+                    .append("</th>");
+            for (int value :
+                    new int[] {
+                        late.submitted(),
+                        late.approved(),
+                        late.rejected(),
+                        excuse.submitted(),
+                        excuse.approved(),
+                        excuse.rejected(),
+                        sources.studentGeo(),
+                        sources.manualRequest(),
+                        sources.autoAfterGeoFailure(),
+                        sources.headmanManual()
+                    }) {
                 html.append("<td class=\"metric\">").append(value).append("</td>");
             }
             html.append("</tr>");
@@ -137,28 +196,46 @@ public final class HeadmanStatsTabularRenderer {
         return html.append("</tbody></table></div>").toString();
     }
 
-    private static String sheetXml(HeadmanStatsExportModel model, int headerRow, int firstDataRow, int lastRow) {
+    private static String sheetXml(
+            HeadmanStatsExportModel model, int headerRow, int firstDataRow, int lastRow) {
         StringBuilder xml = new StringBuilder(32_000);
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
-                .append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><dimension ref=\"A1:W")
-                .append(lastRow).append("\"/><sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"")
-                .append(headerRow).append("\" topLeftCell=\"A").append(firstDataRow)
-                .append("\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews><cols>")
+                .append(
+                        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><dimension ref=\"A1:W")
+                .append(lastRow)
+                .append("\"/><sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"")
+                .append(headerRow)
+                .append("\" topLeftCell=\"A")
+                .append(firstDataRow)
+                .append(
+                        "\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews><cols>")
                 .append("<col min=\"1\" max=\"1\" width=\"32\" customWidth=\"1\"/>")
-                .append("<col min=\"2\" max=\"23\" width=\"15\" customWidth=\"1\"/></cols><sheetData>");
+                .append(
+                        "<col min=\"2\" max=\"23\" width=\"15\" customWidth=\"1\"/></cols><sheetData>");
         appendInlineRow(xml, 1, List.of("Статистика посещаемости группы"), true);
         Context context = model.context();
         appendContextRow(xml, 2, "Группа", context.groupName());
         appendContextRow(xml, 3, "Активный семестр", semester(context));
-        appendContextRow(xml, 4, "Разрез", context.subjectId() == null ? "Вся группа" : context.subjectName());
-        appendContextRow(xml, 5, "Типы занятий", context.lessonTypes().isEmpty() ? "Все" : String.join(", ", context.lessonTypes()));
-        appendContextRow(xml, 6, "Завершённых занятий учтено", Integer.toString(context.lessonsCount()));
-        appendContextRow(xml, 7, "Студентов после фильтра", Integer.toString(model.filteredStudents()));
+        appendContextRow(
+                xml,
+                4,
+                "Разрез",
+                context.subjectId() == null ? "Вся группа" : context.subjectName());
+        appendContextRow(
+                xml,
+                5,
+                "Типы занятий",
+                context.lessonTypes().isEmpty() ? "Все" : String.join(", ", context.lessonTypes()));
+        appendContextRow(
+                xml, 6, "Завершённых занятий учтено", Integer.toString(context.lessonsCount()));
+        appendContextRow(
+                xml, 7, "Студентов после фильтра", Integer.toString(model.filteredStudents()));
         appendContextRow(xml, 8, "Сформировано", GENERATED_AT.format(context.generatedAt()));
         appendContextRow(xml, 9, "Фильтры", model.filters());
         appendContextRow(xml, 10, "Сортировка", model.sorts());
         appendInlineRow(xml, 12, List.of("Итоги по выбранному набору студентов"), true);
-        appendInlineRow(xml, 13, List.of("Показатель", "Количество", "Знаменатель", "Процент"), true);
+        appendInlineRow(
+                xml, 13, List.of("Показатель", "Количество", "Знаменатель", "Процент"), true);
         for (int index = 0; index < METRIC_LABELS.size(); index++) {
             Metric metric = metricAt(model.summary(), index);
             int row = 14 + index;
@@ -189,15 +266,31 @@ public final class HeadmanStatsTabularRenderer {
         for (Metric metric : metrics(row)) {
             numberCell(xml, columnName(column++) + rowNumber, metric.numerator(), 0);
             numberCell(xml, columnName(column++) + rowNumber, metric.denominator(), 0);
-            if (metric.denominator() == 0) inlineCell(xml, columnName(column++) + rowNumber, "—", 0);
-            else numberCell(xml, columnName(column++) + rowNumber, Double.toString(metric.percent() / 100.0), 2);
+            if (metric.denominator() == 0)
+                inlineCell(xml, columnName(column++) + rowNumber, "—", 0);
+            else
+                numberCell(
+                        xml,
+                        columnName(column++) + rowNumber,
+                        Double.toString(metric.percent() / 100.0),
+                        2);
         }
         var late = row.lateCheckin();
         var excuse = row.excuse();
         var sources = row.sources();
-        for (int value : new int[]{late.submitted(), late.approved(), late.rejected(), excuse.submitted(),
-                excuse.approved(), excuse.rejected(), sources.studentGeo(), sources.manualRequest(),
-                sources.autoAfterGeoFailure(), sources.headmanManual()}) {
+        for (int value :
+                new int[] {
+                    late.submitted(),
+                    late.approved(),
+                    late.rejected(),
+                    excuse.submitted(),
+                    excuse.approved(),
+                    excuse.rejected(),
+                    sources.studentGeo(),
+                    sources.manualRequest(),
+                    sources.autoAfterGeoFailure(),
+                    sources.headmanManual()
+                }) {
             numberCell(xml, columnName(column++) + rowNumber, value, 0);
         }
         xml.append("</row>");
@@ -210,8 +303,18 @@ public final class HeadmanStatsTabularRenderer {
             labels.add(metric + " знаменатель");
             labels.add(metric + " процент");
         }
-        labels.addAll(List.of("н подано", "н одобрено", "н отклонено", "у подано", "у одобрено", "у отклонено",
-                "+ гео", "+ заявка", "+ после гео", "+ староста"));
+        labels.addAll(
+                List.of(
+                        "н подано",
+                        "н одобрено",
+                        "н отклонено",
+                        "у подано",
+                        "у одобрено",
+                        "у отклонено",
+                        "+ гео",
+                        "+ заявка",
+                        "+ после гео",
+                        "+ староста"));
         return List.copyOf(labels);
     }
 
@@ -222,7 +325,8 @@ public final class HeadmanStatsTabularRenderer {
         xml.append("</row>");
     }
 
-    private static void appendInlineRow(StringBuilder xml, int row, List<String> values, boolean header) {
+    private static void appendInlineRow(
+            StringBuilder xml, int row, List<String> values, boolean header) {
         xml.append("<row r=\"").append(row).append("\">");
         for (int index = 0; index < values.size(); index++) {
             inlineCell(xml, columnName(index + 1) + row, values.get(index), header ? 1 : 0);
@@ -243,7 +347,9 @@ public final class HeadmanStatsTabularRenderer {
     private static void inlineCell(StringBuilder xml, String reference, String value, int style) {
         xml.append("<c r=\"").append(reference).append("\" t=\"inlineStr\"");
         if (style != 0) xml.append(" s=\"").append(style).append("\"");
-        xml.append("><is><t xml:space=\"preserve\">").append(xmlText(value)).append("</t></is></c>");
+        xml.append("><is><t xml:space=\"preserve\">")
+                .append(xmlText(value))
+                .append("</t></is></c>");
     }
 
     private static String stylesXml() {
@@ -266,13 +372,21 @@ public final class HeadmanStatsTabularRenderer {
     }
 
     private static String semester(Context context) {
-        if (context.semesterId() == null || context.semesterFrom() == null) return "нет активного семестра";
-        return context.semesterName() + " · " + DATE.format(context.semesterFrom()) + " — " + DATE.format(context.semesterTo());
+        if (context.semesterId() == null || context.semesterFrom() == null)
+            return "нет активного семестра";
+        return context.semesterName()
+                + " · "
+                + DATE.format(context.semesterFrom())
+                + " — "
+                + DATE.format(context.semesterTo());
     }
 
     private static List<Metric> metrics(StudentRow row) {
-        return List.of(row.metrics().present(), row.metrics().presentOrExcused(),
-                row.metrics().excused(), row.metrics().absent());
+        return List.of(
+                row.metrics().present(),
+                row.metrics().presentOrExcused(),
+                row.metrics().excused(),
+                row.metrics().absent());
     }
 
     private static Metric metricAt(Metrics metrics, int index) {
@@ -286,13 +400,18 @@ public final class HeadmanStatsTabularRenderer {
     }
 
     private static String metricText(Metric metric) {
-        return metric.denominator() == 0 ? "— (0/0)"
+        return metric.denominator() == 0
+                ? "— (0/0)"
                 : metric.numerator() + " / " + metric.denominator() + " / " + percentText(metric);
     }
 
     private static String percentText(Metric metric) {
-        return metric.denominator() == 0 ? "—"
-                : java.math.BigDecimal.valueOf(metric.percent()).setScale(1, RoundingMode.HALF_UP).toPlainString() + "%";
+        return metric.denominator() == 0
+                ? "—"
+                : java.math.BigDecimal.valueOf(metric.percent())
+                                .setScale(1, RoundingMode.HALF_UP)
+                                .toPlainString()
+                        + "%";
     }
 
     private static String htmlText(String value) {
@@ -303,20 +422,26 @@ public final class HeadmanStatsTabularRenderer {
     private static String xmlText(String value) {
         StringBuilder result = new StringBuilder(value == null ? 0 : value.length());
         if (value != null) {
-            value.codePoints().filter(codePoint -> codePoint == 0x9 || codePoint == 0xA || codePoint == 0xD
-                            || codePoint >= 0x20 && codePoint <= 0xD7FF
-                            || codePoint >= 0xE000 && codePoint <= 0xFFFD
-                            || codePoint >= 0x10000 && codePoint <= 0x10FFFF)
-                    .forEach(codePoint -> {
-                        switch (codePoint) {
-                            case '&' -> result.append("&amp;");
-                            case '<' -> result.append("&lt;");
-                            case '>' -> result.append("&gt;");
-                            case '"' -> result.append("&quot;");
-                            case '\'' -> result.append("&apos;");
-                            default -> result.appendCodePoint(codePoint);
-                        }
-                    });
+            value.codePoints()
+                    .filter(
+                            codePoint ->
+                                    codePoint == 0x9
+                                            || codePoint == 0xA
+                                            || codePoint == 0xD
+                                            || codePoint >= 0x20 && codePoint <= 0xD7FF
+                                            || codePoint >= 0xE000 && codePoint <= 0xFFFD
+                                            || codePoint >= 0x10000 && codePoint <= 0x10FFFF)
+                    .forEach(
+                            codePoint -> {
+                                switch (codePoint) {
+                                    case '&' -> result.append("&amp;");
+                                    case '<' -> result.append("&lt;");
+                                    case '>' -> result.append("&gt;");
+                                    case '"' -> result.append("&quot;");
+                                    case '\'' -> result.append("&apos;");
+                                    default -> result.appendCodePoint(codePoint);
+                                }
+                            });
         }
         return result.toString();
     }

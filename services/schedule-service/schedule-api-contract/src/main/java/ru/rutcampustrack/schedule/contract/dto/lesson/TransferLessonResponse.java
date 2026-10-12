@@ -1,7 +1,6 @@
 package ru.rutcampustrack.schedule.contract.dto.lesson;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
@@ -17,11 +16,15 @@ public record TransferLessonResponse(
         String revision,
         boolean retryable,
         String errorCode,
-        LocalDate targetDate
-) {
-    private static final Set<String> ERROR_CODES = Set.of(
-            "TARGET_DATA_CONFLICT", "SOURCE_STATE_CONFLICT", "SCOPE_MISMATCH",
-            "INVALID_SNAPSHOT", "DEPENDENCY_UNAVAILABLE", "ARCHIVED_SEMESTER");
+        LocalDate targetDate) {
+    private static final Set<String> ERROR_CODES =
+            Set.of(
+                    "TARGET_DATA_CONFLICT",
+                    "SOURCE_STATE_CONFLICT",
+                    "SCOPE_MISMATCH",
+                    "INVALID_SNAPSHOT",
+                    "DEPENDENCY_UNAVAILABLE",
+                    "ARCHIVED_SEMESTER");
 
     public TransferLessonResponse {
         Objects.requireNonNull(operationId, "operationId");

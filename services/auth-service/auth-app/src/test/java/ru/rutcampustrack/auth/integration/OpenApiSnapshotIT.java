@@ -1,34 +1,31 @@
 package ru.rutcampustrack.auth.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * M12 G5 (extends M11 G3): OpenAPI ↔ runtime conformance check для auth-service.
  *
- * <p>Тест GET'ает {@code /api-docs} у running app и сравнивает с
- * committed snapshot'ом в {@code docs/openapi/auth.json}. При
- * расхождении падает с инструкцией обновить snapshot через
- * {@code -Popenapi.snapshot.update=true}.
+ * <p>Тест GET'ает {@code /api-docs} у running app и сравнивает с committed snapshot'ом в {@code
+ * docs/openapi/auth.json}. При расхождении падает с инструкцией обновить snapshot через {@code
+ * -Popenapi.snapshot.update=true}.
  *
- * <p>M12 binary-compatibility gate: после M12 split и M11 @Schema
- * policy, runtime /api-docs должен совпадать с ручным baseline из
- * {@code docs/openapi/auth.json}. Internal endpoints (@Hidden) не
+ * <p>M12 binary-compatibility gate: после M12 split и M11 @Schema policy, runtime /api-docs должен
+ * совпадать с ручным baseline из {@code docs/openapi/auth.json}. Internal endpoints (@Hidden) не
  * должны присутствовать в public spec.
  */
 class OpenApiSnapshotIT extends AbstractIntegrationTest {
@@ -36,12 +33,15 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
     private static final String SERVICE_NAME = "auth";
     // CWD при запуске gradle test — services/auth-service/auth-app/,
     // repo root = ../../../ относительно неё.
-    private static final Path SNAPSHOT_PATH = Paths.get("../../..")
-            .resolve("docs").resolve("openapi").resolve(SERVICE_NAME + ".json")
-            .toAbsolutePath().normalize();
+    private static final Path SNAPSHOT_PATH =
+            Paths.get("../../..")
+                    .resolve("docs")
+                    .resolve("openapi")
+                    .resolve(SERVICE_NAME + ".json")
+                    .toAbsolutePath()
+                    .normalize();
 
-    @Autowired
-    TestRestTemplate restTemplate;
+    @Autowired TestRestTemplate restTemplate;
 
     @Test
     @DisplayName("M12 G5: /api-docs matches committed snapshot")
@@ -56,15 +56,17 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
         }
 
         assertThat(SNAPSHOT_PATH)
-                .as("Snapshot file missing — run with -Popenapi.snapshot.update=true to create %s",
+                .as(
+                        "Snapshot file missing — run with -Popenapi.snapshot.update=true to create %s",
                         SNAPSHOT_PATH)
                 .exists();
 
         String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
         assertThat(actual)
-                .as("OpenAPI spec drifted from committed snapshot. " +
-                        "To regenerate: ./gradlew :services:auth-service:auth-app:integrationTest " +
-                        "--tests OpenApiSnapshotIT -Popenapi.snapshot.update=true")
+                .as(
+                        "OpenAPI spec drifted from committed snapshot. "
+                                + "To regenerate: ./gradlew :services:auth-service:auth-app:integrationTest "
+                                + "--tests OpenApiSnapshotIT -Popenapi.snapshot.update=true")
                 .isEqualTo(expected);
     }
 
@@ -74,16 +76,22 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = (ObjectNode) mapper.readTree(response.getBody());
-        root.path("paths").fieldNames().forEachRemaining(path ->
-                assertThat(path).as("Internal routes must stay outside the public OpenAPI contract")
-                        .doesNotStartWith("/internal/"));
+        root.path("paths")
+                .fieldNames()
+                .forEachRemaining(
+                        path ->
+                                assertThat(path)
+                                        .as(
+                                                "Internal routes must stay outside the public OpenAPI contract")
+                                        .doesNotStartWith("/internal/"));
         // springdoc включает `servers: [{url: http://localhost:<random>}]` — волатильно,
         // RANDOM_PORT меняется каждый запуск. Снимаем из snapshot.
         root.remove("servers");
 
-        ObjectWriter writer = mapper.writer()
-                .with(SerializationFeature.INDENT_OUTPUT)
-                .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+        ObjectWriter writer =
+                mapper.writer()
+                        .with(SerializationFeature.INDENT_OUTPUT)
+                        .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         return writer.writeValueAsString(root) + "\n";
     }
 }

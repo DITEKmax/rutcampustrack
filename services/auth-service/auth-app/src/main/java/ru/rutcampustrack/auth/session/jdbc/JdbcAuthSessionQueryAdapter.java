@@ -1,15 +1,5 @@
 package ru.rutcampustrack.auth.session.jdbc;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import ru.rutcampustrack.auth.session.AuthSessionException;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
-
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,6 +16,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 
 /** PostgreSQL implementation of the read-only public session queries. */
 @Repository
@@ -34,7 +33,8 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
     private static final int DEFAULT_LIMIT = 20;
     private static final int MAX_LIMIT = 50;
 
-    private static final String LOGIN_AUTHORITY_SQL = """
+    private static final String LOGIN_AUTHORITY_SQL =
+            """
             SELECT u.id, u.roles_version, u.last_name, u.first_name, u.middle_name,
                    g.id AS grant_id, g.role, g.status, g.group_id,
                    g.created_at AS grant_created_at, g.updated_at AS grant_updated_at,
@@ -46,7 +46,8 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             ORDER BY g.id
             """;
 
-    private static final String USER_IDENTITY_SQL = """
+    private static final String USER_IDENTITY_SQL =
+            """
             SELECT u.id, u.last_name, u.first_name, u.middle_name,
                    g.group_id, grp.name AS group_label
             FROM users u
@@ -56,7 +57,8 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             ORDER BY g.id
             """;
 
-    private static final String LIVE_SESSIONS_SQL = """
+    private static final String LIVE_SESSIONS_SQL =
+            """
             SELECT sid, auth_method, client_label, location_label,
                    created_at, last_seen_at
             FROM auth_sessions
@@ -67,14 +69,16 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             LIMIT ?
             """;
 
-    private static final String SESSION_METADATA_SQL = """
+    private static final String SESSION_METADATA_SQL =
+            """
             SELECT sid, auth_method, client_label, location_label,
                    created_at, last_seen_at, refresh_expires_at, revoked_at
             FROM auth_sessions
             WHERE user_id = ? AND sid = ?
             """;
 
-    private static final String LIVE_SESSIONS_AFTER_SQL = """
+    private static final String LIVE_SESSIONS_AFTER_SQL =
+            """
             SELECT sid, auth_method, client_label, location_label,
                    created_at, last_seen_at
             FROM auth_sessions
@@ -86,7 +90,8 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             LIMIT ?
             """;
 
-    private static final String HISTORY_SQL = """
+    private static final String HISTORY_SQL =
+            """
             SELECT id, event_type, occurred_at, auth_method,
                    client_label, location_label
             FROM account_security_events
@@ -95,7 +100,8 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             LIMIT ?
             """;
 
-    private static final String HISTORY_AFTER_SQL = """
+    private static final String HISTORY_AFTER_SQL =
+            """
             SELECT id, event_type, occurred_at, auth_method,
                    client_label, location_label
             FROM account_security_events
@@ -122,10 +128,9 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
     public Optional<LoginAuthority> findLoginAuthority(long userId) {
         requirePositiveUserId(userId);
         try {
-            List<LoginRow> rows = jdbcTemplate.query(
-                    LOGIN_AUTHORITY_SQL,
-                    JdbcAuthSessionQueryAdapter::mapLoginRow,
-                    userId);
+            List<LoginRow> rows =
+                    jdbcTemplate.query(
+                            LOGIN_AUTHORITY_SQL, JdbcAuthSessionQueryAdapter::mapLoginRow, userId);
             if (rows.isEmpty()) {
                 return Optional.empty();
             }
@@ -146,10 +151,14 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
                     }
                 }
             }
-            return Optional.of(new LoginAuthority(
-                    first.userId(), first.rolesVersion(), grants,
-                    displayName(first.lastName(), first.firstName(), first.middleName()),
-                    grantLabels, groupLabels));
+            return Optional.of(
+                    new LoginAuthority(
+                            first.userId(),
+                            first.rolesVersion(),
+                            grants,
+                            displayName(first.lastName(), first.firstName(), first.middleName()),
+                            grantLabels,
+                            groupLabels));
         } catch (DataAccessException exception) {
             throw unavailable(exception);
         }
@@ -159,10 +168,9 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
     public Optional<UserIdentity> findUserIdentity(long userId) {
         requirePositiveUserId(userId);
         try {
-            List<IdentityRow> rows = jdbcTemplate.query(
-                    USER_IDENTITY_SQL,
-                    JdbcAuthSessionQueryAdapter::mapIdentityRow,
-                    userId);
+            List<IdentityRow> rows =
+                    jdbcTemplate.query(
+                            USER_IDENTITY_SQL, JdbcAuthSessionQueryAdapter::mapIdentityRow, userId);
             if (rows.isEmpty()) {
                 return Optional.empty();
             }
@@ -173,10 +181,11 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
                     groupLabels.put(row.groupId(), row.groupLabel());
                 }
             }
-            return Optional.of(new UserIdentity(
-                    first.userId(),
-                    displayName(first.lastName(), first.firstName(), first.middleName()),
-                    groupLabels));
+            return Optional.of(
+                    new UserIdentity(
+                            first.userId(),
+                            displayName(first.lastName(), first.firstName(), first.middleName()),
+                            groupLabels));
         } catch (DataAccessException exception) {
             throw unavailable(exception);
         }
@@ -187,18 +196,21 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
         requirePositiveUserId(userId);
         Objects.requireNonNull(sessionId, "sessionId");
         try {
-            List<SessionMetadata> rows = jdbcTemplate.query(
-                    SESSION_METADATA_SQL,
-                    (rs, rowNum) -> new SessionMetadata(
-                            rs.getObject("sid", UUID.class),
-                            rs.getString("auth_method").toUpperCase(Locale.ROOT),
-                            rs.getString("client_label"),
-                            rs.getString("location_label"),
-                            instant(rs, "created_at"),
-                            instant(rs, "last_seen_at"),
-                            instant(rs, "refresh_expires_at"),
-                            instant(rs, "revoked_at")),
-                    userId, sessionId);
+            List<SessionMetadata> rows =
+                    jdbcTemplate.query(
+                            SESSION_METADATA_SQL,
+                            (rs, rowNum) ->
+                                    new SessionMetadata(
+                                            rs.getObject("sid", UUID.class),
+                                            rs.getString("auth_method").toUpperCase(Locale.ROOT),
+                                            rs.getString("client_label"),
+                                            rs.getString("location_label"),
+                                            instant(rs, "created_at"),
+                                            instant(rs, "last_seen_at"),
+                                            instant(rs, "refresh_expires_at"),
+                                            instant(rs, "revoked_at")),
+                            userId,
+                            sessionId);
             return rows.stream().findFirst();
         } catch (DataAccessException exception) {
             throw unavailable(exception);
@@ -207,11 +219,7 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
 
     @Override
     public SessionPage findLiveSessions(
-            long userId,
-            UUID currentSessionId,
-            String cursor,
-            int limit
-    ) {
+            long userId, UUID currentSessionId, String cursor, int limit) {
         requirePositiveUserId(userId);
         int boundedLimit = boundedLimit(limit);
         SessionCursor parsedCursor = parseSessionCursor(cursor);
@@ -219,24 +227,28 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
         try {
             List<SessionView> rows;
             if (parsedCursor == null) {
-                rows = jdbcTemplate.query(
-                        LIVE_SESSIONS_SQL,
-                        JdbcAuthSessionQueryAdapter::mapSession,
-                        userId, Timestamp.from(now), boundedLimit + 1);
+                rows =
+                        jdbcTemplate.query(
+                                LIVE_SESSIONS_SQL,
+                                JdbcAuthSessionQueryAdapter::mapSession,
+                                userId,
+                                Timestamp.from(now),
+                                boundedLimit + 1);
             } else {
-                rows = jdbcTemplate.query(
-                        LIVE_SESSIONS_AFTER_SQL,
-                        JdbcAuthSessionQueryAdapter::mapSession,
-                        userId, Timestamp.from(now), Timestamp.from(parsedCursor.createdAt()),
-                        parsedCursor.sessionId(), boundedLimit + 1);
+                rows =
+                        jdbcTemplate.query(
+                                LIVE_SESSIONS_AFTER_SQL,
+                                JdbcAuthSessionQueryAdapter::mapSession,
+                                userId,
+                                Timestamp.from(now),
+                                Timestamp.from(parsedCursor.createdAt()),
+                                parsedCursor.sessionId(),
+                                boundedLimit + 1);
             }
             boolean hasMore = rows.size() > boundedLimit;
-            List<SessionView> items = hasMore
-                    ? List.copyOf(rows.subList(0, boundedLimit))
-                    : List.copyOf(rows);
-            String nextCursor = hasMore
-                    ? encodeSessionCursor(items.get(items.size() - 1))
-                    : null;
+            List<SessionView> items =
+                    hasMore ? List.copyOf(rows.subList(0, boundedLimit)) : List.copyOf(rows);
+            String nextCursor = hasMore ? encodeSessionCursor(items.get(items.size() - 1)) : null;
             return new SessionPage(items, nextCursor);
         } catch (DataAccessException exception) {
             throw unavailable(exception);
@@ -251,24 +263,26 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
         try {
             List<HistoryView> rows;
             if (parsedCursor == null) {
-                rows = jdbcTemplate.query(
-                        HISTORY_SQL,
-                        JdbcAuthSessionQueryAdapter::mapHistory,
-                        userId, boundedLimit + 1);
+                rows =
+                        jdbcTemplate.query(
+                                HISTORY_SQL,
+                                JdbcAuthSessionQueryAdapter::mapHistory,
+                                userId,
+                                boundedLimit + 1);
             } else {
-                rows = jdbcTemplate.query(
-                        HISTORY_AFTER_SQL,
-                        JdbcAuthSessionQueryAdapter::mapHistory,
-                        userId, Timestamp.from(parsedCursor.occurredAt()),
-                        parsedCursor.id(), boundedLimit + 1);
+                rows =
+                        jdbcTemplate.query(
+                                HISTORY_AFTER_SQL,
+                                JdbcAuthSessionQueryAdapter::mapHistory,
+                                userId,
+                                Timestamp.from(parsedCursor.occurredAt()),
+                                parsedCursor.id(),
+                                boundedLimit + 1);
             }
             boolean hasMore = rows.size() > boundedLimit;
-            List<HistoryView> items = hasMore
-                    ? List.copyOf(rows.subList(0, boundedLimit))
-                    : List.copyOf(rows);
-            String nextCursor = hasMore
-                    ? encodeHistoryCursor(items.get(items.size() - 1))
-                    : null;
+            List<HistoryView> items =
+                    hasMore ? List.copyOf(rows.subList(0, boundedLimit)) : List.copyOf(rows);
+            String nextCursor = hasMore ? encodeHistoryCursor(items.get(items.size() - 1)) : null;
             return new HistoryPage(items, nextCursor);
         } catch (DataAccessException exception) {
             throw unavailable(exception);
@@ -341,7 +355,8 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
     }
 
     private static String encodeCursor(String value) {
-        return Base64.getUrlEncoder().withoutPadding()
+        return Base64.getUrlEncoder()
+                .withoutPadding()
                 .encodeToString(value.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -439,8 +454,7 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             Long groupId,
             Instant grantCreatedAt,
             Instant grantUpdatedAt,
-            String grantContextLabel
-    ) {
+            String grantContextLabel) {
         private RoleGrant toGrant() {
             return new RoleGrant(
                     grantId,
@@ -459,13 +473,9 @@ public class JdbcAuthSessionQueryAdapter implements AuthSessionQueryPort {
             String firstName,
             String middleName,
             Long groupId,
-            String groupLabel
-    ) {
-    }
+            String groupLabel) {}
 
-    private record SessionCursor(Instant createdAt, UUID sessionId) {
-    }
+    private record SessionCursor(Instant createdAt, UUID sessionId) {}
 
-    private record HistoryCursor(Instant occurredAt, long id) {
-    }
+    private record HistoryCursor(Instant occurredAt, long id) {}
 }

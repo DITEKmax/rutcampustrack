@@ -1,5 +1,8 @@
 package ru.rutcampustrack.gateway.ratelimit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -14,10 +17,6 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class RateLimitProblemDetailsFilterTest {
 
     private final RateLimitProblemDetailsFilter filter = new RateLimitProblemDetailsFilter();
@@ -29,11 +28,12 @@ class RateLimitProblemDetailsFilterTest {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/x").build();
         MockServerWebExchange exchange = MockServerWebExchange.from(req);
 
-        GatewayFilterChain chain = decoratedExchange -> {
-            decoratedExchange.getResponse().setStatusCode(HttpStatus.OK);
-            DataBuffer buf = bufferFactory.wrap("hello".getBytes(StandardCharsets.UTF_8));
-            return decoratedExchange.getResponse().writeWith(Mono.just(buf));
-        };
+        GatewayFilterChain chain =
+                decoratedExchange -> {
+                    decoratedExchange.getResponse().setStatusCode(HttpStatus.OK);
+                    DataBuffer buf = bufferFactory.wrap("hello".getBytes(StandardCharsets.UTF_8));
+                    return decoratedExchange.getResponse().writeWith(Mono.just(buf));
+                };
 
         filter.filter(exchange, chain).block();
 
@@ -49,17 +49,19 @@ class RateLimitProblemDetailsFilterTest {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/auth/login").build();
         MockServerWebExchange exchange = MockServerWebExchange.from(req);
 
-        GatewayFilterChain chain = decoratedExchange -> {
-            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            // simulate RequestRateLimiter — empty body
-            return decoratedExchange.getResponse().writeWith(Mono.empty());
-        };
+        GatewayFilterChain chain =
+                decoratedExchange -> {
+                    decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                    // simulate RequestRateLimiter — empty body
+                    return decoratedExchange.getResponse().writeWith(Mono.empty());
+                };
 
         filter.filter(exchange, chain).block();
 
         MockServerHttpResponse resp = exchange.getResponse();
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
-        assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(resp.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(resp.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("60");
 
         String body = resp.getBodyAsString().block();
@@ -73,18 +75,21 @@ class RateLimitProblemDetailsFilterTest {
     @Test
     @DisplayName("Local password-reset verify 429 → contract code, retry window and no-store")
     void status429_passwordResetVerifyLocalDenialUsesContractBody() {
-        MockServerHttpRequest req = MockServerHttpRequest.post("/api/auth/password-reset/verify").build();
+        MockServerHttpRequest req =
+                MockServerHttpRequest.post("/api/auth/password-reset/verify").build();
         MockServerWebExchange exchange = MockServerWebExchange.from(req);
 
-        GatewayFilterChain chain = decoratedExchange -> {
-            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            return decoratedExchange.getResponse().setComplete();
-        };
+        GatewayFilterChain chain =
+                decoratedExchange -> {
+                    decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                    return decoratedExchange.getResponse().setComplete();
+                };
 
         filter.filter(exchange, chain).block();
 
         MockServerHttpResponse response = exchange.getResponse();
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("12");
         assertThat(response.getHeaders().getFirst(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-store");
         String body = response.getBodyAsString().block();
@@ -101,11 +106,15 @@ class RateLimitProblemDetailsFilterTest {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/auth/login").build();
         MockServerWebExchange exchange = MockServerWebExchange.from(req);
 
-        GatewayFilterChain chain = decoratedExchange -> {
-            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            decoratedExchange.getResponse().getHeaders().set(HttpHeaders.RETRY_AFTER, "120");
-            return decoratedExchange.getResponse().writeWith(Mono.empty());
-        };
+        GatewayFilterChain chain =
+                decoratedExchange -> {
+                    decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                    decoratedExchange
+                            .getResponse()
+                            .getHeaders()
+                            .set(HttpHeaders.RETRY_AFTER, "120");
+                    return decoratedExchange.getResponse().writeWith(Mono.empty());
+                };
 
         filter.filter(exchange, chain).block();
 
@@ -125,17 +134,19 @@ class RateLimitProblemDetailsFilterTest {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/auth/login").build();
         MockServerWebExchange exchange = MockServerWebExchange.from(req);
 
-        GatewayFilterChain chain = decoratedExchange -> {
-            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            // simulate RequestRateLimiter: just setComplete, no writeWith
-            return decoratedExchange.getResponse().setComplete();
-        };
+        GatewayFilterChain chain =
+                decoratedExchange -> {
+                    decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                    // simulate RequestRateLimiter: just setComplete, no writeWith
+                    return decoratedExchange.getResponse().setComplete();
+                };
 
         filter.filter(exchange, chain).block();
 
         MockServerHttpResponse resp = exchange.getResponse();
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
-        assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(resp.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(resp.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("60");
         String body = resp.getBodyAsString().block();
         assertThat(body).contains("\"status\":429").contains("\"title\":\"Too Many Requests\"");
@@ -146,23 +157,33 @@ class RateLimitProblemDetailsFilterTest {
     void status429_preservesBackendProblemDetailsAndHeaders() {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/x").build();
         ServerWebExchange exchange = MockServerWebExchange.from(req);
-        String backendBody = """
+        String backendBody =
+                """
                 {"status":429,"extras":{"code":"OTP_RATE_LIMITED","retryAfterSeconds":37}}""";
 
-        GatewayFilterChain chain = decoratedExchange -> {
-            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            decoratedExchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_PROBLEM_JSON);
-            decoratedExchange.getResponse().getHeaders().set(HttpHeaders.RETRY_AFTER, "37");
-            decoratedExchange.getResponse().getHeaders().set(HttpHeaders.CACHE_CONTROL, "no-store");
-            DataBuffer buf = bufferFactory.wrap(backendBody.getBytes(StandardCharsets.UTF_8));
-            return decoratedExchange.getResponse().writeWith(Mono.just(buf));
-        };
+        GatewayFilterChain chain =
+                decoratedExchange -> {
+                    decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                    decoratedExchange
+                            .getResponse()
+                            .getHeaders()
+                            .setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+                    decoratedExchange.getResponse().getHeaders().set(HttpHeaders.RETRY_AFTER, "37");
+                    decoratedExchange
+                            .getResponse()
+                            .getHeaders()
+                            .set(HttpHeaders.CACHE_CONTROL, "no-store");
+                    DataBuffer buf =
+                            bufferFactory.wrap(backendBody.getBytes(StandardCharsets.UTF_8));
+                    return decoratedExchange.getResponse().writeWith(Mono.just(buf));
+                };
 
         filter.filter(exchange, chain).block();
 
         MockServerHttpResponse response = (MockServerHttpResponse) exchange.getResponse();
         assertThat(response.getBodyAsString().block()).isEqualTo(backendBody);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("37");
         assertThat(response.getHeaders().getFirst(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-store");
     }

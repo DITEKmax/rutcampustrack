@@ -1,32 +1,32 @@
 package ru.rutcampustrack.auth.service;
 
+import java.time.Duration;
+import java.util.List;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 
-import java.time.Duration;
-import java.util.List;
-
 /**
- * IMP-02 + M03a Группа 11 (01 P0-6): progressive login rate limiting
- * с composite key {@code (ip, login)}.
+ * IMP-02 + M03a Группа 11 (01 P0-6): progressive login rate limiting с composite key {@code (ip,
+ * login)}.
  *
  * <p>Thresholds:
+ *
  * <ul>
- *   <li>5 failures in 60 min → block 5 minutes</li>
- *   <li>10 failures in 60 min → block 30 minutes</li>
- *   <li>20 failures in 60 min → block 2 hours</li>
+ *   <li>5 failures in 60 min → block 5 minutes
+ *   <li>10 failures in 60 min → block 30 minutes
+ *   <li>20 failures in 60 min → block 2 hours
  * </ul>
  *
- * <p><b>Why composite key.</b> Раньше ключ был просто {@code <login>} —
- * злоумышленник с botnet мог блокировать аккаунт жертвы заранее (DoS-by-rate-limit).
- * Теперь счётчик ведётся per {@code (ip, login)}: атакующий с одного IP лочит только
- * СВОЮ попытку брута, пользователь с другого IP спокойно логинится. Distributed brute
- * через множество IP останавливается ещё раньше — Gateway-level rate-limit (5 req/min
- * per IP) на {@code POST /api/auth/login} (см. {@code docs/api/api-rate-limits.md}).</p>
+ * <p><b>Why composite key.</b> Раньше ключ был просто {@code <login>} — злоумышленник с botnet мог
+ * блокировать аккаунт жертвы заранее (DoS-by-rate-limit). Теперь счётчик ведётся per {@code (ip,
+ * login)}: атакующий с одного IP лочит только СВОЮ попытку брута, пользователь с другого IP
+ * спокойно логинится. Distributed brute через множество IP останавливается ещё раньше —
+ * Gateway-level rate-limit (5 req/min per IP) на {@code POST /api/auth/login} (см. {@code
+ * docs/api/api-rate-limits.md}).
  *
- * <p>Redis keys auto-expire (TTL = block window), unblock автоматический.</p>
+ * <p>Redis keys auto-expire (TTL = block window), unblock автоматический.
  */
 @Service
 public class LoginRateLimiter {
@@ -35,11 +35,12 @@ public class LoginRateLimiter {
     private static final String BLOCK_KEY_PREFIX = "login_blocked:";
 
     /**
-     * M03b Группа 9 (KI-6): atomic INCR + EXPIRE через Lua. Убирает TTL-race,
-     * когда network blip между INCR и EXPIRE = persistent key без expiry.
-     * Возвращает новое значение счётчика (count после INCR).
+     * M03b Группа 9 (KI-6): atomic INCR + EXPIRE через Lua. Убирает TTL-race, когда network blip
+     * между INCR и EXPIRE = persistent key без expiry. Возвращает новое значение счётчика (count
+     * после INCR).
      */
-    private static final String INCREMENT_SCRIPT = """
+    private static final String INCREMENT_SCRIPT =
+            """
             local count = redis.call('INCR', KEYS[1])
             if count == 1 then
                 redis.call('EXPIRE', KEYS[1], ARGV[1])
@@ -55,9 +56,7 @@ public class LoginRateLimiter {
         this.incrementScript = new DefaultRedisScript<>(INCREMENT_SCRIPT, Long.class);
     }
 
-    /**
-     * Check if {@code (ip, login)} pair is currently blocked. Throws if blocked.
-     */
+    /** Check if {@code (ip, login)} pair is currently blocked. Throws if blocked. */
     public void checkBlocked(String ip, String login) {
         String blockKey = blockKey(ip, login);
         if (Boolean.TRUE.equals(redisTemplate.hasKey(blockKey))) {
@@ -69,15 +68,17 @@ public class LoginRateLimiter {
     }
 
     /**
-     * Record a failed login attempt for {@code (ip, login)} pair.
-     * Atomic INCR+EXPIRE через Lua-script — без TTL-race при network blip.
+     * Record a failed login attempt for {@code (ip, login)} pair. Atomic INCR+EXPIRE через
+     * Lua-script — без TTL-race при network blip.
      */
     public void recordFailure(String ip, String login) {
         String attemptsKey = attemptsKey(ip, login);
         String blockKey = blockKey(ip, login);
-        Long count = redisTemplate.execute(incrementScript,
-                List.of(attemptsKey),
-                String.valueOf(Duration.ofMinutes(60).toSeconds()));
+        Long count =
+                redisTemplate.execute(
+                        incrementScript,
+                        List.of(attemptsKey),
+                        String.valueOf(Duration.ofMinutes(60).toSeconds()));
         if (count == null) return;
 
         // Progressive blocking
@@ -91,9 +92,7 @@ public class LoginRateLimiter {
         }
     }
 
-    /**
-     * Clear failure counter on successful login for {@code (ip, login)} pair.
-     */
+    /** Clear failure counter on successful login for {@code (ip, login)} pair. */
     public void clearFailures(String ip, String login) {
         redisTemplate.delete(attemptsKey(ip, login));
         redisTemplate.delete(blockKey(ip, login));

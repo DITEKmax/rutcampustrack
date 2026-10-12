@@ -2,13 +2,12 @@ package ru.rutcampustrack.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
-
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "users")

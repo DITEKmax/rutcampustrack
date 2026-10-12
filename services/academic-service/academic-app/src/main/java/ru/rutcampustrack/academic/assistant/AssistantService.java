@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.assistant;
 
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
@@ -7,8 +10,8 @@ import ru.rutcampustrack.academic.contract.dto.assistant.AssistantPermissionOpti
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
 import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.academic.entity.HeadmanAssistant;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.HeadmanAssistant;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -17,14 +20,11 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-
 @Service
 public class AssistantService {
     @org.springframework.beans.factory.annotation.Autowired
-    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher personalNotifications;
+    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher
+            personalNotifications;
 
     private final HeadmanAssistantRepository assistantRepository;
     private final UserRepository userRepository;
@@ -32,11 +32,12 @@ public class AssistantService {
     private final UserRoleGrantRepository grantRepository;
     private final RequestContext requestContext;
 
-    public AssistantService(HeadmanAssistantRepository assistantRepository,
-                             UserRepository userRepository,
-                             GroupRepository groupRepository,
-                             UserRoleGrantRepository grantRepository,
-                             RequestContext requestContext) {
+    public AssistantService(
+            HeadmanAssistantRepository assistantRepository,
+            UserRepository userRepository,
+            GroupRepository groupRepository,
+            UserRoleGrantRepository grantRepository,
+            RequestContext requestContext) {
         this.assistantRepository = assistantRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
@@ -45,8 +46,8 @@ public class AssistantService {
     }
 
     /**
-     * M13 G9 — headman может управлять только assistant'ами своей группы.
-     * Защищает от IDOR: headman A не должен править/удалять/смотреть assistant'а группы B.
+     * M13 G9 — headman может управлять только assistant'ами своей группы. Защищает от IDOR: headman
+     * A не должен править/удалять/смотреть assistant'а группы B.
      */
     private Long requireOwnGroup(Long groupId) {
         Long ownGroupId = requestContext.getGroupId();
@@ -62,37 +63,46 @@ public class AssistantService {
         }
         Long groupId = requireOwnGroup(requestedGroupId);
         Long actorId = requestContext.getUserId();
-        boolean currentHeadman = actorId != null
-                && grantRepository.findByUserIdAndRoleAndStatus(actorId, "headman", "active").stream()
-                .anyMatch(grant -> groupId.equals(grant.getGroupId()));
+        boolean currentHeadman =
+                actorId != null
+                        && grantRepository
+                                .findByUserIdAndRoleAndStatus(actorId, "headman", "active")
+                                .stream()
+                                .anyMatch(grant -> groupId.equals(grant.getGroupId()));
         if (!currentHeadman) {
-            throw new AccessDeniedException("Текущая сессия больше не является старостой этой группы");
+            throw new AccessDeniedException(
+                    "Текущая сессия больше не является старостой этой группы");
         }
         return groupId;
     }
 
     /**
-     * Serializes assistant writes with headman transfer/revocation.  The group
-     * row is locked before any student lookup, then the durable headman grant
-     * is re-read; the request-context flag is only a legacy admission hint.
+     * Serializes assistant writes with headman transfer/revocation. The group row is locked before
+     * any student lookup, then the durable headman grant is re-read; the request-context flag is
+     * only a legacy admission hint.
      */
     private Long lockAndRequireCurrentHeadman(Long requestedGroupId) {
         Long groupId = requireCurrentHeadmanRead(requestedGroupId);
-        Group group = groupRepository.findByIdForUpdate(groupId)
-                .orElseThrow(() -> new AccessDeniedException("Учебная группа не найдена"));
+        Group group =
+                groupRepository
+                        .findByIdForUpdate(groupId)
+                        .orElseThrow(() -> new AccessDeniedException("Учебная группа не найдена"));
         Long actorId = requestContext.getUserId();
-        boolean currentHeadman = actorId != null
-                && grantRepository.findByUserIdAndRoleAndStatus(actorId, "headman", "active").stream()
-                .anyMatch(grant -> groupId.equals(grant.getGroupId()));
+        boolean currentHeadman =
+                actorId != null
+                        && grantRepository
+                                .findByUserIdAndRoleAndStatus(actorId, "headman", "active")
+                                .stream()
+                                .anyMatch(grant -> groupId.equals(grant.getGroupId()));
         if (!group.isActive() || !currentHeadman) {
-            throw new AccessDeniedException("Текущая сессия больше не является старостой этой группы");
+            throw new AccessDeniedException(
+                    "Текущая сессия больше не является старостой этой группы");
         }
         return group.getId();
     }
 
     private void requireActiveStudentGrant(Long studentId, Long groupId) {
-        Long grantedGroupId = userRepository.findActiveStudentGrantGroupId(studentId)
-                .orElse(null);
+        Long grantedGroupId = userRepository.findActiveStudentGrantGroupId(studentId).orElse(null);
         if (grantedGroupId == null || !grantedGroupId.equals(groupId)) {
             throw new AccessDeniedException("Студент не имеет активного права в этой группе");
         }
@@ -105,26 +115,39 @@ public class AssistantService {
 
         // The durable active STUDENT grant is the membership authority. The
         // legacy users.group_id field and the client groupId are not enough.
-        userRepository.findById(request.studentId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.studentId()));
+        userRepository
+                .findById(request.studentId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("User", "id", request.studentId()));
         requireActiveStudentGrant(request.studentId(), groupId);
 
         // Check no existing active assistant
-        assistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(groupId, request.studentId())
-                .ifPresent(existing -> {
-                    throw new ConflictException("Студент ��же является помо��ником старосты в этой группе");
-                });
+        assistantRepository
+                .findByGroupIdAndStudentIdAndIsActiveTrue(groupId, request.studentId())
+                .ifPresent(
+                        existing -> {
+                            throw new ConflictException(
+                                    "Студент ��же является помо��ником старосты в этой группе");
+                        });
 
         // Convert permissions to lowercase string array (Pitfall 4)
-        String[] permissionsArray = request.permissions().stream()
-                .map(p -> p.name().toLowerCase())
-                .toArray(String[]::new);
+        String[] permissionsArray =
+                request.permissions().stream()
+                        .map(p -> p.name().toLowerCase())
+                        .toArray(String[]::new);
 
-        HeadmanAssistant assistant = new HeadmanAssistant(
-                groupId, request.studentId(), permissionsArray, requestContext.getUserId()
-        );
+        HeadmanAssistant assistant =
+                new HeadmanAssistant(
+                        groupId, request.studentId(), permissionsArray, requestContext.getUserId());
         HeadmanAssistant saved = assistantRepository.save(assistant);
-        if (personalNotifications != null) personalNotifications.assistant(saved.getStudentId(), groupId, false, true, new String[0], saved.getPermissions());
+        if (personalNotifications != null)
+            personalNotifications.assistant(
+                    saved.getStudentId(),
+                    groupId,
+                    false,
+                    true,
+                    new String[0],
+                    saved.getPermissions());
         return saved;
     }
 
@@ -138,7 +161,10 @@ public class AssistantService {
     public List<AssistantPermissionOption> listPermissionCatalog() {
         requireCurrentHeadmanRead(requestContext.getGroupId());
         return Arrays.stream(AssistantPermission.values())
-                .map(permission -> new AssistantPermissionOption(permission, permissionLabel(permission)))
+                .map(
+                        permission ->
+                                new AssistantPermissionOption(
+                                        permission, permissionLabel(permission)))
                 .toList();
     }
 
@@ -156,25 +182,50 @@ public class AssistantService {
         if (!groupId.equals(grantedGroupId)) {
             return List.of();
         }
-        return assistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(groupId, userId)
-                .map(assistant -> Arrays.stream(AssistantPermission.values())
-                        .filter(permission -> assistant.getPermissions() != null
-                                && Arrays.stream(assistant.getPermissions())
-                                .filter(value -> value != null)
-                                .anyMatch(value -> permission.name().equalsIgnoreCase(value)))
-                        .map(permission -> new AssistantPermissionOption(permission, permissionLabel(permission)))
-                        .toList())
+        return assistantRepository
+                .findByGroupIdAndStudentIdAndIsActiveTrue(groupId, userId)
+                .map(
+                        assistant ->
+                                Arrays.stream(AssistantPermission.values())
+                                        .filter(
+                                                permission ->
+                                                        assistant.getPermissions() != null
+                                                                && Arrays.stream(
+                                                                                assistant
+                                                                                        .getPermissions())
+                                                                        .filter(
+                                                                                value ->
+                                                                                        value
+                                                                                                != null)
+                                                                        .anyMatch(
+                                                                                value ->
+                                                                                        permission
+                                                                                                .name()
+                                                                                                .equalsIgnoreCase(
+                                                                                                        value)))
+                                        .map(
+                                                permission ->
+                                                        new AssistantPermissionOption(
+                                                                permission,
+                                                                permissionLabel(permission)))
+                                        .toList())
                 .orElseGet(List::of);
     }
 
     @Transactional
     public HeadmanAssistant updatePermissions(Long id, UpdateAssistantPermissionsRequest request) {
         // M13 G9 — assistant должен принадлежать группе headman'а
-        Long groupId = assistantRepository.findGroupIdById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
+        Long groupId =
+                assistantRepository
+                        .findGroupIdById(id)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
         lockAndRequireCurrentHeadman(groupId);
-        HeadmanAssistant assistant = assistantRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
+        HeadmanAssistant assistant =
+                assistantRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
         if (!groupId.equals(assistant.getGroupId())) {
             throw new AccessDeniedException("Помощник принадлежит другой группе");
         }
@@ -183,24 +234,38 @@ public class AssistantService {
         }
 
         // Convert permissions to lowercase string array (Pitfall 4)
-        String[] permissionsArray = request.permissions().stream()
-                .map(p -> p.name().toLowerCase())
-                .toArray(String[]::new);
+        String[] permissionsArray =
+                request.permissions().stream()
+                        .map(p -> p.name().toLowerCase())
+                        .toArray(String[]::new);
 
         String[] beforePermissions = assistant.getPermissions();
         assistant.setPermissions(permissionsArray);
-        if (personalNotifications != null) personalNotifications.assistant(assistant.getStudentId(), groupId, true, true, beforePermissions, permissionsArray);
+        if (personalNotifications != null)
+            personalNotifications.assistant(
+                    assistant.getStudentId(),
+                    groupId,
+                    true,
+                    true,
+                    beforePermissions,
+                    permissionsArray);
         return assistantRepository.save(assistant);
     }
 
     @Transactional
     public void revokeAssistant(Long id) {
         // M13 G9 — assistant должен принадлежать группе headman'а
-        Long groupId = assistantRepository.findGroupIdById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
+        Long groupId =
+                assistantRepository
+                        .findGroupIdById(id)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
         lockAndRequireCurrentHeadman(groupId);
-        HeadmanAssistant assistant = assistantRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
+        HeadmanAssistant assistant =
+                assistantRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("HeadmanAssistant", "id", id));
         if (!groupId.equals(assistant.getGroupId())) {
             throw new AccessDeniedException("Помощник принадлежит другой группе");
         }
@@ -210,7 +275,14 @@ public class AssistantService {
         assistant.setActive(false);
         assistant.setRevokedAt(OffsetDateTime.now());
         assistantRepository.save(assistant);
-        if (personalNotifications != null) personalNotifications.assistant(assistant.getStudentId(), groupId, true, false, assistant.getPermissions(), new String[0]);
+        if (personalNotifications != null)
+            personalNotifications.assistant(
+                    assistant.getStudentId(),
+                    groupId,
+                    true,
+                    false,
+                    assistant.getPermissions(),
+                    new String[0]);
     }
 
     private static String permissionLabel(AssistantPermission permission) {

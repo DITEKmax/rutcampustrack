@@ -7,13 +7,16 @@ import ru.rutcampustrack.academic.grpc.BotCredentialMessagesResponse;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsRequest;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsResponse;
 
-/** Only this verified bot capability reaches the own credential read and durable exact-card tracker. */
+/**
+ * Only this verified bot capability reaches the own credential read and durable exact-card tracker.
+ */
 @Service
 public class BotCredentialsService {
     private final BotOwnInitialCredentialsQuery credentials;
     private final BotCredentialMessageRepository messages;
 
-    public BotCredentialsService(BotOwnInitialCredentialsQuery credentials, BotCredentialMessageRepository messages) {
+    public BotCredentialsService(
+            BotOwnInitialCredentialsQuery credentials, BotCredentialMessageRepository messages) {
         this.credentials = credentials;
         this.messages = messages;
     }

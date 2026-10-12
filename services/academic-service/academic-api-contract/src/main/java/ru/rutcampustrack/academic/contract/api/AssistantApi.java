@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -17,26 +18,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
-import ru.rutcampustrack.academic.contract.dto.assistant.AssistantResponse;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssistantPermissionOption;
+import ru.rutcampustrack.academic.contract.dto.assistant.AssistantResponse;
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
 
-import java.util.List;
-
-/**
- * REST API contract for headman assistant management.
- */
+/** REST API contract for headman assistant management. */
 @Tag(name = "Assistants", description = "Управление помощниками старосты")
 @RequestMapping("/academic/assistants")
 public interface AssistantApi {
 
     @Operation(summary = "Назначить помощника старосты (HEADMAN/ADMIN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Помощник назначен"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Студент или группа не найдены"),
-            @ApiResponse(responseCode = "409", description = "Студент уже является помощником в этой группе")
+        @ApiResponse(responseCode = "201", description = "Помощник назначен"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Студент или группа не найдены"),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Студент уже является помощником в этой группе")
     })
     @PostMapping
     ResponseEntity<EntityModel<AssistantResponse>> assignAssistant(
@@ -60,21 +59,20 @@ public interface AssistantApi {
 
     @Operation(summary = "Обновить права помощника (HEADMAN/ADMIN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Права обновлены"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Помощник не найден")
+        @ApiResponse(responseCode = "200", description = "Права обновлены"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Помощник не найден")
     })
     @PatchMapping("/{id}/permissions")
     ResponseEntity<EntityModel<AssistantResponse>> updatePermissions(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateAssistantPermissionsRequest request);
+            @PathVariable Long id, @Valid @RequestBody UpdateAssistantPermissionsRequest request);
 
     @Operation(summary = "Отозвать помощника (HEADMAN/ADMIN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Помощник отозван"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Помощник не найден")
+        @ApiResponse(responseCode = "204", description = "Помощник отозван"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Помощник не найден")
     })
     @DeleteMapping("/{id}")
     ResponseEntity<Void> revokeAssistant(@PathVariable Long id);

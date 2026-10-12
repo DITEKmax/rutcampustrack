@@ -1,5 +1,9 @@
 package ru.rutcampustrack.attendance.config;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.boot.ApplicationRunner;
@@ -13,25 +17,17 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 /**
- * One-time startup task that:
- *   1. Removes duplicate attendance documents for the same (lesson_id, user_id),
- *      keeping the most recently updated one.
- *   2. Ensures a unique compound index exists on (lesson_id, user_id) so future
- *      writers cannot create duplicates.
+ * One-time startup task that: 1. Removes duplicate attendance documents for the same (lesson_id,
+ * user_id), keeping the most recently updated one. 2. Ensures a unique compound index exists on
+ * (lesson_id, user_id) so future writers cannot create duplicates.
  *
- * Duplicates historically arose because CheckinService used raw {@code save()}
- * instead of upsert, and the collection lacked a schema-level unique constraint.
- * This runner is idempotent — on a clean collection it does nothing meaningful
- * and simply re-declares the index.
+ * <p>Duplicates historically arose because CheckinService used raw {@code save()} instead of
+ * upsert, and the collection lacked a schema-level unique constraint. This runner is idempotent —
+ * on a clean collection it does nothing meaningful and simply re-declares the index.
  *
- * M09 Группа 1 (04 P0-6): startup orphan cleanup удалён — riskful mass-delete
- * при schedule-service outage/misconfig. Разовые очистки — через
+ * <p>M09 Группа 1 (04 P0-6): startup orphan cleanup удалён — riskful mass-delete при
+ * schedule-service outage/misconfig. Разовые очистки — через
  * docs/operations/deploy/admin-scripts.md (mongosh runbook).
  */
 @Slf4j
@@ -47,12 +43,14 @@ public class AttendanceIndexInitializer {
     }
 
     private void deduplicate(MongoTemplate mongoTemplate) {
-        Aggregation agg = Aggregation.newAggregation(
-                Aggregation.group("lesson_id", "user_id")
-                        .count().as("count")
-                        .addToSet("_id").as("ids"),
-                Aggregation.match(Criteria.where("count").gt(1))
-        );
+        Aggregation agg =
+                Aggregation.newAggregation(
+                        Aggregation.group("lesson_id", "user_id")
+                                .count()
+                                .as("count")
+                                .addToSet("_id")
+                                .as("ids"),
+                        Aggregation.match(Criteria.where("count").gt(1)));
 
         AggregationResults<Document> results =
                 mongoTemplate.aggregate(agg, AttendanceDocument.class, Document.class);
@@ -68,13 +66,18 @@ public class AttendanceIndexInitializer {
             List<String> stringIds = new ArrayList<>();
             for (Object id : ids) stringIds.add(id.toString());
 
-            List<AttendanceDocument> docs = mongoTemplate.find(
-                    Query.query(Criteria.where("_id").in(stringIds)),
-                    AttendanceDocument.class
-            );
-            docs.sort(Comparator.comparing(
-                    (AttendanceDocument d) -> firstNonNull(d.getUpdatedAt(), d.getCreatedAt(), Instant.EPOCH)
-            ).reversed());
+            List<AttendanceDocument> docs =
+                    mongoTemplate.find(
+                            Query.query(Criteria.where("_id").in(stringIds)),
+                            AttendanceDocument.class);
+            docs.sort(
+                    Comparator.comparing(
+                                    (AttendanceDocument d) ->
+                                            firstNonNull(
+                                                    d.getUpdatedAt(),
+                                                    d.getCreatedAt(),
+                                                    Instant.EPOCH))
+                            .reversed());
 
             // Keep docs.get(0), delete the rest.
             for (int i = 1; i < docs.size(); i++) {
@@ -83,10 +86,12 @@ public class AttendanceIndexInitializer {
         }
 
         if (!idsToDelete.isEmpty()) {
-            long deleted = mongoTemplate.remove(
-                    Query.query(Criteria.where("_id").in(idsToDelete)),
-                    AttendanceDocument.class
-            ).getDeletedCount();
+            long deleted =
+                    mongoTemplate
+                            .remove(
+                                    Query.query(Criteria.where("_id").in(idsToDelete)),
+                                    AttendanceDocument.class)
+                            .getDeletedCount();
             log.warn("Removed {} duplicate attendance documents during startup cleanup", deleted);
         } else {
             log.info("No duplicate attendance documents detected — nothing to clean up");
@@ -94,13 +99,14 @@ public class AttendanceIndexInitializer {
     }
 
     private void ensureIndex(MongoTemplate mongoTemplate) {
-        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(
-                new Index()
-                        .on("lesson_id", org.springframework.data.domain.Sort.Direction.ASC)
-                        .on("user_id", org.springframework.data.domain.Sort.Direction.ASC)
-                        .unique()
-                        .named("uniq_lesson_user")
-        );
+        mongoTemplate
+                .indexOps(AttendanceDocument.class)
+                .ensureIndex(
+                        new Index()
+                                .on("lesson_id", org.springframework.data.domain.Sort.Direction.ASC)
+                                .on("user_id", org.springframework.data.domain.Sort.Direction.ASC)
+                                .unique()
+                                .named("uniq_lesson_user"));
         log.info("Ensured unique compound index (lesson_id, user_id) on attendances");
     }
 

@@ -1,9 +1,14 @@
 package ru.rutcampustrack.shared.logback;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.OutputStreamAppender;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import net.logstash.logback.composite.loggingevent.LogLevelJsonProvider;
 import net.logstash.logback.composite.loggingevent.LoggingEventFormattedTimestampJsonProvider;
 import net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders;
@@ -15,19 +20,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * Интеграционный тест: программно строит Logback pipeline с
- * {@link MaskingJsonProvider} и проверяет что JSON-вывод содержит
- * замаскированные значения.
+ * Интеграционный тест: программно строит Logback pipeline с {@link MaskingJsonProvider} и проверяет
+ * что JSON-вывод содержит замаскированные значения.
  *
- * <p>Использует программную конфигурацию (не XML), чтобы не зависеть от
- * классpath-discovery logback-test.xml и параллельного запуска тестов.
+ * <p>Использует программную конфигурацию (не XML), чтобы не зависеть от классpath-discovery
+ * logback-test.xml и параллельного запуска тестов.
  */
 class LogbackBaseIntegrationTest {
 
@@ -119,10 +117,7 @@ class LogbackBaseIntegrationTest {
     void masksTelegramIdInJsonOutput() {
         logger.info("incoming {\"telegram_id\":987654321}");
         String out = readOutput();
-        assertThat(out)
-                .contains("telegram_id")
-                .contains("***")
-                .doesNotContain("987654321");
+        assertThat(out).contains("telegram_id").contains("***").doesNotContain("987654321");
     }
 
     @Test

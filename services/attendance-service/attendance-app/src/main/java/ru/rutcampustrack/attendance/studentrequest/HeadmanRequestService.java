@@ -1,40 +1,5 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
-import org.bson.Document;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
-import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestAttachmentResponse;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecision;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDetailResponse;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestSummaryResponse;
-import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionSelectionResponse;
-import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
-import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.attendance.exception.ConflictException;
-import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
-import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
-import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
-import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
-import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.security.RequestContext;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity;
-import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
-import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
-import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
-import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -46,18 +11,51 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.bson.Document;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestAttachmentResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecision;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionSelectionResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDetailResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestSummaryResponse;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
+import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
+import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
+import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity;
+import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 /**
- * Headman read/transport adapter for the two persisted request collections.
- * Decisions stay in {@link StudentRequestService}; this class only builds the
- * unified read projection and converts the authenticated command.
+ * Headman read/transport adapter for the two persisted request collections. Decisions stay in
+ * {@link StudentRequestService}; this class only builds the unified read projection and converts
+ * the authenticated command.
  */
 @Service
 public class HeadmanRequestService {
@@ -82,8 +80,7 @@ public class HeadmanRequestService {
             StudentRequestService studentRequestService,
             ScheduleGrpcClient scheduleGrpcClient,
             MongoTemplate mongoTemplate,
-            Clock clock
-    ) {
+            Clock clock) {
         this.excuseRepository = excuseRepository;
         this.lateCheckinRepository = lateCheckinRepository;
         this.attendanceRepository = attendanceRepository;
@@ -94,27 +91,46 @@ public class HeadmanRequestService {
         this.clock = clock;
     }
 
-    public HeadmanRequestPageResponse list(Identity identity, String bucket, int page, int size,
-                                           String type, String studentName,
-                                           String coverageDateFrom, String coverageDateTo) {
+    public HeadmanRequestPageResponse list(
+            Identity identity,
+            String bucket,
+            int page,
+            int size,
+            String type,
+            String studentName,
+            String coverageDateFrom,
+            String coverageDateTo) {
         long groupId = requireListAuthority(identity);
-        QueryOptions options = QueryOptions.parse(bucket, page, size, type, studentName,
-                coverageDateFrom, coverageDateTo, groupId, mongoTemplate);
+        QueryOptions options =
+                QueryOptions.parse(
+                        bucket,
+                        page,
+                        size,
+                        type,
+                        studentName,
+                        coverageDateFrom,
+                        coverageDateTo,
+                        groupId,
+                        mongoTemplate);
 
         List<Document> countPipeline = unionPipeline(options, false);
         countPipeline.add(new Document("$count", "total"));
-        Document count = firstDocument(mongoTemplate.getCollection("excuse_tickets").aggregate(countPipeline));
+        Document count =
+                firstDocument(
+                        mongoTemplate.getCollection("excuse_tickets").aggregate(countPipeline));
         long total = count == null ? 0L : numberAsLong(count.get("total"));
 
         List<Document> dataPipeline = unionPipeline(options, true);
         dataPipeline.add(new Document("$skip", (long) options.page() * options.size()));
         dataPipeline.add(new Document("$limit", options.size()));
         List<HeadmanRequestSummaryResponse> content = new ArrayList<>();
-        for (Document document : mongoTemplate.getCollection("excuse_tickets").aggregate(dataPipeline)) {
+        for (Document document :
+                mongoTemplate.getCollection("excuse_tickets").aggregate(dataPipeline)) {
             content.add(summaryFromDocument(document));
         }
         int totalPages = total == 0 ? 0 : (int) ((total + options.size() - 1) / options.size());
-        return new HeadmanRequestPageResponse(content, options.page(), options.size(), total, totalPages);
+        return new HeadmanRequestPageResponse(
+                content, options.page(), options.size(), total, totalPages);
     }
 
     public HeadmanRequestDetailResponse get(Identity identity, String requestId) {
@@ -123,8 +139,8 @@ public class HeadmanRequestService {
         return detail(identity, loaded);
     }
 
-    public HeadmanRequestDetailResponse decide(Identity identity, String requestId,
-                                               HeadmanRequestDecisionRequest command) {
+    public HeadmanRequestDetailResponse decide(
+            Identity identity, String requestId, HeadmanRequestDecisionRequest command) {
         if (command == null || command.decision() == null) {
             throw new BadRequestException("Решение обязательно");
         }
@@ -137,10 +153,18 @@ public class HeadmanRequestService {
         requireHeadmanAuthority(identity, loaded.groupId());
         boolean approved = command.decision() == HeadmanRequestDecision.APPROVED;
         if (loaded.kind() == StudentRequestKind.EXCUSE) {
-            studentRequestService.decideExcuse(identity, requestId, approved, reason,
-                    command.expectedRevision(), command.excludedOccurrenceIds(), command.requestKey());
+            studentRequestService.decideExcuse(
+                    identity,
+                    requestId,
+                    approved,
+                    reason,
+                    command.expectedRevision(),
+                    command.excludedOccurrenceIds(),
+                    command.requestKey());
         } else {
-            if (command.expectedRevision() != null || command.excludedOccurrenceIds() != null || command.requestKey() != null) {
+            if (command.expectedRevision() != null
+                    || command.excludedOccurrenceIds() != null
+                    || command.requestKey() != null) {
                 throw new BadRequestException("Выбор пар доступен только для EXCUSE");
             }
             studentRequestService.decideLateCheckin(identity, requestId, approved, reason);
@@ -150,13 +174,15 @@ public class HeadmanRequestService {
         return get(identity, requestId);
     }
 
-    public AttachmentDownload downloadAttachment(Identity identity, String requestId, String attachmentId) {
+    public AttachmentDownload downloadAttachment(
+            Identity identity, String requestId, String attachmentId) {
         Loaded loaded = load(requestId);
         requireHeadmanAuthority(identity, loaded.groupId());
         if (loaded.kind() != StudentRequestKind.EXCUSE) {
             throw new ResourceNotFoundException("Attachment", "id", attachmentId);
         }
-        return studentRequestService.fetchExcuseAttachmentForBot(identity.userId(), requestId, attachmentId);
+        return studentRequestService.fetchExcuseAttachmentForBot(
+                identity.userId(), requestId, attachmentId);
     }
 
     private long requireListAuthority(Identity identity) {
@@ -191,22 +217,39 @@ public class HeadmanRequestService {
         if (loaded.kind() == StudentRequestKind.EXCUSE) {
             List<HeadmanRequestLessonResponse> lessons = excuseLessons(loaded.excuse());
             Map<Long, LessonResponse> resolved = new HashMap<>();
-            List<HeadmanRequestLessonResponse> current = currentExcuseLessons(loaded.excuse(), resolved);
-            response = new HeadmanRequestDetailResponse(summary(loaded.excuse(), lessons), lessons,
-                    excuseAttachments(loaded.excuse()), current,
-                    current == null || !selectable(identity, loaded.excuse()) ? null
-                            : ExcuseDecisionSelections.revision(loaded.excuse(), resolved),
-                    selection(loaded.excuse().getDecisionSelection()));
+            List<HeadmanRequestLessonResponse> current =
+                    currentExcuseLessons(loaded.excuse(), resolved);
+            response =
+                    new HeadmanRequestDetailResponse(
+                            summary(loaded.excuse(), lessons),
+                            lessons,
+                            excuseAttachments(loaded.excuse()),
+                            current,
+                            current == null || !selectable(identity, loaded.excuse())
+                                    ? null
+                                    : ExcuseDecisionSelections.revision(loaded.excuse(), resolved),
+                            selection(loaded.excuse().getDecisionSelection()));
         } else {
             List<HeadmanRequestLessonResponse> lessons = lateLessons(loaded.late());
-            response = new HeadmanRequestDetailResponse(summary(loaded.late(), lessons), lessons, List.of(),
-                    currentLateLessons(loaded.late()));
+            response =
+                    new HeadmanRequestDetailResponse(
+                            summary(loaded.late(), lessons),
+                            lessons,
+                            List.of(),
+                            currentLateLessons(loaded.late()));
         }
         // Transfer does not update the historical timestamps. Compare durable fields,
         // including current IDs, status, scope and retained evidence, after hydration.
-        boolean unchanged = loaded.kind() == StudentRequestKind.EXCUSE
-                ? excuseRepository.findById(loaded.excuse().getId()).filter(loaded.excuse()::equals).isPresent()
-                : lateCheckinRepository.findById(loaded.late().getId()).filter(loaded.late()::equals).isPresent();
+        boolean unchanged =
+                loaded.kind() == StudentRequestKind.EXCUSE
+                        ? excuseRepository
+                                .findById(loaded.excuse().getId())
+                                .filter(loaded.excuse()::equals)
+                                .isPresent()
+                        : lateCheckinRepository
+                                .findById(loaded.late().getId())
+                                .filter(loaded.late()::equals)
+                                .isPresent();
         if (!unchanged) {
             throw new ConflictException("Заявка изменилась; обнови данные");
         }
@@ -214,19 +257,28 @@ public class HeadmanRequestService {
     }
 
     private boolean selectable(Identity identity, ExcuseTicket ticket) {
-        if (!ExcuseDecisionSelections.open(ticket) || Objects.equals(identity.userId(), ticket.getStudentId())) return false;
+        if (!ExcuseDecisionSelections.open(ticket)
+                || Objects.equals(identity.userId(), ticket.getStudentId())) return false;
         String semesterId = String.valueOf(ticket.getSemesterId());
-        if (mongoTemplate.findById(semesterId,
-                ru.rutcampustrack.attendance.event.SemesterDeletionTombstoneDocument.class) != null) return false;
-        var fence = mongoTemplate.findById(semesterId,
-                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
-        return fence == null || "OPEN".equals(fence.getBarrierState()) || "RELEASED".equals(fence.getBarrierState());
+        if (mongoTemplate.findById(
+                        semesterId,
+                        ru.rutcampustrack.attendance.event.SemesterDeletionTombstoneDocument.class)
+                != null) return false;
+        var fence =
+                mongoTemplate.findById(
+                        semesterId,
+                        ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
+        return fence == null
+                || "OPEN".equals(fence.getBarrierState())
+                || "RELEASED".equals(fence.getBarrierState());
     }
 
-    private List<HeadmanRequestLessonResponse> currentExcuseLessons(ExcuseTicket ticket, Map<Long, LessonResponse> resolved) {
-        boolean open = ticket.getStatus() != ExcuseTicketStatus.APPROVED
-                && ticket.getStatus() != ExcuseTicketStatus.REJECTED
-                && ticket.getStatus() != ExcuseTicketStatus.CANCELLED;
+    private List<HeadmanRequestLessonResponse> currentExcuseLessons(
+            ExcuseTicket ticket, Map<Long, LessonResponse> resolved) {
+        boolean open =
+                ticket.getStatus() != ExcuseTicketStatus.APPROVED
+                        && ticket.getStatus() != ExcuseTicketStatus.REJECTED
+                        && ticket.getStatus() != ExcuseTicketStatus.CANCELLED;
         List<Long> ids = ticket.getLessonIds();
         if (ids == null || ids.isEmpty() || ids.stream().anyMatch(id -> id == null || id <= 0)) {
             throw new ConflictException("Текущие пары заявки недоступны");
@@ -235,9 +287,17 @@ public class HeadmanRequestService {
         boolean unavailable = false;
         for (Long id : ids.stream().distinct().sorted().toList()) {
             try {
-                current.add(currentLesson(id, ticket.getGroupId(), ticket.getSemesterId(), ticket.getStudentId(),
-                        ticket.getLessonSnapshots(), open, resolved));
-            } catch (ResourceNotFoundException | ScheduleServiceUnavailableException dependencyFailure) {
+                current.add(
+                        currentLesson(
+                                id,
+                                ticket.getGroupId(),
+                                ticket.getSemesterId(),
+                                ticket.getStudentId(),
+                                ticket.getLessonSnapshots(),
+                                open,
+                                resolved));
+            } catch (ResourceNotFoundException
+                    | ScheduleServiceUnavailableException dependencyFailure) {
                 if (open) throw dependencyFailure;
                 unavailable = true;
             }
@@ -246,46 +306,74 @@ public class HeadmanRequestService {
     }
 
     private List<HeadmanRequestLessonResponse> currentLateLessons(LateCheckinRequest request) {
-        boolean open = request.getStatus() != LateCheckinRequestStatus.APPROVED
-                && request.getStatus() != LateCheckinRequestStatus.REJECTED
-                && request.getStatus() != LateCheckinRequestStatus.CANCELLED;
-        StudentLessonSnapshotDocument retained = StudentLessonSnapshotDocument.builder()
-                .groupId(request.getGroupId()).semesterId(request.getSemesterId())
-                .subjectId(request.getSubjectId()).subjectName(request.getSubjectName())
-                .subjectType(request.getSubjectType()).build();
+        boolean open =
+                request.getStatus() != LateCheckinRequestStatus.APPROVED
+                        && request.getStatus() != LateCheckinRequestStatus.REJECTED
+                        && request.getStatus() != LateCheckinRequestStatus.CANCELLED;
+        StudentLessonSnapshotDocument retained =
+                StudentLessonSnapshotDocument.builder()
+                        .groupId(request.getGroupId())
+                        .semesterId(request.getSemesterId())
+                        .subjectId(request.getSubjectId())
+                        .subjectName(request.getSubjectName())
+                        .subjectType(request.getSubjectType())
+                        .build();
         try {
-            return List.of(currentLesson(request.getLessonId(), request.getGroupId(), request.getSemesterId(),
-                    request.getStudentId(), List.of(retained), open, null));
+            return List.of(
+                    currentLesson(
+                            request.getLessonId(),
+                            request.getGroupId(),
+                            request.getSemesterId(),
+                            request.getStudentId(),
+                            List.of(retained),
+                            open,
+                            null));
         } catch (ResourceNotFoundException | ScheduleServiceUnavailableException unavailable) {
             if (open) throw unavailable;
             return null;
         }
     }
 
-    private HeadmanRequestLessonResponse currentLesson(Long id, Long groupId, Long semesterId, Long studentId,
-                                                        List<StudentLessonSnapshotDocument> retained, boolean open,
-                                                        Map<Long, LessonResponse> resolved) {
-        if (id == null || id <= 0 || groupId == null || groupId <= 0 || semesterId == null || semesterId <= 0
-                || studentId == null || studentId <= 0) {
+    private HeadmanRequestLessonResponse currentLesson(
+            Long id,
+            Long groupId,
+            Long semesterId,
+            Long studentId,
+            List<StudentLessonSnapshotDocument> retained,
+            boolean open,
+            Map<Long, LessonResponse> resolved) {
+        if (id == null
+                || id <= 0
+                || groupId == null
+                || groupId <= 0
+                || semesterId == null
+                || semesterId <= 0
+                || studentId == null
+                || studentId <= 0) {
             throw new ConflictException("Текущие пары заявки недоступны");
         }
         LessonResponse current = scheduleGrpcClient.getScopedLessonById(id, groupId, semesterId);
         if (current == null) {
-            throw new ScheduleServiceUnavailableException("Schedule returned no current request lesson");
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned no current request lesson");
         }
-        if (current.getId() != id || current.getGroupId() != groupId || current.getSemesterId() != semesterId) {
+        if (current.getId() != id
+                || current.getGroupId() != groupId
+                || current.getSemesterId() != semesterId) {
             throw new ConflictException("Пара заявки изменилась; обнови данные");
         }
         String transferState = current.getTransferState();
         if (!transferState.isBlank() && !"COMPLETED".equals(transferState)) {
-            throw new ScheduleServiceUnavailableException("Current request lesson transfer is not complete");
+            throw new ScheduleServiceUnavailableException(
+                    "Current request lesson transfer is not complete");
         }
         String status = current.getStatus().toLowerCase(Locale.ROOT);
         if (open && !Set.of("planned", "active", "closed").contains(status)) {
             throw new ConflictException("Пара заявки отменена или недоступна");
         }
         if (current.getSubjectId() <= 0 || current.getLessonNumber() <= 0) {
-            throw new ScheduleServiceUnavailableException("Schedule returned an incomplete current request lesson");
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned an incomplete current request lesson");
         }
         LocalDate date;
         LocalTime startsAt;
@@ -295,47 +383,96 @@ public class HeadmanRequestService {
             startsAt = LocalTime.parse(current.getStartTime());
             endsAt = LocalTime.parse(current.getEndTime());
         } catch (DateTimeParseException invalid) {
-            throw new ScheduleServiceUnavailableException("Schedule returned invalid current request lesson times");
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned invalid current request lesson times");
         }
-        StudentLessonSnapshotDocument subject = retained == null ? null : retained.stream()
-                .filter(Objects::nonNull)
-                .filter(snapshot -> Objects.equals(snapshot.getGroupId(), groupId)
-                        && Objects.equals(snapshot.getSemesterId(), semesterId)
-                        && Objects.equals(snapshot.getSubjectId(), current.getSubjectId()))
-                .findFirst().orElse(null);
-        AttendanceDocument attendance = attendanceRepository.findByLessonIdAndUserId(id, studentId).orElse(null);
-        if (attendance != null && ((attendance.getGroupId() != null
-                && !Objects.equals(attendance.getGroupId(), groupId)) || (attendance.getSemesterId() != null
-                && !Objects.equals(attendance.getSemesterId(), semesterId)))) {
+        StudentLessonSnapshotDocument subject =
+                retained == null
+                        ? null
+                        : retained.stream()
+                                .filter(Objects::nonNull)
+                                .filter(
+                                        snapshot ->
+                                                Objects.equals(snapshot.getGroupId(), groupId)
+                                                        && Objects.equals(
+                                                                snapshot.getSemesterId(),
+                                                                semesterId)
+                                                        && Objects.equals(
+                                                                snapshot.getSubjectId(),
+                                                                current.getSubjectId()))
+                                .findFirst()
+                                .orElse(null);
+        AttendanceDocument attendance =
+                attendanceRepository.findByLessonIdAndUserId(id, studentId).orElse(null);
+        if (attendance != null
+                && ((attendance.getGroupId() != null
+                                && !Objects.equals(attendance.getGroupId(), groupId))
+                        || (attendance.getSemesterId() != null
+                                && !Objects.equals(attendance.getSemesterId(), semesterId)))) {
             throw new ConflictException("Отметка текущей пары не соответствует заявке");
         }
         if (resolved != null) resolved.put(id, current);
-        return new HeadmanRequestLessonResponse(id, groupId, current.getSubjectId(),
+        return new HeadmanRequestLessonResponse(
+                id,
+                groupId,
+                current.getSubjectId(),
                 subject == null ? null : subject.getSubjectName(),
                 normalize(current.getLessonType()),
-                semesterId, current.getLessonNumber(), date, startsAt, endsAt, status,
-                attendance == null || attendance.getStatus() == null ? null : attendance.getStatus().name(),
-                attendance == null || attendance.getSource() == null ? null : attendance.getSource().name(),
+                semesterId,
+                current.getLessonNumber(),
+                date,
+                startsAt,
+                endsAt,
+                status,
+                attendance == null || attendance.getStatus() == null
+                        ? null
+                        : attendance.getStatus().name(),
+                attendance == null || attendance.getSource() == null
+                        ? null
+                        : attendance.getSource().name(),
                 current.getOccurrenceId() > 0 ? Long.toString(current.getOccurrenceId()) : null,
-                current.getOccurrenceRevision() > 0 ? Long.toString(current.getOccurrenceRevision()) : null);
+                current.getOccurrenceRevision() > 0
+                        ? Long.toString(current.getOccurrenceRevision())
+                        : null);
     }
 
-    private static HeadmanRequestDecisionSelectionResponse selection(ExcuseDecisionSelectionDocument saved) {
+    private static HeadmanRequestDecisionSelectionResponse selection(
+            ExcuseDecisionSelectionDocument saved) {
         if (saved == null) return null;
-        return new HeadmanRequestDecisionSelectionResponse(saved.getRequestKey(), saved.getExpectedRevision(),
-                saved.getIncludedLessons().stream().map(HeadmanRequestService::receiptLesson).toList(),
-                saved.getExcludedLessons().stream().map(HeadmanRequestService::receiptLesson).toList());
+        return new HeadmanRequestDecisionSelectionResponse(
+                saved.getRequestKey(),
+                saved.getExpectedRevision(),
+                saved.getIncludedLessons().stream()
+                        .map(HeadmanRequestService::receiptLesson)
+                        .toList(),
+                saved.getExcludedLessons().stream()
+                        .map(HeadmanRequestService::receiptLesson)
+                        .toList());
     }
 
-    private static HeadmanRequestLessonResponse receiptLesson(StudentLessonSnapshotDocument snapshot) {
-        return new HeadmanRequestLessonResponse(snapshot.getLessonId(), snapshot.getGroupId(), snapshot.getSubjectId(),
-                snapshot.getSubjectName(), snapshot.getSubjectType(), snapshot.getSemesterId(), snapshot.getLessonNumber(),
-                snapshot.getDate(), snapshot.getStartsAt(), snapshot.getEndsAt(), snapshot.getStatus(),
-                snapshot.getAttendanceStatus(), snapshot.getAttendanceSource(), snapshot.getOccurrenceId(), snapshot.getOccurrenceRevision());
+    private static HeadmanRequestLessonResponse receiptLesson(
+            StudentLessonSnapshotDocument snapshot) {
+        return new HeadmanRequestLessonResponse(
+                snapshot.getLessonId(),
+                snapshot.getGroupId(),
+                snapshot.getSubjectId(),
+                snapshot.getSubjectName(),
+                snapshot.getSubjectType(),
+                snapshot.getSemesterId(),
+                snapshot.getLessonNumber(),
+                snapshot.getDate(),
+                snapshot.getStartsAt(),
+                snapshot.getEndsAt(),
+                snapshot.getStatus(),
+                snapshot.getAttendanceStatus(),
+                snapshot.getAttendanceSource(),
+                snapshot.getOccurrenceId(),
+                snapshot.getOccurrenceRevision());
     }
 
     private HeadmanRequestSummaryResponse summaryFromDocument(Document document) {
-        StudentRequestKind kind = StudentRequestKind.valueOf(valueAsString(document.get("request_kind")));
+        StudentRequestKind kind =
+                StudentRequestKind.valueOf(valueAsString(document.get("request_kind")));
         List<HeadmanRequestLessonResponse> lessons = documentLessons(document, kind);
         Long studentId = nullableLong(document.get("student_id"));
         return summary(
@@ -344,7 +481,9 @@ public class HeadmanRequestService {
                 valueAsString(document.get("status")),
                 studentId,
                 valueAsString(document.get("student_name")),
-                kind == StudentRequestKind.EXCUSE ? canonicalReason(document.get("excuse_type")) : "LATE_CHECKIN",
+                kind == StudentRequestKind.EXCUSE
+                        ? canonicalReason(document.get("excuse_type"))
+                        : "LATE_CHECKIN",
                 kind == StudentRequestKind.EXCUSE ? valueAsString(document.get("comment")) : null,
                 lessons,
                 booleanCollection(document.get("attachment_descriptors")),
@@ -355,44 +494,103 @@ public class HeadmanRequestService {
                 valueAsString(document.get("decision_comment")));
     }
 
-    private HeadmanRequestSummaryResponse summary(ExcuseTicket ticket,
-                                                  List<HeadmanRequestLessonResponse> lessons) {
-        return summary(ticket.getId(), StudentRequestKind.EXCUSE, mapStatus(ticket.getStatus()),
-                ticket.getStudentId(), ticket.getStudentName(),
-                ticket.getExcuseType() == null ? null : ticket.getExcuseType().name(), ticket.getComment(), lessons,
-                ticket.getAttachmentDescriptors() != null && !ticket.getAttachmentDescriptors().isEmpty(),
-                ticket.getCreatedAt(), ticket.getUpdatedAt(), ticket.getDecisionBy(), ticket.getDecisionAt(),
+    private HeadmanRequestSummaryResponse summary(
+            ExcuseTicket ticket, List<HeadmanRequestLessonResponse> lessons) {
+        return summary(
+                ticket.getId(),
+                StudentRequestKind.EXCUSE,
+                mapStatus(ticket.getStatus()),
+                ticket.getStudentId(),
+                ticket.getStudentName(),
+                ticket.getExcuseType() == null ? null : ticket.getExcuseType().name(),
+                ticket.getComment(),
+                lessons,
+                ticket.getAttachmentDescriptors() != null
+                        && !ticket.getAttachmentDescriptors().isEmpty(),
+                ticket.getCreatedAt(),
+                ticket.getUpdatedAt(),
+                ticket.getDecisionBy(),
+                ticket.getDecisionAt(),
                 ticket.getDecisionComment());
     }
 
-    private HeadmanRequestSummaryResponse summary(LateCheckinRequest request,
-                                                  List<HeadmanRequestLessonResponse> lessons) {
-        return summary(request.getId(), StudentRequestKind.LATE_CHECKIN, mapStatus(request.getStatus()),
-                request.getStudentId(), request.getStudentName(), "LATE_CHECKIN", null, lessons, false,
-                request.getCreatedAt(), request.getUpdatedAt(), request.getDecisionBy(), request.getDecisionAt(),
+    private HeadmanRequestSummaryResponse summary(
+            LateCheckinRequest request, List<HeadmanRequestLessonResponse> lessons) {
+        return summary(
+                request.getId(),
+                StudentRequestKind.LATE_CHECKIN,
+                mapStatus(request.getStatus()),
+                request.getStudentId(),
+                request.getStudentName(),
+                "LATE_CHECKIN",
+                null,
+                lessons,
+                false,
+                request.getCreatedAt(),
+                request.getUpdatedAt(),
+                request.getDecisionBy(),
+                request.getDecisionAt(),
                 request.getDecisionComment());
     }
 
-    private HeadmanRequestSummaryResponse summary(String id, StudentRequestKind kind, String status,
-                                                  Long studentId, String studentName, String reason, String comment,
-                                                  List<HeadmanRequestLessonResponse> lessons, boolean hasAttachments,
-                                                  Instant createdAt, Instant updatedAt, Long decisionBy,
-                                                  Instant decisionAt, String decisionComment) {
-        List<LocalDate> dates = lessons.stream().map(HeadmanRequestLessonResponse::date)
-                .filter(Objects::nonNull).toList();
+    private HeadmanRequestSummaryResponse summary(
+            String id,
+            StudentRequestKind kind,
+            String status,
+            Long studentId,
+            String studentName,
+            String reason,
+            String comment,
+            List<HeadmanRequestLessonResponse> lessons,
+            boolean hasAttachments,
+            Instant createdAt,
+            Instant updatedAt,
+            Long decisionBy,
+            Instant decisionAt,
+            String decisionComment) {
+        List<LocalDate> dates =
+                lessons.stream()
+                        .map(HeadmanRequestLessonResponse::date)
+                        .filter(Objects::nonNull)
+                        .toList();
         int alreadyMarked = 0;
         if (studentId != null) {
-            alreadyMarked = (int) lessons.stream()
-                    .map(HeadmanRequestLessonResponse::lessonId)
-                    .filter(Objects::nonNull)
-                    .map(idValue -> attendanceRepository.findByLessonIdAndUserId(idValue, studentId).orElse(null))
-                    .filter(document -> document != null && document.getStatus() == AttendanceStatus.PRESENT)
-                    .count();
+            alreadyMarked =
+                    (int)
+                            lessons.stream()
+                                    .map(HeadmanRequestLessonResponse::lessonId)
+                                    .filter(Objects::nonNull)
+                                    .map(
+                                            idValue ->
+                                                    attendanceRepository
+                                                            .findByLessonIdAndUserId(
+                                                                    idValue, studentId)
+                                                            .orElse(null))
+                                    .filter(
+                                            document ->
+                                                    document != null
+                                                            && document.getStatus()
+                                                                    == AttendanceStatus.PRESENT)
+                                    .count();
         }
-        return new HeadmanRequestSummaryResponse(id, kind.name(), status, studentId, studentName, reason, comment,
+        return new HeadmanRequestSummaryResponse(
+                id,
+                kind.name(),
+                status,
+                studentId,
+                studentName,
+                reason,
+                comment,
                 dates.stream().min(Comparator.naturalOrder()).orElse(null),
-                dates.stream().max(Comparator.naturalOrder()).orElse(null), lessons.size(), alreadyMarked,
-                hasAttachments, createdAt, updatedAt, decisionBy, decisionAt, decisionComment);
+                dates.stream().max(Comparator.naturalOrder()).orElse(null),
+                lessons.size(),
+                alreadyMarked,
+                hasAttachments,
+                createdAt,
+                updatedAt,
+                decisionBy,
+                decisionAt,
+                decisionComment);
     }
 
     private List<HeadmanRequestLessonResponse> excuseLessons(ExcuseTicket ticket) {
@@ -402,51 +600,139 @@ public class HeadmanRequestService {
                 lessons.add(lesson(snapshot, ticket.getStudentId()));
             }
         }
-        List<Long> originalIds = ticket.getOriginalLessonIds() == null ? ticket.getLessonIds() : ticket.getOriginalLessonIds();
+        List<Long> originalIds =
+                ticket.getOriginalLessonIds() == null
+                        ? ticket.getLessonIds()
+                        : ticket.getOriginalLessonIds();
         if (lessons.isEmpty() && originalIds != null) {
             for (Long lessonId : originalIds) {
-                lessons.add(lesson(lessonId, ticket.getGroupId(), ticket.getSemesterId(), ticket.getStudentId()));
+                lessons.add(
+                        lesson(
+                                lessonId,
+                                ticket.getGroupId(),
+                                ticket.getSemesterId(),
+                                ticket.getStudentId()));
             }
         }
         return List.copyOf(lessons);
     }
 
     private List<HeadmanRequestLessonResponse> lateLessons(LateCheckinRequest request) {
-        return List.of(lesson(request.getLessonId(), request.getGroupId(), request.getSubjectId(),
-                request.getSubjectName(), request.getSubjectType(), request.getSemesterId(),
-                request.getLessonNumber(), request.getLessonDate(), "closed", request.getStudentId()));
+        return List.of(
+                lesson(
+                        request.getLessonId(),
+                        request.getGroupId(),
+                        request.getSubjectId(),
+                        request.getSubjectName(),
+                        request.getSubjectType(),
+                        request.getSemesterId(),
+                        request.getLessonNumber(),
+                        request.getLessonDate(),
+                        "closed",
+                        request.getStudentId()));
     }
 
-    private HeadmanRequestLessonResponse lesson(StudentLessonSnapshotDocument snapshot, Long studentId) {
-        return lesson(snapshot.getLessonId(), snapshot.getGroupId(), snapshot.getSubjectId(), snapshot.getSubjectName(),
-                snapshot.getSubjectType(), snapshot.getSemesterId(), snapshot.getLessonNumber(), snapshot.getDate(),
-                snapshot.getStatus(), studentId, snapshot.getStartsAt(), snapshot.getEndsAt());
+    private HeadmanRequestLessonResponse lesson(
+            StudentLessonSnapshotDocument snapshot, Long studentId) {
+        return lesson(
+                snapshot.getLessonId(),
+                snapshot.getGroupId(),
+                snapshot.getSubjectId(),
+                snapshot.getSubjectName(),
+                snapshot.getSubjectType(),
+                snapshot.getSemesterId(),
+                snapshot.getLessonNumber(),
+                snapshot.getDate(),
+                snapshot.getStatus(),
+                studentId,
+                snapshot.getStartsAt(),
+                snapshot.getEndsAt());
     }
 
-    private HeadmanRequestLessonResponse lesson(Long lessonId, Long groupId, Long semesterId, Long studentId) {
-        return lesson(lessonId, groupId, null, null, null, semesterId, null, null, "unknown", studentId, null, null);
+    private HeadmanRequestLessonResponse lesson(
+            Long lessonId, Long groupId, Long semesterId, Long studentId) {
+        return lesson(
+                lessonId,
+                groupId,
+                null,
+                null,
+                null,
+                semesterId,
+                null,
+                null,
+                "unknown",
+                studentId,
+                null,
+                null);
     }
 
-    private HeadmanRequestLessonResponse lesson(Long lessonId, Long groupId, Long subjectId, String subjectName,
-                                                String subjectType, Long semesterId, Integer lessonNumber,
-                                                LocalDate date, String requestStatus, Long studentId) {
-        return lesson(lessonId, groupId, subjectId, subjectName, subjectType, semesterId, lessonNumber, date,
-                requestStatus, studentId, null, null);
+    private HeadmanRequestLessonResponse lesson(
+            Long lessonId,
+            Long groupId,
+            Long subjectId,
+            String subjectName,
+            String subjectType,
+            Long semesterId,
+            Integer lessonNumber,
+            LocalDate date,
+            String requestStatus,
+            Long studentId) {
+        return lesson(
+                lessonId,
+                groupId,
+                subjectId,
+                subjectName,
+                subjectType,
+                semesterId,
+                lessonNumber,
+                date,
+                requestStatus,
+                studentId,
+                null,
+                null);
     }
 
-    private HeadmanRequestLessonResponse lesson(Long lessonId, Long groupId, Long subjectId, String subjectName,
-                                                String subjectType, Long semesterId, Integer lessonNumber,
-                                                LocalDate date, String requestStatus, Long studentId,
-                                                LocalTime startsAt, LocalTime endsAt) {
-        AttendanceDocument attendance = lessonId == null || studentId == null
-                ? null : attendanceRepository.findByLessonIdAndUserId(lessonId, studentId).orElse(null);
-        return new HeadmanRequestLessonResponse(lessonId, groupId, subjectId, subjectName, subjectType, semesterId,
-                lessonNumber, date, startsAt, endsAt, requestStatus,
-                attendance == null || attendance.getStatus() == null ? null : attendance.getStatus().name(),
-                attendance == null || attendance.getSource() == null ? null : attendance.getSource().name());
+    private HeadmanRequestLessonResponse lesson(
+            Long lessonId,
+            Long groupId,
+            Long subjectId,
+            String subjectName,
+            String subjectType,
+            Long semesterId,
+            Integer lessonNumber,
+            LocalDate date,
+            String requestStatus,
+            Long studentId,
+            LocalTime startsAt,
+            LocalTime endsAt) {
+        AttendanceDocument attendance =
+                lessonId == null || studentId == null
+                        ? null
+                        : attendanceRepository
+                                .findByLessonIdAndUserId(lessonId, studentId)
+                                .orElse(null);
+        return new HeadmanRequestLessonResponse(
+                lessonId,
+                groupId,
+                subjectId,
+                subjectName,
+                subjectType,
+                semesterId,
+                lessonNumber,
+                date,
+                startsAt,
+                endsAt,
+                requestStatus,
+                attendance == null || attendance.getStatus() == null
+                        ? null
+                        : attendance.getStatus().name(),
+                attendance == null || attendance.getSource() == null
+                        ? null
+                        : attendance.getSource().name());
     }
 
-    private List<HeadmanRequestLessonResponse> documentLessons(Document document, StudentRequestKind kind) {
+    private List<HeadmanRequestLessonResponse> documentLessons(
+            Document document, StudentRequestKind kind) {
         List<HeadmanRequestLessonResponse> lessons = new ArrayList<>();
         Long studentId = nullableLong(document.get("student_id"));
         if (kind == StudentRequestKind.EXCUSE) {
@@ -455,35 +741,58 @@ public class HeadmanRequestService {
                 for (Object item : collection) {
                     Document snapshot = asDocument(item);
                     if (snapshot != null) {
-                        lessons.add(lesson(nullableLong(snapshot.get("lesson_id")), nullableLong(snapshot.get("group_id")),
-                                nullableLong(snapshot.get("subject_id")), valueAsString(snapshot.get("subject_name")),
-                                valueAsString(snapshot.get("subject_type")), nullableLong(snapshot.get("semester_id")),
-                                nullableInt(snapshot.get("lesson_number")), localDate(snapshot.get("date")),
-                                valueAsString(snapshot.get("status")), studentId, localTime(snapshot.get("starts_at")),
-                                localTime(snapshot.get("ends_at"))));
+                        lessons.add(
+                                lesson(
+                                        nullableLong(snapshot.get("lesson_id")),
+                                        nullableLong(snapshot.get("group_id")),
+                                        nullableLong(snapshot.get("subject_id")),
+                                        valueAsString(snapshot.get("subject_name")),
+                                        valueAsString(snapshot.get("subject_type")),
+                                        nullableLong(snapshot.get("semester_id")),
+                                        nullableInt(snapshot.get("lesson_number")),
+                                        localDate(snapshot.get("date")),
+                                        valueAsString(snapshot.get("status")),
+                                        studentId,
+                                        localTime(snapshot.get("starts_at")),
+                                        localTime(snapshot.get("ends_at"))));
                     }
                 }
             }
-            Object originalIds = document.get("original_lesson_ids") == null ? document.get("lesson_ids") : document.get("original_lesson_ids");
+            Object originalIds =
+                    document.get("original_lesson_ids") == null
+                            ? document.get("lesson_ids")
+                            : document.get("original_lesson_ids");
             if (lessons.isEmpty() && originalIds instanceof Collection<?> ids) {
                 for (Object id : ids) {
-                    lessons.add(lesson(nullableLong(id), nullableLong(document.get("group_id")),
-                            nullableLong(document.get("semester_id")), studentId));
+                    lessons.add(
+                            lesson(
+                                    nullableLong(id),
+                                    nullableLong(document.get("group_id")),
+                                    nullableLong(document.get("semester_id")),
+                                    studentId));
                 }
             }
         } else {
-            lessons.add(lesson(nullableLong(document.get("late_lesson_id")), nullableLong(document.get("late_group_id")),
-                    nullableLong(document.get("late_subject_id")), valueAsString(document.get("late_subject_name")),
-                    valueAsString(document.get("late_subject_type")), nullableLong(document.get("late_semester_id")),
-                    nullableInt(document.get("late_lesson_number")), localDate(document.get("late_lesson_date")),
-                    "closed", studentId));
+            lessons.add(
+                    lesson(
+                            nullableLong(document.get("late_lesson_id")),
+                            nullableLong(document.get("late_group_id")),
+                            nullableLong(document.get("late_subject_id")),
+                            valueAsString(document.get("late_subject_name")),
+                            valueAsString(document.get("late_subject_type")),
+                            nullableLong(document.get("late_semester_id")),
+                            nullableInt(document.get("late_lesson_number")),
+                            localDate(document.get("late_lesson_date")),
+                            "closed",
+                            studentId));
         }
         return List.copyOf(lessons);
     }
 
     private List<HeadmanRequestAttachmentResponse> excuseAttachments(ExcuseTicket ticket) {
-        List<RequestAttachmentDocument> stored = attachmentRepository
-                .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(ticket.getId(), ticket.getStudentId());
+        List<RequestAttachmentDocument> stored =
+                attachmentRepository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
+                        ticket.getId(), ticket.getStudentId());
         if (!stored.isEmpty()) {
             return stored.stream().map(document -> attachment(document, ticket.getId())).toList();
         }
@@ -491,25 +800,40 @@ public class HeadmanRequestService {
             return List.of();
         }
         return ticket.getAttachmentDescriptors().stream()
-                .map(descriptor -> attachment(descriptor, ticket.getId())).toList();
+                .map(descriptor -> attachment(descriptor, ticket.getId()))
+                .toList();
     }
 
-    private HeadmanRequestAttachmentResponse attachment(RequestAttachmentDocument document, String requestId) {
+    private HeadmanRequestAttachmentResponse attachment(
+            RequestAttachmentDocument document, String requestId) {
         String state = document.getState() == null ? null : document.getState().name();
         if (document.getExpiresAt() != null && !clock.instant().isBefore(document.getExpiresAt())) {
             state = "EXPIRED";
         }
-        return new HeadmanRequestAttachmentResponse(document.getId(), document.getName(), document.getContentType(),
-                document.getSize() == null ? 0L : document.getSize(), document.getSha256(), state,
-                document.getUploadedAt(), document.getExpiresAt(), attachmentUrl(requestId, document.getId()));
+        return new HeadmanRequestAttachmentResponse(
+                document.getId(),
+                document.getName(),
+                document.getContentType(),
+                document.getSize() == null ? 0L : document.getSize(),
+                document.getSha256(),
+                state,
+                document.getUploadedAt(),
+                document.getExpiresAt(),
+                attachmentUrl(requestId, document.getId()));
     }
 
-    private HeadmanRequestAttachmentResponse attachment(RequestAttachmentDescriptorDocument descriptor,
-                                                        String requestId) {
-        return new HeadmanRequestAttachmentResponse(descriptor.getId(), descriptor.getName(),
-                descriptor.getContentType(), descriptor.getSize() == null ? 0L : descriptor.getSize(),
-                descriptor.getSha256(), descriptor.getState() == null ? null : descriptor.getState().name(),
-                descriptor.getUploadedAt(), descriptor.getExpiresAt(), attachmentUrl(requestId, descriptor.getId()));
+    private HeadmanRequestAttachmentResponse attachment(
+            RequestAttachmentDescriptorDocument descriptor, String requestId) {
+        return new HeadmanRequestAttachmentResponse(
+                descriptor.getId(),
+                descriptor.getName(),
+                descriptor.getContentType(),
+                descriptor.getSize() == null ? 0L : descriptor.getSize(),
+                descriptor.getSha256(),
+                descriptor.getState() == null ? null : descriptor.getState().name(),
+                descriptor.getUploadedAt(),
+                descriptor.getExpiresAt(),
+                attachmentUrl(requestId, descriptor.getId()));
     }
 
     private static String attachmentUrl(String requestId, String attachmentId) {
@@ -517,8 +841,10 @@ public class HeadmanRequestService {
     }
 
     private List<Document> unionPipeline(QueryOptions options, boolean sort) {
-        boolean includeExcuse = options.type() == null || options.type() == StudentRequestKind.EXCUSE;
-        boolean includeLate = options.type() == null || options.type() == StudentRequestKind.LATE_CHECKIN;
+        boolean includeExcuse =
+                options.type() == null || options.type() == StudentRequestKind.EXCUSE;
+        boolean includeLate =
+                options.type() == null || options.type() == StudentRequestKind.LATE_CHECKIN;
         List<Document> pipeline = new ArrayList<>();
         Document excuseMatch = new Document("group_id", options.groupId());
         if (!includeExcuse) {
@@ -527,28 +853,52 @@ public class HeadmanRequestService {
         appendStatus(excuseMatch, options.bucket(), "status");
         appendSnapshotDateFilter(excuseMatch, options);
         pipeline.add(new Document("$match", excuseMatch));
-        pipeline.add(new Document("$project", new Document("_id", 1)
-                .append("request_kind", "EXCUSE")
-                .append("status", normalizedStatus("status"))
-                .append("student_id", 1).append("student_name", 1)
-                .append("excuse_type", 1).append("comment", 1)
-                .append("lesson_snapshots", 1).append("lesson_ids", 1).append("original_lesson_ids", 1).append("group_id", 1)
-                .append("semester_id", 1).append("attachment_descriptors", 1)
-                .append("decision_by", 1).append("decision_at", 1).append("decision_comment", 1)
-                .append("created_at", 1).append("updated_at", 1)));
+        pipeline.add(
+                new Document(
+                        "$project",
+                        new Document("_id", 1)
+                                .append("request_kind", "EXCUSE")
+                                .append("status", normalizedStatus("status"))
+                                .append("student_id", 1)
+                                .append("student_name", 1)
+                                .append("excuse_type", 1)
+                                .append("comment", 1)
+                                .append("lesson_snapshots", 1)
+                                .append("lesson_ids", 1)
+                                .append("original_lesson_ids", 1)
+                                .append("group_id", 1)
+                                .append("semester_id", 1)
+                                .append("attachment_descriptors", 1)
+                                .append("decision_by", 1)
+                                .append("decision_at", 1)
+                                .append("decision_comment", 1)
+                                .append("created_at", 1)
+                                .append("updated_at", 1)));
         if (includeLate) {
-            pipeline.add(new Document("$unionWith", new Document("coll", "late_checkin_requests")
-                    .append("pipeline", latePipeline(options))));
+            pipeline.add(
+                    new Document(
+                            "$unionWith",
+                            new Document("coll", "late_checkin_requests")
+                                    .append("pipeline", latePipeline(options))));
         }
         if (options.studentName() != null) {
-            pipeline.add(new Document("$match", new Document("student_name",
-                    new Document("$regex", Pattern.quote(options.studentName()))
-                            .append("$options", "i"))));
+            pipeline.add(
+                    new Document(
+                            "$match",
+                            new Document(
+                                    "student_name",
+                                    new Document("$regex", Pattern.quote(options.studentName()))
+                                            .append("$options", "i"))));
         }
         if (sort) {
-            String primaryTime = options.bucket() == QueryBucket.ARCHIVE ? "decision_at" : "created_at";
-            pipeline.add(new Document("$sort", new Document(primaryTime, -1)
-                    .append("request_kind", 1).append("_id", 1)));
+            String primaryTime =
+                    options.bucket() == QueryBucket.ARCHIVE ? "decision_at" : "created_at";
+            pipeline.add(
+                    new Document(
+                            "$sort",
+                            new Document(primaryTime, -1)
+                                    .append("request_kind", 1)
+                                    .append("_id", 1)));
         }
         return pipeline;
     }
@@ -559,23 +909,41 @@ public class HeadmanRequestService {
         appendDateFilter(match, "lesson_date", options);
         List<Document> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", match));
-        pipeline.add(new Document("$project", new Document("_id", 1)
-                .append("request_kind", "LATE_CHECKIN")
-                .append("status", normalizedStatus("status"))
-                .append("student_id", 1).append("student_name", 1)
-                .append("decision_by", 1).append("decision_at", 1).append("decision_comment", 1)
-                .append("late_lesson_id", "$lesson_id").append("late_group_id", "$group_id")
-                .append("late_subject_id", "$subject_id").append("late_subject_name", "$subject_name")
-                .append("late_subject_type", "$subject_type").append("late_semester_id", "$semester_id")
-                .append("late_lesson_number", "$lesson_number").append("late_lesson_date", "$lesson_date")
-                .append("created_at", 1).append("updated_at", 1)));
+        pipeline.add(
+                new Document(
+                        "$project",
+                        new Document("_id", 1)
+                                .append("request_kind", "LATE_CHECKIN")
+                                .append("status", normalizedStatus("status"))
+                                .append("student_id", 1)
+                                .append("student_name", 1)
+                                .append("decision_by", 1)
+                                .append("decision_at", 1)
+                                .append("decision_comment", 1)
+                                .append("late_lesson_id", "$lesson_id")
+                                .append("late_group_id", "$group_id")
+                                .append("late_subject_id", "$subject_id")
+                                .append("late_subject_name", "$subject_name")
+                                .append("late_subject_type", "$subject_type")
+                                .append("late_semester_id", "$semester_id")
+                                .append("late_lesson_number", "$lesson_number")
+                                .append("late_lesson_date", "$lesson_date")
+                                .append("created_at", 1)
+                                .append("updated_at", 1)));
         return pipeline;
     }
 
     private static void appendStatus(Document match, QueryBucket bucket, String field) {
-        List<String> statuses = bucket == QueryBucket.OPEN
-                ? List.of("SUBMITTED", "PENDING", "submitted", "pending")
-                : List.of("APPROVED", "REJECTED", "CANCELLED", "approved", "rejected", "cancelled");
+        List<String> statuses =
+                bucket == QueryBucket.OPEN
+                        ? List.of("SUBMITTED", "PENDING", "submitted", "pending")
+                        : List.of(
+                                "APPROVED",
+                                "REJECTED",
+                                "CANCELLED",
+                                "approved",
+                                "rejected",
+                                "cancelled");
         match.append(field, new Document("$in", statuses));
     }
 
@@ -587,48 +955,74 @@ public class HeadmanRequestService {
         if (options.coverageDateFrom() != null) {
             Document maximum = coverageExtreme(false);
             Document knownMaximum = new Document("$ne", Arrays.asList(maximum, null));
-            Document fromBound = new Document("$gte",
-                    Arrays.asList(maximum, mongoDate(options.coverageDateFrom())));
+            Document fromBound =
+                    new Document(
+                            "$gte", Arrays.asList(maximum, mongoDate(options.coverageDateFrom())));
             overlap.add(new Document("$and", Arrays.asList(knownMaximum, fromBound)));
         }
         if (options.coverageDateTo() != null) {
             Document minimum = coverageExtreme(true);
             Document knownMinimum = new Document("$ne", Arrays.asList(minimum, null));
-            Document toBound = new Document("$lte",
-                    Arrays.asList(minimum, mongoDate(options.coverageDateTo())));
+            Document toBound =
+                    new Document(
+                            "$lte", Arrays.asList(minimum, mongoDate(options.coverageDateTo())));
             overlap.add(new Document("$and", Arrays.asList(knownMinimum, toBound)));
         }
-        match.append("$expr", overlap.size() == 1
-                ? overlap.getFirst()
-                : new Document("$and", overlap));
+        match.append(
+                "$expr", overlap.size() == 1 ? overlap.getFirst() : new Document("$and", overlap));
     }
 
     /**
-     * Reduce embedded snapshot dates instead of relying on Mongo's single
-     * expression $min/$max array traversal.  The accumulator remains a BSON
-     * date, and null/missing snapshot dates are ignored.
+     * Reduce embedded snapshot dates instead of relying on Mongo's single expression $min/$max
+     * array traversal. The accumulator remains a BSON date, and null/missing snapshot dates are
+     * ignored.
      */
     private static Document coverageExtreme(boolean minimum) {
         String comparator = minimum ? "$lt" : "$gt";
         String currentDate = "$$this.date";
-        Document replace = new Document("$and", List.of(
-                new Document("$ne", Arrays.asList(currentDate, null)),
-                new Document("$or", List.of(
-                        new Document("$eq", Arrays.asList("$$value", null)),
-                        new Document(comparator, List.of(currentDate, "$$value"))))));
-        return new Document("$reduce", new Document("input",
-                new Document("$ifNull", List.of("$lesson_snapshots", List.of())))
-                .append("initialValue", null)
-                .append("in", new Document("$cond", List.of(replace, currentDate, "$$value"))));
+        Document replace =
+                new Document(
+                        "$and",
+                        List.of(
+                                new Document("$ne", Arrays.asList(currentDate, null)),
+                                new Document(
+                                        "$or",
+                                        List.of(
+                                                new Document("$eq", Arrays.asList("$$value", null)),
+                                                new Document(
+                                                        comparator,
+                                                        List.of(currentDate, "$$value"))))));
+        return new Document(
+                "$reduce",
+                new Document(
+                                "input",
+                                new Document("$ifNull", List.of("$lesson_snapshots", List.of())))
+                        .append("initialValue", null)
+                        .append(
+                                "in",
+                                new Document("$cond", List.of(replace, currentDate, "$$value"))));
     }
 
     private static Document normalizedStatus(String field) {
         String reference = "$" + field;
-        return new Document("$switch", new Document("branches", List.of(
-                new Document("case", new Document("$in", List.of(reference,
-                        List.of("SUBMITTED", "DRAFT", "submitted", "draft"))))
-                        .append("then", "PENDING")
-        )).append("default", new Document("$toUpper", reference)));
+        return new Document(
+                "$switch",
+                new Document(
+                                "branches",
+                                List.of(
+                                        new Document(
+                                                        "case",
+                                                        new Document(
+                                                                "$in",
+                                                                List.of(
+                                                                        reference,
+                                                                        List.of(
+                                                                                "SUBMITTED",
+                                                                                "DRAFT",
+                                                                                "submitted",
+                                                                                "draft"))))
+                                                .append("then", "PENDING")))
+                        .append("default", new Document("$toUpper", reference)));
     }
 
     private void appendDateFilter(Document match, String field, QueryOptions options) {
@@ -654,7 +1048,9 @@ public class HeadmanRequestService {
     }
 
     private static String mapStatus(ExcuseTicketStatus status) {
-        if (status == null || status == ExcuseTicketStatus.SUBMITTED || status == ExcuseTicketStatus.DRAFT) {
+        if (status == null
+                || status == ExcuseTicketStatus.SUBMITTED
+                || status == ExcuseTicketStatus.DRAFT) {
             return "PENDING";
         }
         return status.name();
@@ -696,7 +1092,11 @@ public class HeadmanRequestService {
     private static Long nullableLong(Object value) {
         if (value == null) return null;
         if (value instanceof Number number) return number.longValue();
-        try { return Long.parseLong(value.toString()); } catch (NumberFormatException ignored) { return null; }
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private static Integer nullableInt(Object value) {
@@ -707,9 +1107,14 @@ public class HeadmanRequestService {
     private static Instant instant(Object value) {
         if (value instanceof Instant instant) return instant;
         if (value instanceof Date date) return date.toInstant();
-        if (value instanceof java.time.LocalDateTime localDateTime) return localDateTime.toInstant(ZoneOffset.UTC);
+        if (value instanceof java.time.LocalDateTime localDateTime)
+            return localDateTime.toInstant(ZoneOffset.UTC);
         if (value == null) return null;
-        try { return Instant.parse(value.toString()); } catch (RuntimeException ignored) { return null; }
+        try {
+            return Instant.parse(value.toString());
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     private LocalDate localDate(Object value) {
@@ -717,16 +1122,27 @@ public class HeadmanRequestService {
         Instant instant = instant(value);
         // Raw aggregation BSON must use the same reader as repository projections.
         // LocalDate's persisted midnight can be the preceding UTC calendar day.
-        if (instant != null) return mongoTemplate.getConverter().getConversionService()
-                .convert(Date.from(instant), LocalDate.class);
+        if (instant != null)
+            return mongoTemplate
+                    .getConverter()
+                    .getConversionService()
+                    .convert(Date.from(instant), LocalDate.class);
         if (value == null) return null;
-        try { return LocalDate.parse(value.toString()); } catch (RuntimeException ignored) { return null; }
+        try {
+            return LocalDate.parse(value.toString());
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     private static LocalTime localTime(Object value) {
         if (value instanceof LocalTime time) return time;
         if (value == null) return null;
-        try { return LocalTime.parse(value.toString()); } catch (RuntimeException ignored) { return null; }
+        try {
+            return LocalTime.parse(value.toString());
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     private static Document asDocument(Object value) {
@@ -743,32 +1159,57 @@ public class HeadmanRequestService {
         return value instanceof Collection<?> collection && !collection.isEmpty();
     }
 
-    private record Loaded(StudentRequestKind kind, Long groupId, ExcuseTicket excuse, LateCheckinRequest late) {
+    private record Loaded(
+            StudentRequestKind kind, Long groupId, ExcuseTicket excuse, LateCheckinRequest late) {}
+
+    private enum QueryBucket {
+        OPEN,
+        ARCHIVE
     }
 
-    private enum QueryBucket { OPEN, ARCHIVE }
-
-    private record QueryOptions(QueryBucket bucket, int page, int size, StudentRequestKind type,
-                                String studentName, LocalDate coverageDateFrom, LocalDate coverageDateTo,
-                                long groupId) {
-        private static QueryOptions parse(String rawBucket, int page, int size, String rawType,
-                                          String rawStudentName, String rawFrom, String rawTo, long groupId,
-                                          MongoTemplate mongoTemplate) {
+    private record QueryOptions(
+            QueryBucket bucket,
+            int page,
+            int size,
+            StudentRequestKind type,
+            String studentName,
+            LocalDate coverageDateFrom,
+            LocalDate coverageDateTo,
+            long groupId) {
+        private static QueryOptions parse(
+                String rawBucket,
+                int page,
+                int size,
+                String rawType,
+                String rawStudentName,
+                String rawFrom,
+                String rawTo,
+                long groupId,
+                MongoTemplate mongoTemplate) {
             QueryBucket bucket;
-            try { bucket = QueryBucket.valueOf(rawBucket == null ? "OPEN" : rawBucket.toUpperCase(Locale.ROOT)); }
-            catch (RuntimeException exception) { throw new BadRequestException("bucket должен быть OPEN или ARCHIVE"); }
+            try {
+                bucket =
+                        QueryBucket.valueOf(
+                                rawBucket == null ? "OPEN" : rawBucket.toUpperCase(Locale.ROOT));
+            } catch (RuntimeException exception) {
+                throw new BadRequestException("bucket должен быть OPEN или ARCHIVE");
+            }
             if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
                 throw new BadRequestException("Некорректные page/size");
             }
             StudentRequestKind type = null;
             if (rawType != null && !rawType.isBlank()) {
-                try { type = StudentRequestKind.valueOf(rawType.toUpperCase(Locale.ROOT)); }
-                catch (RuntimeException exception) { throw new BadRequestException("type должен быть EXCUSE или LATE_CHECKIN"); }
+                try {
+                    type = StudentRequestKind.valueOf(rawType.toUpperCase(Locale.ROOT));
+                } catch (RuntimeException exception) {
+                    throw new BadRequestException("type должен быть EXCUSE или LATE_CHECKIN");
+                }
             }
             LocalDate from = parseDate(rawFrom, "coverageDateFrom");
             LocalDate to = parseDate(rawTo, "coverageDateTo");
             if (from != null && to != null && from.isAfter(to)) {
-                throw new BadRequestException("coverageDateFrom не может быть позже coverageDateTo");
+                throw new BadRequestException(
+                        "coverageDateFrom не может быть позже coverageDateTo");
             }
             String studentName = normalize(rawStudentName);
             return new QueryOptions(bucket, page, size, type, studentName, from, to, groupId);
@@ -776,8 +1217,11 @@ public class HeadmanRequestService {
 
         private static LocalDate parseDate(String value, String field) {
             if (value == null || value.isBlank()) return null;
-            try { return LocalDate.parse(value); }
-            catch (RuntimeException exception) { throw new BadRequestException(field + " должен быть YYYY-MM-DD"); }
+            try {
+                return LocalDate.parse(value);
+            } catch (RuntimeException exception) {
+                throw new BadRequestException(field + " должен быть YYYY-MM-DD");
+            }
         }
     }
 }

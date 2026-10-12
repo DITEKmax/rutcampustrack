@@ -9,8 +9,8 @@ import ru.rutcampustrack.shared.security.InternalJwtValidator;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
 /**
- * M03a: wires shared-security beans into notification-service context.
- * M03b Группа 4: enables {@code WsTicketProperties} для WebSocket handshake.
+ * M03a: wires shared-security beans into notification-service context. M03b Группа 4: enables
+ * {@code WsTicketProperties} для WebSocket handshake.
  */
 @Configuration
 @EnableConfigurationProperties({InternalJwtProperties.class, WsTicketProperties.class})
@@ -22,8 +22,8 @@ public class InternalJwtConfig {
     }
 
     @Bean
-    public InternalJwtValidator internalJwtValidator(PublicKeyProvider publicKeyProvider,
-                                                     InternalJwtProperties properties) {
+    public InternalJwtValidator internalJwtValidator(
+            PublicKeyProvider publicKeyProvider, InternalJwtProperties properties) {
         return new InternalJwtValidator(publicKeyProvider, properties);
     }
 }

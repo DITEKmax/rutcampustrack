@@ -1,5 +1,12 @@
 package ru.rutcampustrack.notification.preferences;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HexFormat;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
@@ -10,14 +17,6 @@ import ru.rutcampustrack.notification.contract.dto.preferences.BotNotificationPr
 import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.UpdateBotNotificationPreferencesRequest;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HexFormat;
-
 @Service
 public class BotNotificationPreferencesService {
     private final NotificationPreferencesStore store;
@@ -25,57 +24,93 @@ public class BotNotificationPreferencesService {
     private final Clock clock;
     private NotificationPreferencesV2Service v2;
 
-    public BotNotificationPreferencesService(NotificationPreferencesStore store, AcademicTelegramBindingClient binding, Clock clock) {
+    public BotNotificationPreferencesService(
+            NotificationPreferencesStore store,
+            AcademicTelegramBindingClient binding,
+            Clock clock) {
         this.store = store;
         this.binding = binding;
         this.clock = clock;
     }
 
     @org.springframework.beans.factory.annotation.Autowired
-    public BotNotificationPreferencesService(NotificationPreferencesStore store, AcademicTelegramBindingClient binding, Clock clock,
-                                            NotificationPreferencesV2Service v2) {
-        this(store, binding, clock); this.v2 = v2;
+    public BotNotificationPreferencesService(
+            NotificationPreferencesStore store,
+            AcademicTelegramBindingClient binding,
+            Clock clock,
+            NotificationPreferencesV2Service v2) {
+        this(store, binding, clock);
+        this.v2 = v2;
     }
 
     @Transactional
     public BotNotificationPreferencesDto get(long userId, long telegramId, String category) {
         category(category, true);
         binding.validate(userId, telegramId);
-        return snapshot(userId, telegramId, store.telegram(userId, telegramId), store.user(userId), category);
+        return snapshot(
+                userId,
+                telegramId,
+                store.telegram(userId, telegramId),
+                store.user(userId),
+                category);
     }
 
     @Transactional
-    public BotNotificationPreferencesDto get(long userId, long telegramId, String category, String type) {
+    public BotNotificationPreferencesDto get(
+            long userId, long telegramId, String category, String type) {
         category(category, true);
-        if (type != null && !ru.rutcampustrack.notification.history.NotificationCatalog.typeIds().contains(type)) {
+        if (type != null
+                && !ru.rutcampustrack.notification.history.NotificationCatalog.typeIds()
+                        .contains(type)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown notification type");
         }
-        if (type != null && v2 == null) throw NotificationPreferencesStore.unavailable("Exact type authority is unavailable", null);
+        if (type != null && v2 == null)
+            throw NotificationPreferencesStore.unavailable(
+                    "Exact type authority is unavailable", null);
         binding.validate(userId, telegramId);
         if (v2 != null) v2.ensure(userId, telegramId);
-        var result = snapshot(userId, telegramId, store.telegram(userId, telegramId), store.user(userId), category);
+        var result =
+                snapshot(
+                        userId,
+                        telegramId,
+                        store.telegram(userId, telegramId),
+                        store.user(userId),
+                        category);
         if (type == null) return result;
-        return new BotNotificationPreferencesDto(result.userId(), result.telegramId(), result.globalEnabled(), result.categories(),
-                result.mutedUntil(), result.canonicalCategories(), result.canonicalMutedUntil(), v2.telegramEnabled(userId, telegramId, type));
+        return new BotNotificationPreferencesDto(
+                result.userId(),
+                result.telegramId(),
+                result.globalEnabled(),
+                result.categories(),
+                result.mutedUntil(),
+                result.canonicalCategories(),
+                result.canonicalMutedUntil(),
+                v2.telegramEnabled(userId, telegramId, type));
     }
 
     @Transactional
-    public BotNotificationPreferencesDto update(long userId, long telegramId, UpdateBotNotificationPreferencesRequest request) {
+    public BotNotificationPreferencesDto update(
+            long userId, long telegramId, UpdateBotNotificationPreferencesRequest request) {
         validate(request);
         binding.validate(userId, telegramId);
-        String receiptKey = NotificationPreferencesStore.facetKey(userId, telegramId) + ":" + request.requestKey();
+        String receiptKey =
+                NotificationPreferencesStore.facetKey(userId, telegramId)
+                        + ":"
+                        + request.requestKey();
         String fingerprint = fingerprint(request);
         Document receipt = store.receipt(receiptKey);
         if (receipt != null) {
             if (!fingerprint.equals(receipt.getString("fingerprint"))) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Preference request identity conflicts");
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT, "Preference request identity conflicts");
             }
             return receiptDto(receipt);
         }
         Document facet = store.telegram(userId, telegramId);
         if (v2 != null) v2.ensure(userId, telegramId);
         NotificationPreferencesDto canonical = store.user(userId);
-        BotNotificationPreferencesDto effective = snapshot(userId, telegramId, facet, canonical, null);
+        BotNotificationPreferencesDto effective =
+                snapshot(userId, telegramId, facet, canonical, null);
         Update patch = new Update();
         String compareField = null;
         Boolean expected = null;
@@ -87,102 +122,200 @@ public class BotNotificationPreferencesService {
             }
             case TOGGLE_CATEGORY -> {
                 compareField = "categories." + request.category();
-                expected = NotificationPreferencesStore.durableCategories(facet.get("categories")).get(request.category());
-                patch.set(compareField, v2 == null ? !expected : !effective.categories().get(request.category()));
+                expected =
+                        NotificationPreferencesStore.durableCategories(facet.get("categories"))
+                                .get(request.category());
+                patch.set(
+                        compareField,
+                        v2 == null ? !expected : !effective.categories().get(request.category()));
             }
             case SET_GLOBAL -> patch.set("globalEnabled", request.enabled());
             case SET_CATEGORY -> patch.set("categories." + request.category(), request.enabled());
             case SET_MUTE -> patch.set("mutedUntil", Date.from(request.mutedUntil()));
-            case MUTE_FOR -> patch.set("mutedUntil", Date.from(Instant.now(clock).plusSeconds(request.durationSeconds())));
+            case MUTE_FOR ->
+                    patch.set(
+                            "mutedUntil",
+                            Date.from(Instant.now(clock).plusSeconds(request.durationSeconds())));
             case CLEAR_MUTE -> patch.unset("mutedUntil");
         }
         Document updated = store.patchTelegram(userId, telegramId, patch, compareField, expected);
         if (v2 != null) {
             switch (request.operation()) {
-                case TOGGLE_GLOBAL, SET_GLOBAL -> v2.applyBotFlags(userId, telegramId, null,
-                        NotificationPreferencesStore.globalEnabled(updated));
-                case TOGGLE_CATEGORY, SET_CATEGORY -> v2.applyBotFlags(userId, telegramId, request.category(),
-                        NotificationPreferencesStore.durableCategories(updated.get("categories")).get(request.category()));
+                case TOGGLE_GLOBAL, SET_GLOBAL ->
+                        v2.applyBotFlags(
+                                userId,
+                                telegramId,
+                                null,
+                                NotificationPreferencesStore.globalEnabled(updated));
+                case TOGGLE_CATEGORY, SET_CATEGORY ->
+                        v2.applyBotFlags(
+                                userId,
+                                telegramId,
+                                request.category(),
+                                NotificationPreferencesStore.durableCategories(
+                                                updated.get("categories"))
+                                        .get(request.category()));
                 default -> {
                     Document account = store.durableUser(userId);
                     Document profile = account.get("v2", Document.class);
-                    if (store.patchV2(userId, profile.getString("revision"), new Update().set("v2.revision", java.util.UUID.randomUUID().toString())) == null)
-                        throw NotificationPreferencesStore.unavailable("Concurrent preference command must be retried", null);
+                    if (store.patchV2(
+                                    userId,
+                                    profile.getString("revision"),
+                                    new Update()
+                                            .set(
+                                                    "v2.revision",
+                                                    java.util.UUID.randomUUID().toString()))
+                            == null)
+                        throw NotificationPreferencesStore.unavailable(
+                                "Concurrent preference command must be retried", null);
                 }
             }
         }
-        BotNotificationPreferencesDto result = snapshot(userId, telegramId, updated, canonical, null);
-        Document saved = new Document("_id", receiptKey).append("fingerprint", fingerprint)
-                .append("userId", userId).append("telegramId", telegramId)
-                .append("globalEnabled", result.globalEnabled()).append("categories", result.categories())
-                .append("mutedUntil", date(result.mutedUntil())).append("canonicalCategories", result.canonicalCategories())
-                .append("canonicalMutedUntil", date(result.canonicalMutedUntil()));
+        BotNotificationPreferencesDto result =
+                snapshot(userId, telegramId, updated, canonical, null);
+        Document saved =
+                new Document("_id", receiptKey)
+                        .append("fingerprint", fingerprint)
+                        .append("userId", userId)
+                        .append("telegramId", telegramId)
+                        .append("globalEnabled", result.globalEnabled())
+                        .append("categories", result.categories())
+                        .append("mutedUntil", date(result.mutedUntil()))
+                        .append("canonicalCategories", result.canonicalCategories())
+                        .append("canonicalMutedUntil", date(result.canonicalMutedUntil()));
         store.insertReceipt(saved);
         return result;
     }
 
-    private BotNotificationPreferencesDto snapshot(long userId, long telegramId, Document facet,
-                                                   NotificationPreferencesDto canonical, String category) {
+    private BotNotificationPreferencesDto snapshot(
+            long userId,
+            long telegramId,
+            Document facet,
+            NotificationPreferencesDto canonical,
+            String category) {
         boolean global = NotificationPreferencesStore.globalEnabled(facet);
         var flags = NotificationPreferencesStore.durableCategories(facet.get("categories"));
         Instant mute = active(NotificationPreferencesStore.instant(facet.get("mutedUntil")));
         Instant canonicalMute = active(canonical.mutedUntil());
-        Boolean eligible = category == null ? null : global && flags.get(category)
-                && canonical.categories().get(category) && mute == null && canonicalMute == null;
+        Boolean eligible =
+                category == null
+                        ? null
+                        : global
+                                && flags.get(category)
+                                && canonical.categories().get(category)
+                                && mute == null
+                                && canonicalMute == null;
         if (v2 != null) {
             var profile = v2.ensure(userId, telegramId);
             var types = NotificationPreferencesV2Service.types(profile.get("v2", Document.class));
             java.util.Map<String, Boolean> effectiveFlags = new java.util.LinkedHashMap<>();
             for (String key : NotificationPreferencesStore.CATEGORIES) {
-                effectiveFlags.put(key, ru.rutcampustrack.notification.history.NotificationCatalog.meanings().stream()
-                        .filter(meaning -> meaning.category().equals(key)).allMatch(meaning -> types.get(meaning.type().name()).telegram()));
+                effectiveFlags.put(
+                        key,
+                        ru.rutcampustrack.notification.history.NotificationCatalog.meanings()
+                                .stream()
+                                .filter(meaning -> meaning.category().equals(key))
+                                .allMatch(meaning -> types.get(meaning.type().name()).telegram()));
             }
             global = types.values().stream().anyMatch(value -> value.telegram());
             flags = effectiveFlags;
-            eligible = category == null ? null : flags.get(category) && mute == null && canonicalMute == null;
+            eligible =
+                    category == null
+                            ? null
+                            : flags.get(category) && mute == null && canonicalMute == null;
         }
-        return new BotNotificationPreferencesDto(userId, telegramId, global, flags, mute,
-                canonical.categories(), canonicalMute, eligible);
+        return new BotNotificationPreferencesDto(
+                userId,
+                telegramId,
+                global,
+                flags,
+                mute,
+                canonical.categories(),
+                canonicalMute,
+                eligible);
     }
 
     private static BotNotificationPreferencesDto receiptDto(Document saved) {
-        return new BotNotificationPreferencesDto(((Number) saved.get("userId")).longValue(),
-                ((Number) saved.get("telegramId")).longValue(), NotificationPreferencesStore.globalEnabled(saved),
+        return new BotNotificationPreferencesDto(
+                ((Number) saved.get("userId")).longValue(),
+                ((Number) saved.get("telegramId")).longValue(),
+                NotificationPreferencesStore.globalEnabled(saved),
                 NotificationPreferencesStore.durableCategories(saved.get("categories")),
                 NotificationPreferencesStore.instant(saved.get("mutedUntil")),
                 NotificationPreferencesStore.durableCategories(saved.get("canonicalCategories")),
-                NotificationPreferencesStore.instant(saved.get("canonicalMutedUntil")), null);
+                NotificationPreferencesStore.instant(saved.get("canonicalMutedUntil")),
+                null);
     }
 
-    private Instant active(Instant mute) { return mute != null && mute.isAfter(Instant.now(clock)) ? mute : null; }
-    private static Date date(Instant instant) { return instant == null ? null : Date.from(instant); }
+    private Instant active(Instant mute) {
+        return mute != null && mute.isAfter(Instant.now(clock)) ? mute : null;
+    }
+
+    private static Date date(Instant instant) {
+        return instant == null ? null : Date.from(instant);
+    }
 
     private static void category(String category, boolean optional) {
-        if (!(optional && category == null) && (category == null || !NotificationPreferencesStore.CATEGORIES.contains(category))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown notification category");
+        if (!(optional && category == null)
+                && (category == null
+                        || !NotificationPreferencesStore.CATEGORIES.contains(category))) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Unknown notification category");
         }
     }
 
     private static void validate(UpdateBotNotificationPreferencesRequest request) {
-        if (request == null || request.operation() == null || request.requestKey() == null
+        if (request == null
+                || request.operation() == null
+                || request.requestKey() == null
                 || !request.requestKey().matches("[A-Za-z0-9_/:\\-]{1,128}")) badCommand();
-        boolean hasCategory = switch (request.operation()) { case TOGGLE_CATEGORY, SET_CATEGORY -> true; default -> false; };
-        boolean hasEnabled = switch (request.operation()) { case SET_GLOBAL, SET_CATEGORY -> true; default -> false; };
-        boolean hasMute = request.operation() == UpdateBotNotificationPreferencesRequest.Operation.SET_MUTE;
+        boolean hasCategory =
+                switch (request.operation()) {
+                    case TOGGLE_CATEGORY, SET_CATEGORY -> true;
+                    default -> false;
+                };
+        boolean hasEnabled =
+                switch (request.operation()) {
+                    case SET_GLOBAL, SET_CATEGORY -> true;
+                    default -> false;
+                };
+        boolean hasMute =
+                request.operation() == UpdateBotNotificationPreferencesRequest.Operation.SET_MUTE;
         if (hasCategory) category(request.category(), false);
-        boolean hasDuration = request.operation() == UpdateBotNotificationPreferencesRequest.Operation.MUTE_FOR;
-        if (hasDuration && (request.durationSeconds() == null
-                || (request.durationSeconds() != 86400 && request.durationSeconds() != 604800))) badCommand();
+        boolean hasDuration =
+                request.operation() == UpdateBotNotificationPreferencesRequest.Operation.MUTE_FOR;
+        if (hasDuration
+                && (request.durationSeconds() == null
+                        || (request.durationSeconds() != 86400
+                                && request.durationSeconds() != 604800))) badCommand();
         if (hasDuration != (request.durationSeconds() != null)) badCommand();
-        if ((!hasCategory && request.category() != null) || hasEnabled != (request.enabled() != null)
+        if ((!hasCategory && request.category() != null)
+                || hasEnabled != (request.enabled() != null)
                 || hasMute != (request.mutedUntil() != null)) badCommand();
     }
 
-    private static void badCommand() { throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid preference command"); }
+    private static void badCommand() {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid preference command");
+    }
+
     private static String fingerprint(UpdateBotNotificationPreferencesRequest request) {
-        String normalized = request.operation().name() + "|" + request.category() + "|" + request.enabled() + "|" + request.mutedUntil() + "|" + request.durationSeconds();
+        String normalized =
+                request.operation().name()
+                        + "|"
+                        + request.category()
+                        + "|"
+                        + request.enabled()
+                        + "|"
+                        + request.mutedUntil()
+                        + "|"
+                        + request.durationSeconds();
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(normalized.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(normalized.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException(impossible);
+        }
     }
 }

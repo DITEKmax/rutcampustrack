@@ -1,6 +1,16 @@
 package ru.rutcampustrack.attendance.semester;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+
 import io.grpc.Status;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,22 +21,10 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 
-import java.lang.reflect.Field;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-
 @ExtendWith(MockitoExtension.class)
 class SemesterCacheServiceTest {
 
-    @Mock
-    private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
+    @Mock private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
 
     private SemesterCacheService cache;
 

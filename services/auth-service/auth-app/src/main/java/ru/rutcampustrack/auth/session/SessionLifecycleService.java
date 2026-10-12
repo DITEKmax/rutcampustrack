@@ -1,5 +1,9 @@
 package ru.rutcampustrack.auth.session;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -8,15 +12,9 @@ import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
 /**
- * Orchestrates pure domain validation and one atomic port call per command.
- * It intentionally does not mint JWTs, access the database, or compose reads
- * and writes into a pretend compare-and-set.
+ * Orchestrates pure domain validation and one atomic port call per command. It intentionally does
+ * not mint JWTs, access the database, or compose reads and writes into a pretend compare-and-set.
  */
 public final class SessionLifecycleService {
 
@@ -26,9 +24,7 @@ public final class SessionLifecycleService {
     private final PasswordPolicy passwordPolicy;
 
     public SessionLifecycleService(
-            SessionStatePort sessionStatePort,
-            CredentialSessionTransactionPort credentialPort
-    ) {
+            SessionStatePort sessionStatePort, CredentialSessionTransactionPort credentialPort) {
         this(sessionStatePort, credentialPort, new ActiveRolePolicy(), new PasswordPolicy());
     }
 
@@ -36,8 +32,7 @@ public final class SessionLifecycleService {
             SessionStatePort sessionStatePort,
             CredentialSessionTransactionPort credentialPort,
             ActiveRolePolicy activeRolePolicy,
-            PasswordPolicy passwordPolicy
-    ) {
+            PasswordPolicy passwordPolicy) {
         this.sessionStatePort = Objects.requireNonNull(sessionStatePort, "sessionStatePort");
         this.credentialPort = Objects.requireNonNull(credentialPort, "credentialPort");
         this.activeRolePolicy = Objects.requireNonNull(activeRolePolicy, "activeRolePolicy");
@@ -46,145 +41,187 @@ public final class SessionLifecycleService {
 
     public SessionStatePort.CreateSessionResult createSession(CreateSessionRequest request) {
         Objects.requireNonNull(request, "request");
-        ActiveRolePolicy.Evaluation evaluation = activeRolePolicy.evaluate(request.userId(), request.grants());
+        ActiveRolePolicy.Evaluation evaluation =
+                activeRolePolicy.evaluate(request.userId(), request.grants());
         if (!evaluation.succeeded()) {
             return SessionStatePort.CreateSessionResult.failure(map(evaluation.code()));
         }
 
         RoleGrant defaultGrant = evaluation.defaultGrant();
-        SessionState state = new SessionState(
-                request.sessionId(),
-                request.userId(),
-                defaultGrant == null ? null : defaultGrant.grantId(),
-                1,
-                request.currentRefreshJti(),
-                null,
-                request.refreshExpiresAt(),
-                request.createdAt(),
-                request.createdAt(),
-                null,
-                null,
-                request.authMethod(),
-                request.clientLabel(),
-                request.locationLabel()
-        );
-        SessionStatePort.CredentialProof credentialProof = request.expectedCredentialHash() == null
-                ? null
-                : new SessionStatePort.CredentialProof(request.expectedCredentialHash());
-        SecurityEvent loginEvent = new SecurityEvent(
-                request.userId(), request.sessionId(), SecurityEvent.Type.LOGIN,
-                request.createdAt(), request.authMethod(), request.clientLabel(), request.locationLabel()
-        );
-        return sessionStatePort.createSession(new SessionStatePort.CreateSessionCommand(
-                state, request.rolesVersion(), evaluation.grants(), credentialProof, loginEvent
-        ));
+        SessionState state =
+                new SessionState(
+                        request.sessionId(),
+                        request.userId(),
+                        defaultGrant == null ? null : defaultGrant.grantId(),
+                        1,
+                        request.currentRefreshJti(),
+                        null,
+                        request.refreshExpiresAt(),
+                        request.createdAt(),
+                        request.createdAt(),
+                        null,
+                        null,
+                        request.authMethod(),
+                        request.clientLabel(),
+                        request.locationLabel());
+        SessionStatePort.CredentialProof credentialProof =
+                request.expectedCredentialHash() == null
+                        ? null
+                        : new SessionStatePort.CredentialProof(request.expectedCredentialHash());
+        SecurityEvent loginEvent =
+                new SecurityEvent(
+                        request.userId(),
+                        request.sessionId(),
+                        SecurityEvent.Type.LOGIN,
+                        request.createdAt(),
+                        request.authMethod(),
+                        request.clientLabel(),
+                        request.locationLabel());
+        return sessionStatePort.createSession(
+                new SessionStatePort.CreateSessionCommand(
+                        state,
+                        request.rolesVersion(),
+                        evaluation.grants(),
+                        credentialProof,
+                        loginEvent));
     }
 
     public SessionStatePort.SnapshotResult snapshot(SnapshotRequest request) {
         Objects.requireNonNull(request, "request");
-        return sessionStatePort.snapshot(new SessionStatePort.SnapshotCommand(
-                request.userId(), request.sessionId(), request.now()
-        ));
+        return sessionStatePort.snapshot(
+                new SessionStatePort.SnapshotCommand(
+                        request.userId(), request.sessionId(), request.now()));
     }
 
     public SessionStatePort.RoleSelectionResult selectRole(SelectRoleRequest request) {
         Objects.requireNonNull(request, "request");
-        SecurityEvent event = new SecurityEvent(
-                request.userId(), request.sessionId(), SecurityEvent.Type.ROLE_CHANGED,
-                request.now(), request.authMethod(), request.clientLabel(), request.locationLabel()
-        );
-        return sessionStatePort.selectRole(new SessionStatePort.SelectRoleCommand(
-                request.userId(), request.sessionId(), request.role(), request.expectedSessionVersion(),
-                request.now(), event
-        ));
+        SecurityEvent event =
+                new SecurityEvent(
+                        request.userId(),
+                        request.sessionId(),
+                        SecurityEvent.Type.ROLE_CHANGED,
+                        request.now(),
+                        request.authMethod(),
+                        request.clientLabel(),
+                        request.locationLabel());
+        return sessionStatePort.selectRole(
+                new SessionStatePort.SelectRoleCommand(
+                        request.userId(),
+                        request.sessionId(),
+                        request.role(),
+                        request.expectedSessionVersion(),
+                        request.now(),
+                        event));
     }
 
     public SessionStatePort.RefreshResult refresh(RefreshRequest request) {
         Objects.requireNonNull(request, "request");
-        return sessionStatePort.refresh(new SessionStatePort.RefreshCommand(
-                request.userId(), request.sessionId(), request.presentedJti(),
-                request.replacementJti(), request.now()
-        ));
+        return sessionStatePort.refresh(
+                new SessionStatePort.RefreshCommand(
+                        request.userId(),
+                        request.sessionId(),
+                        request.presentedJti(),
+                        request.replacementJti(),
+                        request.now()));
     }
 
     public SessionStatePort.RevokeResult revokeCurrent(RevokeRequest request) {
         Objects.requireNonNull(request, "request");
-        SecurityEvent event = new SecurityEvent(
-                request.userId(), request.sessionId(), SecurityEvent.Type.CURRENT_LOGOUT,
-                request.now(), request.authMethod(), request.clientLabel(), request.locationLabel()
-        );
-        return sessionStatePort.revokeCurrent(new SessionStatePort.RevokeCurrentCommand(
-                request.userId(), request.sessionId(), request.now(), event
-        ));
+        SecurityEvent event =
+                new SecurityEvent(
+                        request.userId(),
+                        request.sessionId(),
+                        SecurityEvent.Type.CURRENT_LOGOUT,
+                        request.now(),
+                        request.authMethod(),
+                        request.clientLabel(),
+                        request.locationLabel());
+        return sessionStatePort.revokeCurrent(
+                new SessionStatePort.RevokeCurrentCommand(
+                        request.userId(), request.sessionId(), request.now(), event));
     }
 
     public SessionStatePort.RevokeAllResult revokeAll(RevokeAllRequest request) {
         Objects.requireNonNull(request, "request");
-        SecurityEvent event = new SecurityEvent(
-                request.userId(), request.currentSessionId(), SecurityEvent.Type.LOGOUT_ALL,
-                request.now(), request.authMethod(), request.clientLabel(), request.locationLabel()
-        );
-        return sessionStatePort.revokeAll(new SessionStatePort.RevokeAllCommand(
-                request.userId(), request.currentSessionId(), request.now(), event
-        ));
+        SecurityEvent event =
+                new SecurityEvent(
+                        request.userId(),
+                        request.currentSessionId(),
+                        SecurityEvent.Type.LOGOUT_ALL,
+                        request.now(),
+                        request.authMethod(),
+                        request.clientLabel(),
+                        request.locationLabel());
+        return sessionStatePort.revokeAll(
+                new SessionStatePort.RevokeAllCommand(
+                        request.userId(), request.currentSessionId(), request.now(), event));
     }
 
-    public SessionStatePort.RevokeResult revokeSelected(SessionStatePort.RevokeSelectedCommand command) {
+    public SessionStatePort.RevokeResult revokeSelected(
+            SessionStatePort.RevokeSelectedCommand command) {
         return sessionStatePort.revokeSelected(Objects.requireNonNull(command, "command"));
     }
 
     /**
      * Validates the requested password and delegates the atomic credential operation.
      *
-     * <p>The trusted integration caller must derive {@code replacementHash} from this
-     * exact validated {@code newPassword} value, without normalization, truncation,
-     * or another transformation. Hashing belongs to that trusted integration boundary;
-     * the pure domain does not apply BCrypt.
+     * <p>The trusted integration caller must derive {@code replacementHash} from this exact
+     * validated {@code newPassword} value, without normalization, truncation, or another
+     * transformation. Hashing belongs to that trusted integration boundary; the pure domain does
+     * not apply BCrypt.
      */
     public CredentialSessionTransactionPort.ChangePasswordResult changePassword(
-            ChangePasswordRequest request
-    ) {
+            ChangePasswordRequest request) {
         Objects.requireNonNull(request, "request");
         PasswordPolicy.Validation validation = passwordPolicy.validate(request.newPassword());
         if (!validation.valid()) {
             return CredentialSessionTransactionPort.ChangePasswordResult.failure(
-                    CredentialSessionTransactionPort.FailureCode.PASSWORD_POLICY_VIOLATION
-            );
+                    CredentialSessionTransactionPort.FailureCode.PASSWORD_POLICY_VIOLATION);
         }
-        SecurityEvent event = new SecurityEvent(
-                request.userId(), request.currentSessionId(), SecurityEvent.Type.PASSWORD_CHANGED,
-                request.now(), request.authMethod(), request.clientLabel(), request.locationLabel()
-        );
-        return credentialPort.changePassword(new CredentialSessionTransactionPort.ChangePasswordCommand(
-                request.userId(), request.currentSessionId(), request.expectedCurrentHash(),
-                request.replacementHash(), request.now(), event
-        ));
+        SecurityEvent event =
+                new SecurityEvent(
+                        request.userId(),
+                        request.currentSessionId(),
+                        SecurityEvent.Type.PASSWORD_CHANGED,
+                        request.now(),
+                        request.authMethod(),
+                        request.clientLabel(),
+                        request.locationLabel());
+        return credentialPort.changePassword(
+                new CredentialSessionTransactionPort.ChangePasswordCommand(
+                        request.userId(),
+                        request.currentSessionId(),
+                        request.expectedCurrentHash(),
+                        request.replacementHash(),
+                        request.now(),
+                        event));
     }
 
     public boolean issuePasswordResetTicket(
             long userId,
             CredentialSessionTransactionPort.CredentialHash ticketHash,
-            Instant expiresAt
-    ) {
+            Instant expiresAt) {
         if (userId <= 0) {
             throw new IllegalArgumentException("userId must be positive");
         }
         return credentialPort.issuePasswordResetTicket(
-                userId, Objects.requireNonNull(ticketHash, "ticketHash"),
+                userId,
+                Objects.requireNonNull(ticketHash, "ticketHash"),
                 Objects.requireNonNull(expiresAt, "expiresAt"));
     }
 
     public CredentialSessionTransactionPort.PasswordResetResult completePasswordReset(
-            PasswordResetRequest request
-    ) {
+            PasswordResetRequest request) {
         Objects.requireNonNull(request, "request");
         PasswordPolicy.Validation validation = passwordPolicy.validate(request.newPassword());
         if (!validation.valid()) {
             return CredentialSessionTransactionPort.PasswordResetResult.failure(
-                    CredentialSessionTransactionPort.PasswordResetFailureCode.PASSWORD_POLICY_VIOLATION);
+                    CredentialSessionTransactionPort.PasswordResetFailureCode
+                            .PASSWORD_POLICY_VIOLATION);
         }
-        return credentialPort.completePasswordReset(new CredentialSessionTransactionPort.PasswordResetCommand(
-                request.ticketHash(), request.replacementHash(), request.now()));
+        return credentialPort.completePasswordReset(
+                new CredentialSessionTransactionPort.PasswordResetCommand(
+                        request.ticketHash(), request.replacementHash(), request.now()));
     }
 
     private static SessionStatePort.FailureCode map(ActiveRolePolicy.Code code) {
@@ -209,8 +246,7 @@ public final class SessionLifecycleService {
             List<RoleGrant> grants,
             String expectedCredentialHash,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         public CreateSessionRequest {
             if (userId <= 0) {
                 throw new IllegalArgumentException("userId must be positive");
@@ -229,10 +265,12 @@ public final class SessionLifecycleService {
             grants = List.copyOf(Objects.requireNonNull(grants, "grants"));
             if (authMethod == AuthMethod.PASSWORD
                     && (expectedCredentialHash == null || expectedCredentialHash.isBlank())) {
-                throw new IllegalArgumentException("password session requires expected credential hash");
+                throw new IllegalArgumentException(
+                        "password session requires expected credential hash");
             }
             if (authMethod != AuthMethod.PASSWORD && expectedCredentialHash != null) {
-                throw new IllegalArgumentException("non-password session cannot carry credential hash");
+                throw new IllegalArgumentException(
+                        "non-password session cannot carry credential hash");
             }
             validateLabel(clientLabel, "clientLabel");
             validateLabel(locationLabel, "locationLabel");
@@ -240,10 +278,20 @@ public final class SessionLifecycleService {
 
         @Override
         public String toString() {
-            return "CreateSessionRequest[userId=" + userId + ", sessionId=" + sessionId
-                    + ", currentRefreshJti=<redacted>, createdAt=" + createdAt
-                    + ", refreshExpiresAt=" + refreshExpiresAt + ", authMethod=" + authMethod
-                    + ", rolesVersion=" + rolesVersion + ", grants=" + grants
+            return "CreateSessionRequest[userId="
+                    + userId
+                    + ", sessionId="
+                    + sessionId
+                    + ", currentRefreshJti=<redacted>, createdAt="
+                    + createdAt
+                    + ", refreshExpiresAt="
+                    + refreshExpiresAt
+                    + ", authMethod="
+                    + authMethod
+                    + ", rolesVersion="
+                    + rolesVersion
+                    + ", grants="
+                    + grants
                     + ", expectedCredentialHash=<redacted>]";
         }
     }
@@ -263,8 +311,7 @@ public final class SessionLifecycleService {
             Instant now,
             AuthMethod authMethod,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         public SelectRoleRequest {
             requireUserAndSession(userId, sessionId);
             role = Objects.requireNonNull(role, "role");
@@ -278,12 +325,7 @@ public final class SessionLifecycleService {
     }
 
     public record RefreshRequest(
-            long userId,
-            UUID sessionId,
-            UUID presentedJti,
-            UUID replacementJti,
-            Instant now
-    ) {
+            long userId, UUID sessionId, UUID presentedJti, UUID replacementJti, Instant now) {
         public RefreshRequest {
             requireUserAndSession(userId, sessionId);
             presentedJti = Objects.requireNonNull(presentedJti, "presentedJti");
@@ -296,8 +338,13 @@ public final class SessionLifecycleService {
 
         @Override
         public String toString() {
-            return "RefreshRequest[userId=" + userId + ", sessionId=" + sessionId
-                    + ", presentedJti=<redacted>, replacementJti=<redacted>, now=" + now + ']';
+            return "RefreshRequest[userId="
+                    + userId
+                    + ", sessionId="
+                    + sessionId
+                    + ", presentedJti=<redacted>, replacementJti=<redacted>, now="
+                    + now
+                    + ']';
         }
     }
 
@@ -307,8 +354,7 @@ public final class SessionLifecycleService {
             Instant now,
             AuthMethod authMethod,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         public RevokeRequest {
             requireUserAndSession(userId, sessionId);
             now = Objects.requireNonNull(now, "now");
@@ -323,8 +369,7 @@ public final class SessionLifecycleService {
             Instant now,
             AuthMethod authMethod,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         public RevokeAllRequest {
             if (userId <= 0) {
                 throw new IllegalArgumentException("userId must be positive");
@@ -337,9 +382,9 @@ public final class SessionLifecycleService {
     }
 
     /**
-     * Password change input. The trusted caller supplies a replacement hash derived
-     * from the exact validated {@code newPassword} value, without normalization or
-     * truncation; the pure domain does not hash the password.
+     * Password change input. The trusted caller supplies a replacement hash derived from the exact
+     * validated {@code newPassword} value, without normalization or truncation; the pure domain
+     * does not hash the password.
      */
     public record ChangePasswordRequest(
             long userId,
@@ -350,14 +395,14 @@ public final class SessionLifecycleService {
             Instant now,
             AuthMethod authMethod,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         public ChangePasswordRequest {
             if (userId <= 0) {
                 throw new IllegalArgumentException("userId must be positive");
             }
             currentSessionId = Objects.requireNonNull(currentSessionId, "currentSessionId");
-            expectedCurrentHash = Objects.requireNonNull(expectedCurrentHash, "expectedCurrentHash");
+            expectedCurrentHash =
+                    Objects.requireNonNull(expectedCurrentHash, "expectedCurrentHash");
             replacementHash = Objects.requireNonNull(replacementHash, "replacementHash");
             now = Objects.requireNonNull(now, "now");
             validateLabel(clientLabel, "clientLabel");
@@ -366,9 +411,14 @@ public final class SessionLifecycleService {
 
         @Override
         public String toString() {
-            return "ChangePasswordRequest[userId=" + userId + ", currentSessionId=" + currentSessionId
+            return "ChangePasswordRequest[userId="
+                    + userId
+                    + ", currentSessionId="
+                    + currentSessionId
                     + ", expectedCurrentHash=<redacted>, replacementHash=<redacted>"
-                    + ", newPassword=<redacted>, now=" + now + ']';
+                    + ", newPassword=<redacted>, now="
+                    + now
+                    + ']';
         }
     }
 
@@ -376,8 +426,7 @@ public final class SessionLifecycleService {
             CredentialSessionTransactionPort.CredentialHash ticketHash,
             CredentialSessionTransactionPort.CredentialHash replacementHash,
             CharSequence newPassword,
-            Instant now
-    ) {
+            Instant now) {
         public PasswordResetRequest {
             ticketHash = Objects.requireNonNull(ticketHash, "ticketHash");
             replacementHash = Objects.requireNonNull(replacementHash, "replacementHash");
@@ -388,7 +437,9 @@ public final class SessionLifecycleService {
         @Override
         public String toString() {
             return "PasswordResetRequest[ticketHash=<redacted>, replacementHash=<redacted>, "
-                    + "newPassword=<redacted>, now=" + now + ']';
+                    + "newPassword=<redacted>, now="
+                    + now
+                    + ']';
         }
     }
 

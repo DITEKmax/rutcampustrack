@@ -6,15 +6,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 /** Wire models for the small, admin-owned campus map catalog API. */
 public final class CampusMapAdminModels {
-    private CampusMapAdminModels() {
-    }
+    private CampusMapAdminModels() {}
 
     public enum Format {
         png,
@@ -28,93 +26,136 @@ public final class CampusMapAdminModels {
         failed
     }
 
-    public enum UploadPlanStatus { created, replaced }
+    public enum UploadPlanStatus {
+        created,
+        replaced
+    }
 
-    public enum PlanTargetStatus { found, absent }
+    public enum PlanTargetStatus {
+        found,
+        absent
+    }
 
-    public record PlanTargetResponse(String buildingCode, String floorCode, PlanTargetStatus status,
-            @JsonInclude(JsonInclude.Include.ALWAYS) FloorResponse floor) { }
+    public record PlanTargetResponse(
+            String buildingCode,
+            String floorCode,
+            PlanTargetStatus status,
+            @JsonInclude(JsonInclude.Include.ALWAYS) FloorResponse floor) {}
 
     @Schema(name = "CampusMapUploadPlanResponse")
-    public record UploadPlanResponse(UploadPlanStatus status, boolean buildingCreated,
-                                     boolean floorCreated, PlanResponse plan) {
+    public record UploadPlanResponse(
+            UploadPlanStatus status,
+            boolean buildingCreated,
+            boolean floorCreated,
+            PlanResponse plan) {}
+
+    public enum DeletionTarget {
+        FLOOR,
+        BUILDING
     }
 
-    public enum DeletionTarget { FLOOR, BUILDING }
+    public record DeletionPreview(
+            DeletionTarget targetType,
+            String targetId,
+            String buildingId,
+            String label,
+            long versions,
+            long assets,
+            long bytes,
+            long openCount,
+            long remainingFloors,
+            String previewDigest) {}
 
-    public record DeletionPreview(DeletionTarget targetType, String targetId, String buildingId,
-            String label, long versions, long assets, long bytes, long openCount,
-            long remainingFloors, String previewDigest) { }
-
-    public record DeleteRequest(@NotNull UUID operationId,
+    public record DeleteRequest(
+            @NotNull UUID operationId,
             @NotBlank @Pattern(regexp = "[0-9a-f]{64}") String previewDigest,
             @NotBlank @Size(max = 256) String password) {
-        @Override public String toString() { return "CampusMapDeleteRequest[redacted]"; }
+        @Override
+        public String toString() {
+            return "CampusMapDeleteRequest[redacted]";
+        }
     }
 
-    public record DeletionResult(UUID operationId, DeletionTarget targetType, String targetId,
-            String status) { }
+    public record DeletionResult(
+            UUID operationId, DeletionTarget targetType, String targetId, String status) {}
 
-    public record PlanDeletionPreview(String buildingCode, String floorCode,
-            @JsonInclude(JsonInclude.Include.ALWAYS) Format format, String label, long files, long bytes,
-            String previewDigest) { }
+    public record PlanDeletionPreview(
+            String buildingCode,
+            String floorCode,
+            @JsonInclude(JsonInclude.Include.ALWAYS) Format format,
+            String label,
+            long files,
+            long bytes,
+            String previewDigest) {}
 
     public record PlanDeleteRequest(
             @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String buildingCode,
             @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String floorCode,
-            Format format, @NotNull UUID operationId,
+            Format format,
+            @NotNull UUID operationId,
             @NotBlank @Pattern(regexp = "[0-9a-f]{64}") String previewDigest,
             @NotBlank @Size(max = 256) String password) {
-        @Override public String toString() { return "CampusMapPlanDeleteRequest[redacted]"; }
+        @Override
+        public String toString() {
+            return "CampusMapPlanDeleteRequest[redacted]";
+        }
     }
 
-    public record PlanDeletionResult(UUID operationId, String buildingCode, String floorCode,
-            @JsonInclude(JsonInclude.Include.ALWAYS) Format format, String status) { }
+    public record PlanDeletionResult(
+            UUID operationId,
+            String buildingCode,
+            String floorCode,
+            @JsonInclude(JsonInclude.Include.ALWAYS) Format format,
+            String status) {}
 
     @Schema(name = "CampusMapCreateBuildingRequest")
     public record CreateBuildingRequest(
-            @Schema(description = "Numeric campus building code", example = "20", requiredMode = Schema.RequiredMode.REQUIRED)
-            @NotBlank(message = "Код корпуса обязателен")
-            @Pattern(regexp = "[1-9][0-9]*", message = "Код корпуса должен быть положительным числом")
-            String code,
+            @Schema(
+                            description = "Numeric campus building code",
+                            example = "20",
+                            requiredMode = Schema.RequiredMode.REQUIRED)
+                    @NotBlank(message = "Код корпуса обязателен")
+                    @Pattern(
+                            regexp = "[1-9][0-9]*",
+                            message = "Код корпуса должен быть положительным числом")
+                    String code,
             @Schema(description = "Human-readable label; defaults to the code")
-            @Size(max = 255, message = "Название корпуса не должно превышать 255 символов")
-            String label
-    ) {
-    }
+                    @Size(max = 255, message = "Название корпуса не должно превышать 255 символов")
+                    String label) {}
 
     @Schema(name = "CampusMapCreateFloorRequest")
     public record CreateFloorRequest(
-            @Schema(description = "Owning building id", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-            String buildingId,
-            @Schema(description = "Numeric floor code", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
-            @NotBlank(message = "Код этажа обязателен")
-            @Pattern(regexp = "[1-9][0-9]*", message = "Код этажа должен быть положительным числом")
-            String code,
+            @Schema(
+                            description = "Owning building id",
+                            example = "1",
+                            requiredMode = Schema.RequiredMode.REQUIRED)
+                    String buildingId,
+            @Schema(
+                            description = "Numeric floor code",
+                            example = "2",
+                            requiredMode = Schema.RequiredMode.REQUIRED)
+                    @NotBlank(message = "Код этажа обязателен")
+                    @Pattern(
+                            regexp = "[1-9][0-9]*",
+                            message = "Код этажа должен быть положительным числом")
+                    String code,
             @Schema(description = "Human-readable label; defaults to the code")
-            @Size(max = 255, message = "Название этажа не должно превышать 255 символов")
-            String label
-    ) {
-    }
+                    @Size(max = 255, message = "Название этажа не должно превышать 255 символов")
+                    String label) {}
 
     @Schema(name = "CampusMapUpdateInventoryRequest")
     public record UpdateInventoryRequest(
             @NotBlank(message = "Код обязателен")
-            @Pattern(regexp = "[1-9][0-9]*", message = "Код должен быть положительным числом")
-            @Size(max = 64, message = "Код не должен превышать 64 символа")
-            String code,
-            @Size(max = 255, message = "Название не должно превышать 255 символов")
-            String label
-    ) {
-    }
+                    @Pattern(
+                            regexp = "[1-9][0-9]*",
+                            message = "Код должен быть положительным числом")
+                    @Size(max = 64, message = "Код не должен превышать 64 символа")
+                    String code,
+            @Size(max = 255, message = "Название не должно превышать 255 символов") String label) {}
 
     @Schema(name = "CampusMapBuilding")
     public record BuildingResponse(
-            String id,
-            String code,
-            String label,
-            List<FloorResponse> floors
-    ) {
+            String id, String code, String label, List<FloorResponse> floors) {
         public BuildingResponse {
             floors = List.copyOf(Objects.requireNonNull(floors, "floors"));
         }
@@ -127,16 +168,15 @@ public final class CampusMapAdminModels {
             String code,
             String label,
             PlanResponse currentPlan,
-            @Schema(description = "Number of distinct floor openings in the labelled period", example = "42")
-            long openCount,
+            @Schema(
+                            description =
+                                    "Number of distinct floor openings in the labelled period",
+                            example = "42")
+                    long openCount,
             @Schema(description = "Period used for openCount", example = "all_time")
-            String openCountPeriod
-    ) {
-        public FloorResponse(String id,
-                             String buildingId,
-                             String code,
-                             String label,
-                             PlanResponse currentPlan) {
+                    String openCountPeriod) {
+        public FloorResponse(
+                String id, String buildingId, String code, String label, PlanResponse currentPlan) {
             this(id, buildingId, code, label, currentPlan, 0L, "all_time");
         }
 
@@ -158,8 +198,7 @@ public final class CampusMapAdminModels {
             String label,
             String catalogRevision,
             FormatSlot png,
-            FormatSlot svg
-    ) {
+            FormatSlot svg) {
         public PlanResponse {
             Objects.requireNonNull(png, "png");
             Objects.requireNonNull(svg, "svg");
@@ -175,8 +214,7 @@ public final class CampusMapAdminModels {
             long bytes,
             @JsonInclude(JsonInclude.Include.NON_NULL) String sha256,
             @JsonInclude(JsonInclude.Include.NON_NULL) Integer width,
-            @JsonInclude(JsonInclude.Include.NON_NULL) Integer height
-    ) {
+            @JsonInclude(JsonInclude.Include.NON_NULL) Integer height) {
         public FormatSlot {
             Objects.requireNonNull(format, "format");
             Objects.requireNonNull(state, "state");
@@ -185,7 +223,8 @@ public final class CampusMapAdminModels {
                 throw new IllegalArgumentException("map bytes must be between 0 and 10 MiB");
             }
             if (state == FormatState.ready && (id == null || sha256 == null || bytes == 0)) {
-                throw new IllegalArgumentException("ready slot requires id, sha256 and positive bytes");
+                throw new IllegalArgumentException(
+                        "ready slot requires id, sha256 and positive bytes");
             }
             if (state != FormatState.ready && (id != null || sha256 != null || bytes != 0)) {
                 throw new IllegalArgumentException("non-ready slot cannot expose asset metadata");

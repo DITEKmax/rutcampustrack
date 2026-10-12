@@ -10,9 +10,21 @@ import ru.rutcampustrack.auth.dto.*;
 @Hidden
 @RequestMapping("/internal/export-jobs")
 public interface InternalExportJobApi {
-    @PostMapping("/claim") ResponseEntity<ExportJobModels.Claim> claim();
-    @PostMapping("/{id}/complete") ResponseEntity<ExportJobModels.Status> complete(@PathVariable UUID id, @Valid @RequestBody ExportJobModels.Complete result);
-    @PostMapping("/{id}/fail") ResponseEntity<Void> fail(@PathVariable UUID id, @Valid @RequestBody ExportJobModels.Fail failure);
-    @PostMapping("/admit") ResponseEntity<Void> admit(@Valid @RequestBody ExportJobModels.Admit request);
-    @PostMapping("/{id}/file") ResponseEntity<byte[]> file(@PathVariable UUID id, @Valid @RequestBody WsSessionAdmissionRequest actor);
+    @PostMapping("/claim")
+    ResponseEntity<ExportJobModels.Claim> claim();
+
+    @PostMapping("/{id}/complete")
+    ResponseEntity<ExportJobModels.Status> complete(
+            @PathVariable UUID id, @Valid @RequestBody ExportJobModels.Complete result);
+
+    @PostMapping("/{id}/fail")
+    ResponseEntity<Void> fail(
+            @PathVariable UUID id, @Valid @RequestBody ExportJobModels.Fail failure);
+
+    @PostMapping("/admit")
+    ResponseEntity<Void> admit(@Valid @RequestBody ExportJobModels.Admit request);
+
+    @PostMapping("/{id}/file")
+    ResponseEntity<byte[]> file(
+            @PathVariable UUID id, @Valid @RequestBody WsSessionAdmissionRequest actor);
 }

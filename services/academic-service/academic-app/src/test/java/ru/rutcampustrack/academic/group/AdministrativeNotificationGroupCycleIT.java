@@ -1,7 +1,12 @@
 package ru.rutcampustrack.academic.group;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,37 +24,38 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /** Actual committed outbox/marker proof in a database owned only by this test. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import({InternalJwtTestConfig.class, GroupPromotionCycleIT.PromotionTestClockConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class AdministrativeNotificationGroupCycleIT {
-    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16")
-            .withDatabaseName("n4_group_cycle")
-            .withLabel("rct.package", "notifications-admin-n4-1010")
-            .withReuse(false);
+    private static final PostgreSQLContainer<?> POSTGRES =
+            new PostgreSQLContainer<>("postgres:16")
+                    .withDatabaseName("n4_group_cycle")
+                    .withLabel("rct.package", "notifications-admin-n4-1010")
+                    .withReuse(false);
 
-    static { POSTGRES.start(); }
+    static {
+        POSTGRES.start();
+    }
 
     @AfterAll
-    static void stopOwnedDatabase() { POSTGRES.stop(); }
+    static void stopOwnedDatabase() {
+        POSTGRES.stop();
+    }
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.autoconfigure.exclude", () ->
-                "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                        + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                        + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+        registry.add(
+                "spring.autoconfigure.exclude",
+                () ->
+                        "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
+                                + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
     }
 
     @MockitoBean RabbitTemplate rabbitTemplate;
@@ -61,17 +67,23 @@ class AdministrativeNotificationGroupCycleIT {
     @Test
     void firstAutomaticBatchCommitsOneFactualOutboxAndMarkerWhileRollbackAndLaterBatchDoNotRepeat()
             throws Exception {
-        long cycleId = jdbc.queryForObject("""
+        long cycleId =
+                jdbc.queryForObject(
+                        """
                 INSERT INTO semesters(name,date_from,date_to,is_active,semester_type,academic_year)
                 VALUES ('N4 owned spring cycle',? ,?,false,'SPRING',2025) RETURNING id
-                """, Long.class, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 31));
+                """,
+                        Long.class,
+                        LocalDate.of(2026, 8, 1),
+                        LocalDate.of(2026, 8, 31));
         long first = addGroup("НИТ-111");
         TransactionTemplate tx = new TransactionTemplate(transactions);
 
-        tx.executeWithoutResult(status -> {
-            assertThat(service.executeAutomaticallyIfDue()).isPresent();
-            status.setRollbackOnly();
-        });
+        tx.executeWithoutResult(
+                status -> {
+                    assertThat(service.executeAutomaticallyIfDue()).isPresent();
+                    status.setRollbackOnly();
+                });
         assertThat(markerCount(cycleId)).isZero();
         assertThat(eventCount(cycleId)).isZero();
         assertThat(groupName(first)).isEqualTo("НИТ-111");
@@ -80,21 +92,36 @@ class AdministrativeNotificationGroupCycleIT {
         assertThat(groupName(first)).isEqualTo("НИТ-211");
         assertThat(markerCount(cycleId)).isOne();
         assertThat(eventCount(cycleId)).isOne();
-        JsonNode fact = mapper.readTree(jdbc.queryForObject("""
+        JsonNode fact =
+                mapper.readTree(
+                                jdbc.queryForObject(
+                                        """
                 SELECT payload::text FROM academic_outbox WHERE event_type='group.promotion.completed'
                   AND payload #>> '{payload,cycle_semester_id}'=?
-                """, String.class, Long.toString(cycleId))).path("payload");
+                """,
+                                        String.class,
+                                        Long.toString(cycleId)))
+                        .path("payload");
         assertThat(fact.path("cycle_semester_id").asLong()).isEqualTo(cycleId);
         assertThat(fact.path("cycle_date_to").asText()).isEqualTo("2026-08-31");
-        assertThat(fact.path("promoted").asLong()).isEqualTo(jdbc.queryForObject(
-                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id=? AND action='PROMOTE'",
-                Long.class, cycleId));
-        assertThat(fact.path("graduated").asLong()).isEqualTo(jdbc.queryForObject(
-                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id=? AND action='ARCHIVE'",
-                Long.class, cycleId));
-        assertThat(fact.path("skipped").asLong()).isEqualTo(jdbc.queryForObject(
-                "SELECT skipped FROM group_promotion_notification_cycle WHERE cycle_semester_id=?",
-                Long.class, cycleId));
+        assertThat(fact.path("promoted").asLong())
+                .isEqualTo(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id=? AND action='PROMOTE'",
+                                Long.class,
+                                cycleId));
+        assertThat(fact.path("graduated").asLong())
+                .isEqualTo(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id=? AND action='ARCHIVE'",
+                                Long.class,
+                                cycleId));
+        assertThat(fact.path("skipped").asLong())
+                .isEqualTo(
+                        jdbc.queryForObject(
+                                "SELECT skipped FROM group_promotion_notification_cycle WHERE cycle_semester_id=?",
+                                Long.class,
+                                cycleId));
 
         long later = addGroup("ДОП-111");
         service.executeAutomaticallyIfDue();
@@ -102,18 +129,27 @@ class AdministrativeNotificationGroupCycleIT {
         assertThat(groupName(later)).isEqualTo("ДОП-211");
         assertThat(markerCount(cycleId)).isOne();
         assertThat(eventCount(cycleId)).isOne();
-        assertThat(jdbc.queryForObject("""
+        assertThat(
+                        jdbc.queryForObject(
+                                """
                 SELECT count(*) FROM academic_outbox WHERE event_type='group.renamed'
                   AND payload #>> '{payload,group_id}'=?
                   AND payload #>> '{payload,notification_cause}'='AUTOMATIC_GROUP_CYCLE'
-                """, Long.class, Long.toString(later))).isOne();
+                """,
+                                Long.class,
+                                Long.toString(later)))
+                .isOne();
     }
 
     private long addGroup(String name) {
-        return jdbc.queryForObject("""
+        return jdbc.queryForObject(
+                """
                 INSERT INTO groups(name,is_active,created_at,duration_status)
                 VALUES (?,true,?,'LEGACY_UNKNOWN') RETURNING id
-                """, Long.class, name, OffsetDateTime.of(2026, 8, 1, 0, 0, 0, 0, ZoneOffset.UTC));
+                """,
+                Long.class,
+                name,
+                OffsetDateTime.of(2026, 8, 1, 0, 0, 0, 0, ZoneOffset.UTC));
     }
 
     private String groupName(long groupId) {
@@ -121,14 +157,19 @@ class AdministrativeNotificationGroupCycleIT {
     }
 
     private long markerCount(long cycleId) {
-        return jdbc.queryForObject("SELECT count(*) FROM group_promotion_notification_cycle WHERE cycle_semester_id=?",
-                Long.class, cycleId);
+        return jdbc.queryForObject(
+                "SELECT count(*) FROM group_promotion_notification_cycle WHERE cycle_semester_id=?",
+                Long.class,
+                cycleId);
     }
 
     private long eventCount(long cycleId) {
-        return jdbc.queryForObject("""
+        return jdbc.queryForObject(
+                """
                 SELECT count(*) FROM academic_outbox WHERE event_type='group.promotion.completed'
                   AND payload #>> '{payload,cycle_semester_id}'=?
-                """, Long.class, Long.toString(cycleId));
+                """,
+                Long.class,
+                Long.toString(cycleId));
     }
 }

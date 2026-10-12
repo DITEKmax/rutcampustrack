@@ -1,7 +1,6 @@
 package ru.rutcampustrack.shared.events;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -11,8 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class IdempotencyGuardTest {
 
@@ -71,7 +70,7 @@ class IdempotencyGuardTest {
         envelope.put("event_type", "legacy.event");
 
         org.assertj.core.api.Assertions.assertThatThrownBy(
-                () -> guard.tryClaim("academic", envelope))
+                        () -> guard.tryClaim("academic", envelope))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("event_id")
                 .hasMessageContaining("legacy.event");
@@ -87,15 +86,14 @@ class IdempotencyGuardTest {
         envelope.put("event_type", "lesson.started");
 
         org.assertj.core.api.Assertions.assertThatThrownBy(
-                () -> guard.tryClaim("academic", envelope))
+                        () -> guard.tryClaim("academic", envelope))
                 .isInstanceOf(IllegalStateException.class);
         assertThat(store.size()).isZero();
     }
 
     @Test
     void tryClaim_nullEnvelope_throwsFailClosed() {
-        org.assertj.core.api.Assertions.assertThatThrownBy(
-                () -> guard.tryClaim("academic", null))
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> guard.tryClaim("academic", null))
                 .isInstanceOf(IllegalStateException.class);
         assertThat(store.size()).isZero();
     }
@@ -109,9 +107,7 @@ class IdempotencyGuardTest {
         assertThat(IdempotencyGuard.extractEventId(envelope)).isEqualTo(eventId);
     }
 
-    /**
-     * Минималистичный store для unit-теста — без БД, без Spring.
-     */
+    /** Минималистичный store для unit-теста — без БД, без Spring. */
     static class InMemoryStore implements IdempotencyStore {
         private final Set<String> claimed = new HashSet<>();
 

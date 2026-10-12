@@ -1,7 +1,13 @@
 package ru.rutcampustrack.schedule.integration;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -11,25 +17,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * M05 Группа 1 — regression guard для composite index
- * {@code idx_lessons_item_date (schedule_item_id, date) WHERE status != 'cancelled'}
- * (V12__add_performance_indexes.sql, DECISION D1).
+ * M05 Группа 1 — regression guard для composite index {@code idx_lessons_item_date
+ * (schedule_item_id, date) WHERE status != 'cancelled'} (V12__add_performance_indexes.sql, DECISION
+ * D1).
  *
- * <p>Проверяет что hot query {@code findByScheduleItemIdInAndDateBetweenAndStatusIn}
- * выполняется быстрее чем 50ms на seed-dataset (600 schedule_items,
- * 12000 lessons — соответствует {@code docs/milestones/M05-performance/seed-perf.sql}).
+ * <p>Проверяет что hot query {@code findByScheduleItemIdInAndDateBetweenAndStatusIn} выполняется
+ * быстрее чем 50ms на seed-dataset (600 schedule_items, 12000 lessons — соответствует {@code
+ * docs/milestones/M05-performance/seed-perf.sql}).
  *
- * <p>Seed идемпотентен: использует id ≥ 900000 и DELETE перед вставкой.
- * При падении теста — проверить EXPLAIN ANALYZE, убедиться что планировщик
- * не делает {@code Seq Scan on lessons}.
+ * <p>Seed идемпотентен: использует id ≥ 900000 и DELETE перед вставкой. При падении теста —
+ * проверить EXPLAIN ANALYZE, убедиться что планировщик не делает {@code Seq Scan on lessons}.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
@@ -49,7 +47,8 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
         resetScheduleData();
 
         // schedule_items: 20 groups × 30 slots = 600 rows.
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO schedule_items (
                     id, assignment_id, group_id, subject_id, semester_id,
                     day_of_week, lesson_number, start_time, end_time,
@@ -71,9 +70,11 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
                     NOW() - INTERVAL '200 days'
                 FROM generate_series(1, ?) AS g(go),
                      generate_series(1, ?) AS s(so)
-                """, GROUPS, SLOTS_PER_GROUP);
+                """,
+                GROUPS, SLOTS_PER_GROUP);
 
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
                      valid_from, cap_until_exclusive, creation_cap_until_exclusive)
@@ -81,7 +82,8 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
                        DATE '2000-01-01', DATE '2200-01-01', DATE '2200-01-01'
                   FROM schedule_items WHERE group_id >= 900000
                 """);
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO lesson_occurrences
                     (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,
                      semester_id, assigned_teacher_id, lesson_type)
@@ -89,10 +91,12 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
                        si.assignment_id, si.group_id, si.subject_id, si.semester_id, 700, 'lecture'
                   FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
                  WHERE si.group_id >= 900000
-                """, WEEKS);
+                """,
+                WEEKS);
 
         // lessons: for each schedule_item × 20 weeks = 12000 rows.
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO lessons (
                     schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
                     assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time,
@@ -120,9 +124,11 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
                 JOIN lesson_occurrences occurrence ON occurrence.schedule_item_id = si.id
                  AND occurrence.occurrence_date = (CURRENT_DATE - 70) + ((w.wo - 1) * 7) + (si.day_of_week - 1)
                 WHERE si.group_id >= 900000
-                """, WEEKS);
+                """,
+                WEEKS);
 
-        jdbc.update("""
+        jdbc.update(
+                """
                 UPDATE lesson_occurrences occurrence SET current_lesson_id = lesson.id
                   FROM lessons lesson WHERE lesson.occurrence_id = occurrence.id
                 """);
@@ -139,14 +145,16 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
     void weekJournalQueryStaysUnder50ms() {
         // Emulates LessonService.getLessonsForGroup(groupId, from, to).
         Long targetGroupId = 900000L + 10;
-        List<Long> scheduleItemIds = jdbc.queryForList("""
+        List<Long> scheduleItemIds =
+                jdbc.queryForList(
+                        """
                 SELECT id FROM schedule_items
                  WHERE group_id = ? AND semester_id = 1 AND is_active = TRUE
-                """, Long.class, targetGroupId);
+                """,
+                        Long.class,
+                        targetGroupId);
 
-        assertThat(scheduleItemIds)
-                .as("schedule_items for target group")
-                .hasSize(SLOTS_PER_GROUP);
+        assertThat(scheduleItemIds).as("schedule_items for target group").hasSize(SLOTS_PER_GROUP);
 
         LocalDate from = LocalDate.now().minusDays(70);
         LocalDate to = from.plusDays(7);
@@ -157,25 +165,32 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
                 scheduleItemIds, from, to, statuses);
 
         // Measure across 5 runs → use best time (regression-guard semantics).
-        long[] timings = IntStream.range(0, 5)
-                .mapToLong(i -> {
-                    long start = System.nanoTime();
-                    List<Lesson> result = lessonRepository
-                            .findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                                    scheduleItemIds, from, to, statuses);
-                    long elapsed = (System.nanoTime() - start) / 1_000_000L;
-                    assertThat(result).as("week lessons").isNotEmpty();
-                    return elapsed;
-                })
-                .toArray();
+        long[] timings =
+                IntStream.range(0, 5)
+                        .mapToLong(
+                                i -> {
+                                    long start = System.nanoTime();
+                                    List<Lesson> result =
+                                            lessonRepository
+                                                    .findByScheduleItemIdInAndDateBetweenAndStatusIn(
+                                                            scheduleItemIds, from, to, statuses);
+                                    long elapsed = (System.nanoTime() - start) / 1_000_000L;
+                                    assertThat(result).as("week lessons").isNotEmpty();
+                                    return elapsed;
+                                })
+                        .toArray();
 
         long bestMs = LongStream.of(timings).min().orElseThrow();
-        log.info("Q1 week-journal timings(ms): {} — best={}ms, limit={}ms",
-                timings, bestMs, QUERY_TIME_LIMIT_MS);
+        log.info(
+                "Q1 week-journal timings(ms): {} — best={}ms, limit={}ms",
+                timings,
+                bestMs,
+                QUERY_TIME_LIMIT_MS);
 
         assertThat(bestMs)
-                .as("week-journal query should complete under %dms "
-                        + "(regression guard for idx_lessons_item_date)",
+                .as(
+                        "week-journal query should complete under %dms "
+                                + "(regression guard for idx_lessons_item_date)",
                         QUERY_TIME_LIMIT_MS)
                 .isLessThan(QUERY_TIME_LIMIT_MS);
     }

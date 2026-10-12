@@ -9,30 +9,39 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * ADMIN create contract for the registry. The canonical display name is
- * assembled by Academic from the two code parts; clients do not send name or
- * current course.
+ * ADMIN create contract for the registry. The canonical display name is assembled by Academic from
+ * the two code parts; clients do not send name or current course.
  */
 @Schema(description = "Создание группы в реестре ADMIN")
 public record CreateAdminGroupRequest(
-        @Schema(description = "Буквенная часть кода группы", example = "ИВТ",
-                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 4)
-        @NotBlank(message = "Буквенный код группы обязателен")
-        @Pattern(regexp = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}$",
-                message = "Буквенный код: 2–4 кириллических символа")
-        @Size(max = 4, message = "Буквенный код не должен превышать 4 символа")
-        String alphabeticCode,
-
-        @Schema(description = "Трёхзначная цифровая часть; первая цифра — текущий курс",
-                example = "311", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[1-5]\\d{2}$")
-        @NotBlank(message = "Цифровой код группы обязателен")
-        @Pattern(regexp = "^[1-5]\\d{2}$", message = "Цифровой код должен содержать 3 цифры, первая — от 1 до 5")
-        String numericCode,
-
-        @Schema(description = "Срок обучения в годах", example = "4",
-                requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1", maximum = "5")
-        @NotNull(message = "Срок обучения обязателен")
-        @Min(value = 1, message = "Срок обучения должен быть от 1 до 5 лет")
-        @Max(value = 5, message = "Срок обучения должен быть от 1 до 5 лет")
-        Integer trainingDurationYears
-) {}
+        @Schema(
+                        description = "Буквенная часть кода группы",
+                        example = "ИВТ",
+                        requiredMode = Schema.RequiredMode.REQUIRED,
+                        maxLength = 4)
+                @NotBlank(message = "Буквенный код группы обязателен")
+                @Pattern(
+                        regexp = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}$",
+                        message = "Буквенный код: 2–4 кириллических символа")
+                @Size(max = 4, message = "Буквенный код не должен превышать 4 символа")
+                String alphabeticCode,
+        @Schema(
+                        description = "Трёхзначная цифровая часть; первая цифра — текущий курс",
+                        example = "311",
+                        requiredMode = Schema.RequiredMode.REQUIRED,
+                        pattern = "^[1-5]\\d{2}$")
+                @NotBlank(message = "Цифровой код группы обязателен")
+                @Pattern(
+                        regexp = "^[1-5]\\d{2}$",
+                        message = "Цифровой код должен содержать 3 цифры, первая — от 1 до 5")
+                String numericCode,
+        @Schema(
+                        description = "Срок обучения в годах",
+                        example = "4",
+                        requiredMode = Schema.RequiredMode.REQUIRED,
+                        minimum = "1",
+                        maximum = "5")
+                @NotNull(message = "Срок обучения обязателен")
+                @Min(value = 1, message = "Срок обучения должен быть от 1 до 5 лет")
+                @Max(value = 5, message = "Срок обучения должен быть от 1 до 5 лет")
+                Integer trainingDurationYears) {}

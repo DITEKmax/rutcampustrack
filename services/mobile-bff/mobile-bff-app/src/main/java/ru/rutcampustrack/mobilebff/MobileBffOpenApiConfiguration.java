@@ -1,25 +1,23 @@
 package ru.rutcampustrack.mobilebff;
 
 import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.media.Discriminator;
 import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Discriminator;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Keeps Springdoc's polymorphic geo model acyclic.
  *
- * <p>Swagger's inheritance converter otherwise emits
- * GeoInput.oneOf -> CoordinatesGeo.allOf -> GeoInput. The runtime Java model
- * remains sealed and Jackson-discriminated; only the derived OpenAPI shape is
- * normalized to the equivalent flat discriminated union expected by clients.
+ * <p>Swagger's inheritance converter otherwise emits GeoInput.oneOf -> CoordinatesGeo.allOf ->
+ * GeoInput. The runtime Java model remains sealed and Jackson-discriminated; only the derived
+ * OpenAPI shape is normalized to the equivalent flat discriminated union expected by clients.
  */
 @Configuration(proxyBeanMethods = false)
 class MobileBffOpenApiConfiguration {
@@ -50,15 +48,17 @@ class MobileBffOpenApiConfiguration {
             }
             union.setProperties(null);
             union.setRequired(null);
-            union.setDiscriminator(new Discriminator()
-                    .propertyName("kind")
-                    .mapping("COORDINATES", "#/components/schemas/" + COORDINATES)
-                    .mapping("UNAVAILABLE", "#/components/schemas/" + UNAVAILABLE));
+            union.setDiscriminator(
+                    new Discriminator()
+                            .propertyName("kind")
+                            .mapping("COORDINATES", "#/components/schemas/" + COORDINATES)
+                            .mapping("UNAVAILABLE", "#/components/schemas/" + UNAVAILABLE));
         };
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static void flattenConcreteSchema(Components components, String name, String discriminatorValue) {
+    private static void flattenConcreteSchema(
+            Components components, String name, String discriminatorValue) {
         Schema schema = components.getSchemas().get(name);
         if (schema == null) {
             throw new IllegalStateException("Springdoc did not export " + name);
@@ -68,11 +68,14 @@ class MobileBffOpenApiConfiguration {
         if (allOf == null) {
             return;
         }
-        Schema inline = allOf.stream()
-                .filter(candidate -> candidate.get$ref() == null)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        name + " has no inline schema to flatten"));
+        Schema inline =
+                allOf.stream()
+                        .filter(candidate -> candidate.get$ref() == null)
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                name + " has no inline schema to flatten"));
 
         Map<String, Schema> properties = new LinkedHashMap<>();
         if (inline.getProperties() != null) {
@@ -91,7 +94,8 @@ class MobileBffOpenApiConfiguration {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static void wrapNullableReference(Components components, String schemaName, String propertyName) {
+    private static void wrapNullableReference(
+            Components components, String schemaName, String propertyName) {
         Schema parent = components.getSchemas().get(schemaName);
         if (parent == null || parent.getProperties() == null) {
             throw new IllegalStateException("Springdoc did not export " + schemaName);
@@ -99,7 +103,11 @@ class MobileBffOpenApiConfiguration {
         Schema property = (Schema) parent.getProperties().get(propertyName);
         if (property == null || property.get$ref() == null) {
             throw new IllegalStateException(
-                    "Springdoc did not export " + schemaName + "." + propertyName + " as a reference");
+                    "Springdoc did not export "
+                            + schemaName
+                            + "."
+                            + propertyName
+                            + " as a reference");
         }
 
         Schema reference = new Schema().$ref(property.get$ref());

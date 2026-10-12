@@ -10,5 +10,4 @@ public record HeadmanAssignmentResponse(
         String headmanFio,
         boolean changed,
         boolean activatesDraft,
-        int assistantsRevoked
-) {}
+        int assistantsRevoked) {}

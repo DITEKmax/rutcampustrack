@@ -1,10 +1,10 @@
 package ru.rutcampustrack.shared.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureAlgorithm;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.Signature;
@@ -16,9 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class InternalJwtValidatorTest {
 
@@ -31,21 +30,21 @@ class InternalJwtValidatorTest {
     @BeforeEach
     void setUp() {
         factory = new InternalJwtTestFactory();
-        InternalJwtProperties props = new InternalJwtProperties(
-                null, 0, 0, true, null, null, null);
-        PublicKeyProvider keyProvider = new PublicKeyProvider(props) {
-            @Override
-            public java.security.PublicKey getPublicKey() {
-                return factory.publicKey();
-            }
-        };
+        InternalJwtProperties props = new InternalJwtProperties(null, 0, 0, true, null, null, null);
+        PublicKeyProvider keyProvider =
+                new PublicKeyProvider(props) {
+                    @Override
+                    public java.security.PublicKey getPublicKey() {
+                        return factory.publicKey();
+                    }
+                };
         validator = new InternalJwtValidator(keyProvider, props);
     }
 
     @Test
     void validToken_returnsCompleteFrozenClaims() {
-        String token = factory.validToken(
-                42L, SESSION_ID, 3L, 7L, "ADMIN", "ACTIVE", 9L, false, false);
+        String token =
+                factory.validToken(42L, SESSION_ID, 3L, 7L, "ADMIN", "ACTIVE", 9L, false, false);
 
         InternalJwtClaims claims = validator.validate(token);
 
@@ -62,8 +61,8 @@ class InternalJwtValidatorTest {
 
     @Test
     void headmanTokenKeepsRawAdmissionRoleAndMapsToStudentDomainRole() {
-        String token = factory.validToken(
-                42L, SESSION_ID, 3L, 7L, "HEADMAN", "ACTIVE", 9L, true, false);
+        String token =
+                factory.validToken(42L, SESSION_ID, 3L, 7L, "HEADMAN", "ACTIVE", 9L, true, false);
 
         InternalJwtClaims claims = validator.validate(token);
 
@@ -75,8 +74,9 @@ class InternalJwtValidatorTest {
 
     @Test
     void terminalToken_isReadOnlyAndCanOmitGroup() {
-        String token = factory.validToken(
-                1L, SESSION_ID, 1L, 1L, "STUDENT", "EXPELLED", null, false, true);
+        String token =
+                factory.validToken(
+                        1L, SESSION_ID, 1L, 1L, "STUDENT", "EXPELLED", null, false, true);
 
         InternalJwtClaims claims = validator.validate(token);
 
@@ -88,11 +88,23 @@ class InternalJwtValidatorTest {
     @Test
     void expiredToken_throws() {
         Instant now = now();
-        String token = factory.buildToken(
-                1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false,
-                now.minusSeconds(600), now.minusSeconds(300),
-                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE,
-                "internal", currentKeyPair());
+        String token =
+                factory.buildToken(
+                        1L,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        null,
+                        false,
+                        false,
+                        now.minusSeconds(600),
+                        now.minusSeconds(300),
+                        InternalJwtTestFactory.ISSUER,
+                        InternalJwtTestFactory.AUDIENCE,
+                        "internal",
+                        currentKeyPair());
 
         assertThatThrownBy(() -> validator.validate(token))
                 .isInstanceOf(InternalJwtException.class)
@@ -101,24 +113,74 @@ class InternalJwtValidatorTest {
 
     @Test
     void wrongSignatureIssuerAudienceAndPurpose_throw() {
-        assertRejected(factory.buildToken(
-                1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false,
-                now(), now().plusSeconds(60),
-                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE,
-                "internal", newKeyPair()));
-        assertRejected(factory.buildToken(
-                1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false,
-                now(), now().plusSeconds(60),
-                "evil", InternalJwtTestFactory.AUDIENCE, "internal", currentKeyPair()));
-        assertRejected(factory.buildToken(
-                1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false,
-                now(), now().plusSeconds(60),
-                InternalJwtTestFactory.ISSUER, "extra", "internal", currentKeyPair()));
-        assertRejected(factory.buildToken(
-                1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false,
-                now(), now().plusSeconds(60),
-                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE,
-                "access", currentKeyPair()));
+        assertRejected(
+                factory.buildToken(
+                        1L,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        null,
+                        false,
+                        false,
+                        now(),
+                        now().plusSeconds(60),
+                        InternalJwtTestFactory.ISSUER,
+                        InternalJwtTestFactory.AUDIENCE,
+                        "internal",
+                        newKeyPair()));
+        assertRejected(
+                factory.buildToken(
+                        1L,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        null,
+                        false,
+                        false,
+                        now(),
+                        now().plusSeconds(60),
+                        "evil",
+                        InternalJwtTestFactory.AUDIENCE,
+                        "internal",
+                        currentKeyPair()));
+        assertRejected(
+                factory.buildToken(
+                        1L,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        null,
+                        false,
+                        false,
+                        now(),
+                        now().plusSeconds(60),
+                        InternalJwtTestFactory.ISSUER,
+                        "extra",
+                        "internal",
+                        currentKeyPair()));
+        assertRejected(
+                factory.buildToken(
+                        1L,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        null,
+                        false,
+                        false,
+                        now(),
+                        now().plusSeconds(60),
+                        InternalJwtTestFactory.ISSUER,
+                        InternalJwtTestFactory.AUDIENCE,
+                        "access",
+                        currentKeyPair()));
     }
 
     @Test
@@ -135,25 +197,34 @@ class InternalJwtValidatorTest {
         assertRejected(rawTokenWithHeader("{\"alg\":\"RS384\",\"kid\":\"test-kid\"}"));
         assertRejected(rawTokenWithHeader("{\"alg\":true,\"kid\":\"test-kid\"}"));
         assertRejected(rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":true}"));
-        assertRejected(rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"foo\":\"unexpected\"}"));
-        assertRejected(rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"alg\":\"RS256\"}"));
-        assertRejected(rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":\"JWS\"}"));
+        assertRejected(
+                rawTokenWithHeader(
+                        "{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"foo\":\"unexpected\"}"));
+        assertRejected(
+                rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"alg\":\"RS256\"}"));
+        assertRejected(
+                rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":\"JWS\"}"));
         assertRejected(rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":true}"));
-        assertRejected(rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":\"J\\u0057T\"}"));
+        assertRejected(
+                rawTokenWithHeader(
+                        "{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":\"J\\u0057T\"}"));
     }
 
     @Test
     void joseHeader_mayIncludeCanonicalJwtType() {
-        assertThat(validator.validate(rawTokenWithHeader(
-                "{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":\"JWT\"}")))
-                .isEqualTo(new InternalJwtClaims(
-                        1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false));
+        assertThat(
+                        validator.validate(
+                                rawTokenWithHeader(
+                                        "{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"typ\":\"JWT\"}")))
+                .isEqualTo(
+                        new InternalJwtClaims(
+                                1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false));
     }
 
     @Test
     void duplicateJoseHeader_withValidSignature_isRejected() {
-        String token = rawTokenWithHeader(
-                "{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"alg\":\"RS256\"}");
+        String token =
+                rawTokenWithHeader("{\"alg\":\"RS256\",\"kid\":\"test-kid\",\"alg\":\"RS256\"}");
 
         assertSignatureIsValid(token);
         assertRejected(token);
@@ -161,8 +232,12 @@ class InternalJwtValidatorTest {
 
     @Test
     void duplicatePayload_withValidSignature_isRejected() {
-        String token = signRawPayload(rawPayloadJson(null).replace(
-                "\"role\":\"STUDENT\"", "\"role\":\"STUDENT\",\"role\":\"STUDENT\""));
+        String token =
+                signRawPayload(
+                        rawPayloadJson(null)
+                                .replace(
+                                        "\"role\":\"STUDENT\"",
+                                        "\"role\":\"STUDENT\",\"role\":\"STUDENT\""));
 
         assertSignatureIsValid(token);
         assertRejected(token);
@@ -184,9 +259,21 @@ class InternalJwtValidatorTest {
 
     @Test
     void everyFrozenRequiredClaimMustBePresent() {
-        for (String requiredClaim : List.of(
-                "iss", "aud", "token_use", "sub", "sid", "sv", "rv", "role",
-                "status", "is_headman", "readOnly", "iat", "exp")) {
+        for (String requiredClaim :
+                List.of(
+                        "iss",
+                        "aud",
+                        "token_use",
+                        "sub",
+                        "sid",
+                        "sv",
+                        "rv",
+                        "role",
+                        "status",
+                        "is_headman",
+                        "readOnly",
+                        "iat",
+                        "exp")) {
             assertRejected(rawTokenWithout(requiredClaim));
         }
     }
@@ -215,10 +302,10 @@ class InternalJwtValidatorTest {
         assertRejected(rawToken("exp", (epoch + 60) + ".5"));
         assertRejected(rawToken("iat", epoch + "e0"));
         assertRejected(rawToken("exp", (epoch + 60) + "e0"));
-        assertRejected(rawToken("iat", Long.toString(epoch + 60),
-                "exp", Long.toString(epoch + 60)));
-        assertRejected(rawToken("iat", Long.toString(epoch + 120),
-                "exp", Long.toString(epoch + 180)));
+        assertRejected(
+                rawToken("iat", Long.toString(epoch + 60), "exp", Long.toString(epoch + 60)));
+        assertRejected(
+                rawToken("iat", Long.toString(epoch + 120), "exp", Long.toString(epoch + 180)));
         assertRejected(rawToken("iat", "\"not-a-number\""));
     }
 
@@ -227,8 +314,7 @@ class InternalJwtValidatorTest {
         assertThatThrownBy(() -> validator.validate(""))
                 .isInstanceOf(InternalJwtException.class)
                 .hasMessageContaining("missing");
-        assertThatThrownBy(() -> validator.validate(null))
-                .isInstanceOf(InternalJwtException.class);
+        assertThatThrownBy(() -> validator.validate(null)).isInstanceOf(InternalJwtException.class);
     }
 
     private void assertRejected(String token) {
@@ -275,12 +361,13 @@ class InternalJwtValidatorTest {
             values.remove(omitted);
         }
         StringBuilder payload = new StringBuilder("{");
-        values.forEach((name, value) -> {
-            if (payload.length() > 1) {
-                payload.append(',');
-            }
-            payload.append('"').append(name).append("\":").append(value);
-        });
+        values.forEach(
+                (name, value) -> {
+                    if (payload.length() > 1) {
+                        payload.append(',');
+                    }
+                    payload.append('"').append(name).append("\":").append(value);
+                });
         return payload.append('}').toString();
     }
 
@@ -305,10 +392,14 @@ class InternalJwtValidatorTest {
     private String signedTokenWithAlgorithm(SignatureAlgorithm algorithm) {
         Instant issuedAt = now();
         return Jwts.builder()
-                .header().keyId(InternalJwtTestFactory.KEY_ID).and()
+                .header()
+                .keyId(InternalJwtTestFactory.KEY_ID)
+                .and()
                 .subject("1")
                 .issuer(InternalJwtTestFactory.ISSUER)
-                .audience().add(InternalJwtTestFactory.AUDIENCE).and()
+                .audience()
+                .add(InternalJwtTestFactory.AUDIENCE)
+                .and()
                 .claim("token_use", "internal")
                 .claim("sid", SESSION_ID.toString())
                 .claim("sv", "1")

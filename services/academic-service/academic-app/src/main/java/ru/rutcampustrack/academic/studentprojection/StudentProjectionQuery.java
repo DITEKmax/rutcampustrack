@@ -1,7 +1,7 @@
 package ru.rutcampustrack.academic.studentprojection;
 
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +12,8 @@ import java.util.UUID;
 /**
  * Read-only data port for the student projection resolver.
  *
- * <p>The port keeps SQL authority reads separate from the deterministic
- * history/rank calculation, which also makes the fail-closed rules testable
- * without replacing the real query adapter.</p>
+ * <p>The port keeps SQL authority reads separate from the deterministic history/rank calculation,
+ * which also makes the fail-closed rules testable without replacing the real query adapter.
  */
 public interface StudentProjectionQuery {
 
@@ -35,10 +34,7 @@ public interface StudentProjectionQuery {
     Map<Long, SubjectSnapshot> findSubjectsByIds(Collection<Long> subjectIds);
 
     List<Long> findActiveStudentIds(
-            long groupId,
-            long semesterId,
-            LocalDate dateFrom,
-            LocalDate dateUntilExclusive);
+            long groupId, long semesterId, LocalDate dateFrom, LocalDate dateUntilExclusive);
 
     record AuthoritySnapshot(
             long userId,
@@ -64,7 +60,8 @@ public interface StudentProjectionQuery {
                 throw new IllegalArgumentException("session identity must be positive");
             }
             if (activeRoleGrantId != null && activeRoleGrantId <= 0) {
-                throw new IllegalArgumentException("activeRoleGrantId must be positive when present");
+                throw new IllegalArgumentException(
+                        "activeRoleGrantId must be positive when present");
             }
             refreshExpiresAt = Objects.requireNonNull(refreshExpiresAt, "refreshExpiresAt");
         }
@@ -75,26 +72,12 @@ public interface StudentProjectionQuery {
         }
     }
 
-    record RoleGrantSnapshot(
-            long id,
-            String role,
-            String status,
-            Long groupId) {
-    }
+    record RoleGrantSnapshot(long id, String role, String status, Long groupId) {}
 
-    record SemesterSnapshot(
-            long id,
-            LocalDate dateFrom,
-            LocalDate dateTo) {
-    }
+    record SemesterSnapshot(long id, LocalDate dateFrom, LocalDate dateTo) {}
 
     record GroupHistorySnapshot(
-            long id,
-            long userId,
-            long groupId,
-            LocalDate joinedAt,
-            LocalDate leftAt) {
-    }
+            long id, long userId, long groupId, LocalDate joinedAt, LocalDate leftAt) {}
 
     record AssignmentSnapshot(
             long id,
@@ -103,13 +86,7 @@ public interface StudentProjectionQuery {
             long semesterId,
             String lessonType,
             LocalDate validFrom,
-            LocalDate validUntilExclusive) {
-    }
+            LocalDate validUntilExclusive) {}
 
-    record SubjectSnapshot(
-            long id,
-            String name,
-            String type,
-            long groupId) {
-    }
+    record SubjectSnapshot(long id, String name, String type, long groupId) {}
 }

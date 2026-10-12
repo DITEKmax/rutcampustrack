@@ -7,10 +7,11 @@ import com.tngtech.archunit.lang.ArchRule;
 import ru.rutcampustrack.shared.observability.GrpcDeadlineArchRules;
 
 /**
- * M05 G9 DRY (NEW-149): правило вынесено в
- * {@link GrpcDeadlineArchRules}, здесь только per-service scoping.
+ * M05 G9 DRY (NEW-149): правило вынесено в {@link GrpcDeadlineArchRules}, здесь только per-service
+ * scoping.
  */
-@AnalyzeClasses(packages = "ru.rutcampustrack.schedule",
+@AnalyzeClasses(
+        packages = "ru.rutcampustrack.schedule",
         importOptions = {ImportOption.DoNotIncludeTests.class})
 class GrpcClientDeadlineTest {
 

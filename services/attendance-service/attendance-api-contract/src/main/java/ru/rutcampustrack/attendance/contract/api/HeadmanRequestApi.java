@@ -32,9 +32,11 @@ public interface HeadmanRequestApi {
 
     @PostMapping("/{id}/decision")
     ResponseEntity<HeadmanRequestDetailResponse> decide(
-            @PathVariable String id,
-            @Valid @RequestBody HeadmanRequestDecisionRequest body);
+            @PathVariable String id, @Valid @RequestBody HeadmanRequestDecisionRequest body);
 
-    @GetMapping(value = "/{id}/attachments/{attachmentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    ResponseEntity<byte[]> downloadAttachment(@PathVariable String id, @PathVariable String attachmentId);
+    @GetMapping(
+            value = "/{id}/attachments/{attachmentId}",
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<byte[]> downloadAttachment(
+            @PathVariable String id, @PathVariable String attachmentId);
 }

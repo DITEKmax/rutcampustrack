@@ -9,9 +9,9 @@ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 
 /**
- * Resolves the active semester from Academic before current-semester operations.
- * The historical cache API remains available to startup and archive-event callers,
- * but a missed event must not leave requests using an archived semester indefinitely.
+ * Resolves the active semester from Academic before current-semester operations. The historical
+ * cache API remains available to startup and archive-event callers, but a missed event must not
+ * leave requests using an archived semester indefinitely.
  */
 @Service
 public class SemesterCacheService {
@@ -26,7 +26,8 @@ public class SemesterCacheService {
 
     @PostConstruct
     public void init() {
-        // Catch any exception so startup is not blocked if Academic Service is temporarily unavailable
+        // Catch any exception so startup is not blocked if Academic Service is temporarily
+        // unavailable
         try {
             refresh();
         } catch (Exception e) {

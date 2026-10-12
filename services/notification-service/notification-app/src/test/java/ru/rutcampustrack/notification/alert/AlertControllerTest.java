@@ -1,12 +1,5 @@
 package ru.rutcampustrack.notification.alert;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.mock;
@@ -14,15 +7,22 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
+
 /**
  * M04 Группа 9 — unit tests для /internal/alert.
  *
  * <p>Покрывает:
+ *
  * <ul>
- *   <li>Happy path: valid Bearer → alerts publishes each via {@link AlertPublisher}.</li>
- *   <li>Auth: missing / wrong / empty header / empty secret property — 401.</li>
- *   <li>Malformed body (no alerts array) — 400.</li>
- *   <li>Каждый alert в пачке → отдельный publish call с нужными полями.</li>
+ *   <li>Happy path: valid Bearer → alerts publishes each via {@link AlertPublisher}.
+ *   <li>Auth: missing / wrong / empty header / empty secret property — 401.
+ *   <li>Malformed body (no alerts array) — 400.
+ *   <li>Каждый alert в пачке → отдельный publish call с нужными полями.
  * </ul>
  */
 class AlertControllerTest {
@@ -38,33 +38,37 @@ class AlertControllerTest {
 
     @Test
     void happyPath_publishesEachAlertAndReturns200() {
-        Map<String, Object> body = Map.of(
-                "alerts", List.of(
-                        Map.of(
-                                "status", "firing",
-                                "labels", Map.of(
-                                        "alertname", "ServiceDown",
-                                        "severity", "critical",
-                                        "job", "auth-service"
-                                ),
-                                "annotations", Map.of(
-                                        "summary", "auth-service недоступен",
-                                        "description", "Scrape failed > 1m"
-                                )
-                        ),
-                        Map.of(
-                                "status", "resolved",
-                                "labels", Map.of("alertname", "DiskUsageHigh", "severity", "warning"),
-                                "annotations", Map.of()
-                        )
-                )
-        );
+        Map<String, Object> body =
+                Map.of(
+                        "alerts",
+                        List.of(
+                                Map.of(
+                                        "status", "firing",
+                                        "labels",
+                                                Map.of(
+                                                        "alertname", "ServiceDown",
+                                                        "severity", "critical",
+                                                        "job", "auth-service"),
+                                        "annotations",
+                                                Map.of(
+                                                        "summary", "auth-service недоступен",
+                                                        "description", "Scrape failed > 1m")),
+                                Map.of(
+                                        "status", "resolved",
+                                        "labels",
+                                                Map.of(
+                                                        "alertname",
+                                                        "DiskUsageHigh",
+                                                        "severity",
+                                                        "warning"),
+                                        "annotations", Map.of())));
 
         ResponseEntity<?> response = controller.receive("Bearer secret-token", body);
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getBody()).isInstanceOfSatisfying(Map.class,
-                m -> assertThat(m.get("published")).isEqualTo(2));
+        assertThat(response.getBody())
+                .isInstanceOfSatisfying(
+                        Map.class, m -> assertThat(m.get("published")).isEqualTo(2));
 
         var captor = forClass(AlertPayload.class);
         verify(publisher, times(2)).publishFired(captor.capture());
@@ -85,14 +89,16 @@ class AlertControllerTest {
 
     @Test
     void wrongBearerToken_returns401() {
-        ResponseEntity<?> response = controller.receive("Bearer wrong-token", Map.of("alerts", List.of()));
+        ResponseEntity<?> response =
+                controller.receive("Bearer wrong-token", Map.of("alerts", List.of()));
         assertThat(response.getStatusCode().value()).isEqualTo(401);
         verify(publisher, never()).publishFired(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
     void nonBearerAuthorization_returns401() {
-        ResponseEntity<?> response = controller.receive("Basic abc123", Map.of("alerts", List.of()));
+        ResponseEntity<?> response =
+                controller.receive("Basic abc123", Map.of("alerts", List.of()));
         assertThat(response.getStatusCode().value()).isEqualTo(401);
     }
 
@@ -105,23 +111,25 @@ class AlertControllerTest {
 
     @Test
     void malformedBody_noAlertsArray_returns400() {
-        ResponseEntity<?> response = controller.receive("Bearer secret-token", Map.of("version", "4"));
+        ResponseEntity<?> response =
+                controller.receive("Bearer secret-token", Map.of("version", "4"));
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         verify(publisher, never()).publishFired(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
     void emptyAlertsArray_returns200WithZero() {
-        ResponseEntity<?> response = controller.receive("Bearer secret-token", Map.of("alerts", List.of()));
+        ResponseEntity<?> response =
+                controller.receive("Bearer secret-token", Map.of("alerts", List.of()));
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getBody()).isInstanceOfSatisfying(Map.class,
-                m -> assertThat(m.get("published")).isEqualTo(0));
+        assertThat(response.getBody())
+                .isInstanceOfSatisfying(
+                        Map.class, m -> assertThat(m.get("published")).isEqualTo(0));
     }
 
     /**
-     * G11 H3 fix — labels с non-string значениями не должны ломать
-     * парсинг. До fix'а был unchecked cast + ClassCastException позже
-     * в bot'е.
+     * G11 H3 fix — labels с non-string значениями не должны ломать парсинг. До fix'а был unchecked
+     * cast + ClassCastException позже в bot'е.
      */
     @Test
     void labelsWithNonStringValues_coercedSafely() {
@@ -131,13 +139,17 @@ class AlertControllerTest {
         labelsMixed.put("count", true);
         labelsMixed.put("nullval", null);
 
-        Map<String, Object> body = Map.of(
-                "alerts", List.of(Map.of(
-                        "status", "firing",
-                        "labels", labelsMixed,
-                        "annotations", Map.of()
-                ))
-        );
+        Map<String, Object> body =
+                Map.of(
+                        "alerts",
+                        List.of(
+                                Map.of(
+                                        "status",
+                                        "firing",
+                                        "labels",
+                                        labelsMixed,
+                                        "annotations",
+                                        Map.of())));
 
         ResponseEntity<?> response = controller.receive("Bearer secret-token", body);
         assertThat(response.getStatusCode().value()).isEqualTo(200);

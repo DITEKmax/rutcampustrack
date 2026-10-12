@@ -8,20 +8,18 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
-
-import javax.net.ssl.SSLSession;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.net.ssl.SSLSession;
 
 /**
  * Reusable exact-method service identity admission.
  *
- * <p>The interceptor is intentionally inert for methods absent from the
- * supplied policy. This lets an application register it globally while the
- * existing contracts of unrelated RPCs remain owned by their existing
- * interceptors.</p>
+ * <p>The interceptor is intentionally inert for methods absent from the supplied policy. This lets
+ * an application register it globally while the existing contracts of unrelated RPCs remain owned
+ * by their existing interceptors.
  */
 public final class ServiceIdentityServerInterceptor implements ServerInterceptor {
 
@@ -38,7 +36,8 @@ public final class ServiceIdentityServerInterceptor implements ServerInterceptor
 
     private static final String INVALID_IDENTITY = "Invalid service identity";
     private static final String TLS_REQUIRED = "Service identity requires authenticated TLS";
-    private static final String FORBIDDEN_CALLER = "Service identity is not allowed for this method";
+    private static final String FORBIDDEN_CALLER =
+            "Service identity is not allowed for this method";
 
     private final ServicePrincipal target;
     private final Map<String, ServicePrincipal> allowedCallersByMethod;
@@ -65,12 +64,11 @@ public final class ServiceIdentityServerInterceptor implements ServerInterceptor
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-            ServerCall<ReqT, RespT> call,
-            Metadata headers,
-            ServerCallHandler<ReqT, RespT> next) {
-        String methodName = call == null || call.getMethodDescriptor() == null
-                ? ""
-                : call.getMethodDescriptor().getFullMethodName();
+            ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        String methodName =
+                call == null || call.getMethodDescriptor() == null
+                        ? ""
+                        : call.getMethodDescriptor().getFullMethodName();
         ServicePrincipal expectedCaller = allowedCallersByMethod.get(methodName);
         if (expectedCaller == null) {
             return next.startCall(call, headers);
@@ -93,7 +91,8 @@ public final class ServiceIdentityServerInterceptor implements ServerInterceptor
             return reject(call, Status.Code.PERMISSION_DENIED, FORBIDDEN_CALLER);
         }
 
-        Context context = Context.current().withValue(ServicePrincipal.CONTEXT_KEY, verified.source());
+        Context context =
+                Context.current().withValue(ServicePrincipal.CONTEXT_KEY, verified.source());
         return Contexts.interceptCall(context, call, headers, next);
     }
 
@@ -137,10 +136,8 @@ public final class ServiceIdentityServerInterceptor implements ServerInterceptor
     }
 
     private static <ReqT> ServerCall.Listener<ReqT> reject(
-            ServerCall<ReqT, ?> call,
-            Status.Code code,
-            String description) {
+            ServerCall<ReqT, ?> call, Status.Code code, String description) {
         call.close(Status.fromCode(code).withDescription(description), new Metadata());
-        return new ServerCall.Listener<>() { };
+        return new ServerCall.Listener<>() {};
     }
 }

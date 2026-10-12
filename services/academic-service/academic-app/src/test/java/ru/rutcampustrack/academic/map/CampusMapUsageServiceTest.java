@@ -1,20 +1,5 @@
 package ru.rutcampustrack.academic.map;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +9,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
+
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 @ExtendWith(MockitoExtension.class)
 class CampusMapUsageServiceTest {
@@ -47,33 +46,56 @@ class CampusMapUsageServiceTest {
     @Test
     void oneLogicalOpeningWritesIntentAndDedupeWithPseudonymousOwner() {
         givenPublishedFloor();
-        when(repository.insertOpenIntent(any(), eq(INTENT_ID), eq(20L), eq(200L), any())).thenReturn(1, 0);
+        when(repository.insertOpenIntent(any(), eq(INTENT_ID), eq(20L), eq(200L), any()))
+                .thenReturn(1, 0);
         OffsetDateTime acceptedAt = OffsetDateTime.parse("2999-01-01T12:00:00Z");
         when(repository.findOpenIntentForUpdate(OWNER_HMAC, INTENT_ID))
-                .thenReturn(Optional.of(new CampusMapUsageRepository.OpenIntentRow(
-                        OWNER_HMAC, INTENT_ID, 20L, 200L, payloadHash(),
-                        LocalDate.parse("2999-01-01"), acceptedAt, acceptedAt.plusHours(48))));
+                .thenReturn(
+                        Optional.of(
+                                new CampusMapUsageRepository.OpenIntentRow(
+                                        OWNER_HMAC,
+                                        INTENT_ID,
+                                        20L,
+                                        200L,
+                                        payloadHash(),
+                                        LocalDate.parse("2999-01-01"),
+                                        acceptedAt,
+                                        acceptedAt.plusHours(48))));
 
         service.recordFloorOpen("20", "200", INTENT_ID, claims());
 
-        verify(repository).insertOpenIntent(eq(OWNER_HMAC), eq(INTENT_ID), eq(20L), eq(200L),
-                argThat(hash -> hash != null && hash.length == 32));
-        verify(repository).insertDemandDedupe(OWNER_HMAC, 200L,
-                LocalDate.parse("2999-01-01"), INTENT_ID, acceptedAt);
-        service.recordFloorOpen("20", "200", INTENT_ID, claims()); // retained intent is a no-op signal
+        verify(repository)
+                .insertOpenIntent(
+                        eq(OWNER_HMAC),
+                        eq(INTENT_ID),
+                        eq(20L),
+                        eq(200L),
+                        argThat(hash -> hash != null && hash.length == 32));
+        verify(repository)
+                .insertDemandDedupe(
+                        OWNER_HMAC, 200L, LocalDate.parse("2999-01-01"), INTENT_ID, acceptedAt);
+        service.recordFloorOpen(
+                "20", "200", INTENT_ID, claims()); // retained intent is a no-op signal
         verify(events, org.mockito.Mockito.times(1))
-                .publishEvent(any(ru.rutcampustrack.academic.event.DashboardInvalidatedEvent.class));
+                .publishEvent(
+                        any(ru.rutcampustrack.academic.event.DashboardInvalidatedEvent.class));
     }
 
     @Test
     void sameIntentBoundToAnotherFloorCannotIncrement() {
         givenPublishedFloor();
         when(repository.findOpenIntentForUpdate(OWNER_HMAC, INTENT_ID))
-                .thenReturn(Optional.of(new CampusMapUsageRepository.OpenIntentRow(
-                        OWNER_HMAC, INTENT_ID, 20L, 201L, PAYLOAD_HASH,
-                        LocalDate.parse("2999-01-01"),
-                        OffsetDateTime.parse("2999-01-01T12:00:00Z"),
-                        OffsetDateTime.parse("2999-01-03T12:00:00Z"))));
+                .thenReturn(
+                        Optional.of(
+                                new CampusMapUsageRepository.OpenIntentRow(
+                                        OWNER_HMAC,
+                                        INTENT_ID,
+                                        20L,
+                                        201L,
+                                        PAYLOAD_HASH,
+                                        LocalDate.parse("2999-01-01"),
+                                        OffsetDateTime.parse("2999-01-01T12:00:00Z"),
+                                        OffsetDateTime.parse("2999-01-03T12:00:00Z"))));
 
         assertThatThrownBy(() -> service.recordFloorOpen("20", "200", INTENT_ID, claims()))
                 .isInstanceOf(CampusMapReadException.class)
@@ -109,25 +131,28 @@ class CampusMapUsageServiceTest {
     }
 
     private static InternalJwtClaims claims() {
-        return new InternalJwtClaims(100L, SESSION_ID, 1L, 1L,
-                "STUDENT", "ACTIVE", 10L, false, false);
+        return new InternalJwtClaims(
+                100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
     }
 
     private void givenPublishedFloor() {
         when(repository.lockFloorForOpen(200L)).thenReturn(true);
         when(mapReadService.readFloorPlan("20", "200", claims()))
-                .thenReturn(new CampusMapReadModels.PlanResult(
-                        new CampusMapReadModels.ManifestPlan(20L, 200L, 1L, "floor", null, null)));
+                .thenReturn(
+                        new CampusMapReadModels.PlanResult(
+                                new CampusMapReadModels.ManifestPlan(
+                                        20L, 200L, 1L, "floor", null, null)));
         when(ownerHmacProvider.forUser(100L)).thenReturn(OWNER_HMAC);
     }
 
     private static byte[] payloadHash() {
         try {
-            ByteBuffer payload = ByteBuffer.allocate(Long.BYTES * 2 + 16)
-                    .putLong(20L)
-                    .putLong(200L)
-                    .putLong(INTENT_ID.getMostSignificantBits())
-                    .putLong(INTENT_ID.getLeastSignificantBits());
+            ByteBuffer payload =
+                    ByteBuffer.allocate(Long.BYTES * 2 + 16)
+                            .putLong(20L)
+                            .putLong(200L)
+                            .putLong(INTENT_ID.getMostSignificantBits())
+                            .putLong(INTENT_ID.getLeastSignificantBits());
             return MessageDigest.getInstance("SHA-256").digest(payload.array());
         } catch (Exception error) {
             throw new AssertionError(error);

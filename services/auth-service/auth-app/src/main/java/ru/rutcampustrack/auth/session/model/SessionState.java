@@ -5,8 +5,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Internal session transition state. Refresh JTIs are intentionally kept out
- * of public snapshots and redacted from this record's textual form.
+ * Internal session transition state. Refresh JTIs are intentionally kept out of public snapshots
+ * and redacted from this record's textual form.
  */
 public record SessionState(
         UUID sessionId,
@@ -22,8 +22,7 @@ public record SessionState(
         SessionRevokeReason revokeReason,
         AuthMethod authMethod,
         String clientLabel,
-        String locationLabel
-) {
+        String locationLabel) {
 
     public SessionState {
         sessionId = Objects.requireNonNull(sessionId, "sessionId");
@@ -38,7 +37,8 @@ public record SessionState(
         }
         currentRefreshJti = Objects.requireNonNull(currentRefreshJti, "currentRefreshJti");
         if (Objects.equals(currentRefreshJti, previousRefreshJti)) {
-            throw new IllegalArgumentException("previousRefreshJti must differ from currentRefreshJti");
+            throw new IllegalArgumentException(
+                    "previousRefreshJti must differ from currentRefreshJti");
         }
         refreshExpiresAt = Objects.requireNonNull(refreshExpiresAt, "refreshExpiresAt");
         createdAt = Objects.requireNonNull(createdAt, "createdAt");
@@ -50,7 +50,8 @@ public record SessionState(
             throw new IllegalArgumentException("lastSeenAt must not precede createdAt");
         }
         if ((revokedAt == null) != (revokeReason == null)) {
-            throw new IllegalArgumentException("revokedAt and revokeReason must be both null or both present");
+            throw new IllegalArgumentException(
+                    "revokedAt and revokeReason must be both null or both present");
         }
         if (revokedAt != null && revokedAt.isBefore(createdAt)) {
             throw new IllegalArgumentException("revokedAt must not precede createdAt");
@@ -75,10 +76,20 @@ public record SessionState(
 
     public SessionState withActiveRole(Long grantId, long nextVersion) {
         return new SessionState(
-                sessionId, userId, grantId, nextVersion, currentRefreshJti,
-                previousRefreshJti, refreshExpiresAt, createdAt, lastSeenAt,
-                revokedAt, revokeReason, authMethod, clientLabel, locationLabel
-        );
+                sessionId,
+                userId,
+                grantId,
+                nextVersion,
+                currentRefreshJti,
+                previousRefreshJti,
+                refreshExpiresAt,
+                createdAt,
+                lastSeenAt,
+                revokedAt,
+                revokeReason,
+                authMethod,
+                clientLabel,
+                locationLabel);
     }
 
     public SessionState withRefresh(UUID nextCurrent, Instant seenAt) {
@@ -88,10 +99,20 @@ public record SessionState(
             throw new IllegalArgumentException("seenAt must not be after refresh expiry");
         }
         return new SessionState(
-                sessionId, userId, activeRoleGrantId, sessionVersion, nextCurrent,
-                currentRefreshJti, refreshExpiresAt, createdAt, seenAt,
-                revokedAt, revokeReason, authMethod, clientLabel, locationLabel
-        );
+                sessionId,
+                userId,
+                activeRoleGrantId,
+                sessionVersion,
+                nextCurrent,
+                currentRefreshJti,
+                refreshExpiresAt,
+                createdAt,
+                seenAt,
+                revokedAt,
+                revokeReason,
+                authMethod,
+                clientLabel,
+                locationLabel);
     }
 
     public SessionState revokedAt(Instant when, SessionRevokeReason reason) {
@@ -101,27 +122,50 @@ public record SessionState(
             throw new IllegalArgumentException("revocation must not precede creation");
         }
         return new SessionState(
-                sessionId, userId, activeRoleGrantId, sessionVersion, currentRefreshJti,
-                previousRefreshJti, refreshExpiresAt, createdAt, lastSeenAt,
-                when, reason, authMethod, clientLabel, locationLabel
-        );
+                sessionId,
+                userId,
+                activeRoleGrantId,
+                sessionVersion,
+                currentRefreshJti,
+                previousRefreshJti,
+                refreshExpiresAt,
+                createdAt,
+                lastSeenAt,
+                when,
+                reason,
+                authMethod,
+                clientLabel,
+                locationLabel);
     }
 
     @Override
     public String toString() {
-        return "SessionState[sessionId=" + sessionId
-                + ", userId=" + userId
-                + ", activeRoleGrantId=" + activeRoleGrantId
-                + ", sessionVersion=" + sessionVersion
+        return "SessionState[sessionId="
+                + sessionId
+                + ", userId="
+                + userId
+                + ", activeRoleGrantId="
+                + activeRoleGrantId
+                + ", sessionVersion="
+                + sessionVersion
                 + ", refreshJti=<redacted>"
-                + ", refreshExpiresAt=" + refreshExpiresAt
-                + ", createdAt=" + createdAt
-                + ", lastSeenAt=" + lastSeenAt
-                + ", revokedAt=" + revokedAt
-                + ", revokeReason=" + revokeReason
-                + ", authMethod=" + authMethod
-                + ", clientLabel=" + clientLabel
-                + ", locationLabel=" + locationLabel + ']';
+                + ", refreshExpiresAt="
+                + refreshExpiresAt
+                + ", createdAt="
+                + createdAt
+                + ", lastSeenAt="
+                + lastSeenAt
+                + ", revokedAt="
+                + revokedAt
+                + ", revokeReason="
+                + revokeReason
+                + ", authMethod="
+                + authMethod
+                + ", clientLabel="
+                + clientLabel
+                + ", locationLabel="
+                + locationLabel
+                + ']';
     }
 
     private static void validateLabel(String value, String field) {

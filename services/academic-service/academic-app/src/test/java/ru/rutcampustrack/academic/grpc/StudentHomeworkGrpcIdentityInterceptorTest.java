@@ -1,5 +1,11 @@
 package ru.rutcampustrack.academic.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
@@ -7,29 +13,6 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
-import ru.rutcampustrack.academic.entity.Homework;
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.homework.HomeworkStudentService;
-import ru.rutcampustrack.academic.map.CampusMapReadService;
-import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
-import ru.rutcampustrack.academic.repository.HomeworkRepository;
-import ru.rutcampustrack.academic.repository.SubjectRepository;
-import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-import ru.rutcampustrack.shared.security.InternalJwtException;
-import ru.rutcampustrack.shared.security.InternalJwtValidator;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -37,14 +20,29 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.homework.HomeworkStudentService;
+import ru.rutcampustrack.academic.map.CampusMapReadService;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
+import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.repository.SubjectRepository;
+import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.security.InternalJwtException;
+import ru.rutcampustrack.shared.security.InternalJwtValidator;
 
 class StudentHomeworkGrpcIdentityInterceptorTest {
     private static final UUID SESSION_ID = UUID.fromString("22222222-2222-4222-8222-222222222222");
@@ -55,14 +53,16 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
 
     @Test
     void validTokenBindsClaimsOnlyForHomeworkMutation() {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         when(validator.validate("signed")).thenReturn(claims);
         AtomicReference<InternalJwtClaims> seen = new AtomicReference<>();
-        ServerCallHandler<Object, Object> next = (call, headers) -> {
-            seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
-            return new ServerCall.Listener<>() { };
-        };
+        ServerCallHandler<Object, Object> next =
+                (call, headers) -> {
+                    seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
+                    return new ServerCall.Listener<>() {};
+                };
 
         interceptor.interceptCall(call("SetHomeworkCompletion"), headers("signed"), next);
 
@@ -71,14 +71,16 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
 
     @Test
     void validTokenBindsClaimsForHomeworkRead() {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         when(validator.validate("signed")).thenReturn(claims);
         AtomicReference<InternalJwtClaims> seen = new AtomicReference<>();
-        ServerCallHandler<Object, Object> next = (call, headers) -> {
-            seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
-            return new ServerCall.Listener<>() { };
-        };
+        ServerCallHandler<Object, Object> next =
+                (call, headers) -> {
+                    seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
+                    return new ServerCall.Listener<>() {};
+                };
 
         interceptor.interceptCall(call("GetHomeworksForWeek"), headers("signed"), next);
 
@@ -87,14 +89,16 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
 
     @Test
     void validTokenBindsClaimsForStudentProjectionRead() {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         when(validator.validate("signed")).thenReturn(claims);
         AtomicReference<InternalJwtClaims> seen = new AtomicReference<>();
-        ServerCallHandler<Object, Object> next = (call, headers) -> {
-            seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
-            return new ServerCall.Listener<>() { };
-        };
+        ServerCallHandler<Object, Object> next =
+                (call, headers) -> {
+                    seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
+                    return new ServerCall.Listener<>() {};
+                };
 
         interceptor.interceptCall(call("ResolveStudentProjectionScope"), headers("signed"), next);
 
@@ -102,17 +106,25 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @ValueSource(strings = {
-            "GetCampusMapManifest", "GetCampusFloorPlan", "ReadCampusMapAsset", "RecordCampusFloorOpen", "ResolveHeadmanStatsScope"})
+    @ValueSource(
+            strings = {
+                "GetCampusMapManifest",
+                "GetCampusFloorPlan",
+                "ReadCampusMapAsset",
+                "RecordCampusFloorOpen",
+                "ResolveHeadmanStatsScope"
+            })
     void validTokenBindsClaimsForEveryCampusMapOperation(String methodName) {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         when(validator.validate("signed")).thenReturn(claims);
         AtomicReference<InternalJwtClaims> seen = new AtomicReference<>();
-        ServerCallHandler<Object, Object> next = (call, headers) -> {
-            seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
-            return new ServerCall.Listener<>() { };
-        };
+        ServerCallHandler<Object, Object> next =
+                (call, headers) -> {
+                    seen.set(StudentHomeworkGrpcIdentity.CLAIMS.get());
+                    return new ServerCall.Listener<>() {};
+                };
 
         interceptor.interceptCall(call(methodName), headers("signed"), next);
 
@@ -124,8 +136,11 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
         when(validator.validate("bad")).thenThrow(new InternalJwtException("bad token"));
         ServerCall<Object, Object> call = call("SetHomeworkCompletion");
         @SuppressWarnings("unchecked")
-        ServerCall.Listener<Object> ignored = interceptor.interceptCall(
-                call, headers("bad"), (nextCall, metadata) -> new ServerCall.Listener<>() { });
+        ServerCall.Listener<Object> ignored =
+                interceptor.interceptCall(
+                        call,
+                        headers("bad"),
+                        (nextCall, metadata) -> new ServerCall.Listener<>() {});
 
         ArgumentCaptor<Status> status = ArgumentCaptor.forClass(Status.class);
         verify(call).close(status.capture(), any());
@@ -135,16 +150,15 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
     @ParameterizedTest(name = "{0} {1}")
     @MethodSource("invalidMapTokenCases")
     void missingOrBadMapTokenClosesUnauthenticatedWithoutCallingHandler(
-            String tokenCase,
-            String methodName,
-            String token) {
+            String tokenCase, String methodName, String token) {
         when(validator.validate(token)).thenThrow(new InternalJwtException(tokenCase));
         AtomicReference<Boolean> handlerCalled = new AtomicReference<>(false);
         ServerCall<Object, Object> call = call(methodName);
-        ServerCallHandler<Object, Object> next = (nextCall, metadata) -> {
-            handlerCalled.set(true);
-            return new ServerCall.Listener<>() { };
-        };
+        ServerCallHandler<Object, Object> next =
+                (nextCall, metadata) -> {
+                    handlerCalled.set(true);
+                    return new ServerCall.Listener<>() {};
+                };
 
         interceptor.interceptCall(call, headers(token), next);
 
@@ -165,7 +179,8 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
 
         service.getHomeworksForWeek(request(100L, 10L), observer);
 
-        assertThat(Status.fromThrowable(observer.error).getCode()).isEqualTo(Status.Code.PERMISSION_DENIED);
+        assertThat(Status.fromThrowable(observer.error).getCode())
+                .isEqualTo(Status.Code.PERMISSION_DENIED);
         verifyNoInteractions(users, homeworks, completions, subjects);
     }
 
@@ -188,19 +203,26 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
         when(homework.getSubjectId()).thenReturn(701L);
         when(homework.getLessonDate()).thenReturn(LocalDate.of(2026, 3, 2));
         when(homework.getLessonNumber()).thenReturn(1);
-        when(homework.getBindingMode()).thenReturn(ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode.LESSON);
-        when(homeworks.findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                10L, 20L, HomeworkPublicationState.ACTIVE,
-                LocalDate.of(2026, 3, 2), LocalDate.of(2026, 3, 2)))
+        when(homework.getBindingMode())
+                .thenReturn(ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode.LESSON);
+        when(homeworks
+                        .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                                10L,
+                                20L,
+                                HomeworkPublicationState.ACTIVE,
+                                LocalDate.of(2026, 3, 2),
+                                LocalDate.of(2026, 3, 2)))
                 .thenReturn(List.of(homework));
         when(completions.findByHomeworkIdInAndStudentId(List.of(700L), 100L)).thenReturn(List.of());
         when(subjects.findAllById(Set.of(701L))).thenReturn(List.of());
 
-        InternalJwtClaims terminalClaims = new InternalJwtClaims(
-                100L, SESSION_ID, 4L, 8L, "STUDENT", "EXPELLED", 10L, false, true);
+        InternalJwtClaims terminalClaims =
+                new InternalJwtClaims(
+                        100L, SESSION_ID, 4L, 8L, "STUDENT", "EXPELLED", 10L, false, true);
         RecordingObserver<HomeworksForWeekResponse> observer = new RecordingObserver<>();
-        Context.current().withValue(StudentHomeworkGrpcIdentity.CLAIMS, terminalClaims).run(
-                () -> service.getHomeworksForWeek(request(100L, 10L), observer));
+        Context.current()
+                .withValue(StudentHomeworkGrpcIdentity.CLAIMS, terminalClaims)
+                .run(() -> service.getHomeworksForWeek(request(100L, 10L), observer));
 
         assertThat(observer.error).isNull();
         assertThat(observer.value.getHomeworksList()).hasSize(1);
@@ -211,21 +233,24 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
 
     @Test
     void peerRequestIsDeniedBeforeOwnUserLookup() {
-        assertDenied(new InternalJwtClaims(
+        assertDenied(
+                new InternalJwtClaims(
                         100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false),
                 request(101L, 10L));
     }
 
     @Test
     void groupRequestIsDeniedBeforeOwnUserLookup() {
-        assertDenied(new InternalJwtClaims(
+        assertDenied(
+                new InternalJwtClaims(
                         100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false),
                 request(100L, 11L));
     }
 
     @Test
     void wrongRoleRequestIsDeniedBeforeOwnUserLookup() {
-        assertDenied(new InternalJwtClaims(
+        assertDenied(
+                new InternalJwtClaims(
                         100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", 10L, false, false),
                 request(100L, 10L));
     }
@@ -238,10 +263,12 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
         AcademicGrpcServiceImpl service = service(users, homeworks, completions, subjects);
         RecordingObserver<HomeworksForWeekResponse> observer = new RecordingObserver<>();
 
-        Context.current().withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims).run(
-                () -> service.getHomeworksForWeek(request, observer));
+        Context.current()
+                .withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims)
+                .run(() -> service.getHomeworksForWeek(request, observer));
 
-        assertThat(Status.fromThrowable(observer.error).getCode()).isEqualTo(Status.Code.PERMISSION_DENIED);
+        assertThat(Status.fromThrowable(observer.error).getCode())
+                .isEqualTo(Status.Code.PERMISSION_DENIED);
         verifyNoInteractions(users, homeworks, completions, subjects);
     }
 
@@ -305,8 +332,7 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
         }
 
         @Override
-        public void onCompleted() {
-        }
+        public void onCompleted() {}
     }
 
     private static ServerCall<Object, Object> call(String method) {

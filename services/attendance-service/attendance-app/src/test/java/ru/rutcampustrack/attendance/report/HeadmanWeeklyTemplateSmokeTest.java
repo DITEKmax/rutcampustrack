@@ -1,8 +1,7 @@
 package ru.rutcampustrack.attendance.report;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,8 +15,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.junit.jupiter.api.Test;
 
 class HeadmanWeeklyTemplateSmokeTest {
 
@@ -39,7 +38,8 @@ class HeadmanWeeklyTemplateSmokeTest {
         String renderedXml = readDocumentXml();
 
         for (Map.Entry<String, String> entry : sampleValues().entrySet()) {
-            renderedXml = renderedXml.replace("${" + entry.getKey() + "}", escapeXml(entry.getValue()));
+            renderedXml =
+                    renderedXml.replace("${" + entry.getKey() + "}", escapeXml(entry.getValue()));
         }
 
         assertThat(extractPlaceholders(renderedXml)).isEmpty();
@@ -51,13 +51,14 @@ class HeadmanWeeklyTemplateSmokeTest {
     }
 
     private static String readDocumentXml() throws Exception {
-        InputStream resource = HeadmanWeeklyTemplateSmokeTest.class
-                .getClassLoader()
-                .getResourceAsStream(TEMPLATE_RESOURCE);
+        InputStream resource =
+                HeadmanWeeklyTemplateSmokeTest.class
+                        .getClassLoader()
+                        .getResourceAsStream(TEMPLATE_RESOURCE);
         assertThat(resource).as("template resource %s", TEMPLATE_RESOURCE).isNotNull();
 
         try (InputStream input = Objects.requireNonNull(resource);
-             ZipInputStream zip = new ZipInputStream(input, StandardCharsets.UTF_8)) {
+                ZipInputStream zip = new ZipInputStream(input, StandardCharsets.UTF_8)) {
             var entry = zip.getNextEntry();
             while (entry != null) {
                 if ("word/document.xml".equals(entry.getName())) {
@@ -110,30 +111,35 @@ class HeadmanWeeklyTemplateSmokeTest {
 
         LocalDate weekStart = LocalDate.of(2026, 4, 27);
         for (int dayIndex = 0; dayIndex < DAYS.size(); dayIndex++) {
-            values.put("date_" + DAYS.get(dayIndex), weekStart.plusDays(dayIndex).format(DATE_FORMAT));
+            values.put(
+                    "date_" + DAYS.get(dayIndex), weekStart.plusDays(dayIndex).format(DATE_FORMAT));
         }
 
-        List<String> subjects = List.of(
-                "Мат. анализ",
-                "История",
-                "Физика",
-                "Английский",
-                "Программирование",
-                "Алгебра",
-                "Философия",
-                "БЖД",
-                "Экономика",
-                "Проект"
-        );
+        List<String> subjects =
+                List.of(
+                        "Мат. анализ",
+                        "История",
+                        "Физика",
+                        "Английский",
+                        "Программирование",
+                        "Алгебра",
+                        "Философия",
+                        "БЖД",
+                        "Экономика",
+                        "Проект");
         List<String> lessonTypes = List.of("ЛК", "ПЗ", "ЛЗ", "ПЗ", "ЛК");
 
         for (int dayIndex = 0; dayIndex < DAYS.size(); dayIndex++) {
             String day = DAYS.get(dayIndex);
             for (int lesson = 1; lesson <= 5; lesson++) {
                 boolean emptyLesson = "sat".equals(day) && lesson > 3;
-                values.put("subject_" + day + "_" + lesson,
-                        emptyLesson ? "" : subjects.get((dayIndex * 5 + lesson - 1) % subjects.size()));
-                values.put("type_" + day + "_" + lesson,
+                values.put(
+                        "subject_" + day + "_" + lesson,
+                        emptyLesson
+                                ? ""
+                                : subjects.get((dayIndex * 5 + lesson - 1) % subjects.size()));
+                values.put(
+                        "type_" + day + "_" + lesson,
                         emptyLesson ? "" : lessonTypes.get(lesson - 1));
             }
         }
@@ -155,7 +161,8 @@ class HeadmanWeeklyTemplateSmokeTest {
         return values;
     }
 
-    private static String sampleMark(int student, String day, int dayIndex, int lesson, List<String> marks) {
+    private static String sampleMark(
+            int student, String day, int dayIndex, int lesson, List<String> marks) {
         if ("sat".equals(day) && lesson > 3) {
             return "";
         }
@@ -166,8 +173,7 @@ class HeadmanWeeklyTemplateSmokeTest {
     }
 
     private static String escapeXml(String value) {
-        return value
-                .replace("&", "&amp;")
+        return value.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
@@ -178,6 +184,7 @@ class HeadmanWeeklyTemplateSmokeTest {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setExpandEntityReferences(false);
-        factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+        factory.newDocumentBuilder()
+                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 }

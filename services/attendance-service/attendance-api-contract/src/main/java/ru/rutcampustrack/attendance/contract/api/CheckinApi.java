@@ -17,8 +17,8 @@ import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinResponse;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /**
- * Contract interface for geo-checkin API (D-06).
- * Mappings declared here — controller implements this interface.
+ * Contract interface for geo-checkin API (D-06). Mappings declared here — controller implements
+ * this interface.
  */
 @Tag(name = "Checkin", description = "Геоотметка студентов")
 @RequestMapping("/attendance")
@@ -26,14 +26,17 @@ public interface CheckinApi {
 
     @Operation(
             summary = "Геоотметка студента",
-            description = "Устаревший путь отключён. Используйте канонический student check-in API.",
-            deprecated = true
-    )
+            description =
+                    "Устаревший путь отключён. Используйте канонический student check-in API.",
+            deprecated = true)
     @Deprecated(forRemoval = false)
     @ApiResponses({
-            @ApiResponse(responseCode = "410", description = "Устаревший путь отключён",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        @ApiResponse(
+                responseCode = "410",
+                description = "Устаревший путь отключён",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/checkin")
-    ResponseEntity<EntityModel<CheckinResponse>> checkin(@Valid @RequestBody CheckinRequest request);
+    ResponseEntity<EntityModel<CheckinResponse>> checkin(
+            @Valid @RequestBody CheckinRequest request);
 }

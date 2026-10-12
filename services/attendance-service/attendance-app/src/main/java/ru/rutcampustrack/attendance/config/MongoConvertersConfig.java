@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.config;
 
+import java.util.List;
+import java.util.Locale;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -11,14 +13,10 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
-import java.util.List;
-import java.util.Locale;
-
 /**
- * MongoDB custom converters for enum serialization as lowercase strings (INFRA-02).
- * Declared in a separate class from MongoConfig to avoid circular dependency:
- * MongoCustomConversions is needed to create MongoTemplate, so it must NOT be
- * declared in a class that also injects MongoTemplate.
+ * MongoDB custom converters for enum serialization as lowercase strings (INFRA-02). Declared in a
+ * separate class from MongoConfig to avoid circular dependency: MongoCustomConversions is needed to
+ * create MongoTemplate, so it must NOT be declared in a class that also injects MongoTemplate.
  */
 @Configuration
 public class MongoConvertersConfig {
@@ -26,16 +24,16 @@ public class MongoConvertersConfig {
     // INFRA-02: Enum serialization as lowercase strings
     @Bean
     public MongoCustomConversions mongoCustomConversions() {
-        return new MongoCustomConversions(List.of(
-                new AttendanceStatusWriter(),
-                new AttendanceStatusReader(),
-                new AttendanceSourceWriter(),
-                new AttendanceSourceReader(),
-                new ExcuseTypeWriter(),
-                new ExcuseTypeReader(),
-                new ExcuseTicketStatusWriter(),
-                new ExcuseTicketStatusReader()
-        ));
+        return new MongoCustomConversions(
+                List.of(
+                        new AttendanceStatusWriter(),
+                        new AttendanceStatusReader(),
+                        new AttendanceSourceWriter(),
+                        new AttendanceSourceReader(),
+                        new ExcuseTypeWriter(),
+                        new ExcuseTypeReader(),
+                        new ExcuseTicketStatusWriter(),
+                        new ExcuseTicketStatusReader()));
     }
 
     @WritingConverter

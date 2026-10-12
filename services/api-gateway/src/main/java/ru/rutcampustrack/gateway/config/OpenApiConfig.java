@@ -11,9 +11,11 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI gatewayOpenAPI() {
         return new OpenAPI()
-                .info(new Info()
-                        .title("RutCampusTrack API")
-                        .description("Unified API documentation — aggregated from all microservices")
-                        .version("1.0"));
+                .info(
+                        new Info()
+                                .title("RutCampusTrack API")
+                                .description(
+                                        "Unified API documentation — aggregated from all microservices")
+                                .version("1.0"));
     }
 }

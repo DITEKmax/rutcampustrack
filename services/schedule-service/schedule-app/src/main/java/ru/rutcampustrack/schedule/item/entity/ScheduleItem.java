@@ -1,25 +1,23 @@
 package ru.rutcampustrack.schedule.item.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-
 /**
- * JPA entity for the schedule_items table.
- * Represents a recurring weekly schedule template (e.g., "Group 1A has Math every Monday at 08:30, odd weeks").
+ * JPA entity for the schedule_items table. Represents a recurring weekly schedule template (e.g.,
+ * "Group 1A has Math every Monday at 08:30, odd weeks").
  *
- * Column mapping notes:
- * - start_time / end_time: TIME (no timezone) -> LocalTime via direct JDBC 4.2 mapping.
- *   Moscow wall time must not be converted through java.sql.Time and the JVM timezone.
- * - week_type: PostgreSQL custom enum -> WeekType via EnumConverters.WeekTypeConverter (autoApply=true).
- *   Do NOT add @Convert — autoApply handles it automatically.
- * - No @ManyToOne associations — FKs are stored as Long IDs (project-wide convention).
+ * <p>Column mapping notes: - start_time / end_time: TIME (no timezone) -> LocalTime via direct JDBC
+ * 4.2 mapping. Moscow wall time must not be converted through java.sql.Time and the JVM timezone. -
+ * week_type: PostgreSQL custom enum -> WeekType via EnumConverters.WeekTypeConverter
+ * (autoApply=true). Do NOT add @Convert — autoApply handles it automatically. - No @ManyToOne
+ * associations — FKs are stored as Long IDs (project-wide convention).
  */
 @Entity
 @Table(name = "schedule_items")

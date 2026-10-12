@@ -1,14 +1,13 @@
 package ru.rutcampustrack.notification.event;
 
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore;
-
-import java.util.Map;
-import java.util.UUID;
 
 /** Rabbit boundary keeps committed replay reads outside the delivery transaction. */
 @Component
@@ -22,13 +21,19 @@ public class NotificationEventConsumer {
         this.processor = processor;
     }
 
-    @RabbitListener(queues = "notification-web.events",
+    @RabbitListener(
+            queues = "notification-web.events",
             containerFactory = "notificationHistoryRabbitListenerContainerFactory")
     public void onEvent(Map<String, Object> envelope) {
         String eventId = validEventId(envelope);
-        if (eventId != null && mongoTemplate.exists(Query.query(
-                Criteria.where("consumer_id").is(EventConsumer.CONSUMER_ID)
-                        .and("event_id").is(eventId)), MongoIdempotencyStore.DEFAULT_COLLECTION)) {
+        if (eventId != null
+                && mongoTemplate.exists(
+                        Query.query(
+                                Criteria.where("consumer_id")
+                                        .is(EventConsumer.CONSUMER_ID)
+                                        .and("event_id")
+                                        .is(eventId)),
+                        MongoIdempotencyStore.DEFAULT_COLLECTION)) {
             return;
         }
         // A concurrent, still-uncommitted event is invisible here. The processor's

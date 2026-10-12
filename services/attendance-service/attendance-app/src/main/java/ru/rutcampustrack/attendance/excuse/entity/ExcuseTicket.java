@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.excuse.entity;
 
+import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,13 +14,9 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 
-import java.time.Instant;
-import java.util.List;
-
 /**
- * MongoDB document for excuse tickets (Phase 59, D-01, D-02).
- * Collection: excuse_tickets.
- * Lombok allowed in app module (entity).
+ * MongoDB document for excuse tickets (Phase 59, D-01, D-02). Collection: excuse_tickets. Lombok
+ * allowed in app module (entity).
  */
 @Data
 @Builder
@@ -27,8 +25,7 @@ import java.util.List;
 @Document(collection = "excuse_tickets")
 public class ExcuseTicket {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     @Field("student_id")
     private Long studentId;
@@ -42,7 +39,10 @@ public class ExcuseTicket {
     @Field("lesson_ids")
     private List<Long> lessonIds;
 
-    /** Known membership retained before a selected decision narrows the effective targets; no metadata is invented. */
+    /**
+     * Known membership retained before a selected decision narrows the effective targets; no
+     * metadata is invented.
+     */
     @Field("original_lesson_ids")
     private List<Long> originalLessonIds;
 
@@ -53,8 +53,10 @@ public class ExcuseTicket {
     /** Immutable schedule data used by archive/detail reads after schedule changes. */
     @Field("lesson_snapshots")
     private List<StudentLessonSnapshotDocument> lessonSnapshots;
+
     @Field("decision_selection")
-    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument decisionSelection;
+    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument
+            decisionSelection;
 
     @Field("excuse_type")
     private ExcuseType excuseType;

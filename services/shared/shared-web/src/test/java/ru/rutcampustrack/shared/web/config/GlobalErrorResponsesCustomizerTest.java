@@ -1,5 +1,7 @@
 package ru.rutcampustrack.shared.web.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -11,8 +13,6 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springdoc.core.customizers.OpenApiCustomizer;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class GlobalErrorResponsesCustomizerTest {
 
@@ -47,7 +47,8 @@ class GlobalErrorResponsesCustomizerTest {
     }
 
     @Test
-    @DisplayName("M11 G1: все добавленные error responses имеют content=application/problem+json + $ref ErrorResponse")
+    @DisplayName(
+            "M11 G1: все добавленные error responses имеют content=application/problem+json + $ref ErrorResponse")
     void addedResponsesHaveProblemJsonContent() {
         OpenAPI api = openApiWithSingleOperation(new Operation());
         OpenApiCustomizer customizer = config.globalErrorResponsesCustomizer();
@@ -55,7 +56,7 @@ class GlobalErrorResponsesCustomizerTest {
         customizer.customise(api);
 
         ApiResponses responses = api.getPaths().get("/test").getGet().getResponses();
-        for (String status : new String[]{"400", "401", "403", "404", "409", "429", "500"}) {
+        for (String status : new String[] {"400", "401", "403", "404", "409", "429", "500"}) {
             Content content = responses.get(status).getContent();
             assertThat(content)
                     .as("status %s content", status)
@@ -64,13 +65,15 @@ class GlobalErrorResponsesCustomizerTest {
 
             MediaType mediaType = content.get(GlobalErrorResponsesCustomizer.PROBLEM_JSON);
             assertThat(mediaType.getSchema().get$ref())
-                    .isEqualTo("#/components/schemas/"
-                            + GlobalErrorResponsesCustomizer.ERROR_RESPONSE_SCHEMA);
+                    .isEqualTo(
+                            "#/components/schemas/"
+                                    + GlobalErrorResponsesCustomizer.ERROR_RESPONSE_SCHEMA);
         }
     }
 
     @Test
-    @DisplayName("M11 G1: existing @ApiResponse с description сохраняется, добавляется content schema")
+    @DisplayName(
+            "M11 G1: existing @ApiResponse с description сохраняется, добавляется content schema")
     void preservesExistingDescriptionEnrichesContent() {
         Operation op = new Operation();
         ApiResponses existing = new ApiResponses();
@@ -94,9 +97,8 @@ class GlobalErrorResponsesCustomizerTest {
         ApiResponses existing = new ApiResponses();
         MediaType custom = new MediaType();
         Content customContent = new Content().addMediaType("application/custom+json", custom);
-        existing.addApiResponse("409", new ApiResponse()
-                .description("Конфликт")
-                .content(customContent));
+        existing.addApiResponse(
+                "409", new ApiResponse().description("Конфликт").content(customContent));
         op.setResponses(existing);
         OpenAPI api = openApiWithSingleOperation(op);
 
@@ -105,7 +107,8 @@ class GlobalErrorResponsesCustomizerTest {
         ApiResponse resp409 = api.getPaths().get("/test").getGet().getResponses().get("409");
         assertThat(resp409.getContent()).containsKey("application/custom+json");
         // Shared problem+json НЕ добавлен поверх существующего custom content
-        assertThat(resp409.getContent()).doesNotContainKey(GlobalErrorResponsesCustomizer.PROBLEM_JSON);
+        assertThat(resp409.getContent())
+                .doesNotContainKey(GlobalErrorResponsesCustomizer.PROBLEM_JSON);
     }
 
     @Test

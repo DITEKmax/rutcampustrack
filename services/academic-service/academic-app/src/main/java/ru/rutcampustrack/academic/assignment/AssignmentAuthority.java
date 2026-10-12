@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.assignment;
 
+import java.time.LocalDate;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
@@ -18,15 +20,12 @@ import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 
-import java.time.LocalDate;
-import java.util.Objects;
-
 /**
  * The single V25 write authority for immutable assignment rows.
  *
- * <p>Callers authenticate their actor and group before reaching this class;
- * this class owns the shared referential, grant, date and overlap checks so
- * create-subject and add/assign-teacher paths cannot drift apart.</p>
+ * <p>Callers authenticate their actor and group before reaching this class; this class owns the
+ * shared referential, grant, date and overlap checks so create-subject and add/assign-teacher paths
+ * cannot drift apart.
  */
 @Service
 public class AssignmentAuthority {
@@ -41,20 +40,20 @@ public class AssignmentAuthority {
     private final UserRepository userRepository;
     private final UserRoleGrantRepository grantRepository;
     private AssignmentClosureService closureService;
-    @jakarta.persistence.PersistenceContext
-    private jakarta.persistence.EntityManager entityManager;
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
     @org.springframework.beans.factory.annotation.Autowired
     public void setClosureService(AssignmentClosureService closureService) {
         this.closureService = closureService;
     }
 
-    public AssignmentAuthority(AssignmentRepository assignmentRepository,
-                               SemesterRepository semesterRepository,
-                               SubjectRepository subjectRepository,
-                               SubjectLessonTypeRepository lessonTypeRepository,
-                               UserRepository userRepository,
-                               UserRoleGrantRepository grantRepository) {
+    public AssignmentAuthority(
+            AssignmentRepository assignmentRepository,
+            SemesterRepository semesterRepository,
+            SubjectRepository subjectRepository,
+            SubjectLessonTypeRepository lessonTypeRepository,
+            UserRepository userRepository,
+            UserRoleGrantRepository grantRepository) {
         this.assignmentRepository = assignmentRepository;
         this.semesterRepository = semesterRepository;
         this.subjectRepository = subjectRepository;
@@ -69,64 +68,104 @@ public class AssignmentAuthority {
         if (semesterId == null || semesterId <= 0) {
             throw new BadRequestException("semesterId", "ID семестра должен быть положительным");
         }
-        return semesterRepository.findByIdForUpdate(semesterId)
+        return semesterRepository
+                .findByIdForUpdate(semesterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", semesterId));
     }
 
     @Transactional
-    public Assignment create(Long teacherId,
-                             Long subjectId,
-                             Long groupId,
-                             Long semesterId,
-                             SubjectType lessonType,
-                             LocalDate validFrom,
-                             LocalDate validUntilExclusive) {
+    public Assignment create(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive) {
         Semester semester = lockSemester(semesterId);
-        return createWithLockedSemester(teacherId, subjectId, groupId, semester,
-                lessonType, validFrom, validUntilExclusive);
+        return createWithLockedSemester(
+                teacherId,
+                subjectId,
+                groupId,
+                semester,
+                lessonType,
+                validFrom,
+                validUntilExclusive);
     }
 
     /** Creates after the caller has acquired the deterministic semester lock. */
     @Transactional
-    public Assignment createWithLockedSemester(Long teacherId,
-                                               Long subjectId,
-                                               Long groupId,
-                                               Semester semester,
-                                               SubjectType lessonType,
-                                               LocalDate validFrom,
-                                               LocalDate validUntilExclusive) {
-        return createLocked(teacherId,subjectId,groupId,semester,lessonType,validFrom,validUntilExclusive,true);
+    public Assignment createWithLockedSemester(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Semester semester,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive) {
+        return createLocked(
+                teacherId,
+                subjectId,
+                groupId,
+                semester,
+                lessonType,
+                validFrom,
+                validUntilExclusive,
+                true);
     }
 
     /** Only SubjectService's newly inserted subject admission uses this atomic batch. */
     @Transactional
-    public void createInitialAssignmentsForNewSubject(Long subjectId, Long groupId,
-            java.util.Map<Long,Semester> lockedSemesters,
-            java.util.List<ru.rutcampustrack.academic.contract.dto.subject.InitialAssignmentRequest> initial) {
-        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()
+    public void createInitialAssignmentsForNewSubject(
+            Long subjectId,
+            Long groupId,
+            java.util.Map<Long, Semester> lockedSemesters,
+            java.util.List<ru.rutcampustrack.academic.contract.dto.subject.InitialAssignmentRequest>
+                    initial) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager
+                        .isActualTransactionActive()
                 || assignmentRepository.existsBySubjectId(subjectId)) {
-            throw new ConflictException("Первичные назначения требуют нового предмета в одной транзакции");
+            throw new ConflictException(
+                    "Первичные назначения требуют нового предмета в одной транзакции");
         }
-        java.util.Set<String> checked=new java.util.HashSet<>();
+        java.util.Set<String> checked = new java.util.HashSet<>();
         for (var request : initial) {
-            if (checked.add(request.semesterId()+"|"+request.lessonType())) {
-                Objects.requireNonNull(closureService,"Assignment adoption coordinator").requireNoOpenTuple(
-                        groupId,subjectId,request.semesterId(),request.lessonType());
+            if (checked.add(request.semesterId() + "|" + request.lessonType())) {
+                Objects.requireNonNull(closureService, "Assignment adoption coordinator")
+                        .requireNoOpenTuple(
+                                groupId, subjectId, request.semesterId(), request.lessonType());
             }
         }
-        java.util.List<Assignment> targets=new java.util.ArrayList<>();
-        for (var request : initial) targets.add(createLocked(request.teacherId(),subjectId,groupId,
-                lockedSemesters.get(request.semesterId()),request.lessonType(),request.validFrom(),request.validUntilExclusive(),false));
+        java.util.List<Assignment> targets = new java.util.ArrayList<>();
+        for (var request : initial)
+            targets.add(
+                    createLocked(
+                            request.teacherId(),
+                            subjectId,
+                            groupId,
+                            lockedSemesters.get(request.semesterId()),
+                            request.lessonType(),
+                            request.validFrom(),
+                            request.validUntilExclusive(),
+                            false));
         for (Assignment target : targets) {
             closureService.prepareAdoption(target);
             entityManager.detach(target);
         }
     }
 
-    private Assignment createLocked(Long teacherId,Long subjectId,Long groupId,Semester semester,
-            SubjectType lessonType,LocalDate validFrom,LocalDate validUntilExclusive,boolean independentAdmission) {
+    private Assignment createLocked(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Semester semester,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive,
+            boolean independentAdmission) {
         if (teacherId == null || teacherId <= 0) {
-            throw new BadRequestException("teacherId", "ID преподавателя должен быть положительным");
+            throw new BadRequestException(
+                    "teacherId", "ID преподавателя должен быть положительным");
         }
         if (subjectId == null || subjectId <= 0) {
             throw new BadRequestException("subjectId", "ID предмета должен быть положительным");
@@ -135,13 +174,17 @@ public class AssignmentAuthority {
             throw new BadRequestException("groupId", "ID группы должен быть положительным");
         }
         if (semester == null || semester.getId() == null) {
-            throw new ResourceNotFoundException("Semester", "id", semester == null ? null : semester.getId());
+            throw new ResourceNotFoundException(
+                    "Semester", "id", semester == null ? null : semester.getId());
         }
         if (lessonType == null) {
             throw new BadRequestException("lessonType", "Тип занятия обязателен");
         }
-        Subject subject = subjectRepository.findById(subjectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
+        Subject subject =
+                subjectRepository
+                        .findById(subjectId)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Subject", "id", subjectId));
         if (!Objects.equals(subject.getGroupId(), groupId)) {
             throw new AccessDeniedException("Предмет не принадлежит указанной группе");
         }
@@ -149,26 +192,49 @@ public class AssignmentAuthority {
             throw new BadRequestException("lessonType", "Тип занятия не разрешён для предмета");
         }
 
-        User teacher = userRepository.findById(teacherId)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher", "id", teacherId));
-        if (grantRepository.findByUserIdAndRoleAndStatus(teacher.getId(), TEACHER_ROLE, ACTIVE_STATUS)
+        User teacher =
+                userRepository
+                        .findById(teacherId)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Teacher", "id", teacherId));
+        if (grantRepository
+                .findByUserIdAndRoleAndStatus(teacher.getId(), TEACHER_ROLE, ACTIVE_STATUS)
                 .isEmpty()) {
             throw new AccessDeniedException("У преподавателя нет активного права TEACHER");
         }
 
         validateDates(semester, validFrom, validUntilExclusive);
-        if (independentAdmission) Objects.requireNonNull(closureService, "Assignment adoption coordinator")
-                .requireNoOpenTuple(groupId, subjectId, semester.getId(), lessonType);
-        assignmentRepository.findOverlapping(
-                        teacherId, subjectId, groupId, semester.getId(), lessonType.name().toLowerCase(),
-                        validFrom, validUntilExclusive)
-                .ifPresent(existing -> {
-                    throw new ConflictException("Назначение преподавателя пересекается с существующим");
-                });
-        Assignment assignment = assignmentRepository.saveAndFlush(new Assignment(
-                teacherId, subjectId, groupId, semester.getId(), lessonType,
-                validFrom, validUntilExclusive, "PREPARED"));
-        if (independentAdmission) Objects.requireNonNull(closureService, "Assignment adoption coordinator").prepareAdoption(assignment);
+        if (independentAdmission)
+            Objects.requireNonNull(closureService, "Assignment adoption coordinator")
+                    .requireNoOpenTuple(groupId, subjectId, semester.getId(), lessonType);
+        assignmentRepository
+                .findOverlapping(
+                        teacherId,
+                        subjectId,
+                        groupId,
+                        semester.getId(),
+                        lessonType.name().toLowerCase(),
+                        validFrom,
+                        validUntilExclusive)
+                .ifPresent(
+                        existing -> {
+                            throw new ConflictException(
+                                    "Назначение преподавателя пересекается с существующим");
+                        });
+        Assignment assignment =
+                assignmentRepository.saveAndFlush(
+                        new Assignment(
+                                teacherId,
+                                subjectId,
+                                groupId,
+                                semester.getId(),
+                                lessonType,
+                                validFrom,
+                                validUntilExclusive,
+                                "PREPARED"));
+        if (independentAdmission)
+            Objects.requireNonNull(closureService, "Assignment adoption coordinator")
+                    .prepareAdoption(assignment);
         // Its lifecycle changes in fresh transactions after admission commits.
         // Do not retain a PREPARED instance in an open persistence context used
         // by the subsequent Subject projection.
@@ -176,9 +242,8 @@ public class AssignmentAuthority {
         return assignment;
     }
 
-    public static void validateDates(Semester semester,
-                                     LocalDate validFrom,
-                                     LocalDate validUntilExclusive) {
+    public static void validateDates(
+            Semester semester, LocalDate validFrom, LocalDate validUntilExclusive) {
         if (validFrom == null) {
             throw new BadRequestException("validFrom", "Дата начала обязательна");
         }
@@ -190,8 +255,10 @@ public class AssignmentAuthority {
         }
         LocalDate effectiveEnd = semester.getDateTo().plusDays(1);
         if (validUntilExclusive != null
-                && (!validUntilExclusive.isAfter(validFrom) || validUntilExclusive.isAfter(effectiveEnd))) {
-            throw new BadRequestException("validUntilExclusive",
+                && (!validUntilExclusive.isAfter(validFrom)
+                        || validUntilExclusive.isAfter(effectiveEnd))) {
+            throw new BadRequestException(
+                    "validUntilExclusive",
                     "Дата окончания должна быть после начала и не позже конца семестра");
         }
     }

@@ -1,14 +1,13 @@
 package ru.rutcampustrack.auth.config;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.ResourceLock;
-import ru.rutcampustrack.auth.entity.enums.UserRole;
-import ru.rutcampustrack.auth.entity.enums.AccountStatus;
-
-import java.util.Locale;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.Locale;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import ru.rutcampustrack.auth.entity.enums.AccountStatus;
+import ru.rutcampustrack.auth.entity.enums.UserRole;
 
 @ResourceLock("java.util.Locale.default")
 class LowercaseEnumConverterTest {
@@ -18,9 +17,18 @@ class LowercaseEnumConverterTest {
         Locale previous = Locale.getDefault();
         try {
             Locale.setDefault(Locale.forLanguageTag("tr-TR"));
-            assertThat(new EnumConverters.UserRoleConverter().convertToDatabaseColumn(UserRole.ADMIN)).isEqualTo("admin");
-            assertThat(new EnumConverters.AccountStatusConverter().convertToEntityAttribute("active")).isEqualTo(AccountStatus.ACTIVE);
-            assertThat(new EnumConverters.AccountStatusConverter().convertToDatabaseColumn(AccountStatus.ARCHIVED)).isEqualTo("archived");
+            assertThat(
+                            new EnumConverters.UserRoleConverter()
+                                    .convertToDatabaseColumn(UserRole.ADMIN))
+                    .isEqualTo("admin");
+            assertThat(
+                            new EnumConverters.AccountStatusConverter()
+                                    .convertToEntityAttribute("active"))
+                    .isEqualTo(AccountStatus.ACTIVE);
+            assertThat(
+                            new EnumConverters.AccountStatusConverter()
+                                    .convertToDatabaseColumn(AccountStatus.ARCHIVED))
+                    .isEqualTo("archived");
         } finally {
             Locale.setDefault(previous);
         }

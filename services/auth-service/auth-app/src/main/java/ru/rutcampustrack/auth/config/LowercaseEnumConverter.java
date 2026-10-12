@@ -1,23 +1,24 @@
 package ru.rutcampustrack.auth.config;
 
 import jakarta.persistence.AttributeConverter;
-
 import java.util.Locale;
 
 /**
  * Universal JPA converter: Java Enum <-> lowercase string in PostgreSQL.
- * <p>
- * Usage: create a concrete subclass for each enum.
+ *
+ * <p>Usage: create a concrete subclass for each enum.
+ *
  * <pre>
  * {@literal @}Converter(autoApply = true)
  * public class UserRoleConverter extends LowercaseEnumConverter{@literal <}UserRole{@literal >} {
  *     public UserRoleConverter() { super(UserRole.class); }
  * }
  * </pre>
- * In DB: "admin", "teacher", "student"
- * In Java: UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT
+ *
+ * In DB: "admin", "teacher", "student" In Java: UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT
  */
-public abstract class LowercaseEnumConverter<E extends Enum<E>> implements AttributeConverter<E, String> {
+public abstract class LowercaseEnumConverter<E extends Enum<E>>
+        implements AttributeConverter<E, String> {
 
     // Persisted names are immutable codes; host locale must not change them.
     private final Class<E> enumClass;

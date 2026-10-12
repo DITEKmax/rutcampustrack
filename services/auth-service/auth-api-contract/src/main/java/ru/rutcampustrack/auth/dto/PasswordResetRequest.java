@@ -8,9 +8,7 @@ import jakarta.validation.constraints.Size;
 
 /** Accepts either a web login or the Telegram account identifier used by the bot. */
 public record PasswordResetRequest(
-        @Positive Long telegramId,
-        @Size(max = 128) @Pattern(regexp = "(?s).*\\S.*") String login
-) {
+        @Positive Long telegramId, @Size(max = 128) @Pattern(regexp = "(?s).*\\S.*") String login) {
     @AssertTrue(message = "Exactly one recovery identifier is required")
     @JsonIgnore
     public boolean isExactlyOneIdentifier() {

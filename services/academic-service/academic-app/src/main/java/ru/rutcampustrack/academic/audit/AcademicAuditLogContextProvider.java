@@ -10,13 +10,11 @@ import ru.rutcampustrack.shared.web.audit.AuditLogContextProvider;
 /**
  * M16 G6 — academic-app implementation {@link AuditLogContextProvider}.
  *
- * <p>Резолвит current user из academic-specific {@link RequestContext}
- * (request-scoped bean). Correlation ID — из shared-observability MDC
- * ({@link MdcKeys#TRACE_ID}).
+ * <p>Резолвит current user из academic-specific {@link RequestContext} (request-scoped bean).
+ * Correlation ID — из shared-observability MDC ({@link MdcKeys#TRACE_ID}).
  *
- * <p>{@code RequestContext} request-scoped → обёрнут в
- * {@code @Scope(proxyMode = TARGET_CLASS)}. ObjectProvider даёт fail-safe
- * resolution: вне request scope (system thread, тест без context)
+ * <p>{@code RequestContext} request-scoped → обёрнут в {@code @Scope(proxyMode = TARGET_CLASS)}.
+ * ObjectProvider даёт fail-safe resolution: вне request scope (system thread, тест без context)
  * вернётся {@code null} вместо {@code ScopeNotActiveException}.
  */
 @Component

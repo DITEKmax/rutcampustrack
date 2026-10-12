@@ -14,15 +14,28 @@ import ru.rutcampustrack.documentrenderer.grpc.*;
 public class RegistryDocumentClient {
     @GrpcClient("document-renderer-service")
     private DocumentRendererGrpcServiceGrpc.DocumentRendererGrpcServiceBlockingStub stub;
+
     public byte[] convert(byte[] docx, boolean png) {
-        if (docx.length > 4 * 1024 * 1024 - 1024) throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Реестр превышает лимит преобразования");
+        if (docx.length > 4 * 1024 * 1024 - 1024)
+            throw new ResponseStatusException(
+                    HttpStatus.PAYLOAD_TOO_LARGE, "Реестр превышает лимит преобразования");
         try {
-            return stub.withDeadlineAfter(30, TimeUnit.SECONDS).convert(ConvertDocumentRequest.newBuilder()
-                    .setDocx(ByteString.copyFrom(docx)).setTargetFormat(png ? TargetFormat.PNG_PAGES_ZIP : TargetFormat.PDF)
-                    .setPngDpi(200).build()).getContent().toByteArray();
+            return stub.withDeadlineAfter(30, TimeUnit.SECONDS)
+                    .convert(
+                            ConvertDocumentRequest.newBuilder()
+                                    .setDocx(ByteString.copyFrom(docx))
+                                    .setTargetFormat(
+                                            png ? TargetFormat.PNG_PAGES_ZIP : TargetFormat.PDF)
+                                    .setPngDpi(200)
+                                    .build())
+                    .getContent()
+                    .toByteArray();
         } catch (StatusRuntimeException e) {
-            throw new ResponseStatusException(e.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED
-                    ? HttpStatus.PAYLOAD_TOO_LARGE : HttpStatus.SERVICE_UNAVAILABLE, "Формирование файла недоступно");
+            throw new ResponseStatusException(
+                    e.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED
+                            ? HttpStatus.PAYLOAD_TOO_LARGE
+                            : HttpStatus.SERVICE_UNAVAILABLE,
+                    "Формирование файла недоступно");
         }
     }
 }

@@ -1,28 +1,10 @@
 package ru.rutcampustrack.academic.map;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InOrder;
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.*;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.INVALID_ARGUMENT;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.NOT_FOUND;
@@ -43,6 +25,23 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestResult;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Plan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InOrder;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 class CampusMapReadServiceTest {
     private static final UUID SESSION_ID = UUID.fromString("22222222-2222-4222-8222-222222222222");
     private static final byte[] PNG_CONTENT = "campus-map-png".getBytes(StandardCharsets.UTF_8);
@@ -55,8 +54,16 @@ class CampusMapReadServiceTest {
     @BeforeEach
     void authenticatedUserExists() {
         when(users.findByIdIncludingArchived(100L)).thenReturn(Optional.of(existingUser));
-        when(repository.findCatalogById(anyLong())).thenAnswer(invocation ->
-                Optional.of(new Catalog((Long) invocation.getArgument(0), 1L, 1, 1, false)));
+        when(repository.findCatalogById(anyLong()))
+                .thenAnswer(
+                        invocation ->
+                                Optional.of(
+                                        new Catalog(
+                                                (Long) invocation.getArgument(0),
+                                                1L,
+                                                1,
+                                                1,
+                                                false)));
     }
 
     @Test
@@ -67,13 +74,40 @@ class CampusMapReadServiceTest {
         Floor firstFloor = new Floor(200L, 20L, "2", 1, 500L, true);
         Floor secondFloor = new Floor(100L, 10L, "1", 0, null, true);
         Plan plan = new Plan(500L, 200L, 4L, 1L, "published", java.time.OffsetDateTime.now());
-        FormatSlot png = readySlot(501L, 500L, CampusMapFormat.PNG, 700L, PNG_CONTENT.length,
-                sha256(PNG_CONTENT), 640, 480);
-        FormatSlot svg = new FormatSlot(502L, 500L, CampusMapFormat.SVG,
-                CampusMapFormatState.ABSENT, "image/svg+xml", null, 0, null,
-                null, null, List.of());
-        AssetMetadata pngMetadata = new AssetMetadata(700L, 500L, CampusMapFormat.PNG,
-                "image/png", PNG_CONTENT.length, sha256(PNG_CONTENT), 640, 480, PNG_CONTENT.length);
+        FormatSlot png =
+                readySlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        700L,
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480);
+        FormatSlot svg =
+                new FormatSlot(
+                        502L,
+                        500L,
+                        CampusMapFormat.SVG,
+                        CampusMapFormatState.ABSENT,
+                        "image/svg+xml",
+                        null,
+                        0,
+                        null,
+                        null,
+                        null,
+                        List.of());
+        AssetMetadata pngMetadata =
+                new AssetMetadata(
+                        700L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        "image/png",
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480,
+                        PNG_CONTENT.length);
 
         when(repository.findCurrentCatalogs()).thenReturn(List.of(catalog));
         when(repository.findActiveBuildings()).thenReturn(List.of(first, second));
@@ -88,9 +122,9 @@ class CampusMapReadServiceTest {
         assertThat(result.unchanged()).isFalse();
         Manifest manifest = result.manifest();
         assertThat(manifest.revision()).isEqualTo(9L);
-        assertThat(manifest.buildings()).extracting(ManifestBuilding::id)
-                .containsExactly(20L, 10L);
-        assertThat(manifest.buildings().get(0).floors()).extracting(ManifestFloor::id)
+        assertThat(manifest.buildings()).extracting(ManifestBuilding::id).containsExactly(20L, 10L);
+        assertThat(manifest.buildings().get(0).floors())
+                .extracting(ManifestFloor::id)
                 .containsExactly(200L);
         ManifestPlan aggregate = manifest.buildings().get(0).floors().get(0).plan();
         assertThat(aggregate.png().state()).isEqualTo(CampusMapFormatState.READY);
@@ -104,8 +138,10 @@ class CampusMapReadServiceTest {
         Building building = new Building(20L, "B", 0, true);
         Floor retainedFloor = new Floor(200L, 20L, "2", 0, 500L, true);
         Floor changedFloor = new Floor(201L, 20L, "3", 1, 600L, true);
-        Plan retainedPlan = new Plan(500L, 200L, 4L, 1L, "retained-r1", java.time.OffsetDateTime.now());
-        Plan changedPlan = new Plan(600L, 201L, 1L, 2L, "changed-r2", java.time.OffsetDateTime.now());
+        Plan retainedPlan =
+                new Plan(500L, 200L, 4L, 1L, "retained-r1", java.time.OffsetDateTime.now());
+        Plan changedPlan =
+                new Plan(600L, 201L, 1L, 2L, "changed-r2", java.time.OffsetDateTime.now());
 
         when(repository.findCurrentCatalogs()).thenReturn(List.of(current));
         when(repository.findActiveBuildings()).thenReturn(List.of(building));
@@ -117,7 +153,8 @@ class CampusMapReadServiceTest {
         Manifest manifest = service.readManifest(0L, activeClaims()).manifest();
 
         assertThat(manifest.revision()).isEqualTo(10L);
-        assertThat(manifest.buildings().get(0).floors()).extracting(ManifestFloor::id)
+        assertThat(manifest.buildings().get(0).floors())
+                .extracting(ManifestFloor::id)
                 .containsExactly(200L, 201L);
         assertThat(manifest.buildings().get(0).floors().get(0).plan().label())
                 .isEqualTo("retained-r1");
@@ -158,8 +195,9 @@ class CampusMapReadServiceTest {
         when(repository.findActiveFloors()).thenReturn(List.of());
         when(repository.findCurrentPlans()).thenReturn(List.of());
 
-        InternalJwtClaims teacher = new InternalJwtClaims(
-                100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", null, false, false);
+        InternalJwtClaims teacher =
+                new InternalJwtClaims(
+                        100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", null, false, false);
 
         assertThatCode(() -> service.readManifest(0L, teacher)).doesNotThrowAnyException();
         verify(users).findByIdIncludingArchived(100L);
@@ -167,7 +205,8 @@ class CampusMapReadServiceTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidClaimCases")
-    void invalidSignedClaimsAreDeniedBeforeUserAndMapLookups(String name, InternalJwtClaims claims) {
+    void invalidSignedClaimsAreDeniedBeforeUserAndMapLookups(
+            String name, InternalJwtClaims claims) {
         assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims));
 
         verifyNoInteractions(users, repository);
@@ -176,9 +215,7 @@ class CampusMapReadServiceTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("statusCases")
     void signedStudentStatusMatrixAllowsOnlyActiveRegularAndTerminalReadOnly(
-            String name,
-            InternalJwtClaims claims,
-            boolean allowed) {
+            String name, InternalJwtClaims claims, boolean allowed) {
         if (!allowed) {
             assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims));
             verifyNoInteractions(users, repository);
@@ -226,20 +263,48 @@ class CampusMapReadServiceTest {
     @Test
     void nonCanonicalFloorAndAssetIdsAreRejectedBeforeMapLookup() {
         assertCode(INVALID_ARGUMENT, () -> service.readFloorPlan("20", "00200", activeClaims()));
-        assertCode(INVALID_ARGUMENT, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "00700", activeClaims(), () -> false));
-        assertCode(INVALID_ARGUMENT, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "9223372036854775808", activeClaims(), () -> false));
+        assertCode(
+                INVALID_ARGUMENT,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "00700",
+                                activeClaims(),
+                                () -> false));
+        assertCode(
+                INVALID_ARGUMENT,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "9223372036854775808",
+                                activeClaims(),
+                                () -> false));
 
         verifyNoInteractions(repository);
     }
 
     @Test
     void nonPositiveVersionAndUnspecifiedFormatAreRejectedBeforeMapLookup() {
-        assertCode(INVALID_ARGUMENT, () -> service.readAsset("20", "200", 0L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
-        assertCode(INVALID_ARGUMENT, () -> service.readAsset("20", "200", 3L,
-                null, "700", activeClaims(), () -> false));
+        assertCode(
+                INVALID_ARGUMENT,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                0L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
+        assertCode(
+                INVALID_ARGUMENT,
+                () -> service.readAsset("20", "200", 3L, null, "700", activeClaims(), () -> false));
 
         verifyNoInteractions(repository);
     }
@@ -247,7 +312,8 @@ class CampusMapReadServiceTest {
     @Test
     void unknownFloorIsNotFoundBeforePlanReads() {
         when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
         when(repository.findActiveFloor(999L)).thenReturn(Optional.empty());
 
         assertCode(NOT_FOUND, () -> service.readFloorPlan("20", "999", activeClaims()));
@@ -260,9 +326,10 @@ class CampusMapReadServiceTest {
     @Test
     void floorWithForeignBuildingParentIsNotFoundBeforePlanReads() {
         when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(
-                Optional.of(new Floor(200L, 21L, "2", 0, null, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 21L, "2", 0, null, true)));
 
         assertCode(NOT_FOUND, () -> service.readFloorPlan("20", "200", activeClaims()));
 
@@ -273,18 +340,18 @@ class CampusMapReadServiceTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidCurrentPointerCases")
     void invalidCurrentPointerFailsClosedBeforeFormatReads(
-            String name,
-            long currentVersionId,
-            boolean missingPlanRowLookup) {
+            String name, long currentVersionId, boolean missingPlanRowLookup) {
         when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(
-                Optional.of(new Floor(200L, 20L, "2", 0, currentVersionId, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, currentVersionId, true)));
         if (missingPlanRowLookup) {
             when(repository.findPlanById(500L, 200L)).thenReturn(Optional.empty());
         }
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS,
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
                 () -> service.readFloorPlan("20", "200", activeClaims()));
 
         if (missingPlanRowLookup) {
@@ -298,21 +365,52 @@ class CampusMapReadServiceTest {
     @Test
     void floorPlanResolvesCurrentPointerAsPlanId() {
         Plan plan = new Plan(500L, 200L, 4L, 1L, "published", java.time.OffsetDateTime.now());
-        FormatSlot png = readySlot(501L, 500L, CampusMapFormat.PNG, 700L, PNG_CONTENT.length,
-                sha256(PNG_CONTENT), 640, 480);
-        FormatSlot svg = new FormatSlot(502L, 500L, CampusMapFormat.SVG,
-                CampusMapFormatState.ABSENT, "image/svg+xml", null, 0, null,
-                null, null, List.of());
-        AssetMetadata metadata = new AssetMetadata(700L, 500L, CampusMapFormat.PNG,
-                "image/png", PNG_CONTENT.length, sha256(PNG_CONTENT), 640, 480, PNG_CONTENT.length);
+        FormatSlot png =
+                readySlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        700L,
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480);
+        FormatSlot svg =
+                new FormatSlot(
+                        502L,
+                        500L,
+                        CampusMapFormat.SVG,
+                        CampusMapFormatState.ABSENT,
+                        "image/svg+xml",
+                        null,
+                        0,
+                        null,
+                        null,
+                        null,
+                        List.of());
+        AssetMetadata metadata =
+                new AssetMetadata(
+                        700L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        "image/png",
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480,
+                        PNG_CONTENT.length);
         when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 500L, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 500L, true)));
         when(repository.findPlanById(500L, 200L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(500L)).thenReturn(List.of(png, svg));
-        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG)).thenReturn(Optional.of(metadata));
+        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG))
+                .thenReturn(Optional.of(metadata));
 
-        assertThat(service.readFloorPlan("20", "200", activeClaims()).plan().version()).isEqualTo(4L);
+        assertThat(service.readFloorPlan("20", "200", activeClaims()).plan().version())
+                .isEqualTo(4L);
         verify(repository).findPlanById(500L, 200L);
         verify(repository, never()).findPlan(200L, 500L);
     }
@@ -320,19 +418,41 @@ class CampusMapReadServiceTest {
     @Test
     void assetChecksMetadataBeforeLoadingBytesAndSupportsHistoricalPublishedVersion() {
         Plan plan = new Plan(500L, 200L, 3L, 8L, "historical", java.time.OffsetDateTime.now());
-        FormatSlot slot = readySlot(501L, 500L, CampusMapFormat.PNG, 700L, PNG_CONTENT.length,
-                sha256(PNG_CONTENT), 640, 480);
-        AssetMetadata metadata = new AssetMetadata(700L, 500L, CampusMapFormat.PNG,
-                "image/png", PNG_CONTENT.length, sha256(PNG_CONTENT), 640, 480, PNG_CONTENT.length);
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        FormatSlot slot =
+                readySlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        700L,
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480);
+        AssetMetadata metadata =
+                new AssetMetadata(
+                        700L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        "image/png",
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480,
+                        PNG_CONTENT.length);
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 3L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(500L)).thenReturn(List.of(slot));
-        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG)).thenReturn(Optional.of(metadata));
-        when(repository.loadAsset(700L, 500L, CampusMapFormat.PNG)).thenReturn(Optional.of(new Asset(PNG_CONTENT)));
+        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG))
+                .thenReturn(Optional.of(metadata));
+        when(repository.loadAsset(700L, 500L, CampusMapFormat.PNG))
+                .thenReturn(Optional.of(new Asset(PNG_CONTENT)));
 
-        Optional<Asset> result = service.readAsset("20", "200", 3L, CampusMapFormat.PNG,
-                "700", activeClaims(), () -> false);
+        Optional<Asset> result =
+                service.readAsset(
+                        "20", "200", 3L, CampusMapFormat.PNG, "700", activeClaims(), () -> false);
 
         assertThat(result).contains(new Asset(PNG_CONTENT));
         InOrder order = inOrder(repository);
@@ -342,13 +462,23 @@ class CampusMapReadServiceTest {
 
     @Test
     void unknownHistoricalVersionIsNotFoundBeforeFormatReads() {
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(
-                Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 99L)).thenReturn(Optional.empty());
 
-        assertCode(NOT_FOUND, () -> service.readAsset("20", "200", 99L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                NOT_FOUND,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                99L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
 
         verify(repository, never()).findFormatSlots(anyLong());
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
@@ -361,8 +491,17 @@ class CampusMapReadServiceTest {
         FormatSlot slot = readyPngSlot(plan.id(), 700L);
         stubAssetPlan(plan, slot);
 
-        assertCode(NOT_FOUND, () -> service.readAsset("20", "200", plan.version(),
-                CampusMapFormat.PNG, "701", activeClaims(), () -> false));
+        assertCode(
+                NOT_FOUND,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                plan.version(),
+                                CampusMapFormat.PNG,
+                                "701",
+                                activeClaims(),
+                                () -> false));
 
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
@@ -375,8 +514,17 @@ class CampusMapReadServiceTest {
         stubAssetPlan(plan, slot);
         when(repository.findCatalogById(plan.catalogRevisionId())).thenReturn(Optional.empty());
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset("20", "200", plan.version(),
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                plan.version(),
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
 
         verify(repository, never()).findFormatSlots(anyLong());
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
@@ -386,50 +534,118 @@ class CampusMapReadServiceTest {
     @Test
     void oversizedSlotIsRejectedBeforeByteLoad() {
         Plan plan = new Plan(500L, 200L, 3L, 8L, "historical", java.time.OffsetDateTime.now());
-        FormatSlot slot = readySlot(501L, 500L, CampusMapFormat.PNG, 700L,
-                CampusMapReadRepository.MAX_ASSET_BYTES + 1, new byte[32], 640, 480);
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        FormatSlot slot =
+                readySlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        700L,
+                        CampusMapReadRepository.MAX_ASSET_BYTES + 1,
+                        new byte[32],
+                        640,
+                        480);
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 3L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(500L)).thenReturn(List.of(slot));
 
-        assertCode(RESOURCE_EXHAUSTED, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                RESOURCE_EXHAUSTED,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
     }
 
     @Test
     void metadataSizeMismatchIsRejectedBeforeByteLoad() {
         Plan plan = new Plan(500L, 200L, 3L, 8L, "historical", java.time.OffsetDateTime.now());
-        FormatSlot slot = readySlot(501L, 500L, CampusMapFormat.PNG, 700L, PNG_CONTENT.length,
-                sha256(PNG_CONTENT), 640, 480);
-        AssetMetadata metadata = new AssetMetadata(700L, 500L, CampusMapFormat.PNG,
-                "image/png", PNG_CONTENT.length + 1L, sha256(PNG_CONTENT), 640, 480,
-                PNG_CONTENT.length + 1L);
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        FormatSlot slot =
+                readySlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        700L,
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480);
+        AssetMetadata metadata =
+                new AssetMetadata(
+                        700L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        "image/png",
+                        PNG_CONTENT.length + 1L,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480,
+                        PNG_CONTENT.length + 1L);
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 3L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(500L)).thenReturn(List.of(slot));
-        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG)).thenReturn(Optional.of(metadata));
+        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG))
+                .thenReturn(Optional.of(metadata));
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
     }
 
     @Test
     void slotMimeMismatchIsRejectedBeforeByteLoad() {
         Plan plan = new Plan(500L, 200L, 3L, 8L, "historical", java.time.OffsetDateTime.now());
-        FormatSlot slot = new FormatSlot(501L, 500L, CampusMapFormat.PNG,
-                CampusMapFormatState.READY, "text/plain", 700L, PNG_CONTENT.length,
-                sha256(PNG_CONTENT), 640, 480, List.of());
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        FormatSlot slot =
+                new FormatSlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        CampusMapFormatState.READY,
+                        "text/plain",
+                        700L,
+                        PNG_CONTENT.length,
+                        sha256(PNG_CONTENT),
+                        640,
+                        480,
+                        List.of());
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 3L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(500L)).thenReturn(List.of(slot));
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
     }
@@ -437,23 +653,49 @@ class CampusMapReadServiceTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("nonReadySlotStates")
     void manifestKeepsEachNonReadyFormatStateWithoutByteMetadataLookup(
-            String name,
-            CampusMapFormatState state) {
+            String name, CampusMapFormatState state) {
         Plan plan = historicalPlan();
         when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
         when(repository.findActiveBuildings()).thenReturn(List.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloors()).thenReturn(
-                List.of(new Floor(200L, 20L, "2", 0, plan.id(), true)));
+        when(repository.findActiveFloors())
+                .thenReturn(List.of(new Floor(200L, 20L, "2", 0, plan.id(), true)));
         when(repository.findCurrentPlans()).thenReturn(List.of(plan));
-        when(repository.findFormatSlots(plan.id())).thenReturn(List.of(
-                new FormatSlot(501L, plan.id(), CampusMapFormat.PNG, state,
-                        "image/png", null, 0, null, null, null, List.of()),
-                new FormatSlot(502L, plan.id(), CampusMapFormat.SVG,
-                        CampusMapFormatState.ABSENT, "image/svg+xml", null, 0,
-                        null, null, null, List.of())));
+        when(repository.findFormatSlots(plan.id()))
+                .thenReturn(
+                        List.of(
+                                new FormatSlot(
+                                        501L,
+                                        plan.id(),
+                                        CampusMapFormat.PNG,
+                                        state,
+                                        "image/png",
+                                        null,
+                                        0,
+                                        null,
+                                        null,
+                                        null,
+                                        List.of()),
+                                new FormatSlot(
+                                        502L,
+                                        plan.id(),
+                                        CampusMapFormat.SVG,
+                                        CampusMapFormatState.ABSENT,
+                                        "image/svg+xml",
+                                        null,
+                                        0,
+                                        null,
+                                        null,
+                                        null,
+                                        List.of())));
 
-        ManifestPlan result = service.readManifest(0L, activeClaims())
-                .manifest().buildings().get(0).floors().get(0).plan();
+        ManifestPlan result =
+                service.readManifest(0L, activeClaims())
+                        .manifest()
+                        .buildings()
+                        .get(0)
+                        .floors()
+                        .get(0)
+                        .plan();
 
         assertThat(result.png().state()).isEqualTo(state);
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
@@ -463,15 +705,34 @@ class CampusMapReadServiceTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("nonReadySlotStates")
     void nonReadyAssetWithNullAssetIdIsNotFoundBeforeMetadataOrByteLoad(
-            String name,
-            CampusMapFormatState state) {
+            String name, CampusMapFormatState state) {
         Plan plan = historicalPlan();
-        FormatSlot slot = new FormatSlot(501L, plan.id(), CampusMapFormat.PNG, state,
-                "image/png", null, 0L, null, null, null, List.of());
+        FormatSlot slot =
+                new FormatSlot(
+                        501L,
+                        plan.id(),
+                        CampusMapFormat.PNG,
+                        state,
+                        "image/png",
+                        null,
+                        0L,
+                        null,
+                        null,
+                        null,
+                        List.of());
         stubAssetPlan(plan, slot);
 
-        assertCode(NOT_FOUND, () -> service.readAsset("20", "200", plan.version(),
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                NOT_FOUND,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                plan.version(),
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
     }
@@ -484,9 +745,17 @@ class CampusMapReadServiceTest {
         when(repository.findAssetMetadata(700L, plan.id(), CampusMapFormat.PNG))
                 .thenReturn(Optional.empty());
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS,
-                () -> service.readAsset("20", "200", plan.version(), CampusMapFormat.PNG,
-                        "700", activeClaims(), () -> false));
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                plan.version(),
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository).findAssetMetadata(700L, plan.id(), CampusMapFormat.PNG);
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
     }
@@ -494,18 +763,18 @@ class CampusMapReadServiceTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidCurrentSlotCases")
     void currentPlanRejectsMissingDuplicateOrMisparentedFormatSlots(
-            String name,
-            List<FormatSlot> slots) {
+            String name, List<FormatSlot> slots) {
         Plan plan = historicalPlan();
         when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
-        when(repository.findActiveBuilding(20L)).thenReturn(
-                Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(
-                Optional.of(new Floor(200L, 20L, "2", 0, plan.id(), true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, plan.id(), true)));
         when(repository.findPlanById(plan.id(), 200L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(plan.id())).thenReturn(slots);
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS,
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
                 () -> service.readFloorPlan("20", "200", activeClaims()));
         verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());
     }
@@ -513,17 +782,24 @@ class CampusMapReadServiceTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("assetMetadataMismatchCases")
     void assetMetadataParentHashAndDimensionsMustMatchBeforeByteLoad(
-            String name,
-            AssetMetadata metadata) {
+            String name, AssetMetadata metadata) {
         Plan plan = historicalPlan();
         FormatSlot slot = readyPngSlot(plan.id(), 700L);
         stubAssetPlan(plan, slot);
         when(repository.findAssetMetadata(700L, plan.id(), CampusMapFormat.PNG))
                 .thenReturn(Optional.of(metadata));
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS,
-                () -> service.readAsset("20", "200", plan.version(), CampusMapFormat.PNG,
-                        "700", activeClaims(), () -> false));
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                plan.version(),
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository, never()).loadAsset(anyLong(), anyLong(), any());
     }
 
@@ -531,8 +807,15 @@ class CampusMapReadServiceTest {
     void cancellationStopsBeforeIdentityLookupAndDoesNotLoadBytes() {
         AtomicBoolean cancelled = new AtomicBoolean(true);
 
-        Optional<Asset> result = service.readAsset("20", "200", 3L, CampusMapFormat.PNG,
-                "700", activeClaims(), cancelled::get);
+        Optional<Asset> result =
+                service.readAsset(
+                        "20",
+                        "200",
+                        3L,
+                        CampusMapFormat.PNG,
+                        "700",
+                        activeClaims(),
+                        cancelled::get);
 
         assertThat(result).isEmpty();
         verifyNoInteractions(users, repository);
@@ -545,38 +828,80 @@ class CampusMapReadServiceTest {
         when(repository.findActiveFloors()).thenReturn(List.of());
         when(repository.findCurrentPlans()).thenReturn(List.of());
 
-        assertThat(service.readManifest(0L, claims("ARCHIVED", true)).manifest().buildings()).isEmpty();
+        assertThat(service.readManifest(0L, claims("ARCHIVED", true)).manifest().buildings())
+                .isEmpty();
         verify(users).findByIdIncludingArchived(100L);
     }
 
     @Test
     void unpublishedPlanFailsClosed() {
         Plan unpublished = new Plan(500L, 200L, 3L, 8L, "draft", null);
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 3L)).thenReturn(Optional.of(unpublished));
 
-        assertCode(FAILED_PRECONDITION, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                FAILED_PRECONDITION,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
     }
 
     @Test
     void digestMismatchFailsAfterMetadataButBeforeReturningAsset() {
         Plan plan = new Plan(500L, 200L, 3L, 8L, "historical", java.time.OffsetDateTime.now());
         byte[] wrongDigest = new byte[32];
-        FormatSlot slot = readySlot(501L, 500L, CampusMapFormat.PNG, 700L, PNG_CONTENT.length,
-                wrongDigest, 640, 480);
-        AssetMetadata metadata = new AssetMetadata(700L, 500L, CampusMapFormat.PNG,
-                "image/png", PNG_CONTENT.length, wrongDigest, 640, 480, PNG_CONTENT.length);
-        when(repository.findActiveBuilding(20L)).thenReturn(Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        FormatSlot slot =
+                readySlot(
+                        501L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        700L,
+                        PNG_CONTENT.length,
+                        wrongDigest,
+                        640,
+                        480);
+        AssetMetadata metadata =
+                new AssetMetadata(
+                        700L,
+                        500L,
+                        CampusMapFormat.PNG,
+                        "image/png",
+                        PNG_CONTENT.length,
+                        wrongDigest,
+                        640,
+                        480,
+                        PNG_CONTENT.length);
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, 3L)).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(500L)).thenReturn(List.of(slot));
-        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG)).thenReturn(Optional.of(metadata));
-        when(repository.loadAsset(700L, 500L, CampusMapFormat.PNG)).thenReturn(Optional.of(new Asset(PNG_CONTENT)));
+        when(repository.findAssetMetadata(700L, 500L, CampusMapFormat.PNG))
+                .thenReturn(Optional.of(metadata));
+        when(repository.loadAsset(700L, 500L, CampusMapFormat.PNG))
+                .thenReturn(Optional.of(new Asset(PNG_CONTENT)));
 
-        assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset("20", "200", 3L,
-                CampusMapFormat.PNG, "700", activeClaims(), () -> false));
+        assertCode(
+                CampusMapReadException.Code.DATA_LOSS,
+                () ->
+                        service.readAsset(
+                                "20",
+                                "200",
+                                3L,
+                                CampusMapFormat.PNG,
+                                "700",
+                                activeClaims(),
+                                () -> false));
         verify(repository).loadAsset(700L, 500L, CampusMapFormat.PNG);
     }
 
@@ -597,18 +922,42 @@ class CampusMapReadServiceTest {
     private static Stream<Arguments> invalidClaimCases() {
         return Stream.of(
                 arguments("missing claims", (InternalJwtClaims) null),
-                arguments("zero user", claim(0L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
-                arguments("negative user", claim(-1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
-                arguments("missing group", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false)),
-                arguments("zero group", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 0L, false)),
-                arguments("negative group", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", -1L, false)),
-                arguments("missing session", claim(100L, null, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
-                arguments("zero session version", claim(100L, SESSION_ID, 0L, 1L, "STUDENT", "ACTIVE", 10L, false)),
-                arguments("zero roles version", claim(100L, SESSION_ID, 1L, 0L, "STUDENT", "ACTIVE", 10L, false)),
-                arguments("foreign role", claim(100L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", 10L, false)),
-                arguments("missing role", claim(100L, SESSION_ID, 1L, 1L, null, "ACTIVE", 10L, false)),
-                arguments("missing status", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", null, 10L, false)),
-                arguments("unknown status", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "UNKNOWN", 10L, false)));
+                arguments(
+                        "zero user",
+                        claim(0L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
+                arguments(
+                        "negative user",
+                        claim(-1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
+                arguments(
+                        "missing group",
+                        claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false)),
+                arguments(
+                        "zero group",
+                        claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 0L, false)),
+                arguments(
+                        "negative group",
+                        claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", -1L, false)),
+                arguments(
+                        "missing session",
+                        claim(100L, null, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
+                arguments(
+                        "zero session version",
+                        claim(100L, SESSION_ID, 0L, 1L, "STUDENT", "ACTIVE", 10L, false)),
+                arguments(
+                        "zero roles version",
+                        claim(100L, SESSION_ID, 1L, 0L, "STUDENT", "ACTIVE", 10L, false)),
+                arguments(
+                        "foreign role",
+                        claim(100L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", 10L, false)),
+                arguments(
+                        "missing role",
+                        claim(100L, SESSION_ID, 1L, 1L, null, "ACTIVE", 10L, false)),
+                arguments(
+                        "missing status",
+                        claim(100L, SESSION_ID, 1L, 1L, "STUDENT", null, 10L, false)),
+                arguments(
+                        "unknown status",
+                        claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "UNKNOWN", 10L, false)));
     }
 
     private static Stream<Arguments> statusCases() {
@@ -644,105 +993,248 @@ class CampusMapReadServiceTest {
         FormatSlot svg = absentSlot(502L, 500L, CampusMapFormat.SVG);
         return Stream.of(
                 arguments("missing SVG slot", List.of(png)),
-                arguments("duplicate PNG format", List.of(png,
-                        absentSlot(503L, 500L, CampusMapFormat.PNG))),
-                arguments("duplicate slot id", List.of(png,
-                        absentSlot(501L, 500L, CampusMapFormat.SVG))),
-                arguments("format row points to another plan", List.of(
-                        absentSlot(501L, 999L, CampusMapFormat.PNG), svg)));
+                arguments(
+                        "duplicate PNG format",
+                        List.of(png, absentSlot(503L, 500L, CampusMapFormat.PNG))),
+                arguments(
+                        "duplicate slot id",
+                        List.of(png, absentSlot(501L, 500L, CampusMapFormat.SVG))),
+                arguments(
+                        "format row points to another plan",
+                        List.of(absentSlot(501L, 999L, CampusMapFormat.PNG), svg)));
     }
 
     private static Stream<Arguments> assetMetadataMismatchCases() {
         byte[] digest = sha256(PNG_CONTENT);
         return Stream.of(
-                arguments("asset id parent", assetMetadata(701L, 500L, CampusMapFormat.PNG,
-                        "image/png", PNG_CONTENT.length, digest, 640, 480, PNG_CONTENT.length)),
-                arguments("plan version parent", assetMetadata(700L, 501L, CampusMapFormat.PNG,
-                        "image/png", PNG_CONTENT.length, digest, 640, 480, PNG_CONTENT.length)),
-                arguments("format parent", assetMetadata(700L, 500L, CampusMapFormat.SVG,
-                        "image/svg+xml", PNG_CONTENT.length, digest, 640, 480, PNG_CONTENT.length)),
-                arguments("content type", assetMetadata(700L, 500L, CampusMapFormat.PNG,
-                        "text/plain", PNG_CONTENT.length, digest, 640, 480, PNG_CONTENT.length)),
-                arguments("digest", assetMetadata(700L, 500L, CampusMapFormat.PNG,
-                        "image/png", PNG_CONTENT.length, new byte[32], 640, 480, PNG_CONTENT.length)),
-                arguments("width", assetMetadata(700L, 500L, CampusMapFormat.PNG,
-                        "image/png", PNG_CONTENT.length, digest, 641, 480, PNG_CONTENT.length)),
-                arguments("height", assetMetadata(700L, 500L, CampusMapFormat.PNG,
-                        "image/png", PNG_CONTENT.length, digest, 640, 481, PNG_CONTENT.length)),
-                arguments("content length", assetMetadata(700L, 500L, CampusMapFormat.PNG,
-                        "image/png", PNG_CONTENT.length, digest, 640, 480, PNG_CONTENT.length + 1L)));
+                arguments(
+                        "asset id parent",
+                        assetMetadata(
+                                701L,
+                                500L,
+                                CampusMapFormat.PNG,
+                                "image/png",
+                                PNG_CONTENT.length,
+                                digest,
+                                640,
+                                480,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "plan version parent",
+                        assetMetadata(
+                                700L,
+                                501L,
+                                CampusMapFormat.PNG,
+                                "image/png",
+                                PNG_CONTENT.length,
+                                digest,
+                                640,
+                                480,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "format parent",
+                        assetMetadata(
+                                700L,
+                                500L,
+                                CampusMapFormat.SVG,
+                                "image/svg+xml",
+                                PNG_CONTENT.length,
+                                digest,
+                                640,
+                                480,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "content type",
+                        assetMetadata(
+                                700L,
+                                500L,
+                                CampusMapFormat.PNG,
+                                "text/plain",
+                                PNG_CONTENT.length,
+                                digest,
+                                640,
+                                480,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "digest",
+                        assetMetadata(
+                                700L,
+                                500L,
+                                CampusMapFormat.PNG,
+                                "image/png",
+                                PNG_CONTENT.length,
+                                new byte[32],
+                                640,
+                                480,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "width",
+                        assetMetadata(
+                                700L,
+                                500L,
+                                CampusMapFormat.PNG,
+                                "image/png",
+                                PNG_CONTENT.length,
+                                digest,
+                                641,
+                                480,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "height",
+                        assetMetadata(
+                                700L,
+                                500L,
+                                CampusMapFormat.PNG,
+                                "image/png",
+                                PNG_CONTENT.length,
+                                digest,
+                                640,
+                                481,
+                                PNG_CONTENT.length)),
+                arguments(
+                        "content length",
+                        assetMetadata(
+                                700L,
+                                500L,
+                                CampusMapFormat.PNG,
+                                "image/png",
+                                PNG_CONTENT.length,
+                                digest,
+                                640,
+                                480,
+                                PNG_CONTENT.length + 1L)));
     }
 
-    private static InternalJwtClaims claim(long userId,
-                                           UUID sessionId,
-                                           long sessionVersion,
-                                           long rolesVersion,
-                                           String role,
-                                           String status,
-                                           Long groupId,
-                                           boolean readOnly) {
-        return new InternalJwtClaims(userId, sessionId, sessionVersion, rolesVersion,
-                role, status, groupId, false, readOnly);
+    private static InternalJwtClaims claim(
+            long userId,
+            UUID sessionId,
+            long sessionVersion,
+            long rolesVersion,
+            String role,
+            String status,
+            Long groupId,
+            boolean readOnly) {
+        return new InternalJwtClaims(
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                false,
+                readOnly);
     }
 
     private static Plan historicalPlan() {
-        return new Plan(500L, 200L, 3L, 8L, "historical", java.time.OffsetDateTime.parse("2026-01-01T00:00:00Z"));
+        return new Plan(
+                500L,
+                200L,
+                3L,
+                8L,
+                "historical",
+                java.time.OffsetDateTime.parse("2026-01-01T00:00:00Z"));
     }
 
     private static FormatSlot readyPngSlot(long planId, long assetId) {
-        return readySlot(501L, planId, CampusMapFormat.PNG, assetId, PNG_CONTENT.length,
-                sha256(PNG_CONTENT), 640, 480);
+        return readySlot(
+                501L,
+                planId,
+                CampusMapFormat.PNG,
+                assetId,
+                PNG_CONTENT.length,
+                sha256(PNG_CONTENT),
+                640,
+                480);
     }
 
     private static FormatSlot absentSlot(long id, long planId, CampusMapFormat format) {
-        return new FormatSlot(id, planId, format, CampusMapFormatState.ABSENT,
+        return new FormatSlot(
+                id,
+                planId,
+                format,
+                CampusMapFormatState.ABSENT,
                 format == CampusMapFormat.PNG ? "image/png" : "image/svg+xml",
-                null, 0L, null, null, null, List.of());
+                null,
+                0L,
+                null,
+                null,
+                null,
+                List.of());
     }
 
-    private static AssetMetadata assetMetadata(long id,
-                                               long planId,
-                                               CampusMapFormat format,
-                                               String contentType,
-                                               long bytes,
-                                               byte[] digest,
-                                               Integer width,
-                                               Integer height,
-                                               long contentLength) {
-        return new AssetMetadata(id, planId, format, contentType, bytes, digest,
-                width, height, contentLength);
+    private static AssetMetadata assetMetadata(
+            long id,
+            long planId,
+            CampusMapFormat format,
+            String contentType,
+            long bytes,
+            byte[] digest,
+            Integer width,
+            Integer height,
+            long contentLength) {
+        return new AssetMetadata(
+                id, planId, format, contentType, bytes, digest, width, height, contentLength);
     }
 
     private void stubAssetPlan(Plan plan, FormatSlot slot) {
-        when(repository.findActiveBuilding(20L)).thenReturn(
-                Optional.of(new Building(20L, "B", 0, true)));
-        when(repository.findActiveFloor(200L)).thenReturn(
-                Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
+        when(repository.findActiveBuilding(20L))
+                .thenReturn(Optional.of(new Building(20L, "B", 0, true)));
+        when(repository.findActiveFloor(200L))
+                .thenReturn(Optional.of(new Floor(200L, 20L, "2", 0, 900L, true)));
         when(repository.findPlan(200L, plan.version())).thenReturn(Optional.of(plan));
         when(repository.findFormatSlots(plan.id())).thenReturn(List.of(slot));
     }
 
-    private static FormatSlot readySlot(long id,
-                                         long planId,
-                                         CampusMapFormat format,
-                                         long assetId,
-                                         long bytes,
-                                         byte[] sha,
-                                         int width,
-                                         int height) {
-        return new FormatSlot(id, planId, format, CampusMapFormatState.READY,
+    private static FormatSlot readySlot(
+            long id,
+            long planId,
+            CampusMapFormat format,
+            long assetId,
+            long bytes,
+            byte[] sha,
+            int width,
+            int height) {
+        return new FormatSlot(
+                id,
+                planId,
+                format,
+                CampusMapFormatState.READY,
                 format == CampusMapFormat.PNG ? "image/png" : "image/svg+xml",
-                assetId, bytes, sha, width, height, List.of());
+                assetId,
+                bytes,
+                sha,
+                width,
+                height,
+                List.of());
     }
 
     private static List<FormatSlot> absentSlots(long planId, long pngId, long svgId) {
         return List.of(
-                new FormatSlot(pngId, planId, CampusMapFormat.PNG,
-                        CampusMapFormatState.ABSENT, "image/png", null, 0, null,
-                        null, null, List.of()),
-                new FormatSlot(svgId, planId, CampusMapFormat.SVG,
-                        CampusMapFormatState.ABSENT, "image/svg+xml", null, 0, null,
-                        null, null, List.of()));
+                new FormatSlot(
+                        pngId,
+                        planId,
+                        CampusMapFormat.PNG,
+                        CampusMapFormatState.ABSENT,
+                        "image/png",
+                        null,
+                        0,
+                        null,
+                        null,
+                        null,
+                        List.of()),
+                new FormatSlot(
+                        svgId,
+                        planId,
+                        CampusMapFormat.SVG,
+                        CampusMapFormatState.ABSENT,
+                        "image/svg+xml",
+                        null,
+                        0,
+                        null,
+                        null,
+                        null,
+                        List.of()));
     }
 
     private InternalJwtClaims activeClaims() {
@@ -750,8 +1242,8 @@ class CampusMapReadServiceTest {
     }
 
     private static InternalJwtClaims claims(String status, boolean readOnly) {
-        return new InternalJwtClaims(100L, SESSION_ID, 1L, 1L,
-                "STUDENT", status, 10L, false, readOnly);
+        return new InternalJwtClaims(
+                100L, SESSION_ID, 1L, 1L, "STUDENT", status, 10L, false, readOnly);
     }
 
     private static byte[] sha256(byte[] content) {

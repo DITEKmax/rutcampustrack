@@ -2,13 +2,13 @@ package ru.rutcampustrack.academic.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "users")
@@ -52,11 +52,9 @@ public class User {
         return sb.toString();
     }
 
-    @Setter
-    private String email;
+    @Setter private String email;
 
-    @Setter
-    private String phone;
+    @Setter private String phone;
 
     @Setter
     @Column(name = "telegram_id")

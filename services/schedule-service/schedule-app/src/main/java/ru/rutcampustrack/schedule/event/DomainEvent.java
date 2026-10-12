@@ -1,8 +1,8 @@
 package ru.rutcampustrack.schedule.event;
 
 /**
- * Schedule-service alias для {@link ru.rutcampustrack.shared.events.DomainEvent}
- * (M04 D5(a) — единый envelope across services).
+ * Schedule-service alias для {@link ru.rutcampustrack.shared.events.DomainEvent} (M04 D5(a) —
+ * единый envelope across services).
  */
 public abstract class DomainEvent extends ru.rutcampustrack.shared.events.DomainEvent {
 

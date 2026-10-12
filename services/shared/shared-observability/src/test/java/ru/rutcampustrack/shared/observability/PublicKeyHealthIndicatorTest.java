@@ -1,10 +1,10 @@
 package ru.rutcampustrack.shared.observability;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class PublicKeyHealthIndicatorTest {
 
@@ -28,9 +28,12 @@ class PublicKeyHealthIndicatorTest {
 
     @Test
     void probeException_returnsDownWithError() {
-        Health h = new PublicKeyHealthIndicator(() -> {
-            throw new IllegalStateException("key fetch failed");
-        }).health();
+        Health h =
+                new PublicKeyHealthIndicator(
+                                () -> {
+                                    throw new IllegalStateException("key fetch failed");
+                                })
+                        .health();
 
         assertThat(h.getStatus()).isEqualTo(Status.DOWN);
         assertThat(h.getDetails()).containsKey("error");

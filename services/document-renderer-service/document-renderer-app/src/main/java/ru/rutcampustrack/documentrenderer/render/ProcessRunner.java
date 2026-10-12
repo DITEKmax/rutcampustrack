@@ -1,17 +1,16 @@
 package ru.rutcampustrack.documentrenderer.render;
 
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProcessRunner {
@@ -26,10 +25,11 @@ public class ProcessRunner {
             Files.createDirectories(cacheDir);
             Files.createDirectories(configDir);
 
-            ProcessBuilder builder = new ProcessBuilder(command)
-                    .directory(workingDirectory.toFile())
-                    .redirectErrorStream(true)
-                    .redirectOutput(logFile.toFile());
+            ProcessBuilder builder =
+                    new ProcessBuilder(command)
+                            .directory(workingDirectory.toFile())
+                            .redirectErrorStream(true)
+                            .redirectOutput(logFile.toFile());
             builder.environment().put("HOME", homeDir.toString());
             builder.environment().put("XDG_CACHE_HOME", cacheDir.toString());
             builder.environment().put("XDG_CONFIG_HOME", configDir.toString());
@@ -37,17 +37,19 @@ public class ProcessRunner {
             process = builder.start();
             boolean finished = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
             if (!finished) {
-                throw new DocumentConversionException("Renderer command timed out: " + command.get(0));
+                throw new DocumentConversionException(
+                        "Renderer command timed out: " + command.get(0));
             }
-            String output = Files.exists(logFile)
-                    ? Files.readString(logFile, StandardCharsets.UTF_8)
-                    : "";
+            String output =
+                    Files.exists(logFile) ? Files.readString(logFile, StandardCharsets.UTF_8) : "";
             return new ProcessResult(process.exitValue(), output);
         } catch (IOException ex) {
-            throw new DocumentConversionException("Failed to start renderer command: " + command.get(0), ex);
+            throw new DocumentConversionException(
+                    "Failed to start renderer command: " + command.get(0), ex);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            throw new DocumentConversionException("Renderer command interrupted: " + command.get(0), ex);
+            throw new DocumentConversionException(
+                    "Renderer command interrupted: " + command.get(0), ex);
         } finally {
             if (process != null && process.isAlive()) {
                 stopProcessTree(process);
@@ -59,10 +61,13 @@ public class ProcessRunner {
         // Cleanup must finish before the converter removes its working directory.
         boolean interrupted = Thread.interrupted();
         try {
-            List<ProcessHandle> descendants = process.descendants()
-                    .sorted(Comparator.comparingInt(ProcessRunner::processDepth).reversed()).toList();
+            List<ProcessHandle> descendants =
+                    process.descendants()
+                            .sorted(Comparator.comparingInt(ProcessRunner::processDepth).reversed())
+                            .toList();
             try {
-                // Keep the parent alive until it has reaped its children, avoiding orphan processes.
+                // Keep the parent alive until it has reaped its children, avoiding orphan
+                // processes.
                 for (ProcessHandle child : descendants) {
                     child.destroyForcibly();
                     while (child.isAlive()) {
@@ -71,7 +76,8 @@ public class ProcessRunner {
                         } catch (InterruptedException ex) {
                             interrupted = true;
                         } catch (ExecutionException | TimeoutException ex) {
-                            throw new DocumentConversionException("Renderer child process did not stop", ex);
+                            throw new DocumentConversionException(
+                                    "Renderer child process did not stop", ex);
                         }
                     }
                 }

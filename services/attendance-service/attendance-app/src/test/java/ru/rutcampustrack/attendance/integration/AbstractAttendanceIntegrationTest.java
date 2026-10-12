@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.integration;
 
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,21 +20,17 @@ import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
-import org.junit.jupiter.api.BeforeEach;
-import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
-
-import java.util.List;
 
 /**
  * Abstract base class for Attendance Service integration tests.
  *
- * Provides:
- * - Static MongoDB 7.0 and RabbitMQ 3.13 Testcontainers (shared across all tests in JVM)
- * - @MockitoBean for gRPC clients and SemesterCacheService (prevents @PostConstruct gRPC calls)
- * - @ActiveProfiles("test") activates application-test.yml with RabbitAutoConfiguration excluded
- * - @AutoConfigureMockMvc for HTTP endpoint testing
+ * <p>Provides: - Static MongoDB 7.0 and RabbitMQ 3.13 Testcontainers (shared across all tests in
+ * JVM) - @MockitoBean for gRPC clients and SemesterCacheService (prevents @PostConstruct gRPC
+ * calls) - @ActiveProfiles("test") activates application-test.yml with RabbitAutoConfiguration
+ * excluded - @AutoConfigureMockMvc for HTTP endpoint testing
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -40,26 +38,19 @@ import java.util.List;
 @Import(InternalJwtTestConfig.class)
 public abstract class AbstractAttendanceIntegrationTest {
 
-    @Autowired
-    protected MockMvc mockMvc;
+    @Autowired protected MockMvc mockMvc;
 
-    @Autowired
-    protected MongoTemplate mongoTemplate;
+    @Autowired protected MongoTemplate mongoTemplate;
 
-    @Autowired
-    protected AttendanceRepository attendanceRepository;
+    @Autowired protected AttendanceRepository attendanceRepository;
 
-    @MockitoBean
-    protected ScheduleGrpcClient scheduleGrpcClient;
+    @MockitoBean protected ScheduleGrpcClient scheduleGrpcClient;
 
-    @MockitoBean
-    protected AcademicGrpcClient academicGrpcClient;
+    @MockitoBean protected AcademicGrpcClient academicGrpcClient;
 
-    @MockitoBean
-    protected SemesterCacheService semesterCacheService;
+    @MockitoBean protected SemesterCacheService semesterCacheService;
 
-    @MockitoBean
-    protected GeofenceService geofenceService;
+    @MockitoBean protected GeofenceService geofenceService;
 
     @Autowired(required = false)
     protected OutboxPublisherJob outboxPublisherJob;
@@ -68,9 +59,8 @@ public abstract class AbstractAttendanceIntegrationTest {
     protected OutboxStorage outboxStorage;
 
     /**
-     * M02: flush pending outbox rows → Rabbit. Прод-шедулер guarded
-     * {@code @Profile("!test")}, так что тесты дёргают publisher вручную
-     * после сервисного вызова.
+     * M02: flush pending outbox rows → Rabbit. Прод-шедулер guarded {@code @Profile("!test")}, так
+     * что тесты дёргают publisher вручную после сервисного вызова.
      */
     protected void flushOutbox() {
         if (outboxPublisherJob != null) {
@@ -79,9 +69,8 @@ public abstract class AbstractAttendanceIntegrationTest {
     }
 
     /**
-     * M02: очистить leftover pending outbox rows между тестами (коллекция
-     * shared через reused Mongo container). Вызывается автоматически в
-     * {@code @BeforeEach}.
+     * M02: очистить leftover pending outbox rows между тестами (коллекция shared через reused Mongo
+     * container). Вызывается автоматически в {@code @BeforeEach}.
      */
     @BeforeEach
     void drainOutboxBeforeEach() {
@@ -92,6 +81,7 @@ public abstract class AbstractAttendanceIntegrationTest {
 
     static final MongoDBContainer MONGODB;
     static final RabbitMQContainer RABBITMQ;
+
     @SuppressWarnings("resource")
     static final GenericContainer<?> REDIS;
 

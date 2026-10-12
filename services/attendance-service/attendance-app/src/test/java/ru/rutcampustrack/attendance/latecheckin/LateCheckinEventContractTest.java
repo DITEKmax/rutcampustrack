@@ -1,17 +1,9 @@
 package ru.rutcampustrack.attendance.latecheckin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
-import ru.rutcampustrack.attendance.events.EventSchemaValidator;
-import ru.rutcampustrack.attendance.event.EventEnvelope;
-import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
-import ru.rutcampustrack.shared.outbox.OutboxRecord;
-import ru.rutcampustrack.shared.outbox.OutboxStorage;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,19 +11,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
+import ru.rutcampustrack.attendance.event.EventEnvelope;
+import ru.rutcampustrack.attendance.events.EventSchemaValidator;
+import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /**
- * Contract-тесты publisher'а late-checkin events (M09 G3.4, 14 P0-1) —
- * проверяют, что envelope.payload укладывается в JSON Schema'ы
- * {@code event-schemas/late_checkin.requested.json} и {@code .decided.json}.
- * Bot-consumer доверяет этим schema'ам, поэтому любое расхождение здесь
+ * Contract-тесты publisher'а late-checkin events (M09 G3.4, 14 P0-1) — проверяют, что
+ * envelope.payload укладывается в JSON Schema'ы {@code event-schemas/late_checkin.requested.json} и
+ * {@code .decided.json}. Bot-consumer доверяет этим schema'ам, поэтому любое расхождение здесь
  * ломает prod-flow.
  *
- * <p>Чистый unit-тест: используется in-memory {@link OutboxStorage} + прямая
- * валидация через {@link EventSchemaValidator} (networknt json-schema). Без
- * Spring context / testcontainers / Rabbit.
+ * <p>Чистый unit-тест: используется in-memory {@link OutboxStorage} + прямая валидация через {@link
+ * EventSchemaValidator} (networknt json-schema). Без Spring context / testcontainers / Rabbit.
  */
 class LateCheckinEventContractTest {
 
@@ -47,26 +44,28 @@ class LateCheckinEventContractTest {
 
     @Test
     void publishRequested_producesEnvelopeMatchingSchema() throws Exception {
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .id("req-1")
-                .studentId(100L)
-                .groupId(10L)
-                .lessonId(42L)
-                .studentName("Иванов И.")
-                .status(LateCheckinRequestStatus.PENDING)
-                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
-                .updatedAt(Instant.parse("2026-04-23T09:00:00Z"))
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .id("req-1")
+                        .studentId(100L)
+                        .groupId(10L)
+                        .lessonId(42L)
+                        .studentName("Иванов И.")
+                        .status(LateCheckinRequestStatus.PENDING)
+                        .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                        .updatedAt(Instant.parse("2026-04-23T09:00:00Z"))
+                        .build();
 
         publisher.publishRequested(request, LocalDate.of(2026, 4, 23), 3, 7L, "Математика");
 
-        assertThat(outbox.captured).extracting(OutboxRecord::eventType)
+        assertThat(outbox.captured)
+                .extracting(OutboxRecord::eventType)
                 .containsExactly("late_checkin.requested", "dashboard.invalidated");
         OutboxRecord record = outbox.captured.getFirst();
         assertThat(record.eventType()).isEqualTo("late_checkin.requested");
 
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "late_checkin.requested.json", record.payload());
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("late_checkin.requested.json", record.payload());
         assertThat(errors)
                 .as("late_checkin.requested payload должен соответствовать schema")
                 .isEmpty();
@@ -86,18 +85,19 @@ class LateCheckinEventContractTest {
 
     @Test
     void publishDecided_approved_producesEnvelopeMatchingSchema() throws Exception {
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .id("req-1")
-                .studentId(100L)
-                .groupId(10L)
-                .lessonId(42L)
-                .studentName("Иванов И.")
-                .status(LateCheckinRequestStatus.APPROVED)
-                .decisionBy(777L)
-                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
-                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .id("req-1")
+                        .studentId(100L)
+                        .groupId(10L)
+                        .lessonId(42L)
+                        .studentName("Иванов И.")
+                        .status(LateCheckinRequestStatus.APPROVED)
+                        .decisionBy(777L)
+                        .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                        .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .build();
 
         publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, "Математика");
 
@@ -105,8 +105,8 @@ class LateCheckinEventContractTest {
         OutboxRecord record = outbox.captured.get(0);
         assertThat(record.eventType()).isEqualTo("late_checkin.decided");
 
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "late_checkin.decided.json", record.payload());
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("late_checkin.decided.json", record.payload());
         assertThat(errors)
                 .as("late_checkin.decided (approved) payload должен соответствовать schema")
                 .isEmpty();
@@ -121,24 +121,25 @@ class LateCheckinEventContractTest {
 
     @Test
     void publishDecided_rejected_producesEnvelopeMatchingSchema() throws Exception {
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .id("req-2")
-                .studentId(100L)
-                .groupId(10L)
-                .lessonId(42L)
-                .studentName("Иванов И.")
-                .status(LateCheckinRequestStatus.REJECTED)
-                .decisionBy(777L)
-                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
-                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .id("req-2")
+                        .studentId(100L)
+                        .groupId(10L)
+                        .lessonId(42L)
+                        .studentName("Иванов И.")
+                        .status(LateCheckinRequestStatus.REJECTED)
+                        .decisionBy(777L)
+                        .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                        .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .build();
 
         publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, "Математика");
 
         OutboxRecord record = outbox.captured.get(0);
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "late_checkin.decided.json", record.payload());
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("late_checkin.decided.json", record.payload());
         assertThat(errors)
                 .as("late_checkin.decided (rejected) payload должен соответствовать schema")
                 .isEmpty();
@@ -149,22 +150,24 @@ class LateCheckinEventContractTest {
 
     @Test
     void publishDecided_geoCancelledProducesTerminalConsumerEvent() throws Exception {
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .id("req-3")
-                .studentId(100L)
-                .groupId(10L)
-                .lessonId(42L)
-                .status(LateCheckinRequestStatus.CANCELLED)
-                .resolutionReason(LateCheckinResolutionReason.GEO_CONFIRMED)
-                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
-                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .id("req-3")
+                        .studentId(100L)
+                        .groupId(10L)
+                        .lessonId(42L)
+                        .status(LateCheckinRequestStatus.CANCELLED)
+                        .resolutionReason(LateCheckinResolutionReason.GEO_CONFIRMED)
+                        .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                        .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .build();
 
         publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, null);
 
         OutboxRecord record = outbox.captured.getFirst();
-        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload())).isEmpty();
+        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload()))
+                .isEmpty();
         var payload = mapper.readTree(record.payload()).get("payload");
         assertThat(payload.get("status").asText()).isEqualTo("cancelled");
         assertThat(payload.get("resolution_reason").asText()).isEqualTo("geo_confirmed");
@@ -173,38 +176,46 @@ class LateCheckinEventContractTest {
 
     @Test
     void publishDecided_studentCancelledUsesCanonicalWireReasonAndSchema() throws Exception {
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .id("req-student-cancelled")
-                .studentId(100L)
-                .groupId(10L)
-                .lessonId(42L)
-                .status(LateCheckinRequestStatus.CANCELLED)
-                .resolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT)
-                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
-                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .id("req-student-cancelled")
+                        .studentId(100L)
+                        .groupId(10L)
+                        .lessonId(42L)
+                        .status(LateCheckinRequestStatus.CANCELLED)
+                        .resolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT)
+                        .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                        .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
+                        .build();
 
         publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, null);
 
         OutboxRecord record = outbox.captured.getFirst();
-        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload())).isEmpty();
-        assertThat(mapper.readTree(record.payload()).get("payload").get("resolution_reason").asText())
+        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload()))
+                .isEmpty();
+        assertThat(
+                        mapper.readTree(record.payload())
+                                .get("payload")
+                                .get("resolution_reason")
+                                .asText())
                 .isEqualTo("student_cancelled");
     }
 
     @Test
     void decisionCommandRequiresPositiveInternalActor() throws Exception {
         String requestId = "0123456789abcdef01234567";
-        String valid = botEnvelope("late_checkin.decision", Map.of(
-                "request_id", requestId, "approved", true, "decision_by", 42L
-        ));
-        String invalid = botEnvelope("late_checkin.decision", Map.of(
-                "request_id", requestId, "approved", true, "decision_by", 0L
-        ));
-        String missing = botEnvelope("late_checkin.decision", Map.of(
-                "request_id", requestId, "approved", true
-        ));
+        String valid =
+                botEnvelope(
+                        "late_checkin.decision",
+                        Map.of("request_id", requestId, "approved", true, "decision_by", 42L));
+        String invalid =
+                botEnvelope(
+                        "late_checkin.decision",
+                        Map.of("request_id", requestId, "approved", true, "decision_by", 0L));
+        String missing =
+                botEnvelope(
+                        "late_checkin.decision", Map.of("request_id", requestId, "approved", true));
 
         assertThat(EventSchemaValidator.validate("late_checkin.decision.json", valid))
                 .as("bot command must carry the resolved internal academic user id")
@@ -220,15 +231,43 @@ class LateCheckinEventContractTest {
     @Test
     void excuseDecisionRequiresTrustedSourceAndStrictPayload() throws Exception {
         String ticketId = "0123456789abcdef01234567";
-        String valid = botEnvelope("excuse.decision", Map.of(
-                "ticket_id", ticketId, "approved", true, "decision_by", 42L,
-                "decision_comment", "Принято"));
-        String untrusted = mapper.writeValueAsString(EventEnvelope.build("excuse.decision", Map.of(
-                "ticket_id", ticketId, "approved", true, "decision_by", 42L,
-                "decision_comment", "Принято")));
-        String extra = botEnvelope("excuse.decision", Map.of(
-                "ticket_id", ticketId, "approved", true, "decision_by", 42L,
-                "unexpected", true));
+        String valid =
+                botEnvelope(
+                        "excuse.decision",
+                        Map.of(
+                                "ticket_id",
+                                ticketId,
+                                "approved",
+                                true,
+                                "decision_by",
+                                42L,
+                                "decision_comment",
+                                "Принято"));
+        String untrusted =
+                mapper.writeValueAsString(
+                        EventEnvelope.build(
+                                "excuse.decision",
+                                Map.of(
+                                        "ticket_id",
+                                        ticketId,
+                                        "approved",
+                                        true,
+                                        "decision_by",
+                                        42L,
+                                        "decision_comment",
+                                        "Принято")));
+        String extra =
+                botEnvelope(
+                        "excuse.decision",
+                        Map.of(
+                                "ticket_id",
+                                ticketId,
+                                "approved",
+                                true,
+                                "decision_by",
+                                42L,
+                                "unexpected",
+                                true));
 
         assertThat(EventSchemaValidator.validate("excuse.decision.json", valid)).isEmpty();
         assertThat(EventSchemaValidator.validate("excuse.decision.json", untrusted)).isNotEmpty();
@@ -252,11 +291,30 @@ class LateCheckinEventContractTest {
             captured.add(new OutboxRecord(nextId++, eventType, payload, Instant.now()));
         }
 
-        @Override public List<OutboxRecord> findPending(int limit) { return List.copyOf(captured); }
-        @Override public void markSent(Object id) {}
-        @Override public void markFailed(Object id, String errorMsg) {}
-        @Override public long deleteSentBefore(Instant before) { return 0; }
-        @Override public long countPending() { return captured.size(); }
-        @Override public long oldestPendingAgeSeconds() { return 0; }
+        @Override
+        public List<OutboxRecord> findPending(int limit) {
+            return List.copyOf(captured);
+        }
+
+        @Override
+        public void markSent(Object id) {}
+
+        @Override
+        public void markFailed(Object id, String errorMsg) {}
+
+        @Override
+        public long deleteSentBefore(Instant before) {
+            return 0;
+        }
+
+        @Override
+        public long countPending() {
+            return captured.size();
+        }
+
+        @Override
+        public long oldestPendingAgeSeconds() {
+            return 0;
+        }
     }
 }

@@ -2,14 +2,13 @@ package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
 import ru.rutcampustrack.documentrenderer.grpc.ConvertDocumentRequest;
 import ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceGrpc;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
-
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class DocumentRendererGrpcClient {
@@ -25,8 +24,8 @@ public class DocumentRendererGrpcClient {
     }
 
     /**
-     * Export-only conversion preserves RESOURCE_EXHAUSTED so the teacher export
-     * boundary can return a user-visible size limit instead of a generic outage.
+     * Export-only conversion preserves RESOURCE_EXHAUSTED so the teacher export boundary can return
+     * a user-visible size limit instead of a generic outage.
      */
     public byte[] convertDocxForTeacherExport(byte[] docx, TargetFormat targetFormat) {
         if (docx != null && docx.length > DEFAULT_RENDERER_MESSAGE_LIMIT_BYTES - 1024) {
@@ -38,8 +37,8 @@ public class DocumentRendererGrpcClient {
     }
 
     /**
-     * Bounded conversion for a headman weekly export. Keep the teacher-specific
-     * boundary unchanged while preserving renderer size failures for the 413 API mapping.
+     * Bounded conversion for a headman weekly export. Keep the teacher-specific boundary unchanged
+     * while preserving renderer size failures for the 413 API mapping.
      */
     public byte[] convertDocxForHeadmanWeeklyExport(byte[] docx, TargetFormat targetFormat) {
         if (docx != null && docx.length > DEFAULT_RENDERER_MESSAGE_LIMIT_BYTES - 1024) {
@@ -59,18 +58,20 @@ public class DocumentRendererGrpcClient {
         }
         try {
             return stub.withDeadlineAfter(30, TimeUnit.SECONDS)
-                    .convert(ConvertDocumentRequest.newBuilder()
-                            .setDocx(com.google.protobuf.ByteString.copyFrom(docx))
-                            .setTargetFormat(targetFormat)
-                            .setPngDpi(PNG_DPI)
-                            .build())
+                    .convert(
+                            ConvertDocumentRequest.newBuilder()
+                                    .setDocx(com.google.protobuf.ByteString.copyFrom(docx))
+                                    .setTargetFormat(targetFormat)
+                                    .setPngDpi(PNG_DPI)
+                                    .build())
                     .getContent()
                     .toByteArray();
         } catch (StatusRuntimeException e) {
             if (preserveSizeLimit && e.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
                 throw e;
             }
-            throw new ReportExportUnavailableException("Document renderer unavailable: " + e.getStatus());
+            throw new ReportExportUnavailableException(
+                    "Document renderer unavailable: " + e.getStatus());
         }
     }
 

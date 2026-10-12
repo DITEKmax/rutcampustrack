@@ -14,7 +14,8 @@ public class AcademicSemesterDeletionSnapshotReader {
     }
 
     public Snapshot read(long semesterId) {
-        return jdbc.query("""
+        return jdbc.query(
+                """
                 WITH domain_rows AS (
                     SELECT 'assignment' AS kind, a.id::TEXT AS row_id, to_jsonb(a)::TEXT AS value
                       FROM assignments a WHERE a.semester_id = ?
@@ -47,12 +48,24 @@ public class AcademicSemesterDeletionSnapshotReader {
                                                E'\\n' ORDER BY kind, row_id), ''), 'UTF8'),
                            'sha256'), 'hex') AS participant_digest
                   FROM domain_rows
-                """, rs -> {
-            if (!rs.next()) throw new IllegalStateException("Academic deletion snapshot returned no row");
-            return new Snapshot(rs.getLong("assignments"), rs.getLong("homeworks"),
-                    rs.getString("participant_digest"));
-        }, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId);
+                """,
+                rs -> {
+                    if (!rs.next())
+                        throw new IllegalStateException(
+                                "Academic deletion snapshot returned no row");
+                    return new Snapshot(
+                            rs.getLong("assignments"),
+                            rs.getLong("homeworks"),
+                            rs.getString("participant_digest"));
+                },
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId);
     }
 
-    public record Snapshot(long assignments, long homeworks, String participantDigest) { }
+    public record Snapshot(long assignments, long homeworks, String participantDigest) {}
 }

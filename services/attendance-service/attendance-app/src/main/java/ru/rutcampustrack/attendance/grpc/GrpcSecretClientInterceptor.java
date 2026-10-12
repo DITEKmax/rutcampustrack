@@ -4,9 +4,7 @@ import io.grpc.*;
 import net.devh.boot.grpc.client.interceptor.GrpcGlobalClientInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 
-/**
- * IMP-09: Attaches shared secret to outgoing gRPC calls.
- */
+/** IMP-09: Attaches shared secret to outgoing gRPC calls. */
 @GrpcGlobalClientInterceptor
 public class GrpcSecretClientInterceptor implements ClientInterceptor {
 
@@ -18,10 +16,9 @@ public class GrpcSecretClientInterceptor implements ClientInterceptor {
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-            MethodDescriptor<ReqT, RespT> method,
-            CallOptions callOptions,
-            Channel next) {
-        return new ForwardingClientCall.SimpleForwardingClientCall<>(next.newCall(method, callOptions)) {
+            MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+        return new ForwardingClientCall.SimpleForwardingClientCall<>(
+                next.newCall(method, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
                 if (secret != null && !secret.isBlank()) {

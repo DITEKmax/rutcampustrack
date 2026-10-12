@@ -11,13 +11,14 @@ import ru.rutcampustrack.shared.security.admin.AdminAccessProfile;
 public final class RegistryExportAdmission {
     private RegistryExportAdmission() {}
 
-    public static AdminAccessProfile requireCurrent(AdminAccessJdbcAuthority admins,
-            SessionPrincipal principal, ReportDownloadKind kind) {
-        String permission = switch (kind) {
-            case ADMIN_USERS -> "USERS_VIEW";
-            case ADMIN_GROUPS -> "GROUPS_VIEW";
-            default -> null;
-        };
+    public static AdminAccessProfile requireCurrent(
+            AdminAccessJdbcAuthority admins, SessionPrincipal principal, ReportDownloadKind kind) {
+        String permission =
+                switch (kind) {
+                    case ADMIN_USERS -> "USERS_VIEW";
+                    case ADMIN_GROUPS -> "GROUPS_VIEW";
+                    default -> null;
+                };
         if (permission == null) return null;
         AdminAccessProfile profile = admins.current(claims(principal));
         if (!profile.allows(permission)) throw AdminAccessException.denied();
@@ -28,8 +29,15 @@ public final class RegistryExportAdmission {
         if (principal.selectedRole() == null || principal.selectedStatus() == null) {
             throw AdminAccessException.denied();
         }
-        return new InternalJwtClaims(principal.userId(), principal.sessionId(),
-                principal.sessionVersion(), principal.rolesVersion(), principal.selectedRole().name(),
-                principal.selectedStatus().name(), principal.groupId(), principal.headman(), principal.readOnly());
+        return new InternalJwtClaims(
+                principal.userId(),
+                principal.sessionId(),
+                principal.sessionVersion(),
+                principal.rolesVersion(),
+                principal.selectedRole().name(),
+                principal.selectedStatus().name(),
+                principal.groupId(),
+                principal.headman(),
+                principal.readOnly());
     }
 }

@@ -1,13 +1,23 @@
 package ru.rutcampustrack.attendance.student;
 
-import org.springframework.beans.factory.ObjectProvider;
 import com.mongodb.MongoException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Objects;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.attendance.audit.RejectedAttendanceActionService;
-import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -17,11 +27,13 @@ import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Ack;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Attendance;
@@ -32,32 +44,25 @@ import ru.rutcampustrack.attendance.student.StudentCheckinModels.Lesson;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Outcome;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Request;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Resolution;
-import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Objects;
 
 @Service
 public class StudentCheckinService {
     private RejectedAttendanceActionService rejectedActions;
-    @Autowired
-    public void setRejectedActions(RejectedAttendanceActionService actions) { this.rejectedActions = actions; }
-    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
-    @Autowired
-    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
 
+    @Autowired
+    public void setRejectedActions(RejectedAttendanceActionService actions) {
+        this.rejectedActions = actions;
+    }
+
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+
+    @Autowired
+    public void setRequestActions(
+            ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) {
+        this.requestActions = actions;
+    }
 
     static final Duration CHECKIN_BUFFER = Duration.ofMinutes(5);
     static final Duration COOLDOWN = Duration.ofMinutes(5);
@@ -93,9 +98,18 @@ public class StudentCheckinService {
             Clock clock,
             JournalAttachmentPort journalAttachmentPort,
             ObjectProvider<EducationalTime> educationalTime) {
-        this(attendanceRepository, pairRepository, receiptRepository, lateCheckinRepository, excuseRepository,
-                pairCoordinator, geofenceService, attendanceEventPublisher, lateCheckinEventPublisher,
-                businessMetrics, transactionTemplate,
+        this(
+                attendanceRepository,
+                pairRepository,
+                receiptRepository,
+                lateCheckinRepository,
+                excuseRepository,
+                pairCoordinator,
+                geofenceService,
+                attendanceEventPublisher,
+                lateCheckinEventPublisher,
+                businessMetrics,
+                transactionTemplate,
                 educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
                 journalAttachmentPort);
     }
@@ -113,8 +127,7 @@ public class StudentCheckinService {
             BusinessMetrics businessMetrics,
             TransactionTemplate transactionTemplate,
             Clock clock,
-            JournalAttachmentPort journalAttachmentPort
-    ) {
+            JournalAttachmentPort journalAttachmentPort) {
         this.attendanceRepository = attendanceRepository;
         this.pairRepository = pairRepository;
         this.receiptRepository = receiptRepository;
@@ -143,11 +156,21 @@ public class StudentCheckinService {
             LateCheckinEventPublisher lateCheckinEventPublisher,
             BusinessMetrics businessMetrics,
             TransactionTemplate transactionTemplate,
-            Clock clock
-    ) {
-        this(attendanceRepository, pairRepository, receiptRepository, lateCheckinRepository, excuseRepository,
-                pairCoordinator, geofenceService, attendanceEventPublisher,
-                lateCheckinEventPublisher, businessMetrics, transactionTemplate, clock, null);
+            Clock clock) {
+        this(
+                attendanceRepository,
+                pairRepository,
+                receiptRepository,
+                lateCheckinRepository,
+                excuseRepository,
+                pairCoordinator,
+                geofenceService,
+                attendanceEventPublisher,
+                lateCheckinEventPublisher,
+                businessMetrics,
+                transactionTemplate,
+                clock,
+                null);
     }
 
     public Ack checkin(Identity identity, Lesson lesson, String idempotencyKey, Geo geo) {
@@ -172,36 +195,61 @@ public class StudentCheckinService {
         RuntimeException last = null;
         for (int attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt++) {
             try {
-                Ack result = transactionTemplate.execute(status ->
-                        executeTransaction(identity, lesson, idempotencyKey, payloadHash, geo, acceptedAt));
+                Ack result =
+                        transactionTemplate.execute(
+                                status ->
+                                        executeTransaction(
+                                                identity,
+                                                lesson,
+                                                idempotencyKey,
+                                                payloadHash,
+                                                geo,
+                                                acceptedAt));
                 if (result == null) {
-                    throw new IllegalStateException("Mongo transaction returned no check-in result");
+                    throw new IllegalStateException(
+                            "Mongo transaction returned no check-in result");
                 }
                 return result;
             } catch (RuntimeException error) {
                 last = error;
-                if (error instanceof StudentCheckinException || !isRetryable(error)
+                if (error instanceof StudentCheckinException
+                        || !isRetryable(error)
                         || attempt == MAX_TRANSACTION_ATTEMPTS) {
                     throw error;
                 }
             }
         }
-        throw last == null ? new IllegalStateException("Check-in transaction did not execute") : last;
+        throw last == null
+                ? new IllegalStateException("Check-in transaction did not execute")
+                : last;
     }
 
     /** The RPC's early immutable-receipt mismatch has no lesson snapshot yet. */
-    public void auditRejectedReplay(Identity identity, long lessonId, Geo geo, StudentCheckinException error) {
-        if (error.code() == Code.IDEMPOTENCY_PAYLOAD_MISMATCH) auditRejected(identity, null, lessonId, geo, error);
+    public void auditRejectedReplay(
+            Identity identity, long lessonId, Geo geo, StudentCheckinException error) {
+        if (error.code() == Code.IDEMPOTENCY_PAYLOAD_MISMATCH)
+            auditRejected(identity, null, lessonId, geo, error);
     }
 
-    private void auditRejected(Identity identity, Lesson lesson, long lessonId, Geo geo, StudentCheckinException error) {
+    private void auditRejected(
+            Identity identity,
+            Lesson lesson,
+            long lessonId,
+            Geo geo,
+            StudentCheckinException error) {
         if (rejectedActions == null) return;
         switch (error.code()) {
-            case CHECKIN_NOT_ELIGIBLE, CHECKIN_COOLDOWN, MANUAL_ABSENCE_REQUIRES_APPEAL, IDEMPOTENCY_PAYLOAD_MISMATCH ->
-                    rejectedActions.geo(identity, lesson, lessonId,
+            case CHECKIN_NOT_ELIGIBLE,
+                    CHECKIN_COOLDOWN,
+                    MANUAL_ABSENCE_REQUIRES_APPEAL,
+                    IDEMPOTENCY_PAYLOAD_MISMATCH ->
+                    rejectedActions.geo(
+                            identity,
+                            lesson,
+                            lessonId,
                             RejectedAttendanceActionService.Code.valueOf(error.code().name()),
                             geo instanceof Coordinates coordinates ? coordinates : null);
-            default -> { }
+            default -> {}
         }
     }
 
@@ -209,9 +257,13 @@ public class StudentCheckinService {
         try {
             guard.run();
         } catch (ConflictException error) {
-            if (rejectedActions != null) rejectedActions.geo(identity, lesson, lesson.id(),
-                    RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT,
-                    geo instanceof Coordinates coordinates ? coordinates : null);
+            if (rejectedActions != null)
+                rejectedActions.geo(
+                        identity,
+                        lesson,
+                        lesson.id(),
+                        RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT,
+                        geo instanceof Coordinates coordinates ? coordinates : null);
             throw error;
         }
     }
@@ -220,15 +272,18 @@ public class StudentCheckinService {
     public Ack replay(Identity identity, long lessonId, String idempotencyKey, Geo geo) {
         validateIdentityAndPayload(identity, lessonId, idempotencyKey, geo);
         String payloadHash = sha256(lessonId + "\n" + geo.canonicalValue());
-        return receiptRepository.findByStudentIdAndLessonIdAndIdempotencyKey(
+        return receiptRepository
+                .findByStudentIdAndLessonIdAndIdempotencyKey(
                         identity.userId(), lessonId, idempotencyKey)
-                .map(receipt -> {
-                    if (!receipt.getPayloadHash().equals(payloadHash)) {
-                        throw new StudentCheckinException(Code.IDEMPOTENCY_PAYLOAD_MISMATCH,
-                                "Idempotency-Key уже использован с другим запросом");
-                    }
-                    return fromReceipt(receipt);
-                })
+                .map(
+                        receipt -> {
+                            if (!receipt.getPayloadHash().equals(payloadHash)) {
+                                throw new StudentCheckinException(
+                                        Code.IDEMPOTENCY_PAYLOAD_MISMATCH,
+                                        "Idempotency-Key уже использован с другим запросом");
+                            }
+                            return fromReceipt(receipt);
+                        })
                 .orElse(null);
     }
 
@@ -238,36 +293,55 @@ public class StudentCheckinService {
             String idempotencyKey,
             String payloadHash,
             Geo geo,
-            Instant acceptedAt
-    ) {
-        var previousReceipt = receiptRepository.findByStudentIdAndLessonIdAndIdempotencyKey(
-                identity.userId(), lesson.id(), idempotencyKey);
+            Instant acceptedAt) {
+        var previousReceipt =
+                receiptRepository.findByStudentIdAndLessonIdAndIdempotencyKey(
+                        identity.userId(), lesson.id(), idempotencyKey);
         if (previousReceipt.isPresent()) {
             if (!previousReceipt.get().getPayloadHash().equals(payloadHash)) {
-                throw new StudentCheckinException(Code.IDEMPOTENCY_PAYLOAD_MISMATCH,
+                throw new StudentCheckinException(
+                        Code.IDEMPOTENCY_PAYLOAD_MISMATCH,
                         "Idempotency-Key уже использован с другим запросом");
             }
             return fromReceipt(previousReceipt.get());
         }
 
-        guardedWriteFence(identity, lesson, geo, () -> pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt));
-        AttendanceDocument current = attendanceRepository
-                .findByLessonIdAndUserId(lesson.id(), identity.userId())
-                .orElse(null);
+        guardedWriteFence(
+                identity,
+                lesson,
+                geo,
+                () -> pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt));
+        AttendanceDocument current =
+                attendanceRepository
+                        .findByLessonIdAndUserId(lesson.id(), identity.userId())
+                        .orElse(null);
         if (isManualHeadmanAbsence(current)) {
-            throw new StudentCheckinException(Code.MANUAL_ABSENCE_REQUIRES_APPEAL,
+            throw new StudentCheckinException(
+                    Code.MANUAL_ABSENCE_REQUIRES_APPEAL,
                     "Ручная отметка «н» оспаривается отдельной заявкой");
         }
         if (current != null && current.getStatus() == AttendanceStatus.PRESENT) {
             return presentAck(current, lesson.id(), acceptedAt);
         }
 
-        guardedWriteFence(identity, lesson, geo, () ->
-                pairCoordinator.lock(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId(), acceptedAt));
-        current = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId())
-                .orElse(null);
+        guardedWriteFence(
+                identity,
+                lesson,
+                geo,
+                () ->
+                        pairCoordinator.lock(
+                                lesson.semesterId(),
+                                identity.userId(),
+                                lesson.id(),
+                                identity.groupId(),
+                                acceptedAt));
+        current =
+                attendanceRepository
+                        .findByLessonIdAndUserId(lesson.id(), identity.userId())
+                        .orElse(null);
         if (isManualHeadmanAbsence(current)) {
-            throw new StudentCheckinException(Code.MANUAL_ABSENCE_REQUIRES_APPEAL,
+            throw new StudentCheckinException(
+                    Code.MANUAL_ABSENCE_REQUIRES_APPEAL,
                     "Ручная отметка «н» оспаривается отдельной заявкой");
         }
         if (current != null && current.getStatus() == AttendanceStatus.PRESENT) {
@@ -276,68 +350,93 @@ public class StudentCheckinService {
 
         if (excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
                 identity.userId(), List.of(lesson.id()), List.of(ExcuseTicketStatus.SUBMITTED))) {
-            throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE,
+            throw new StudentCheckinException(
+                    Code.CHECKIN_NOT_ELIGIBLE,
                     "Уважительная заявка на эту пару уже ожидает решения старосты");
         }
 
-        LateCheckinRequest pendingRequest = lateCheckinRepository
-                .findFirstByStudentIdAndLessonIdAndStatus(
-                        identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
-                .orElse(null);
-        if (pendingRequest != null && pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE) {
-            throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE,
-                    "Заявка на эту пару уже ожидает решения старосты");
+        LateCheckinRequest pendingRequest =
+                lateCheckinRepository
+                        .findFirstByStudentIdAndLessonIdAndStatus(
+                                identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
+                        .orElse(null);
+        if (pendingRequest != null
+                && pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE) {
+            throw new StudentCheckinException(
+                    Code.CHECKIN_NOT_ELIGIBLE, "Заявка на эту пару уже ожидает решения старосты");
         }
 
-        CheckinPairStateDocument pair = pairRepository.findById(
-                PairWriteCoordinator.pairId(identity.userId(), lesson.id())).orElseThrow();
+        CheckinPairStateDocument pair =
+                pairRepository
+                        .findById(PairWriteCoordinator.pairId(identity.userId(), lesson.id()))
+                        .orElseThrow();
         if (pair.getRetryAt() != null && acceptedAt.isBefore(pair.getRetryAt())) {
-            throw new StudentCheckinException(Code.CHECKIN_COOLDOWN,
-                    "Повторная геопроверка пока недоступна", pair.getRetryAt());
+            throw new StudentCheckinException(
+                    Code.CHECKIN_COOLDOWN,
+                    "Повторная геопроверка пока недоступна",
+                    pair.getRetryAt());
         }
 
-        ru.rutcampustrack.attendance.geofence.GeofenceService.Decision geoDecision = geo instanceof Coordinates coordinates
-                ? geofenceService.evaluate(coordinates.latitude(), coordinates.longitude()) : null;
+        ru.rutcampustrack.attendance.geofence.GeofenceService.Decision geoDecision =
+                geo instanceof Coordinates coordinates
+                        ? geofenceService.evaluate(coordinates.latitude(), coordinates.longitude())
+                        : null;
         boolean geoAccepted = geoDecision != null && geoDecision.accepted();
-        AttendanceDocument beforeAttempt = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
+        AttendanceDocument beforeAttempt =
+                ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         Instant retryAt = acceptedAt.plus(COOLDOWN);
         pair.setLastAttemptAt(acceptedAt);
         pair.setRetryAt(retryAt);
         pair.setUpdatedAt(acceptedAt);
         pairRepository.save(pair);
 
-        Ack ack = geoAccepted
-                ? markPresent(identity, lesson, current, acceptedAt)
-                : createOrReuseRequest(identity, lesson, acceptedAt, retryAt);
+        Ack ack =
+                geoAccepted
+                        ? markPresent(identity, lesson, current, acceptedAt)
+                        : createOrReuseRequest(identity, lesson, acceptedAt, retryAt);
         receiptRepository.save(toReceipt(identity, lesson, idempotencyKey, payloadHash, ack));
         java.util.Map<String, Object> geoEvidence = new java.util.LinkedHashMap<>();
-        geoEvidence.put("distance_meters", geoDecision == null ? null : geoDecision.distanceMeters());
+        geoEvidence.put(
+                "distance_meters", geoDecision == null ? null : geoDecision.distanceMeters());
         geoEvidence.put("radius_meters", geoDecision == null ? null : geoDecision.radiusMeters());
         geoEvidence.put("accuracy_meters", null);
-        geoEvidence.put("verdict", geoDecision == null ? "UNAVAILABLE" : geoAccepted ? "ACCEPTED" : "OUTSIDE_RADIUS");
+        geoEvidence.put(
+                "verdict",
+                geoDecision == null ? "UNAVAILABLE" : geoAccepted ? "ACCEPTED" : "OUTSIDE_RADIUS");
         if (!geoAccepted && geo instanceof Coordinates coordinates) {
-            // Keep only the unconfirmed attempt's original coordinates beside its evaluated distance snapshot.
+            // Keep only the unconfirmed attempt's original coordinates beside its evaluated
+            // distance snapshot.
             geoEvidence.put("latitude", coordinates.latitude());
             geoEvidence.put("longitude", coordinates.longitude());
         }
-        AttendanceDocument afterAttempt = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId()).orElse(null);
-        attendanceEventPublisher.recordLocal(identity.groupId(), lesson.semesterId(), lesson.id(), "GEO_ATTEMPT",
-                ru.rutcampustrack.attendance.audit.LessonActionService.person(identity.userId(), "STUDENT", identity.displayName()),
-                ru.rutcampustrack.attendance.audit.LessonActionService.person(identity.userId(), "STUDENT", identity.displayName()),
+        AttendanceDocument afterAttempt =
+                attendanceRepository
+                        .findByLessonIdAndUserId(lesson.id(), identity.userId())
+                        .orElse(null);
+        attendanceEventPublisher.recordLocal(
+                identity.groupId(),
+                lesson.semesterId(),
+                lesson.id(),
+                "GEO_ATTEMPT",
+                ru.rutcampustrack.attendance.audit.LessonActionService.person(
+                        identity.userId(), "STUDENT", identity.displayName()),
+                ru.rutcampustrack.attendance.audit.LessonActionService.person(
+                        identity.userId(), "STUDENT", identity.displayName()),
                 ru.rutcampustrack.attendance.audit.LessonActionService.snapshot(beforeAttempt),
-                ru.rutcampustrack.attendance.audit.LessonActionService.snapshot(afterAttempt), geoEvidence,
-                ack.request() == null ? null : ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference(
-                        "LATE_CHECKIN", ack.request().id(), ack.request().status().name()), acceptedAt);
+                ru.rutcampustrack.attendance.audit.LessonActionService.snapshot(afterAttempt),
+                geoEvidence,
+                ack.request() == null
+                        ? null
+                        : ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference(
+                                "LATE_CHECKIN", ack.request().id(), ack.request().status().name()),
+                acceptedAt);
         return ack;
     }
 
     private Ack markPresent(
-            Identity identity,
-            Lesson lesson,
-            AttendanceDocument current,
-            Instant now
-    ) {
-        AttendanceDocument beforeMark = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
+            Identity identity, Lesson lesson, AttendanceDocument current, Instant now) {
+        AttendanceDocument beforeMark =
+                ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         AttendanceDocument attendance = current == null ? new AttendanceDocument() : current;
         if (attendance.getCreatedAt() == null) {
             attendance.setCreatedAt(now);
@@ -353,7 +452,8 @@ public class StudentCheckinService {
         attendance.setSource(AttendanceSource.STUDENT_GEO);
         attendance.setMarkedBy(null);
         if (journalAttachmentPort != null) {
-            journalAttachmentPort.delete(lesson.semesterId(), lesson.id(), identity.userId(), identity.groupId());
+            journalAttachmentPort.delete(
+                    lesson.semesterId(), lesson.id(), identity.userId(), identity.groupId());
         }
         attendance.setExcuseReason(null);
         attendance.setExcuseType(null);
@@ -365,67 +465,70 @@ public class StudentCheckinService {
         attendance.setUpdatedAt(now);
         attendance.setMarkRevision(java.util.UUID.randomUUID().toString());
         AttendanceDocument saved = attendanceRepository.save(attendance);
-        attendanceEventPublisher.recordChange("ATTENDANCE_SET", beforeMark, saved, identity.userId(), "STUDENT", null);
+        attendanceEventPublisher.recordChange(
+                "ATTENDANCE_SET", beforeMark, saved, identity.userId(), "STUDENT", null);
 
-        lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
+        lateCheckinRepository
+                .findFirstByStudentIdAndLessonIdAndStatus(
                         identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
                 .filter(request -> request.getOrigin() == LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
-                .ifPresent(request -> {
-                    java.util.Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(request);
-                    request.setStatus(LateCheckinRequestStatus.CANCELLED);
-                    request.setResolutionReason(LateCheckinResolutionReason.GEO_CONFIRMED);
-                    request.setDecisionAt(now);
-                    request.setDecisionBy(null);
-                    request.setUpdatedAt(now);
-                    LateCheckinRequest cancelled = lateCheckinRepository.save(request);
-                    if (requestActions != null) requestActions.late(cancelled, auditBefore, null, null, now);
-                    lateCheckinEventPublisher.publishDecided(
-                            cancelled,
-                            lesson.date(),
-                            lesson.lessonNumber(),
-                            lesson.subjectId(),
-                            null
-                    );
-                });
+                .ifPresent(
+                        request -> {
+                            java.util.Map<String, Object> auditBefore =
+                                    ru.rutcampustrack.attendance.audit.RequestActionRecorder
+                                            .snapshot(request);
+                            request.setStatus(LateCheckinRequestStatus.CANCELLED);
+                            request.setResolutionReason(LateCheckinResolutionReason.GEO_CONFIRMED);
+                            request.setDecisionAt(now);
+                            request.setDecisionBy(null);
+                            request.setUpdatedAt(now);
+                            LateCheckinRequest cancelled = lateCheckinRepository.save(request);
+                            if (requestActions != null)
+                                requestActions.late(cancelled, auditBefore, null, null, now);
+                            lateCheckinEventPublisher.publishDecided(
+                                    cancelled,
+                                    lesson.date(),
+                                    lesson.lessonNumber(),
+                                    lesson.subjectId(),
+                                    null);
+                        });
 
         attendanceEventPublisher.publishMarked(saved);
         businessMetrics.checkinCounter("present").increment();
         return presentAck(saved, lesson.id(), now);
     }
 
-    private Ack createOrReuseRequest(Identity identity, Lesson lesson, Instant now, Instant retryAt) {
-        LateCheckinRequest request = lateCheckinRepository
-                .findFirstByStudentIdAndLessonIdAndStatus(
-                        identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
-                .orElse(null);
+    private Ack createOrReuseRequest(
+            Identity identity, Lesson lesson, Instant now, Instant retryAt) {
+        LateCheckinRequest request =
+                lateCheckinRepository
+                        .findFirstByStudentIdAndLessonIdAndStatus(
+                                identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
+                        .orElse(null);
         boolean created = request == null;
         if (created) {
-            request = LateCheckinRequest.builder()
-                    .studentId(identity.userId())
-                    .groupId(identity.groupId())
-                    .lessonId(lesson.id())
-                    .subjectId(lesson.subjectId())
-                    .subjectName(lesson.subjectName())
-                    .subjectType(lesson.subjectType())
-                    .semesterId(lesson.semesterId())
-                    .lessonNumber(lesson.lessonNumber())
-                    .lessonDate(lesson.date())
-                    .startsAt(lesson.startsAt())
-                    .endsAt(lesson.endsAt())
-                    .studentName(identity.displayName())
-                    .status(LateCheckinRequestStatus.PENDING)
-                    .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
-                    .createdAt(now)
-                    .updatedAt(now)
-                    .build();
+            request =
+                    LateCheckinRequest.builder()
+                            .studentId(identity.userId())
+                            .groupId(identity.groupId())
+                            .lessonId(lesson.id())
+                            .subjectId(lesson.subjectId())
+                            .subjectName(lesson.subjectName())
+                            .subjectType(lesson.subjectType())
+                            .semesterId(lesson.semesterId())
+                            .lessonNumber(lesson.lessonNumber())
+                            .lessonDate(lesson.date())
+                            .startsAt(lesson.startsAt())
+                            .endsAt(lesson.endsAt())
+                            .studentName(identity.displayName())
+                            .status(LateCheckinRequestStatus.PENDING)
+                            .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
+                            .createdAt(now)
+                            .updatedAt(now)
+                            .build();
             request = lateCheckinRepository.save(request);
             lateCheckinEventPublisher.publishRequested(
-                    request,
-                    lesson.date(),
-                    lesson.lessonNumber(),
-                    lesson.subjectId(),
-                    null
-            );
+                    request, lesson.date(), lesson.lessonNumber(), lesson.subjectId(), null);
             businessMetrics.lateCheckinCreatedCounter().increment();
         }
         Request projection = new Request(request.getId(), request.getStatus(), null);
@@ -439,18 +542,23 @@ public class StudentCheckinService {
     }
 
     private static Ack presentAck(AttendanceDocument document, long lessonId, Instant serverNow) {
-        Attendance attendance = new Attendance(document.getStatus(), document.getSource(), document.getUpdatedAt());
+        Attendance attendance =
+                new Attendance(document.getStatus(), document.getSource(), document.getUpdatedAt());
         return new Ack(Outcome.PRESENT, lessonId, attendance, null, null, serverNow);
     }
 
     private static void validateIdentityAndPayload(
             Identity identity, long lessonId, String idempotencyKey, Geo geo) {
         if (identity != null && identity.readOnly()) {
-            throw new StudentCheckinException(Code.OUT_OF_SCOPE,
-                    "Терминальная student-сессия доступна только для чтения");
+            throw new StudentCheckinException(
+                    Code.OUT_OF_SCOPE, "Терминальная student-сессия доступна только для чтения");
         }
-        if (identity == null || identity.userId() <= 0 || identity.groupId() == null || identity.groupId() <= 0) {
-            throw new StudentCheckinException(Code.INVALID_SESSION, "Не хватает student/group scope");
+        if (identity == null
+                || identity.userId() <= 0
+                || identity.groupId() == null
+                || identity.groupId() <= 0) {
+            throw new StudentCheckinException(
+                    Code.INVALID_SESSION, "Не хватает student/group scope");
         }
         if (!"STUDENT".equalsIgnoreCase(identity.role())) {
             throw new StudentCheckinException(Code.WRONG_ROLE, "Геоотметка доступна роли STUDENT");
@@ -458,29 +566,36 @@ public class StudentCheckinService {
         if (lessonId <= 0) {
             throw new StudentCheckinException(Code.LESSON_NOT_FOUND, "Пара не найдена");
         }
-        if (idempotencyKey == null || idempotencyKey.length() < 16 || idempotencyKey.length() > 128
+        if (idempotencyKey == null
+                || idempotencyKey.length() < 16
+                || idempotencyKey.length() > 128
                 || idempotencyKey.chars().anyMatch(c -> c < 0x21 || c > 0x7e)) {
-            throw new StudentCheckinException(Code.INVALID_IDEMPOTENCY_KEY, "Некорректный Idempotency-Key");
+            throw new StudentCheckinException(
+                    Code.INVALID_IDEMPOTENCY_KEY, "Некорректный Idempotency-Key");
         }
         if (geo == null) {
             throw new StudentCheckinException(Code.INVALID_REQUEST, "geo обязателен");
         }
         if (geo instanceof Coordinates coordinates
-                && (!Double.isFinite(coordinates.latitude()) || !Double.isFinite(coordinates.longitude())
-                || coordinates.latitude() < -90 || coordinates.latitude() > 90
-                || coordinates.longitude() < -180 || coordinates.longitude() > 180)) {
+                && (!Double.isFinite(coordinates.latitude())
+                        || !Double.isFinite(coordinates.longitude())
+                        || coordinates.latitude() < -90
+                        || coordinates.latitude() > 90
+                        || coordinates.longitude() < -180
+                        || coordinates.longitude() > 180)) {
             throw new StudentCheckinException(Code.INVALID_REQUEST, "Некорректные координаты");
         }
         if (geo instanceof StudentCheckinModels.Unavailable unavailable
                 && (unavailable.reason() == null || unavailable.reason().isBlank())) {
-            throw new StudentCheckinException(Code.INVALID_REQUEST, "Причина недоступной геолокации обязательна");
+            throw new StudentCheckinException(
+                    Code.INVALID_REQUEST, "Причина недоступной геолокации обязательна");
         }
     }
 
     private static void validateDynamicEligibility(Identity identity, Lesson lesson) {
         if (identity.headman()) {
-            throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE,
-                    "Староста отмечает себя через журнал посещаемости");
+            throw new StudentCheckinException(
+                    Code.CHECKIN_NOT_ELIGIBLE, "Староста отмечает себя через журнал посещаемости");
         }
         if (lesson == null || lesson.id() <= 0 || lesson.semesterId() <= 0) {
             throw new StudentCheckinException(Code.LESSON_NOT_FOUND, "Пара не найдена");
@@ -492,17 +607,27 @@ public class StudentCheckinService {
             throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE, "Пара отменена");
         }
         if (lesson.geoBlocked()) {
-            throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE, "Геоотметка заблокирована");
+            throw new StudentCheckinException(
+                    Code.CHECKIN_NOT_ELIGIBLE, "Геоотметка заблокирована");
         }
     }
 
     static void validateWindow(Lesson lesson, Instant now, Clock clock) {
-        Instant opensAt = lesson.date().atTime(lesson.startsAt()).atZone(clock.getZone()).toInstant()
-                .minus(CHECKIN_BUFFER);
-        Instant closesAt = lesson.date().atTime(lesson.endsAt()).atZone(clock.getZone()).toInstant()
-                .plus(CHECKIN_BUFFER);
+        Instant opensAt =
+                lesson.date()
+                        .atTime(lesson.startsAt())
+                        .atZone(clock.getZone())
+                        .toInstant()
+                        .minus(CHECKIN_BUFFER);
+        Instant closesAt =
+                lesson.date()
+                        .atTime(lesson.endsAt())
+                        .atZone(clock.getZone())
+                        .toInstant()
+                        .plus(CHECKIN_BUFFER);
         if (now.isBefore(opensAt) || now.isAfter(closesAt)) {
-            throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE, "Вне временного окна отметки");
+            throw new StudentCheckinException(
+                    Code.CHECKIN_NOT_ELIGIBLE, "Вне временного окна отметки");
         }
     }
 
@@ -514,13 +639,17 @@ public class StudentCheckinService {
                 .idempotencyKey(key)
                 .payloadHash(payloadHash)
                 .outcome(ack.outcome().name())
-                .attendanceStatus(ack.attendance() == null ? null : ack.attendance().status().name())
-                .attendanceSource(ack.attendance() == null ? null : ack.attendance().source().name())
+                .attendanceStatus(
+                        ack.attendance() == null ? null : ack.attendance().status().name())
+                .attendanceSource(
+                        ack.attendance() == null ? null : ack.attendance().source().name())
                 .markedAt(ack.attendance() == null ? null : ack.attendance().markedAt())
                 .requestId(ack.request() == null ? null : ack.request().id())
                 .requestStatus(ack.request() == null ? null : ack.request().status().name())
-                .requestResolution(ack.request() == null || ack.request().resolution() == null
-                        ? null : ack.request().resolution().name())
+                .requestResolution(
+                        ack.request() == null || ack.request().resolution() == null
+                                ? null
+                                : ack.request().resolution().name())
                 .retryAt(ack.retryAt())
                 .serverNow(ack.serverNow())
                 .createdAt(ack.serverNow())
@@ -528,22 +657,37 @@ public class StudentCheckinService {
     }
 
     private static Ack fromReceipt(StudentCheckinReceiptDocument receipt) {
-        Attendance attendance = receipt.getAttendanceStatus() == null ? null : new Attendance(
-                AttendanceStatus.valueOf(receipt.getAttendanceStatus()),
-                AttendanceSource.valueOf(receipt.getAttendanceSource()),
-                receipt.getMarkedAt());
-        Request request = receipt.getRequestId() == null ? null : new Request(
-                receipt.getRequestId(),
-                LateCheckinRequestStatus.valueOf(receipt.getRequestStatus()),
-                receipt.getRequestResolution() == null ? null : Resolution.valueOf(receipt.getRequestResolution()));
-        return new Ack(Outcome.valueOf(receipt.getOutcome()), receipt.getLessonId(), attendance, request,
-                receipt.getRetryAt(), receipt.getServerNow());
+        Attendance attendance =
+                receipt.getAttendanceStatus() == null
+                        ? null
+                        : new Attendance(
+                                AttendanceStatus.valueOf(receipt.getAttendanceStatus()),
+                                AttendanceSource.valueOf(receipt.getAttendanceSource()),
+                                receipt.getMarkedAt());
+        Request request =
+                receipt.getRequestId() == null
+                        ? null
+                        : new Request(
+                                receipt.getRequestId(),
+                                LateCheckinRequestStatus.valueOf(receipt.getRequestStatus()),
+                                receipt.getRequestResolution() == null
+                                        ? null
+                                        : Resolution.valueOf(receipt.getRequestResolution()));
+        return new Ack(
+                Outcome.valueOf(receipt.getOutcome()),
+                receipt.getLessonId(),
+                attendance,
+                request,
+                receipt.getRetryAt(),
+                receipt.getServerNow());
     }
 
     private static String sha256(String value) {
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException("SHA-256 is unavailable", impossible);
         }
@@ -556,7 +700,8 @@ public class StudentCheckinService {
             }
             if (current instanceof MongoException mongo
                     && (mongo.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)
-                    || mongo.hasErrorLabel(MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL))) {
+                            || mongo.hasErrorLabel(
+                                    MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL))) {
                 return true;
             }
             if (current instanceof TransactionException

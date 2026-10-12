@@ -1,19 +1,18 @@
 package ru.rutcampustrack.shared.web.validation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidFileValidatorTest {
 
@@ -35,13 +34,18 @@ class ValidFileValidatorTest {
     record Upload(@ValidFile MultipartFile file) {}
 
     /** Restricted: 1 KiB, only image/png or image/jpeg. */
-    record ImageUpload(@ValidFile(maxSizeBytes = 1024, allowedMediaTypes = {"image/png", "image/jpeg"}) MultipartFile file) {}
+    record ImageUpload(
+            @ValidFile(
+                            maxSizeBytes = 1024,
+                            allowedMediaTypes = {"image/png", "image/jpeg"})
+                    MultipartFile file) {}
 
     @Test
     @DisplayName("null и empty файл — валидны (use @NotNull для обязательности)")
     void nullAndEmpty() {
         assertThat(validator.validate(new Upload(null))).isEmpty();
-        assertThat(validator.validate(new Upload(new MockMultipartFile("f", new byte[0])))).isEmpty();
+        assertThat(validator.validate(new Upload(new MockMultipartFile("f", new byte[0]))))
+                .isEmpty();
     }
 
     @Test
@@ -59,7 +63,9 @@ class ValidFileValidatorTest {
         MultipartFile f = new MockMultipartFile("f", "big.png", "image/png", data);
         Set<ConstraintViolation<ImageUpload>> violations = validator.validate(new ImageUpload(f));
         assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage()).contains("превышает").contains("1024");
+        assertThat(violations.iterator().next().getMessage())
+                .contains("превышает")
+                .contains("1024");
     }
 
     @Test
@@ -81,7 +87,8 @@ class ValidFileValidatorTest {
     @Test
     @DisplayName("allowedMediaTypes пустой — любой тип валиден")
     void anyTypeAllowed() {
-        MultipartFile f = new MockMultipartFile("f", "x", "application/octet-stream", new byte[100]);
+        MultipartFile f =
+                new MockMultipartFile("f", "x", "application/octet-stream", new byte[100]);
         assertThat(validator.validate(new Upload(f))).isEmpty();
     }
 

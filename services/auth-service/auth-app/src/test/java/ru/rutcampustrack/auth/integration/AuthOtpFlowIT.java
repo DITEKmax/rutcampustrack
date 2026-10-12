@@ -1,7 +1,19 @@
 package ru.rutcampustrack.auth.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Clock;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,68 +24,58 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.RabbitMQContainer;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
-import ru.rutcampustrack.auth.events.EventSchemaValidator;
-import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
 import ru.rutcampustrack.auth.event.AuthOutboxCleanupJob;
+import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
+import ru.rutcampustrack.auth.events.EventSchemaValidator;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
-
-import java.time.Clock;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * M09 G2 (08 P0-2) — AuthOtpFlowIT.
  *
  * <p>Проверяет сквозной flow OTP:
+ *
  * <ol>
- *   <li>{@code POST /auth/otp/request} → 204 без тела (код не утекает в HTTP)</li>
- *   <li>Код лежит в Redis по ключу {@code otp:<telegramId>}</li>
- *   <li>RabbitMQ получает {@code otp.requested} event с тем же кодом</li>
+ *   <li>{@code POST /auth/otp/request} → 204 без тела (код не утекает в HTTP)
+ *   <li>Код лежит в Redis по ключу {@code otp:<telegramId>}
+ *   <li>RabbitMQ получает {@code otp.requested} event с тем же кодом
  * </ol>
  *
- * <p>Uses the canonical auth integration fixture (Academic V1..V24 + Redis)
- * and adds RabbitMQ for the real OTP and password-change event assertions.
+ * <p>Uses the canonical auth integration fixture (Academic V1..V24 + Redis) and adds RabbitMQ for
+ * the real OTP and password-change event assertions.
  */
-@TestPropertySource(properties = {
-        // Перекрываем exclude из application-test.yml — нужен RabbitTemplate.
-        "spring.autoconfigure.exclude=",
-        "auth.password-reset-url=https://recovery.example.test/password-reset"
-})
+@TestPropertySource(
+        properties = {
+            // Перекрываем exclude из application-test.yml — нужен RabbitTemplate.
+            "spring.autoconfigure.exclude=",
+            "auth.password-reset-url=https://recovery.example.test/password-reset"
+        })
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
-@Sql(scripts = "classpath:sql/clear-telegram-id.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(
+        scripts = "classpath:sql/clear-telegram-id.sql",
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class AuthOtpFlowIT extends AbstractIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
@@ -90,29 +92,20 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         RABBITMQ.start();
     }
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @Autowired private TestRestTemplate restTemplate;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @Autowired private StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    @Autowired private RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private AmqpAdmin amqpAdmin;
+    @Autowired private AmqpAdmin amqpAdmin;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @Autowired
-    private JdbcTemplate jdbc;
-    @Autowired
-    private OutboxStorage outboxStorage;
-    @Autowired
-    private OutboxEventSender outboxSender;
-    @Autowired
-    private PlatformTransactionManager transactionManager;
+    @Autowired private JdbcTemplate jdbc;
+    @Autowired private OutboxStorage outboxStorage;
+    @Autowired private OutboxEventSender outboxSender;
+    @Autowired private PlatformTransactionManager transactionManager;
     private long passwordChangedEventCountBeforeTest;
 
     @BeforeEach
@@ -122,18 +115,28 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         keys = redisTemplate.keys("password_reset:*");
         if (keys != null && !keys.isEmpty()) redisTemplate.delete(keys);
 
-        Long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
-        jdbc.update("DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
+        Long userId =
+                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+        jdbc.update(
+                "DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
                 Long.toString(TELEGRAM_ID));
-        jdbc.update("UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
-                + "WHERE user_id = ? AND revoked_at IS NULL", userId);
+        jdbc.update(
+                "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
+                        + "WHERE user_id = ? AND revoked_at IS NULL",
+                userId);
         jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", userId);
-        passwordChangedEventCountBeforeTest = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM account_security_events WHERE user_id = ? "
-                        + "AND event_type = 'PASSWORD_CHANGED'", Long.class, userId);
-        jdbc.update("UPDATE users SET password_hash = ?, password_changed = false, "
-                + "initial_password = NULL, telegram_id = ? WHERE id = ?",
-                PASSWORD_HASH, TELEGRAM_ID, userId);
+        passwordChangedEventCountBeforeTest =
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM account_security_events WHERE user_id = ? "
+                                + "AND event_type = 'PASSWORD_CHANGED'",
+                        Long.class,
+                        userId);
+        jdbc.update(
+                "UPDATE users SET password_hash = ?, password_changed = false, "
+                        + "initial_password = NULL, telegram_id = ? WHERE id = ?",
+                PASSWORD_HASH,
+                TELEGRAM_ID,
+                userId);
 
         // Declare test queue and bind к exchange — чтобы event попал именно сюда.
         // durable=false, exclusive=false, autoDelete=false — queue должен пережить
@@ -162,8 +165,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Test
     @Timeout(value = 20, unit = TimeUnit.SECONDS)
     void requestOtp_204Body_redisHasCode_rabbitReceivesEvent() throws Exception {
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-                "/auth/otp/request", new OtpRequest(TELEGRAM_ID), Void.class);
+        ResponseEntity<Void> response =
+                restTemplate.postForEntity(
+                        "/auth/otp/request", new OtpRequest(TELEGRAM_ID), Void.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(response.getBody()).isNull();
@@ -198,16 +202,21 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         TokenResponse secondSession = loginStudent("password");
         assertThat(activeSessionCount()).isEqualTo(2);
 
-        ResponseEntity<String> invalidRequest = restTemplate.postForEntity(
-                "/auth/password-reset/request",
-                Map.of("login", "student", "telegramId", TELEGRAM_ID), String.class);
+        ResponseEntity<String> invalidRequest =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request",
+                        Map.of("login", "student", "telegramId", TELEGRAM_ID),
+                        String.class);
         assertThat(invalidRequest.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(invalidRequest.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
+        assertThat(invalidRequest.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
 
-        ResponseEntity<JsonNode> request = restTemplate.postForEntity(
-                "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
+        ResponseEntity<JsonNode> request =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
         assertThat(request.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(request.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
+        assertThat(request.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
         assertThat(request.getBody()).isNotNull();
         String challengeId = request.getBody().path("challengeId").asText();
         assertThat(challengeId).hasSize(32);
@@ -215,10 +224,14 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(request.getBody().has("attemptsRemaining")).isFalse();
         assertThat(request.getBody().has("code")).isFalse();
 
-        ResponseEntity<JsonNode> unknown = restTemplate.postForEntity(
-                "/auth/password-reset/request", Map.of("login", "unknown-reset-user"), JsonNode.class);
+        ResponseEntity<JsonNode> unknown =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request",
+                        Map.of("login", "unknown-reset-user"),
+                        JsonNode.class);
         assertThat(unknown.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(unknown.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
+        assertThat(unknown.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
         assertThat(unknown.getBody()).isNotNull();
         assertThat(unknown.getBody().path("ttlSeconds").asInt()).isEqualTo(120);
         assertThat(unknown.getBody().size()).isEqualTo(request.getBody().size());
@@ -235,24 +248,33 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(payload.path("attempts_remaining").asInt()).isEqualTo(3);
 
         // A bot request for the same account shares the login request's account window.
-        ResponseEntity<JsonNode> botAlias = restTemplate.postForEntity(
-                "/auth/password-reset/request", Map.of("telegramId", TELEGRAM_ID), JsonNode.class);
+        ResponseEntity<JsonNode> botAlias =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request",
+                        Map.of("telegramId", TELEGRAM_ID),
+                        JsonNode.class);
         assertThat(botAlias.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(botAlias.getBody()).isNotNull();
         assertThat(botAlias.getBody().has("attemptsRemaining")).isFalse();
         assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
 
         // A reset-purpose code cannot enter the login OTP route or create a session.
-        ResponseEntity<String> loginVerify = restTemplate.postForEntity(
-                "/auth/otp/verify", Map.of("telegramId", TELEGRAM_ID, "code", code), String.class);
+        ResponseEntity<String> loginVerify =
+                restTemplate.postForEntity(
+                        "/auth/otp/verify",
+                        Map.of("telegramId", TELEGRAM_ID, "code", code),
+                        String.class);
         assertThat(loginVerify.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(activeSessionCount()).isEqualTo(2);
 
-        ResponseEntity<JsonNode> verified = restTemplate.postForEntity(
-                "/auth/password-reset/verify",
-                Map.of("challengeId", challengeId, "code", code), JsonNode.class);
+        ResponseEntity<JsonNode> verified =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/verify",
+                        Map.of("challengeId", challengeId, "code", code),
+                        JsonNode.class);
         assertThat(verified.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(verified.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
+        assertThat(verified.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
         assertThat(verified.getBody()).isNotNull();
         String resetTicket = verified.getBody().path("resetTicket").asText();
         assertThat(resetTicket).isNotBlank();
@@ -264,18 +286,32 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             CyclicBarrier start = new CyclicBarrier(2);
-            Future<ResponseEntity<String>> first = executor.submit(() -> {
-                start.await(10, TimeUnit.SECONDS);
-                return restTemplate.postForEntity("/auth/password-reset/complete",
-                        Map.of("resetTicket", resetTicket, "newPassword", "NewStrongPassword42!"),
-                        String.class);
-            });
-            Future<ResponseEntity<String>> second = executor.submit(() -> {
-                start.await(10, TimeUnit.SECONDS);
-                return restTemplate.postForEntity("/auth/password-reset/complete",
-                        Map.of("resetTicket", resetTicket, "newPassword", "NewStrongPassword42!"),
-                        String.class);
-            });
+            Future<ResponseEntity<String>> first =
+                    executor.submit(
+                            () -> {
+                                start.await(10, TimeUnit.SECONDS);
+                                return restTemplate.postForEntity(
+                                        "/auth/password-reset/complete",
+                                        Map.of(
+                                                "resetTicket",
+                                                resetTicket,
+                                                "newPassword",
+                                                "NewStrongPassword42!"),
+                                        String.class);
+                            });
+            Future<ResponseEntity<String>> second =
+                    executor.submit(
+                            () -> {
+                                start.await(10, TimeUnit.SECONDS);
+                                return restTemplate.postForEntity(
+                                        "/auth/password-reset/complete",
+                                        Map.of(
+                                                "resetTicket",
+                                                resetTicket,
+                                                "newPassword",
+                                                "NewStrongPassword42!"),
+                                        String.class);
+                            });
             assertThat(first.get(20, TimeUnit.SECONDS).getStatusCode())
                     .isIn(HttpStatus.NO_CONTENT, HttpStatus.GONE);
             assertThat(second.get(20, TimeUnit.SECONDS).getStatusCode())
@@ -293,7 +329,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(passwordChangedMessage)
                 .as("после committed reset отправляется password.changed")
                 .isNotNull();
-        String passwordChangedJson = new String(passwordChangedMessage.getBody(), java.nio.charset.StandardCharsets.UTF_8);
+        String passwordChangedJson =
+                new String(
+                        passwordChangedMessage.getBody(), java.nio.charset.StandardCharsets.UTF_8);
         JsonNode passwordChanged = objectMapper.readTree(passwordChangedJson);
         assertThat(EventSchemaValidator.validate("password.changed.json", passwordChangedJson))
                 .as("password.changed event соответствует публичной schema")
@@ -302,35 +340,49 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         JsonNode changedPayload = passwordChanged.path("payload");
         assertThat(changedPayload.path("telegram_id").asLong()).isEqualTo(TELEGRAM_ID);
         assertThat(passwordChanged.path("event_version").asInt()).isEqualTo(2);
-        Map<String, Object> changedIdentity = jdbc.queryForMap(
-                "SELECT id, credentials_version, telegram_binding_version, telegram_id "
-                        + "FROM users WHERE login = 'student'");
+        Map<String, Object> changedIdentity =
+                jdbc.queryForMap(
+                        "SELECT id, credentials_version, telegram_binding_version, telegram_id "
+                                + "FROM users WHERE login = 'student'");
         var changedFields = new java.util.HashSet<String>();
         changedPayload.fieldNames().forEachRemaining(changedFields::add);
-        assertThat(changedFields).containsExactlyInAnyOrder(
-                "user_id", "credentials_version", "telegram_binding_version", "telegram_id");
+        assertThat(changedFields)
+                .containsExactlyInAnyOrder(
+                        "user_id",
+                        "credentials_version",
+                        "telegram_binding_version",
+                        "telegram_id");
         assertThat(changedPayload.path("user_id").asLong())
                 .isEqualTo(((Number) changedIdentity.get("id")).longValue());
-        assertThat(changedPayload.path("credentials_version").asLong()).isPositive()
+        assertThat(changedPayload.path("credentials_version").asLong())
+                .isPositive()
                 .isEqualTo(((Number) changedIdentity.get("credentials_version")).longValue());
-        assertThat(changedPayload.path("telegram_binding_version").asLong()).isPositive()
+        assertThat(changedPayload.path("telegram_binding_version").asLong())
+                .isPositive()
                 .isEqualTo(((Number) changedIdentity.get("telegram_binding_version")).longValue());
         assertThat(changedPayload.path("telegram_id").asLong())
                 .isEqualTo(((Number) changedIdentity.get("telegram_id")).longValue());
-        assertThat(passwordChangedJson.contains("NewStrongPassword42!") || passwordChangedJson.contains(resetTicket))
-                .as("password event must omit changed password and reset ticket values").isFalse();
+        assertThat(
+                        passwordChangedJson.contains("NewStrongPassword42!")
+                                || passwordChangedJson.contains(resetTicket))
+                .as("password event must omit changed password and reset ticket values")
+                .isFalse();
         assertThat(changedPayload.has("password")).isFalse();
         assertThat(changedPayload.has("reset_ticket")).isFalse();
         assertThat(changedPayload.has("code")).isFalse();
-        assertThat(jdbc.queryForObject(
-                "SELECT COUNT(*) FROM account_security_events WHERE user_id = "
-                        + "(SELECT id FROM users WHERE login = 'student') AND event_type = 'PASSWORD_CHANGED'",
-                Long.class)).isEqualTo(passwordChangedEventCountBeforeTest + 1);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM account_security_events WHERE user_id = "
+                                        + "(SELECT id FROM users WHERE login = 'student') AND event_type = 'PASSWORD_CHANGED'",
+                                Long.class))
+                .isEqualTo(passwordChangedEventCountBeforeTest + 1);
         assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
 
         assertThat(activeSessionCount()).isZero();
-        assertThat(bearerSessionStatus(firstSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(bearerSessionStatus(secondSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(bearerSessionStatus(firstSession.accessToken()))
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(bearerSessionStatus(secondSession.accessToken()))
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(refreshStatus(firstSession.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(loginStudent("NewStrongPassword42!").accessToken()).isNotBlank();
     }
@@ -339,7 +391,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Timeout(value = 30, unit = TimeUnit.SECONDS)
     void passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart() throws Exception {
         TokenResponse oldSession = loginStudent("password");
-        CachingConnectionFactory connections = (CachingConnectionFactory) rabbitTemplate.getConnectionFactory();
+        CachingConnectionFactory connections =
+                (CachingConnectionFactory) rabbitTemplate.getConnectionFactory();
         CachingConnectionFactory publisherConnections =
                 (CachingConnectionFactory) connections.getPublisherConnectionFactory();
         assertThat(publisherConnections).isNotNull();
@@ -354,14 +407,25 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             publisherConnections.resetConnection();
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(oldSession.accessToken());
-            ResponseEntity<Void> changed = restTemplate.exchange("/auth/change-password", HttpMethod.POST,
-                    new HttpEntity<>(Map.of("currentPassword", "password",
-                            "newPassword", "OutboxNewPassword42!"), headers), Void.class);
+            ResponseEntity<Void> changed =
+                    restTemplate.exchange(
+                            "/auth/change-password",
+                            HttpMethod.POST,
+                            new HttpEntity<>(
+                                    Map.of(
+                                            "currentPassword",
+                                            "password",
+                                            "newPassword",
+                                            "OutboxNewPassword42!"),
+                                    headers),
+                            Void.class);
             assertThat(changed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-            assertThat(bearerSessionStatus(oldSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(bearerSessionStatus(oldSession.accessToken()))
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
             assertThat(loginStudent("OutboxNewPassword42!").accessToken()).isNotBlank();
             assertThat(outboxStorage.countPending()).isEqualTo(1);
-            assertThatThrownBy(() -> publishAuthOutbox(outboxSender)).isInstanceOf(IllegalStateException.class);
+            assertThatThrownBy(() -> publishAuthOutbox(outboxSender))
+                    .isInstanceOf(IllegalStateException.class);
             assertThat(outboxStorage.countPending()).isEqualTo(1);
         } finally {
             connections.setAddresses(brokerAddress);
@@ -370,42 +434,64 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             publisherConnections.resetConnection();
         }
 
-        String storedJson = jdbc.queryForObject("SELECT payload::text FROM auth_outbox WHERE status = 'pending'",
-                String.class);
+        String storedJson =
+                jdbc.queryForObject(
+                        "SELECT payload::text FROM auth_outbox WHERE status = 'pending'",
+                        String.class);
         JsonNode storedEvent = objectMapper.readTree(storedJson);
         assertThat(EventSchemaValidator.validate("password.changed.json", storedJson)).isEmpty();
         assertThat(storedEvent.path("event_version").asInt()).isEqualTo(2);
         JsonNode storedPayload = storedEvent.path("payload");
-        Map<String, Object> storedIdentity = jdbc.queryForMap(
-                "SELECT id, credentials_version, telegram_binding_version, telegram_id "
-                        + "FROM users WHERE login = 'student'");
+        Map<String, Object> storedIdentity =
+                jdbc.queryForMap(
+                        "SELECT id, credentials_version, telegram_binding_version, telegram_id "
+                                + "FROM users WHERE login = 'student'");
         var storedFields = new java.util.HashSet<String>();
         storedPayload.fieldNames().forEachRemaining(storedFields::add);
-        assertThat(storedFields).containsExactlyInAnyOrder(
-                "user_id", "credentials_version", "telegram_binding_version", "telegram_id");
+        assertThat(storedFields)
+                .containsExactlyInAnyOrder(
+                        "user_id",
+                        "credentials_version",
+                        "telegram_binding_version",
+                        "telegram_id");
         assertThat(storedPayload.path("user_id").asLong())
                 .isEqualTo(((Number) storedIdentity.get("id")).longValue());
-        assertThat(storedPayload.path("credentials_version").asLong()).isPositive()
+        assertThat(storedPayload.path("credentials_version").asLong())
+                .isPositive()
                 .isEqualTo(((Number) storedIdentity.get("credentials_version")).longValue());
-        assertThat(storedPayload.path("telegram_binding_version").asLong()).isPositive()
+        assertThat(storedPayload.path("telegram_binding_version").asLong())
+                .isPositive()
                 .isEqualTo(((Number) storedIdentity.get("telegram_binding_version")).longValue());
         assertThat(storedPayload.path("telegram_id").asLong())
                 .isEqualTo(((Number) storedIdentity.get("telegram_id")).longValue());
         assertThat(storedEvent.path("payload").path("telegram_id").asLong()).isEqualTo(TELEGRAM_ID);
-        assertThat(storedJson).doesNotContain("OutboxNewPassword42!", "password_hash", "reset_ticket", "code");
+        assertThat(storedJson)
+                .doesNotContain("OutboxNewPassword42!", "password_hash", "reset_ticket", "code");
 
         // Age must not expire an undelivered intent.
-        jdbc.update("UPDATE auth_outbox SET created_at = NOW() - INTERVAL '8 days' WHERE status = 'pending'");
-        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
-                assertThat(new AuthOutboxCleanupJob(outboxStorage, Clock.systemUTC(), 7).runCleanup()).isZero());
+        jdbc.update(
+                "UPDATE auth_outbox SET created_at = NOW() - INTERVAL '8 days' WHERE status = 'pending'");
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status ->
+                                assertThat(
+                                                new AuthOutboxCleanupJob(
+                                                                outboxStorage, Clock.systemUTC(), 7)
+                                                        .runCleanup())
+                                        .isZero());
         assertThat(outboxStorage.countPending()).isEqualTo(1);
 
         // Broker accepts the event, then the publisher loses its result before
         // marking sent. A restarted publisher retries the same logical event.
-        assertThatThrownBy(() -> publishAuthOutbox((type, payload) -> {
-            outboxSender.send(type, payload);
-            throw new IllegalStateException("simulated process loss after broker confirmation");
-        })).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(
+                        () ->
+                                publishAuthOutbox(
+                                        (type, payload) -> {
+                                            outboxSender.send(type, payload);
+                                            throw new IllegalStateException(
+                                                    "simulated process loss after broker confirmation");
+                                        }))
+                .isInstanceOf(IllegalStateException.class);
         assertThat(outboxStorage.countPending()).isEqualTo(1);
         Message firstDelivery = receiveWithRetry(TEST_QUEUE);
         assertThat(firstDelivery).isNotNull();
@@ -418,14 +504,18 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(outboxStorage.countPending()).isZero();
         assertThat(publishAuthOutbox(outboxSender)).isZero();
         assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM auth_outbox", Long.class)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM auth_outbox", Long.class))
+                .isEqualTo(1L);
     }
 
     private int publishAuthOutbox(OutboxEventSender sender) {
         // Recreate the stateless publisher on every invocation, retaining only
         // database state, as after an Auth process restart.
-        return new TransactionTemplate(transactionManager).execute(status ->
-                new AuthOutboxPublisherJob(outboxStorage, sender, null).publishBatch());
+        return new TransactionTemplate(transactionManager)
+                .execute(
+                        status ->
+                                new AuthOutboxPublisherJob(outboxStorage, sender, null)
+                                        .publishBatch());
     }
 
     @Test
@@ -433,8 +523,11 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     void passwordResetFailedAttemptsSurviveANewChallenge() throws Exception {
         assertThat(activeSessionCount()).isZero();
 
-        ResponseEntity<JsonNode> request = restTemplate.postForEntity(
-                "/auth/password-reset/request", Map.of("telegramId", TELEGRAM_ID), JsonNode.class);
+        ResponseEntity<JsonNode> request =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request",
+                        Map.of("telegramId", TELEGRAM_ID),
+                        JsonNode.class);
         assertThat(request.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         String challengeId = request.getBody().path("challengeId").asText();
         JsonNode event = objectMapper.readTree(receiveWithRetry(TEST_QUEUE).getBody());
@@ -443,69 +536,104 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         String wrongCode = String.format("%06d", (Integer.parseInt(code) + 1) % 1_000_000);
 
         for (int attempt = 1; attempt <= 3; attempt++) {
-            ResponseEntity<String> rejected = restTemplate.postForEntity(
-                    "/auth/password-reset/verify",
-                    Map.of("challengeId", challengeId, "code", wrongCode), String.class);
-            assertThat(rejected.getStatusCode()).isEqualTo(
-                    attempt == 3 ? HttpStatus.TOO_MANY_REQUESTS : HttpStatus.BAD_REQUEST);
+            ResponseEntity<String> rejected =
+                    restTemplate.postForEntity(
+                            "/auth/password-reset/verify",
+                            Map.of("challengeId", challengeId, "code", wrongCode),
+                            String.class);
+            assertThat(rejected.getStatusCode())
+                    .isEqualTo(
+                            attempt == 3 ? HttpStatus.TOO_MANY_REQUESTS : HttpStatus.BAD_REQUEST);
         }
 
         Set<String> cooldownKeys = redisTemplate.keys("password_reset:request_cooldown:*");
         if (cooldownKeys != null && !cooldownKeys.isEmpty()) {
             redisTemplate.delete(cooldownKeys);
         }
-        ResponseEntity<JsonNode> nextRequest = restTemplate.postForEntity(
-                "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
+        ResponseEntity<JsonNode> nextRequest =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
         assertThat(nextRequest.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(nextRequest.getBody()).isNotNull();
         assertThat(nextRequest.getBody().has("attemptsRemaining")).isFalse();
         assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
 
-        ResponseEntity<String> limited = restTemplate.postForEntity(
-                "/auth/password-reset/verify",
-                Map.of("challengeId", nextRequest.getBody().path("challengeId").asText(),
-                        "code", wrongCode), String.class);
+        ResponseEntity<String> limited =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/verify",
+                        Map.of(
+                                "challengeId",
+                                nextRequest.getBody().path("challengeId").asText(),
+                                "code",
+                                wrongCode),
+                        String.class);
         assertThat(limited.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
 
         String freshChallengeId = nextRequest.getBody().path("challengeId").asText();
-        ResponseEntity<String> noActiveSession = restTemplate.postForEntity(
-                "/auth/password-reset/verify",
-                Map.of("challengeId", freshChallengeId, "code", payload.path("code").asText()),
-                String.class);
+        ResponseEntity<String> noActiveSession =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/verify",
+                        Map.of(
+                                "challengeId",
+                                freshChallengeId,
+                                "code",
+                                payload.path("code").asText()),
+                        String.class);
         assertThat(noActiveSession.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
         assertThat(activeSessionCount()).isZero();
     }
 
     @Test
     @Timeout(value = 180, unit = TimeUnit.SECONDS)
-    void passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation() throws Exception {
-        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+    void passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation()
+            throws Exception {
+        long userId =
+                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
         // Sensitive snapshots remain in memory; assertion failures expose booleans only.
-        java.util.function.Supplier<List<Object>> protectedState = () -> List.of(
-                jdbc.queryForList("SELECT password_hash, password_changed, initial_password FROM users WHERE id = ?", userId),
-                jdbc.queryForList("SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY sid", userId));
-        java.util.function.Supplier<List<Map<String, Object>>> tickets = () ->
-                jdbc.queryForList("SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id", userId);
+        java.util.function.Supplier<List<Object>> protectedState =
+                () ->
+                        List.of(
+                                jdbc.queryForList(
+                                        "SELECT password_hash, password_changed, initial_password FROM users WHERE id = ?",
+                                        userId),
+                                jdbc.queryForList(
+                                        "SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY sid",
+                                        userId));
+        java.util.function.Supplier<List<Map<String, Object>>> tickets =
+                () ->
+                        jdbc.queryForList(
+                                "SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id",
+                                userId);
         JsonNode originalState = objectMapper.valueToTree(protectedState.get());
         JsonNode originalTickets = objectMapper.valueToTree(tickets.get());
 
         long requestedAt = System.nanoTime();
-        ResponseEntity<JsonNode> requested = restTemplate.postForEntity("/auth/password-reset/request",
-                Map.of("login", "student"), JsonNode.class);
+        ResponseEntity<JsonNode> requested =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
         assertThat(requested.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(requested.getBody() != null).isTrue();
         int ttlSeconds = requested.getBody().path("ttlSeconds").asInt();
         assertThat(ttlSeconds).isEqualTo(120); // Same existing policy in main and test profile.
         String challenge = requested.getBody().path("challengeId").asText();
-        String challengeHash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
-                .digest(challenge.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
-        List<String> keys = List.of("password_reset:challenge:" + challengeHash + ":account",
-                "password_reset:challenge:" + challengeHash + ":user", "password_reset:challenge:" + challengeHash + ":code");
+        String challengeHash =
+                java.util.HexFormat.of()
+                        .formatHex(
+                                java.security.MessageDigest.getInstance("SHA-256")
+                                        .digest(
+                                                challenge.getBytes(
+                                                        java.nio.charset.StandardCharsets.UTF_8)));
+        List<String> keys =
+                List.of(
+                        "password_reset:challenge:" + challengeHash + ":account",
+                        "password_reset:challenge:" + challengeHash + ":user",
+                        "password_reset:challenge:" + challengeHash + ":code");
         String code = redisTemplate.opsForValue().get(keys.get(2));
         assertThat(code != null && code.matches("\\d{6}")).isTrue();
         for (String key : keys) {
             Long remaining = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
-            assertThat(remaining != null && remaining > 0 && remaining <= ttlSeconds * 1000L).isTrue();
+            assertThat(remaining != null && remaining > 0 && remaining <= ttlSeconds * 1000L)
+                    .isTrue();
         }
         long deadline = requestedAt + TimeUnit.SECONDS.toNanos(ttlSeconds + 10L);
         // Observe real Redis wall-clock expiration; never DEL/EXPIRE or override TTL/Clock.
@@ -513,53 +641,88 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 && System.nanoTime() < deadline) {
             Thread.sleep(200);
         }
-        assertThat(keys.stream().allMatch(key -> Long.valueOf(-2).equals(redisTemplate.getExpire(key)))).isTrue();
-        ResponseEntity<JsonNode> expired = restTemplate.postForEntity("/auth/password-reset/verify",
-                Map.of("challengeId", challenge, "code", code), JsonNode.class);
+        assertThat(
+                        keys.stream()
+                                .allMatch(
+                                        key ->
+                                                Long.valueOf(-2)
+                                                        .equals(redisTemplate.getExpire(key))))
+                .isTrue();
+        ResponseEntity<JsonNode> expired =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/verify",
+                        Map.of("challengeId", challenge, "code", code),
+                        JsonNode.class);
         assertThat(expired.getStatusCode()).isEqualTo(HttpStatus.GONE);
         assertThat(expired.getBody() != null).isTrue();
         assertThat(expired.getBody().path("extras").path("code").asText()).isEqualTo("OTP_EXPIRED");
-        assertThat(expired.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
-        assertThat(expired.getBody().has("resetTicket") || expired.getBody().has("accessToken")
-                || expired.getBody().has("refreshToken") || expired.getBody().has("session")).isFalse();
+        assertThat(expired.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
+        assertThat(
+                        expired.getBody().has("resetTicket")
+                                || expired.getBody().has("accessToken")
+                                || expired.getBody().has("refreshToken")
+                                || expired.getBody().has("session"))
+                .isFalse();
         assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
         assertThat(objectMapper.valueToTree(tickets.get()).equals(originalTickets)).isTrue();
-        System.out.printf("OTP_CHALLENGE_EXPIRY ttlSeconds=%d elapsedMs=%d keysAbsent=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0%n",
+        System.out.printf(
+                "OTP_CHALLENGE_EXPIRY ttlSeconds=%d elapsedMs=%d keysAbsent=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0%n",
                 ttlSeconds, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - requestedAt));
 
         // Cooldown has naturally elapsed. A fresh valid verify is only the consume precondition.
-        ResponseEntity<JsonNode> fresh = restTemplate.postForEntity("/auth/password-reset/request",
-                Map.of("login", "student"), JsonNode.class);
+        ResponseEntity<JsonNode> fresh =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
         assertThat(fresh.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(fresh.getBody() != null).isTrue();
         String freshChallenge = fresh.getBody().path("challengeId").asText();
-        String freshHash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
-                .digest(freshChallenge.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        String freshHash =
+                java.util.HexFormat.of()
+                        .formatHex(
+                                java.security.MessageDigest.getInstance("SHA-256")
+                                        .digest(
+                                                freshChallenge.getBytes(
+                                                        java.nio.charset.StandardCharsets.UTF_8)));
         String freshPrefix = "password_reset:challenge:" + freshHash;
         String freshCode = redisTemplate.opsForValue().get(freshPrefix + ":code");
         assertThat(freshCode != null && freshCode.matches("\\d{6}")).isTrue();
         Map<String, String> proof = Map.of("challengeId", freshChallenge, "code", freshCode);
-        ResponseEntity<JsonNode> consumed = restTemplate.postForEntity("/auth/password-reset/verify", proof, JsonNode.class);
+        ResponseEntity<JsonNode> consumed =
+                restTemplate.postForEntity("/auth/password-reset/verify", proof, JsonNode.class);
         assertThat(consumed.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(consumed.getBody() != null && consumed.getBody().path("resetTicket").isTextual()
-                && !consumed.getBody().path("resetTicket").asText().isBlank()).isTrue();
-        assertThat(Long.valueOf(-2).equals(redisTemplate.getExpire(freshPrefix + ":code"))).isTrue();
-        assertThat(redisTemplate.getExpire(freshPrefix + ":account") > 0
-                && redisTemplate.getExpire(freshPrefix + ":user") > 0).isTrue();
+        assertThat(
+                        consumed.getBody() != null
+                                && consumed.getBody().path("resetTicket").isTextual()
+                                && !consumed.getBody().path("resetTicket").asText().isBlank())
+                .isTrue();
+        assertThat(Long.valueOf(-2).equals(redisTemplate.getExpire(freshPrefix + ":code")))
+                .isTrue();
+        assertThat(
+                        redisTemplate.getExpire(freshPrefix + ":account") > 0
+                                && redisTemplate.getExpire(freshPrefix + ":user") > 0)
+                .isTrue();
         JsonNode consumedTickets = objectMapper.valueToTree(tickets.get());
         assertThat(consumedTickets.size()).isEqualTo(originalTickets.size() + 1);
         assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
 
-        ResponseEntity<JsonNode> reused = restTemplate.postForEntity("/auth/password-reset/verify", proof, JsonNode.class);
+        ResponseEntity<JsonNode> reused =
+                restTemplate.postForEntity("/auth/password-reset/verify", proof, JsonNode.class);
         assertThat(reused.getStatusCode()).isEqualTo(HttpStatus.GONE);
         assertThat(reused.getBody() != null).isTrue();
         assertThat(reused.getBody().path("extras").path("code").asText()).isEqualTo("OTP_EXPIRED");
-        assertThat(reused.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
-        assertThat(reused.getBody().has("resetTicket") || reused.getBody().has("accessToken")
-                || reused.getBody().has("refreshToken") || reused.getBody().has("session")).isFalse();
+        assertThat(reused.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
+        assertThat(
+                        reused.getBody().has("resetTicket")
+                                || reused.getBody().has("accessToken")
+                                || reused.getBody().has("refreshToken")
+                                || reused.getBody().has("session"))
+                .isFalse();
         assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
         assertThat(objectMapper.valueToTree(tickets.get()).equals(consumedTickets)).isTrue();
-        System.out.println("OTP_CHALLENGE_REUSE codeConsumed=true ownerAndUserLive=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0");
+        System.out.println(
+                "OTP_CHALLENGE_REUSE codeConsumed=true ownerAndUserLive=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0");
     }
 
     @Test
@@ -567,30 +730,37 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     void passwordResetCompletesWhenTheAccountHasNoActiveSessions() throws Exception {
         assertThat(activeSessionCount()).isZero();
 
-        ResponseEntity<JsonNode> request = restTemplate.postForEntity(
-                "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
+        ResponseEntity<JsonNode> request =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
         assertThat(request.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         String challengeId = request.getBody().path("challengeId").asText();
         JsonNode event = objectMapper.readTree(receiveWithRetry(TEST_QUEUE).getBody());
         String code = event.path("payload").path("code").asText();
 
-        ResponseEntity<JsonNode> verified = restTemplate.postForEntity(
-                "/auth/password-reset/verify",
-                Map.of("challengeId", challengeId, "code", code), JsonNode.class);
+        ResponseEntity<JsonNode> verified =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/verify",
+                        Map.of("challengeId", challengeId, "code", code),
+                        JsonNode.class);
         assertThat(verified.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(activeSessionCount()).isZero();
         String resetTicket = verified.getBody().path("resetTicket").asText();
 
-        ResponseEntity<String> completed = restTemplate.postForEntity(
-                "/auth/password-reset/complete",
-                Map.of("resetTicket", resetTicket, "newPassword", "NoSessionPassword42!"), String.class);
+        ResponseEntity<String> completed =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/complete",
+                        Map.of("resetTicket", resetTicket, "newPassword", "NoSessionPassword42!"),
+                        String.class);
         assertThat(completed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(completed.getHeaders().getCacheControl()).isEqualTo("no-store");
         assertThat(activeSessionCount()).isZero();
 
-        ResponseEntity<String> replay = restTemplate.postForEntity(
-                "/auth/password-reset/complete",
-                Map.of("resetTicket", resetTicket, "newPassword", "NoSessionPassword42!"), String.class);
+        ResponseEntity<String> replay =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/complete",
+                        Map.of("resetTicket", resetTicket, "newPassword", "NoSessionPassword42!"),
+                        String.class);
         assertThat(replay.getStatusCode()).isEqualTo(HttpStatus.GONE);
         assertThat(loginStudent("NoSessionPassword42!").accessToken()).isNotBlank();
     }
@@ -600,50 +770,102 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     void adminRecoveryWithoutTelegramRestoresStudentAndTeacher() throws Exception {
         TokenResponse admin = loginAdmin();
         for (String login : List.of("student", "teacher")) {
-            long id = jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
-            List<Map<String, Object>> identityBefore = jdbc.queryForList(
-                    "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id", id);
-            jdbc.update("UPDATE users SET telegram_id = NULL, password_hash = ? WHERE id = ?", PASSWORD_HASH, id);
+            long id =
+                    jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
+            List<Map<String, Object>> identityBefore =
+                    jdbc.queryForList(
+                            "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id",
+                            id);
+            jdbc.update(
+                    "UPDATE users SET telegram_id = NULL, password_hash = ? WHERE id = ?",
+                    PASSWORD_HASH,
+                    id);
             TokenResponse old = loginUser(login, "password");
-            String beforeHash = jdbc.queryForObject("SELECT password_hash FROM users WHERE id = ?", String.class, id);
-            String beforeStatus = jdbc.queryForObject("SELECT status::text FROM users WHERE id = ?", String.class, id);
+            String beforeHash =
+                    jdbc.queryForObject(
+                            "SELECT password_hash FROM users WHERE id = ?", String.class, id);
+            String beforeStatus =
+                    jdbc.queryForObject(
+                            "SELECT status::text FROM users WHERE id = ?", String.class, id);
             try {
                 // The public no-Telegram request still gives only an indistinguishable challenge.
-                ResponseEntity<JsonNode> decoy = restTemplate.postForEntity("/auth/password-reset/request",
-                        Map.of("login", login), JsonNode.class);
+                ResponseEntity<JsonNode> decoy =
+                        restTemplate.postForEntity(
+                                "/auth/password-reset/request",
+                                Map.of("login", login),
+                                JsonNode.class);
                 assertThat(decoy.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
                 assertThat(decoy.getBody().has("resetTicket")).isFalse();
                 assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
 
                 ResponseEntity<JsonNode> issued = issueAdminRecovery(admin.accessToken(), id);
                 assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-                assertThat(issued.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
+                assertThat(issued.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                        .containsOnly("no-store");
                 String link = issued.getBody().path("url").asText();
-                assertThat(link).startsWith("https://recovery.example.test/password-reset#resetTicket=");
+                assertThat(link)
+                        .startsWith("https://recovery.example.test/password-reset#resetTicket=");
                 assertThat(issued.getBody().path("expiresInSeconds").asInt()).isEqualTo(3600);
                 String ticket = recoveryTicket(link);
                 assertThat(ticket).matches("[A-Za-z0-9_-]{43}");
-                assertThat(jdbc.queryForObject("SELECT token_hash FROM password_reset_tokens WHERE user_id = ? ORDER BY id DESC LIMIT 1",
-                        String.class, id)).hasSize(64).isNotEqualTo(ticket);
-                assertThat(jdbc.queryForObject("SELECT password_hash FROM users WHERE id = ?", String.class, id)).isEqualTo(beforeHash);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT token_hash FROM password_reset_tokens WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+                                        String.class,
+                                        id))
+                        .hasSize(64)
+                        .isNotEqualTo(ticket);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT password_hash FROM users WHERE id = ?",
+                                        String.class,
+                                        id))
+                        .isEqualTo(beforeHash);
                 assertThat(bearerSessionStatus(old.accessToken())).isEqualTo(HttpStatus.OK);
 
-                ResponseEntity<String> completed = restTemplate.postForEntity("/auth/password-reset/complete",
-                        Map.of("resetTicket", ticket, "newPassword", "AdminRecoveryPassword42!"), String.class);
+                ResponseEntity<String> completed =
+                        restTemplate.postForEntity(
+                                "/auth/password-reset/complete",
+                                Map.of(
+                                        "resetTicket",
+                                        ticket,
+                                        "newPassword",
+                                        "AdminRecoveryPassword42!"),
+                                String.class);
                 assertThat(completed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-                assertThat(bearerSessionStatus(old.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+                assertThat(bearerSessionStatus(old.accessToken()))
+                        .isEqualTo(HttpStatus.UNAUTHORIZED);
                 assertThat(refreshStatus(old.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
-                assertThat(restTemplate.postForEntity("/auth/password-reset/complete",
-                        Map.of("resetTicket", ticket, "newPassword", "AnotherRecoveryPassword42!"), String.class)
-                        .getStatusCode()).isEqualTo(HttpStatus.GONE);
+                assertThat(
+                                restTemplate
+                                        .postForEntity(
+                                                "/auth/password-reset/complete",
+                                                Map.of(
+                                                        "resetTicket",
+                                                        ticket,
+                                                        "newPassword",
+                                                        "AnotherRecoveryPassword42!"),
+                                                String.class)
+                                        .getStatusCode())
+                        .isEqualTo(HttpStatus.GONE);
                 assertThat(loginUser(login, "AdminRecoveryPassword42!").accessToken()).isNotBlank();
-                assertThat(jdbc.queryForObject("SELECT status::text FROM users WHERE id = ?", String.class, id)).isEqualTo(beforeStatus);
-                assertThat(jdbc.queryForList("SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id", id))
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT status::text FROM users WHERE id = ?",
+                                        String.class,
+                                        id))
+                        .isEqualTo(beforeStatus);
+                assertThat(
+                                jdbc.queryForList(
+                                        "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id",
+                                        id))
                         .isEqualTo(identityBefore);
                 assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
             } finally {
                 jdbc.update("UPDATE users SET password_hash = ? WHERE id = ?", PASSWORD_HASH, id);
-                jdbc.update("UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' WHERE user_id = ? AND revoked_at IS NULL", id);
+                jdbc.update(
+                        "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' WHERE user_id = ? AND revoked_at IS NULL",
+                        id);
                 jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", id);
             }
         }
@@ -652,32 +874,55 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Test
     @Timeout(value = 20, unit = TimeUnit.SECONDS)
     void adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket() {
-        long targetId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+        long targetId =
+                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
         TokenResponse student = loginStudent("password");
-        assertThat(issueAdminRecovery(student.accessToken(), targetId).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?", Integer.class, targetId)).isZero();
+        assertThat(issueAdminRecovery(student.accessToken(), targetId).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?",
+                                Integer.class,
+                                targetId))
+                .isZero();
         TokenResponse admin = loginAdmin();
         ResponseEntity<JsonNode> issued = issueAdminRecovery(admin.accessToken(), targetId);
         assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         String ticket = recoveryTicket(issued.getBody().path("url").asText());
-        jdbc.update("UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 second' WHERE user_id = ?", targetId);
-        assertThat(restTemplate.postForEntity("/auth/password-reset/complete",
-                Map.of("resetTicket", ticket, "newPassword", "ExpiredRecoveryPassword42!"), String.class)
-                .getStatusCode()).isEqualTo(HttpStatus.GONE);
+        jdbc.update(
+                "UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 second' WHERE user_id = ?",
+                targetId);
+        assertThat(
+                        restTemplate
+                                .postForEntity(
+                                        "/auth/password-reset/complete",
+                                        Map.of(
+                                                "resetTicket",
+                                                ticket,
+                                                "newPassword",
+                                                "ExpiredRecoveryPassword42!"),
+                                        String.class)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.GONE);
         assertThat(bearerSessionStatus(student.accessToken())).isEqualTo(HttpStatus.OK);
-        jdbc.update("UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
-                + "WHERE user_id = (SELECT id FROM users WHERE login = 'admin') AND revoked_at IS NULL");
+        jdbc.update(
+                "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
+                        + "WHERE user_id = (SELECT id FROM users WHERE login = 'admin') AND revoked_at IS NULL");
         ResponseEntity<JsonNode> denied = issueAdminRecovery(admin.accessToken(), targetId);
         assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(denied.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
+        assertThat(denied.getHeaders().getCacheControl().split("\\s*,\\s*"))
+                .containsOnly("no-store");
     }
 
     private ResponseEntity<JsonNode> issueAdminRecovery(String token, long id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         headers.set("Host", "untrusted.example.test");
-        return restTemplate.exchange("/auth/admin/users/" + id + "/password-reset-link", HttpMethod.POST,
-                new HttpEntity<>(headers), JsonNode.class);
+        return restTemplate.exchange(
+                "/auth/admin/users/" + id + "/password-reset-link",
+                HttpMethod.POST,
+                new HttpEntity<>(headers),
+                JsonNode.class);
     }
 
     private static String recoveryTicket(String link) {
@@ -693,39 +938,51 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         TokenResponse bootstrap = loginUser("admin", "password");
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(bootstrap.accessToken());
-        ResponseEntity<JsonNode> selected = restTemplate.exchange("/auth/session/active-role", HttpMethod.PUT,
-                new HttpEntity<>(Map.of("role", "ADMIN", "expectedSessionVersion", "1"), headers), JsonNode.class);
+        ResponseEntity<JsonNode> selected =
+                restTemplate.exchange(
+                        "/auth/session/active-role",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(
+                                Map.of("role", "ADMIN", "expectedSessionVersion", "1"), headers),
+                        JsonNode.class);
         assertThat(selected.getStatusCode()).isEqualTo(HttpStatus.OK);
-        return new TokenResponse(selected.getBody().path("accessToken").asText(), bootstrap.refreshToken(),
+        return new TokenResponse(
+                selected.getBody().path("accessToken").asText(),
+                bootstrap.refreshToken(),
                 selected.getBody().path("expiresIn").asLong());
     }
 
     private TokenResponse loginUser(String login, String password) {
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", new LoginRequest(login, password), TokenResponse.class);
+        ResponseEntity<TokenResponse> response =
+                restTemplate.postForEntity(
+                        "/auth/login", new LoginRequest(login, password), TokenResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         return response.getBody();
     }
 
     private int activeSessionCount() {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM auth_sessions "
-                + "WHERE user_id = (SELECT id FROM users WHERE login = 'student') "
-                + "AND revoked_at IS NULL", Integer.class);
+        return jdbc.queryForObject(
+                "SELECT COUNT(*) FROM auth_sessions "
+                        + "WHERE user_id = (SELECT id FROM users WHERE login = 'student') "
+                        + "AND revoked_at IS NULL",
+                Integer.class);
     }
 
     private HttpStatusCode bearerSessionStatus(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        return restTemplate.exchange("/auth/session", HttpMethod.GET,
-                new HttpEntity<>(headers), String.class).getStatusCode();
+        return restTemplate
+                .exchange("/auth/session", HttpMethod.GET, new HttpEntity<>(headers), String.class)
+                .getStatusCode();
     }
 
     private HttpStatusCode refreshStatus(String refreshToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.COOKIE, "rct_refresh=" + refreshToken);
-        return restTemplate.exchange("/auth/refresh", HttpMethod.POST,
-                new HttpEntity<>(headers), String.class).getStatusCode();
+        return restTemplate
+                .exchange("/auth/refresh", HttpMethod.POST, new HttpEntity<>(headers), String.class)
+                .getStatusCode();
     }
 
     private Message receiveWithRetry(String queue) throws InterruptedException {

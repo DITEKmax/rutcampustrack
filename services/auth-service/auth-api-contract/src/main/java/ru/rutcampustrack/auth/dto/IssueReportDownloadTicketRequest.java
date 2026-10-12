@@ -12,7 +12,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,8 +33,7 @@ public record IssueReportDownloadTicketRequest(
         @Valid HeadmanGroupCompositionParameters headmanGroupComposition,
         @Valid HeadmanSubjectJournalParameters headmanSubjectJournal,
         @Valid AdminUsersParameters adminUsers,
-        @Valid AdminGroupsParameters adminGroups
-) {
+        @Valid AdminGroupsParameters adminGroups) {
     private static final int MAX_PARAMETER_VALUES = 20;
     private static final int MAX_PARAMETER_LENGTH = 128;
 
@@ -43,21 +41,33 @@ public record IssueReportDownloadTicketRequest(
     @JsonIgnore
     public boolean isParametersConsistent() {
         if (kind == null) return false;
-        Object selected = switch (kind) {
-            case TEACHER_JOURNAL -> teacherJournal;
-            case TEACHER_STATS -> teacherStats;
-            case HEADMAN_WEEKLY_CURRENT -> headmanWeeklyCurrent;
-            case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected;
-            case HEADMAN_STATS -> headmanStats;
-            case HEADMAN_STATS_TREND -> headmanStatsTrend;
-            case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition;
-            case HEADMAN_SUBJECT_JOURNAL -> headmanSubjectJournal;
-            case ADMIN_USERS -> adminUsers;
-            case ADMIN_GROUPS -> adminGroups;
-        };
-        long count = java.util.stream.Stream.of(teacherJournal, teacherStats, headmanWeeklyCurrent,
-                headmanWeeklySelected, headmanStats, headmanStatsTrend, headmanGroupComposition,
-                headmanSubjectJournal, adminUsers, adminGroups).filter(Objects::nonNull).count();
+        Object selected =
+                switch (kind) {
+                    case TEACHER_JOURNAL -> teacherJournal;
+                    case TEACHER_STATS -> teacherStats;
+                    case HEADMAN_WEEKLY_CURRENT -> headmanWeeklyCurrent;
+                    case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected;
+                    case HEADMAN_STATS -> headmanStats;
+                    case HEADMAN_STATS_TREND -> headmanStatsTrend;
+                    case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition;
+                    case HEADMAN_SUBJECT_JOURNAL -> headmanSubjectJournal;
+                    case ADMIN_USERS -> adminUsers;
+                    case ADMIN_GROUPS -> adminGroups;
+                };
+        long count =
+                java.util.stream.Stream.of(
+                                teacherJournal,
+                                teacherStats,
+                                headmanWeeklyCurrent,
+                                headmanWeeklySelected,
+                                headmanStats,
+                                headmanStatsTrend,
+                                headmanGroupComposition,
+                                headmanSubjectJournal,
+                                adminUsers,
+                                adminGroups)
+                        .filter(Objects::nonNull)
+                        .count();
         if (selected == null || count != 1) return false;
         return switch (kind) {
             case TEACHER_JOURNAL -> teacherJournal.isLessonIdValid();
@@ -67,12 +77,27 @@ public record IssueReportDownloadTicketRequest(
         };
     }
 
-    public IssueReportDownloadTicketRequest(ReportDownloadKind kind, TeacherJournalParameters teacherJournal,
-            TeacherStatsParameters teacherStats, HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
-            HeadmanWeeklySelectedParameters headmanWeeklySelected, HeadmanStatsParameters headmanStats,
-            HeadmanStatsTrendParameters headmanStatsTrend, HeadmanGroupCompositionParameters headmanGroupComposition) {
-        this(kind, teacherJournal, teacherStats, headmanWeeklyCurrent, headmanWeeklySelected,
-                headmanStats, headmanStatsTrend, headmanGroupComposition, null, null, null);
+    public IssueReportDownloadTicketRequest(
+            ReportDownloadKind kind,
+            TeacherJournalParameters teacherJournal,
+            TeacherStatsParameters teacherStats,
+            HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
+            HeadmanWeeklySelectedParameters headmanWeeklySelected,
+            HeadmanStatsParameters headmanStats,
+            HeadmanStatsTrendParameters headmanStatsTrend,
+            HeadmanGroupCompositionParameters headmanGroupComposition) {
+        this(
+                kind,
+                teacherJournal,
+                teacherStats,
+                headmanWeeklyCurrent,
+                headmanWeeklySelected,
+                headmanStats,
+                headmanStatsTrend,
+                headmanGroupComposition,
+                null,
+                null,
+                null);
     }
 
     /** Retains source compatibility for callers constructing existing ticket kinds. */
@@ -83,10 +108,16 @@ public record IssueReportDownloadTicketRequest(
             HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
             HeadmanWeeklySelectedParameters headmanWeeklySelected,
             HeadmanStatsParameters headmanStats,
-            HeadmanStatsTrendParameters headmanStatsTrend
-    ) {
-        this(kind, teacherJournal, teacherStats, headmanWeeklyCurrent, headmanWeeklySelected,
-                headmanStats, headmanStatsTrend, null);
+            HeadmanStatsTrendParameters headmanStatsTrend) {
+        this(
+                kind,
+                teacherJournal,
+                teacherStats,
+                headmanWeeklyCurrent,
+                headmanWeeklySelected,
+                headmanStats,
+                headmanStatsTrend,
+                null);
     }
 
     /** Retains source compatibility for callers constructing existing ticket kinds. */
@@ -96,12 +127,20 @@ public record IssueReportDownloadTicketRequest(
             TeacherStatsParameters teacherStats,
             HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
             HeadmanWeeklySelectedParameters headmanWeeklySelected,
-            HeadmanStatsParameters headmanStats
-    ) {
-        this(kind, teacherJournal, teacherStats, headmanWeeklyCurrent, headmanWeeklySelected, headmanStats, null);
+            HeadmanStatsParameters headmanStats) {
+        this(
+                kind,
+                teacherJournal,
+                teacherStats,
+                headmanWeeklyCurrent,
+                headmanWeeklySelected,
+                headmanStats,
+                null);
     }
 
-    /** Stable digest signed into the short-lived internal JWT to bind dispatch to this exact report. */
+    /**
+     * Stable digest signed into the short-lived internal JWT to bind dispatch to this exact report.
+     */
     @JsonIgnore
     public String bindingHash() {
         if (!isParametersConsistent()) {
@@ -139,30 +178,45 @@ public record IssueReportDownloadTicketRequest(
                 append(canonical, headmanWeeklyCurrent.format().code());
             }
             case HEADMAN_WEEKLY_SELECTED -> {
-                appendList(canonical, headmanWeeklySelected.weekStarts().stream()
-                        .map(LocalDate::toString).toList());
+                appendList(
+                        canonical,
+                        headmanWeeklySelected.weekStarts().stream()
+                                .map(LocalDate::toString)
+                                .toList());
                 append(canonical, headmanWeeklySelected.format().code());
             }
             case HEADMAN_STATS -> {
                 append(canonical, headmanStats.subjectId());
                 appendList(canonical, headmanStats.lessonTypes());
-                append(canonical, headmanStats.sorts() == null
-                        ? null : Integer.toString(headmanStats.sorts().size()));
+                append(
+                        canonical,
+                        headmanStats.sorts() == null
+                                ? null
+                                : Integer.toString(headmanStats.sorts().size()));
                 if (headmanStats.sorts() != null) {
-                    headmanStats.sorts().forEach(sort -> {
-                        append(canonical, sort.field());
-                        append(canonical, sort.descending());
-                    });
+                    headmanStats
+                            .sorts()
+                            .forEach(
+                                    sort -> {
+                                        append(canonical, sort.field());
+                                        append(canonical, sort.descending());
+                                    });
                 }
-                append(canonical, headmanStats.filters() == null
-                        ? null : Integer.toString(headmanStats.filters().size()));
+                append(
+                        canonical,
+                        headmanStats.filters() == null
+                                ? null
+                                : Integer.toString(headmanStats.filters().size()));
                 if (headmanStats.filters() != null) {
-                    headmanStats.filters().forEach(filter -> {
-                        append(canonical, filter.field());
-                        append(canonical, filter.contains());
-                        append(canonical, canonicalDecimal(filter.minimum()));
-                        append(canonical, canonicalDecimal(filter.maximum()));
-                    });
+                    headmanStats
+                            .filters()
+                            .forEach(
+                                    filter -> {
+                                        append(canonical, filter.field());
+                                        append(canonical, filter.contains());
+                                        append(canonical, canonicalDecimal(filter.minimum()));
+                                        append(canonical, canonicalDecimal(filter.maximum()));
+                                    });
                 }
                 append(canonical, headmanStats.format().code());
                 if (headmanStats.semesterId() != null) {
@@ -185,28 +239,43 @@ public record IssueReportDownloadTicketRequest(
                     append(canonical, headmanStatsTrend.bucketUnit().name());
                 }
             }
-            case HEADMAN_GROUP_COMPOSITION -> append(canonical, headmanGroupComposition.format().code());
+            case HEADMAN_GROUP_COMPOSITION ->
+                    append(canonical, headmanGroupComposition.format().code());
             case HEADMAN_SUBJECT_JOURNAL -> {
                 append(canonical, headmanSubjectJournal.subjectId());
                 appendList(canonical, headmanSubjectJournal.lessonTypes());
-                appendList(canonical, headmanSubjectJournal.weekStarts() == null ? null : headmanSubjectJournal.weekStarts().stream().map(LocalDate::toString).toList());
+                appendList(
+                        canonical,
+                        headmanSubjectJournal.weekStarts() == null
+                                ? null
+                                : headmanSubjectJournal.weekStarts().stream()
+                                        .map(LocalDate::toString)
+                                        .toList());
                 append(canonical, headmanSubjectJournal.format().code());
             }
             case ADMIN_USERS -> {
-                append(canonical, adminUsers.search()); append(canonical, adminUsers.role());
-                append(canonical, adminUsers.status()); append(canonical, adminUsers.roleStatus());
-                appendSorts(canonical, adminUsers.sorts()); append(canonical, adminUsers.format().code());
+                append(canonical, adminUsers.search());
+                append(canonical, adminUsers.role());
+                append(canonical, adminUsers.status());
+                append(canonical, adminUsers.roleStatus());
+                appendSorts(canonical, adminUsers.sorts());
+                append(canonical, adminUsers.format().code());
             }
             case ADMIN_GROUPS -> {
-                append(canonical, adminGroups.status()); append(canonical, adminGroups.search());
-                append(canonical, adminGroups.course()); append(canonical, adminGroups.studyMode());
-                append(canonical, adminGroups.educationLevel()); appendSorts(canonical, adminGroups.sorts());
+                append(canonical, adminGroups.status());
+                append(canonical, adminGroups.search());
+                append(canonical, adminGroups.course());
+                append(canonical, adminGroups.studyMode());
+                append(canonical, adminGroups.educationLevel());
+                appendSorts(canonical, adminGroups.sorts());
                 append(canonical, adminGroups.format().code());
             }
         }
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException("SHA-256 is unavailable", impossible);
         }
@@ -218,21 +287,23 @@ public record IssueReportDownloadTicketRequest(
         if (!isParametersConsistent()) {
             throw new IllegalArgumentException("Report parameters do not match the selected kind");
         }
-        String base = switch (kind) {
-            case TEACHER_JOURNAL -> "teacher-journal";
-            case TEACHER_STATS -> "teacher-stats";
-            case HEADMAN_WEEKLY_CURRENT -> "headman-weekly-current";
-            case HEADMAN_WEEKLY_SELECTED -> "headman-weekly-selected";
-            case HEADMAN_STATS -> "headman-stats";
-            case HEADMAN_STATS_TREND -> "headman-stats-trend";
-            case HEADMAN_GROUP_COMPOSITION -> "headman-group-composition";
-            case HEADMAN_SUBJECT_JOURNAL -> "headman-subject-journal";
-            case ADMIN_USERS -> "admin-users";
-            case ADMIN_GROUPS -> "admin-groups";
-        };
-        String extension = kind == ReportDownloadKind.HEADMAN_STATS_TREND
-                ? headmanStatsTrend.format().code()
-                : selectedFormat().filenameExtension();
+        String base =
+                switch (kind) {
+                    case TEACHER_JOURNAL -> "teacher-journal";
+                    case TEACHER_STATS -> "teacher-stats";
+                    case HEADMAN_WEEKLY_CURRENT -> "headman-weekly-current";
+                    case HEADMAN_WEEKLY_SELECTED -> "headman-weekly-selected";
+                    case HEADMAN_STATS -> "headman-stats";
+                    case HEADMAN_STATS_TREND -> "headman-stats-trend";
+                    case HEADMAN_GROUP_COMPOSITION -> "headman-group-composition";
+                    case HEADMAN_SUBJECT_JOURNAL -> "headman-subject-journal";
+                    case ADMIN_USERS -> "admin-users";
+                    case ADMIN_GROUPS -> "admin-groups";
+                };
+        String extension =
+                kind == ReportDownloadKind.HEADMAN_STATS_TREND
+                        ? headmanStatsTrend.format().code()
+                        : selectedFormat().filenameExtension();
         return base + "." + extension;
     }
 
@@ -260,27 +331,51 @@ public record IssueReportDownloadTicketRequest(
 
     private static void appendSorts(StringBuilder canonical, List<RegistrySort> sorts) {
         append(canonical, sorts == null ? null : sorts.size());
-        if (sorts != null) for (RegistrySort sort : sorts) { append(canonical, sort.field()); append(canonical, sort.descending()); }
+        if (sorts != null)
+            for (RegistrySort sort : sorts) {
+                append(canonical, sort.field());
+                append(canonical, sort.descending());
+            }
     }
 
-    public record HeadmanSubjectJournalParameters(@NotNull @Positive Long subjectId,
+    public record HeadmanSubjectJournalParameters(
+            @NotNull @Positive Long subjectId,
             @NotNull @Size(min = 1, max = 3) List<@NotBlank String> lessonTypes,
-            @Size(max = 64) List<@NotNull LocalDate> weekStarts, @NotNull ReportDownloadFormat format) {
-        public HeadmanSubjectJournalParameters { lessonTypes = immutable(lessonTypes); weekStarts = immutable(weekStarts); }
+            @Size(max = 64) List<@NotNull LocalDate> weekStarts,
+            @NotNull ReportDownloadFormat format) {
+        public HeadmanSubjectJournalParameters {
+            lessonTypes = immutable(lessonTypes);
+            weekStarts = immutable(weekStarts);
+        }
     }
+
     public record RegistrySort(@NotBlank @Size(max = 64) String field, boolean descending) {}
-    public record AdminUsersParameters(@Size(max = 255) String search,
-            @Pattern(regexp = "STUDENT|TEACHER|ADMIN|HEADMAN") String role, @Pattern(regexp = "ACTIVE|EXPELLED|SUSPENDED|ARCHIVED") String status,
-            @Pattern(regexp = "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED") String roleStatus,
-            @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts, @NotNull ReportDownloadFormat format) {
-        public AdminUsersParameters { sorts = immutable(sorts); }
+
+    public record AdminUsersParameters(
+            @Size(max = 255) String search,
+            @Pattern(regexp = "STUDENT|TEACHER|ADMIN|HEADMAN") String role,
+            @Pattern(regexp = "ACTIVE|EXPELLED|SUSPENDED|ARCHIVED") String status,
+            @Pattern(regexp = "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED")
+                    String roleStatus,
+            @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts,
+            @NotNull ReportDownloadFormat format) {
+        public AdminUsersParameters {
+            sorts = immutable(sorts);
+        }
     }
-    public record AdminGroupsParameters(@Pattern(regexp = "ACTIVE|DRAFT|ARCHIVED") String status,
-            @Size(max = 255) String search, @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(5) Integer course,
+
+    public record AdminGroupsParameters(
+            @Pattern(regexp = "ACTIVE|DRAFT|ARCHIVED") String status,
+            @Size(max = 255) String search,
+            @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(5)
+                    Integer course,
             @Pattern(regexp = "FULL_TIME|PART_TIME|EXTRAMURAL") String studyMode,
             @Pattern(regexp = "BACHELOR|SPECIALIST|MASTER") String educationLevel,
-            @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts, @NotNull ReportDownloadFormat format) {
-        public AdminGroupsParameters { sorts = immutable(sorts); }
+            @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts,
+            @NotNull ReportDownloadFormat format) {
+        public AdminGroupsParameters {
+            sorts = immutable(sorts);
+        }
     }
 
     private static String canonicalDecimal(java.math.BigDecimal value) {
@@ -312,33 +407,53 @@ public record IssueReportDownloadTicketRequest(
             @NotNull @Positive Long semesterId,
             @NotNull @Positive Long groupId,
             @NotNull @Positive Long subjectId,
-            @NotNull @Size(min = 1, max = 3)
-            List<@NotBlank @Size(max = 64) String> lessonTypes,
+            @NotNull @Size(min = 1, max = 3) List<@NotBlank @Size(max = 64) String> lessonTypes,
             LocalDate dateFrom,
             LocalDate dateTo,
             @NotNull ReportDownloadFormat format,
             boolean pastOnly,
-            @Pattern(regexp = "[1-9][0-9]{0,18}") String lessonId
-    ) {
+            @Pattern(regexp = "[1-9][0-9]{0,18}") String lessonId) {
         public TeacherJournalParameters {
             lessonTypes = immutable(lessonTypes);
         }
 
-        public TeacherJournalParameters(Long semesterId, Long groupId, Long subjectId,
-                List<String> lessonTypes, LocalDate dateFrom, LocalDate dateTo, ReportDownloadFormat format) {
-            this(semesterId, groupId, subjectId, lessonTypes, dateFrom, dateTo, format, false, null);
+        public TeacherJournalParameters(
+                Long semesterId,
+                Long groupId,
+                Long subjectId,
+                List<String> lessonTypes,
+                LocalDate dateFrom,
+                LocalDate dateTo,
+                ReportDownloadFormat format) {
+            this(
+                    semesterId,
+                    groupId,
+                    subjectId,
+                    lessonTypes,
+                    dateFrom,
+                    dateTo,
+                    format,
+                    false,
+                    null);
         }
 
         @AssertTrue(message = "lessonId must be a positive long identity")
         @JsonIgnore
         public boolean isLessonIdValid() {
             if (lessonId == null) return true;
-            try { return lessonId.matches("[1-9][0-9]*") && Long.parseLong(lessonId) > 0; }
-            catch (NumberFormatException invalid) { return false; }
+            try {
+                return lessonId.matches("[1-9][0-9]*") && Long.parseLong(lessonId) > 0;
+            } catch (NumberFormatException invalid) {
+                return false;
+            }
         }
 
-        public TeacherJournalParameters(Long semesterId, Long groupId, Long subjectId,
-                                        List<String> lessonTypes, ReportDownloadFormat format) {
+        public TeacherJournalParameters(
+                Long semesterId,
+                Long groupId,
+                Long subjectId,
+                List<String> lessonTypes,
+                ReportDownloadFormat format) {
             this(semesterId, groupId, subjectId, lessonTypes, null, null, format);
         }
 
@@ -356,14 +471,12 @@ public record IssueReportDownloadTicketRequest(
             @NotBlank @Pattern(regexp = "(?i:students|student|groups|group)") String scope,
             @Positive Long groupId,
             @Positive Long subjectId,
+            @Size(max = MAX_PARAMETER_VALUES) List<@NotBlank @Size(max = 64) String> lessonTypes,
             @Size(max = MAX_PARAMETER_VALUES)
-            List<@NotBlank @Size(max = 64) String> lessonTypes,
+                    List<@NotBlank @Size(max = MAX_PARAMETER_LENGTH) String> sorts,
             @Size(max = MAX_PARAMETER_VALUES)
-            List<@NotBlank @Size(max = MAX_PARAMETER_LENGTH) String> sorts,
-            @Size(max = MAX_PARAMETER_VALUES)
-            List<@NotBlank @Size(max = MAX_PARAMETER_LENGTH) String> filters,
-            @NotNull ReportDownloadFormat format
-    ) {
+                    List<@NotBlank @Size(max = MAX_PARAMETER_LENGTH) String> filters,
+            @NotNull ReportDownloadFormat format) {
         public TeacherStatsParameters {
             lessonTypes = immutable(lessonTypes);
             sorts = immutable(sorts);
@@ -373,16 +486,12 @@ public record IssueReportDownloadTicketRequest(
 
     @Schema(description = "Current headman weekly export parameters")
     public record HeadmanWeeklyCurrentParameters(
-            @NotNull LocalDate weekStart,
-            @NotNull ReportDownloadFormat format
-    ) {
-    }
+            @NotNull LocalDate weekStart, @NotNull ReportDownloadFormat format) {}
 
     @Schema(description = "Selected headman weekly export parameters")
     public record HeadmanWeeklySelectedParameters(
             @NotNull @Size(min = 1, max = 64) List<@NotNull LocalDate> weekStarts,
-            @NotNull ReportDownloadFormat format
-    ) {
+            @NotNull ReportDownloadFormat format) {
         public HeadmanWeeklySelectedParameters {
             weekStarts = immutable(weekStarts);
         }
@@ -391,61 +500,74 @@ public record IssueReportDownloadTicketRequest(
     @Schema(description = "Headman current-group statistics export parameters")
     public record HeadmanStatsParameters(
             @Positive Long subjectId,
-            @Size(max = MAX_PARAMETER_VALUES)
-            List<@NotBlank @Size(max = 64) String> lessonTypes,
+            @Size(max = MAX_PARAMETER_VALUES) List<@NotBlank @Size(max = 64) String> lessonTypes,
             @Size(max = MAX_PARAMETER_VALUES) List<@NotNull @Valid HeadmanStatsSort> sorts,
             @Size(max = MAX_PARAMETER_VALUES) List<@NotNull @Valid HeadmanStatsFilter> filters,
             @NotNull ReportDownloadFormat format,
-            @Positive Long semesterId
-    ) {
+            @Positive Long semesterId) {
         public HeadmanStatsParameters {
             lessonTypes = immutable(lessonTypes);
             sorts = immutable(sorts);
             filters = immutable(filters);
         }
-        public HeadmanStatsParameters(Long subjectId, List<String> lessonTypes, List<HeadmanStatsSort> sorts,
-                                     List<HeadmanStatsFilter> filters, ReportDownloadFormat format) {
+
+        public HeadmanStatsParameters(
+                Long subjectId,
+                List<String> lessonTypes,
+                List<HeadmanStatsSort> sorts,
+                List<HeadmanStatsFilter> filters,
+                ReportDownloadFormat format) {
             this(subjectId, lessonTypes, sorts, filters, format, null);
         }
     }
 
-    @Schema(description = "Current headman's own group roster export; group is selected by the server")
-    public record HeadmanGroupCompositionParameters(@NotNull ReportDownloadFormat format) {
-    }
+    @Schema(
+            description =
+                    "Current headman's own group roster export; group is selected by the server")
+    public record HeadmanGroupCompositionParameters(@NotNull ReportDownloadFormat format) {}
 
     @Schema(description = "Current-group headman trend chart export parameters")
     public record HeadmanStatsTrendParameters(
             @NotNull HeadmanStatsTrendMode mode,
             LocalDate weekStart,
             @Positive Long subjectId,
-            @Size(max = MAX_PARAMETER_VALUES)
-            List<@NotBlank @Size(max = 64) String> lessonTypes,
+            @Size(max = MAX_PARAMETER_VALUES) List<@NotBlank @Size(max = 64) String> lessonTypes,
             @NotNull ReportDownloadFormat format,
             @Positive Long semesterId,
-            HeadmanStatsBucketUnit bucketUnit
-    ) {
+            HeadmanStatsBucketUnit bucketUnit) {
         public HeadmanStatsTrendParameters {
             lessonTypes = immutable(lessonTypes);
         }
-        public HeadmanStatsTrendParameters(HeadmanStatsTrendMode mode, LocalDate weekStart, Long subjectId,
-                                          List<String> lessonTypes, ReportDownloadFormat format) {
+
+        public HeadmanStatsTrendParameters(
+                HeadmanStatsTrendMode mode,
+                LocalDate weekStart,
+                Long subjectId,
+                List<String> lessonTypes,
+                ReportDownloadFormat format) {
             this(mode, weekStart, subjectId, lessonTypes, format, null, null);
         }
 
         @JsonIgnore
         public boolean isConsistent() {
-            if (mode == null || (format != ReportDownloadFormat.PNG && format != ReportDownloadFormat.HTML)) {
+            if (mode == null
+                    || (format != ReportDownloadFormat.PNG
+                            && format != ReportDownloadFormat.HTML)) {
                 return false;
             }
             List<String> types = lessonTypes == null ? List.of() : lessonTypes;
             if (types.stream().anyMatch(value -> value == null || value.isBlank())
-                    || types.size() > MAX_PARAMETER_VALUES || types.stream().distinct().count() != types.size()) {
+                    || types.size() > MAX_PARAMETER_VALUES
+                    || types.stream().distinct().count() != types.size()) {
                 return false;
             }
             return switch (mode) {
                 case SEMESTER -> weekStart == null && subjectId == null && types.isEmpty();
-                case WEEK -> weekStart != null && weekStart.getDayOfWeek().getValue() == 1
-                        && subjectId == null && types.isEmpty();
+                case WEEK ->
+                        weekStart != null
+                                && weekStart.getDayOfWeek().getValue() == 1
+                                && subjectId == null
+                                && types.isEmpty();
                 case SUBJECT -> weekStart == null && subjectId != null && subjectId > 0;
             };
         }
@@ -457,23 +579,20 @@ public record IssueReportDownloadTicketRequest(
         SUBJECT
     }
 
-    public enum HeadmanStatsBucketUnit { DAY, WEEK }
+    public enum HeadmanStatsBucketUnit {
+        DAY,
+        WEEK
+    }
 
     @Schema(description = "One priority-ordered headman statistics sort field")
-    public record HeadmanStatsSort(
-            @NotBlank @Size(max = 64) String field,
-            boolean descending
-    ) {
-    }
+    public record HeadmanStatsSort(@NotBlank @Size(max = 64) String field, boolean descending) {}
 
     @Schema(description = "A bounded text or numeric headman statistics filter")
     public record HeadmanStatsFilter(
             @NotBlank @Size(max = 64) String field,
             @Size(max = MAX_PARAMETER_LENGTH) String contains,
             @Digits(integer = 12, fraction = 4) java.math.BigDecimal minimum,
-            @Digits(integer = 12, fraction = 4) java.math.BigDecimal maximum
-    ) {
-    }
+            @Digits(integer = 12, fraction = 4) java.math.BigDecimal maximum) {}
 
     private static <T> List<T> immutable(List<T> values) {
         return values == null ? null : List.copyOf(values);

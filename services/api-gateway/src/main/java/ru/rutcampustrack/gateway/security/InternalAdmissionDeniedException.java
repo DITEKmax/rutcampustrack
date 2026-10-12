@@ -3,8 +3,8 @@ package ru.rutcampustrack.gateway.security;
 import org.springframework.http.HttpStatus;
 
 /**
- * A live auth authority denial that the gateway may expose with a typed public
- * response.  The upstream detail is intentionally never retained.
+ * A live auth authority denial that the gateway may expose with a typed public response. The
+ * upstream detail is intentionally never retained.
  */
 public final class InternalAdmissionDeniedException extends RuntimeException {
 

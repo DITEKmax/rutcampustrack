@@ -1,55 +1,48 @@
 package ru.rutcampustrack.shared.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * M08 G9 (P1-5 / NEW-164) — параметризованный coverage / sanity test над
- * {@code event-schemas/*.json}.
+ * M08 G9 (P1-5 / NEW-164) — параметризованный coverage / sanity test над {@code
+ * event-schemas/*.json}.
  *
  * <p>Гарантии:
+ *
  * <ol>
- *   <li>Каждый файл {@code event-schemas/*.json} — корректная JSON Schema
- *       draft 2020-12 (networknt парсит без NPE).</li>
- *   <li>Envelope содержит фиксированный набор required полей
- *       ({@code event_type}, {@code event_id}, {@code occurred_at},
- *       {@code payload}, {@code event_version}, {@code trace_id},
- *       {@code source}). Исключение — {@code _common.json} ($defs-only).</li>
- *   <li>Каждая schema содержит {@code "const": "<event_type>"} и имя
- *       файла совпадает с const (защита от переименования schema без
- *       обновления publisher'а и наоборот).</li>
- *   <li>Coverage regression guard — существует ожидаемый набор
- *       events. Новый файл → тест падает → автор осознанно расширяет
- *       whitelist + добавляет соответствующий {@code *ContractIT} в
- *       своём сервисе (NEW-164 intent: schema не может появиться
- *       "в воздухе").</li>
+ *   <li>Каждый файл {@code event-schemas/*.json} — корректная JSON Schema draft 2020-12 (networknt
+ *       парсит без NPE).
+ *   <li>Envelope содержит фиксированный набор required полей ({@code event_type}, {@code event_id},
+ *       {@code occurred_at}, {@code payload}, {@code event_version}, {@code trace_id}, {@code
+ *       source}). Исключение — {@code _common.json} ($defs-only).
+ *   <li>Каждая schema содержит {@code "const": "<event_type>"} и имя файла совпадает с const
+ *       (защита от переименования schema без обновления publisher'а и наоборот).
+ *   <li>Coverage regression guard — существует ожидаемый набор events. Новый файл → тест падает →
+ *       автор осознанно расширяет whitelist + добавляет соответствующий {@code *ContractIT} в своём
+ *       сервисе (NEW-164 intent: schema не может появиться "в воздухе").
  * </ol>
  *
- * <p>Этот test — unit-уровня (без Spring / Testcontainers), работает от
- * repo-root rel-path (`services/shared/shared-events` →
- * `../../../event-schemas/`). Запускается в обычном {@code test}-task,
- * не требует Docker.
+ * <p>Этот test — unit-уровня (без Spring / Testcontainers), работает от repo-root rel-path
+ * (`services/shared/shared-events` → `../../../event-schemas/`). Запускается в обычном {@code
+ * test}-task, не требует Docker.
  */
 class EventSchemaCoverageTest {
 
@@ -57,52 +50,57 @@ class EventSchemaCoverageTest {
     private static final JsonSchemaFactory SCHEMA_FACTORY =
             JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
 
-    private static final List<String> REQUIRED_ENVELOPE_FIELDS = List.of(
-            "event_type", "event_id", "occurred_at", "payload",
-            "event_version", "trace_id", "source"
-    );
+    private static final List<String> REQUIRED_ENVELOPE_FIELDS =
+            List.of(
+                    "event_type",
+                    "event_id",
+                    "occurred_at",
+                    "payload",
+                    "event_version",
+                    "trace_id",
+                    "source");
 
     /**
-     * Expected event set — regression guard. Добавление нового файла
-     * в event-schemas/ требует одновременно:
-     *   (a) обновить этот whitelist;
-     *   (b) написать *ContractIT в сервисе-источнике.
-     * Пара достигается в одном PR, что ловит drift между schema и publisher'ом.
+     * Expected event set — regression guard. Добавление нового файла в event-schemas/ требует
+     * одновременно: (a) обновить этот whitelist; (b) написать *ContractIT в сервисе-источнике. Пара
+     * достигается в одном PR, что ловит drift между schema и publisher'ом.
      */
-    private static final Set<String> EXPECTED_EVENT_SCHEMAS = new TreeSet<>(List.of(
-            "attendance.marked",
-            "excuse.decided",
-            "excuse.requested",
-            "group.archived",
-            "group.renamed",
-            "group.updated",
-            "homework.due_reminder",
-            "homework.published",
-            "homework.updated",
-            "homework.weekly_digest",
-            "late_checkin.decided",
-            "late_checkin.decision",
-            "late_checkin.requested",
-            "lesson.blocked",
-            "lesson.cancelled",
-            "lesson.closed",
-            "lesson.deleted",
-            "lesson.one_off.cancelled",
-            "lesson.one_off.created",
-            "lesson.reminder",
-            "lesson.started",
-            "otp.requested",
-            "otp.verified",
-            "password.changed",
-            "semester.archived"
-    ));
+    private static final Set<String> EXPECTED_EVENT_SCHEMAS =
+            new TreeSet<>(
+                    List.of(
+                            "attendance.marked",
+                            "excuse.decided",
+                            "excuse.requested",
+                            "group.archived",
+                            "group.renamed",
+                            "group.updated",
+                            "homework.due_reminder",
+                            "homework.published",
+                            "homework.updated",
+                            "homework.weekly_digest",
+                            "late_checkin.decided",
+                            "late_checkin.decision",
+                            "late_checkin.requested",
+                            "lesson.blocked",
+                            "lesson.cancelled",
+                            "lesson.closed",
+                            "lesson.deleted",
+                            "lesson.one_off.cancelled",
+                            "lesson.one_off.created",
+                            "lesson.reminder",
+                            "lesson.started",
+                            "otp.requested",
+                            "otp.verified",
+                            "password.changed",
+                            "semester.archived"));
 
     private static Path schemasDir() {
         // services/shared/shared-events → ../../../event-schemas
-        return Path.of("").toAbsolutePath()
-                .getParent()   // services/shared
-                .getParent()   // services
-                .getParent()   // repo root
+        return Path.of("")
+                .toAbsolutePath()
+                .getParent() // services/shared
+                .getParent() // services
+                .getParent() // repo root
                 .resolve("event-schemas");
     }
 
@@ -116,9 +114,10 @@ class EventSchemaCoverageTest {
     @Test
     @DisplayName("coverage guard — все известные schemas присутствуют; unexpected — stop!")
     void eventSchemasMatchWhitelist() throws IOException {
-        Set<String> onDisk = eventSchemaFiles()
-                .map(p -> p.getFileName().toString().replace(".json", ""))
-                .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> onDisk =
+                eventSchemaFiles()
+                        .map(p -> p.getFileName().toString().replace(".json", ""))
+                        .collect(Collectors.toCollection(TreeSet::new));
 
         Set<String> missing = new TreeSet<>(EXPECTED_EVENT_SCHEMAS);
         missing.removeAll(onDisk);
@@ -126,11 +125,10 @@ class EventSchemaCoverageTest {
         Set<String> unexpected = new TreeSet<>(onDisk);
         unexpected.removeAll(EXPECTED_EVENT_SCHEMAS);
 
-        assertThat(missing)
-                .as("schemas объявлены в whitelist, но отсутствуют на диске")
-                .isEmpty();
+        assertThat(missing).as("schemas объявлены в whitelist, но отсутствуют на диске").isEmpty();
         assertThat(unexpected)
-                .as("schemas на диске без whitelist-entry — добавь в EXPECTED_EVENT_SCHEMAS + *ContractIT в сервисе-источнике")
+                .as(
+                        "schemas на диске без whitelist-entry — добавь в EXPECTED_EVENT_SCHEMAS + *ContractIT в сервисе-источнике")
                 .isEmpty();
     }
 
@@ -142,7 +140,8 @@ class EventSchemaCoverageTest {
 
         JsonNode tree = MAPPER.readTree(Files.readString(common));
         assertThat(tree.get("$defs"))
-                .as("_common.json должен содержать $defs блок, на который ссылаются envelope-schemas")
+                .as(
+                        "_common.json должен содержать $defs блок, на который ссылаются envelope-schemas")
                 .isNotNull();
         assertThat(tree.get("$defs").has("eventId")).isTrue();
         assertThat(tree.get("$defs").has("occurredAt")).isTrue();
@@ -194,7 +193,8 @@ class EventSchemaCoverageTest {
         assertRefsResolveToCommon(properties.get("event_id"), "_common.json#/$defs/eventId");
         assertRefsResolveToCommon(properties.get("occurred_at"), "_common.json#/$defs/occurredAt");
         assertRefsResolveToCommon(properties.get("trace_id"), "_common.json#/$defs/traceId");
-        assertRefsResolveToCommon(properties.get("event_version"), "_common.json#/$defs/eventVersion");
+        assertRefsResolveToCommon(
+                properties.get("event_version"), "_common.json#/$defs/eventVersion");
     }
 
     @ParameterizedTest(name = "{0}")
@@ -205,7 +205,8 @@ class EventSchemaCoverageTest {
         // подходить под domain-specific required (domain-specific assertions
         // живут в *ContractIT в каждом сервисе), здесь проверяем envelope-shape.
         String expectedEventType = schemaFile.getFileName().toString().replace(".json", "");
-        String envelope = """
+        String envelope =
+                """
                 {
                   "event_type": "%s",
                   "event_id": "00000000-0000-0000-0000-000000000000",
@@ -215,7 +216,8 @@ class EventSchemaCoverageTest {
                   "source": "shared-events-coverage-test",
                   "payload": {}
                 }
-                """.formatted(expectedEventType);
+                """
+                        .formatted(expectedEventType);
 
         JsonSchema schema = SCHEMA_FACTORY.getSchema(schemaFile.toUri());
         Set<ValidationMessage> errors = schema.validate(MAPPER.readTree(envelope));
@@ -226,12 +228,13 @@ class EventSchemaCoverageTest {
         // networknt возвращает path вида "$.payload" / "$.payload/foo" —
         // отфильтровываем всё что начинается с payload (domain-specific
         // required — ответственность *ContractIT в сервисе).
-        List<String> envelopeErrorPaths = errors.stream()
-                .map(ValidationMessage::getInstanceLocation)
-                .map(Object::toString)
-                .filter(path -> !path.startsWith("$.payload"))
-                .filter(path -> !path.startsWith("/payload"))
-                .toList();
+        List<String> envelopeErrorPaths =
+                errors.stream()
+                        .map(ValidationMessage::getInstanceLocation)
+                        .map(Object::toString)
+                        .filter(path -> !path.startsWith("$.payload"))
+                        .filter(path -> !path.startsWith("/payload"))
+                        .toList();
 
         assertThat(envelopeErrorPaths)
                 .as("envelope-level fields должны пройти — ошибки: " + errors)
@@ -240,7 +243,8 @@ class EventSchemaCoverageTest {
 
     private static void assertRefsResolveToCommon(JsonNode propertyNode, String expectedRef) {
         assertThat(propertyNode)
-                .as("property schema must exist — envelope field referenced from _common.json missing")
+                .as(
+                        "property schema must exist — envelope field referenced from _common.json missing")
                 .isNotNull();
         JsonNode ref = propertyNode.get("$ref");
         assertThat(ref)

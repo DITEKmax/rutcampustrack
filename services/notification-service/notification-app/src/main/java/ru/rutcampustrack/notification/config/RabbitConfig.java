@@ -16,13 +16,14 @@ import org.springframework.context.annotation.Configuration;
 /**
  * RabbitMQ configuration for Notification Web event consumption.
  *
- * Per D-01: Declares durable queue 'notification-web.events' bound to fanout exchange 'rut-uit.events'.
- * Per D-02: DLQ infrastructure declared at startup — main queue routes dead letters to DLQ.
- * Per D-03: Jackson2JsonMessageConverter uses the shared Spring-managed ObjectMapper
- *           (already has JavaTimeModule from JacksonAutoConfiguration — do NOT create new ObjectMapper).
- * Per Pitfall 1: RabbitTemplate does NOT set channelTransacted=true to avoid message loss.
+ * <p>Per D-01: Declares durable queue 'notification-web.events' bound to fanout exchange
+ * 'rut-uit.events'. Per D-02: DLQ infrastructure declared at startup — main queue routes dead
+ * letters to DLQ. Per D-03: Jackson2JsonMessageConverter uses the shared Spring-managed
+ * ObjectMapper (already has JavaTimeModule from JacksonAutoConfiguration — do NOT create new
+ * ObjectMapper). Per Pitfall 1: RabbitTemplate does NOT set channelTransacted=true to avoid message
+ * loss.
  *
- * Bean names are notificationWeb-specific to avoid Spring bean name clash if multiple services
+ * <p>Bean names are notificationWeb-specific to avoid Spring bean name clash if multiple services
  * load in same test context.
  */
 @Configuration
@@ -52,27 +53,29 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding notificationWebQueueBinding(FanoutExchange notificationWebEventsExchange,
-                                                Queue notificationWebEventsQueue) {
+    public Binding notificationWebQueueBinding(
+            FanoutExchange notificationWebEventsExchange, Queue notificationWebEventsQueue) {
         return BindingBuilder.bind(notificationWebEventsQueue).to(notificationWebEventsExchange);
     }
 
     @Bean
-    public Binding notificationWebDlqBinding(DirectExchange notificationWebDlqExchange,
-                                              Queue notificationWebDlqQueue) {
+    public Binding notificationWebDlqBinding(
+            DirectExchange notificationWebDlqExchange, Queue notificationWebDlqQueue) {
         return BindingBuilder.bind(notificationWebDlqQueue)
                 .to(notificationWebDlqExchange)
                 .with("notification-web.events.dlq");
     }
 
     @Bean
-    public Jackson2JsonMessageConverter notificationWebJacksonMessageConverter(ObjectMapper objectMapper) {
+    public Jackson2JsonMessageConverter notificationWebJacksonMessageConverter(
+            ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
-                                          Jackson2JsonMessageConverter notificationWebJacksonMessageConverter) {
+    public RabbitTemplate rabbitTemplate(
+            ConnectionFactory connectionFactory,
+            Jackson2JsonMessageConverter notificationWebJacksonMessageConverter) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(notificationWebJacksonMessageConverter);
         // Do NOT set channelTransacted=true — causes message loss with AFTER_COMMIT (Pitfall 1)

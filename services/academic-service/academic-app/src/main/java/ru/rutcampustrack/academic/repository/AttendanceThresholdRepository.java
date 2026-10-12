@@ -1,8 +1,8 @@
 package ru.rutcampustrack.academic.repository;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.rutcampustrack.academic.entity.AttendanceThreshold;
-import java.util.Optional;
 
 public interface AttendanceThresholdRepository extends JpaRepository<AttendanceThreshold, Long> {
     /** Subject-level threshold — most specific (THRSH-03) */

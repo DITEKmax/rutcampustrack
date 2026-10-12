@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.group;
 
+import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
+import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
+import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -8,22 +12,22 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.GroupApi;
-import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
-import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
-import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
-import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
+import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewResponse;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanRosterResponse;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewRequest;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewRequest;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
+import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.entity.Group;
@@ -31,14 +35,7 @@ import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.academic.user.UserAssembler;
 
-import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
-import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
-import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
-
-/**
- * REST controller implementing GroupApi contract.
- * Delegates all business logic to GroupService.
- */
+/** REST controller implementing GroupApi contract. Delegates all business logic to GroupService. */
 @RestController
 public class GroupController implements GroupApi {
 
@@ -48,11 +45,12 @@ public class GroupController implements GroupApi {
     private final GroupPromotionService promotionService;
     private final GroupHeadmanAssignmentService headmanAssignmentService;
 
-    public GroupController(GroupService groupService,
-                           GroupAssembler groupAssembler,
-                           UserAssembler userAssembler,
-                           GroupPromotionService promotionService,
-                           GroupHeadmanAssignmentService headmanAssignmentService) {
+    public GroupController(
+            GroupService groupService,
+            GroupAssembler groupAssembler,
+            UserAssembler userAssembler,
+            GroupPromotionService promotionService,
+            GroupHeadmanAssignmentService headmanAssignmentService) {
         this.groupService = groupService;
         this.groupAssembler = groupAssembler;
         this.userAssembler = userAssembler;
@@ -61,47 +59,66 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
     public ResponseEntity<EntityModel<GroupResponse>> createGroup(CreateGroupRequest request) {
         Group group = groupService.createGroup(request);
         return ResponseEntity.status(201).body(groupAssembler.toModel(group));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
     public ResponseEntity<AdminGroupResponse> createAdminGroup(CreateAdminGroupRequest request) {
         Group group = groupService.createAdminGroup(request);
         return ResponseEntity.status(201).body(groupAssembler.toCreatedRegistryResponse(group));
     }
 
     @Override
-    @RequireRole(value={ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN, ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT, ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER}, admin={"GROUPS_VIEW"})
+    @RequireRole(
+            value = {
+                ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN,
+                ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT,
+                ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER
+            },
+            admin = {"GROUPS_VIEW"})
     public ResponseEntity<EntityModel<GroupResponse>> getGroup(Long id) {
         Group group = groupService.findGroupById(id);
         return ResponseEntity.ok(groupAssembler.toModel(group));
     }
 
     @Override
-    @RequireRole(value={ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN, ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT, ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER}, admin={"GROUPS_VIEW"})
+    @RequireRole(
+            value = {
+                ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN,
+                ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT,
+                ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER
+            },
+            admin = {"GROUPS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<GroupResponse>>> listGroups(
-            Boolean active,
-            Pageable pageable,
-            PagedResourcesAssembler<GroupResponse> assembler) {
+            Boolean active, Pageable pageable, PagedResourcesAssembler<GroupResponse> assembler) {
         Page<Group> page = groupService.listGroups(active, pageable);
         Page<GroupResponse> responsePage = page.map(groupAssembler::toResponse);
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
-    public ResponseEntity<EntityModel<GroupResponse>> updateGroup(Long id, UpdateGroupRequest request) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
+    public ResponseEntity<EntityModel<GroupResponse>> updateGroup(
+            Long id, UpdateGroupRequest request) {
         Group group = groupService.updateGroup(id, request);
         return ResponseEntity.ok(groupAssembler.toModel(group));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
     public ResponseEntity<Void> restoreGroup(Long id) {
         groupService.restoreGroup(id);
         return ResponseEntity.noContent().build();
@@ -115,7 +132,9 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole(value={ADMIN, TEACHER}, admin={"GROUPS_VIEW"})
+    @RequireRole(
+            value = {ADMIN, TEACHER},
+            admin = {"GROUPS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<GroupResponse>>> listGroupsByStatus(
             GroupStatus status,
             String search,
@@ -123,20 +142,28 @@ public class GroupController implements GroupApi {
             PagedResourcesAssembler<GroupResponse> assembler) {
         Page<Group> page = groupService.listGroups(status, search, pageable);
         Page<GroupResponse> responsePage = page.map(groupAssembler::toResponse);
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_VIEW"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_VIEW"})
     public AdminGroupRegistryResponse listAdminGroups(
-            AdminGroupStatus status, String search, Integer course,
-            StudyMode studyMode, EducationLevel educationLevel, Pageable pageable) {
-        GroupService.GroupRegistryPage result = groupService.listAdminGroups(
-                status, search, course, studyMode, educationLevel, pageable);
-        var items = result.page().getContent().stream()
-                .map(groupAssembler::toRegistryResponse)
-                .toList();
+            AdminGroupStatus status,
+            String search,
+            Integer course,
+            StudyMode studyMode,
+            EducationLevel educationLevel,
+            Pageable pageable) {
+        GroupService.GroupRegistryPage result =
+                groupService.listAdminGroups(
+                        status, search, course, studyMode, educationLevel, pageable);
+        var items =
+                result.page().getContent().stream()
+                        .map(groupAssembler::toRegistryResponse)
+                        .toList();
         var counts = result.counts();
         return new AdminGroupRegistryResponse(
                 items,
@@ -144,48 +171,60 @@ public class GroupController implements GroupApi {
                 result.page().getSize(),
                 result.page().getTotalElements(),
                 result.page().getTotalPages(),
-                counts.activeCount(), counts.draftCount(), counts.archivedCount());
+                counts.activeCount(),
+                counts.draftCount(),
+                counts.archivedCount());
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_VIEW"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_VIEW"})
     public HeadmanRosterResponse getHeadmanRoster(Long id) {
         return headmanAssignmentService.roster(id);
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
-    public HeadmanAssignmentPreviewResponse previewHeadman(
-            Long id, Long studentId) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
+    public HeadmanAssignmentPreviewResponse previewHeadman(Long id, Long studentId) {
         return headmanAssignmentService.preview(id, studentId);
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
     public HeadmanAssignmentResponse assignHeadman(Long id, AssignHeadmanRequest request) {
         return headmanAssignmentService.assign(id, request);
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
     public ResponseEntity<PromotionSummary> promotePreview(PromotionPreviewRequest request) {
         return ResponseEntity.ok(promotionService.preview(request.getGroupId()));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"GROUPS_MANAGE"})
     public ResponseEntity<PromotionSummary> promote(PromotionExecuteRequest request) {
         return ResponseEntity.ok(promotionService.execute(request));
     }
 
     @Override
-    @RequireRole(value={STUDENT}, admin={"GROUPS_MANAGE"})
+    @RequireRole(
+            value = {STUDENT},
+            admin = {"GROUPS_MANAGE"})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> getMyGroupMembers(
-            Pageable pageable,
-            PagedResourcesAssembler<UserResponse> assembler) {
+            Pageable pageable, PagedResourcesAssembler<UserResponse> assembler) {
         Page<User> page = groupService.getMyGroupMembers(pageable);
         Page<UserResponse> responsePage = page.map(userAssembler::toResponse);
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 }

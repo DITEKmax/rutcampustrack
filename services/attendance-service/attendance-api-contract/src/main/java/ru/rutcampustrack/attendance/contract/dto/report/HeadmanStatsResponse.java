@@ -21,8 +21,7 @@ public record HeadmanStatsResponse(
         long totalElements,
         boolean hasPrevious,
         boolean hasNext,
-        EmptyState emptyState
-) {
+        EmptyState emptyState) {
     public HeadmanStatsResponse {
         context = Objects.requireNonNull(context, "context");
         summary = Objects.requireNonNull(summary, "summary");
@@ -45,10 +44,10 @@ public record HeadmanStatsResponse(
             String subjectName,
             List<String> lessonTypes,
             int lessonsCount,
-            Instant generatedAt
-    ) {
+            Instant generatedAt) {
         public Context {
-            if (groupId <= 0 || lessonsCount < 0) throw new IllegalArgumentException("Invalid statistics context");
+            if (groupId <= 0 || lessonsCount < 0)
+                throw new IllegalArgumentException("Invalid statistics context");
             groupName = Objects.requireNonNullElse(groupName, "");
             semesterName = Objects.requireNonNullElse(semesterName, "");
             subjectName = Objects.requireNonNullElse(subjectName, "");
@@ -61,12 +60,7 @@ public record HeadmanStatsResponse(
         }
     }
 
-    public record Metrics(
-            Metric present,
-            Metric presentOrExcused,
-            Metric excused,
-            Metric absent
-    ) {
+    public record Metrics(Metric present, Metric presentOrExcused, Metric excused, Metric absent) {
         public Metrics {
             present = Objects.requireNonNull(present, "present");
             presentOrExcused = Objects.requireNonNull(presentOrExcused, "presentOrExcused");
@@ -77,8 +71,12 @@ public record HeadmanStatsResponse(
 
     public record Metric(int numerator, int denominator, double percent) {
         public Metric {
-            if (numerator < 0 || denominator < 0 || numerator > denominator
-                    || !Double.isFinite(percent) || percent < 0 || percent > 100) {
+            if (numerator < 0
+                    || denominator < 0
+                    || numerator > denominator
+                    || !Double.isFinite(percent)
+                    || percent < 0
+                    || percent > 100) {
                 throw new IllegalArgumentException("Invalid statistics metric");
             }
         }
@@ -94,13 +92,18 @@ public record HeadmanStatsResponse(
 
     public record TicketCounts(int submitted, int approved, int rejected) {
         public TicketCounts {
-            if (submitted < 0 || approved < 0 || rejected < 0) throw new IllegalArgumentException("Invalid ticket count");
+            if (submitted < 0 || approved < 0 || rejected < 0)
+                throw new IllegalArgumentException("Invalid ticket count");
         }
     }
 
-    public record Sources(int studentGeo, int manualRequest, int autoAfterGeoFailure, int headmanManual) {
+    public record Sources(
+            int studentGeo, int manualRequest, int autoAfterGeoFailure, int headmanManual) {
         public Sources {
-            if (studentGeo < 0 || manualRequest < 0 || autoAfterGeoFailure < 0 || headmanManual < 0) {
+            if (studentGeo < 0
+                    || manualRequest < 0
+                    || autoAfterGeoFailure < 0
+                    || headmanManual < 0) {
                 throw new IllegalArgumentException("Invalid attendance source count");
             }
         }
@@ -112,8 +115,7 @@ public record HeadmanStatsResponse(
             Metrics metrics,
             TicketCounts lateCheckin,
             TicketCounts excuse,
-            Sources sources
-    ) {
+            Sources sources) {
         public StudentRow {
             if (studentId <= 0) throw new IllegalArgumentException("Invalid student identity");
             displayName = Objects.requireNonNullElse(displayName, "");

@@ -17,8 +17,8 @@ public class NotificationPreferencesController implements NotificationPreference
     private final NotificationPreferencesService service;
     private final RequestContext requestContext;
 
-    public NotificationPreferencesController(NotificationPreferencesService service,
-                                             RequestContext requestContext) {
+    public NotificationPreferencesController(
+            NotificationPreferencesService service, RequestContext requestContext) {
         this.service = service;
         this.requestContext = requestContext;
     }

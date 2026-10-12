@@ -1,46 +1,44 @@
 package ru.rutcampustrack.attendance.report;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentDetailResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendExportRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
-
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.security.RequireRole;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 /**
- * REST controller for attendance reports (RPRT-01..04).
- * Implements ReportApi — all mappings and Swagger annotations live in the interface.
+ * REST controller for attendance reports (RPRT-01..04). Implements ReportApi — all mappings and
+ * Swagger annotations live in the interface.
  *
- * Per CLAUDE.md: controller only delegates to ReportService and wraps in HATEOAS.
- * No business logic, no authorization, no exception handling — all in ReportService.
+ * <p>Per CLAUDE.md: controller only delegates to ReportService and wraps in HATEOAS. No business
+ * logic, no authorization, no exception handling — all in ReportService.
  */
 @RestController
 @RequiredArgsConstructor
@@ -49,37 +47,51 @@ public class ReportController implements ReportApi {
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<java.util.List<ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportFormatOption>> getHeadmanSubjectJournalFormats() {
+    public ResponseEntity<
+                    java.util.List<
+                            ru.rutcampustrack.attendance.contract.dto.report
+                                    .HeadmanWeeklyExportFormatOption>>
+            getHeadmanSubjectJournalFormats() {
         headmanWeeklyReportService.getActiveSemesterWeeks();
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(HeadmanWeeklyReportFormat.catalogue());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(HeadmanWeeklyReportFormat.catalogue());
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
     public ResponseEntity<byte[]> exportHeadmanSubjectJournal(
-            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest request) {
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest
+                    request) {
         return download(headmanWeeklyReportService.exportSubjectJournal(request));
     }
 
-
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse>
+    public ResponseEntity<
+                    ru.rutcampustrack.attendance.contract.dto.report
+                            .HeadmanGroupCompositionFormatsResponse>
             getHeadmanGroupCompositionFormats() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(groupCompositionService.formats());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(groupCompositionService.formats());
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
     public ResponseEntity<byte[]> exportHeadmanGroupComposition(String format) {
         var result = groupCompositionService.export(format);
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(result.contentType()))
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(result.contentType()))
                 .cacheControl(CacheControl.noStore())
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
-                        .filename(result.fileName(), StandardCharsets.UTF_8).build().toString())
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(result.fileName(), StandardCharsets.UTF_8)
+                                .build()
+                                .toString())
                 .body(result.content());
     }
-
 
     private final ReportService reportService;
     private final HeadmanWeeklyReportService headmanWeeklyReportService;
@@ -88,10 +100,14 @@ public class ReportController implements ReportApi {
 
     @RequireRole({UserRole.STUDENT, UserRole.TEACHER})
     @Override
-    public ResponseEntity<EntityModel<LessonAttendanceResponse>> getLessonAttendance(Long lessonId) {
+    public ResponseEntity<EntityModel<LessonAttendanceResponse>> getLessonAttendance(
+            Long lessonId) {
         LessonAttendanceResponse response = reportService.getLessonAttendance(lessonId);
-        EntityModel<LessonAttendanceResponse> model = EntityModel.of(response,
-                linkTo(methodOn(ReportController.class).getLessonAttendance(lessonId)).withSelfRel());
+        EntityModel<LessonAttendanceResponse> model =
+                EntityModel.of(
+                        response,
+                        linkTo(methodOn(ReportController.class).getLessonAttendance(lessonId))
+                                .withSelfRel());
         return ResponseEntity.ok(model);
     }
 
@@ -100,9 +116,13 @@ public class ReportController implements ReportApi {
     public ResponseEntity<EntityModel<JournalResponse>> getJournal(
             Long groupId, Long subjectId, LocalDate dateFrom, LocalDate dateTo) {
         JournalResponse response = reportService.getJournal(groupId, subjectId, dateFrom, dateTo);
-        EntityModel<JournalResponse> model = EntityModel.of(response,
-                linkTo(methodOn(ReportController.class).getJournal(groupId, subjectId, dateFrom, dateTo))
-                        .withSelfRel());
+        EntityModel<JournalResponse> model =
+                EntityModel.of(
+                        response,
+                        linkTo(
+                                        methodOn(ReportController.class)
+                                                .getJournal(groupId, subjectId, dateFrom, dateTo))
+                                .withSelfRel());
         return ResponseEntity.ok(model);
     }
 
@@ -110,31 +130,39 @@ public class ReportController implements ReportApi {
     @Override
     public ResponseEntity<EntityModel<StudentStatsResponse>> getStudentStats() {
         StudentStatsResponse response = reportService.getStudentStats();
-        EntityModel<StudentStatsResponse> model = EntityModel.of(response,
-                linkTo(methodOn(ReportController.class).getStudentStats()).withSelfRel());
+        EntityModel<StudentStatsResponse> model =
+                EntityModel.of(
+                        response,
+                        linkTo(methodOn(ReportController.class).getStudentStats()).withSelfRel());
         return ResponseEntity.ok(model);
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<EntityModel<StudentDashboardResponse>> getStudentDashboard(Integer topLimit) {
+    public ResponseEntity<EntityModel<StudentDashboardResponse>> getStudentDashboard(
+            Integer topLimit) {
         int limit = (topLimit == null || topLimit <= 0) ? 5 : topLimit;
         StudentDashboardResponse response = reportService.getStudentDashboard(limit);
-        EntityModel<StudentDashboardResponse> model = EntityModel.of(response,
-                linkTo(methodOn(ReportController.class).getStudentDashboard(topLimit)).withSelfRel());
+        EntityModel<StudentDashboardResponse> model =
+                EntityModel.of(
+                        response,
+                        linkTo(methodOn(ReportController.class).getStudentDashboard(topLimit))
+                                .withSelfRel());
         return ResponseEntity.ok(model);
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<CollectionModel<EntityModel<AttendanceRecordEntry>>> getStudentRecords(Long subjectId) {
+    public ResponseEntity<CollectionModel<EntityModel<AttendanceRecordEntry>>> getStudentRecords(
+            Long subjectId) {
         List<AttendanceRecordEntry> entries = reportService.getStudentRecords(subjectId);
-        List<EntityModel<AttendanceRecordEntry>> entityModels = entries.stream()
-                .map(EntityModel::of)
-                .toList();
-        CollectionModel<EntityModel<AttendanceRecordEntry>> collectionModel = CollectionModel.of(
-                entityModels,
-                linkTo(methodOn(ReportController.class).getStudentRecords(subjectId)).withSelfRel());
+        List<EntityModel<AttendanceRecordEntry>> entityModels =
+                entries.stream().map(EntityModel::of).toList();
+        CollectionModel<EntityModel<AttendanceRecordEntry>> collectionModel =
+                CollectionModel.of(
+                        entityModels,
+                        linkTo(methodOn(ReportController.class).getStudentRecords(subjectId))
+                                .withSelfRel());
         return ResponseEntity.ok(collectionModel);
     }
 
@@ -142,8 +170,11 @@ public class ReportController implements ReportApi {
     @Override
     public ResponseEntity<EntityModel<HeadmanWeeklyWeeksResponse>> getHeadmanWeeklyWeeks() {
         HeadmanWeeklyWeeksResponse response = headmanWeeklyReportService.getActiveSemesterWeeks();
-        EntityModel<HeadmanWeeklyWeeksResponse> model = EntityModel.of(response,
-                linkTo(methodOn(ReportController.class).getHeadmanWeeklyWeeks()).withSelfRel());
+        EntityModel<HeadmanWeeklyWeeksResponse> model =
+                EntityModel.of(
+                        response,
+                        linkTo(methodOn(ReportController.class).getHeadmanWeeklyWeeks())
+                                .withSelfRel());
         return ResponseEntity.ok(model);
     }
 
@@ -161,7 +192,8 @@ public class ReportController implements ReportApi {
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<EntityModel<HeadmanStatsResponse>> queryHeadmanStats(HeadmanStatsQueryRequest request) {
+    public ResponseEntity<EntityModel<HeadmanStatsResponse>> queryHeadmanStats(
+            HeadmanStatsQueryRequest request) {
         return ResponseEntity.ok(EntityModel.of(headmanStatsService.query(request)));
     }
 
@@ -180,21 +212,28 @@ public class ReportController implements ReportApi {
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<EntityModel<HeadmanStatsStudentDetailResponse>> queryHeadmanStudentStatsDetail(
-            Long studentId, int latePage, int excusePage, int size, Long semesterId) {
-        return ResponseEntity.ok(EntityModel.of(
-                headmanStatsService.studentDetail(studentId, latePage, excusePage, size, semesterId)));
+    public ResponseEntity<EntityModel<HeadmanStatsStudentDetailResponse>>
+            queryHeadmanStudentStatsDetail(
+                    Long studentId, int latePage, int excusePage, int size, Long semesterId) {
+        return ResponseEntity.ok(
+                EntityModel.of(
+                        headmanStatsService.studentDetail(
+                                studentId, latePage, excusePage, size, semesterId)));
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSemestersResponse> getHeadmanStatsSemesters() {
+    public ResponseEntity<
+                    ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSemestersResponse>
+            getHeadmanStatsSemesters() {
         return ResponseEntity.ok(headmanStatsService.semesters());
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsOverviewResponse> getHeadmanStatsOverview() {
+    public ResponseEntity<
+                    ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsOverviewResponse>
+            getHeadmanStatsOverview() {
         return ResponseEntity.ok(headmanStatsService.overview());
     }
 
@@ -202,23 +241,35 @@ public class ReportController implements ReportApi {
     @Override
     public ResponseEntity<EntityModel<HeadmanStatsTrendResponse>> queryHeadmanStudentStatsTrend(
             Long studentId, HeadmanStatsTrendQueryRequest request) {
-        return ResponseEntity.ok(EntityModel.of(headmanStatsService.studentTrend(studentId, request)));
+        return ResponseEntity.ok(
+                EntityModel.of(headmanStatsService.studentTrend(studentId, request)));
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
-    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentLessonsResponse> getHeadmanStudentLessons(
-            Long studentId, Long semesterId, int page, int size, Long subjectId, java.util.List<String> lessonTypes) {
-        return ResponseEntity.ok(headmanStatsService.studentLessons(studentId, semesterId, page, size, subjectId, lessonTypes));
+    public ResponseEntity<
+                    ru.rutcampustrack.attendance.contract.dto.report
+                            .HeadmanStatsStudentLessonsResponse>
+            getHeadmanStudentLessons(
+                    Long studentId,
+                    Long semesterId,
+                    int page,
+                    int size,
+                    Long subjectId,
+                    java.util.List<String> lessonTypes) {
+        return ResponseEntity.ok(
+                headmanStatsService.studentLessons(
+                        studentId, semesterId, page, size, subjectId, lessonTypes));
     }
 
     @RequireRole(UserRole.STUDENT)
     @Override
     public ResponseEntity<byte[]> exportHeadmanStats(HeadmanStatsExportRequest request) {
         HeadmanStatsExportResult result = headmanStatsService.export(request);
-        ContentDisposition disposition = ContentDisposition.attachment()
-                .filename(result.fileName(), StandardCharsets.UTF_8)
-                .build();
+        ContentDisposition disposition =
+                ContentDisposition.attachment()
+                        .filename(result.fileName(), StandardCharsets.UTF_8)
+                        .build();
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(result.contentType()))
                 .cacheControl(CacheControl.noStore())
@@ -227,9 +278,10 @@ public class ReportController implements ReportApi {
     }
 
     private static ResponseEntity<byte[]> download(HeadmanWeeklyExportResult result) {
-        ContentDisposition disposition = ContentDisposition.attachment()
-                .filename(result.fileName(), StandardCharsets.UTF_8)
-                .build();
+        ContentDisposition disposition =
+                ContentDisposition.attachment()
+                        .filename(result.fileName(), StandardCharsets.UTF_8)
+                        .build();
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(result.contentType()))
                 .cacheControl(CacheControl.noStore())
@@ -238,9 +290,10 @@ public class ReportController implements ReportApi {
     }
 
     private static ResponseEntity<byte[]> download(HeadmanStatsExportResult result) {
-        ContentDisposition disposition = ContentDisposition.attachment()
-                .filename(result.fileName(), StandardCharsets.UTF_8)
-                .build();
+        ContentDisposition disposition =
+                ContentDisposition.attachment()
+                        .filename(result.fileName(), StandardCharsets.UTF_8)
+                        .build();
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(result.contentType()))
                 .cacheControl(CacheControl.noStore())

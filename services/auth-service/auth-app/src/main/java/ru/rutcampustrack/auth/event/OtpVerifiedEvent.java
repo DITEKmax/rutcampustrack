@@ -3,9 +3,8 @@ package ru.rutcampustrack.auth.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Публикуется после успешной верификации OTP-кода (вход в веб-панель).
- * Потребляется notification-bot для удаления Telegram-сообщений с кодом
- * и исходного запроса пользователя.
+ * Публикуется после успешной верификации OTP-кода (вход в веб-панель). Потребляется
+ * notification-bot для удаления Telegram-сообщений с кодом и исходного запроса пользователя.
  */
 public class OtpVerifiedEvent extends DomainEvent {
 

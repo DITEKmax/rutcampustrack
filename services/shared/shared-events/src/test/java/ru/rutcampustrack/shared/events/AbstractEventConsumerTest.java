@@ -1,14 +1,13 @@
 package ru.rutcampustrack.shared.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AbstractEventConsumerTest {
 
@@ -50,9 +49,12 @@ class AbstractEventConsumerTest {
         AnyEvent event = new AnyEvent();
         event.setTraceId("inner-trace");
 
-        consumer.handle(event, e -> {
-            assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("inner-trace");
-        });
+        consumer.handle(
+                event,
+                e -> {
+                    assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID))
+                            .isEqualTo("inner-trace");
+                });
 
         assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("outer-trace");
     }
@@ -63,9 +65,11 @@ class AbstractEventConsumerTest {
         AnyEvent event = new AnyEvent();
         event.setTraceId("trace-x");
 
-        consumer.handle(event, e -> {
-            assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("trace-x");
-        });
+        consumer.handle(
+                event,
+                e -> {
+                    assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("trace-x");
+                });
 
         assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isNull();
     }
@@ -77,9 +81,14 @@ class AbstractEventConsumerTest {
         AnyEvent event = new AnyEvent();
         event.setTraceId("inner");
 
-        assertThatThrownBy(() -> consumer.handle(event, e -> {
-            throw new RuntimeException("handler boom");
-        })).hasMessage("handler boom");
+        assertThatThrownBy(
+                        () ->
+                                consumer.handle(
+                                        event,
+                                        e -> {
+                                            throw new RuntimeException("handler boom");
+                                        }))
+                .hasMessage("handler boom");
 
         assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("outer");
     }
@@ -91,9 +100,11 @@ class AbstractEventConsumerTest {
         AnyEvent event = new AnyEvent();
         // traceId == null
 
-        consumer.handle(event, e -> {
-            assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("existing");
-        });
+        consumer.handle(
+                event,
+                e -> {
+                    assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("existing");
+                });
 
         assertThat(MDC.get(AbstractEventConsumer.MDC_TRACE_ID)).isEqualTo("existing");
     }

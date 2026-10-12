@@ -1,22 +1,22 @@
 package ru.rutcampustrack.notification.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 class WsSessionBindingRegistryTest {
 
     @Test
     void unboundRawTransportsAreBoundedAndCapacityReturnsOnDisconnect() throws Exception {
-        WsSessionBindingRegistry registry = new WsSessionBindingRegistry(mock(WsTicketClient.class), 1, 1);
+        WsSessionBindingRegistry registry =
+                new WsSessionBindingRegistry(mock(WsTicketClient.class), 1, 1);
         WebSocketSession first = socket(trustedAttributes());
         WebSocketSession second = socket(trustedAttributes());
 
@@ -66,8 +66,16 @@ class WsSessionBindingRegistryTest {
     private static Map<String, Object> trustedAttributes() {
         return Map.of(
                 TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE,
-                new WsSessionAdmissionRequest(7, UUID.randomUUID().toString(), 2, 3,
-                        "STUDENT", "ACTIVE", 42L, false, false),
+                new WsSessionAdmissionRequest(
+                        7,
+                        UUID.randomUUID().toString(),
+                        2,
+                        3,
+                        "STUDENT",
+                        "ACTIVE",
+                        42L,
+                        false,
+                        false),
                 TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE,
                 UUID.randomUUID().toString());
     }

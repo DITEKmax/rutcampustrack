@@ -1,20 +1,15 @@
 package ru.rutcampustrack.academic.group;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -24,14 +19,18 @@ import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
 /** Real PostgreSQL proof for the completed-spring promotion cycle ledger. */
 @AutoConfigureMockMvc
@@ -49,7 +48,10 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
     @Autowired private GroupPromotionJob groupPromotionJob;
     @Autowired private GroupPromotionService groupPromotionService;
     @Autowired private ru.rutcampustrack.academic.semester.SemesterService semesterService;
-    @Autowired private ru.rutcampustrack.academic.history.HistoricalMembershipService historicalMembership;
+
+    @Autowired
+    private ru.rutcampustrack.academic.history.HistoricalMembershipService historicalMembership;
+
     @Autowired private org.springframework.test.context.event.ApplicationEvents applicationEvents;
 
     @TestConfiguration
@@ -66,71 +68,104 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
     @org.junit.jupiter.api.BeforeEach
     void selectDurableFullAdminSession() {
-        Long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
-        jdbc.update("INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
-                + "VALUES (?, true, 'FULL', '{}', 1) ON CONFLICT(user_id) DO UPDATE "
-                + "SET assigned = true, mode = 'FULL', permissions = '{}', "
-                + "version = admin_access_profiles.version + 1, updated_at = NOW()", adminId);
-        Long grantId = jdbc.queryForObject("SELECT id FROM user_role_grants "
-                + "WHERE user_id = ? AND role = 'admin' AND status = 'active'", Long.class, adminId);
+        Long adminId =
+                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        jdbc.update(
+                "INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
+                        + "VALUES (?, true, 'FULL', '{}', 1) ON CONFLICT(user_id) DO UPDATE "
+                        + "SET assigned = true, mode = 'FULL', permissions = '{}', "
+                        + "version = admin_access_profiles.version + 1, updated_at = NOW()",
+                adminId);
+        Long grantId =
+                jdbc.queryForObject(
+                        "SELECT id FROM user_role_grants "
+                                + "WHERE user_id = ? AND role = 'admin' AND status = 'active'",
+                        Long.class,
+                        adminId);
         java.util.UUID sid = java.util.UUID.randomUUID();
-        jdbc.update("INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
-                + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
-                + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
-                sid, adminId, grantId, java.util.UUID.randomUUID());
-        Long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, adminId);
-        adminToken = jwtFactory.validToken(adminId, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false);
+        jdbc.update(
+                "INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
+                        + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
+                        + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
+                sid,
+                adminId,
+                grantId,
+                java.util.UUID.randomUUID());
+        Long rolesVersion =
+                jdbc.queryForObject(
+                        "SELECT roles_version FROM users WHERE id = ?", Long.class, adminId);
+        adminToken =
+                jwtFactory.validToken(
+                        adminId, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false);
     }
 
     @Test
-    void singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory() throws Exception {
+    void singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory()
+            throws Exception {
         Long cycleId = prepareCompletedSpringCycle();
         Long adminId = userId("admin");
         Long teacherId = userId("teacher");
 
         Long firstGroup = addGroup("УИТ-151", beforeCycleEnd());
-        jdbc.update("UPDATE groups SET alphabetic_code = 'УИТ', numeric_code = '151', "
-                + "current_course = 1, training_duration_years = 3, duration_status = 'KNOWN' WHERE id = ?",
+        jdbc.update(
+                "UPDATE groups SET alphabetic_code = 'УИТ', numeric_code = '151', "
+                        + "current_course = 1, training_duration_years = 3, duration_status = 'KNOWN' WHERE id = ?",
                 firstGroup);
         Long archiveGroup = addGroup("УИТ-411", beforeCycleEnd());
         Long massGroup = addGroup("УВП-111", beforeCycleEnd());
         Long lateGroup = addGroup("РЕГ-111", afterCycleEnd());
         Long studentId = addStudent(firstGroup, "prom_s_" + System.nanoTime());
-        jdbc.update("INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+        jdbc.update(
+                "INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
                         + "VALUES (?, ?, ?, ?)",
-                studentId, firstGroup, CYCLE_END.minusDays(20), "promotion-cycle-it");
+                studentId,
+                firstGroup,
+                CYCLE_END.minusDays(20),
+                "promotion-cycle-it");
 
         mockMvc.perform(previewRequest(teacherId, "TEACHER", "{}"))
                 .andExpect(status().isForbidden());
 
-        JsonNode singlePreview = response(previewRequest(
-                adminId, "ADMIN", "{\"groupId\":" + firstGroup + "}"));
+        JsonNode singlePreview =
+                response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + firstGroup + "}"));
         assertThat(singlePreview.path("dryRun").asBoolean()).isTrue();
         assertThat(singlePreview.path("executed").asBoolean()).isFalse();
         assertThat(singlePreview.path("cycleSemesterId").asLong()).isEqualTo(cycleId);
         assertThat(singlePreview.path("groupId").asLong()).isEqualTo(firstGroup);
         assertThat(singlePreview.path("promoteCount").asInt()).isEqualTo(1);
         assertThat(singlePreview.path("promotedStudentCount").asLong()).isEqualTo(1L);
-        assertThat(singlePreview.path("toPromote").get(0).path("id").asLong()).isEqualTo(firstGroup);
+        assertThat(singlePreview.path("toPromote").get(0).path("id").asLong())
+                .isEqualTo(firstGroup);
 
         String singleVersion = singlePreview.path("previewVersion").asText();
-        JsonNode singleResult = response(executeRequest(
-                adminId, cycleId, singleVersion, firstGroup));
+        JsonNode singleResult =
+                response(executeRequest(adminId, cycleId, singleVersion, firstGroup));
         assertThat(singleResult.path("executed").asBoolean()).isTrue();
         assertThat(singleResult.path("dryRun").asBoolean()).isFalse();
         assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
-        mockMvc.perform(get("/academic/groups/registry")
-                        .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "").header("X-Is-Headman", "false")
-                        .param("status", "DRAFT").param("search", "УИТ-251")
-                        .param("course", "2").param("studyMode", "PART_TIME")
-                        .param("educationLevel", "SPECIALIST"))
+        mockMvc.perform(
+                        get("/academic/groups/registry")
+                                .header("X-Internal-Token", adminToken)
+                                .header("X-User-Id", adminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false")
+                                .param("status", "DRAFT")
+                                .param("search", "УИТ-251")
+                                .param("course", "2")
+                                .param("studyMode", "PART_TIME")
+                                .param("educationLevel", "SPECIALIST"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].currentCourse").value(2))
                 .andExpect(jsonPath("$.items[0].trainingDurationYears").value(3));
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
-                Long.class, studentId, firstGroup)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                                Long.class,
+                                studentId,
+                                firstGroup))
+                .isEqualTo(1L);
 
         JsonNode massPreview = response(previewRequest(adminId, "ADMIN", "{}"));
         assertThat(massPreview.path("groupId").isNull()).isTrue();
@@ -139,10 +174,16 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(massPreview.path("skipped").findValuesAsText("id"))
                 .contains(Long.toString(firstGroup), Long.toString(lateGroup));
         assertThat(massPreview.path("archiveCount").asInt()).isEqualTo(1);
-        assertThat(massPreview.path("toArchive").get(0).path("id").asLong()).isEqualTo(archiveGroup);
+        assertThat(massPreview.path("toArchive").get(0).path("id").asLong())
+                .isEqualTo(archiveGroup);
 
         addGroup("УР-111", beforeCycleEnd());
-        mockMvc.perform(executeRequest(adminId, cycleId, massPreview.path("previewVersion").asText(), null))
+        mockMvc.perform(
+                        executeRequest(
+                                adminId,
+                                cycleId,
+                                massPreview.path("previewVersion").asText(),
+                                null))
                 .andExpect(status().isConflict());
         assertThat(groupName(massGroup)).isEqualTo("УВП-111");
         assertThat(groupName(archiveGroup)).isEqualTo("УИТ-411");
@@ -150,29 +191,51 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         JsonNode refreshedMassPreview = response(previewRequest(adminId, "ADMIN", "{}"));
         assertThat(refreshedMassPreview.path("skipped").findValuesAsText("id"))
                 .contains(Long.toString(firstGroup), Long.toString(lateGroup));
-        assertThat(refreshedMassPreview.path("toArchive").get(0).path("id").asLong()).isEqualTo(archiveGroup);
-        JsonNode massResult = response(executeRequest(
-                adminId, cycleId, refreshedMassPreview.path("previewVersion").asText(), null));
+        assertThat(refreshedMassPreview.path("toArchive").get(0).path("id").asLong())
+                .isEqualTo(archiveGroup);
+        JsonNode massResult =
+                response(
+                        executeRequest(
+                                adminId,
+                                cycleId,
+                                refreshedMassPreview.path("previewVersion").asText(),
+                                null));
         assertThat(massResult.path("executed").asBoolean()).isTrue();
         assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
         assertThat(groupName(massGroup)).isEqualTo("УВП-211");
         assertThat(groupName(archiveGroup)).isEqualTo("УИТ-411 (выпуск 2026)");
         assertThat(groupIdByName("УИТ-251")).isEqualTo(firstGroup);
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
-                Long.class, studentId, firstGroup)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                                Long.class,
+                                studentId,
+                                firstGroup))
+                .isEqualTo(1L);
 
-        mockMvc.perform(executeRequest(
-                        adminId, cycleId, refreshedMassPreview.path("previewVersion").asText(), null))
+        mockMvc.perform(
+                        executeRequest(
+                                adminId,
+                                cycleId,
+                                refreshedMassPreview.path("previewVersion").asText(),
+                                null))
                 .andExpect(status().isConflict());
         assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
         assertThat(groupName(massGroup)).isEqualTo("УВП-211");
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                Long.class, cycleId, firstGroup)).isEqualTo(1L);
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                Long.class, cycleId, massGroup)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                firstGroup))
+                .isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                massGroup))
+                .isEqualTo(1L);
     }
 
     @Test
@@ -184,13 +247,22 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         Long graduatingGroup = addGroup("РЕГ-411", beforeCycleEnd());
         Long lateGroup = addGroup("РЕГ-111", afterCycleEnd());
         Long studentId = addStudent(automaticGroup, "auto_" + System.nanoTime());
-        jdbc.update("INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+        jdbc.update(
+                "INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
                         + "VALUES (?, ?, ?, ?)",
-                studentId, automaticGroup, CYCLE_END.minusDays(20), "automatic-promotion-cycle-it");
+                studentId,
+                automaticGroup,
+                CYCLE_END.minusDays(20),
+                "automatic-promotion-cycle-it");
 
-        JsonNode manualPreview = response(previewRequest(
-                adminId, "ADMIN", "{\"groupId\":" + manualGroup + "}"));
-        response(executeRequest(adminId, cycleId, manualPreview.path("previewVersion").asText(), manualGroup));
+        JsonNode manualPreview =
+                response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + manualGroup + "}"));
+        response(
+                executeRequest(
+                        adminId,
+                        cycleId,
+                        manualPreview.path("previewVersion").asText(),
+                        manualGroup));
         assertThat(automaticCompletionFacts()).isEmpty();
 
         var pending = groupPromotionService.preview(null);
@@ -207,33 +279,61 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(fact.graduated()).isEqualTo(1);
         assertThat(fact.skipped()).isEqualTo(skippedIds.size());
         assertThat(fact.actorUserId()).isNull();
-        assertThat(applicationEvents.stream(ru.rutcampustrack.academic.event.GroupRenamedEvent.class)
-                .map(event -> (ru.rutcampustrack.academic.event.GroupRenamedEvent.Payload) event.getPayload())
-                .filter(payload -> automaticGroup.equals(payload.groupId())).toList())
-                .singleElement().satisfies(payload -> {
-                    assertThat(payload.notificationCause()).isEqualTo("AUTOMATIC_GROUP_CYCLE");
-                    assertThat(payload.cycleSemesterId()).isEqualTo(cycleId);
-                });
-        assertThat(applicationEvents.stream(ru.rutcampustrack.academic.event.GroupArchivedEvent.class)
-                .map(event -> (ru.rutcampustrack.academic.event.GroupArchivedEvent.Payload) event.getPayload())
-                .filter(payload -> graduatingGroup.equals(payload.groupId())).toList())
-                .singleElement().satisfies(payload -> {
-                    assertThat(payload.notificationCause()).isEqualTo("AUTOMATIC_GROUP_CYCLE");
-                    assertThat(payload.cycleSemesterId()).isEqualTo(cycleId);
-                });
+        assertThat(
+                        applicationEvents.stream(
+                                        ru.rutcampustrack.academic.event.GroupRenamedEvent.class)
+                                .map(
+                                        event ->
+                                                (ru.rutcampustrack.academic.event.GroupRenamedEvent
+                                                                .Payload)
+                                                        event.getPayload())
+                                .filter(payload -> automaticGroup.equals(payload.groupId()))
+                                .toList())
+                .singleElement()
+                .satisfies(
+                        payload -> {
+                            assertThat(payload.notificationCause())
+                                    .isEqualTo("AUTOMATIC_GROUP_CYCLE");
+                            assertThat(payload.cycleSemesterId()).isEqualTo(cycleId);
+                        });
+        assertThat(
+                        applicationEvents.stream(
+                                        ru.rutcampustrack.academic.event.GroupArchivedEvent.class)
+                                .map(
+                                        event ->
+                                                (ru.rutcampustrack.academic.event.GroupArchivedEvent
+                                                                .Payload)
+                                                        event.getPayload())
+                                .filter(payload -> graduatingGroup.equals(payload.groupId()))
+                                .toList())
+                .singleElement()
+                .satisfies(
+                        payload -> {
+                            assertThat(payload.notificationCause())
+                                    .isEqualTo("AUTOMATIC_GROUP_CYCLE");
+                            assertThat(payload.cycleSemesterId()).isEqualTo(cycleId);
+                        });
 
         assertThat(groupName(manualGroup)).isEqualTo("УИТ-211");
         assertThat(groupName(automaticGroup)).isEqualTo("УВП-211");
         assertThat(groupName(graduatingGroup)).isEqualTo("РЕГ-411 (выпуск 2026)");
         assertThat(groupName(lateGroup)).isEqualTo("РЕГ-111");
         assertThat(groupIdByName("УВП-211")).isEqualTo(automaticGroup);
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
-                Long.class, studentId, automaticGroup)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                                Long.class,
+                                studentId,
+                                automaticGroup))
+                .isEqualTo(1L);
         for (Long groupId : List.of(manualGroup, automaticGroup, graduatingGroup)) {
-            assertThat(jdbc.queryForObject(
-                    "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                    Long.class, cycleId, groupId)).isEqualTo(1L);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                    Long.class,
+                                    cycleId,
+                                    groupId))
+                    .isEqualTo(1L);
         }
 
         groupPromotionJob.checkDueSpringCycle();
@@ -242,12 +342,19 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
         assertThat(groupName(automaticGroup)).isEqualTo("УВП-211");
         assertThat(groupName(graduatingGroup)).isEqualTo("РЕГ-411 (выпуск 2026)");
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ?",
-                Long.class, cycleId)).isEqualTo(3L);
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
-                Long.class, studentId, automaticGroup)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ?",
+                                Long.class,
+                                cycleId))
+                .isEqualTo(3L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                                Long.class,
+                                studentId,
+                                automaticGroup))
+                .isEqualTo(1L);
 
         // A later eligible batch in the same cycle keeps Student group facts,
         // while the durable ADMIN marker survives the first batch and replays.
@@ -255,17 +362,38 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         groupPromotionJob.checkDueSpringCycle();
         assertThat(groupName(laterGroup)).isEqualTo("ДОП-211");
         assertThat(automaticCompletionFacts()).hasSize(1);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_notification_cycle "
-                + "WHERE cycle_semester_id=?", Long.class, cycleId)).isOne();
-        assertThat(jdbc.queryForObject("SELECT promoted FROM group_promotion_notification_cycle "
-                + "WHERE cycle_semester_id=?", Long.class, cycleId)).isEqualTo(fact.promoted());
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_notification_cycle "
+                                        + "WHERE cycle_semester_id=?",
+                                Long.class,
+                                cycleId))
+                .isOne();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT promoted FROM group_promotion_notification_cycle "
+                                        + "WHERE cycle_semester_id=?",
+                                Long.class,
+                                cycleId))
+                .isEqualTo(fact.promoted());
 
-        org.springframework.test.context.transaction.TestTransaction.end(); // Default test rollback.
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_notification_cycle "
-                + "WHERE cycle_semester_id=?", Long.class, cycleId)).isZero();
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM academic_outbox "
-                + "WHERE event_type='group.promotion.completed' "
-                + "AND payload #>> '{payload,cycle_semester_id}'=?", Long.class, cycleId.toString())).isZero();
+        org.springframework.test.context.transaction.TestTransaction
+                .end(); // Default test rollback.
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_notification_cycle "
+                                        + "WHERE cycle_semester_id=?",
+                                Long.class,
+                                cycleId))
+                .isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM academic_outbox "
+                                        + "WHERE event_type='group.promotion.completed' "
+                                        + "AND payload #>> '{payload,cycle_semester_id}'=?",
+                                Long.class,
+                                cycleId.toString()))
+                .isZero();
     }
 
     @Test
@@ -277,17 +405,23 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         Long third = addGroup("УИТ-311", beforeCycleEnd());
         Long graduating = addGroup("УИТ-411", beforeCycleEnd());
         Long studentId = addStudent(second, "adj_" + System.nanoTime());
-        jdbc.update("INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+        jdbc.update(
+                "INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
                         + "VALUES (?, ?, ?, ?)",
-                studentId, second, CYCLE_END.minusDays(20), "adjacent-promotion-cycle-it");
+                studentId,
+                second,
+                CYCLE_END.minusDays(20),
+                "adjacent-promotion-cycle-it");
 
         JsonNode preview = response(previewRequest(adminId, "ADMIN", "{}"));
         assertThat(preview.path("conflicts").size()).isZero();
         assertThat(preview.path("toPromote").size()).isEqualTo(3);
         assertThat(preview.path("toArchive").size()).isEqualTo(1);
 
-        JsonNode result = response(executeRequest(
-                adminId, cycleId, preview.path("previewVersion").asText(), null));
+        JsonNode result =
+                response(
+                        executeRequest(
+                                adminId, cycleId, preview.path("previewVersion").asText(), null));
 
         assertThat(result.path("executed").asBoolean()).isTrue();
         assertThat(groupName(first)).isEqualTo("УИТ-211");
@@ -297,23 +431,42 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(groupIdByName("УИТ-211")).isEqualTo(first);
         assertThat(groupIdByName("УИТ-311")).isEqualTo(second);
         assertThat(groupIdByName("УИТ-411")).isEqualTo(third);
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ?",
-                Long.class, cycleId)).isEqualTo(4L);
-        assertThat(jdbc.queryForObject(
-                "SELECT action FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                String.class, cycleId, graduating)).isEqualTo("ARCHIVE");
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
-                Long.class, studentId, second)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ?",
+                                Long.class,
+                                cycleId))
+                .isEqualTo(4L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT action FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                String.class,
+                                cycleId,
+                                graduating))
+                .isEqualTo("ARCHIVE");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                                Long.class,
+                                studentId,
+                                second))
+                .isEqualTo(1L);
     }
 
-    private List<ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent.Payload>
-    automaticCompletionFacts() {
+    private List<
+                    ru.rutcampustrack.academic.event
+                            .AdministrativeNotificationGroupPromotionCompletedEvent.Payload>
+            automaticCompletionFacts() {
         return applicationEvents.stream(
-                ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent.class)
-                .map(event -> (ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent.Payload)
-                        event.getPayload()).toList();
+                        ru.rutcampustrack.academic.event
+                                .AdministrativeNotificationGroupPromotionCompletedEvent.class)
+                .map(
+                        event ->
+                                (ru.rutcampustrack.academic.event
+                                                .AdministrativeNotificationGroupPromotionCompletedEvent
+                                                .Payload)
+                                        event.getPayload())
+                .toList();
     }
 
     @Test
@@ -324,37 +477,76 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         String previewBody = "{\"groupId\":" + groupId + "}";
         JsonNode legacyPreview = response(previewRequest(adminId, "ADMIN", previewBody));
         assertThat(legacyPreview.path("toPromote").get(0).path("to").asText()).isEqualTo("УИТ-211");
-        var update = put("/academic/groups/" + groupId)
-                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false")
-                .contentType(APPLICATION_JSON);
-        response(update.content("{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":4}"));
-        mockMvc.perform(executeRequest(adminId, cycleId, legacyPreview.path("previewVersion").asText(), groupId))
+        var update =
+                put("/academic/groups/" + groupId)
+                        .header("X-Internal-Token", adminToken)
+                        .header("X-User-Id", adminId)
+                        .header("X-User-Role", "ADMIN")
+                        .with(signedAdmin())
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .contentType(APPLICATION_JSON);
+        response(
+                update.content(
+                        "{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":4}"));
+        mockMvc.perform(
+                        executeRequest(
+                                adminId,
+                                cycleId,
+                                legacyPreview.path("previewVersion").asText(),
+                                groupId))
                 .andExpect(status().isConflict());
         JsonNode fourYearPreview = response(previewRequest(adminId, "ADMIN", previewBody));
         assertThat(fourYearPreview.path("toPromote")).isEqualTo(legacyPreview.path("toPromote"));
         assertThat(fourYearPreview.path("previewVersion").asText())
                 .isNotEqualTo(legacyPreview.path("previewVersion").asText());
-        response(update.content("{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":5}"));
-        mockMvc.perform(executeRequest(adminId, cycleId, fourYearPreview.path("previewVersion").asText(), groupId))
+        response(
+                update.content(
+                        "{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":5}"));
+        mockMvc.perform(
+                        executeRequest(
+                                adminId,
+                                cycleId,
+                                fourYearPreview.path("previewVersion").asText(),
+                                groupId))
                 .andExpect(status().isConflict());
         assertThat(groupName(groupId)).isEqualTo("УИТ-111");
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record "
-                + "WHERE cycle_semester_id = ? AND group_id = ?", Long.class, cycleId, groupId)).isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record "
+                                        + "WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                groupId))
+                .isZero();
         JsonNode freshPreview = response(previewRequest(adminId, "ADMIN", previewBody));
         assertThat(freshPreview.path("toPromote")).isEqualTo(fourYearPreview.path("toPromote"));
         assertThat(freshPreview.path("previewVersion").asText())
                 .isNotEqualTo(fourYearPreview.path("previewVersion").asText());
-        response(executeRequest(adminId, cycleId, freshPreview.path("previewVersion").asText(), groupId));
+        response(
+                executeRequest(
+                        adminId, cycleId, freshPreview.path("previewVersion").asText(), groupId));
         assertThat(groupName(groupId)).isEqualTo("УИТ-211");
-        mockMvc.perform(executeRequest(adminId, cycleId, freshPreview.path("previewVersion").asText(), groupId))
+        mockMvc.perform(
+                        executeRequest(
+                                adminId,
+                                cycleId,
+                                freshPreview.path("previewVersion").asText(),
+                                groupId))
                 .andExpect(status().isConflict());
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record "
-                + "WHERE cycle_semester_id = ? AND group_id = ?", Long.class, cycleId, groupId)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record "
+                                        + "WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                groupId))
+                .isEqualTo(1L);
     }
 
     @Test
-    void archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion() throws Exception {
+    void archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion()
+            throws Exception {
         Long adminId = userId("admin");
         Long cycleId = prepareCompletedSpringCycle();
         Long corrected = addGroup("РМ-121", beforeCycleEnd());
@@ -362,53 +554,122 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         jdbc.update("UPDATE groups SET training_duration_years = 5 WHERE id = ?", graduating);
         Long late = addGroup("НГ-111", afterCycleEnd());
         Long studentId = addStudent(corrected, "cutoff_s_" + System.nanoTime());
-        jdbc.update("INSERT INTO student_group_history(user_id, group_id, joined_at, reason) VALUES (?, ?, ?, ?)",
-                studentId, corrected, CYCLE_END.minusDays(10), "cutoff-history-it");
-        jdbc.update("INSERT INTO group_history_coverage(group_id, coverage_from, writer_version) VALUES (?, ?, ?)",
-                corrected, CYCLE_END.minusDays(10),
+        jdbc.update(
+                "INSERT INTO student_group_history(user_id, group_id, joined_at, reason) VALUES (?, ?, ?, ?)",
+                studentId,
+                corrected,
+                CYCLE_END.minusDays(10),
+                "cutoff-history-it");
+        jdbc.update(
+                "INSERT INTO group_history_coverage(group_id, coverage_from, writer_version) VALUES (?, ?, ?)",
+                corrected,
+                CYCLE_END.minusDays(10),
                 ru.rutcampustrack.academic.history.HistoricalMembershipService.WRITER_VERSION);
-        long subjectId = jdbc.queryForObject("INSERT INTO subjects(name, type, group_id) "
-                + "VALUES (?, 'lecture', ?) RETURNING id", Long.class, "cutoff-" + System.nanoTime(), corrected);
-        jdbc.update("INSERT INTO subject_lesson_types(subject_id, lesson_type) VALUES (?, 'lecture')", subjectId);
-        long assignmentId = jdbc.queryForObject("INSERT INTO assignments(teacher_id, subject_id, group_id, "
-                + "semester_id, lesson_type, valid_from, valid_until_exclusive) "
-                + "VALUES (?, ?, ?, ?, 'lecture', ?, ?) RETURNING id", Long.class,
-                userId("teacher"), subjectId, corrected, cycleId, CYCLE_END.minusDays(10), CYCLE_END.plusDays(1));
-        List<Long> rosterBefore = historicalMembership.readRoster(corrected, CYCLE_END, cycleId)
-                .students().stream().map(ru.rutcampustrack.academic.entity.User::getId).toList();
+        long subjectId =
+                jdbc.queryForObject(
+                        "INSERT INTO subjects(name, type, group_id) "
+                                + "VALUES (?, 'lecture', ?) RETURNING id",
+                        Long.class,
+                        "cutoff-" + System.nanoTime(),
+                        corrected);
+        jdbc.update(
+                "INSERT INTO subject_lesson_types(subject_id, lesson_type) VALUES (?, 'lecture')",
+                subjectId);
+        long assignmentId =
+                jdbc.queryForObject(
+                        "INSERT INTO assignments(teacher_id, subject_id, group_id, "
+                                + "semester_id, lesson_type, valid_from, valid_until_exclusive) "
+                                + "VALUES (?, ?, ?, ?, 'lecture', ?, ?) RETURNING id",
+                        Long.class,
+                        userId("teacher"),
+                        subjectId,
+                        corrected,
+                        cycleId,
+                        CYCLE_END.minusDays(10),
+                        CYCLE_END.plusDays(1));
+        List<Long> rosterBefore =
+                historicalMembership.readRoster(corrected, CYCLE_END, cycleId).students().stream()
+                        .map(ru.rutcampustrack.academic.entity.User::getId)
+                        .toList();
         assertThat(rosterBefore).containsExactly(studentId);
 
-        JsonNode invalidPlan = response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + corrected + "}"));
-        assertThat(invalidPlan.path("conflicts").get(0).path("reason").asText()).isEqualTo("invalid_code");
-        var groupUpdate = put("/academic/groups/" + corrected)
-                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false")
-                .contentType(APPLICATION_JSON);
-        mockMvc.perform(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":6}"))
+        JsonNode invalidPlan =
+                response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + corrected + "}"));
+        assertThat(invalidPlan.path("conflicts").get(0).path("reason").asText())
+                .isEqualTo("invalid_code");
+        var groupUpdate =
+                put("/academic/groups/" + corrected)
+                        .header("X-Internal-Token", adminToken)
+                        .header("X-User-Id", adminId)
+                        .header("X-User-Role", "ADMIN")
+                        .with(signedAdmin())
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .contentType(APPLICATION_JSON);
+        mockMvc.perform(
+                        groupUpdate.content(
+                                "{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":6}"))
                 .andExpect(status().isBadRequest());
-        mockMvc.perform(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":false,\"trainingDurationYears\":4}"))
+        mockMvc.perform(
+                        groupUpdate.content(
+                                "{\"name\":\"РМ-121\",\"active\":false,\"trainingDurationYears\":4}"))
                 .andExpect(status().isBadRequest());
-        assertThat(jdbc.queryForObject("SELECT is_active FROM groups WHERE id = ?", Boolean.class, corrected)).isTrue();
-        response(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":4}"));
-        JsonNode correctedPlan = response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + corrected + "}"));
-        response(executeRequest(adminId, cycleId, correctedPlan.path("previewVersion").asText(), corrected));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT is_active FROM groups WHERE id = ?",
+                                Boolean.class,
+                                corrected))
+                .isTrue();
+        response(
+                groupUpdate.content(
+                        "{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":4}"));
+        JsonNode correctedPlan =
+                response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + corrected + "}"));
+        response(
+                executeRequest(
+                        adminId,
+                        cycleId,
+                        correctedPlan.path("previewVersion").asText(),
+                        corrected));
         assertThat(groupName(corrected)).isEqualTo("РМ-221");
-        response(groupUpdate.content("{\"name\":\"РМ-221\",\"active\":true,\"trainingDurationYears\":3}"));
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
-                Long.class, studentId, corrected)).isEqualTo(1L);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                Long.class, cycleId, corrected)).isEqualTo(1L);
+        response(
+                groupUpdate.content(
+                        "{\"name\":\"РМ-221\",\"active\":true,\"trainingDurationYears\":3}"));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                                Long.class,
+                                studentId,
+                                corrected))
+                .isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                corrected))
+                .isEqualTo(1L);
 
         entityManager.flush();
         jdbc.update("UPDATE semesters SET is_archived = true WHERE id = ?", cycleId);
         entityManager.clear();
-        mockMvc.perform(post("/academic/semesters/" + cycleId + "/restore")
-                        .header("Idempotency-Key", java.util.UUID.randomUUID())
-                        .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false"))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("dateTo"));
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM semester_archive_operations WHERE semester_id = ?",
-                Long.class, cycleId)).isZero();
+        mockMvc.perform(
+                        post("/academic/semesters/" + cycleId + "/restore")
+                                .header("Idempotency-Key", java.util.UUID.randomUUID())
+                                .header("X-Internal-Token", adminToken)
+                                .header("X-User-Id", adminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field").value("dateTo"));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM semester_archive_operations WHERE semester_id = ?",
+                                Long.class,
+                                cycleId))
+                .isZero();
         JsonNode originalPlan = response(previewRequest(adminId, "ADMIN", "{}"));
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("name", "ignored display name");
@@ -416,41 +677,83 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         metadata.put("academicYear", 2025);
         metadata.put("dateFrom", "2026-02-02");
         metadata.put("dateTo", "2027-12-31");
-        var semesterUpdate = put("/academic/semesters/" + cycleId)
-                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false")
-                .contentType(APPLICATION_JSON);
+        var semesterUpdate =
+                put("/academic/semesters/" + cycleId)
+                        .header("X-Internal-Token", adminToken)
+                        .header("X-User-Id", adminId)
+                        .header("X-User-Role", "ADMIN")
+                        .with(signedAdmin())
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .contentType(APPLICATION_JSON);
         mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("dates"));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field").value("dates"));
         metadata.put("dateFrom", "2026-02-01");
         metadata.put("semesterType", "AUTUMN");
         mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("semesterType"));
-        // Legacy archive: explicitly classify and extend in one PUT; the old completed cutoff must survive.
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field").value("semesterType"));
+        // Legacy archive: explicitly classify and extend in one PUT; the old completed cutoff must
+        // survive.
         entityManager.flush();
-        jdbc.update("UPDATE semesters SET semester_type = NULL, academic_year = NULL WHERE id = ?", cycleId);
+        jdbc.update(
+                "UPDATE semesters SET semester_type = NULL, academic_year = NULL WHERE id = ?",
+                cycleId);
         entityManager.clear();
         metadata.put("semesterType", "SPRING");
         response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
         entityManager.flush();
-        assertThat(jdbc.queryForObject("SELECT semester_type FROM semesters WHERE id = ?",
-                String.class, cycleId)).isEqualTo("SPRING");
-        assertThat(jdbc.queryForObject("SELECT academic_year FROM semesters WHERE id = ?",
-                Integer.class, cycleId)).isEqualTo(2025);
-        assertThat(jdbc.queryForObject("SELECT is_archived AND NOT is_active AND archive_transition = 'NONE' "
-                + "AND NOT archive_release_pending FROM semesters WHERE id = ?", Boolean.class, cycleId)).isTrue();
-        assertThat(jdbc.queryForObject("SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
-                LocalDate.class, cycleId)).isEqualTo(CYCLE_END);
-        assertThat(historicalMembership.readRoster(corrected, CYCLE_END, cycleId).students().stream()
-                .map(ru.rutcampustrack.academic.entity.User::getId).toList()).isEqualTo(rosterBefore);
-        assertThat(jdbc.queryForObject("SELECT valid_from FROM assignments WHERE id = ?",
-                LocalDate.class, assignmentId)).isEqualTo(CYCLE_END.minusDays(10));
-        assertThat(jdbc.queryForObject("SELECT valid_until_exclusive FROM assignments WHERE id = ?",
-                LocalDate.class, assignmentId)).isEqualTo(CYCLE_END.plusDays(1));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT semester_type FROM semesters WHERE id = ?",
+                                String.class,
+                                cycleId))
+                .isEqualTo("SPRING");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT academic_year FROM semesters WHERE id = ?",
+                                Integer.class,
+                                cycleId))
+                .isEqualTo(2025);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT is_archived AND NOT is_active AND archive_transition = 'NONE' "
+                                        + "AND NOT archive_release_pending FROM semesters WHERE id = ?",
+                                Boolean.class,
+                                cycleId))
+                .isTrue();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
+                                LocalDate.class,
+                                cycleId))
+                .isEqualTo(CYCLE_END);
+        assertThat(
+                        historicalMembership
+                                .readRoster(corrected, CYCLE_END, cycleId)
+                                .students()
+                                .stream()
+                                .map(ru.rutcampustrack.academic.entity.User::getId)
+                                .toList())
+                .isEqualTo(rosterBefore);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT valid_from FROM assignments WHERE id = ?",
+                                LocalDate.class,
+                                assignmentId))
+                .isEqualTo(CYCLE_END.minusDays(10));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT valid_until_exclusive FROM assignments WHERE id = ?",
+                                LocalDate.class,
+                                assignmentId))
+                .isEqualTo(CYCLE_END.plusDays(1));
         JsonNode extendedPlan = response(previewRequest(adminId, "ADMIN", "{}"));
         assertThat(extendedPlan.path("cycleSemesterId").asLong()).isEqualTo(cycleId);
         assertThat(extendedPlan.path("cycleDateTo").asText()).isEqualTo("2026-06-30");
-        assertThat(extendedPlan.path("previewVersion").asText()).isEqualTo(originalPlan.path("previewVersion").asText());
+        assertThat(extendedPlan.path("previewVersion").asText())
+                .isEqualTo(originalPlan.path("previewVersion").asText());
         assertThat(extendedPlan.path("skipped").findValuesAsText("id"))
                 .contains(Long.toString(corrected), Long.toString(late));
         groupPromotionJob.checkDueSpringCycle();
@@ -461,29 +764,52 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
         entityManager.flush();
         groupPromotionJob.checkDueSpringCycle();
-        assertThat(jdbc.queryForObject("SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
-                LocalDate.class, cycleId)).isEqualTo(CYCLE_END);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                Long.class, cycleId, corrected)).isEqualTo(1L);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
-                Long.class, cycleId, graduating)).isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
+                                LocalDate.class,
+                                cycleId))
+                .isEqualTo(CYCLE_END);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                corrected))
+                .isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                                Long.class,
+                                cycleId,
+                                graduating))
+                .isEqualTo(1L);
         var restoring = semesterService.beginRestoreTransition(cycleId);
         assertThat(restoring.isActive()).isFalse();
         assertThat(restoring.isArchived()).isTrue();
         assertThat(restoring.getArchiveTransition().name()).isEqualTo("RESTORING");
         metadata.put("dateTo", "2029-12-31");
         mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("status"));
-        assertThat(jdbc.queryForObject("SELECT date_to FROM semesters WHERE id = ?",
-                LocalDate.class, cycleId)).isEqualTo(LocalDate.of(2028, 12, 31));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field").value("status"));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT date_to FROM semesters WHERE id = ?",
+                                LocalDate.class,
+                                cycleId))
+                .isEqualTo(LocalDate.of(2028, 12, 31));
     }
 
     private Long prepareCompletedSpringCycle() {
-        Long cycleId = jdbc.queryForObject(
-                "SELECT id FROM semesters WHERE name = 'Spring 2026' AND date_to = ? ORDER BY id LIMIT 1",
-                Long.class, CYCLE_END);
-        jdbc.update("UPDATE semesters SET semester_type = 'SPRING', academic_year = 2025, "
-                        + "is_active = false WHERE id = ?", cycleId);
+        Long cycleId =
+                jdbc.queryForObject(
+                        "SELECT id FROM semesters WHERE name = 'Spring 2026' AND date_to = ? ORDER BY id LIMIT 1",
+                        Long.class,
+                        CYCLE_END);
+        jdbc.update(
+                "UPDATE semesters SET semester_type = 'SPRING', academic_year = 2025, "
+                        + "is_active = false WHERE id = ?",
+                cycleId);
         return cycleId;
     }
 
@@ -491,20 +817,26 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         return jdbc.queryForObject(
                 "INSERT INTO groups (name, is_active, created_at, duration_status) "
                         + "VALUES (?, true, ?, 'LEGACY_UNKNOWN') RETURNING id",
-                Long.class, name, createdAt);
+                Long.class,
+                name,
+                createdAt);
     }
 
     private Long addStudent(Long groupId, String login) {
-        Long studentId = jdbc.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                        + "is_headman, password_changed, created_at, updated_at) "
-                        + "VALUES (?, 'x', 'Тестов', 'Студент', 'student', 'active', false, false, NOW(), NOW()) "
-                        + "RETURNING id",
-                Long.class, login);
-        jdbc.update("INSERT INTO user_role_grants "
+        Long studentId =
+                jdbc.queryForObject(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
+                                + "is_headman, password_changed, created_at, updated_at) "
+                                + "VALUES (?, 'x', 'Тестов', 'Студент', 'student', 'active', false, false, NOW(), NOW()) "
+                                + "RETURNING id",
+                        Long.class,
+                        login);
+        jdbc.update(
+                "INSERT INTO user_role_grants "
                         + "(user_id, role, status, group_id, created_at, updated_at) "
                         + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
-                studentId, groupId);
+                studentId,
+                groupId);
         return studentId;
     }
 
@@ -528,20 +860,22 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         return CYCLE_END.plusDays(10).atTime(12, 0).atOffset(ZoneOffset.UTC);
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder previewRequest(
-            Long userId, String role, String body) {
-        var request = post("/academic/groups/promote/preview")
-                .header("X-User-Id", userId)
-                .header("X-User-Role", role)
-                .header("X-Group-Id", "")
-                .header("X-Is-Headman", "false")
-                .contentType(APPLICATION_JSON)
-                .content(body);
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            previewRequest(Long userId, String role, String body) {
+        var request =
+                post("/academic/groups/promote/preview")
+                        .header("X-User-Id", userId)
+                        .header("X-User-Role", role)
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .contentType(APPLICATION_JSON)
+                        .content(body);
         return "ADMIN".equals(role) ? request.header("X-Internal-Token", adminToken) : request;
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder executeRequest(
-            Long userId, Long cycleId, String version, Long groupId) throws Exception {
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            executeRequest(Long userId, Long cycleId, String version, Long groupId)
+                    throws Exception {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("cycleSemesterId", cycleId);
         body.put("previewVersion", version);
@@ -549,18 +883,18 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         return post("/academic/groups/promote")
                 .header("X-Internal-Token", adminToken)
                 .header("X-User-Id", userId)
-                .header("X-User-Role", "ADMIN").with(signedAdmin())
+                .header("X-User-Role", "ADMIN")
+                .with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body));
     }
 
-    private JsonNode response(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request)
+    private JsonNode response(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request)
             throws Exception {
-        MvcResult result = mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andReturn();
+        MvcResult result = mockMvc.perform(request).andExpect(status().isOk()).andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());
     }
 }

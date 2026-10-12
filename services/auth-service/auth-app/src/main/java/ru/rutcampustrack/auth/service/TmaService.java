@@ -1,6 +1,17 @@
 package ru.rutcampustrack.auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Clock;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -14,18 +25,6 @@ import ru.rutcampustrack.auth.exception.TmaValidationException;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Clock;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 @Service
 public class TmaService {
 
@@ -38,20 +37,28 @@ public class TmaService {
 
     /** Validated initData uses the common session seam. */
     @Autowired
-    public TmaService(UserRepository userRepository,
-                      AuthService authService,
-                      StringRedisTemplate redisTemplate,
-                      TmaProperties tmaProperties,
-                      ObjectMapper objectMapper) {
-        this(userRepository, authService, redisTemplate, tmaProperties, objectMapper, Clock.systemUTC());
+    public TmaService(
+            UserRepository userRepository,
+            AuthService authService,
+            StringRedisTemplate redisTemplate,
+            TmaProperties tmaProperties,
+            ObjectMapper objectMapper) {
+        this(
+                userRepository,
+                authService,
+                redisTemplate,
+                tmaProperties,
+                objectMapper,
+                Clock.systemUTC());
     }
 
-    TmaService(UserRepository userRepository,
-               AuthService authService,
-               StringRedisTemplate redisTemplate,
-               TmaProperties tmaProperties,
-               ObjectMapper objectMapper,
-               Clock clock) {
+    TmaService(
+            UserRepository userRepository,
+            AuthService authService,
+            StringRedisTemplate redisTemplate,
+            TmaProperties tmaProperties,
+            ObjectMapper objectMapper,
+            Clock clock) {
         this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
         this.tmaProperties = tmaProperties;
@@ -82,14 +89,16 @@ public class TmaService {
 
         User user;
         try {
-            user = userRepository.findByTelegramId(telegramId)
-                    .orElseThrow(InvalidCredentialsException::new);
+            user =
+                    userRepository
+                            .findByTelegramId(telegramId)
+                            .orElseThrow(InvalidCredentialsException::new);
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
-        return authService.issueSession(user,
-                ru.rutcampustrack.auth.session.model.AuthMethod.TMA,
-                null, null, null);
+        return authService.issueSession(
+                user, ru.rutcampustrack.auth.session.model.AuthMethod.TMA, null, null, null);
     }
 
     private static long parseAuthDate(String value) {
@@ -110,16 +119,18 @@ public class TmaService {
             String receivedHash = params.remove("hash");
             if (receivedHash == null) return false;
 
-            String dataCheckString = params.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(e -> e.getKey() + "=" + e.getValue())
-                    .collect(Collectors.joining("\n"));
+            String dataCheckString =
+                    params.entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey())
+                            .map(e -> e.getKey() + "=" + e.getValue())
+                            .collect(Collectors.joining("\n"));
 
-            byte[] secretKey = hmacSha256(
-                    tmaProperties.botToken().getBytes(StandardCharsets.UTF_8),
-                    "WebAppData".getBytes(StandardCharsets.UTF_8));
-            byte[] computedHash = hmacSha256(
-                    dataCheckString.getBytes(StandardCharsets.UTF_8), secretKey);
+            byte[] secretKey =
+                    hmacSha256(
+                            tmaProperties.botToken().getBytes(StandardCharsets.UTF_8),
+                            "WebAppData".getBytes(StandardCharsets.UTF_8));
+            byte[] computedHash =
+                    hmacSha256(dataCheckString.getBytes(StandardCharsets.UTF_8), secretKey);
 
             String computedHex = HexFormat.of().formatHex(computedHash);
             return MessageDigest.isEqual(

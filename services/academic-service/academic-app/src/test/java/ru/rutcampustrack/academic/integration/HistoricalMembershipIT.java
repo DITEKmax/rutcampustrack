@@ -1,15 +1,32 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mockingDetails;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
@@ -28,52 +45,27 @@ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.user.UserService;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mockingDetails;
-
 /**
- * Proof that the managed writer, rather than raw fixtures, creates the
- * coverage marker and initial/transfer history consumed by dated reads.
+ * Proof that the managed writer, rather than raw fixtures, creates the coverage marker and
+ * initial/transfer history consumed by dated reads.
  */
 class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private GroupService groupService;
+    @Autowired private GroupService groupService;
 
-    @Autowired
-    private UserService userService;
+    @Autowired private UserService userService;
 
-    @Autowired
-    private HistoricalMembershipService historicalMembershipService;
+    @Autowired private HistoricalMembershipService historicalMembershipService;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private PlatformTransactionManager transactionManager;
+    @Autowired private PlatformTransactionManager transactionManager;
 
-    @MockitoSpyBean
-    private StudentGroupHistoryRepository historyRepository;
+    @MockitoSpyBean private StudentGroupHistoryRepository historyRepository;
 
     private final List<Long> createdGroupIds = new ArrayList<>();
     private Long createdUserId;
@@ -82,24 +74,29 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void installCurrentActiveSemester() {
-        previousActiveSemesterIds = jdbcTemplate.query(
-                "SELECT id FROM semesters WHERE is_active = true ORDER BY id",
-                (rs, rowNum) -> rs.getLong(1));
+        previousActiveSemesterIds =
+                jdbcTemplate.query(
+                        "SELECT id FROM semesters WHERE is_active = true ORDER BY id",
+                        (rs, rowNum) -> rs.getLong(1));
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         LocalDate today = LocalDate.now(MOSCOW);
-        List<Long> writableSemesters = jdbcTemplate.query(
-                "SELECT id FROM semesters WHERE date_from <= ? AND date_to >= ? "
-                        + "AND NOT is_archived AND archive_transition = 'NONE' "
-                        + "AND NOT archive_release_pending "
-                        + "ORDER BY (name LIKE 'L5B historical %') DESC, id LIMIT 1",
-                (rs, rowNum) -> rs.getLong(1), today, today);
-        testSemesterId = writableSemesters.isEmpty()
-                ? jdbcTemplate.queryForObject(
-                        "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                                + "VALUES (?, ?, ?, true, NOW()) RETURNING id",
-                        Long.class, "L5B historical " + UUID.randomUUID(),
-                        today.minusDays(7), today.plusDays(7))
-                : writableSemesters.get(0);
+        List<Long> writableSemesters =
+                jdbcTemplate.query(
+                        "SELECT id FROM semesters WHERE date_from <= ? AND date_to >= ? "
+                                + "AND NOT is_archived AND archive_transition = 'NONE' "
+                                + "AND NOT archive_release_pending "
+                                + "ORDER BY (name LIKE 'L5B historical %') DESC, id LIMIT 1",
+                        (rs, rowNum) -> rs.getLong(1), today, today);
+        testSemesterId =
+                writableSemesters.isEmpty()
+                        ? jdbcTemplate.queryForObject(
+                                "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                                        + "VALUES (?, ?, ?, true, NOW()) RETURNING id",
+                                Long.class,
+                                "L5B historical " + UUID.randomUUID(),
+                                today.minusDays(7),
+                                today.plusDays(7))
+                        : writableSemesters.get(0);
         jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", testSemesterId);
     }
 
@@ -107,7 +104,8 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
     void cleanManagedRows() {
         if (createdUserId != null) {
             jdbcTemplate.update("DELETE FROM auth_sessions WHERE user_id = ?", createdUserId);
-            jdbcTemplate.update("DELETE FROM student_group_history WHERE user_id = ?", createdUserId);
+            jdbcTemplate.update(
+                    "DELETE FROM student_group_history WHERE user_id = ?", createdUserId);
             jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", createdUserId);
             jdbcTemplate.update("DELETE FROM users WHERE id = ?", createdUserId);
         }
@@ -144,50 +142,68 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(withUnrelatedGrantRolesVersion).isGreaterThan(initialRolesVersion);
         assertThat(grantStatus(student.getId(), "teacher")).isEqualTo("active");
 
-        userService.patchUser(student.getId(),
+        userService.patchUser(
+                student.getId(),
                 new PatchUserRequest(null, null, null, true, null, null, null, null));
         long assignedRolesVersion = rolesVersion(student.getId());
         assertThat(assignedRolesVersion).isGreaterThan(initialRolesVersion);
         assertThat(grantStatus(student.getId(), "headman")).isEqualTo("active");
         assertThat(grantGroupId(student.getId(), "headman")).isEqualTo(source.getId());
 
-        userService.patchUser(student.getId(),
+        userService.patchUser(
+                student.getId(),
                 new PatchUserRequest(null, null, null, false, null, null, null, null));
         long revokedRolesVersion = rolesVersion(student.getId());
         assertThat(revokedRolesVersion).isGreaterThan(assignedRolesVersion);
         assertThat(grantStatus(student.getId(), "headman")).isEqualTo("suspended");
 
-        userService.patchUser(student.getId(),
+        userService.patchUser(
+                student.getId(),
                 new PatchUserRequest(null, null, null, true, null, null, null, null));
         long reassignedRolesVersion = rolesVersion(student.getId());
         assertThat(reassignedRolesVersion).isGreaterThan(revokedRolesVersion);
 
         LocalDate semesterStart = LocalDate.now(MOSCOW).minusDays(7);
-        assertThat(historicalMembershipService.readRoster(
-                source.getId(), semesterStart, testSemesterId).students())
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(source.getId(), semesterStart, testSemesterId)
+                                .students())
                 .extracting(User::getId)
                 .containsExactly(student.getId());
         assertThat(historicalMembershipService.readMemberUserIds(source.getId(), semesterStart))
                 .containsExactly(student.getId());
 
-        userService.transferStudent(student.getId(),
+        userService.transferStudent(
+                student.getId(),
                 new TransferStudentRequest(destination.getId(), "historical test transfer"));
 
         LocalDate transferDate = LocalDate.now(MOSCOW);
-        assertThat(historicalMembershipService.readRoster(
-                source.getId(), transferDate.minusDays(1), testSemesterId).students())
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(
+                                        source.getId(), transferDate.minusDays(1), testSemesterId)
+                                .students())
                 .extracting(User::getId)
                 .containsExactly(student.getId());
-        assertThat(historicalMembershipService.readMemberUserIds(source.getId(), transferDate.minusDays(1)))
+        assertThat(
+                        historicalMembershipService.readMemberUserIds(
+                                source.getId(), transferDate.minusDays(1)))
                 .containsExactly(student.getId());
-        assertThat(historicalMembershipService.readRoster(
-                source.getId(), transferDate, testSemesterId).students())
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(source.getId(), transferDate, testSemesterId)
+                                .students())
                 .isEmpty();
-        assertThat(historicalMembershipService.readMemberUserIds(source.getId(), transferDate)).isEmpty();
-        assertThat(historicalMembershipService.readMemberUserIds(
-                destination.getId(), transferDate.minusDays(1))).isEmpty();
-        assertThat(historicalMembershipService.readRoster(
-                destination.getId(), transferDate, testSemesterId).students())
+        assertThat(historicalMembershipService.readMemberUserIds(source.getId(), transferDate))
+                .isEmpty();
+        assertThat(
+                        historicalMembershipService.readMemberUserIds(
+                                destination.getId(), transferDate.minusDays(1)))
+                .isEmpty();
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(destination.getId(), transferDate, testSemesterId)
+                                .students())
                 .extracting(User::getId)
                 .containsExactly(student.getId());
         assertThat(historicalMembershipService.readMemberUserIds(destination.getId(), transferDate))
@@ -208,31 +224,52 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(grantStatus(student.getId(), "student")).isEqualTo("archived");
         assertThat(grantStatus(student.getId(), "headman")).isEqualTo("archived");
         assertThat(grantStatus(student.getId(), "teacher")).isEqualTo("archived");
-        assertThat(userRepository.findByIdIncludingArchived(student.getId()).orElseThrow().getGroupId())
+        assertThat(
+                        userRepository
+                                .findByIdIncludingArchived(student.getId())
+                                .orElseThrow()
+                                .getGroupId())
                 .isNull();
 
-        assertThat(historicalMembershipService.readRoster(
-                source.getId(), transferDate.minusDays(1), testSemesterId).students())
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(
+                                        source.getId(), transferDate.minusDays(1), testSemesterId)
+                                .students())
                 .extracting(User::getId)
                 .containsExactly(student.getId());
-        assertThat(historicalMembershipService.readRoster(
-                destination.getId(), archiveDate, testSemesterId).students())
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(destination.getId(), archiveDate, testSemesterId)
+                                .students())
                 .isEmpty();
         assertThat(historicalMembershipService.readMemberUserIds(destination.getId(), archiveDate))
                 .isEmpty();
-        assertThat(historicalMembershipService.readRoster(
-                destination.getId(), archiveDate.plusDays(1), testSemesterId).students())
+        assertThat(
+                        historicalMembershipService
+                                .readRoster(
+                                        destination.getId(),
+                                        archiveDate.plusDays(1),
+                                        testSemesterId)
+                                .students())
                 .isEmpty();
 
-        List<StudentGroupHistory> history = historyRepository.findByUserIdOrderByJoinedAtDesc(student.getId());
+        List<StudentGroupHistory> history =
+                historyRepository.findByUserIdOrderByJoinedAtDesc(student.getId());
         assertThat(history).hasSize(2);
         assertThat(history).allSatisfy(row -> assertThat(row.getJoinedAt()).isNotNull());
-        assertThat(history.stream().filter(row -> row.getGroupId().equals(source.getId())).findFirst()
-                .orElseThrow().getLeftAt()).isEqualTo(transferDate);
-        StudentGroupHistory destinationHistory = history.stream()
-                .filter(row -> row.getGroupId().equals(destination.getId()))
-                .findFirst()
-                .orElseThrow();
+        assertThat(
+                        history.stream()
+                                .filter(row -> row.getGroupId().equals(source.getId()))
+                                .findFirst()
+                                .orElseThrow()
+                                .getLeftAt())
+                .isEqualTo(transferDate);
+        StudentGroupHistory destinationHistory =
+                history.stream()
+                        .filter(row -> row.getGroupId().equals(destination.getId()))
+                        .findFirst()
+                        .orElseThrow();
         assertThat(destinationHistory.getJoinedAt()).isEqualTo(transferDate);
         assertThat(destinationHistory.getLeftAt()).isEqualTo(archiveDate);
     }
@@ -243,7 +280,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         User student = createStudent(group.getId());
         LocalDate transitionDate = LocalDate.now(MOSCOW);
 
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.EXPELLED, null, null, null));
 
         List<StudentGroupHistory> afterExpulsion =
@@ -251,7 +290,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(afterExpulsion).hasSize(1);
         assertThat(afterExpulsion.get(0).getLeftAt()).isEqualTo(transitionDate);
 
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
 
         List<StudentGroupHistory> afterReactivation =
@@ -261,7 +302,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(afterReactivation.get(1).getJoinedAt()).isEqualTo(transitionDate);
         assertThat(afterReactivation.get(1).getLeftAt()).isNull();
 
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.GRADUATED, null, null, null));
 
         List<StudentGroupHistory> afterGraduation =
@@ -277,8 +320,10 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         jdbcTemplate.update(
                 "INSERT INTO user_role_grants "
                         + "(user_id, role, status, created_at, updated_at) "
-                        + "VALUES (?, 'teacher', 'active', NOW(), NOW())", student.getId());
-        userService.patchUser(student.getId(),
+                        + "VALUES (?, 'teacher', 'active', NOW(), NOW())",
+                student.getId());
+        userService.patchUser(
+                student.getId(),
                 new PatchUserRequest(null, null, null, true, null, null, null, null));
         long studentGrant = grantId(student.getId(), "student");
         long headmanGrant = grantId(student.getId(), "headman");
@@ -287,7 +332,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         UUID headmanSession = createSession(student.getId(), headmanGrant);
         UUID teacherSession = createSession(student.getId(), teacherGrant);
 
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
 
         // No Auth snapshot/refresh is made between the administrative writes.
@@ -295,10 +342,14 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertSelection(headmanSession, null, 2);
         assertSelection(teacherSession, teacherGrant, 1);
         assertThat(grantStatus(student.getId(), "teacher")).isEqualTo("active");
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
         assertSelection(studentSession, null, 2);
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
         assertThat(grantId(student.getId(), "student")).isEqualTo(studentGrant);
         assertSelection(studentSession, null, 2);
@@ -312,7 +363,8 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(grantId(student.getId(), "teacher")).isEqualTo(teacherGrant);
         assertThat(grantStatus(student.getId(), "teacher")).isEqualTo("archived");
         assertThat(historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId()))
-                .hasSize(1).allSatisfy(history -> assertThat(history.getLeftAt()).isNotNull());
+                .hasSize(1)
+                .allSatisfy(history -> assertThat(history.getLeftAt()).isNotNull());
     }
 
     @Test
@@ -323,22 +375,44 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         UUID session = createSession(student.getId(), studentGrant);
         long originalRolesVersion = rolesVersion(student.getId());
 
-        assertThatThrownBy(() -> new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
-            userService.updateRoleGrant(student.getId(), "STUDENT",
-                    new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
-            assertSelection(session, null, 2);
-            throw new IllegalStateException("injected failure after role revocation");
-        })).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(
+                        () ->
+                                new TransactionTemplate(transactionManager)
+                                        .executeWithoutResult(
+                                                tx -> {
+                                                    userService.updateRoleGrant(
+                                                            student.getId(),
+                                                            "STUDENT",
+                                                            new RoleGrantUpdateRequest(
+                                                                    RoleGrantStatus.SUSPENDED,
+                                                                    null,
+                                                                    null,
+                                                                    null));
+                                                    assertSelection(session, null, 2);
+                                                    throw new IllegalStateException(
+                                                            "injected failure after role revocation");
+                                                }))
+                .isInstanceOf(IllegalStateException.class)
                 .hasMessage("injected failure after role revocation");
 
         assertSelection(session, studentGrant, 1);
         assertThat(grantStatus(student.getId(), "student")).isEqualTo("active");
         assertThat(rolesVersion(student.getId())).isEqualTo(originalRolesVersion);
-        userService.patchUser(student.getId(), new PatchUserRequest(
-                null, null, null, null, null, null, null,
-                ru.rutcampustrack.academic.contract.enums.AccountStatus.SUSPENDED));
+        userService.patchUser(
+                student.getId(),
+                new PatchUserRequest(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        ru.rutcampustrack.academic.contract.enums.AccountStatus.SUSPENDED));
         assertSelection(session, null, 2);
-        userService.updateRoleGrant(student.getId(), "STUDENT",
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
         assertSelection(session, null, 2);
     }
@@ -352,24 +426,45 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         Answer<Object> historyRepositoryCall = springDataProxyDelegate(historyRepository);
 
         try {
-            doAnswer(invocation -> {
-                historySaveReached.set(true);
-                StudentGroupHistory history = invocation.getArgument(0);
-                if (history.getUserId() != null) {
-                    userWasPersistedBeforeHistoryFailure.set(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM users WHERE id = ?", Integer.class,
-                            history.getUserId()) == 1);
-                }
-                throw new IllegalStateException("injected history persistence failure");
-            }).when(historyRepository).save(any(StudentGroupHistory.class));
+            doAnswer(
+                            invocation -> {
+                                historySaveReached.set(true);
+                                StudentGroupHistory history = invocation.getArgument(0);
+                                if (history.getUserId() != null) {
+                                    userWasPersistedBeforeHistoryFailure.set(
+                                            jdbcTemplate.queryForObject(
+                                                            "SELECT COUNT(*) FROM users WHERE id = ?",
+                                                            Integer.class,
+                                                            history.getUserId())
+                                                    == 1);
+                                }
+                                throw new IllegalStateException(
+                                        "injected history persistence failure");
+                            })
+                    .when(historyRepository)
+                    .save(any(StudentGroupHistory.class));
 
-            assertThatThrownBy(() -> userService.createUser(new CreateUserRequest(
-                    "L5B", marker, null, UserRole.STUDENT, group.getId(), null,
-                    Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L)))
-                    .isInstanceOfSatisfying(IllegalStateException.class, error ->
-                            assertThat(error).hasMessage("injected history persistence failure"));
+            assertThatThrownBy(
+                            () ->
+                                    userService.createUser(
+                                            new CreateUserRequest(
+                                                    "L5B",
+                                                    marker,
+                                                    null,
+                                                    UserRole.STUDENT,
+                                                    group.getId(),
+                                                    null,
+                                                    Math.floorMod(System.nanoTime(), 9_000_000_000L)
+                                                            + 100_000L)))
+                    .isInstanceOfSatisfying(
+                            IllegalStateException.class,
+                            error ->
+                                    assertThat(error)
+                                            .hasMessage("injected history persistence failure"));
         } finally {
-            doAnswer(historyRepositoryCall).when(historyRepository).save(any(StudentGroupHistory.class));
+            doAnswer(historyRepositoryCall)
+                    .when(historyRepository)
+                    .save(any(StudentGroupHistory.class));
         }
 
         assertThat(historySaveReached)
@@ -378,13 +473,18 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(userWasPersistedBeforeHistoryFailure)
                 .as("the managed user row must exist before history persistence fails")
                 .isTrue();
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM users WHERE first_name = ?", Integer.class, marker))
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM users WHERE first_name = ?",
+                                Integer.class,
+                                marker))
                 .isZero();
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM student_group_history h "
-                        + "JOIN users u ON u.id = h.user_id WHERE u.first_name = ?",
-                Integer.class, marker))
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM student_group_history h "
+                                        + "JOIN users u ON u.id = h.user_id WHERE u.first_name = ?",
+                                Integer.class,
+                                marker))
                 .isZero();
     }
 
@@ -399,31 +499,41 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         AtomicBoolean pauseOnce = new AtomicBoolean();
         Answer<Object> historyRepositoryCall = springDataProxyDelegate(historyRepository);
 
-        doAnswer(invocation -> {
-            Object result = historyRepositoryCall.answer(invocation);
-            if (pauseOnce.compareAndSet(false, true)) {
-                historySnapshotReady.countDown();
-                if (!releaseHistoryRead.await(20, TimeUnit.SECONDS)) {
-                    throw new AssertionError("dated read barrier timed out");
-                }
-            }
-            return result;
-        }).when(historyRepository)
+        doAnswer(
+                        invocation -> {
+                            Object result = historyRepositoryCall.answer(invocation);
+                            if (pauseOnce.compareAndSet(false, true)) {
+                                historySnapshotReady.countDown();
+                                if (!releaseHistoryRead.await(20, TimeUnit.SECONDS)) {
+                                    throw new AssertionError("dated read barrier timed out");
+                                }
+                            }
+                            return result;
+                        })
+                .when(historyRepository)
                 .findByGroupIdOrderByUserIdAscJoinedAtAscIdAsc(source.getId());
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         Future<HistoricalMembershipService.RosterSnapshot> readFuture = null;
         Future<User> transferFuture = null;
         try {
-            readFuture = executor.submit(() -> historicalMembershipService.readRoster(
-                    source.getId(), transferDate, testSemesterId));
+            readFuture =
+                    executor.submit(
+                            () ->
+                                    historicalMembershipService.readRoster(
+                                            source.getId(), transferDate, testSemesterId));
             assertThat(historySnapshotReady.await(20, TimeUnit.SECONDS))
                     .as("dated read must establish its database snapshot before transfer")
                     .isTrue();
 
-            transferFuture = executor.submit(() -> userService.transferStudent(
-                    student.getId(),
-                    new TransferStudentRequest(destination.getId(), "concurrent historical test transfer")));
+            transferFuture =
+                    executor.submit(
+                            () ->
+                                    userService.transferStudent(
+                                            student.getId(),
+                                            new TransferStudentRequest(
+                                                    destination.getId(),
+                                                    "concurrent historical test transfer")));
             assertThat(transferFuture.get(20, TimeUnit.SECONDS).getGroupId())
                     .isEqualTo(destination.getId());
 
@@ -434,12 +544,16 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                     .extracting(User::getId)
                     .containsExactly(student.getId());
 
-            assertThat(historicalMembershipService.readRoster(
-                    source.getId(), transferDate, testSemesterId).students())
+            assertThat(
+                            historicalMembershipService
+                                    .readRoster(source.getId(), transferDate, testSemesterId)
+                                    .students())
                     .extracting(User::getId)
                     .isEmpty();
-            assertThat(historicalMembershipService.readRoster(
-                    destination.getId(), transferDate, testSemesterId).students())
+            assertThat(
+                            historicalMembershipService
+                                    .readRoster(destination.getId(), transferDate, testSemesterId)
+                                    .students())
                     .extracting(User::getId)
                     .containsExactly(student.getId());
         } finally {
@@ -448,7 +562,8 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
             assertThat(executor.awaitTermination(20, TimeUnit.SECONDS))
                     .as("historical read/transfer workers must terminate")
                     .isTrue();
-            doAnswer(historyRepositoryCall).when(historyRepository)
+            doAnswer(historyRepositoryCall)
+                    .when(historyRepository)
                     .findByGroupIdOrderByUserIdAscJoinedAtAscIdAsc(source.getId());
         }
     }
@@ -459,13 +574,32 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         Group destination = createGroup();
         User student = createStudent(source.getId());
 
-        assertThatThrownBy(() -> userService.patchUser(student.getId(),
-                new PatchUserRequest(null, null, null, null, destination.getId(), null, null, null)))
+        assertThatThrownBy(
+                        () ->
+                                userService.patchUser(
+                                        student.getId(),
+                                        new PatchUserRequest(
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                destination.getId(),
+                                                null,
+                                                null,
+                                                null)))
                 .isInstanceOf(HistoricalMembershipException.class)
-                .satisfies(error -> assertThat(((HistoricalMembershipException) error).code())
-                        .isEqualTo(HistoricalMembershipException.Code.UNSUPPORTED_MUTATION));
+                .satisfies(
+                        error ->
+                                assertThat(((HistoricalMembershipException) error).code())
+                                        .isEqualTo(
+                                                HistoricalMembershipException.Code
+                                                        .UNSUPPORTED_MUTATION));
 
-        assertThat(userRepository.findByIdIncludingArchived(student.getId()).orElseThrow().getGroupId())
+        assertThat(
+                        userRepository
+                                .findByIdIncludingArchived(student.getId())
+                                .orElseThrow()
+                                .getGroupId())
                 .isEqualTo(source.getId());
         assertThat(historyRepository.findByUserIdOrderByJoinedAtDesc(student.getId())).hasSize(1);
     }
@@ -476,14 +610,22 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         User student = createStudent(group.getId());
         LocalDate today = LocalDate.now(MOSCOW);
 
-        jdbcTemplate.update("UPDATE student_group_history SET left_at = ? WHERE user_id = ?",
-                today.minusDays(1), student.getId());
+        jdbcTemplate.update(
+                "UPDATE student_group_history SET left_at = ? WHERE user_id = ?",
+                today.minusDays(1),
+                student.getId());
 
-        assertThatThrownBy(() -> historicalMembershipService.readRoster(
-                group.getId(), today, testSemesterId))
-                .isInstanceOfSatisfying(HistoricalMembershipException.class, error ->
-                        assertThat(error.code())
-                                .isEqualTo(HistoricalMembershipException.Code.FAILED_PRECONDITION));
+        assertThatThrownBy(
+                        () ->
+                                historicalMembershipService.readRoster(
+                                        group.getId(), today, testSemesterId))
+                .isInstanceOfSatisfying(
+                        HistoricalMembershipException.class,
+                        error ->
+                                assertThat(error.code())
+                                        .isEqualTo(
+                                                HistoricalMembershipException.Code
+                                                        .FAILED_PRECONDITION));
     }
 
     @Test
@@ -495,30 +637,40 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
 
         // Simulate a partial writer failure: the current assignment points at
         // destination while the only history row still belongs to source.
-        jdbcTemplate.update("UPDATE users SET group_id = ? WHERE id = ?",
-                destination.getId(), student.getId());
+        jdbcTemplate.update(
+                "UPDATE users SET group_id = ? WHERE id = ?", destination.getId(), student.getId());
 
-        assertThatThrownBy(() -> historicalMembershipService.readRoster(
-                destination.getId(), today, testSemesterId))
+        assertThatThrownBy(
+                        () ->
+                                historicalMembershipService.readRoster(
+                                        destination.getId(), today, testSemesterId))
                 .isInstanceOf(HistoricalMembershipException.class);
-        assertThatThrownBy(() -> historicalMembershipService.readMemberUserIds(
-                destination.getId(), today))
+        assertThatThrownBy(
+                        () ->
+                                historicalMembershipService.readMemberUserIds(
+                                        destination.getId(), today))
                 .isInstanceOf(HistoricalMembershipException.class);
     }
 
     private Group createGroup() {
         int number = (int) Math.floorMod(System.nanoTime(), 10);
         String prefix = createdGroupIds.isEmpty() ? "УИТ" : "УВП";
-        Group group = groupService.createGroup(new CreateGroupRequest(
-                prefix + "-11" + number));
+        Group group = groupService.createGroup(new CreateGroupRequest(prefix + "-11" + number));
         createdGroupIds.add(group.getId());
         return group;
     }
 
     private User createStudent(Long groupId) {
-        EntityModel<UserCreatedResponse> created = userService.createUser(new CreateUserRequest(
-                "L5B", "Student", null, UserRole.STUDENT, groupId, null,
-                Math.abs(System.nanoTime()) + 100_000L));
+        EntityModel<UserCreatedResponse> created =
+                userService.createUser(
+                        new CreateUserRequest(
+                                "L5B",
+                                "Student",
+                                null,
+                                UserRole.STUDENT,
+                                groupId,
+                                null,
+                                Math.abs(System.nanoTime()) + 100_000L));
         createdUserId = created.getContent().getId();
         return userRepository.findByIdIncludingArchived(createdUserId).orElseThrow();
     }
@@ -530,52 +682,72 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
 
     private long grantId(Long userId, String role) {
         return jdbcTemplate.queryForObject(
-                "SELECT id FROM user_role_grants WHERE user_id = ? AND role = ?", Long.class, userId, role);
+                "SELECT id FROM user_role_grants WHERE user_id = ? AND role = ?",
+                Long.class,
+                userId,
+                role);
     }
 
     private UUID createSession(Long userId, long grantId) {
         UUID sessionId = UUID.randomUUID();
-        jdbcTemplate.update("""
+        jdbcTemplate.update(
+                """
                 INSERT INTO auth_sessions (sid, user_id, active_role_grant_id, session_version,
                     current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method)
                 VALUES (?, ?, ?, 1, ?, NOW() + INTERVAL '1 day', NOW(), NOW(), 'PASSWORD')
-                """, sessionId, userId, grantId, UUID.randomUUID());
+                """,
+                sessionId,
+                userId,
+                grantId,
+                UUID.randomUUID());
         return sessionId;
     }
 
     private void assertSelection(UUID sessionId, Long grantId, long version) {
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT active_role_grant_id FROM auth_sessions WHERE sid = ?", Long.class, sessionId))
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT active_role_grant_id FROM auth_sessions WHERE sid = ?",
+                                Long.class,
+                                sessionId))
                 .isEqualTo(grantId);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT session_version FROM auth_sessions WHERE sid = ?", Long.class, sessionId))
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT session_version FROM auth_sessions WHERE sid = ?",
+                                Long.class,
+                                sessionId))
                 .isEqualTo(version);
     }
 
     private int grantCount(Long userId, String role) {
         return jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM user_role_grants WHERE user_id = ? AND role = ?",
-                Integer.class, userId, role);
+                Integer.class,
+                userId,
+                role);
     }
 
     private String grantStatus(Long userId, String role) {
         return jdbcTemplate.queryForObject(
                 "SELECT status FROM user_role_grants WHERE user_id = ? AND role = ?",
-                String.class, userId, role);
+                String.class,
+                userId,
+                role);
     }
 
     private Long grantGroupId(Long userId, String role) {
         return jdbcTemplate.queryForObject(
                 "SELECT group_id FROM user_role_grants WHERE user_id = ? AND role = ?",
-                Long.class, userId, role);
+                Long.class,
+                userId,
+                role);
     }
 
     private static Answer<Object> springDataProxyDelegate(Object repositorySpy) {
-        Answer<?> defaultAnswer = mockingDetails(repositorySpy)
-                .getMockCreationSettings()
-                .getDefaultAnswer();
+        Answer<?> defaultAnswer =
+                mockingDetails(repositorySpy).getMockCreationSettings().getDefaultAnswer();
         assertThat(defaultAnswer)
-                .as("@MockitoSpyBean must retain Spring Test's delegate to the original Spring Data proxy")
+                .as(
+                        "@MockitoSpyBean must retain Spring Test's delegate to the original Spring Data proxy")
                 .isNotNull();
         return invocation -> defaultAnswer.answer(invocation);
     }

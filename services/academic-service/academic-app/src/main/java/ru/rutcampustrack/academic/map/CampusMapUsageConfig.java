@@ -6,5 +6,4 @@ import org.springframework.context.annotation.Configuration;
 /** Registers the dedicated map-usage key without coupling it to auth secrets. */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CampusMapUsageProperties.class)
-public class CampusMapUsageConfig {
-}
+public class CampusMapUsageConfig {}

@@ -7,8 +7,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Removes pseudonymous map-open retention rows after both database-defined
- * deadlines.  The daily floor aggregate is intentionally left untouched.
+ * Removes pseudonymous map-open retention rows after both database-defined deadlines. The daily
+ * floor aggregate is intentionally left untouched.
  */
 public class CampusMapUsageCleanupJob {
     public static final String LOCK_NAME = "campus-map-usage-cleanup";
@@ -34,8 +34,10 @@ public class CampusMapUsageCleanupJob {
         int intentRows = repository.deleteExpiredOpenIntents();
         CleanupResult result = new CleanupResult(dedupeRows, intentRows);
         if (result.total() > 0) {
-            log.info("Campus map usage cleanup: deleted {} dedupe rows and {} intent rows",
-                    dedupeRows, intentRows);
+            log.info(
+                    "Campus map usage cleanup: deleted {} dedupe rows and {} intent rows",
+                    dedupeRows,
+                    intentRows);
         }
         return result;
     }

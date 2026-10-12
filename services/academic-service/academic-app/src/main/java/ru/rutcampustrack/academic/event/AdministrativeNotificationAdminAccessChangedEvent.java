@@ -1,10 +1,9 @@
 package ru.rutcampustrack.academic.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import ru.rutcampustrack.shared.events.EventVersion;
 import ru.rutcampustrack.shared.security.admin.AdminAccessProfile;
-
-import java.util.List;
 
 /** Personal administrative access fact, containing no sessions or credentials. */
 @EventVersion(1)
@@ -17,9 +16,20 @@ public class AdministrativeNotificationAdminAccessChangedEvent extends DomainEve
             @JsonProperty("version") long version,
             @JsonProperty("actor_user_id") Long actorUserId) {}
 
-    public AdministrativeNotificationAdminAccessChangedEvent(Object source, AdminAccessProfile result,
-                                                           boolean permissionsChanged, Long actorUserId) {
-        super(source, "admin.access.changed", new Payload(result.userId(), result.mode(),
-                result.permissions(), permissionsChanged, result.version(), actorUserId));
+    public AdministrativeNotificationAdminAccessChangedEvent(
+            Object source,
+            AdminAccessProfile result,
+            boolean permissionsChanged,
+            Long actorUserId) {
+        super(
+                source,
+                "admin.access.changed",
+                new Payload(
+                        result.userId(),
+                        result.mode(),
+                        result.permissions(),
+                        permissionsChanged,
+                        result.version(),
+                        actorUserId));
     }
 }

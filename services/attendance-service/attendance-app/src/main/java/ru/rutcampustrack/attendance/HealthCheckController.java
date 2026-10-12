@@ -6,9 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.security.RequireRole;
 
-/**
- * Minimal health-check endpoint used in SecuritySmokeIT to verify AOP role enforcement.
- */
+/** Minimal health-check endpoint used in SecuritySmokeIT to verify AOP role enforcement. */
 @RestController
 public class HealthCheckController {
 

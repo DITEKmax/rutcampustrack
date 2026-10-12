@@ -7,6 +7,5 @@ import ru.rutcampustrack.shared.outbox.jpa.OutboxEntity;
 @Entity
 @Table(name = "auth_outbox")
 public class AuthOutboxEntity extends OutboxEntity {
-    public AuthOutboxEntity() {
-    }
+    public AuthOutboxEntity() {}
 }

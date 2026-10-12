@@ -1,6 +1,7 @@
 package ru.rutcampustrack.documentrenderer.render;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,9 +12,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 class OfficeDocumentConverterTest {
 
@@ -28,13 +27,26 @@ class OfficeDocumentConverterTest {
 
         assertThat(converter.convertToPdf(DOCX)).containsExactly(PDF);
 
-        assertThat(runner.invocations()).singleElement().satisfies(invocation -> {
-            assertThat(invocation.command()).containsExactly(
-                    "soffice", "--headless", "--nologo", "--nofirststartwizard",
-                    "--convert-to", "pdf", "--outdir", invocation.workingDirectory().toString(),
-                    invocation.workingDirectory().resolve("input.docx").toString());
-            assertThat(invocation.workingDirectory()).doesNotExist();
-        });
+        assertThat(runner.invocations())
+                .singleElement()
+                .satisfies(
+                        invocation -> {
+                            assertThat(invocation.command())
+                                    .containsExactly(
+                                            "soffice",
+                                            "--headless",
+                                            "--nologo",
+                                            "--nofirststartwizard",
+                                            "--convert-to",
+                                            "pdf",
+                                            "--outdir",
+                                            invocation.workingDirectory().toString(),
+                                            invocation
+                                                    .workingDirectory()
+                                                    .resolve("input.docx")
+                                                    .toString());
+                            assertThat(invocation.workingDirectory()).doesNotExist();
+                        });
     }
 
     @Test
@@ -75,7 +87,8 @@ class OfficeDocumentConverterTest {
 
         List<String> names = new ArrayList<>();
         List<byte[]> pages = new ArrayList<>();
-        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(archive), StandardCharsets.UTF_8)) {
+        try (ZipInputStream zip =
+                new ZipInputStream(new ByteArrayInputStream(archive), StandardCharsets.UTF_8)) {
             var entry = zip.getNextEntry();
             while (entry != null) {
                 names.add(entry.getName());
@@ -83,10 +96,20 @@ class OfficeDocumentConverterTest {
                 entry = zip.getNextEntry();
             }
         }
-        assertThat(names).containsExactly(
-                "page-0001.png", "page-0002.png", "page-0003.png", "page-0004.png",
-                "page-0005.png", "page-0006.png", "page-0007.png", "page-0008.png",
-                "page-0009.png", "page-0010.png", "page-0011.png", "page-0012.png");
+        assertThat(names)
+                .containsExactly(
+                        "page-0001.png",
+                        "page-0002.png",
+                        "page-0003.png",
+                        "page-0004.png",
+                        "page-0005.png",
+                        "page-0006.png",
+                        "page-0007.png",
+                        "page-0008.png",
+                        "page-0009.png",
+                        "page-0010.png",
+                        "page-0011.png",
+                        "page-0012.png");
         assertThat(pages).hasSize(12);
         assertThat(pages.get(11)).containsExactly((byte) 12);
         assertThat(runner.invocations().get(1).command())
@@ -155,7 +178,8 @@ class OfficeDocumentConverterTest {
     @Test
     void processRunnerErrorIsPropagatedThroughPngConversionAndCleansTaskDirectory() {
         RecordingProcessRunner runner = new RecordingProcessRunner();
-        DocumentConversionException failure = new DocumentConversionException("renderer process error");
+        DocumentConversionException failure =
+                new DocumentConversionException("renderer process error");
         runner.failure = failure;
         OfficeDocumentConverter converter = new OfficeDocumentConverter(properties(), runner);
 
@@ -181,8 +205,7 @@ class OfficeDocumentConverterTest {
         MISSING_MIDDLE_PNG_PAGE
     }
 
-    private record Invocation(List<String> command, Path workingDirectory) {
-    }
+    private record Invocation(List<String> command, Path workingDirectory) {}
 
     private static final class RecordingProcessRunner extends ProcessRunner {
         private final List<Invocation> invocations = new ArrayList<>();
@@ -204,11 +227,13 @@ class OfficeDocumentConverterTest {
                 } else if (command.contains("-singlefile") && mode != Mode.MISSING_PNG_OUTPUT) {
                     Files.write(workingDirectory.resolve("page.png"), PNG);
                 } else if (mode == Mode.MISSING_MIDDLE_PNG_PAGE) {
-                    Files.write(workingDirectory.resolve("page-1.png"), new byte[]{1});
-                    Files.write(workingDirectory.resolve("page-3.png"), new byte[]{3});
+                    Files.write(workingDirectory.resolve("page-1.png"), new byte[] {1});
+                    Files.write(workingDirectory.resolve("page-3.png"), new byte[] {3});
                 } else if (mode != Mode.MISSING_PNG_OUTPUT) {
                     for (int page = 12; page >= 1; page--) {
-                        Files.write(workingDirectory.resolve("page-" + page + ".png"), new byte[]{(byte) page});
+                        Files.write(
+                                workingDirectory.resolve("page-" + page + ".png"),
+                                new byte[] {(byte) page});
                     }
                 }
             } catch (IOException error) {

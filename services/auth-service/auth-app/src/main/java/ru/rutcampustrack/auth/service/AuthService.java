@@ -3,6 +3,11 @@ package ru.rutcampustrack.auth.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,27 +20,21 @@ import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.PasswordResetException;
-import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
+import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.PasswordPolicy;
 import ru.rutcampustrack.auth.session.SessionLifecycleService;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
-import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
-import java.util.UUID;
-
 /**
- * Public authentication service.  Password/OTP/TMA proof validation ends at
- * one session issuance seam; role and session truth is owned by PostgreSQL.
+ * Public authentication service. Password/OTP/TMA proof validation ends at one session issuance
+ * seam; role and session truth is owned by PostgreSQL.
  */
 @Service
 public class AuthService {
@@ -53,8 +52,8 @@ public class AuthService {
     private final PasswordPolicy passwordPolicy = new PasswordPolicy();
 
     /**
-     * The small facade keeps the existing repository type out of the session
-     * issuance seam while still using UserRepository for credential lookup.
+     * The small facade keeps the existing repository type out of the session issuance seam while
+     * still using UserRepository for credential lookup.
      */
     @Autowired
     public AuthService(
@@ -66,10 +65,18 @@ public class AuthService {
             BcryptConcurrencyGuard bcryptGuard,
             BusinessMetrics businessMetrics,
             AuthSessionQueryPort sessionQueryPort,
-            SessionLifecycleService sessionLifecycle
-    ) {
-        this(userRepository, jwtService, passwordEncoder, jwtProperties, loginRateLimiter,
-                bcryptGuard, businessMetrics, sessionQueryPort, sessionLifecycle, Clock.systemUTC());
+            SessionLifecycleService sessionLifecycle) {
+        this(
+                userRepository,
+                jwtService,
+                passwordEncoder,
+                jwtProperties,
+                loginRateLimiter,
+                bcryptGuard,
+                businessMetrics,
+                sessionQueryPort,
+                sessionLifecycle,
+                Clock.systemUTC());
     }
 
     public AuthService(
@@ -82,9 +89,9 @@ public class AuthService {
             BusinessMetrics businessMetrics,
             AuthSessionQueryPort sessionQueryPort,
             SessionLifecycleService sessionLifecycle,
-            Clock clock
-    ) {
-        this.userRepositoryFacade = new UserRepositoryFacade(Objects.requireNonNull(userRepository, "userRepository"));
+            Clock clock) {
+        this.userRepositoryFacade =
+                new UserRepositoryFacade(Objects.requireNonNull(userRepository, "userRepository"));
         this.jwtService = Objects.requireNonNull(jwtService, "jwtService");
         this.passwordEncoder = Objects.requireNonNull(passwordEncoder, "passwordEncoder");
         this.jwtProperties = Objects.requireNonNull(jwtProperties, "jwtProperties");
@@ -103,8 +110,10 @@ public class AuthService {
 
         User user;
         try {
-            user = userRepositoryFacade.findByLogin(request.login())
-                    .orElseThrow(() -> new InvalidCredentialsException());
+            user =
+                    userRepositoryFacade
+                            .findByLogin(request.login())
+                            .orElseThrow(() -> new InvalidCredentialsException());
         } catch (InvalidCredentialsException exception) {
             loginRateLimiter.recordFailure(clientIp, request.login());
             throw exception;
@@ -118,8 +127,9 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        boolean passwordMatches = bcryptGuard.execute(() ->
-                passwordEncoder.matches(request.password(), observedHash));
+        boolean passwordMatches =
+                bcryptGuard.execute(
+                        () -> passwordEncoder.matches(request.password(), observedHash));
         if (!passwordMatches) {
             loginRateLimiter.recordFailure(clientIp, request.login());
             throw new InvalidCredentialsException();
@@ -130,42 +140,66 @@ public class AuthService {
     }
 
     /** Shared issuance seam used by all public proof types. */
-    public TokenResponse issueSession(User user, AuthMethod authMethod, String expectedCredentialHash) {
+    public TokenResponse issueSession(
+            User user, AuthMethod authMethod, String expectedCredentialHash) {
         return issueSession(user, authMethod, expectedCredentialHash, null, null);
     }
 
     /**
-     * Creates the DB session before signing either a selected access token or a
-     * neutral bootstrap token. Labels are trusted observations and may remain
-     * null when the public proof endpoint has no such metadata.
+     * Creates the DB session before signing either a selected access token or a neutral bootstrap
+     * token. Labels are trusted observations and may remain null when the public proof endpoint has
+     * no such metadata.
      */
     public TokenResponse issueSession(
             User user,
             AuthMethod authMethod,
             String expectedCredentialHash,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         Instant createdAt = clock.instant();
         UUID sessionId = UUID.randomUUID();
         UUID refreshJti = UUID.randomUUID();
-        SessionSnapshot snapshot = createSession(user, authMethod, expectedCredentialHash,
-                clientLabel, locationLabel, sessionId, refreshJti, createdAt);
+        SessionSnapshot snapshot =
+                createSession(
+                        user,
+                        authMethod,
+                        expectedCredentialHash,
+                        clientLabel,
+                        locationLabel,
+                        sessionId,
+                        refreshJti,
+                        createdAt);
         return issueTokenPair(snapshot, refreshJti, createdAt);
     }
 
-    /** Trusted QR transaction seam: the caller stores its receipt in the same REQUIRED transaction. */
-    public SessionSnapshot createQrSession(long userId, UUID sessionId, UUID refreshJti,
-                                            Instant issuedAt, String browserLabel) {
-        User user = userRepositoryFacade.findById(userId)
-                .orElseThrow(() -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION));
-        return createSession(user, AuthMethod.QR, null, browserLabel, null, sessionId, refreshJti, issuedAt);
+    /**
+     * Trusted QR transaction seam: the caller stores its receipt in the same REQUIRED transaction.
+     */
+    public SessionSnapshot createQrSession(
+            long userId, UUID sessionId, UUID refreshJti, Instant issuedAt, String browserLabel) {
+        User user =
+                userRepositoryFacade
+                        .findById(userId)
+                        .orElseThrow(
+                                () ->
+                                        new AuthSessionException(
+                                                AuthSessionException.Code.INVALID_SESSION));
+        return createSession(
+                user, AuthMethod.QR, null, browserLabel, null, sessionId, refreshJti, issuedAt);
     }
 
-    /** Signs only an already committed, re-admitted QR receipt; no session or refresh rotation is performed. */
-    public TokenResponse signQrSession(SessionSnapshot snapshot, UUID originalRefreshJti, Instant originalIssuedAt,
-                                       Instant originalAccessExpiry, String signingFingerprint) {
-        if (snapshot.authMethod() != AuthMethod.QR || !qrSigningFingerprint().equals(signingFingerprint)
+    /**
+     * Signs only an already committed, re-admitted QR receipt; no session or refresh rotation is
+     * performed.
+     */
+    public TokenResponse signQrSession(
+            SessionSnapshot snapshot,
+            UUID originalRefreshJti,
+            Instant originalIssuedAt,
+            Instant originalAccessExpiry,
+            String signingFingerprint) {
+        if (snapshot.authMethod() != AuthMethod.QR
+                || !qrSigningFingerprint().equals(signingFingerprint)
                 || !clock.instant().isBefore(originalAccessExpiry)) {
             throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
         }
@@ -173,23 +207,37 @@ public class AuthService {
     }
 
     public String qrSigningFingerprint() {
-        return java.util.HexFormat.of().formatHex(ru.rutcampustrack.auth.qr.QrLoginCrypto.hash(
-                jwtService.getPublicKeyPem() + ":" + jwtService.getSigningKeyId()));
+        return java.util.HexFormat.of()
+                .formatHex(
+                        ru.rutcampustrack.auth.qr.QrLoginCrypto.hash(
+                                jwtService.getPublicKeyPem() + ":" + jwtService.getSigningKeyId()));
     }
 
     public Instant qrAccessExpiry(SessionSnapshot snapshot, Instant issuedAt) {
         return accessExpiry(snapshot, issuedAt.truncatedTo(ChronoUnit.SECONDS));
     }
 
-    private SessionSnapshot createSession(User user, AuthMethod authMethod, String expectedCredentialHash,
-            String clientLabel, String locationLabel, UUID sessionId, UUID refreshJti, Instant createdAt) {
+    private SessionSnapshot createSession(
+            User user,
+            AuthMethod authMethod,
+            String expectedCredentialHash,
+            String clientLabel,
+            String locationLabel,
+            UUID sessionId,
+            UUID refreshJti,
+            Instant createdAt) {
         Objects.requireNonNull(user, "user");
         Objects.requireNonNull(authMethod, "authMethod");
         long userId = requirePositiveUserId(user);
         AuthSessionQueryPort.LoginAuthority authority;
         try {
-            authority = sessionQueryPort.findLoginAuthority(userId)
-                    .orElseThrow(() -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION));
+            authority =
+                    sessionQueryPort
+                            .findLoginAuthority(userId)
+                            .orElseThrow(
+                                    () ->
+                                            new AuthSessionException(
+                                                    AuthSessionException.Code.INVALID_SESSION));
         } catch (AuthSessionException exception) {
             throw exception;
         } catch (RuntimeException exception) {
@@ -205,19 +253,22 @@ public class AuthService {
 
         SessionStatePort.CreateSessionResult result;
         try {
-            result = sessionLifecycle.createSession(new SessionLifecycleService.CreateSessionRequest(
-                    userId,
-                    sessionId,
-                    refreshJti,
-                    createdAt,
-                    refreshExpiresAt,
-                    authMethod,
-                    authority.rolesVersion(),
-                    authority.grants(),
-                    authMethod == AuthMethod.PASSWORD ? expectedCredentialHash : null,
-                    clientLabel,
-                    locationLabel
-            ));
+            result =
+                    sessionLifecycle.createSession(
+                            new SessionLifecycleService.CreateSessionRequest(
+                                    userId,
+                                    sessionId,
+                                    refreshJti,
+                                    createdAt,
+                                    refreshExpiresAt,
+                                    authMethod,
+                                    authority.rolesVersion(),
+                                    authority.grants(),
+                                    authMethod == AuthMethod.PASSWORD
+                                            ? expectedCredentialHash
+                                            : null,
+                                    clientLabel,
+                                    locationLabel));
         } catch (RuntimeException exception) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
@@ -232,9 +283,15 @@ public class AuthService {
         if (snapshot == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
-        businessMetrics.loginCounter(snapshot.activeRole() == null
-                ? "bootstrap"
-                : snapshot.activeRole().role().name().toLowerCase(java.util.Locale.ROOT)).increment();
+        businessMetrics
+                .loginCounter(
+                        snapshot.activeRole() == null
+                                ? "bootstrap"
+                                : snapshot.activeRole()
+                                        .role()
+                                        .name()
+                                        .toLowerCase(java.util.Locale.ROOT))
+                .increment();
         return snapshot;
     }
 
@@ -266,8 +323,10 @@ public class AuthService {
         UUID replacementJti = UUID.randomUUID();
         SessionStatePort.RefreshResult result;
         try {
-            result = sessionLifecycle.refresh(new SessionLifecycleService.RefreshRequest(
-                    userId, sessionId, presentedJti, replacementJti, now));
+            result =
+                    sessionLifecycle.refresh(
+                            new SessionLifecycleService.RefreshRequest(
+                                    userId, sessionId, presentedJti, replacementJti, now));
         } catch (RuntimeException exception) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
@@ -295,8 +354,12 @@ public class AuthService {
             throw new AuthSessionException(AuthSessionException.Code.REFRESH_REJECTED);
         }
         try {
-            Instant expiration = jwtService.parseSessionRefreshToken(refreshToken)
-                    .getPayload().getExpiration().toInstant();
+            Instant expiration =
+                    jwtService
+                            .parseSessionRefreshToken(refreshToken)
+                            .getPayload()
+                            .getExpiration()
+                            .toInstant();
             long remaining = expiration.getEpochSecond() - clock.instant().getEpochSecond();
             if (remaining <= 0) {
                 throw new AuthSessionException(AuthSessionException.Code.REFRESH_REJECTED);
@@ -318,12 +381,15 @@ public class AuthService {
         Objects.requireNonNull(principal, "principal");
         SessionStatePort.SnapshotResult result;
         try {
-            result = sessionLifecycle.snapshot(new SessionLifecycleService.SnapshotRequest(
-                    principal.userId(), principal.sessionId(), clock.instant()));
+            result =
+                    sessionLifecycle.snapshot(
+                            new SessionLifecycleService.SnapshotRequest(
+                                    principal.userId(), principal.sessionId(), clock.instant()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -332,7 +398,8 @@ public class AuthService {
             throw map(result.failureCode());
         }
         SessionSnapshot snapshot = result.snapshot();
-        if (snapshot == null || snapshot.userId() != principal.userId()
+        if (snapshot == null
+                || snapshot.userId() != principal.userId()
                 || !snapshot.sessionId().equals(principal.sessionId())) {
             throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
         }
@@ -359,8 +426,7 @@ public class AuthService {
             SessionPrincipal principal,
             ru.rutcampustrack.auth.dto.SelectActiveRoleRequest request,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         Objects.requireNonNull(request, "request");
         SessionSnapshot current = admit(principal);
         AuthRole role;
@@ -373,13 +439,22 @@ public class AuthService {
         }
         SessionStatePort.RoleSelectionResult result;
         try {
-            result = sessionLifecycle.selectRole(new SessionLifecycleService.SelectRoleRequest(
-                    principal.userId(), principal.sessionId(), role, expectedVersion, clock.instant(),
-                    current.authMethod(), clientLabel, locationLabel));
+            result =
+                    sessionLifecycle.selectRole(
+                            new SessionLifecycleService.SelectRoleRequest(
+                                    principal.userId(),
+                                    principal.sessionId(),
+                                    role,
+                                    expectedVersion,
+                                    clock.instant(),
+                                    current.authMethod(),
+                                    clientLabel,
+                                    locationLabel));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -390,17 +465,25 @@ public class AuthService {
         return result;
     }
 
-    public SessionStatePort.RevokeResult revokeSession(SessionPrincipal principal, UUID targetSessionId) {
+    public SessionStatePort.RevokeResult revokeSession(
+            SessionPrincipal principal, UUID targetSessionId) {
         admit(principal);
         SessionStatePort.RevokeResult result;
         try {
-            result = sessionLifecycle.revokeSelected(new SessionStatePort.RevokeSelectedCommand(
-                    principal.userId(), principal.sessionId(), targetSessionId,
-                    principal.sessionVersion(), principal.rolesVersion(), clock.instant()));
+            result =
+                    sessionLifecycle.revokeSelected(
+                            new SessionStatePort.RevokeSelectedCommand(
+                                    principal.userId(),
+                                    principal.sessionId(),
+                                    targetSessionId,
+                                    principal.sessionVersion(),
+                                    principal.rolesVersion(),
+                                    clock.instant()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -415,13 +498,20 @@ public class AuthService {
         SessionSnapshot current = admit(principal);
         SessionStatePort.RevokeResult result;
         try {
-            result = sessionLifecycle.revokeCurrent(new SessionLifecycleService.RevokeRequest(
-                    principal.userId(), principal.sessionId(), clock.instant(),
-                    current.authMethod(), current.clientLabel(), current.locationLabel()));
+            result =
+                    sessionLifecycle.revokeCurrent(
+                            new SessionLifecycleService.RevokeRequest(
+                                    principal.userId(),
+                                    principal.sessionId(),
+                                    clock.instant(),
+                                    current.authMethod(),
+                                    current.clientLabel(),
+                                    current.locationLabel()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -457,14 +547,15 @@ public class AuthService {
         }
         if (expectedPrincipal != null
                 && (expectedPrincipal.userId() != userId
-                || !expectedPrincipal.sessionId().equals(sessionId))) {
+                        || !expectedPrincipal.sessionId().equals(sessionId))) {
             throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
         }
         AuthSessionQueryPort.SessionMetadata metadata;
         try {
             metadata = sessionQueryPort.findSessionMetadata(userId, sessionId).orElse(null);
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (metadata == null || !metadata.isLiveAt(clock.instant())) {
             return null;
@@ -477,18 +568,26 @@ public class AuthService {
         }
         SessionStatePort.RevokeResult result;
         try {
-            result = sessionLifecycle.revokeCurrent(new SessionLifecycleService.RevokeRequest(
-                    userId, sessionId, clock.instant(), authMethod,
-                    metadata.clientLabel(), metadata.locationLabel()));
+            result =
+                    sessionLifecycle.revokeCurrent(
+                            new SessionLifecycleService.RevokeRequest(
+                                    userId,
+                                    sessionId,
+                                    clock.instant(),
+                                    authMethod,
+                                    metadata.clientLabel(),
+                                    metadata.locationLabel()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
-        if (!result.succeeded() && result.failureCode() != SessionStatePort.FailureCode.SESSION_REVOKED) {
+        if (!result.succeeded()
+                && result.failureCode() != SessionStatePort.FailureCode.SESSION_REVOKED) {
             throw map(result.failureCode());
         }
         return result;
@@ -498,13 +597,20 @@ public class AuthService {
         SessionSnapshot current = admit(principal);
         SessionStatePort.RevokeAllResult result;
         try {
-            result = sessionLifecycle.revokeAll(new SessionLifecycleService.RevokeAllRequest(
-                    principal.userId(), principal.sessionId(), clock.instant(),
-                    current.authMethod(), current.clientLabel(), current.locationLabel()));
+            result =
+                    sessionLifecycle.revokeAll(
+                            new SessionLifecycleService.RevokeAllRequest(
+                                    principal.userId(),
+                                    principal.sessionId(),
+                                    clock.instant(),
+                                    current.authMethod(),
+                                    current.clientLabel(),
+                                    current.locationLabel()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -531,14 +637,12 @@ public class AuthService {
             throw new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
         }
         String access = jwtService.generateSessionAccessToken(snapshot, issuedAt, expiry);
-        return new TokenResponse(access, null,
-                Math.max(1L, expiry.getEpochSecond() - issuedAt.getEpochSecond()));
+        return new TokenResponse(
+                access, null, Math.max(1L, expiry.getEpochSecond() - issuedAt.getEpochSecond()));
     }
 
     public CredentialSessionTransactionPort.ChangePasswordResult changePassword(
-            SessionPrincipal principal,
-            ru.rutcampustrack.auth.dto.ChangePasswordRequest request
-    ) {
+            SessionPrincipal principal, ru.rutcampustrack.auth.dto.ChangePasswordRequest request) {
         if (principal.isBootstrap()) {
             throw new AuthSessionException(AuthSessionException.Code.BOOTSTRAP_SCOPE_DENIED);
         }
@@ -549,36 +653,53 @@ public class AuthService {
         }
         User user;
         try {
-            user = userRepositoryFacade.findById(principal.userId())
-                    .orElseThrow(() -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION));
+            user =
+                    userRepositoryFacade
+                            .findById(principal.userId())
+                            .orElseThrow(
+                                    () ->
+                                            new AuthSessionException(
+                                                    AuthSessionException.Code.INVALID_SESSION));
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         String currentHash = user.getPasswordHash();
         if (currentHash == null || currentHash.isBlank()) {
             throw new AuthSessionException(AuthSessionException.Code.CURRENT_PASSWORD_INVALID);
         }
-        String replacementHash = bcryptGuard.execute(() -> {
-            if (!passwordEncoder.matches(request.currentPassword(), currentHash)) {
-                return null;
-            }
-            return passwordEncoder.encode(request.newPassword().toString());
-        });
+        String replacementHash =
+                bcryptGuard.execute(
+                        () -> {
+                            if (!passwordEncoder.matches(request.currentPassword(), currentHash)) {
+                                return null;
+                            }
+                            return passwordEncoder.encode(request.newPassword().toString());
+                        });
         if (replacementHash == null) {
             throw new AuthSessionException(AuthSessionException.Code.CURRENT_PASSWORD_INVALID);
         }
         CredentialSessionTransactionPort.ChangePasswordResult result;
         try {
-            result = sessionLifecycle.changePassword(new SessionLifecycleService.ChangePasswordRequest(
-                    principal.userId(), principal.sessionId(),
-                    new CredentialSessionTransactionPort.CredentialHash(currentHash),
-                    new CredentialSessionTransactionPort.CredentialHash(replacementHash),
-                    request.newPassword(), clock.instant(), current.authMethod(),
-                    current.clientLabel(), current.locationLabel()));
+            result =
+                    sessionLifecycle.changePassword(
+                            new SessionLifecycleService.ChangePasswordRequest(
+                                    principal.userId(),
+                                    principal.sessionId(),
+                                    new CredentialSessionTransactionPort.CredentialHash(
+                                            currentHash),
+                                    new CredentialSessionTransactionPort.CredentialHash(
+                                            replacementHash),
+                                    request.newPassword(),
+                                    clock.instant(),
+                                    current.authMethod(),
+                                    current.clientLabel(),
+                                    current.locationLabel()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -590,9 +711,7 @@ public class AuthService {
     }
 
     public long completePasswordReset(
-            CredentialSessionTransactionPort.CredentialHash ticketHash,
-            String newPassword
-    ) {
+            CredentialSessionTransactionPort.CredentialHash ticketHash, String newPassword) {
         Objects.requireNonNull(ticketHash, "ticketHash");
         PasswordPolicy.Validation validation = passwordPolicy.validate(newPassword);
         if (!validation.valid()) {
@@ -601,16 +720,19 @@ public class AuthService {
         String replacementHash = bcryptGuard.execute(() -> passwordEncoder.encode(newPassword));
         CredentialSessionTransactionPort.PasswordResetResult result;
         try {
-            result = sessionLifecycle.completePasswordReset(
-                    new SessionLifecycleService.PasswordResetRequest(
-                            ticketHash,
-                            new CredentialSessionTransactionPort.CredentialHash(replacementHash),
-                            newPassword,
-                            clock.instant()));
+            result =
+                    sessionLifecycle.completePasswordReset(
+                            new SessionLifecycleService.PasswordResetRequest(
+                                    ticketHash,
+                                    new CredentialSessionTransactionPort.CredentialHash(
+                                            replacementHash),
+                                    newPassword,
+                                    clock.instant()));
         } catch (RuntimeException exception) {
             throw exception instanceof AuthSessionException typed
                     ? typed
-                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+                    : new AuthSessionException(
+                            AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (result == null) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
@@ -619,12 +741,14 @@ public class AuthService {
             return result.userId();
         }
         switch (result.failureCode()) {
-            case RESET_TICKET_INVALID -> throw new PasswordResetException(
-                    PasswordResetException.Code.RESET_TICKET_INVALID, null, null);
-            case PASSWORD_POLICY_VIOLATION -> throw new AuthSessionException(
-                    AuthSessionException.Code.PASSWORD_POLICY_VIOLATION);
-            case AUTHORITY_UNAVAILABLE -> throw new AuthSessionException(
-                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+            case RESET_TICKET_INVALID ->
+                    throw new PasswordResetException(
+                            PasswordResetException.Code.RESET_TICKET_INVALID, null, null);
+            case PASSWORD_POLICY_VIOLATION ->
+                    throw new AuthSessionException(
+                            AuthSessionException.Code.PASSWORD_POLICY_VIOLATION);
+            case AUTHORITY_UNAVAILABLE ->
+                    throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
         throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
     }
@@ -643,19 +767,27 @@ public class AuthService {
         }
     }
 
-    private TokenResponse issueTokenPair(SessionSnapshot snapshot, UUID refreshJti, Instant now, Instant originalAccessExpiry) {
+    private TokenResponse issueTokenPair(
+            SessionSnapshot snapshot, UUID refreshJti, Instant now, Instant originalAccessExpiry) {
         Instant issuedAt = now.truncatedTo(ChronoUnit.SECONDS);
         Instant absoluteRefreshExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
-        Instant accessExpiry = originalAccessExpiry == null ? accessExpiry(snapshot, issuedAt) : originalAccessExpiry;
-        if (!issuedAt.isBefore(accessExpiry) || !issuedAt.isBefore(absoluteRefreshExpiry) || accessExpiry.isAfter(absoluteRefreshExpiry)) {
+        Instant accessExpiry =
+                originalAccessExpiry == null
+                        ? accessExpiry(snapshot, issuedAt)
+                        : originalAccessExpiry;
+        if (!issuedAt.isBefore(accessExpiry)
+                || !issuedAt.isBefore(absoluteRefreshExpiry)
+                || accessExpiry.isAfter(absoluteRefreshExpiry)) {
             throw new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
         }
 
-        String refresh = jwtService.generateSessionRefreshToken(
-                snapshot, refreshJti, issuedAt, absoluteRefreshExpiry);
-        String access = snapshot.activeRole() == null
-                ? jwtService.generateBootstrapToken(snapshot, issuedAt, accessExpiry)
-                : jwtService.generateSessionAccessToken(snapshot, issuedAt, accessExpiry);
+        String refresh =
+                jwtService.generateSessionRefreshToken(
+                        snapshot, refreshJti, issuedAt, absoluteRefreshExpiry);
+        String access =
+                snapshot.activeRole() == null
+                        ? jwtService.generateBootstrapToken(snapshot, issuedAt, accessExpiry)
+                        : jwtService.generateSessionAccessToken(snapshot, issuedAt, accessExpiry);
         long expiresIn = Math.max(1L, accessExpiry.getEpochSecond() - issuedAt.getEpochSecond());
         return new TokenResponse(access, refresh, expiresIn);
     }
@@ -691,16 +823,26 @@ public class AuthService {
             return new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
         return switch (code) {
-            case INVALID_SESSION -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
-            case SESSION_NOT_FOUND -> new AuthSessionException(AuthSessionException.Code.SESSION_NOT_FOUND);
-            case SESSION_REVOKED -> new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
-            case SESSION_STATE_STALE -> new AuthSessionException(AuthSessionException.Code.SESSION_STATE_STALE);
-            case SESSION_VERSION_CONFLICT -> new AuthSessionException(AuthSessionException.Code.SESSION_VERSION_CONFLICT);
-            case ROLE_NOT_GRANTED -> new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
-            case ROLE_NOT_SELECTABLE -> new AuthSessionException(AuthSessionException.Code.ROLE_NOT_SELECTABLE);
-            case ROLE_READ_ONLY -> new AuthSessionException(AuthSessionException.Code.ROLE_READ_ONLY);
-            case REFRESH_ALREADY_ROTATED -> new AuthSessionException(AuthSessionException.Code.REFRESH_ALREADY_ROTATED);
-            case REFRESH_REJECTED -> new AuthSessionException(AuthSessionException.Code.REFRESH_REJECTED);
+            case INVALID_SESSION ->
+                    new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
+            case SESSION_NOT_FOUND ->
+                    new AuthSessionException(AuthSessionException.Code.SESSION_NOT_FOUND);
+            case SESSION_REVOKED ->
+                    new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
+            case SESSION_STATE_STALE ->
+                    new AuthSessionException(AuthSessionException.Code.SESSION_STATE_STALE);
+            case SESSION_VERSION_CONFLICT ->
+                    new AuthSessionException(AuthSessionException.Code.SESSION_VERSION_CONFLICT);
+            case ROLE_NOT_GRANTED ->
+                    new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
+            case ROLE_NOT_SELECTABLE ->
+                    new AuthSessionException(AuthSessionException.Code.ROLE_NOT_SELECTABLE);
+            case ROLE_READ_ONLY ->
+                    new AuthSessionException(AuthSessionException.Code.ROLE_READ_ONLY);
+            case REFRESH_ALREADY_ROTATED ->
+                    new AuthSessionException(AuthSessionException.Code.REFRESH_ALREADY_ROTATED);
+            case REFRESH_REJECTED ->
+                    new AuthSessionException(AuthSessionException.Code.REFRESH_REJECTED);
             default -> new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         };
     }
@@ -711,15 +853,21 @@ public class AuthService {
             return new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
         return switch (code) {
-            case CURRENT_PASSWORD_INVALID -> new AuthSessionException(AuthSessionException.Code.CURRENT_PASSWORD_INVALID);
-            case PASSWORD_POLICY_VIOLATION -> new AuthSessionException(AuthSessionException.Code.PASSWORD_POLICY_VIOLATION);
-            case INVALID_SESSION -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
-            case SESSION_REVOKED -> new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
-            case AUTHORITY_UNAVAILABLE -> new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+            case CURRENT_PASSWORD_INVALID ->
+                    new AuthSessionException(AuthSessionException.Code.CURRENT_PASSWORD_INVALID);
+            case PASSWORD_POLICY_VIOLATION ->
+                    new AuthSessionException(AuthSessionException.Code.PASSWORD_POLICY_VIOLATION);
+            case INVALID_SESSION ->
+                    new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
+            case SESSION_REVOKED ->
+                    new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
+            case AUTHORITY_UNAVAILABLE ->
+                    new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         };
     }
 
-    private static boolean sameSelectedIdentity(SessionPrincipal principal, SessionSnapshot snapshot) {
+    private static boolean sameSelectedIdentity(
+            SessionPrincipal principal, SessionSnapshot snapshot) {
         var role = snapshot.activeRole();
         return role != null
                 && principal.selectedRole() == role.role()

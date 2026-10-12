@@ -1,39 +1,38 @@
 package ru.rutcampustrack.shared.outbox;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import org.junit.jupiter.api.Test;
-
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 /**
- * M02 Группа 7 — networknt/json-schema-validator понимает относительный
- * {@code $ref: "_common.json#/$defs/..."} из event-schemas/*.json.
+ * M02 Группа 7 — networknt/json-schema-validator понимает относительный {@code $ref:
+ * "_common.json#/$defs/..."} из event-schemas/*.json.
  *
- * <p>networknt резолвит relative-refs относительно baseURI загруженной
- * схемы — мы передаём {@code file://.../event-schemas/lesson.started.json}
- * и библиотека сама загрузит {@code _common.json} из той же директории.
- * Никаких дополнительных URI-mappings не требуется.
+ * <p>networknt резолвит relative-refs относительно baseURI загруженной схемы — мы передаём {@code
+ * file://.../event-schemas/lesson.started.json} и библиотека сама загрузит {@code _common.json} из
+ * той же директории. Никаких дополнительных URI-mappings не требуется.
  */
 class EventSchemaRefTest {
 
     /**
-     * event-schemas/ в корне репо. Тест запускается из
-     * services/shared/shared-outbox/ → подъём на 3 уровня.
+     * event-schemas/ в корне репо. Тест запускается из services/shared/shared-outbox/ → подъём на 3
+     * уровня.
      */
     private Path schemasDir() {
-        return Path.of("").toAbsolutePath()
-                .getParent()   // services/shared
-                .getParent()   // services
-                .getParent()   // repo root
+        return Path.of("")
+                .toAbsolutePath()
+                .getParent() // services/shared
+                .getParent() // services
+                .getParent() // repo root
                 .resolve("event-schemas");
     }
 
@@ -50,7 +49,9 @@ class EventSchemaRefTest {
         // M06 G9 hot-patch: envelope fields (event_version/trace_id/source) added
         // в M04 Группа 6 (commit 08fbd1f), но test payload'ы не обновлены →
         // pre-existing failure выплыл на M06 build. Добавлены обязательные поля.
-        JsonNode json = mapper.readTree("""
+        JsonNode json =
+                mapper.readTree(
+                        """
                 {
                   "event_type": "lesson.started",
                   "event_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -82,7 +83,9 @@ class EventSchemaRefTest {
         // isNotEmpty).
         JsonSchema schema = loadSchema("lesson.started.json");
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode json = mapper.readTree("""
+        JsonNode json =
+                mapper.readTree(
+                        """
                 {
                   "event_type": "lesson.started",
                   "event_id": "550e8400-e29b-41d4-a716-446655440000",

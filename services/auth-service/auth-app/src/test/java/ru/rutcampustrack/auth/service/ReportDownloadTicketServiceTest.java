@@ -1,7 +1,31 @@
 package ru.rutcampustrack.auth.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.security.SecureRandom;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
@@ -18,31 +42,6 @@ import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
-import java.security.SecureRandom;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 class ReportDownloadTicketServiceTest {
     @Test
     void workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow() {
@@ -54,23 +53,35 @@ class ReportDownloadTicketServiceTest {
         var actor = principal();
         var admitted = snapshot(NOW);
         when(auth.admit(actor)).thenReturn(admitted);
-        when(jwt.generateInternalReportDownloadToken(eq(admitted), any(), any(), anyString(), any()))
+        when(jwt.generateInternalReportDownloadToken(
+                        eq(admitted), any(), any(), anyString(), any()))
                 .thenReturn("synthetic-signed-worker-authority");
         var service = service(new MemoryStore(), auth, jwt, issuer, clock);
         Instant durableExpiry = NOW.plusSeconds(600);
         var fresh = service.authorizeJob(actor, report(), durableExpiry);
         assertEquals(NOW.plusSeconds(60), fresh.ticketExpiresAt());
         assertEquals(fresh.ticketExpiresAt(), fresh.admission().expiresAt());
-        verify(jwt).generateInternalReportDownloadToken(eq(admitted), eq(NOW),
-                eq(NOW.plusSeconds(60)), eq(report().bindingHash()), eq(NOW.plusSeconds(60)));
+        verify(jwt)
+                .generateInternalReportDownloadToken(
+                        eq(admitted),
+                        eq(NOW),
+                        eq(NOW.plusSeconds(60)),
+                        eq(report().bindingHash()),
+                        eq(NOW.plusSeconds(60)));
         Instant nearExpiry = NOW.plusSeconds(15);
         var remaining = service.authorizeJob(actor, report(), nearExpiry);
         assertEquals(nearExpiry, remaining.ticketExpiresAt());
         assertEquals(nearExpiry, remaining.admission().expiresAt());
-        verify(jwt).generateInternalReportDownloadToken(eq(admitted), eq(NOW),
-                eq(nearExpiry), eq(report().bindingHash()), eq(nearExpiry));
+        verify(jwt)
+                .generateInternalReportDownloadToken(
+                        eq(admitted),
+                        eq(NOW),
+                        eq(nearExpiry),
+                        eq(report().bindingHash()),
+                        eq(nearExpiry));
         clock.set(nearExpiry);
-        assertThrows(SessionAdmissionException.class,
+        assertThrows(
+                SessionAdmissionException.class,
                 () -> service.authorizeJob(actor, report(), nearExpiry));
     }
 
@@ -89,7 +100,9 @@ class ReportDownloadTicketServiceTest {
         assertEquals(fileExpiry, issued.expiresAt());
         assertEquals(Duration.ofSeconds(15), store.ticketTtl);
         clock.set(fileExpiry);
-        assertTrue(service.redeem(issued.downloadPath().substring("/api/report-download/".length())).isEmpty());
+        assertTrue(
+                service.redeem(issued.downloadPath().substring("/api/report-download/".length()))
+                        .isEmpty());
     }
 
     private static final long USER_ID = 17L;
@@ -98,7 +111,8 @@ class ReportDownloadTicketServiceTest {
     private static final String NEVER_STORE_THIS = "opaque-bearer-or-init-data-sentinel";
 
     @Test
-    void issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry() {
+    void
+            issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry() {
         MutableClock clock = new MutableClock(NOW);
         MemoryStore store = new MemoryStore();
         AuthService auth = mock(AuthService.class);
@@ -109,7 +123,8 @@ class ReportDownloadTicketServiceTest {
         SessionSnapshot snapshot = snapshot(NOW);
         IssueReportDownloadTicketRequest report = report();
         when(auth.admit(principal)).thenReturn(snapshot);
-        when(jwt.generateInternalReportDownloadToken(eq(snapshot), any(), any(), anyString(), any()))
+        when(jwt.generateInternalReportDownloadToken(
+                        eq(snapshot), any(), any(), anyString(), any()))
                 .thenReturn("fresh-signed-authority");
 
         ReportDownloadTicketService service = service(store, auth, jwt, issuer, clock);
@@ -120,7 +135,9 @@ class ReportDownloadTicketServiceTest {
         assertEquals(NOW.plusSeconds(60), issued.expiresAt());
         assertEquals("teacher-journal.pdf", issued.suggestedFilename());
         assertEquals(Duration.ofSeconds(60), store.ticketTtl);
-        assertFalse(store.serializedTicket.contains(ticket), "the opaque capability is not stored as a value");
+        assertFalse(
+                store.serializedTicket.contains(ticket),
+                "the opaque capability is not stored as a value");
         assertFalse(store.serializedTicket.contains(NEVER_STORE_THIS));
         verify(jwt, org.mockito.Mockito.never()).generateInternalToken(any(), any(), any());
 
@@ -132,11 +149,18 @@ class ReportDownloadTicketServiceTest {
         assertEquals(first.admission().expiresAt(), retry.admission().expiresAt());
         assertEquals(2, store.redemptions);
         verify(auth, times(3)).admit(principal);
-        verify(jwt, times(2)).generateInternalReportDownloadToken(eq(snapshot), any(), any(),
-                eq(report.bindingHash()), eq(NOW.plusSeconds(60)));
+        verify(jwt, times(2))
+                .generateInternalReportDownloadToken(
+                        eq(snapshot),
+                        any(),
+                        any(),
+                        eq(report.bindingHash()),
+                        eq(NOW.plusSeconds(60)));
 
         clock.set(NOW.plusSeconds(61));
-        assertTrue(service.redeem(ticket).isEmpty(), "an expired ticket cannot be redeemed or extended");
+        assertTrue(
+                service.redeem(ticket).isEmpty(),
+                "an expired ticket cannot be redeemed or extended");
         verify(auth, times(3)).admit(principal);
         assertEquals(2, store.redemptions);
     }
@@ -151,14 +175,20 @@ class ReportDownloadTicketServiceTest {
         issuer.setTokenTtlSeconds(300);
         SessionPrincipal principal = principal();
         SessionSnapshot snapshot = snapshot(NOW);
-        when(auth.admit(principal)).thenReturn(snapshot)
+        when(auth.admit(principal))
+                .thenReturn(snapshot)
                 .thenThrow(new AuthSessionException(AuthSessionException.Code.SESSION_STATE_STALE));
         ReportDownloadTicketService service = service(store, auth, jwt, issuer, clock);
-        String ticket = service.issue(principal, report()).downloadPath()
-                .substring("/api/report-download/".length());
+        String ticket =
+                service.issue(principal, report())
+                        .downloadPath()
+                        .substring("/api/report-download/".length());
 
         assertThrows(AuthSessionException.class, () -> service.redeem(ticket));
-        assertEquals(0, store.redemptions, "permission changes are checked before counting/serving a use");
+        assertEquals(
+                0,
+                store.redemptions,
+                "permission changes are checked before counting/serving a use");
         verifyNoInteractions(jwt);
         verify(auth, times(2)).admit(principal);
     }
@@ -174,13 +204,16 @@ class ReportDownloadTicketServiceTest {
         SessionPrincipal principal = assistantPrincipal();
         SessionSnapshot snapshot = assistantSnapshot(NOW);
         when(auth.admit(principal)).thenReturn(snapshot);
-        when(jwt.generateInternalToken(eq(snapshot), any(), any())).thenReturn("fresh-current-identity");
+        when(jwt.generateInternalToken(eq(snapshot), any(), any()))
+                .thenReturn("fresh-current-identity");
         when(academic.hasViewStatsPermission("fresh-current-identity", 31L)).thenReturn(false);
-        ReportDownloadTicketService service = service(store, auth, jwt, issuer,
-                new MutableClock(NOW), academic);
+        ReportDownloadTicketService service =
+                service(store, auth, jwt, issuer, new MutableClock(NOW), academic);
 
-        SessionAdmissionException denied = assertThrows(SessionAdmissionException.class,
-                () -> service.issue(principal, trendReport()));
+        SessionAdmissionException denied =
+                assertThrows(
+                        SessionAdmissionException.class,
+                        () -> service.issue(principal, trendReport()));
 
         assertEquals(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED, denied.code());
         verify(jwt).generateInternalToken(eq(snapshot), eq(NOW), eq(NOW.plusSeconds(60)));
@@ -194,21 +227,68 @@ class ReportDownloadTicketServiceTest {
             MemoryStore store = new MemoryStore();
             AuthService auth = mock(AuthService.class);
             JwtService jwt = mock(JwtService.class);
-            var role = new RoleGrant(7L, USER_ID, AuthRole.HEADMAN, RoleStatus.ACTIVE, 31L,
-                    NOW.minusSeconds(10), NOW.minusSeconds(2));
-            var snapshot = new SessionSnapshot(SESSION_ID, USER_ID, 2L, 3L, role, List.of(role),
-                    NOW.plusSeconds(900), NOW.minusSeconds(10), NOW.minusSeconds(1), null, null,
-                    AuthMethod.PASSWORD, null, null);
-            var principal = new SessionPrincipal(USER_ID, SESSION_ID, 2L, 3L,
-                    AuthRole.HEADMAN, RoleStatus.ACTIVE, 31L, true, false);
-            var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
-                    null, null, null, null, null, null,
-                    new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(format));
-            when(auth.admit(principal)).thenReturn(snapshot, snapshot)
-                    .thenThrow(new AuthSessionException(AuthSessionException.Code.SESSION_STATE_STALE));
-            when(jwt.generateInternalReportDownloadToken(eq(snapshot), any(), any(), anyString(), any()))
+            var role =
+                    new RoleGrant(
+                            7L,
+                            USER_ID,
+                            AuthRole.HEADMAN,
+                            RoleStatus.ACTIVE,
+                            31L,
+                            NOW.minusSeconds(10),
+                            NOW.minusSeconds(2));
+            var snapshot =
+                    new SessionSnapshot(
+                            SESSION_ID,
+                            USER_ID,
+                            2L,
+                            3L,
+                            role,
+                            List.of(role),
+                            NOW.plusSeconds(900),
+                            NOW.minusSeconds(10),
+                            NOW.minusSeconds(1),
+                            null,
+                            null,
+                            AuthMethod.PASSWORD,
+                            null,
+                            null);
+            var principal =
+                    new SessionPrincipal(
+                            USER_ID,
+                            SESSION_ID,
+                            2L,
+                            3L,
+                            AuthRole.HEADMAN,
+                            RoleStatus.ACTIVE,
+                            31L,
+                            true,
+                            false);
+            var report =
+                    new IssueReportDownloadTicketRequest(
+                            ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(
+                                    format));
+            when(auth.admit(principal))
+                    .thenReturn(snapshot, snapshot)
+                    .thenThrow(
+                            new AuthSessionException(
+                                    AuthSessionException.Code.SESSION_STATE_STALE));
+            when(jwt.generateInternalReportDownloadToken(
+                            eq(snapshot), any(), any(), anyString(), any()))
                     .thenReturn("fresh-roster-authority");
-            var service = service(store, auth, jwt, new InternalIssuerProperties(), new MutableClock(NOW));
+            var service =
+                    service(
+                            store,
+                            auth,
+                            jwt,
+                            new InternalIssuerProperties(),
+                            new MutableClock(NOW));
 
             var issued = service.issue(principal, report);
             var ticket = issued.downloadPath().substring("/api/report-download/".length());
@@ -217,11 +297,18 @@ class ReportDownloadTicketServiceTest {
             assertEquals(report.bindingHash(), redeemed.reportBindingHash());
             assertEquals("31", redeemed.admission().groupId());
             assertEquals("HEADMAN", redeemed.admission().role());
-            assertEquals("headman-group-composition." + format.filenameExtension(), issued.suggestedFilename());
+            assertEquals(
+                    "headman-group-composition." + format.filenameExtension(),
+                    issued.suggestedFilename());
             assertThrows(AuthSessionException.class, () -> service.redeem(ticket));
             assertEquals(1, store.redemptions);
-            verify(jwt).generateInternalReportDownloadToken(eq(snapshot), eq(NOW), any(),
-                    eq(report.bindingHash()), eq(NOW.plusSeconds(60)));
+            verify(jwt)
+                    .generateInternalReportDownloadToken(
+                            eq(snapshot),
+                            eq(NOW),
+                            any(),
+                            eq(report.bindingHash()),
+                            eq(NOW.plusSeconds(60)));
         }
     }
 
@@ -232,13 +319,30 @@ class ReportDownloadTicketServiceTest {
         var jwt = mock(JwtService.class);
         var academic = mock(AcademicAssistantPermissionClient.class);
         when(auth.admit(assistantPrincipal())).thenReturn(assistantSnapshot(NOW));
-        var service = service(store, auth, jwt, new InternalIssuerProperties(), new MutableClock(NOW), academic);
-        var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
-                null, null, null, null, null, null,
-                new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(ReportDownloadFormat.PDF));
+        var service =
+                service(
+                        store,
+                        auth,
+                        jwt,
+                        new InternalIssuerProperties(),
+                        new MutableClock(NOW),
+                        academic);
+        var report =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(
+                                ReportDownloadFormat.PDF));
 
-        var denied = assertThrows(SessionAdmissionException.class,
-                () -> service.issue(assistantPrincipal(), report));
+        var denied =
+                assertThrows(
+                        SessionAdmissionException.class,
+                        () -> service.issue(assistantPrincipal(), report));
         assertEquals(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED, denied.code());
         verifyNoInteractions(store, jwt, academic);
     }
@@ -246,78 +350,176 @@ class ReportDownloadTicketServiceTest {
     @Test
     void malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException() {
         AuthService auth = mock(AuthService.class);
-        IssueReportDownloadTicketRequest malformed = new IssueReportDownloadTicketRequest(
-                ReportDownloadKind.TEACHER_JOURNAL, null,
-                new IssueReportDownloadTicketRequest.TeacherStatsParameters(
-                        4L, "student", null, null, null, null, null, ReportDownloadFormat.PDF),
-                null, null, null);
-        ReportDownloadTicketService service = service(new MemoryStore(), auth, mock(JwtService.class),
-                new InternalIssuerProperties(), new MutableClock(NOW));
+        IssueReportDownloadTicketRequest malformed =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.TEACHER_JOURNAL,
+                        null,
+                        new IssueReportDownloadTicketRequest.TeacherStatsParameters(
+                                4L,
+                                "student",
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                ReportDownloadFormat.PDF),
+                        null,
+                        null,
+                        null);
+        ReportDownloadTicketService service =
+                service(
+                        new MemoryStore(),
+                        auth,
+                        mock(JwtService.class),
+                        new InternalIssuerProperties(),
+                        new MutableClock(NOW));
 
-        assertThrows(ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException.class,
+        assertThrows(
+                ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException.class,
                 () -> service.issue(principal(), malformed));
         verifyNoInteractions(auth);
     }
 
-    private static ReportDownloadTicketService service(ReportDownloadTicketStore store,
-                                                        AuthService auth,
-                                                        JwtService jwt,
-                                                        InternalIssuerProperties issuer,
-                                                        Clock clock) {
-        return service(store, auth, jwt, issuer, clock, mock(AcademicAssistantPermissionClient.class));
+    private static ReportDownloadTicketService service(
+            ReportDownloadTicketStore store,
+            AuthService auth,
+            JwtService jwt,
+            InternalIssuerProperties issuer,
+            Clock clock) {
+        return service(
+                store, auth, jwt, issuer, clock, mock(AcademicAssistantPermissionClient.class));
     }
 
-    private static ReportDownloadTicketService service(ReportDownloadTicketStore store,
-                                                        AuthService auth,
-                                                        JwtService jwt,
-                                                        InternalIssuerProperties issuer,
-                                                        Clock clock,
-                                                        AcademicAssistantPermissionClient academic) {
-        return new ReportDownloadTicketService(store, auth, jwt, issuer,
-                new ObjectMapper().registerModule(new JavaTimeModule()), clock, new SecureRandom(), academic,
+    private static ReportDownloadTicketService service(
+            ReportDownloadTicketStore store,
+            AuthService auth,
+            JwtService jwt,
+            InternalIssuerProperties issuer,
+            Clock clock,
+            AcademicAssistantPermissionClient academic) {
+        return new ReportDownloadTicketService(
+                store,
+                auth,
+                jwt,
+                issuer,
+                new ObjectMapper().registerModule(new JavaTimeModule()),
+                clock,
+                new SecureRandom(),
+                academic,
                 mock(AdminAccessJdbcAuthority.class));
     }
 
     private static SessionPrincipal principal() {
-        return new SessionPrincipal(USER_ID, SESSION_ID, 2L, 3L,
-                AuthRole.TEACHER, RoleStatus.ACTIVE, 31L, false, false);
+        return new SessionPrincipal(
+                USER_ID,
+                SESSION_ID,
+                2L,
+                3L,
+                AuthRole.TEACHER,
+                RoleStatus.ACTIVE,
+                31L,
+                false,
+                false);
     }
 
     private static SessionSnapshot snapshot(Instant now) {
-        RoleGrant role = new RoleGrant(5L, USER_ID, AuthRole.TEACHER, RoleStatus.ACTIVE, 31L,
-                now.minusSeconds(10), now.minusSeconds(2));
-        return new SessionSnapshot(SESSION_ID, USER_ID, 2L, 3L, role, List.of(role),
-                now.plusSeconds(900), now.minusSeconds(10), now.minusSeconds(1), null, null,
-                AuthMethod.PASSWORD, null, null);
+        RoleGrant role =
+                new RoleGrant(
+                        5L,
+                        USER_ID,
+                        AuthRole.TEACHER,
+                        RoleStatus.ACTIVE,
+                        31L,
+                        now.minusSeconds(10),
+                        now.minusSeconds(2));
+        return new SessionSnapshot(
+                SESSION_ID,
+                USER_ID,
+                2L,
+                3L,
+                role,
+                List.of(role),
+                now.plusSeconds(900),
+                now.minusSeconds(10),
+                now.minusSeconds(1),
+                null,
+                null,
+                AuthMethod.PASSWORD,
+                null,
+                null);
     }
 
     private static SessionPrincipal assistantPrincipal() {
-        return new SessionPrincipal(USER_ID, SESSION_ID, 2L, 3L,
-                AuthRole.STUDENT, RoleStatus.ACTIVE, 31L, false, false);
+        return new SessionPrincipal(
+                USER_ID,
+                SESSION_ID,
+                2L,
+                3L,
+                AuthRole.STUDENT,
+                RoleStatus.ACTIVE,
+                31L,
+                false,
+                false);
     }
 
     private static SessionSnapshot assistantSnapshot(Instant now) {
-        RoleGrant role = new RoleGrant(6L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, 31L,
-                now.minusSeconds(10), now.minusSeconds(2));
-        return new SessionSnapshot(SESSION_ID, USER_ID, 2L, 3L, role, List.of(role),
-                now.plusSeconds(900), now.minusSeconds(10), now.minusSeconds(1), null, null,
-                AuthMethod.PASSWORD, null, null);
+        RoleGrant role =
+                new RoleGrant(
+                        6L,
+                        USER_ID,
+                        AuthRole.STUDENT,
+                        RoleStatus.ACTIVE,
+                        31L,
+                        now.minusSeconds(10),
+                        now.minusSeconds(2));
+        return new SessionSnapshot(
+                SESSION_ID,
+                USER_ID,
+                2L,
+                3L,
+                role,
+                List.of(role),
+                now.plusSeconds(900),
+                now.minusSeconds(10),
+                now.minusSeconds(1),
+                null,
+                null,
+                AuthMethod.PASSWORD,
+                null,
+                null);
     }
 
     private static IssueReportDownloadTicketRequest report() {
-        return new IssueReportDownloadTicketRequest(ReportDownloadKind.TEACHER_JOURNAL,
+        return new IssueReportDownloadTicketRequest(
+                ReportDownloadKind.TEACHER_JOURNAL,
                 new IssueReportDownloadTicketRequest.TeacherJournalParameters(
-                        7L, 31L, 41L, List.of("LECTURE"),
-                        LocalDate.parse("2026-09-01"), LocalDate.parse("2026-09-30"), ReportDownloadFormat.PDF),
-                null, null, null, null);
+                        7L,
+                        31L,
+                        41L,
+                        List.of("LECTURE"),
+                        LocalDate.parse("2026-09-01"),
+                        LocalDate.parse("2026-09-30"),
+                        ReportDownloadFormat.PDF),
+                null,
+                null,
+                null,
+                null);
     }
 
     private static IssueReportDownloadTicketRequest trendReport() {
-        return new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
-                null, null, null, null, null,
+        return new IssueReportDownloadTicketRequest(
+                ReportDownloadKind.HEADMAN_STATS_TREND,
+                null,
+                null,
+                null,
+                null,
+                null,
                 new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
                         IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.SEMESTER,
-                        null, null, null, ReportDownloadFormat.PNG));
+                        null,
+                        null,
+                        null,
+                        ReportDownloadFormat.PNG));
     }
 
     private static final class MutableClock extends Clock {

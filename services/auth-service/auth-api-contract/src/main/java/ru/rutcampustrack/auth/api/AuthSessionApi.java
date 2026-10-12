@@ -4,12 +4,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,8 +22,6 @@ import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.CurrentSessionResponse;
 import ru.rutcampustrack.auth.dto.SelectActiveRoleRequest;
 import ru.rutcampustrack.auth.dto.SelectActiveRoleResponse;
-
-import java.util.UUID;
 
 @Tag(name = "Authentication session", description = "Session, role and account security contracts")
 @RequestMapping("/auth")
@@ -39,8 +38,7 @@ public interface AuthSessionApi {
     @ApiResponse(responseCode = "200", description = "Role selected with a fresh session snapshot")
     @PutMapping("/session/active-role")
     ResponseEntity<SelectActiveRoleResponse> selectActiveRole(
-            @Valid @RequestBody SelectActiveRoleRequest request,
-            Authentication authentication);
+            @Valid @RequestBody SelectActiveRoleRequest request, Authentication authentication);
 
     @Operation(summary = "List the current user's live sessions")
     @ApiResponse(responseCode = "200", description = "Own non-expired sessions")
@@ -81,7 +79,5 @@ public interface AuthSessionApi {
     @ApiResponse(responseCode = "204", description = "Password changed and sessions revoked")
     @PostMapping("/change-password")
     ResponseEntity<Void> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request,
-            Authentication authentication);
+            @Valid @RequestBody ChangePasswordRequest request, Authentication authentication);
 }
-

@@ -1,5 +1,18 @@
 package ru.rutcampustrack.attendance.event;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import com.mongodb.client.result.UpdateResult;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,42 +34,19 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
-import com.mongodb.client.result.UpdateResult;
-
-import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
-/**
- * Unit tests for LessonEventService business logic.
- * Pure Mockito — no Spring context loaded.
- */
+/** Unit tests for LessonEventService business logic. Pure Mockito — no Spring context loaded. */
 @ExtendWith(MockitoExtension.class)
 class LessonEventServiceTest {
 
-    @Mock
-    private MongoTemplate mongoTemplate;
+    @Mock private MongoTemplate mongoTemplate;
 
-    @Mock
-    private ScheduleGrpcClient scheduleGrpcClient;
+    @Mock private ScheduleGrpcClient scheduleGrpcClient;
 
-    @Mock
-    private AcademicGrpcClient academicGrpcClient;
+    @Mock private AcademicGrpcClient academicGrpcClient;
 
-    @Mock
-    private SemesterCacheService semesterCacheService;
+    @Mock private SemesterCacheService semesterCacheService;
 
-    @Mock
-    private BulkOperations bulkOps;
+    @Mock private BulkOperations bulkOps;
 
     private LessonEventService lessonEventService;
 
@@ -64,15 +54,26 @@ class LessonEventServiceTest {
     void setUp() {
         // This focused test supplies the already accepted archive/lesson fence.
         // Real fence refusal and transactional effects are covered by the event ITs.
-        lessonEventService = new LessonEventService(
-                mongoTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor(), mock(PairWriteCoordinator.class),
-                mock(AttendanceAttachmentService.class));
+        lessonEventService =
+                new LessonEventService(
+                        mongoTemplate,
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        semesterCacheService,
+                        new SyncTaskExecutor(),
+                        mock(PairWriteCoordinator.class),
+                        mock(AttendanceAttachmentService.class));
         // Lenient: not all tests use bulkOps (e.g. empty group, cancellation tests)
-        lenient().when(mongoTemplate.bulkOps(any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class)))
+        lenient()
+                .when(
+                        mongoTemplate.bulkOps(
+                                any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class)))
                 .thenReturn(bulkOps);
         // Lenient: updateMulti returns non-null UpdateResult to prevent NPE in logger
-        lenient().when(mongoTemplate.updateMulti(any(Query.class), any(Update.class), eq(AttendanceDocument.class)))
+        lenient()
+                .when(
+                        mongoTemplate.updateMulti(
+                                any(Query.class), any(Update.class), eq(AttendanceDocument.class)))
                 .thenReturn(mock(UpdateResult.class));
     }
 
@@ -82,24 +83,43 @@ class LessonEventServiceTest {
 
     @Test
     void processLessonClosed_callsBulkUpsertForEachStudent() {
-        LessonResponse lesson = LessonResponse.newBuilder()
-                .setId(1L).setGroupId(10L).setSubjectId(5L)
-                .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
-                .setSemesterId(1L)
-                .build();
+        LessonResponse lesson =
+                LessonResponse.newBuilder()
+                        .setId(1L)
+                        .setGroupId(10L)
+                        .setSubjectId(5L)
+                        .setDate("2026-04-01")
+                        .setLessonNumber(1)
+                        .setStatus("closed")
+                        .setSemesterId(1L)
+                        .build();
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
 
-        GroupMembersResponse members = GroupMembersResponse.newBuilder()
-                .addStudents(StudentInfo.newBuilder().setUserId(100L).setDisplayName("Student 100").build())
-                .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student 101").build())
-                .addStudents(StudentInfo.newBuilder().setUserId(102L).setDisplayName("Student 102").build())
-                .build();
+        GroupMembersResponse members =
+                GroupMembersResponse.newBuilder()
+                        .addStudents(
+                                StudentInfo.newBuilder()
+                                        .setUserId(100L)
+                                        .setDisplayName("Student 100")
+                                        .build())
+                        .addStudents(
+                                StudentInfo.newBuilder()
+                                        .setUserId(101L)
+                                        .setDisplayName("Student 101")
+                                        .build())
+                        .addStudents(
+                                StudentInfo.newBuilder()
+                                        .setUserId(102L)
+                                        .setDisplayName("Student 102")
+                                        .build())
+                        .build();
         when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
-                .thenReturn(GroupMembersResponse.newBuilder()
-                        .addAllStudents(members.getStudentsList())
-                        .setAsOfDate("2026-04-01")
-                        .setSemesterId(1L)
-                        .build());
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .addAllStudents(members.getStudentsList())
+                                .setAsOfDate("2026-04-01")
+                                .setSemesterId(1L)
+                                .build());
 
         lessonEventService.processLessonClosed(1L, 10L);
 
@@ -113,21 +133,28 @@ class LessonEventServiceTest {
 
     @Test
     void processLessonClosed_emptyGroup_skipsWithoutBulkOps() {
-        LessonResponse lesson = LessonResponse.newBuilder()
-                .setId(1L).setGroupId(10L).setSubjectId(5L)
-                .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
-                .setSemesterId(1L)
-                .build();
+        LessonResponse lesson =
+                LessonResponse.newBuilder()
+                        .setId(1L)
+                        .setGroupId(10L)
+                        .setSubjectId(5L)
+                        .setDate("2026-04-01")
+                        .setLessonNumber(1)
+                        .setStatus("closed")
+                        .setSemesterId(1L)
+                        .build();
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
         when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
-                .thenReturn(GroupMembersResponse.newBuilder()
-                        .setAsOfDate("2026-04-01")
-                        .setSemesterId(1L)
-                        .build());
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .setAsOfDate("2026-04-01")
+                                .setSemesterId(1L)
+                                .build());
 
         lessonEventService.processLessonClosed(1L, 10L);
 
-        verify(mongoTemplate, never()).bulkOps(any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .bulkOps(any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class));
         verify(bulkOps, never()).execute();
     }
 
@@ -137,13 +164,19 @@ class LessonEventServiceTest {
 
     @Test
     void processLessonClosed_missingSemesterId_failsClosed() {
-        LessonResponse lesson = LessonResponse.newBuilder()
-                .setId(1L).setGroupId(10L).setSubjectId(5L)
-                .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
-                .build();
+        LessonResponse lesson =
+                LessonResponse.newBuilder()
+                        .setId(1L)
+                        .setGroupId(10L)
+                        .setSubjectId(5L)
+                        .setDate("2026-04-01")
+                        .setLessonNumber(1)
+                        .setStatus("closed")
+                        .build();
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
 
-        assertThrows(ScheduleServiceUnavailableException.class,
+        assertThrows(
+                ScheduleServiceUnavailableException.class,
                 () -> lessonEventService.processLessonClosed(1L, 10L));
         verifyNoInteractions(academicGrpcClient);
     }
@@ -155,9 +188,12 @@ class LessonEventServiceTest {
     @Test
     void processLessonClosed_grpcFailure_propagatesException() {
         when(scheduleGrpcClient.getLessonById(1L))
-                .thenThrow(new ScheduleServiceUnavailableException("Schedule Service unavailable: UNAVAILABLE"));
+                .thenThrow(
+                        new ScheduleServiceUnavailableException(
+                                "Schedule Service unavailable: UNAVAILABLE"));
 
-        assertThrows(ScheduleServiceUnavailableException.class,
+        assertThrows(
+                ScheduleServiceUnavailableException.class,
                 () -> lessonEventService.processLessonClosed(1L, 10L));
     }
 
@@ -171,9 +207,18 @@ class LessonEventServiceTest {
         lessonEventService.processLessonCancelled(1L, 1L);
 
         verify(mongoTemplate, times(1))
-                .updateMulti(any(Query.class), org.mockito.ArgumentMatchers.argThat(update ->
-                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.CANCELLED.equals(
-                                update.getUpdateObject().get("$set", org.bson.Document.class).get("status"))),
+                .updateMulti(
+                        any(Query.class),
+                        org.mockito.ArgumentMatchers.argThat(
+                                update ->
+                                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus
+                                                .CANCELLED
+                                                .equals(
+                                                        update.getUpdateObject()
+                                                                .get(
+                                                                        "$set",
+                                                                        org.bson.Document.class)
+                                                                .get("status"))),
                         eq(AttendanceDocument.class));
     }
 
@@ -192,6 +237,7 @@ class LessonEventServiceTest {
 
     private void stubCancellationMarker() {
         when(mongoTemplate.findOne(any(Query.class), eq(LessonCancellationMarker.class)))
-                .thenReturn(new LessonCancellationMarker("marker-1", 1L, 1L, java.time.Instant.now()));
+                .thenReturn(
+                        new LessonCancellationMarker("marker-1", 1L, 1L, java.time.Instant.now()));
     }
 }

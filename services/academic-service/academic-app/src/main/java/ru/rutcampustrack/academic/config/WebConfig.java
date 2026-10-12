@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.config;
 
 import com.fasterxml.jackson.databind.MapperFeature;
+import java.util.Locale;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +10,6 @@ import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.Locale;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {

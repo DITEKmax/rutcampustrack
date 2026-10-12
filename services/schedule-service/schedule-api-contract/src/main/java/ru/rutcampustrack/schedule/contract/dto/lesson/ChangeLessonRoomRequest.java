@@ -1,14 +1,13 @@
 package ru.rutcampustrack.schedule.contract.dto.lesson;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 /** Null or blank room clears the room of this occurrence only. */
 public record ChangeLessonRoomRequest(
-        String room,
-        @NotNull @Pattern(regexp = "[1-9][0-9]{0,18}") String expectedRevision) {
+        String room, @NotNull @Pattern(regexp = "[1-9][0-9]{0,18}") String expectedRevision) {
     /** Numeric JSON must not silently coerce into a room or a decimal revision. */
     @JsonCreator
     public static ChangeLessonRoomRequest fromJson(

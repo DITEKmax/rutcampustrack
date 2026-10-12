@@ -4,36 +4,34 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.springframework.context.ApplicationEvent;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Базовый класс для всех domain events (NEW-60, P2-1/5, QA3, M04 D5(a)).
  *
  * <p>Envelope-поля — snake_case в JSON (соответствует event-schemas):
+ *
  * <ul>
- *   <li>{@code event_type} — строковый идентификатор события (например
- *       {@code "lesson.started"}). Соответствует filename в event-schemas/.</li>
- *   <li>{@code event_id} — UUID конкретного экземпляра события.</li>
- *   <li>{@code event_version} — версия schema из {@link EventVersion}
- *       (auto-fill в {@link AbstractEventPublisher}).</li>
- *   <li>{@code trace_id} — correlation id (auto-fill из MDC в
- *       {@link AbstractEventPublisher}).</li>
- *   <li>{@code occurred_at} — время события.</li>
- *   <li>{@code source} — сервис-источник (например {@code "academic-service"}).</li>
- *   <li>{@code payload} — domain-специфичные данные (POJO/record, сериализуется Jackson'ом).</li>
+ *   <li>{@code event_type} — строковый идентификатор события (например {@code "lesson.started"}).
+ *       Соответствует filename в event-schemas/.
+ *   <li>{@code event_id} — UUID конкретного экземпляра события.
+ *   <li>{@code event_version} — версия schema из {@link EventVersion} (auto-fill в {@link
+ *       AbstractEventPublisher}).
+ *   <li>{@code trace_id} — correlation id (auto-fill из MDC в {@link AbstractEventPublisher}).
+ *   <li>{@code occurred_at} — время события.
+ *   <li>{@code source} — сервис-источник (например {@code "academic-service"}).
+ *   <li>{@code payload} — domain-специфичные данные (POJO/record, сериализуется Jackson'ом).
  * </ul>
  *
- * <p>Extends Spring's {@code ApplicationEvent} — сервисы публикуют через
- * {@code applicationEventPublisher.publishEvent(...)}, а
- * {@code @TransactionalEventListener} в каждом сервисе сериализует payload
- * и пишет в outbox table.
+ * <p>Extends Spring's {@code ApplicationEvent} — сервисы публикуют через {@code
+ * applicationEventPublisher.publishEvent(...)}, а {@code @TransactionalEventListener} в каждом
+ * сервисе сериализует payload и пишет в outbox table.
  *
- * <p>{@code @JsonIgnoreProperties} прячет служебные поля Spring
- * ApplicationEvent ({@code source}, {@code timestamp}). Наше поле {@code source}
- * (сервис-источник) объявлено отдельно с {@code @JsonProperty}.
+ * <p>{@code @JsonIgnoreProperties} прячет служебные поля Spring ApplicationEvent ({@code source},
+ * {@code timestamp}). Наше поле {@code source} (сервис-источник) объявлено отдельно с
+ * {@code @JsonProperty}.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties({"timestamp"})
@@ -62,8 +60,9 @@ public abstract class DomainEvent extends ApplicationEvent {
     private final Object payload;
 
     /**
-     * @param eventType строковый идентификатор события (snake_case dot-separated, например {@code "lesson.started"}).
-     * @param payload   domain-данные (POJO/record), сериализуется Jackson'ом.
+     * @param eventType строковый идентификатор события (snake_case dot-separated, например {@code
+     *     "lesson.started"}).
+     * @param payload domain-данные (POJO/record), сериализуется Jackson'ом.
      */
     protected DomainEvent(String eventType, Object payload) {
         super(eventType);

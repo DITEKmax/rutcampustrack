@@ -3,11 +3,12 @@ package ru.rutcampustrack.attendance.contract.dto.report;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Attendance stats for one subject (RPRT-03, D-13).
- * subjectName is resolved via gRPC GetSubjectsByIds call in the service layer.
- * Plain Java class — no Lombok (contract module rule).
+ * Attendance stats for one subject (RPRT-03, D-13). subjectName is resolved via gRPC
+ * GetSubjectsByIds call in the service layer. Plain Java class — no Lombok (contract module rule).
  */
-@Schema(description = "Статистика по одному предмету: ID, название, тип занятия, счётчики статусов, процент посещения")
+@Schema(
+        description =
+                "Статистика по одному предмету: ID, название, тип занятия, счётчики статусов, процент посещения")
 public class SubjectStats {
 
     private final Long subjectId;
@@ -19,13 +20,26 @@ public class SubjectStats {
     private final int excused;
     private final double percentage;
 
-    public SubjectStats(Long subjectId, String subjectName, int total, int attended,
-                        int absent, int excused, double percentage) {
+    public SubjectStats(
+            Long subjectId,
+            String subjectName,
+            int total,
+            int attended,
+            int absent,
+            int excused,
+            double percentage) {
         this(subjectId, subjectName, "", total, attended, absent, excused, percentage);
     }
 
-    public SubjectStats(Long subjectId, String subjectName, String subjectType, int total, int attended,
-                        int absent, int excused, double percentage) {
+    public SubjectStats(
+            Long subjectId,
+            String subjectName,
+            String subjectType,
+            int total,
+            int attended,
+            int absent,
+            int excused,
+            double percentage) {
         this.subjectId = subjectId;
         this.subjectName = subjectName;
         this.subjectType = subjectType;

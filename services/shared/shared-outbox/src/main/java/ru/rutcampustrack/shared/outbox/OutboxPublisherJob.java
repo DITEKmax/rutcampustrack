@@ -2,36 +2,33 @@ package ru.rutcampustrack.shared.outbox;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.util.List;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
  * Публикует pending outbox-записи во внешний транспорт.
  *
- * <p>Запускается раз в {@code fixedDelay = 5000ms} (ms). {@link SchedulerLock}
- * гарантирует, что при scale-out только один инстанс за tick реально читает
- * outbox. Имя lock'а — константа {@code "outbox-publisher"}: каждый сервис
- * держит свой ShedLock-table в своей БД (academic_db / schedule_db — PG,
- * attendance_db — Mongo), поэтому три сервиса не конкурируют за один lock.
+ * <p>Запускается раз в {@code fixedDelay = 5000ms} (ms). {@link SchedulerLock} гарантирует, что при
+ * scale-out только один инстанс за tick реально читает outbox. Имя lock'а — константа {@code
+ * "outbox-publisher"}: каждый сервис держит свой ShedLock-table в своей БД (academic_db /
+ * schedule_db — PG, attendance_db — Mongo), поэтому три сервиса не конкурируют за один lock.
  * Конкурируют только инстансы ОДНОГО сервиса — ровно то что нужно.
  *
- * <p>Транзакционность: {@code @Transactional} на tick — вся batch'а идёт
- * одной tx. После успешной publish-попытки sender'ом → {@code markSent}.
- * При transport exception запись не переводится в FAILED: job логирует сбой,
- * бросает exception наружу, и следующий tick снова подхватывает pending rows.
+ * <p>Транзакционность: {@code @Transactional} на tick — вся batch'а идёт одной tx. После успешной
+ * publish-попытки sender'ом → {@code markSent}. При transport exception запись не переводится в
+ * FAILED: job логирует сбой, бросает exception наружу, и следующий tick снова подхватывает pending
+ * rows.
  *
- * <p>Важно: {@code markFailed} помечает запись FAILED (не pending), поэтому
- * для временной недоступности RabbitMQ он не используется. Семантика отправки —
- * at-least-once, consumers дедуплицируют повторные события по {@code event_id}.
+ * <p>Важно: {@code markFailed} помечает запись FAILED (не pending), поэтому для временной
+ * недоступности RabbitMQ он не используется. Семантика отправки — at-least-once, consumers
+ * дедуплицируют повторные события по {@code event_id}.
  *
- * <p>Сервис-потребитель регистрирует этот job как {@code @Bean} и
- * {@code @Component} сразу не нужен — Spring сканирует shared-outbox пакет
- * и создаёт сам (NEW-34 component-scan path).
+ * <p>Сервис-потребитель регистрирует этот job как {@code @Bean} и {@code @Component} сразу не нужен
+ * — Spring сканирует shared-outbox пакет и создаёт сам (NEW-34 component-scan path).
  */
 public class OutboxPublisherJob {
 
@@ -49,36 +46,34 @@ public class OutboxPublisherJob {
 
     /**
      * @param storage storage-реализация (JpaOutboxStorage / MongoOutboxStorage)
-     * @param sender  транспортный shim (обычно RabbitTemplate wrapper)
+     * @param sender транспортный shim (обычно RabbitTemplate wrapper)
      */
     public OutboxPublisherJob(OutboxStorage storage, OutboxEventSender sender) {
         this(storage, sender, null);
     }
 
     /**
-     * @param storage       storage-реализация
-     * @param sender        транспортный shim
+     * @param storage storage-реализация
+     * @param sender транспортный shim
      * @param meterRegistry Micrometer registry — null допустимо (метрики не пишутся)
      */
-    public OutboxPublisherJob(OutboxStorage storage, OutboxEventSender sender,
-                              MeterRegistry meterRegistry) {
+    public OutboxPublisherJob(
+            OutboxStorage storage, OutboxEventSender sender, MeterRegistry meterRegistry) {
         this.storage = storage;
         this.sender = sender;
         this.meterRegistry = meterRegistry;
     }
 
     @Scheduled(fixedDelayString = "${rutcampustrack.outbox.publisher.fixed-delay-ms:5000}")
-    @SchedulerLock(name = LOCK_NAME,
-                   lockAtMostFor = "PT1M",
-                   lockAtLeastFor = "PT5S")
+    @SchedulerLock(name = LOCK_NAME, lockAtMostFor = "PT1M", lockAtLeastFor = "PT5S")
     @Transactional
     public void tick() {
         publishBatch();
     }
 
     /**
-     * Internal method — extracted для юнит-тестов без Spring proxy-wrapping.
-     * {@code @Transactional} здесь не применяется — caller должен обеспечить tx.
+     * Internal method — extracted для юнит-тестов без Spring proxy-wrapping. {@code @Transactional}
+     * здесь не применяется — caller должен обеспечить tx.
      */
     public int publishBatch() {
         List<OutboxRecord> batch = storage.findPending(BATCH_SIZE);
@@ -91,11 +86,18 @@ public class OutboxPublisherJob {
             try {
                 sender.send(record.eventType(), record.payload());
             } catch (Exception e) {
-                log.error("Outbox publish failed: id={}, eventType={}, error={}",
-                        record.id(), record.eventType(), e.getMessage());
+                log.error(
+                        "Outbox publish failed: id={}, eventType={}, error={}",
+                        record.id(),
+                        record.eventType(),
+                        e.getMessage());
                 incrementFailed(record.eventType());
-                throw new IllegalStateException("Outbox publish failed: id=" + record.id()
-                        + ", eventType=" + record.eventType(), e);
+                throw new IllegalStateException(
+                        "Outbox publish failed: id="
+                                + record.id()
+                                + ", eventType="
+                                + record.eventType(),
+                        e);
             }
         }
         for (OutboxRecord record : batch) {

@@ -1,7 +1,7 @@
 package ru.rutcampustrack.auth.event;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import ru.rutcampustrack.shared.events.EventVersion;
 
 /** Metadata persisted atomically with a password change/reset, then delivered by outbox. */
@@ -15,16 +15,26 @@ public final class PasswordChangedEvent extends DomainEvent {
             @JsonProperty("telegram_binding_version") long telegramBindingVersion,
             @JsonProperty("telegram_id") Long telegramId) {
         public Payload {
-            if (userId <= 0 || credentialsVersion <= 0 || telegramBindingVersion <= 0
+            if (userId <= 0
+                    || credentialsVersion <= 0
+                    || telegramBindingVersion <= 0
                     || telegramId != null && telegramId <= 0) {
-                throw new IllegalArgumentException("password event identity and generations must be positive");
+                throw new IllegalArgumentException(
+                        "password event identity and generations must be positive");
             }
         }
     }
 
-    public PasswordChangedEvent(Object source, long userId, long credentialsVersion,
-                                long telegramBindingVersion, Long telegramId) {
-        super(source, "password.changed", new Payload(userId, credentialsVersion, telegramBindingVersion, telegramId));
+    public PasswordChangedEvent(
+            Object source,
+            long userId,
+            long credentialsVersion,
+            long telegramBindingVersion,
+            Long telegramId) {
+        super(
+                source,
+                "password.changed",
+                new Payload(userId, credentialsVersion, telegramBindingVersion, telegramId));
         setEventVersion(2);
     }
 }

@@ -1,40 +1,6 @@
 package ru.rutcampustrack.schedule.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.ResourceLock;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import java.util.Locale;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import com.fasterxml.jackson.databind.JsonNode;
-import ru.rutcampustrack.schedule.events.EventSchemaValidator;
-import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
-import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
-import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
-import ru.rutcampustrack.schedule.lesson.entity.Lesson;
-import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
-import ru.rutcampustrack.academic.grpc.SemesterTransition;
-import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
-import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
-import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
-
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
@@ -45,36 +11,60 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.academic.grpc.SemesterTransition;
+import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
+import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+import ru.rutcampustrack.schedule.events.EventSchemaValidator;
+import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+
 /**
- * Integration tests for lesson operations: cancel (LSSN-04), restore (LSSN-05),
- * removed mass-cancel route (LSSN-06), and geo-block toggle (LSSN-07).
+ * Integration tests for lesson operations: cancel (LSSN-04), restore (LSSN-05), removed mass-cancel
+ * route (LSSN-06), and geo-block toggle (LSSN-07).
  */
 @AutoConfigureMockMvc
 class LessonApiIT extends AbstractScheduleIntegrationTest {
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @Autowired
-    ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl grpcService;
+    @Autowired ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl grpcService;
 
-    @Autowired
-    LessonTransferWriter transferWriter;
+    @Autowired LessonTransferWriter transferWriter;
 
-    @Autowired
-    MockMvc mockMvc;
+    @Autowired MockMvc mockMvc;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    @Autowired ObjectMapper objectMapper;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
+    @Autowired JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
     private static final AtomicLong FIXTURE_SEQUENCE =
             new AtomicLong(System.currentTimeMillis() * 1000L);
@@ -97,31 +87,51 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     }
 
     private ScheduleItem createScheduleItem(LocalDate from, LocalDate untilExclusive) {
-        jdbcTemplate.update("""
+        jdbcTemplate.update(
+                """
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
                      lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
                 VALUES (?, ?, 100, 10, 700, 'lecture', ?, ?, ?)
-                """, testGroupId, testGroupId, from, untilExclusive, untilExclusive);
-        Long itemId = jdbcTemplate.queryForObject("""
+                """,
+                testGroupId,
+                testGroupId,
+                from,
+                untilExclusive,
+                untilExclusive);
+        Long itemId =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,
                      lesson_number, start_time, end_time, week_type, room)
                 VALUES (?, ?, 100, 10, 3, 1, '08:30'::time, '09:50'::time, 'all', 'A-101')
                 RETURNING id
-                """, Long.class, testGroupId, testGroupId);
+                """,
+                        Long.class,
+                        testGroupId,
+                        testGroupId);
         return scheduleItemRepository.findById(itemId).orElseThrow();
     }
 
     private Lesson createLesson(Long scheduleItemId, LessonStatus status, LocalDate date) {
-        Long occurrenceId = jdbcTemplate.queryForObject("""
+        Long occurrenceId =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO lesson_occurrences
                     (schedule_item_id, occurrence_date, assignment_id, group_id,
                      subject_id, semester_id, assigned_teacher_id, lesson_type)
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture')
                 RETURNING id
-                """, Long.class, scheduleItemId, date, testGroupId, testGroupId);
-        Long lessonId = jdbcTemplate.queryForObject("""
+                """,
+                        Long.class,
+                        scheduleItemId,
+                        date,
+                        testGroupId,
+                        testGroupId);
+        Long lessonId =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO lessons
                     (schedule_item_id, occurrence_id, assignment_id, group_id, subject_id,
                      semester_id, assigned_teacher_id, lesson_type, lesson_number,
@@ -130,42 +140,63 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', 1, 3, 'all',
                         '08:30'::time, '09:50'::time, 1, 1, ?, ?::lesson_status, false)
                 RETURNING id
-                """, Long.class, scheduleItemId, occurrenceId, testGroupId, testGroupId,
-                date, status.name().toLowerCase());
-        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
-                lessonId, occurrenceId);
-        jdbcTemplate.update("""
+                """,
+                        Long.class,
+                        scheduleItemId,
+                        occurrenceId,
+                        testGroupId,
+                        testGroupId,
+                        date,
+                        status.name().toLowerCase());
+        jdbcTemplate.update(
+                "UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
+                lessonId,
+                occurrenceId);
+        jdbcTemplate.update(
+                """
                 INSERT INTO lesson_lifecycle_entries
                     (occurrence_id, revision, action, lesson_id, generation, actor_id, occurred_at)
                 VALUES (?, 1, 'CREATED', ?, 1, ?, NOW())
-                """, occurrenceId, lessonId, USER_ID);
+                """,
+                occurrenceId,
+                lessonId,
+                USER_ID);
         return lessonRepository.findById(lessonId).orElseThrow();
     }
 
-    private Long insertHomeworkBinding(long occurrenceId, long lessonId, long authorId, UUID requestKey) {
-        return jdbcTemplate.queryForObject("""
+    private Long insertHomeworkBinding(
+            long occurrenceId, long lessonId, long authorId, UUID requestKey) {
+        return jdbcTemplate.queryForObject(
+                """
                 INSERT INTO lesson_homework_bindings
                     (occurrence_id, current_lesson_id, homework_id, actor_id, request_key,
                      payload_hash, state, revision)
                 VALUES (?, ?, 8801, ?, ?, ?, 'ACTIVE', 1)
                 RETURNING binding_id
-                """, Long.class, occurrenceId, lessonId, authorId, requestKey, new byte[32]);
+                """,
+                Long.class,
+                occurrenceId,
+                lessonId,
+                authorId,
+                requestKey,
+                new byte[32]);
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder withHeadmanHeaders(
-            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
-        return request
-                .header("X-User-Id", USER_ID.toString())
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            withHeadmanHeaders(
+                    org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+                            request) {
+        return request.header("X-User-Id", USER_ID.toString())
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", testGroupId.toString())
                 .header("X-Is-Headman", "true");
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder withAdminHeaders(
-            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
-        return request
-                .header("X-User-Id", "999")
-                .header("X-User-Role", "ADMIN");
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            withAdminHeaders(
+                    org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+                            request) {
+        return request.header("X-User-Id", "999").header("X-User-Role", "ADMIN");
     }
 
     @ParameterizedTest
@@ -182,29 +213,51 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 assertThat(lessonRepository.findById(active.getId()).orElseThrow().getStatus())
                         .isEqualTo(LessonStatus.ACTIVE);
             } else if (boundary.equals("write")) {
-                var converter = new ru.rutcampustrack.schedule.config.EnumConverters.LessonStatusConverter();
+                var converter =
+                        new ru.rutcampustrack.schedule.config.EnumConverters
+                                .LessonStatusConverter();
                 // The durable code is checked before binding into the real PostgreSQL enum.
                 String code = converter.convertToDatabaseColumn(LessonStatus.ACTIVE);
                 assertThat(code).isEqualTo("active");
-                jdbcTemplate.update("UPDATE lessons SET status=?::lesson_status WHERE id=?", code, active.getId());
-                assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id=?",
-                        String.class, active.getId())).isEqualTo("active");
+                jdbcTemplate.update(
+                        "UPDATE lessons SET status=?::lesson_status WHERE id=?",
+                        code,
+                        active.getId());
+                assertThat(
+                                jdbcTemplate.queryForObject(
+                                        "SELECT status::text FROM lessons WHERE id=?",
+                                        String.class,
+                                        active.getId()))
+                        .isEqualTo("active");
                 assertThat(converter.convertToDatabaseColumn(null)).isNull();
                 assertThat(converter.convertToEntityAttribute(null)).isNull();
-                org.assertj.core.api.Assertions.assertThatThrownBy(() -> converter.convertToEntityAttribute("future"))
+                org.assertj.core.api.Assertions.assertThatThrownBy(
+                                () -> converter.convertToEntityAttribute("future"))
                         .isInstanceOf(IllegalArgumentException.class);
             } else {
-                JsonNode response = objectMapper.readTree(mockMvc.perform(withHeadmanHeaders(
-                        get("/schedule/groups/{groupId}/lessons", testGroupId)
-                                .param("dateFrom", date.toString()).param("dateTo", date.toString())
-                                .param("status", "active")))
-                        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+                JsonNode response =
+                        objectMapper.readTree(
+                                mockMvc.perform(
+                                                withHeadmanHeaders(
+                                                        get(
+                                                                        "/schedule/groups/{groupId}/lessons",
+                                                                        testGroupId)
+                                                                .param("dateFrom", date.toString())
+                                                                .param("dateTo", date.toString())
+                                                                .param("status", "active")))
+                                        .andExpect(status().isOk())
+                                        .andReturn()
+                                        .getResponse()
+                                        .getContentAsString());
                 JsonNode rows = response.path("_embedded").elements().next();
                 assertThat(rows.size()).isEqualTo(1);
                 assertThat(rows.get(0).path("id").asLong()).isEqualTo(active.getId());
-                mockMvc.perform(withHeadmanHeaders(get("/schedule/groups/{groupId}/lessons", testGroupId)
-                                .param("dateFrom", date.toString()).param("dateTo", date.toString())
-                                .param("status", "future")))
+                mockMvc.perform(
+                                withHeadmanHeaders(
+                                        get("/schedule/groups/{groupId}/lessons", testGroupId)
+                                                .param("dateFrom", date.toString())
+                                                .param("dateTo", date.toString())
+                                                .param("status", "future")))
                         .andExpect(status().isBadRequest());
             }
         } finally {
@@ -218,46 +271,89 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem(date.minusDays(1), date.plusDays(5));
         Lesson closed = createLesson(item.getId(), LessonStatus.CLOSED, date);
         jdbcTemplate.update("UPDATE schedule_items SET room = 'B-202' WHERE id = ?", item.getId());
-        JsonNode response = objectMapper.readTree(mockMvc.perform(withHeadmanHeaders(
-                get("/schedule/groups/{groupId}/lessons", testGroupId)
-                        .param("dateFrom", date.toString()).param("dateTo", date.toString())
-                        .param("status", "CLOSED")))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        JsonNode response =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        withHeadmanHeaders(
+                                                get(
+                                                                "/schedule/groups/{groupId}/lessons",
+                                                                testGroupId)
+                                                        .param("dateFrom", date.toString())
+                                                        .param("dateTo", date.toString())
+                                                        .param("status", "CLOSED")))
+                                .andExpect(status().isOk())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
         JsonNode rows = response.path("_embedded").elements().next();
         assertThat(rows.size()).isEqualTo(1);
         assertThat(rows.get(0).path("id").asLong()).isEqualTo(closed.getId());
         assertThat(rows.get(0).path("room").isNull()).isTrue();
-        var result = new java.util.concurrent.CompletableFuture<ru.rutcampustrack.schedule.grpc.LessonResponse>();
-        grpcService.getLessonById(ru.rutcampustrack.schedule.grpc.LessonByIdRequest.newBuilder()
-                .setLessonId(closed.getId()).build(), new io.grpc.stub.StreamObserver<>() {
-            @Override public void onNext(ru.rutcampustrack.schedule.grpc.LessonResponse value) { result.complete(value); }
-            @Override public void onError(Throwable error) { result.completeExceptionally(error); }
-            @Override public void onCompleted() { }
-        });
+        var result =
+                new java.util.concurrent.CompletableFuture<
+                        ru.rutcampustrack.schedule.grpc.LessonResponse>();
+        grpcService.getLessonById(
+                ru.rutcampustrack.schedule.grpc.LessonByIdRequest.newBuilder()
+                        .setLessonId(closed.getId())
+                        .build(),
+                new io.grpc.stub.StreamObserver<>() {
+                    @Override
+                    public void onNext(ru.rutcampustrack.schedule.grpc.LessonResponse value) {
+                        result.complete(value);
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        result.completeExceptionally(error);
+                    }
+
+                    @Override
+                    public void onCompleted() {}
+                });
         assertThat(result.get(5, java.util.concurrent.TimeUnit.SECONDS).getRoom()).isEmpty();
-        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class,
-                closed.getId())).isNull();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT room_snapshot FROM lessons WHERE id = ?",
+                                String.class,
+                                closed.getId()))
+                .isNull();
     }
 
     @Test
     void getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer() throws Exception {
         LocalDate sourceDate = LocalDate.now(ZoneId.of("Europe/Moscow")).plusDays(10);
-        if (sourceDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) sourceDate = sourceDate.plusDays(1);
+        if (sourceDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY)
+            sourceDate = sourceDate.plusDays(1);
         LocalDate targetDate = sourceDate.plusDays(1);
-        if (targetDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) targetDate = targetDate.plusDays(1);
+        if (targetDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY)
+            targetDate = targetDate.plusDays(1);
         createScheduleItem(sourceDate.minusDays(1), targetDate.plusDays(2));
         long sourceId = insertOneOffChoice(sourceDate, (short) 2);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
                 .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
-        var transfer = transferWriter.transfer(sourceId, USER_ID,
-                new TransferLessonRequest(targetDate, 3, null, null, "moved", "1", UUID.randomUUID()));
+        var transfer =
+                transferWriter.transfer(
+                        sourceId,
+                        USER_ID,
+                        new TransferLessonRequest(
+                                targetDate, 3, null, null, "moved", "1", UUID.randomUUID()));
         long targetId = Long.parseLong(transfer.targetLessonId());
 
-        JsonNode response = objectMapper.readTree(mockMvc.perform(withHeadmanHeaders(
-                get("/schedule/groups/{groupId}/lessons", testGroupId)
-                        .param("dateFrom", sourceDate.toString()).param("dateTo", targetDate.toString())
-                        .param("status", "PLANNED", "TRANSFERRED").param("size", "100")))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        JsonNode response =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        withHeadmanHeaders(
+                                                get(
+                                                                "/schedule/groups/{groupId}/lessons",
+                                                                testGroupId)
+                                                        .param("dateFrom", sourceDate.toString())
+                                                        .param("dateTo", targetDate.toString())
+                                                        .param("status", "PLANNED", "TRANSFERRED")
+                                                        .param("size", "100")))
+                                .andExpect(status().isOk())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
         var collections = response.path("_embedded").elements();
         assertThat(collections.hasNext()).isTrue();
         JsonNode rows = collections.next();
@@ -275,39 +371,68 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         assertThat(old.path("current").asBoolean()).isFalse();
         assertThat(current.path("status").asText()).isEqualTo("PLANNED");
         assertThat(current.path("current").asBoolean()).isTrue();
-        assertThat(current.path("occurrenceId").asLong()).isEqualTo(old.path("occurrenceId").asLong());
-        assertThat(current.path("generation").asLong()).isEqualTo(old.path("generation").asLong() + 1);
+        assertThat(current.path("occurrenceId").asLong())
+                .isEqualTo(old.path("occurrenceId").asLong());
+        assertThat(current.path("generation").asLong())
+                .isEqualTo(old.path("generation").asLong() + 1);
         assertThat(current.path("date").asText()).isEqualTo(targetDate.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?",
-                Long.class, current.path("occurrenceId").asLong())).isEqualTo(targetId);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?",
+                                Long.class,
+                                current.path("occurrenceId").asLong()))
+                .isEqualTo(targetId);
     }
 
     @Test
-    void nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope() throws Exception {
+    void nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope()
+            throws Exception {
         LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
         ScheduleItem item = createScheduleItem(today.minusYears(1), today.plusYears(1));
-        createLesson(item.getId(), LessonStatus.PLANNED, today.minusDays(1)); // elapsed despite stale status
+        createLesson(
+                item.getId(),
+                LessonStatus.PLANNED,
+                today.minusDays(1)); // elapsed despite stale status
         createLesson(item.getId(), LessonStatus.CLOSED, today.plusDays(2));
         createLesson(item.getId(), LessonStatus.CANCELLED, today.plusDays(3));
         Lesson source = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(4));
         LocalDate transferDate = today.plusDays(5);
-        if (transferDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) transferDate = transferDate.plusDays(1);
+        if (transferDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY)
+            transferDate = transferDate.plusDays(1);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
                 .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
         when(academicGrpcClient.getSemesterArchiveAuthorityState(11L))
                 .thenReturn(SemesterStateResponse.newBuilder().setId(11L).build());
-        transferWriter.transfer(source.getId(), USER_ID,
-                new TransferLessonRequest(transferDate, 3, null, null, null, "1", UUID.randomUUID()));
+        transferWriter.transfer(
+                source.getId(),
+                USER_ID,
+                new TransferLessonRequest(
+                        transferDate, 3, null, null, null, "1", UUID.randomUUID()));
         Lesson nearest = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(30));
 
         // Native JDBC binding must retain Moscow wall time on a UTC JVM,
         // including the exact five-minute eligibility boundary.
         LocalDate nearestDate = nearest.getDate();
-        assertThat(lessonRepository.findNextHomeworkLesson(testGroupId, 10L, 100L, "lecture",
-                nearestDate, nearestDate + "T09:54:00").map(choice -> choice.getLessonId()))
+        assertThat(
+                        lessonRepository
+                                .findNextHomeworkLesson(
+                                        testGroupId,
+                                        10L,
+                                        100L,
+                                        "lecture",
+                                        nearestDate,
+                                        nearestDate + "T09:54:00")
+                                .map(choice -> choice.getLessonId()))
                 .contains(nearest.getId());
-        assertThat(lessonRepository.findNextHomeworkLesson(testGroupId, 10L, 100L, "lecture",
-                nearestDate, nearestDate + "T09:55:00")).isEmpty();
+        assertThat(
+                        lessonRepository.findNextHomeworkLesson(
+                                testGroupId,
+                                10L,
+                                100L,
+                                "lecture",
+                                nearestDate,
+                                nearestDate + "T09:55:00"))
+                .isEmpty();
 
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.minusDays(1))))
                 .andExpect(status().isOk())
@@ -326,7 +451,8 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 .andExpect(jsonPath("$.subjectId", is(100)))
                 .andExpect(jsonPath("$.lessonType", is("lecture")));
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.plusDays(30))))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.lessonId").value(nearest.getId()));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lessonId").value(nearest.getId()));
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.plusDays(31))))
                 .andExpect(status().isNoContent());
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 11L, "LECTURE", today)))
@@ -336,12 +462,16 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId + 1, today)))
                 .andExpect(status().isForbidden());
         when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
-                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).setArchived(true).build());
+                .thenReturn(
+                        SemesterStateResponse.newBuilder().setId(10L).setArchived(true).build());
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
                 .andExpect(status().isNoContent());
         when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
-                .thenReturn(SemesterStateResponse.newBuilder().setId(10L)
-                        .setTransition(SemesterTransition.ARCHIVING).build());
+                .thenReturn(
+                        SemesterStateResponse.newBuilder()
+                                .setId(10L)
+                                .setTransition(SemesterTransition.ARCHIVING)
+                                .build());
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
                 .andExpect(status().isNoContent());
         when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
@@ -349,13 +479,17 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         when(academicGrpcClient.isHeadman(USER_ID, testGroupId)).thenReturn(false);
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
                 .andExpect(status().isForbidden());
-        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK")).thenReturn(true);
+        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK"))
+                .thenReturn(true);
         mockMvc.perform(withAssistantHeaders(nextChoice(testGroupId, today)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.lessonId").value(oneOff));
-        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK")).thenReturn(false);
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lessonId").value(oneOff));
+        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK"))
+                .thenReturn(false);
         mockMvc.perform(withAssistantHeaders(nextChoice(testGroupId, today)))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(withHeadmanHeaders(nextChoice(0L, today))).andExpect(status().isBadRequest());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(0L, today)))
+                .andExpect(status().isBadRequest());
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 10L, "UNKNOWN", today)))
                 .andExpect(status().isBadRequest());
     }
@@ -367,36 +501,73 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder nextChoice(
             Long groupId, Long semesterId, String lessonType, LocalDate fromDate) {
-        return get("/schedule/lessons/next").param("groupId", groupId.toString())
-                .param("semesterId", semesterId.toString()).param("subjectId", "100")
-                .param("lessonType", lessonType).param("fromDate", fromDate.toString());
+        return get("/schedule/lessons/next")
+                .param("groupId", groupId.toString())
+                .param("semesterId", semesterId.toString())
+                .param("subjectId", "100")
+                .param("lessonType", lessonType)
+                .param("fromDate", fromDate.toString());
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder withAssistantHeaders(
-            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
-        return request.header("X-User-Id", USER_ID.toString()).header("X-User-Role", "STUDENT")
-                .header("X-Group-Id", testGroupId.toString()).header("X-Is-Headman", "false");
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            withAssistantHeaders(
+                    org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+                            request) {
+        return request.header("X-User-Id", USER_ID.toString())
+                .header("X-User-Role", "STUDENT")
+                .header("X-Group-Id", testGroupId.toString())
+                .header("X-Is-Headman", "false");
     }
 
     private long insertOneOffChoice(LocalDate date, short lessonNumber) {
-        long oneOffId = jdbcTemplate.queryForObject("""
+        long oneOffId =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO schedule_one_off_lessons (group_id, subject_id, semester_id, date,
                     lesson_number, created_by) VALUES (?, 100, 10, ?, ?, ?) RETURNING id
-                """, Long.class, testGroupId, date, lessonNumber, USER_ID);
-        long occurrenceId = jdbcTemplate.queryForObject("""
+                """,
+                        Long.class,
+                        testGroupId,
+                        date,
+                        lessonNumber,
+                        USER_ID);
+        long occurrenceId =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO lesson_occurrences (one_off_lesson_id, occurrence_date, assignment_id,
                     group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture') RETURNING id
-                """, Long.class, oneOffId, date, testGroupId, testGroupId);
-        long lessonId = jdbcTemplate.queryForObject("""
+                """,
+                        Long.class,
+                        oneOffId,
+                        date,
+                        testGroupId,
+                        testGroupId);
+        long lessonId =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO lessons (one_off_lesson_id, occurrence_id, assignment_id, group_id,
                     subject_id, semester_id, assigned_teacher_id, lesson_type, date, lesson_number,
                     start_time, end_time, day_of_week, week_type_snapshot, status, generation, revision)
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', ?, ?, '08:30'::time,
                     '09:50'::time, extract(isodow FROM ?::date), 'all', 'planned', 1, 1) RETURNING id
-                """, Long.class, oneOffId, occurrenceId, testGroupId, testGroupId, date, lessonNumber, date);
-        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
-        jdbcTemplate.update("UPDATE schedule_one_off_lessons SET physical_lesson_id = ? WHERE id = ?", lessonId, oneOffId);
+                """,
+                        Long.class,
+                        oneOffId,
+                        occurrenceId,
+                        testGroupId,
+                        testGroupId,
+                        date,
+                        lessonNumber,
+                        date);
+        jdbcTemplate.update(
+                "UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
+                lessonId,
+                occurrenceId);
+        jdbcTemplate.update(
+                "UPDATE schedule_one_off_lessons SET physical_lesson_id = ? WHERE id = ?",
+                lessonId,
+                oneOffId);
         return lessonId;
     }
 
@@ -407,11 +578,13 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "Snow day")))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of("reason", "Snow day")))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("CANCELLED")))
                 .andExpect(jsonPath("$.cancelReason", is("Snow day")))
@@ -419,7 +592,8 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 .andExpect(jsonPath("$.cancelledAt").exists());
 
         Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
-        org.assertj.core.api.Assertions.assertThat(saved.getStatus()).isEqualTo(LessonStatus.CANCELLED);
+        org.assertj.core.api.Assertions.assertThat(saved.getStatus())
+                .isEqualTo(LessonStatus.CANCELLED);
         org.assertj.core.api.Assertions.assertThat(saved.getCancelledBy()).isNotNull();
         org.assertj.core.api.Assertions.assertThat(saved.getCancelledAt()).isNotNull();
     }
@@ -431,11 +605,15 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.ACTIVE, LocalDate.of(2026, 4, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "Cancel running lesson")))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of(
+                                                                "reason",
+                                                                "Cancel running lesson")))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("CANCELLED")));
     }
@@ -447,11 +625,15 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.CLOSED, LocalDate.of(2026, 3, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "Replaced retroactively")))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of(
+                                                                "reason",
+                                                                "Replaced retroactively")))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("CANCELLED")));
     }
@@ -459,13 +641,16 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     @Test
     void cancelLesson_alreadyCancelled_returns422() throws Exception {
         ScheduleItem item = createScheduleItem();
-        Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 1));
+        Lesson lesson =
+                createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "Double cancel")))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of("reason", "Double cancel")))))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -474,11 +659,13 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "")))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of("reason", "")))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -487,15 +674,16 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     @Test
     void restoreLesson_cancelled_success() throws Exception {
         ScheduleItem item = createScheduleItem();
-        Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 1));
+        Lesson lesson =
+                createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 1));
         lesson.setCancelReason("old reason");
         lesson.setCancelledBy(99L);
         lesson.setCancelledAt(java.time.OffsetDateTime.now());
         lessonRepository.save(lesson);
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/restore")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/restore")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("PLANNED")))
                 .andExpect(jsonPath("$.cancelReason", nullValue()))
@@ -503,7 +691,8 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 .andExpect(jsonPath("$.cancelledAt", nullValue()));
 
         Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
-        org.assertj.core.api.Assertions.assertThat(saved.getStatus()).isEqualTo(LessonStatus.PLANNED);
+        org.assertj.core.api.Assertions.assertThat(saved.getStatus())
+                .isEqualTo(LessonStatus.PLANNED);
         org.assertj.core.api.Assertions.assertThat(saved.getCancelReason()).isNull();
         org.assertj.core.api.Assertions.assertThat(saved.getCancelledBy()).isNull();
         org.assertj.core.api.Assertions.assertThat(saved.getCancelledAt()).isNull();
@@ -514,61 +703,108 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
         UUID requestKey = UUID.randomUUID();
-        long bindingId = insertHomeworkBinding(lesson.getOccurrenceId(), lesson.getId(), 77L, requestKey);
+        long bindingId =
+                insertHomeworkBinding(lesson.getOccurrenceId(), lesson.getId(), 77L, requestKey);
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "Teacher replaced")))))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of("reason", "Teacher replaced")))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("CANCELLED")));
 
-        assertThat(jdbcTemplate.queryForObject("""
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT COUNT(*) FROM lesson_homework_bindings
                  WHERE binding_id = ? AND occurrence_id = ? AND current_lesson_id = ?
                    AND homework_id = 8801 AND state = 'ARCHIVED' AND revision = 2
-                """, Long.class, bindingId, lesson.getOccurrenceId(), lesson.getId())).isEqualTo(1L);
-        assertThat(jdbcTemplate.queryForObject("""
+                """,
+                                Long.class,
+                                bindingId,
+                                lesson.getOccurrenceId(),
+                                lesson.getId()))
+                .isEqualTo(1L);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT revision FROM lesson_occurrences WHERE id = ?
-                """, Long.class, lesson.getOccurrenceId())).isEqualTo(2L);
-        assertThat(jdbcTemplate.queryForObject("""
+                """,
+                                Long.class,
+                                lesson.getOccurrenceId()))
+                .isEqualTo(2L);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT action FROM lesson_lifecycle_entries
                  WHERE occurrence_id = ? AND revision = 2
-                """, String.class, lesson.getOccurrenceId())).isEqualTo("CANCELLED");
+                """,
+                                String.class,
+                                lesson.getOccurrenceId()))
+                .isEqualTo("CANCELLED");
 
-        var archived = outboxStorage.findPending(1000).stream()
-                .filter(record -> "homework.binding.archived".equals(record.eventType()))
-                .filter(record -> record.payload().contains(requestKey.toString()))
-                .findFirst().orElseThrow();
-        assertThat(EventSchemaValidator.validate("homework.binding.archived.json", archived.payload()))
+        var archived =
+                outboxStorage.findPending(1000).stream()
+                        .filter(record -> "homework.binding.archived".equals(record.eventType()))
+                        .filter(record -> record.payload().contains(requestKey.toString()))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "homework.binding.archived.json", archived.payload()))
                 .isEmpty();
         JsonNode archivePayload = objectMapper.readTree(archived.payload()).path("payload");
         assertThat(archivePayload.path("binding_id").asLong()).isEqualTo(bindingId);
         assertThat(archivePayload.path("actor_id").asLong()).isEqualTo(77L);
         assertThat(archivePayload.path("request_key").asText()).isEqualTo(requestKey.toString());
-        assertThat(archivePayload.path("occurrence_id").asLong()).isEqualTo(lesson.getOccurrenceId());
+        assertThat(archivePayload.path("occurrence_id").asLong())
+                .isEqualTo(lesson.getOccurrenceId());
         assertThat(archivePayload.path("lesson_id").asLong()).isEqualTo(lesson.getId());
         assertThat(archivePayload.path("homework_id").asLong()).isEqualTo(8801L);
         assertThat(archivePayload.path("binding_revision").asLong()).isEqualTo(2L);
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/restore")))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/restore")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("PLANNED")));
 
-        assertThat(jdbcTemplate.queryForObject("""
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?
-                """, Long.class, lesson.getOccurrenceId())).isEqualTo(lesson.getId());
-        assertThat(jdbcTemplate.queryForObject("""
+                """,
+                                Long.class,
+                                lesson.getOccurrenceId()))
+                .isEqualTo(lesson.getId());
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT revision FROM lesson_occurrences WHERE id = ?
-                """, Long.class, lesson.getOccurrenceId())).isEqualTo(3L);
-        assertThat(jdbcTemplate.queryForObject("""
+                """,
+                                Long.class,
+                                lesson.getOccurrenceId()))
+                .isEqualTo(3L);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT action FROM lesson_lifecycle_entries
                  WHERE occurrence_id = ? AND revision = 3
-                """, String.class, lesson.getOccurrenceId())).isEqualTo("RESTORED");
-        assertThat(jdbcTemplate.queryForObject("""
+                """,
+                                String.class,
+                                lesson.getOccurrenceId()))
+                .isEqualTo("RESTORED");
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
                 SELECT state FROM lesson_homework_bindings WHERE binding_id = ?
-                """, String.class, bindingId)).isEqualTo("ARCHIVED");
+                """,
+                                String.class,
+                                bindingId))
+                .isEqualTo("ARCHIVED");
     }
 
     @Test
@@ -576,9 +812,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/restore")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/restore")))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -589,33 +825,39 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
         long lessonCountBefore = lessonRepository.count();
-        long cancelledEventsBefore = outboxStorage.findPending(1000).stream()
-                .filter(record -> "lesson.cancelled".equals(record.eventType()))
-                .count();
+        long cancelledEventsBefore =
+                outboxStorage.findPending(1000).stream()
+                        .filter(record -> "lesson.cancelled".equals(record.eventType()))
+                        .count();
 
-        String body = objectMapper.writeValueAsString(Map.of(
-                "groupId", testGroupId,
-                "dateFrom", "2026-04-01",
-                "dateTo", "2026-04-03",
-                "reason", "Holiday"
-        ));
+        String body =
+                objectMapper.writeValueAsString(
+                        Map.of(
+                                "groupId", testGroupId,
+                                "dateFrom", "2026-04-01",
+                                "dateTo", "2026-04-03",
+                                "reason", "Holiday"));
 
-        mockMvc.perform(withHeadmanHeaders(
-                post("/schedule/lessons/mass-cancel")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                post("/schedule/lessons/mass-cancel")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body)))
                 .andExpect(status().isNotFound());
 
         Lesson unchanged = lessonRepository.findById(lesson.getId()).orElseThrow();
-        org.assertj.core.api.Assertions.assertThat(lessonRepository.count()).isEqualTo(lessonCountBefore);
-        org.assertj.core.api.Assertions.assertThat(unchanged.getStatus()).isEqualTo(LessonStatus.PLANNED);
+        org.assertj.core.api.Assertions.assertThat(lessonRepository.count())
+                .isEqualTo(lessonCountBefore);
+        org.assertj.core.api.Assertions.assertThat(unchanged.getStatus())
+                .isEqualTo(LessonStatus.PLANNED);
         org.assertj.core.api.Assertions.assertThat(unchanged.getCancelReason()).isNull();
         org.assertj.core.api.Assertions.assertThat(unchanged.getCancelledBy()).isNull();
         org.assertj.core.api.Assertions.assertThat(unchanged.getCancelledAt()).isNull();
-        org.assertj.core.api.Assertions.assertThat(outboxStorage.findPending(1000).stream()
-                .filter(record -> "lesson.cancelled".equals(record.eventType()))
-                .count()).isEqualTo(cancelledEventsBefore);
+        org.assertj.core.api.Assertions.assertThat(
+                        outboxStorage.findPending(1000).stream()
+                                .filter(record -> "lesson.cancelled".equals(record.eventType()))
+                                .count())
+                .isEqualTo(cancelledEventsBefore);
     }
 
     @Test
@@ -636,9 +878,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 20));
 
-        mockMvc.perform(withHeadmanHeaders(
-                post("/schedule/lessons/" + lesson.getId() + "/blockage")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                post("/schedule/lessons/" + lesson.getId() + "/blockage")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.blockedByHeadman", is(true)))
                 .andExpect(jsonPath("$.blockedByUserId", is(USER_ID.intValue())));
@@ -654,9 +896,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.ACTIVE, LocalDate.of(2026, 4, 20));
 
-        mockMvc.perform(withHeadmanHeaders(
-                post("/schedule/lessons/" + lesson.getId() + "/blockage")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                post("/schedule/lessons/" + lesson.getId() + "/blockage")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.blockedByHeadman", is(true)))
                 .andExpect(jsonPath("$.blockedByUserId", is(USER_ID.intValue())));
@@ -670,11 +912,12 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     @Test
     void blockLesson_cancelled_returns422() throws Exception {
         ScheduleItem item = createScheduleItem();
-        Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 20));
+        Lesson lesson =
+                createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 20));
 
-        mockMvc.perform(withHeadmanHeaders(
-                post("/schedule/lessons/" + lesson.getId() + "/blockage")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                post("/schedule/lessons/" + lesson.getId() + "/blockage")))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -685,9 +928,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.CLOSED, LocalDate.of(2026, 3, 1));
 
-        mockMvc.perform(withHeadmanHeaders(
-                post("/schedule/lessons/" + lesson.getId() + "/blockage")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                post("/schedule/lessons/" + lesson.getId() + "/blockage")))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -700,9 +943,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         lesson.setBlockedAt(OffsetDateTime.now());
         lessonRepository.save(lesson);
 
-        mockMvc.perform(withHeadmanHeaders(
-                delete("/schedule/lessons/" + lesson.getId() + "/blockage")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                delete("/schedule/lessons/" + lesson.getId() + "/blockage")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.blockedByHeadman", is(false)))
                 .andExpect(jsonPath("$.blockedByUserId", nullValue()));
@@ -719,9 +962,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 20));
 
-        mockMvc.perform(withHeadmanHeaders(
-                post("/schedule/lessons/" + lesson.getId() + "/blockage")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                post("/schedule/lessons/" + lesson.getId() + "/blockage")))
                 .andExpect(status().isForbidden());
     }
 
@@ -731,23 +974,28 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
 
         // Toggle on
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/geo-block")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("blocked", true)))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/geo-block")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of("blocked", true)))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.geoBlocked", is(true)));
 
-        org.assertj.core.api.Assertions.assertThat(lessonRepository.findById(lesson.getId()).orElseThrow().isGeoBlocked())
+        org.assertj.core.api.Assertions.assertThat(
+                        lessonRepository.findById(lesson.getId()).orElseThrow().isGeoBlocked())
                 .isTrue();
 
         // Toggle off
-        mockMvc.perform(withHeadmanHeaders(
-                patch("/schedule/lessons/" + lesson.getId() + "/geo-block")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("blocked", false)))
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                patch("/schedule/lessons/" + lesson.getId() + "/geo-block")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsString(
+                                                        Map.of("blocked", false)))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.geoBlocked", is(false)));
     }
@@ -755,10 +1003,10 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     // --- VIEW-01: lessons listing with case-insensitive status filter ---
 
     /**
-     * Regression: web-panel headman lessons page sends
-     * {@code ?status=planned,active,closed,cancelled} (lowercase, CSV).
-     * Without {@link ru.rutcampustrack.schedule.config.WebConfig} the Spring
-     * binder fails to parse lowercase enum values and returns 400.
+     * Regression: web-panel headman lessons page sends {@code
+     * ?status=planned,active,closed,cancelled} (lowercase, CSV). Without {@link
+     * ru.rutcampustrack.schedule.config.WebConfig} the Spring binder fails to parse lowercase enum
+     * values and returns 400.
      */
     @Test
     void getLessons_lowercaseStatusCsv_isAccepted() throws Exception {
@@ -766,13 +1014,13 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 28));
         createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 29));
 
-        mockMvc.perform(withHeadmanHeaders(
-                get("/schedule/groups/" + testGroupId + "/lessons")
-                        .param("dateFrom", "2026-04-28")
-                        .param("dateTo", "2026-05-27")
-                        .param("size", "500")
-                        .param("status", "planned,active,closed,cancelled")
-        ))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                get("/schedule/groups/" + testGroupId + "/lessons")
+                                        .param("dateFrom", "2026-04-28")
+                                        .param("dateTo", "2026-05-27")
+                                        .param("size", "500")
+                                        .param("status", "planned,active,closed,cancelled")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements", is(2)));
     }

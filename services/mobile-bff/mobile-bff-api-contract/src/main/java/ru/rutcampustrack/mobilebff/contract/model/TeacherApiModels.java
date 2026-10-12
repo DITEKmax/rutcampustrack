@@ -1,7 +1,6 @@
 package ru.rutcampustrack.mobilebff.contract.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -9,14 +8,14 @@ import java.util.List;
 
 /** Additive read models for the teacher PWA/TMA. */
 public final class TeacherApiModels {
-    private TeacherApiModels() {
-    }
+    private TeacherApiModels() {}
 
     @Schema(name = "TeacherSearch")
-    public record SearchResponse(List<CatalogGroup> groups, List<SearchStudent> students, boolean truncated) { }
+    public record SearchResponse(
+            List<CatalogGroup> groups, List<SearchStudent> students, boolean truncated) {}
 
     @Schema(name = "TeacherSearchStudent")
-    public record SearchStudent(String id, String displayName, String groupId, String groupName) { }
+    public record SearchStudent(String id, String displayName, String groupId, String groupName) {}
 
     @Schema(name = "TeacherAssignment")
     public record Assignment(
@@ -29,9 +28,7 @@ public final class TeacherApiModels {
             String semesterId,
             String lessonType,
             LocalDate validFrom,
-            LocalDate validUntilExclusive
-    ) {
-    }
+            LocalDate validUntilExclusive) {}
 
     @Schema(name = "TeacherDayLesson")
     public record DayLesson(
@@ -52,27 +49,14 @@ public final class TeacherApiModels {
             boolean oneOff,
             boolean moved,
             boolean cancelled,
-            String cancellationReason
-    ) {
-    }
+            String cancellationReason) {}
 
     @Schema(name = "TeacherDay")
     public record DayResponse(
-            String semesterId,
-            LocalDate date,
-            List<DayLesson> lessons,
-            Instant serverNow
-    ) {
-    }
+            String semesterId, LocalDate date, List<DayLesson> lessons, Instant serverNow) {}
 
     @Schema(name = "TeacherSemester")
-    public record SemesterResponse(
-            String id,
-            String name,
-            LocalDate dateFrom,
-            LocalDate dateTo
-    ) {
-    }
+    public record SemesterResponse(String id, String name, LocalDate dateFrom, LocalDate dateTo) {}
 
     @Schema(name = "TeacherRosterEntry")
     public record RosterEntry(
@@ -91,17 +75,10 @@ public final class TeacherApiModels {
             String attachmentId,
             String attachmentName,
             String attachmentContentType,
-            long attachmentSize
-    ) {
-    }
+            long attachmentSize) {}
 
     @Schema(name = "TeacherLesson")
-    public record LessonResponse(
-            DayLesson lesson,
-            List<RosterEntry> roster,
-            Instant serverNow
-    ) {
-    }
+    public record LessonResponse(DayLesson lesson, List<RosterEntry> roster, Instant serverNow) {}
 
     @Schema(name = "TeacherJournalCell")
     public record JournalCell(
@@ -114,17 +91,10 @@ public final class TeacherApiModels {
             boolean autoAbsent,
             String ticketId,
             String excuseType,
-            String excuseReason
-    ) {
-    }
+            String excuseReason) {}
 
     @Schema(name = "TeacherJournalStudent")
-    public record JournalStudent(
-            String studentId,
-            String displayName,
-            List<JournalCell> cells
-    ) {
-    }
+    public record JournalStudent(String studentId, String displayName, List<JournalCell> cells) {}
 
     @Schema(name = "TeacherJournal")
     public record JournalResponse(
@@ -134,9 +104,7 @@ public final class TeacherApiModels {
             int page,
             int pageSize,
             int totalLessons,
-            boolean hasMore
-    ) {
-    }
+            boolean hasMore) {}
 
     @Schema(name = "TeacherExcuseAttachment")
     public record ExcuseAttachment(
@@ -145,9 +113,7 @@ public final class TeacherApiModels {
             String contentType,
             long size,
             Instant uploadedAt,
-            Instant expiresAt
-    ) {
-    }
+            Instant expiresAt) {}
 
     @Schema(name = "TeacherExcuse")
     public record ExcuseResponse(
@@ -168,18 +134,10 @@ public final class TeacherApiModels {
             String decisionComment,
             List<DayLesson> lessons,
             List<ExcuseAttachment> attachments,
-            Instant serverNow
-    ) {
-    }
+            Instant serverNow) {}
 
     @Schema(name = "TeacherExportFormat")
-    public record ExportFormat(
-            String code,
-            String label,
-            String contentType,
-            String extension
-    ) {
-    }
+    public record ExportFormat(String code, String label, String contentType, String extension) {}
 
     @Schema(name = "TeacherExportFormats")
     public record ExportFormatsResponse(List<ExportFormat> formats) {
@@ -189,8 +147,7 @@ public final class TeacherApiModels {
     }
 
     @Schema(name = "TeacherStatsMetric")
-    public record StatsMetric(int numerator, int denominator, double percent) {
-    }
+    public record StatsMetric(int numerator, int denominator, double percent) {}
 
     @Schema(name = "TeacherStatsStudent")
     public record StatsStudent(
@@ -199,9 +156,7 @@ public final class TeacherApiModels {
             StatsMetric present,
             StatsMetric presentOrExcused,
             StatsMetric excused,
-            StatsMetric absent
-    ) {
-    }
+            StatsMetric absent) {}
 
     @Schema(name = "TeacherStatsGroup")
     public record StatsGroup(
@@ -211,31 +166,21 @@ public final class TeacherApiModels {
             StatsMetric present,
             StatsMetric presentOrExcused,
             StatsMetric excused,
-            StatsMetric absent
-    ) {
-    }
+            StatsMetric absent) {}
 
     @Schema(name = "TeacherStatsSubjectOption")
     public record StatsSubjectOption(
-            String groupId,
-            String subjectId,
-            String subjectName,
-            List<String> lessonTypes
-    ) {
-    }
+            String groupId, String subjectId, String subjectName, List<String> lessonTypes) {}
 
     @Schema(name = "TeacherCatalogGroup")
-    public record CatalogGroup(String id, String name) {
-    }
+    public record CatalogGroup(String id, String name) {}
 
     @Schema(name = "TeacherCatalog")
     public record CatalogResponse(
             List<CatalogGroup> groups,
             List<StatsSubjectOption> subjectOptions,
             List<StatsSubjectOption> taughtSubjectOptions,
-            Instant serverNow
-    ) {
-    }
+            Instant serverNow) {}
 
     @Schema(name = "TeacherStats")
     public record StatsResponse(
@@ -247,7 +192,5 @@ public final class TeacherApiModels {
             List<StatsStudent> students,
             List<StatsGroup> groups,
             List<StatsSubjectOption> subjectOptions,
-            Instant serverNow
-    ) {
-    }
+            Instant serverNow) {}
 }

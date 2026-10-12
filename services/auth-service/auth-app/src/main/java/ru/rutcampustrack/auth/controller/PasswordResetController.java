@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.controller;
 
+import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.auth.api.PasswordResetApi;
@@ -10,33 +11,29 @@ import ru.rutcampustrack.auth.dto.PasswordResetVerifyRequest;
 import ru.rutcampustrack.auth.dto.PasswordResetVerifyResponse;
 import ru.rutcampustrack.auth.service.PasswordResetService;
 
-import java.util.Objects;
-
 @RestController
 public final class PasswordResetController implements PasswordResetApi {
 
     private final PasswordResetService passwordResetService;
 
     public PasswordResetController(PasswordResetService passwordResetService) {
-        this.passwordResetService = Objects.requireNonNull(passwordResetService, "passwordResetService");
+        this.passwordResetService =
+                Objects.requireNonNull(passwordResetService, "passwordResetService");
     }
 
     @Override
     public ResponseEntity<PasswordResetRequestResponse> request(PasswordResetRequest request) {
-        return ResponseEntity.accepted()
-                .body(passwordResetService.request(request));
+        return ResponseEntity.accepted().body(passwordResetService.request(request));
     }
 
     @Override
     public ResponseEntity<PasswordResetVerifyResponse> verify(PasswordResetVerifyRequest request) {
-        return ResponseEntity.ok()
-                .body(passwordResetService.verify(request));
+        return ResponseEntity.ok().body(passwordResetService.verify(request));
     }
 
     @Override
     public ResponseEntity<Void> complete(PasswordResetCompleteRequest request) {
         passwordResetService.complete(request.resetTicket(), request.newPassword());
-        return ResponseEntity.noContent()
-                .build();
+        return ResponseEntity.noContent().build();
     }
 }

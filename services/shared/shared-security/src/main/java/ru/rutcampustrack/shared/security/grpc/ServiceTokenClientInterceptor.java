@@ -9,9 +9,8 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 
 /**
- * Narrow client adapter for a protected stub. It removes caller-supplied
- * service-token metadata before the scoped {@link ServiceTokenCallCredentials}
- * can add the one configured credential.
+ * Narrow client adapter for a protected stub. It removes caller-supplied service-token metadata
+ * before the scoped {@link ServiceTokenCallCredentials} can add the one configured credential.
  */
 public final class ServiceTokenClientInterceptor implements ClientInterceptor {
 
@@ -26,14 +25,12 @@ public final class ServiceTokenClientInterceptor implements ClientInterceptor {
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-            MethodDescriptor<ReqT, RespT> method,
-            CallOptions callOptions,
-            Channel next) {
-        CallOptions scopedOptions = credentials.appliesTo(method.getFullMethodName())
-                ? callOptions.withCallCredentials(credentials)
-                : callOptions;
-        ClientCall<ReqT, RespT> delegate = next.newCall(
-                method, scopedOptions);
+            MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+        CallOptions scopedOptions =
+                credentials.appliesTo(method.getFullMethodName())
+                        ? callOptions.withCallCredentials(credentials)
+                        : callOptions;
+        ClientCall<ReqT, RespT> delegate = next.newCall(method, scopedOptions);
         return new ForwardingClientCall.SimpleForwardingClientCall<>(delegate) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {

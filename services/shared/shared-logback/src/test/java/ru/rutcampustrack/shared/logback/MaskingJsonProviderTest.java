@@ -1,14 +1,13 @@
 package ru.rutcampustrack.shared.logback;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class MaskingJsonProviderTest {
 
@@ -41,8 +40,7 @@ class MaskingJsonProviderTest {
                 Arguments.of(
                         "Bearer eyJ1 and telegram_id:42 in one message",
                         "Bearer *** and telegram_id:42 in one message",
-                        "Multiple secrets (telegram_id без кавычек не маскируется, это ок — не JSON)")
-        );
+                        "Multiple secrets (telegram_id без кавычек не маскируется, это ок — не JSON)"));
     }
 
     @ParameterizedTest(name = "{2}")
@@ -53,12 +51,13 @@ class MaskingJsonProviderTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "Plain INFO message",
-            "User logged in: name=Иван",
-            "Timestamp: 2026-04-19T10:00:00Z",
-            "Numeric id: 42"
-    })
+    @ValueSource(
+            strings = {
+                "Plain INFO message",
+                "User logged in: name=Иван",
+                "Timestamp: 2026-04-19T10:00:00Z",
+                "Numeric id: 42"
+            })
     @DisplayName("Обычные сообщения без секретов — не трогаются")
     void leavesNormalMessagesIntact(String input) {
         assertThat(MaskingJsonProvider.mask(input)).isEqualTo(input);

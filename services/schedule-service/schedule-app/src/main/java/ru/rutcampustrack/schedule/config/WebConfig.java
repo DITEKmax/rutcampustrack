@@ -1,8 +1,7 @@
 package ru.rutcampustrack.schedule.config;
 
-import java.util.Locale;
-
 import com.fasterxml.jackson.databind.MapperFeature;
+import java.util.Locale;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

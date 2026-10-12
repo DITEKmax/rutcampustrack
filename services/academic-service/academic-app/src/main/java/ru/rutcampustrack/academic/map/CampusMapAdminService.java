@@ -1,26 +1,5 @@
 package ru.rutcampustrack.academic.map;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Autowired;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.BuildingResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
-import ru.rutcampustrack.academic.exception.BadRequestException;
-import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,28 +20,48 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
-
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.BuildingResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
+import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.academic.exception.BadRequestException;
+import ru.rutcampustrack.academic.exception.ConflictException;
 
 /**
  * Atomic admin commands for campus inventory and immutable floor-plan versions.
  *
- * <p>Upload validation happens before the first write.  A version is then
- * published in one transaction, with absent formats represented by their
- * explicit V26 slot rather than by a missing row.</p>
+ * <p>Upload validation happens before the first write. A version is then published in one
+ * transaction, with absent formats represented by their explicit V26 slot rather than by a missing
+ * row.
  */
 @Service
 public class CampusMapAdminService {
     private static final Pattern POSITIVE_DECIMAL = Pattern.compile("[1-9][0-9]*");
-    private static final Pattern UNSAFE_TEXT = Pattern.compile(
-            "(?is)(javascript:|data:text/html|expression\\s*\\(|@import|@font-face|url\\s*\\(\\s*(?:https?:|//|file:))");
-    private static final Pattern CSS_RESOURCE = Pattern.compile("(?i)(?:url|src|image-set|-webkit-image-set|image)\\s*\\(");
-    private static final byte[] PNG_SIGNATURE = new byte[]{
-            (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
-    };
+    private static final Pattern UNSAFE_TEXT =
+            Pattern.compile(
+                    "(?is)(javascript:|data:text/html|expression\\s*\\(|@import|@font-face|url\\s*\\(\\s*(?:https?:|//|file:))");
+    private static final Pattern CSS_RESOURCE =
+            Pattern.compile("(?i)(?:url|src|image-set|-webkit-image-set|image)\\s*\\(");
+    private static final byte[] PNG_SIGNATURE =
+            new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
     private static final long MAX_BYTES = CampusMapAdminRepository.MAX_ASSET_BYTES;
 
     private final CampusMapAdminRepository repository;
@@ -73,26 +72,29 @@ public class CampusMapAdminService {
     }
 
     @Autowired
-    public CampusMapAdminService(CampusMapAdminRepository repository,
-                                 CampusMapUsageService usage) {
+    public CampusMapAdminService(CampusMapAdminRepository repository, CampusMapUsageService usage) {
         this.repository = repository;
         this.usage = usage;
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public CampusMapAdminModels.PlanTargetResponse getPlanTarget(String buildingCode, String floorCode) {
+    public CampusMapAdminModels.PlanTargetResponse getPlanTarget(
+            String buildingCode, String floorCode) {
         String building = requireUploadCode(buildingCode, "buildingCode");
         String floorCodeValue = requireUploadCode(floorCode, "floorCode");
         var target = repository.findActiveFloorByCodes(building, floorCodeValue);
         if (target.isEmpty()) {
-            return new CampusMapAdminModels.PlanTargetResponse(building, floorCodeValue,
-                    CampusMapAdminModels.PlanTargetStatus.absent, null);
+            return new CampusMapAdminModels.PlanTargetResponse(
+                    building, floorCodeValue, CampusMapAdminModels.PlanTargetStatus.absent, null);
         }
         var floor = target.get();
         PlanResponse plan = currentPlans(List.of(floor)).get(floor.id());
         long count = usage == null ? 0L : usage.allTimeFloorCounts().getOrDefault(floor.id(), 0L);
-        return new CampusMapAdminModels.PlanTargetResponse(building, floorCodeValue,
-                CampusMapAdminModels.PlanTargetStatus.found, toFloor(floor, plan, count));
+        return new CampusMapAdminModels.PlanTargetResponse(
+                building,
+                floorCodeValue,
+                CampusMapAdminModels.PlanTargetStatus.found,
+                toFloor(floor, plan, count));
     }
 
     @Transactional(readOnly = true)
@@ -101,27 +103,44 @@ public class CampusMapAdminService {
         Map<Long, PlanResponse> plans = currentPlans(floors);
         Map<Long, Long> openCounts = usage == null ? Map.of() : usage.allTimeFloorCounts();
         return repository.findActiveBuildings().stream()
-                .map(building -> new BuildingResponse(
-                        decimal(building.id()),
-                        building.code(),
-                        building.label(),
-                        floors.stream()
-                                .filter(floor -> floor.buildingId() == building.id())
-                                .map(floor -> toFloor(floor, plans.get(floor.id()), openCounts.getOrDefault(floor.id(), 0L)))
-                                .toList()))
+                .map(
+                        building ->
+                                new BuildingResponse(
+                                        decimal(building.id()),
+                                        building.code(),
+                                        building.label(),
+                                        floors.stream()
+                                                .filter(
+                                                        floor ->
+                                                                floor.buildingId() == building.id())
+                                                .map(
+                                                        floor ->
+                                                                toFloor(
+                                                                        floor,
+                                                                        plans.get(floor.id()),
+                                                                        openCounts.getOrDefault(
+                                                                                floor.id(), 0L)))
+                                                .toList()))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<FloorResponse> listFloors(String buildingId) {
-        Long parsedBuildingId = buildingId == null || buildingId.isBlank()
-                ? null
-                : parsePositiveId(buildingId, "buildingId");
-        List<CampusMapAdminRepository.FloorRow> floors = repository.findActiveFloors(parsedBuildingId);
+        Long parsedBuildingId =
+                buildingId == null || buildingId.isBlank()
+                        ? null
+                        : parsePositiveId(buildingId, "buildingId");
+        List<CampusMapAdminRepository.FloorRow> floors =
+                repository.findActiveFloors(parsedBuildingId);
         Map<Long, PlanResponse> plans = currentPlans(floors);
         Map<Long, Long> openCounts = usage == null ? Map.of() : usage.allTimeFloorCounts();
         return floors.stream()
-                .map(floor -> toFloor(floor, plans.get(floor.id()), openCounts.getOrDefault(floor.id(), 0L)))
+                .map(
+                        floor ->
+                                toFloor(
+                                        floor,
+                                        plans.get(floor.id()),
+                                        openCounts.getOrDefault(floor.id(), 0L)))
                 .toList();
     }
 
@@ -142,25 +161,36 @@ public class CampusMapAdminService {
     public FloorResponse createFloor(CreateFloorRequest request) {
         long buildingId = parsePositiveId(request.buildingId(), "buildingId");
         repository.lockCatalogForWrite();
-        CampusMapAdminRepository.BuildingRow building = repository.findActiveBuilding(buildingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", buildingId));
+        CampusMapAdminRepository.BuildingRow building =
+                repository
+                        .findActiveBuilding(buildingId)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Корпус", "id", buildingId));
         String code = requireNumericCode(request.code(), "code");
         if (repository.existsFloorCode(buildingId, code)) {
-            throw new ConflictException("code", code, "Этаж с таким кодом уже существует в корпусе");
+            throw new ConflictException(
+                    "code", code, "Этаж с таким кодом уже существует в корпусе");
         }
         String label = defaultLabel(request.label(), "Этаж " + code);
-        long id = repository.insertFloor(buildingId, code, label, repository.nextFloorOrder(buildingId));
+        long id =
+                repository.insertFloor(
+                        buildingId, code, label, repository.nextFloorOrder(buildingId));
         repository.advanceCatalogRevision();
         return new FloorResponse(decimal(id), decimal(building.id()), code, label, null);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public UploadPlanResponse uploadPlan(String buildingCode, String floorCode, String label,
-                                         MultipartFile png, MultipartFile svg) {
+    public UploadPlanResponse uploadPlan(
+            String buildingCode,
+            String floorCode,
+            String label,
+            MultipartFile png,
+            MultipartFile svg) {
         String buildingNumber = requireUploadCode(buildingCode, "buildingCode");
         String floorNumber = requireUploadCode(floorCode, "floorCode");
         if (label != null && label.length() > 255) {
-            throw new BadRequestException("label", "Название схемы не должно превышать 255 символов");
+            throw new BadRequestException(
+                    "label", "Название схемы не должно превышать 255 символов");
         }
         if (isEmpty(png) && isEmpty(svg)) {
             throw new BadRequestException("file", "Загрузите png или svg");
@@ -169,35 +199,64 @@ public class CampusMapAdminService {
         ValidatedAsset svgAsset = isEmpty(svg) ? null : validate(svg, CampusMapFormat.SVG);
 
         repository.lockCatalogForWrite();
-        Optional<CampusMapAdminRepository.BuildingRow> existingBuilding = repository.findBuildingByCode(buildingNumber);
-        existingBuilding.filter(building -> !building.active()).ifPresent(building -> {
-            throw new ConflictException("buildingCode", buildingNumber, "Корпус с таким кодом неактивен");
-        });
-        long buildingId = existingBuilding.map(CampusMapAdminRepository.BuildingRow::id)
-                .orElseGet(() -> repository.insertBuilding(buildingNumber, "Корпус " + buildingNumber,
-                        repository.nextBuildingOrder()));
-        Optional<CampusMapAdminRepository.FloorRow> existingFloor = repository.findFloorByCodeForUpdate(buildingId, floorNumber);
-        existingFloor.filter(floor -> !floor.active()).ifPresent(floor -> {
-            throw new ConflictException("floorCode", floorNumber, "Этаж с таким кодом неактивен");
-        });
-        CampusMapAdminRepository.FloorRow floor = existingFloor.orElseGet(() -> {
-            String floorLabel = "Этаж " + floorNumber;
-            int order = repository.nextFloorOrder(buildingId);
-            long floorId = repository.insertFloor(buildingId, floorNumber, floorLabel, order);
-            return new CampusMapAdminRepository.FloorRow(floorId, buildingId, floorNumber, floorLabel,
-                    order, null, true);
-        });
+        Optional<CampusMapAdminRepository.BuildingRow> existingBuilding =
+                repository.findBuildingByCode(buildingNumber);
+        existingBuilding
+                .filter(building -> !building.active())
+                .ifPresent(
+                        building -> {
+                            throw new ConflictException(
+                                    "buildingCode",
+                                    buildingNumber,
+                                    "Корпус с таким кодом неактивен");
+                        });
+        long buildingId =
+                existingBuilding
+                        .map(CampusMapAdminRepository.BuildingRow::id)
+                        .orElseGet(
+                                () ->
+                                        repository.insertBuilding(
+                                                buildingNumber,
+                                                "Корпус " + buildingNumber,
+                                                repository.nextBuildingOrder()));
+        Optional<CampusMapAdminRepository.FloorRow> existingFloor =
+                repository.findFloorByCodeForUpdate(buildingId, floorNumber);
+        existingFloor
+                .filter(floor -> !floor.active())
+                .ifPresent(
+                        floor -> {
+                            throw new ConflictException(
+                                    "floorCode", floorNumber, "Этаж с таким кодом неактивен");
+                        });
+        CampusMapAdminRepository.FloorRow floor =
+                existingFloor.orElseGet(
+                        () -> {
+                            String floorLabel = "Этаж " + floorNumber;
+                            int order = repository.nextFloorOrder(buildingId);
+                            long floorId =
+                                    repository.insertFloor(
+                                            buildingId, floorNumber, floorLabel, order);
+                            return new CampusMapAdminRepository.FloorRow(
+                                    floorId,
+                                    buildingId,
+                                    floorNumber,
+                                    floorLabel,
+                                    order,
+                                    null,
+                                    true);
+                        });
         Optional<CampusMapAdminRepository.PlanRow> current = repository.findCurrentPlan(floor.id());
         PlanResponse plan = publishValidatedVersion(floor, label, pngAsset, svgAsset, current);
-        return new UploadPlanResponse(current.isEmpty() ? UploadPlanStatus.created : UploadPlanStatus.replaced,
-                existingBuilding.isEmpty(), existingFloor.isEmpty(), plan);
+        return new UploadPlanResponse(
+                current.isEmpty() ? UploadPlanStatus.created : UploadPlanStatus.replaced,
+                existingBuilding.isEmpty(),
+                existingFloor.isEmpty(),
+                plan);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public PlanResponse uploadVersion(String floorId,
-                                      String label,
-                                      MultipartFile png,
-                                      MultipartFile svg) {
+    public PlanResponse uploadVersion(
+            String floorId, String label, MultipartFile png, MultipartFile svg) {
         long floorKey = parsePositiveId(floorId, "floorId");
         if (isEmpty(png) && isEmpty(svg)) {
             throw new BadRequestException("file", "Загрузите png или svg");
@@ -206,17 +265,23 @@ public class CampusMapAdminService {
         ValidatedAsset svgAsset = isEmpty(svg) ? null : validate(svg, CampusMapFormat.SVG);
 
         repository.lockCatalogForWrite();
-        CampusMapAdminRepository.FloorRow floor = repository.findFloorForUpdate(floorKey)
-                .filter(CampusMapAdminRepository.FloorRow::active)
-                .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", floorKey));
+        CampusMapAdminRepository.FloorRow floor =
+                repository
+                        .findFloorForUpdate(floorKey)
+                        .filter(CampusMapAdminRepository.FloorRow::active)
+                        .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", floorKey));
         Optional<CampusMapAdminRepository.PlanRow> current = repository.findCurrentPlan(floor.id());
         return publishValidatedVersion(floor, label, pngAsset, svgAsset, current);
     }
 
-    private PlanResponse publishValidatedVersion(CampusMapAdminRepository.FloorRow floor, String label,
-                                                 ValidatedAsset pngAsset, ValidatedAsset svgAsset,
-                                                 Optional<CampusMapAdminRepository.PlanRow> current) {
-        Map<CampusMapFormat, ValidatedAsset> assets = carryForwardMissingFormats(current, pngAsset, svgAsset);
+    private PlanResponse publishValidatedVersion(
+            CampusMapAdminRepository.FloorRow floor,
+            String label,
+            ValidatedAsset pngAsset,
+            ValidatedAsset svgAsset,
+            Optional<CampusMapAdminRepository.PlanRow> current) {
+        Map<CampusMapFormat, ValidatedAsset> assets =
+                carryForwardMissingFormats(current, pngAsset, svgAsset);
         long version = repository.highestPlanVersion(floor.id()) + 1L;
         if (version <= 0) {
             throw new ConflictException("version", version, "Номер версии схемы исчерпан");
@@ -228,20 +293,51 @@ public class CampusMapAdminService {
         for (CampusMapFormat format : CampusMapFormat.values()) {
             ValidatedAsset asset = assets.get(format);
             if (asset == null) {
-                repository.insertSlot(planId, format, CampusMapFormatState.ABSENT,
-                        expectedMime(format), null, 0, null, null, null);
+                repository.insertSlot(
+                        planId,
+                        format,
+                        CampusMapFormatState.ABSENT,
+                        expectedMime(format),
+                        null,
+                        0,
+                        null,
+                        null,
+                        null);
                 continue;
             }
-            long assetId = repository.insertAsset(planId, format, asset.contentType(), asset.content(),
-                    asset.bytes(), asset.sha256(), asset.width(), asset.height());
-            repository.insertSlot(planId, format, CampusMapFormatState.READY, asset.contentType(), assetId,
-                    asset.bytes(), asset.sha256(), asset.width(), asset.height());
+            long assetId =
+                    repository.insertAsset(
+                            planId,
+                            format,
+                            asset.contentType(),
+                            asset.content(),
+                            asset.bytes(),
+                            asset.sha256(),
+                            asset.width(),
+                            asset.height());
+            repository.insertSlot(
+                    planId,
+                    format,
+                    CampusMapFormatState.READY,
+                    asset.contentType(),
+                    assetId,
+                    asset.bytes(),
+                    asset.sha256(),
+                    asset.width(),
+                    asset.height());
         }
         repository.publishPlan(planId);
         repository.pointFloorAt(floor.id(), planId);
-        return toPlan(repository.findPlan(floor.id(), version)
-                        .orElseThrow(() -> new IllegalStateException("published map version disappeared")),
-                revision.revision(), repository.findSlots(planId), floor.buildingId());
+        return toPlan(
+                repository
+                        .findPlan(floor.id(), version)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "published map version disappeared")),
+                revision.revision(),
+                repository.findSlots(planId),
+                floor.buildingId());
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -250,8 +346,10 @@ public class CampusMapAdminService {
         String code = requireNumericCode(request.code(), "code");
         String label = defaultLabel(request.label(), "Корпус " + code);
         repository.lockCatalogForWrite();
-        CampusMapAdminRepository.BuildingRow building = repository.findActiveBuilding(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", id));
+        CampusMapAdminRepository.BuildingRow building =
+                repository
+                        .findActiveBuilding(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", id));
         if (!building.code().equals(code) && repository.existsBuildingCode(code)) {
             throw new ConflictException("code", code, "Корпус с таким кодом уже существует");
         }
@@ -269,59 +367,87 @@ public class CampusMapAdminService {
         String code = requireNumericCode(request.code(), "code");
         String label = defaultLabel(request.label(), "Этаж " + code);
         repository.lockCatalogForWrite();
-        CampusMapAdminRepository.FloorRow floor = repository.findFloorForUpdate(id)
-                .filter(CampusMapAdminRepository.FloorRow::active)
-                .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", id));
-        repository.findActiveBuilding(floor.buildingId())
-                .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", floor.buildingId()));
+        CampusMapAdminRepository.FloorRow floor =
+                repository
+                        .findFloorForUpdate(id)
+                        .filter(CampusMapAdminRepository.FloorRow::active)
+                        .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", id));
+        repository
+                .findActiveBuilding(floor.buildingId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Корпус", "id", floor.buildingId()));
         if (!floor.code().equals(code) && repository.existsFloorCode(floor.buildingId(), code)) {
-            throw new ConflictException("code", code, "Этаж с таким кодом уже существует в корпусе");
+            throw new ConflictException(
+                    "code", code, "Этаж с таким кодом уже существует в корпусе");
         }
         if (!floor.code().equals(code) || !floor.label().equals(label)) {
             repository.updateFloor(id, code, label);
             repository.advanceCatalogRevision();
         }
         return listFloors(decimal(floor.buildingId())).stream()
-                .filter(row -> row.id().equals(decimal(id))).findFirst()
-                .orElseThrow(() -> new IllegalStateException("updated campus map floor disappeared"));
+                .filter(row -> row.id().equals(decimal(id)))
+                .findFirst()
+                .orElseThrow(
+                        () -> new IllegalStateException("updated campus map floor disappeared"));
     }
 
     @Transactional(readOnly = true)
     public PlanResponse getVersion(String floorId, String version) {
         long floorKey = parsePositiveId(floorId, "floorId");
         long versionKey = parsePositiveId(version, "version");
-        CampusMapAdminRepository.FloorRow floor = repository.findActiveFloors(null).stream()
-                .filter(row -> row.id() == floorKey)
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", floorKey));
-        CampusMapAdminRepository.PlanRow plan = repository.findPlan(floor.id(), versionKey)
-                .filter(row -> row.publishedAt() != null)
-                .orElseThrow(() -> new ResourceNotFoundException("Версия схемы", "version", versionKey));
-        long revision = plan.catalogRevisionId() == null
-                ? 0
-                : catalogRevision(plan.catalogRevisionId());
+        CampusMapAdminRepository.FloorRow floor =
+                repository.findActiveFloors(null).stream()
+                        .filter(row -> row.id() == floorKey)
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", floorKey));
+        CampusMapAdminRepository.PlanRow plan =
+                repository
+                        .findPlan(floor.id(), versionKey)
+                        .filter(row -> row.publishedAt() != null)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Версия схемы", "version", versionKey));
+        long revision =
+                plan.catalogRevisionId() == null ? 0 : catalogRevision(plan.catalogRevisionId());
         return toPlan(plan, revision, repository.findSlots(plan.id()), floor.buildingId());
     }
 
     @Transactional(readOnly = true)
-    public Download downloadAsset(String floorId, String version, String rawFormat, String assetId) {
+    public Download downloadAsset(
+            String floorId, String version, String rawFormat, String assetId) {
         long floorKey = parsePositiveId(floorId, "floorId");
         long versionKey = parsePositiveId(version, "version");
         long assetKey = parsePositiveId(assetId, "assetId");
         CampusMapFormat format = parseFormat(rawFormat);
-        CampusMapAdminRepository.PlanRow plan = repository.findPlan(floorKey, versionKey)
-                .filter(row -> row.publishedAt() != null)
-                .orElseThrow(() -> new ResourceNotFoundException("Версия схемы", "version", versionKey));
-        CampusMapAdminRepository.SlotRow slot = repository.findSlots(plan.id()).stream()
-                .filter(row -> row.format() == format)
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Формат схемы", "format", format));
-        if (slot.state() != CampusMapFormatState.READY || !Objects.equals(slot.assetId(), assetKey)) {
+        CampusMapAdminRepository.PlanRow plan =
+                repository
+                        .findPlan(floorKey, versionKey)
+                        .filter(row -> row.publishedAt() != null)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Версия схемы", "version", versionKey));
+        CampusMapAdminRepository.SlotRow slot =
+                repository.findSlots(plan.id()).stream()
+                        .filter(row -> row.format() == format)
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Формат схемы", "format", format));
+        if (slot.state() != CampusMapFormatState.READY
+                || !Objects.equals(slot.assetId(), assetKey)) {
             throw new ConflictException("assetId", assetId, "Ассет схемы ещё не готов");
         }
-        CampusMapAdminRepository.AssetRow asset = repository.findAsset(assetKey, plan.id(), format)
-                .orElseThrow(() -> new ResourceNotFoundException("Ассет схемы", "id", assetKey));
-        if (asset.content() == null || asset.content().length == 0 || asset.content().length > MAX_BYTES) {
+        CampusMapAdminRepository.AssetRow asset =
+                repository
+                        .findAsset(assetKey, plan.id(), format)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Ассет схемы", "id", assetKey));
+        if (asset.content() == null
+                || asset.content().length == 0
+                || asset.content().length > MAX_BYTES) {
             throw new IllegalStateException("campus map asset is invalid");
         }
         return new Download(asset.contentType(), asset.content(), format);
@@ -330,12 +456,24 @@ public class CampusMapAdminService {
     private Map<Long, PlanResponse> currentPlans(List<CampusMapAdminRepository.FloorRow> floors) {
         Map<Long, PlanResponse> plans = new java.util.HashMap<>();
         for (CampusMapAdminRepository.FloorRow floor : floors) {
-            repository.findCurrentPlan(floor.id()).ifPresent(plan -> {
-                if (plan.publishedAt() != null) {
-                    long revision = plan.catalogRevisionId() == null ? 0 : catalogRevision(plan.catalogRevisionId());
-                    plans.put(floor.id(), toPlan(plan, revision, repository.findSlots(plan.id()), floor.buildingId()));
-                }
-            });
+            repository
+                    .findCurrentPlan(floor.id())
+                    .ifPresent(
+                            plan -> {
+                                if (plan.publishedAt() != null) {
+                                    long revision =
+                                            plan.catalogRevisionId() == null
+                                                    ? 0
+                                                    : catalogRevision(plan.catalogRevisionId());
+                                    plans.put(
+                                            floor.id(),
+                                            toPlan(
+                                                    plan,
+                                                    revision,
+                                                    repository.findSlots(plan.id()),
+                                                    floor.buildingId()));
+                                }
+                            });
         }
         return plans;
     }
@@ -354,23 +492,36 @@ public class CampusMapAdminService {
         return repository.catalogRevisionValue(catalogId);
     }
 
-    private static FloorResponse toFloor(CampusMapAdminRepository.FloorRow floor,
-                                         PlanResponse plan,
-                                         long openCount) {
-        return new FloorResponse(decimal(floor.id()), decimal(floor.buildingId()), floor.code(), floor.label(),
-                plan, openCount, "all_time");
+    private static FloorResponse toFloor(
+            CampusMapAdminRepository.FloorRow floor, PlanResponse plan, long openCount) {
+        return new FloorResponse(
+                decimal(floor.id()),
+                decimal(floor.buildingId()),
+                floor.code(),
+                floor.label(),
+                plan,
+                openCount,
+                "all_time");
     }
 
-    private static PlanResponse toPlan(CampusMapAdminRepository.PlanRow plan,
-                                       long revision,
-                                       List<CampusMapAdminRepository.SlotRow> rows,
-                                       long buildingId) {
-        Map<CampusMapFormat, CampusMapAdminRepository.SlotRow> slots = new EnumMap<>(CampusMapFormat.class);
+    private static PlanResponse toPlan(
+            CampusMapAdminRepository.PlanRow plan,
+            long revision,
+            List<CampusMapAdminRepository.SlotRow> rows,
+            long buildingId) {
+        Map<CampusMapFormat, CampusMapAdminRepository.SlotRow> slots =
+                new EnumMap<>(CampusMapFormat.class);
         for (CampusMapAdminRepository.SlotRow row : rows) {
             slots.put(row.format(), row);
         }
-        return new PlanResponse(decimal(buildingId), decimal(plan.floorId()), decimal(plan.version()), plan.label(),
-                decimal(revision), slot(slots.get(CampusMapFormat.PNG)), slot(slots.get(CampusMapFormat.SVG)));
+        return new PlanResponse(
+                decimal(buildingId),
+                decimal(plan.floorId()),
+                decimal(plan.version()),
+                plan.label(),
+                decimal(revision),
+                slot(slots.get(CampusMapFormat.PNG)),
+                slot(slots.get(CampusMapFormat.SVG)));
     }
 
     private static CampusMapAdminModels.FormatSlot slot(CampusMapAdminRepository.SlotRow row) {
@@ -378,7 +529,9 @@ public class CampusMapAdminService {
             throw new IllegalStateException("campus map plan format is missing");
         }
         return new CampusMapAdminModels.FormatSlot(
-                row.format() == CampusMapFormat.PNG ? CampusMapAdminModels.Format.png : CampusMapAdminModels.Format.svg,
+                row.format() == CampusMapFormat.PNG
+                        ? CampusMapAdminModels.Format.png
+                        : CampusMapAdminModels.Format.svg,
                 switch (row.state()) {
                     case ABSENT -> FormatState.absent;
                     case PROCESSING -> FormatState.processing;
@@ -408,12 +561,26 @@ public class CampusMapAdminService {
                 continue;
             }
             repository.findSlots(current.get().id()).stream()
-                    .filter(slot -> slot.format() == format && slot.state() == CampusMapFormatState.READY
-                            && slot.assetId() != null)
+                    .filter(
+                            slot ->
+                                    slot.format() == format
+                                            && slot.state() == CampusMapFormatState.READY
+                                            && slot.assetId() != null)
                     .findFirst()
-                    .flatMap(slot -> repository.findAsset(slot.assetId(), current.get().id(), format))
-                    .map(asset -> new ValidatedAsset(format, asset.contentType(), asset.content(), asset.bytes(),
-                            asset.sha256(), asset.width(), asset.height()))
+                    .flatMap(
+                            slot ->
+                                    repository.findAsset(
+                                            slot.assetId(), current.get().id(), format))
+                    .map(
+                            asset ->
+                                    new ValidatedAsset(
+                                            format,
+                                            asset.contentType(),
+                                            asset.content(),
+                                            asset.bytes(),
+                                            asset.sha256(),
+                                            asset.width(),
+                                            asset.height()))
                     .ifPresent(asset -> assets.put(format, asset));
         }
         return assets;
@@ -422,8 +589,12 @@ public class CampusMapAdminService {
     private ValidatedAsset validate(MultipartFile file, CampusMapFormat format) {
         String expected = expectedMime(format);
         if (!expected.equals(file.getContentType())) {
-            throw new BadRequestException("file", "Файл " + format.name().toLowerCase(Locale.ROOT)
-                    + " должен иметь MIME " + expected);
+            throw new BadRequestException(
+                    "file",
+                    "Файл "
+                            + format.name().toLowerCase(Locale.ROOT)
+                            + " должен иметь MIME "
+                            + expected);
         }
         if (file.getSize() <= 0 || file.getSize() > MAX_BYTES) {
             throw new BadRequestException("file", "Размер файла должен быть от 1 байта до 10 MiB");
@@ -437,13 +608,21 @@ public class CampusMapAdminService {
         if (content.length == 0 || content.length > MAX_BYTES) {
             throw new BadRequestException("file", "Размер файла должен быть от 1 байта до 10 MiB");
         }
-        Dimensions dimensions = format == CampusMapFormat.PNG ? validatePng(content) : validateSvg(content);
-        return new ValidatedAsset(format, expected, content, content.length, sha256(content),
-                dimensions.width(), dimensions.height());
+        Dimensions dimensions =
+                format == CampusMapFormat.PNG ? validatePng(content) : validateSvg(content);
+        return new ValidatedAsset(
+                format,
+                expected,
+                content,
+                content.length,
+                sha256(content),
+                dimensions.width(),
+                dimensions.height());
     }
 
     private static Dimensions validatePng(byte[] content) {
-        if (content.length < 8 || !Arrays.equals(PNG_SIGNATURE, Arrays.copyOf(content, PNG_SIGNATURE.length))) {
+        if (content.length < 8
+                || !Arrays.equals(PNG_SIGNATURE, Arrays.copyOf(content, PNG_SIGNATURE.length))) {
             throw new BadRequestException("file", "PNG-файл имеет неверную сигнатуру");
         }
         int width = 0;
@@ -455,15 +634,17 @@ public class CampusMapAdminService {
         boolean palette = false;
         boolean dataEnded = false;
         boolean ended = false;
-        for (int offset = 8; offset < content.length;) {
+        for (int offset = 8; offset < content.length; ) {
             if (content.length - offset < 12) throw invalidPng();
             int length = pngInt(content, offset);
             if (length < 0 || length > content.length - offset - 12) throw invalidPng();
-            String type = new String(content, offset + 4, 4, java.nio.charset.StandardCharsets.US_ASCII);
+            String type =
+                    new String(content, offset + 4, 4, java.nio.charset.StandardCharsets.US_ASCII);
             if (!type.matches("[A-Za-z]{2}[A-Z][A-Za-z]")) throw invalidPng();
             CRC32 crc = new CRC32();
             crc.update(content, offset + 4, length + 4);
-            if (crc.getValue() != Integer.toUnsignedLong(pngInt(content, offset + 8 + length))) throw invalidPng();
+            if (crc.getValue() != Integer.toUnsignedLong(pngInt(content, offset + 8 + length)))
+                throw invalidPng();
             int data = offset + 8;
             if (offset == 8 && !"IHDR".equals(type)) throw invalidPng();
             switch (type) {
@@ -474,18 +655,34 @@ public class CampusMapAdminService {
                     depth = Byte.toUnsignedInt(content[data + 8]);
                     color = Byte.toUnsignedInt(content[data + 9]);
                     interlace = Byte.toUnsignedInt(content[data + 12]);
-                    boolean validDepth = switch (color) {
-                        case 0 -> depth == 1 || depth == 2 || depth == 4 || depth == 8 || depth == 16;
-                        case 2, 4, 6 -> depth == 8 || depth == 16;
-                        case 3 -> depth == 1 || depth == 2 || depth == 4 || depth == 8;
-                        default -> false;
-                    };
-                    if (width <= 0 || height <= 0 || !validDepth || content[data + 10] != 0
-                            || content[data + 11] != 0 || interlace > 1) throw invalidPng();
+                    boolean validDepth =
+                            switch (color) {
+                                case 0 ->
+                                        depth == 1
+                                                || depth == 2
+                                                || depth == 4
+                                                || depth == 8
+                                                || depth == 16;
+                                case 2, 4, 6 -> depth == 8 || depth == 16;
+                                case 3 -> depth == 1 || depth == 2 || depth == 4 || depth == 8;
+                                default -> false;
+                            };
+                    if (width <= 0
+                            || height <= 0
+                            || !validDepth
+                            || content[data + 10] != 0
+                            || content[data + 11] != 0
+                            || interlace > 1) throw invalidPng();
                 }
                 case "PLTE" -> {
-                    if (palette || firstData >= 0 || color == 0 || color == 4 || length == 0
-                            || length % 3 != 0 || length > 768 || color == 3 && length / 3 > (1 << depth)) throw invalidPng();
+                    if (palette
+                            || firstData >= 0
+                            || color == 0
+                            || color == 4
+                            || length == 0
+                            || length % 3 != 0
+                            || length > 768
+                            || color == 3 && length / 3 > (1 << depth)) throw invalidPng();
                     palette = true;
                 }
                 case "IDAT" -> {
@@ -493,7 +690,8 @@ public class CampusMapAdminService {
                     if (firstData < 0) firstData = offset;
                 }
                 case "IEND" -> {
-                    if (length != 0 || firstData < 0 || offset + 12 != content.length) throw invalidPng();
+                    if (length != 0 || firstData < 0 || offset + 12 != content.length)
+                        throw invalidPng();
                     ended = true;
                 }
                 default -> {
@@ -514,17 +712,40 @@ public class CampusMapAdminService {
     }
 
     private static BadRequestException invalidPng() {
-        return new BadRequestException("file", "PNG-файл повреждён или содержит неполные данные изображения");
+        return new BadRequestException(
+                "file", "PNG-файл повреждён или содержит неполные данные изображения");
     }
 
-    private static void validatePngScanlines(byte[] content, int offset, int width, int height,
-                                            int depth, int color, int interlace) {
-        int samples = switch (color) { case 0, 3 -> 1; case 2 -> 3; case 4 -> 2; case 6 -> 4; default -> 0; };
+    private static void validatePngScanlines(
+            byte[] content,
+            int offset,
+            int width,
+            int height,
+            int depth,
+            int color,
+            int interlace) {
+        int samples =
+                switch (color) {
+                    case 0, 3 -> 1;
+                    case 2 -> 3;
+                    case 4 -> 2;
+                    case 6 -> 4;
+                    default -> 0;
+                };
         // PNG's seven Adam7 passes, or one whole-image pass. Sizes are arithmetic only:
         // no pixel/row array is allocated from untrusted dimensions.
-        int[][] passes = interlace == 0 ? new int[][]{{0, 0, 1, 1}}
-                : new int[][]{{0, 0, 8, 8}, {4, 0, 8, 8}, {0, 4, 4, 8}, {2, 0, 4, 4},
-                {0, 2, 2, 4}, {1, 0, 2, 2}, {0, 1, 1, 2}};
+        int[][] passes =
+                interlace == 0
+                        ? new int[][] {{0, 0, 1, 1}}
+                        : new int[][] {
+                            {0, 0, 8, 8},
+                            {4, 0, 8, 8},
+                            {0, 4, 4, 8},
+                            {2, 0, 4, 4},
+                            {0, 2, 2, 4},
+                            {1, 0, 2, 2},
+                            {0, 1, 1, 2}
+                        };
         long remainingBytes = 134_217_728L;
         long remainingRows = 1_000_000L;
         for (int[] pass : passes) {
@@ -535,7 +756,8 @@ public class CampusMapAdminService {
             // Compare before multiplication: even maximal legal IHDR dimensions cannot overflow.
             // Include each filter byte and every nonempty Adam7 pass, before starting inflation.
             if (rows > remainingRows || rows > remainingBytes / scanlineBytes) {
-                throw new BadRequestException("file",
+                throw new BadRequestException(
+                        "file",
                         "PNG превышает бюджет проверки: 128 МиБ данных изображения и 1000000 строк проходов");
             }
             remainingRows -= rows;
@@ -556,7 +778,10 @@ public class CampusMapAdminService {
                     pixels.skipNBytes(rowBytes);
                 }
             }
-            if (pixels.read() != -1 || !inflater.finished() || inflater.getRemaining() != 0 || data.read() != -1) {
+            if (pixels.read() != -1
+                    || !inflater.finished()
+                    || inflater.getRemaining() != 0
+                    || data.read() != -1) {
                 throw invalidPng();
             }
         } catch (IOException error) {
@@ -581,8 +806,10 @@ public class CampusMapAdminService {
 
         private boolean advance() {
             while (remaining == 0 && !finished) {
-                if (nextChunk >= content.length || content[nextChunk + 4] != 'I'
-                        || content[nextChunk + 5] != 'D' || content[nextChunk + 6] != 'A'
+                if (nextChunk >= content.length
+                        || content[nextChunk + 4] != 'I'
+                        || content[nextChunk + 5] != 'D'
+                        || content[nextChunk + 6] != 'A'
                         || content[nextChunk + 7] != 'T') {
                     finished = true;
                     return false;
@@ -617,12 +844,21 @@ public class CampusMapAdminService {
     private static Dimensions validateSvg(byte[] content) {
         String text = new String(content, java.nio.charset.StandardCharsets.UTF_8);
         if (text.indexOf('\u0000') >= 0 || UNSAFE_TEXT.matcher(text).find()) {
-            throw new BadRequestException("file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
+            throw new BadRequestException(
+                    "file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
         }
         try {
-            var document = secureXmlFactory().newDocumentBuilder().parse(new ByteArrayInputStream(content));
+            var document =
+                    secureXmlFactory()
+                            .newDocumentBuilder()
+                            .parse(new ByteArrayInputStream(content));
             Element root = document.getDocumentElement();
-            if (root == null || !"svg".equalsIgnoreCase(root.getLocalName() == null ? root.getNodeName() : root.getLocalName())) {
+            if (root == null
+                    || !"svg"
+                            .equalsIgnoreCase(
+                                    root.getLocalName() == null
+                                            ? root.getNodeName()
+                                            : root.getLocalName())) {
                 throw new BadRequestException("file", "SVG должен иметь корневой элемент svg");
             }
             inspectSvg(document);
@@ -640,7 +876,8 @@ public class CampusMapAdminService {
         }
     }
 
-    private static DocumentBuilderFactory secureXmlFactory() throws javax.xml.parsers.ParserConfigurationException {
+    private static DocumentBuilderFactory secureXmlFactory()
+            throws javax.xml.parsers.ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -662,34 +899,47 @@ public class CampusMapAdminService {
                     && "xml-stylesheet".equals(node.getNodeName())) {
                 // A PI is outside the element tree, including before/after the SVG root.
                 // Parse pseudoattributes with the same entity/DTD protections as the document.
-                byte[] attributes = ("<stylesheet " + node.getNodeValue() + "/>")
-                        .getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                Element stylesheet = secureXmlFactory().newDocumentBuilder()
-                        .parse(new ByteArrayInputStream(attributes)).getDocumentElement();
+                byte[] attributes =
+                        ("<stylesheet " + node.getNodeValue() + "/>")
+                                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                Element stylesheet =
+                        secureXmlFactory()
+                                .newDocumentBuilder()
+                                .parse(new ByteArrayInputStream(attributes))
+                                .getDocumentElement();
                 String href = stylesheet.getAttribute("href").trim();
-                if (!"stylesheet".equals(stylesheet.getNodeName()) || stylesheet.hasChildNodes()
+                if (!"stylesheet".equals(stylesheet.getNodeName())
+                        || stylesheet.hasChildNodes()
                         || (!href.isEmpty() && !href.startsWith("#"))) {
-                    throw new BadRequestException("file", "SVG содержит внешний ресурс таблицы стилей");
+                    throw new BadRequestException(
+                            "file", "SVG содержит внешний ресурс таблицы стилей");
                 }
             }
             if (node instanceof Element element) {
-                String name = (element.getLocalName() == null ? element.getNodeName() : element.getLocalName())
-                        .toLowerCase(Locale.ROOT);
+                String name =
+                        (element.getLocalName() == null
+                                        ? element.getNodeName()
+                                        : element.getLocalName())
+                                .toLowerCase(Locale.ROOT);
                 if (SetOfUnsafeElements.contains(name)) {
-                    throw new BadRequestException("file", "SVG содержит запрещённый элемент " + name);
+                    throw new BadRequestException(
+                            "file", "SVG содержит запрещённый элемент " + name);
                 }
                 if ("style".equals(name)) inspectCssResources(element.getTextContent());
-                if ("set".equals(name) || name.startsWith("animate")) inspectAnimatedResource(element);
+                if ("set".equals(name) || name.startsWith("animate"))
+                    inspectAnimatedResource(element);
                 NamedNodeMap attributes = element.getAttributes();
                 for (int index = 0; index < attributes.getLength(); index++) {
                     Node attribute = attributes.item(index);
                     String attrName = attribute.getNodeName().toLowerCase(Locale.ROOT);
-                    String value = attribute.getNodeValue() == null ? "" : attribute.getNodeValue().trim();
+                    String value =
+                            attribute.getNodeValue() == null ? "" : attribute.getNodeValue().trim();
                     inspectCssResources(value);
                     if (attrName.startsWith("on")
                             || UNSAFE_TEXT.matcher(value).find()
                             || (resourceAttribute(attrName) && !safeSvgResource(value))) {
-                        throw new BadRequestException("file", "SVG содержит внешний или исполняемый ресурс");
+                        throw new BadRequestException(
+                                "file", "SVG содержит внешний или исполняемый ресурс");
                     }
                 }
             }
@@ -708,8 +958,10 @@ public class CampusMapAdminService {
         String value = raw.trim().toLowerCase(Locale.ROOT);
         if (value.isEmpty() || value.startsWith("#")) return true;
         for (String mime : List.of("data:image/png", "data:image/jpeg")) {
-            if (value.startsWith(mime) && value.length() > mime.length()
-                    && (value.charAt(mime.length()) == ';' || value.charAt(mime.length()) == ',')) return true;
+            if (value.startsWith(mime)
+                    && value.length() > mime.length()
+                    && (value.charAt(mime.length()) == ';' || value.charAt(mime.length()) == ','))
+                return true;
         }
         return false;
     }
@@ -735,7 +987,8 @@ public class CampusMapAdminService {
     private static void inspectCssResources(String raw) {
         String decoded = unescapeCss(raw);
         if (UNSAFE_TEXT.matcher(decoded).find()) {
-            throw new BadRequestException("file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
+            throw new BadRequestException(
+                    "file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
         }
         if (!CSS_RESOURCE.matcher(decoded).find()) return;
         // Scan original tokens: decoding an escaped quote or deleting a comment inside
@@ -743,7 +996,7 @@ public class CampusMapAdminService {
         // The stack avoids recursive parsing of attacker-controlled parentheses.
         ArrayDeque<CssFunction> functions = new ArrayDeque<>();
         int resourceFunctions = 0;
-        for (int index = 0; index < raw.length();) {
+        for (int index = 0; index < raw.length(); ) {
             index = skipCssSpace(raw, index);
             if (index == raw.length()) break;
             char current = raw.charAt(index);
@@ -759,7 +1012,9 @@ public class CampusMapAdminService {
                     index++;
                     continue;
                 }
-                if (enclosing != null && enclosing.resourceStrings && enclosing.sourceStart
+                if (enclosing != null
+                        && enclosing.resourceStrings
+                        && enclosing.sourceStart
                         && !safeSvgResource(unescapeCss(raw.substring(index + 1, end - 1)))) {
                     throw unsafeCssResource();
                 }
@@ -781,8 +1036,10 @@ public class CampusMapAdminService {
                     if ("url".equals(name) || "src".equals(name)) {
                         index = inspectCssUrl(raw, open + 1);
                     } else {
-                        boolean resourceStrings = "image-set".equals(name)
-                                || "-webkit-image-set".equals(name) || "image".equals(name);
+                        boolean resourceStrings =
+                                "image-set".equals(name)
+                                        || "-webkit-image-set".equals(name)
+                                        || "image".equals(name);
                         functions.push(new CssFunction(resourceStrings));
                         if (resourceStrings) resourceFunctions++;
                         index = open + 1;
@@ -797,7 +1054,8 @@ public class CampusMapAdminService {
             } else {
                 if (current == '(') functions.push(new CssFunction(false));
                 else if (current == ')') {
-                    if (!functions.isEmpty() && functions.pop().resourceStrings) resourceFunctions--;
+                    if (!functions.isEmpty() && functions.pop().resourceStrings)
+                        resourceFunctions--;
                 } else if (current == ',' && enclosing != null) enclosing.sourceStart = true;
                 else if (enclosing != null) enclosing.sourceStart = false;
                 index++;
@@ -846,7 +1104,7 @@ public class CampusMapAdminService {
 
     private static int cssStringEnd(String css, int start) {
         char quote = css.charAt(start);
-        for (int index = start + 1; index < css.length();) {
+        for (int index = start + 1; index < css.length(); ) {
             char current = css.charAt(index);
             if (current == quote) return index + 1;
             if (current == '\r' || current == '\n' || current == '\f') throw unsafeCssResource();
@@ -856,7 +1114,11 @@ public class CampusMapAdminService {
     }
 
     private static boolean cssIdentifierChar(char value) {
-        return Character.isLetterOrDigit(value) || value == '-' || value == '_' || value == '\\' || value >= 128;
+        return Character.isLetterOrDigit(value)
+                || value == '-'
+                || value == '_'
+                || value == '\\'
+                || value >= 128;
     }
 
     private static int cssEscapeEnd(String css, int start) {
@@ -868,11 +1130,15 @@ public class CampusMapAdminService {
             digits++;
         }
         if (digits == 0) {
-            if (css.charAt(index) == '\r' && index + 1 < css.length() && css.charAt(index + 1) == '\n') index++;
+            if (css.charAt(index) == '\r'
+                    && index + 1 < css.length()
+                    && css.charAt(index + 1) == '\n') index++;
             return index + 1;
         }
         if (index < css.length() && Character.isWhitespace(css.charAt(index))) {
-            if (css.charAt(index) == '\r' && index + 1 < css.length() && css.charAt(index + 1) == '\n') index++;
+            if (css.charAt(index) == '\r'
+                    && index + 1 < css.length()
+                    && css.charAt(index + 1) == '\n') index++;
             index++;
         }
         return index;
@@ -910,17 +1176,24 @@ public class CampusMapAdminService {
                 digits++;
             }
             if (digits > 0) {
-                result.appendCodePoint(codepoint == 0 || !Character.isValidCodePoint(codepoint)
-                        || codepoint >= 0xd800 && codepoint <= 0xdfff ? 0xfffd : codepoint);
+                result.appendCodePoint(
+                        codepoint == 0
+                                        || !Character.isValidCodePoint(codepoint)
+                                        || codepoint >= 0xd800 && codepoint <= 0xdfff
+                                ? 0xfffd
+                                : codepoint);
                 if (next < value.length() && Character.isWhitespace(value.charAt(next))) {
-                    if (value.charAt(next) == '\r' && next + 1 < value.length() && value.charAt(next + 1) == '\n') next++;
+                    if (value.charAt(next) == '\r'
+                            && next + 1 < value.length()
+                            && value.charAt(next + 1) == '\n') next++;
                     next++;
                 }
                 index = next - 1;
             } else {
                 char escaped = value.charAt(next);
                 if (escaped != '\r' && escaped != '\n' && escaped != '\f') result.append(escaped);
-                if (escaped == '\r' && next + 1 < value.length() && value.charAt(next + 1) == '\n') next++;
+                if (escaped == '\r' && next + 1 < value.length() && value.charAt(next + 1) == '\n')
+                    next++;
                 index = next;
             }
         }
@@ -979,7 +1252,9 @@ public class CampusMapAdminService {
 
     static String requireUploadCode(String value, String field) {
         if (value == null || value.length() > 64 || !POSITIVE_DECIMAL.matcher(value).matches()) {
-            throw new BadRequestException(field, "Код должен содержать положительное число без пробелов, максимум 64 цифры");
+            throw new BadRequestException(
+                    field,
+                    "Код должен содержать положительное число без пробелов, максимум 64 цифры");
         }
         return value;
     }
@@ -1003,19 +1278,21 @@ public class CampusMapAdminService {
         return Long.toString(value);
     }
 
-    public record Download(String contentType, byte[] content, CampusMapFormat format) {
-    }
+    public record Download(String contentType, byte[] content, CampusMapFormat format) {}
 
-    private record ValidatedAsset(CampusMapFormat format, String contentType, byte[] content, long bytes,
-                                  byte[] sha256, Integer width, Integer height) {
-    }
+    private record ValidatedAsset(
+            CampusMapFormat format,
+            String contentType,
+            byte[] content,
+            long bytes,
+            byte[] sha256,
+            Integer width,
+            Integer height) {}
 
-    private record Dimensions(Integer width, Integer height) {
-    }
+    private record Dimensions(Integer width, Integer height) {}
 
     private static final class Hex {
-        private Hex() {
-        }
+        private Hex() {}
 
         private static String hex(byte[] bytes) {
             StringBuilder builder = new StringBuilder(bytes.length * 2);
@@ -1028,14 +1305,21 @@ public class CampusMapAdminService {
     }
 
     private static final class SetOfUnsafeElements {
-        private static final java.util.Set<String> values = java.util.Set.of(
-                "script", "foreignobject", "iframe", "object", "embed", "audio", "video", "link");
+        private static final java.util.Set<String> values =
+                java.util.Set.of(
+                        "script",
+                        "foreignobject",
+                        "iframe",
+                        "object",
+                        "embed",
+                        "audio",
+                        "video",
+                        "link");
 
         private static boolean contains(String value) {
             return values.contains(value);
         }
 
-        private SetOfUnsafeElements() {
-        }
+        private SetOfUnsafeElements() {}
     }
 }

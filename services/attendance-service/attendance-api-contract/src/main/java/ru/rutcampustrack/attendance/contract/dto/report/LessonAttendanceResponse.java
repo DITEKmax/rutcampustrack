@@ -1,16 +1,16 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.List;
-
 /**
- * Top-level response for lesson attendance list (RPRT-01).
- * Extends RepresentationModel for HATEOAS _links support.
- * Plain Java class — no Lombok (contract module rule).
+ * Top-level response for lesson attendance list (RPRT-01). Extends RepresentationModel for HATEOAS
+ * _links support. Plain Java class — no Lombok (contract module rule).
  */
-@Schema(description = "Список посещаемости конкретной пары: ID пары, группа, предмет, дата, записи по студентам")
+@Schema(
+        description =
+                "Список посещаемости конкретной пары: ID пары, группа, предмет, дата, записи по студентам")
 public class LessonAttendanceResponse extends RepresentationModel<LessonAttendanceResponse> {
 
     private final Long lessonId;
@@ -18,20 +18,33 @@ public class LessonAttendanceResponse extends RepresentationModel<LessonAttendan
     private final Long subjectId;
     private final String lessonDate;
     private final Long semesterId;
+
     /** Uppercase schedule state: PLANNED, ACTIVE, CLOSED, or CANCELLED. */
     private final String lessonStatus;
+
     /** Server-side editability derived from lesson state and server clock. */
     private final boolean editable;
+
     private final List<StudentAttendanceEntry> entries;
 
-    public LessonAttendanceResponse(Long lessonId, Long groupId, Long subjectId, String lessonDate,
-                                     List<StudentAttendanceEntry> entries) {
+    public LessonAttendanceResponse(
+            Long lessonId,
+            Long groupId,
+            Long subjectId,
+            String lessonDate,
+            List<StudentAttendanceEntry> entries) {
         this(lessonId, groupId, subjectId, lessonDate, null, null, false, entries);
     }
 
-    public LessonAttendanceResponse(Long lessonId, Long groupId, Long subjectId, String lessonDate,
-                                    Long semesterId, String lessonStatus, boolean editable,
-                                    List<StudentAttendanceEntry> entries) {
+    public LessonAttendanceResponse(
+            Long lessonId,
+            Long groupId,
+            Long subjectId,
+            String lessonDate,
+            Long semesterId,
+            String lessonStatus,
+            boolean editable,
+            List<StudentAttendanceEntry> entries) {
         this.lessonId = lessonId;
         this.groupId = groupId;
         this.subjectId = subjectId;

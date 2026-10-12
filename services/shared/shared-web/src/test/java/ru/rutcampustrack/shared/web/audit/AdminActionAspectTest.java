@@ -1,5 +1,10 @@
 package ru.rutcampustrack.shared.web.audit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,23 +18,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
- * M16 G6 — расширенные тесты на {@link AdminActionAspect} после миграции
- * с заглушки на real handler.
+ * M16 G6 — расширенные тесты на {@link AdminActionAspect} после миграции с заглушки на real
+ * handler.
  *
  * <p>Покрывает:
+ *
  * <ul>
- *   <li>aspect proxies метод и возвращает результат;</li>
- *   <li>aspect записывает entry в {@link AuditLogStorage};</li>
- *   <li>при exception entry пишется с {@code succeeded=false};</li>
- *   <li>methods без annotation — aspect no-op;</li>
- *   <li>storage exception не ломает caller (best-effort).</li>
+ *   <li>aspect proxies метод и возвращает результат;
+ *   <li>aspect записывает entry в {@link AuditLogStorage};
+ *   <li>при exception entry пишется с {@code succeeded=false};
+ *   <li>methods без annotation — aspect no-op;
+ *   <li>storage exception не ломает caller (best-effort).
  * </ul>
  */
 @SpringJUnitConfig
@@ -51,8 +51,15 @@ class AdminActionAspectTest {
         @Primary
         AuditLogContextProvider auditLogContextProvider() {
             return new AuditLogContextProvider() {
-                @Override public Long currentUserId() { return 42L; }
-                @Override public String currentCorrelationId() { return "corr-test"; }
+                @Override
+                public Long currentUserId() {
+                    return 42L;
+                }
+
+                @Override
+                public String currentCorrelationId() {
+                    return "corr-test";
+                }
             };
         }
     }
@@ -92,11 +99,9 @@ class AdminActionAspectTest {
         }
     }
 
-    @Autowired
-    private Target target;
+    @Autowired private Target target;
 
-    @Autowired
-    private InMemoryAuditLogStorage storage;
+    @Autowired private InMemoryAuditLogStorage storage;
 
     @BeforeEach
     void resetStorage() {

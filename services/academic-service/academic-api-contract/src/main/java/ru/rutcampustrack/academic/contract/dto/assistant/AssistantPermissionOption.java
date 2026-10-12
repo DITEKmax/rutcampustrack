@@ -5,11 +5,7 @@ import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 /**
  * One server-owned assistant permission and its human-readable label.
  *
- * <p>The mobile clients must render the label returned by Academic instead of
- * maintaining a second permission vocabulary.</p>
+ * <p>The mobile clients must render the label returned by Academic instead of maintaining a second
+ * permission vocabulary.
  */
-public record AssistantPermissionOption(
-        AssistantPermission code,
-        String label
-) {
-}
+public record AssistantPermissionOption(AssistantPermission code, String label) {}

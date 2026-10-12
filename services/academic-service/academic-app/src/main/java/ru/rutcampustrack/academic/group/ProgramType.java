@@ -4,12 +4,11 @@ import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
 
 /**
- * Вторая цифра кода: 1–3 бакалавриат, 4–6 специалитет, 7–9 магистратура;
- * в каждой тройке очная, очно-заочная и заочная формы соответственно.
- * Срок задаётся явно; только исторические типы 1/7 имеют прежний fallback 4/2.
+ * Вторая цифра кода: 1–3 бакалавриат, 4–6 специалитет, 7–9 магистратура; в каждой тройке очная,
+ * очно-заочная и заочная формы соответственно. Срок задаётся явно; только исторические типы 1/7
+ * имеют прежний fallback 4/2.
  */
 public enum ProgramType {
-
     BACHELOR(1, 4),
     BACHELOR_PART_TIME(2, null),
     BACHELOR_EXTRAMURAL(3, null),
@@ -35,7 +34,8 @@ public enum ProgramType {
     /** Compatibility duration; new types have no inferred duration. */
     public int getMaxCourse() {
         if (legacyDurationYears == null) {
-            throw new GroupCodeRules.InvalidCodeException("trainingDurationYears",
+            throw new GroupCodeRules.InvalidCodeException(
+                    "trainingDurationYears",
                     "Для этого типа программы срок обучения должен быть задан явно");
         }
         return legacyDurationYears;
@@ -50,7 +50,8 @@ public enum ProgramType {
     }
 
     public EducationLevel getEducationLevel() {
-        return digit <= 3 ? EducationLevel.BACHELOR
+        return digit <= 3
+                ? EducationLevel.BACHELOR
                 : digit <= 6 ? EducationLevel.SPECIALIST : EducationLevel.MASTER;
     }
 

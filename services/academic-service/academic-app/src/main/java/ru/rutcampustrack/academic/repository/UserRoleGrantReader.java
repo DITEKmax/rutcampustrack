@@ -1,21 +1,21 @@
 package ru.rutcampustrack.academic.repository;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
 
 /** Read adapter for the same durable grant rows consumed by Auth. */
 @Repository
 public class UserRoleGrantReader {
 
-    private static final String BASE_SQL = """
+    private static final String BASE_SQL =
+            """
             SELECT g.user_id, g.role, g.status, g.group_id,
                    grp.name AS group_name, u.status::text AS user_status
             FROM user_role_grants g
@@ -60,8 +60,10 @@ public class UserRoleGrantReader {
         String role = rs.getString("role").toUpperCase(java.util.Locale.ROOT);
         String status = rs.getString("status").toUpperCase(java.util.Locale.ROOT);
         boolean selectable = "ACTIVE".equals(status);
-        boolean freshAssignment = "ARCHIVED".equals(status) && !"archived".equals(rs.getString("user_status"))
-                && List.of("STUDENT","TEACHER","ADMIN").contains(role);
+        boolean freshAssignment =
+                "ARCHIVED".equals(status)
+                        && !"archived".equals(rs.getString("user_status"))
+                        && List.of("STUDENT", "TEACHER", "ADMIN").contains(role);
         return new RoleGrantViewResponse(
                 role,
                 status,
@@ -87,8 +89,7 @@ public class UserRoleGrantReader {
     }
 
     private static boolean canUpdate(String role, String status) {
-        return ("STUDENT".equals(role) || "TEACHER".equals(role))
-                && !"ARCHIVED".equals(status);
+        return ("STUDENT".equals(role) || "TEACHER".equals(role)) && !"ARCHIVED".equals(status);
     }
 
     private static String blockedReason(String role, String status) {

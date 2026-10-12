@@ -1,9 +1,8 @@
 package ru.rutcampustrack.gateway.security;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.net.URI;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Fixed backend origins for the allowlisted report downloader. */
 @ConfigurationProperties(prefix = "rutcampustrack.report-download")
@@ -30,8 +29,13 @@ public class ReportDownloadBackendProperties {
         this.attendanceServiceUrl = attendanceServiceUrl;
     }
 
-    public String getAcademicServiceUrl() { return academicServiceUrl; }
-    public void setAcademicServiceUrl(String url) { academicServiceUrl = url; }
+    public String getAcademicServiceUrl() {
+        return academicServiceUrl;
+    }
+
+    public void setAcademicServiceUrl(String url) {
+        academicServiceUrl = url;
+    }
 
     public long getTimeoutMillis() {
         return timeoutMillis;
@@ -54,14 +58,21 @@ public class ReportDownloadBackendProperties {
     private static void validateOrigin(String value, String name) {
         try {
             URI uri = URI.create(value);
-            if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
-                    || uri.getHost() == null || uri.getHost().isBlank()
-                    || uri.getUserInfo() != null || uri.getQuery() != null || uri.getFragment() != null
-                    || (uri.getPath() != null && !uri.getPath().isEmpty() && !"/".equals(uri.getPath()))) {
+            if (!("http".equalsIgnoreCase(uri.getScheme())
+                            || "https".equalsIgnoreCase(uri.getScheme()))
+                    || uri.getHost() == null
+                    || uri.getHost().isBlank()
+                    || uri.getUserInfo() != null
+                    || uri.getQuery() != null
+                    || uri.getFragment() != null
+                    || (uri.getPath() != null
+                            && !uri.getPath().isEmpty()
+                            && !"/".equals(uri.getPath()))) {
                 throw new IllegalArgumentException("origin has non-origin parts");
             }
         } catch (RuntimeException exception) {
-            throw new IllegalStateException("report-download." + name + " must be an HTTP(S) origin", exception);
+            throw new IllegalStateException(
+                    "report-download." + name + " must be an HTTP(S) origin", exception);
         }
     }
 }

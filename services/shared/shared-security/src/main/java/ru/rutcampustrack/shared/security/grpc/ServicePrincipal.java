@@ -1,15 +1,14 @@
 package ru.rutcampustrack.shared.security.grpc;
 
 import io.grpc.Context;
-
 import java.util.Objects;
 
 /**
  * Immutable identity of a trusted service caller.
  *
- * <p>This type is deliberately separate from {@code InternalJwtClaims}. A
- * service credential authenticates the service at the transport boundary; it
- * does not carry a user, session, or domain actor identity.</p>
+ * <p>This type is deliberately separate from {@code InternalJwtClaims}. A service credential
+ * authenticates the service at the transport boundary; it does not carry a user, session, or domain
+ * actor identity.
  */
 public final class ServicePrincipal {
 
@@ -25,7 +24,9 @@ public final class ServicePrincipal {
     private final String name;
 
     public ServicePrincipal(String name) {
-        if (name == null || name.isBlank() || name.length() > 64
+        if (name == null
+                || name.isBlank()
+                || name.length() > 64
                 || !name.matches("[a-z][a-z0-9-]*")) {
             throw new IllegalArgumentException("Invalid service principal");
         }

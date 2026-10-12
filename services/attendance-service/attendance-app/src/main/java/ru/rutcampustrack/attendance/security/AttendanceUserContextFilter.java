@@ -10,18 +10,19 @@ import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 
 /**
- * M03a: attendance-service adaptation of {@link DualModeUserContextFilter}.
- * Bridges Internal JWT claims (or legacy X-User-* headers) into {@link RequestContext}.
+ * M03a: attendance-service adaptation of {@link DualModeUserContextFilter}. Bridges Internal JWT
+ * claims (or legacy X-User-* headers) into {@link RequestContext}.
  */
 @Component
 public class AttendanceUserContextFilter extends DualModeUserContextFilter {
 
     private final RequestContext requestContext;
 
-    public AttendanceUserContextFilter(InternalJwtValidator validator,
-                                       InternalJwtProperties properties,
-                                       RequestContext requestContext,
-                                       BusinessMetrics businessMetrics) {
+    public AttendanceUserContextFilter(
+            InternalJwtValidator validator,
+            InternalJwtProperties properties,
+            RequestContext requestContext,
+            BusinessMetrics businessMetrics) {
         super(validator, properties, businessMetrics);
         this.requestContext = requestContext;
     }

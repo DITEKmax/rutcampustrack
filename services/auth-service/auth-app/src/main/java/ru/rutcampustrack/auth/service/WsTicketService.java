@@ -1,5 +1,10 @@
 package ru.rutcampustrack.auth.service;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -9,26 +14,20 @@ import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
  * M03b Группа 3: issues + consume short-lived WebSocket tickets.
  *
- * <p>Storage (DECISIONS 2026-04-20 WS-ticket storage):</p>
+ * <p>Storage (DECISIONS 2026-04-20 WS-ticket storage):
+ *
  * <ul>
- *     <li>{@code ws_ticket:<uuid>} → pipe-joined payload containing the complete
- *         selected {@link SessionPrincipal}, TTL 30s.
- *         Pipe-separated (не JSON) — упрощает Lua-script SREM без cjson.</li>
- *     <li>{@code ws_ticket_user:<userId>} → SET&lt;uuid&gt; для batch-invalidate
- *         при logout (Группа 8). TTL 60s, refresh на каждый issue.</li>
+ *   <li>{@code ws_ticket:<uuid>} → pipe-joined payload containing the complete selected {@link
+ *       SessionPrincipal}, TTL 30s. Pipe-separated (не JSON) — упрощает Lua-script SREM без cjson.
+ *   <li>{@code ws_ticket_user:<userId>} → SET&lt;uuid&gt; для batch-invalidate при logout (Группа
+ *       8). TTL 60s, refresh на каждый issue.
  * </ul>
  *
- * <p>Consume — atomic via Lua-script: GET ws_ticket:&lt;uuid&gt; → DEL →
- * SREM из user-set. Гарантирует single-use при concurrent access.</p>
+ * <p>Consume — atomic via Lua-script: GET ws_ticket:&lt;uuid&gt; → DEL → SREM из user-set.
+ * Гарантирует single-use при concurrent access.
  */
 @Service
 public class WsTicketService {
@@ -41,7 +40,8 @@ public class WsTicketService {
     private static final String KEY_PREFIX = "ws_ticket:";
     private static final String USER_SET_PREFIX = "ws_ticket_user:";
 
-    private static final String CONSUME_SCRIPT = """
+    private static final String CONSUME_SCRIPT =
+            """
             local payload = redis.call('GET', KEYS[1])
             if not payload then
                 return nil
@@ -56,11 +56,11 @@ public class WsTicketService {
             """;
 
     /**
-     * M03b Группа 11 (bug-hunt HIGH-2): atomic SADD+EXPIRE чтобы избежать
-     * orphan user-set без TTL при network blip. Аналог pattern'а из
-     * LoginRateLimiter (KI-6).
+     * M03b Группа 11 (bug-hunt HIGH-2): atomic SADD+EXPIRE чтобы избежать orphan user-set без TTL
+     * при network blip. Аналог pattern'а из LoginRateLimiter (KI-6).
      */
-    private static final String ADD_TO_SET_SCRIPT = """
+    private static final String ADD_TO_SET_SCRIPT =
+            """
             redis.call('SADD', KEYS[1], ARGV[1])
             redis.call('EXPIRE', KEYS[1], ARGV[2])
             return 1
@@ -76,38 +76,40 @@ public class WsTicketService {
         this.addToSetScript = new DefaultRedisScript<>(ADD_TO_SET_SCRIPT, Long.class);
     }
 
-    /**
-     * Issue a single-use socket capability bound to the complete admitted session identity.
-     */
+    /** Issue a single-use socket capability bound to the complete admitted session identity. */
     public Issued issue(SessionPrincipal principal) {
         if (principal == null || principal.isBootstrap()) {
             throw new IllegalArgumentException("a selected session identity is required");
         }
         String ticket = UUID.randomUUID().toString();
         Instant expiresAt = Instant.now().plus(TICKET_TTL);
-        String payload = String.join("|",
-                Long.toString(principal.userId()),
-                principal.sessionId().toString(),
-                Long.toString(principal.sessionVersion()),
-                Long.toString(principal.rolesVersion()),
-                principal.selectedRole().name(),
-                principal.selectedStatus().name(),
-                principal.groupId() == null ? "" : Long.toString(principal.groupId()),
-                Boolean.toString(principal.headman()),
-                Boolean.toString(principal.readOnly()),
-                Long.toString(expiresAt.getEpochSecond()));
+        String payload =
+                String.join(
+                        "|",
+                        Long.toString(principal.userId()),
+                        principal.sessionId().toString(),
+                        Long.toString(principal.sessionVersion()),
+                        Long.toString(principal.rolesVersion()),
+                        principal.selectedRole().name(),
+                        principal.selectedStatus().name(),
+                        principal.groupId() == null ? "" : Long.toString(principal.groupId()),
+                        Boolean.toString(principal.headman()),
+                        Boolean.toString(principal.readOnly()),
+                        Long.toString(expiresAt.getEpochSecond()));
 
         redisTemplate.opsForValue().set(KEY_PREFIX + ticket, payload, TICKET_TTL);
         String userSetKey = USER_SET_PREFIX + principal.userId();
-        redisTemplate.execute(addToSetScript,
+        redisTemplate.execute(
+                addToSetScript,
                 List.of(userSetKey),
-                ticket, String.valueOf(USER_SET_TTL.toSeconds()));
+                ticket,
+                String.valueOf(USER_SET_TTL.toSeconds()));
         return new Issued(ticket, expiresAt);
     }
 
     /**
-     * Atomic consume: GET + DEL + SREM. Возвращает claims если ticket валиден
-     * и не был consume'нут, иначе empty.
+     * Atomic consume: GET + DEL + SREM. Возвращает claims если ticket валиден и не был consume'нут,
+     * иначе empty.
      */
     public Optional<TicketClaims> consume(String ticket) {
         if (ticket == null || ticket.isBlank()) {
@@ -122,9 +124,8 @@ public class WsTicketService {
     }
 
     /**
-     * Для Группы 8 (logout): invalidate все tickets пользователя.
-     * SMEMBERS + batch DEL + DEL user-set. Возвращает число удалённых
-     * ticket'ов для audit-log.
+     * Для Группы 8 (logout): invalidate все tickets пользователя. SMEMBERS + batch DEL + DEL
+     * user-set. Возвращает число удалённых ticket'ов для audit-log.
      */
     public int invalidateAllFor(long userId) {
         String userSetKey = USER_SET_PREFIX + userId;
@@ -159,11 +160,21 @@ public class WsTicketService {
             boolean headman = parseBoolean(parts[7]);
             boolean readOnly = parseBoolean(parts[8]);
             long expiresEpoch = Long.parseLong(parts[9]);
-            SessionPrincipal principal = new SessionPrincipal(userId, sessionId, sessionVersion,
-                    rolesVersion, role, status, groupId, headman, readOnly);
+            SessionPrincipal principal =
+                    new SessionPrincipal(
+                            userId,
+                            sessionId,
+                            sessionVersion,
+                            rolesVersion,
+                            role,
+                            status,
+                            groupId,
+                            headman,
+                            readOnly);
             return Optional.of(new TicketClaims(principal, Instant.ofEpochSecond(expiresEpoch)));
         } catch (RuntimeException e) {
-            log.warn("Failed to parse ws-ticket identity payload: {}", e.getClass().getSimpleName());
+            log.warn(
+                    "Failed to parse ws-ticket identity payload: {}", e.getClass().getSimpleName());
             return Optional.empty();
         }
     }

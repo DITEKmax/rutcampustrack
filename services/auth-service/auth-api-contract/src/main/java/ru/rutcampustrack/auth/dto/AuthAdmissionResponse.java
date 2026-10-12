@@ -2,7 +2,6 @@ package ru.rutcampustrack.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -20,8 +19,7 @@ public record AuthAdmissionResponse(
         String status,
         @Schema(nullable = true) String groupId,
         boolean isHeadman,
-        boolean readOnly
-) {
+        boolean readOnly) {
     public AuthAdmissionResponse {
         Objects.requireNonNull(internalToken, "internalToken");
         if (internalToken.isBlank()) {
@@ -65,18 +63,29 @@ public record AuthAdmissionResponse(
             throw new IllegalArgumentException(name + " must be an uppercase wire value");
         }
     }
+
     @Override
     public String toString() {
-        return "AuthAdmissionResponse[internalToken=<redacted>, expiresAt=" + expiresAt
-                + ", sessionId=" + sessionId
-                + ", userId=" + userId
-                + ", sessionVersion=" + sessionVersion
-                + ", rolesVersion=" + rolesVersion
-                + ", role=" + role
-                + ", status=" + status
-                + ", groupId=" + groupId
-                + ", isHeadman=" + isHeadman
-                + ", readOnly=" + readOnly
+        return "AuthAdmissionResponse[internalToken=<redacted>, expiresAt="
+                + expiresAt
+                + ", sessionId="
+                + sessionId
+                + ", userId="
+                + userId
+                + ", sessionVersion="
+                + sessionVersion
+                + ", rolesVersion="
+                + rolesVersion
+                + ", role="
+                + role
+                + ", status="
+                + status
+                + ", groupId="
+                + groupId
+                + ", isHeadman="
+                + isHeadman
+                + ", readOnly="
+                + readOnly
                 + "]";
     }
 }

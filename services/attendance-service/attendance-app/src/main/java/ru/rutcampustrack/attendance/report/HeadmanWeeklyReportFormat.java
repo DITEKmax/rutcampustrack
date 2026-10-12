@@ -1,12 +1,11 @@
 package ru.rutcampustrack.attendance.report;
 
-import ru.rutcampustrack.attendance.contract.api.ReportApi;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportFormatOption;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import ru.rutcampustrack.attendance.contract.api.ReportApi;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportFormatOption;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
 
 enum HeadmanWeeklyReportFormat {
     DOCX("docx", "Word (.docx)", ReportApi.DOCX_MEDIA_TYPE, "docx"),

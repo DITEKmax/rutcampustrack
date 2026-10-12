@@ -1,5 +1,11 @@
 package ru.rutcampustrack.gateway.clientip;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
@@ -8,33 +14,28 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class TrustedClientIpFilterTest {
 
     @Test
     void trustedEdgeNormalizesIdentityAndForwardingHeaders() throws Exception {
         TrustedClientIpFilter filter = new TrustedClientIpFilter(resolver("192.0.2.10"));
-        MockServerHttpRequest request = MockServerHttpRequest.get("/api/x")
-                .remoteAddress(address("192.0.2.10"))
-                .header("X-Forwarded-For", "203.0.113.7")
-                .header("X-Real-IP", "198.51.100.7")
-                .header("X-Forwarded-Proto", "https")
-                .header("X-Forwarded-Host", "ruttrack.site")
-                .header("X-Forwarded-Port", "443")
-                .header("Forwarded", "for=198.51.100.7")
-                .build();
+        MockServerHttpRequest request =
+                MockServerHttpRequest.get("/api/x")
+                        .remoteAddress(address("192.0.2.10"))
+                        .header("X-Forwarded-For", "203.0.113.7")
+                        .header("X-Real-IP", "198.51.100.7")
+                        .header("X-Forwarded-Proto", "https")
+                        .header("X-Forwarded-Host", "ruttrack.site")
+                        .header("X-Forwarded-Port", "443")
+                        .header("Forwarded", "for=198.51.100.7")
+                        .build();
         ServerWebExchange exchange = MockServerWebExchange.from(request);
         AtomicReference<ServerWebExchange> captured = new AtomicReference<>();
-        GatewayFilterChain chain = ex -> {
-            captured.set(ex);
-            return Mono.empty();
-        };
+        GatewayFilterChain chain =
+                ex -> {
+                    captured.set(ex);
+                    return Mono.empty();
+                };
 
         filter.filter(exchange, chain).block();
 
@@ -55,22 +56,26 @@ class TrustedClientIpFilterTest {
     @Test
     void untrustedPeerCannotSelectForwardingIdentityOrTrustedMetadata() throws Exception {
         TrustedClientIpFilter filter = new TrustedClientIpFilter(resolver("192.0.2.10"));
-        MockServerHttpRequest request = MockServerHttpRequest.get("/api/x")
-                .remoteAddress(address("198.51.100.9"))
-                .header("X-Forwarded-For", "203.0.113.7")
-                .header("X-Real-IP", "203.0.113.8")
-                .header("X-Forwarded-Proto", "https")
-                .header("X-Forwarded-Host", "attacker.invalid")
-                .header("X-Forwarded-Port", "443")
-                .header("Forwarded", "for=203.0.113.7")
-                .build();
+        MockServerHttpRequest request =
+                MockServerHttpRequest.get("/api/x")
+                        .remoteAddress(address("198.51.100.9"))
+                        .header("X-Forwarded-For", "203.0.113.7")
+                        .header("X-Real-IP", "203.0.113.8")
+                        .header("X-Forwarded-Proto", "https")
+                        .header("X-Forwarded-Host", "attacker.invalid")
+                        .header("X-Forwarded-Port", "443")
+                        .header("Forwarded", "for=203.0.113.7")
+                        .build();
         ServerWebExchange exchange = MockServerWebExchange.from(request);
         AtomicReference<ServerWebExchange> captured = new AtomicReference<>();
 
-        filter.filter(exchange, ex -> {
-            captured.set(ex);
-            return Mono.empty();
-        }).block();
+        filter.filter(
+                        exchange,
+                        ex -> {
+                            captured.set(ex);
+                            return Mono.empty();
+                        })
+                .block();
 
         HttpHeaders headers = captured.get().getRequest().getHeaders();
         assertThat(headers.getFirst("X-Forwarded-For")).isEqualTo("198.51.100.9");

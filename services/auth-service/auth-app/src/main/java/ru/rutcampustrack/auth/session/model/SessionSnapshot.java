@@ -1,8 +1,8 @@
 package ru.rutcampustrack.auth.session.model;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -22,8 +22,7 @@ public record SessionSnapshot(
         SessionRevokeReason revokeReason,
         AuthMethod authMethod,
         String clientLabel,
-        String locationLabel
-) {
+        String locationLabel) {
 
     public SessionSnapshot {
         sessionId = Objects.requireNonNull(sessionId, "sessionId");
@@ -50,7 +49,8 @@ public record SessionSnapshot(
                 throw new IllegalArgumentException("active role belongs to another user");
             }
             if (roles.stream().noneMatch(activeRole::equals)) {
-                throw new IllegalArgumentException("active role must exactly match the roles snapshot");
+                throw new IllegalArgumentException(
+                        "active role must exactly match the roles snapshot");
             }
             if (!activeRole.isSelectable()) {
                 throw new IllegalArgumentException("active role must be selectable");
@@ -66,7 +66,8 @@ public record SessionSnapshot(
             throw new IllegalArgumentException("lastSeenAt must not precede createdAt");
         }
         if ((revokedAt == null) != (revokeReason == null)) {
-            throw new IllegalArgumentException("revokedAt and revokeReason must be both null or both present");
+            throw new IllegalArgumentException(
+                    "revokedAt and revokeReason must be both null or both present");
         }
         if (revokedAt != null && revokedAt.isBefore(createdAt)) {
             throw new IllegalArgumentException("revokedAt must not precede createdAt");

@@ -1,5 +1,15 @@
 package ru.rutcampustrack.academic.assignment;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.entity.Assignment;
@@ -15,28 +25,17 @@ import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 
-import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
 /** Focused source tests for the V25 inclusive semester / exclusive assignment dates. */
 class AssignmentAuthorityContractTest {
 
     @Test
     void semesterBoundsAndNullEndUseExclusiveDayAfterSemester() {
         Semester semester = semester(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
-        AssignmentAuthority.validateDates(semester,
-                LocalDate.of(2026, 9, 30), null);
+        AssignmentAuthority.validateDates(semester, LocalDate.of(2026, 9, 30), null);
 
-        Assignment assignment = new Assignment(7L, 11L, 22L, 33L,
-                SubjectType.LECTURE, LocalDate.of(2026, 9, 30), null);
+        Assignment assignment =
+                new Assignment(
+                        7L, 11L, 22L, 33L, SubjectType.LECTURE, LocalDate.of(2026, 9, 30), null);
         assertThat(AssignmentAuthority.effectiveEnd(assignment, semester))
                 .isEqualTo(LocalDate.of(2026, 10, 1));
     }
@@ -45,11 +44,17 @@ class AssignmentAuthorityContractTest {
     void dateBeforeSemesterAndEndAfterExclusiveBoundaryAreRejected() {
         Semester semester = semester(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
 
-        assertThatThrownBy(() -> AssignmentAuthority.validateDates(
-                semester, LocalDate.of(2026, 8, 31), null))
+        assertThatThrownBy(
+                        () ->
+                                AssignmentAuthority.validateDates(
+                                        semester, LocalDate.of(2026, 8, 31), null))
                 .isInstanceOf(BadRequestException.class);
-        assertThatThrownBy(() -> AssignmentAuthority.validateDates(
-                semester, LocalDate.of(2026, 9, 30), LocalDate.of(2026, 10, 2)))
+        assertThatThrownBy(
+                        () ->
+                                AssignmentAuthority.validateDates(
+                                        semester,
+                                        LocalDate.of(2026, 9, 30),
+                                        LocalDate.of(2026, 10, 2)))
                 .isInstanceOf(BadRequestException.class);
     }
 
@@ -71,25 +76,27 @@ class AssignmentAuthorityContractTest {
         when(users.findById(7L)).thenReturn(java.util.Optional.of(teacher));
         when(teacher.getId()).thenReturn(7L);
         when(grants.findByUserIdAndRoleAndStatus(7L, "teacher", "active"))
-                .thenReturn(java.util.List.of(mock(ru.rutcampustrack.academic.entity.UserRoleGrant.class)));
-        when(assignments.findOverlapping(7L, 11L, 22L, 33L, "lecture",
-                LocalDate.of(2026, 9, 1), null)).thenReturn(java.util.Optional.empty());
+                .thenReturn(
+                        java.util.List.of(
+                                mock(ru.rutcampustrack.academic.entity.UserRoleGrant.class)));
+        when(assignments.findOverlapping(
+                        7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null))
+                .thenReturn(java.util.Optional.empty());
         when(assignments.saveAndFlush(any(Assignment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        AssignmentAuthority authority = new AssignmentAuthority(assignments, semesters, subjects,
-                types, users, grants);
+        AssignmentAuthority authority =
+                new AssignmentAuthority(assignments, semesters, subjects, types, users, grants);
         var adoption = mock(AssignmentClosureService.class);
         authority.setClosureService(adoption);
-        org.springframework.test.util.ReflectionTestUtils.setField(authority, "entityManager",
-                mock(jakarta.persistence.EntityManager.class));
-        authority.create(7L, 11L, 22L, 33L, SubjectType.LECTURE,
-                LocalDate.of(2026, 9, 1), null);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                authority, "entityManager", mock(jakarta.persistence.EntityManager.class));
+        authority.create(7L, 11L, 22L, 33L, SubjectType.LECTURE, LocalDate.of(2026, 9, 1), null);
 
         var order = inOrder(semesters, assignments);
         order.verify(semesters).findByIdForUpdate(33L);
-        order.verify(assignments).findOverlapping(7L, 11L, 22L, 33L, "lecture",
-                LocalDate.of(2026, 9, 1), null);
+        order.verify(assignments)
+                .findOverlapping(7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null);
         order.verify(assignments).saveAndFlush(any(Assignment.class));
         verify(adoption).prepareAdoption(any(Assignment.class));
     }
@@ -112,15 +119,27 @@ class AssignmentAuthorityContractTest {
         when(users.findById(7L)).thenReturn(java.util.Optional.of(teacher));
         when(teacher.getId()).thenReturn(7L);
         when(grants.findByUserIdAndRoleAndStatus(7L, "teacher", "active"))
-                .thenReturn(java.util.List.of(mock(ru.rutcampustrack.academic.entity.UserRoleGrant.class)));
-        when(assignments.findOverlapping(7L, 11L, 22L, 33L, "lecture",
-                LocalDate.of(2026, 9, 1), null)).thenReturn(java.util.Optional.of(mock(Assignment.class)));
+                .thenReturn(
+                        java.util.List.of(
+                                mock(ru.rutcampustrack.academic.entity.UserRoleGrant.class)));
+        when(assignments.findOverlapping(
+                        7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null))
+                .thenReturn(java.util.Optional.of(mock(Assignment.class)));
 
-        AssignmentAuthority authority = new AssignmentAuthority(assignments, semesters, subjects,
-                types, users, grants);
+        AssignmentAuthority authority =
+                new AssignmentAuthority(assignments, semesters, subjects, types, users, grants);
         authority.setClosureService(mock(AssignmentClosureService.class));
-        assertThatThrownBy(() -> authority.create(7L, 11L, 22L, 33L, SubjectType.LECTURE,
-                LocalDate.of(2026, 9, 1), null)).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(
+                        () ->
+                                authority.create(
+                                        7L,
+                                        11L,
+                                        22L,
+                                        33L,
+                                        SubjectType.LECTURE,
+                                        LocalDate.of(2026, 9, 1),
+                                        null))
+                .isInstanceOf(ConflictException.class);
         verify(assignments, never()).save(any(Assignment.class));
     }
 

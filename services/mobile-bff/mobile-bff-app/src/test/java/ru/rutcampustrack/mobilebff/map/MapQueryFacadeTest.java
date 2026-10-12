@@ -1,5 +1,11 @@
 package ru.rutcampustrack.mobilebff.map;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,13 +16,6 @@ import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MapAcademicClient;
 import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MapQueryFacadeTest {
@@ -34,10 +33,12 @@ class MapQueryFacadeTest {
 
     @Test
     void activeTeacherCanUseManifestAndRevisionEtagIsForwarded() {
-        when(requestContext.claims()).thenReturn(
-                new InternalJwtClaims(100L, SESSION_ID, 1L, 1L,
-                        "TEACHER", "ACTIVE", null, false, false));
-        when(academic.manifest(7L)).thenReturn(new MapAcademicClient.ManifestResult(true, 7L, null));
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", null, false, false));
+        when(academic.manifest(7L))
+                .thenReturn(new MapAcademicClient.ManifestResult(true, 7L, null));
 
         facade.manifest("W/\"7\"");
 
@@ -46,10 +47,12 @@ class MapQueryFacadeTest {
 
     @Test
     void headmanUsesStudentRepresentationAndStudentScopeStillApplies() {
-        when(requestContext.claims()).thenReturn(
-                new InternalJwtClaims(101L, SESSION_ID, 1L, 1L,
-                        "STUDENT", "ACTIVE", 11L, true, false));
-        when(academic.manifest(0L)).thenReturn(new MapAcademicClient.ManifestResult(true, 3L, null));
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                101L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 11L, true, false));
+        when(academic.manifest(0L))
+                .thenReturn(new MapAcademicClient.ManifestResult(true, 3L, null));
 
         facade.manifest(null);
 
@@ -58,9 +61,10 @@ class MapQueryFacadeTest {
 
     @Test
     void adminCannotUseMobileMapReadScope() {
-        when(requestContext.claims()).thenReturn(
-                new InternalJwtClaims(102L, SESSION_ID, 1L, 1L,
-                        "ADMIN", "ACTIVE", null, false, false));
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                102L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false));
 
         assertThatThrownBy(() -> facade.manifest(null))
                 .isInstanceOf(MobileBffException.class)

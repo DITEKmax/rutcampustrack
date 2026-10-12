@@ -7,8 +7,7 @@ public record HeadmanRequestPageResponse(
         int page,
         int size,
         long totalElements,
-        int totalPages
-) {
+        int totalPages) {
     public HeadmanRequestPageResponse {
         content = content == null ? List.of() : List.copyOf(content);
     }

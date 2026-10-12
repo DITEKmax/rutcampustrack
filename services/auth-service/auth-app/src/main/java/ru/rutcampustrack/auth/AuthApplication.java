@@ -10,7 +10,12 @@ import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.config.TmaProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({JwtProperties.class, OtpProperties.class, TmaProperties.class, InternalIssuerProperties.class})
+@EnableConfigurationProperties({
+    JwtProperties.class,
+    OtpProperties.class,
+    TmaProperties.class,
+    InternalIssuerProperties.class
+})
 public class AuthApplication {
     public static void main(String[] args) {
         // M13 G25.16 — override SecureRandom.getInstanceStrong() default chain.

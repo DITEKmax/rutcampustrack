@@ -1,5 +1,14 @@
 package ru.rutcampustrack.mobilebff.student;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,16 +28,6 @@ import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class StudentSessionProjectionTest {
 
@@ -47,23 +46,45 @@ class StudentSessionProjectionTest {
 
     @BeforeEach
     void setUp() {
-        service = new StudentQueryService(
-                requestContext, academic, schedule, attendance,
-                Clock.fixed(SERVER_NOW, ZoneOffset.UTC));
+        service =
+                new StudentQueryService(
+                        requestContext,
+                        academic,
+                        schedule,
+                        attendance,
+                        Clock.fixed(SERVER_NOW, ZoneOffset.UTC));
     }
 
     @Test
     void sessionProjectsCompleteValidatedIdentityAndPreservesExistingFields() {
-        when(requestContext.claims()).thenReturn(new InternalJwtClaims(
-                STUDENT_ID, SESSION_ID, 9007199254740993L, 9007199254740995L,
-                "STUDENT", "ACTIVE", GROUP_ID, false, false));
-        when(academic.user(STUDENT_ID)).thenReturn(UserResponse.newBuilder()
-                .setId(STUDENT_ID).setDisplayName("Иван Иванов").build());
-        when(academic.group(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
-                .setId(GROUP_ID).setName("ИС-101").build());
-        when(academic.activeSemester()).thenReturn(SemesterResponse.newBuilder()
-                .setId(SEMESTER_ID).setName("Осень 2026")
-                .setDateFrom("2026-09-01").setDateTo("2026-12-31").build());
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                STUDENT_ID,
+                                SESSION_ID,
+                                9007199254740993L,
+                                9007199254740995L,
+                                "STUDENT",
+                                "ACTIVE",
+                                GROUP_ID,
+                                false,
+                                false));
+        when(academic.user(STUDENT_ID))
+                .thenReturn(
+                        UserResponse.newBuilder()
+                                .setId(STUDENT_ID)
+                                .setDisplayName("Иван Иванов")
+                                .build());
+        when(academic.group(GROUP_ID))
+                .thenReturn(GroupResponse.newBuilder().setId(GROUP_ID).setName("ИС-101").build());
+        when(academic.activeSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("Осень 2026")
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .build());
 
         SessionResponse result = service.session();
 
@@ -73,15 +94,23 @@ class StudentSessionProjectionTest {
         assertThat(result.readOnly()).isFalse();
         assertThat(result.user().id()).isEqualTo(Long.toString(STUDENT_ID));
         assertThat(result.user().displayName()).isEqualTo("Иван Иванов");
-        assertThat(result.activeRole()).isEqualTo(ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ActiveRole.STUDENT);
+        assertThat(result.activeRole())
+                .isEqualTo(
+                        ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ActiveRole
+                                .STUDENT);
         assertThat(result.group().id()).isEqualTo(Long.toString(GROUP_ID));
         assertThat(result.semester().id()).isEqualTo(Long.toString(SEMESTER_ID));
-        assertThat(result.capabilities()).containsExactly(
-                Capability.TODAY, Capability.GEO_CHECKIN, Capability.OFFLINE_SEMESTER_SCHEDULE);
+        assertThat(result.capabilities())
+                .containsExactly(
+                        Capability.TODAY,
+                        Capability.GEO_CHECKIN,
+                        Capability.OFFLINE_SEMESTER_SCHEDULE);
         assertThat(result.serverNow()).isEqualTo(SERVER_NOW);
         assertThat(result.links()).containsKeys("today", "schedule");
-        assertThat(result.links().get("today").href().toString()).isEqualTo("/api/v1/student/today");
-        assertThat(result.links().get("schedule").href().toString()).isEqualTo("/api/v1/student/schedule");
+        assertThat(result.links().get("today").href().toString())
+                .isEqualTo("/api/v1/student/today");
+        assertThat(result.links().get("schedule").href().toString())
+                .isEqualTo("/api/v1/student/schedule");
 
         verify(academic).user(STUDENT_ID);
         verify(academic).group(GROUP_ID);
@@ -90,16 +119,34 @@ class StudentSessionProjectionTest {
 
     @Test
     void readOnlySessionUsesTheSignedFlagWithoutChangingProjectionShape() {
-        when(requestContext.claims()).thenReturn(new InternalJwtClaims(
-                STUDENT_ID, SESSION_ID, 1L, 2L,
-                "STUDENT", "EXPELLED", GROUP_ID, false, true));
-        when(academic.user(STUDENT_ID)).thenReturn(UserResponse.newBuilder()
-                .setId(STUDENT_ID).setDisplayName("Архивный студент").build());
-        when(academic.group(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
-                .setId(GROUP_ID).setName("ИС-101").build());
-        when(academic.activeSemester()).thenReturn(SemesterResponse.newBuilder()
-                .setId(SEMESTER_ID).setName("Осень 2026")
-                .setDateFrom("2026-09-01").setDateTo("2026-12-31").build());
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                STUDENT_ID,
+                                SESSION_ID,
+                                1L,
+                                2L,
+                                "STUDENT",
+                                "EXPELLED",
+                                GROUP_ID,
+                                false,
+                                true));
+        when(academic.user(STUDENT_ID))
+                .thenReturn(
+                        UserResponse.newBuilder()
+                                .setId(STUDENT_ID)
+                                .setDisplayName("Архивный студент")
+                                .build());
+        when(academic.group(GROUP_ID))
+                .thenReturn(GroupResponse.newBuilder().setId(GROUP_ID).setName("ИС-101").build());
+        when(academic.activeSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("Осень 2026")
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .build());
 
         SessionResponse result = service.session();
 
@@ -111,17 +158,37 @@ class StudentSessionProjectionTest {
 
     @Test
     void readOnlyTodayRemainsReadableThroughTheAttendanceSnapshot() {
-        when(requestContext.claims()).thenReturn(new InternalJwtClaims(
-                STUDENT_ID, SESSION_ID, 1L, 2L,
-                "STUDENT", "EXPELLED", GROUP_ID, false, true));
-        when(academic.activeSemester()).thenReturn(SemesterResponse.newBuilder()
-                .setId(SEMESTER_ID).setName("Осень 2026")
-                .setDateFrom("2026-09-01").setDateTo("2026-12-31").build());
-        when(schedule.lessons(GROUP_ID, SEMESTER_ID,
-                java.time.LocalDate.of(2026, 9, 7), java.time.LocalDate.of(2026, 9, 7)))
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                STUDENT_ID,
+                                SESSION_ID,
+                                1L,
+                                2L,
+                                "STUDENT",
+                                "EXPELLED",
+                                GROUP_ID,
+                                false,
+                                true));
+        when(academic.activeSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("Осень 2026")
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .build());
+        when(schedule.lessons(
+                        GROUP_ID,
+                        SEMESTER_ID,
+                        java.time.LocalDate.of(2026, 9, 7),
+                        java.time.LocalDate.of(2026, 9, 7)))
                 .thenReturn(LessonsResponse.getDefaultInstance());
-        when(attendance.snapshot(anyList())).thenReturn(StudentAttendanceSnapshotResponse.newBuilder()
-                .setServerNow(SERVER_NOW.toString()).build());
+        when(attendance.snapshot(anyList()))
+                .thenReturn(
+                        StudentAttendanceSnapshotResponse.newBuilder()
+                                .setServerNow(SERVER_NOW.toString())
+                                .build());
 
         TodayResponse result = service.today();
 

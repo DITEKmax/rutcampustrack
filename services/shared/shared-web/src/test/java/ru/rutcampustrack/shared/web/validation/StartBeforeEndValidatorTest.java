@@ -1,20 +1,19 @@
 package ru.rutcampustrack.shared.web.validation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class StartBeforeEndValidatorTest {
 
@@ -40,18 +39,24 @@ class StartBeforeEndValidatorTest {
 
     static Stream<Arguments> validCases() {
         return Stream.of(
-                Arguments.of(new DateRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2)), "start < end"),
-                Arguments.of(new DateRange(null, LocalDate.of(2026, 1, 2)), "start null — пропускается"),
-                Arguments.of(new DateRange(LocalDate.of(2026, 1, 1), null), "end null — пропускается"),
-                Arguments.of(new DateRange(null, null), "оба null")
-        );
+                Arguments.of(
+                        new DateRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2)),
+                        "start < end"),
+                Arguments.of(
+                        new DateRange(null, LocalDate.of(2026, 1, 2)), "start null — пропускается"),
+                Arguments.of(
+                        new DateRange(LocalDate.of(2026, 1, 1), null), "end null — пропускается"),
+                Arguments.of(new DateRange(null, null), "оба null"));
     }
 
     static Stream<Arguments> invalidCases() {
         return Stream.of(
-                Arguments.of(new DateRange(LocalDate.of(2026, 1, 2), LocalDate.of(2026, 1, 1)), "start > end"),
-                Arguments.of(new DateRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 1)), "start == end (строго <)")
-        );
+                Arguments.of(
+                        new DateRange(LocalDate.of(2026, 1, 2), LocalDate.of(2026, 1, 1)),
+                        "start > end"),
+                Arguments.of(
+                        new DateRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 1)),
+                        "start == end (строго <)"));
     }
 
     @ParameterizedTest(name = "valid: {1}")
@@ -71,12 +76,12 @@ class StartBeforeEndValidatorTest {
     @org.junit.jupiter.api.Test
     @DisplayName("Кастомные имена полей — читаются из BeanWrapper")
     void customFieldNames() {
-        CustomNames valid = new CustomNames(
-                LocalDateTime.of(2026, 1, 1, 10, 0),
-                LocalDateTime.of(2026, 1, 1, 11, 0));
-        CustomNames invalid = new CustomNames(
-                LocalDateTime.of(2026, 1, 1, 11, 0),
-                LocalDateTime.of(2026, 1, 1, 10, 0));
+        CustomNames valid =
+                new CustomNames(
+                        LocalDateTime.of(2026, 1, 1, 10, 0), LocalDateTime.of(2026, 1, 1, 11, 0));
+        CustomNames invalid =
+                new CustomNames(
+                        LocalDateTime.of(2026, 1, 1, 11, 0), LocalDateTime.of(2026, 1, 1, 10, 0));
         assertThat(validator.validate(valid)).isEmpty();
         assertThat(validator.validate(invalid)).hasSize(1);
     }

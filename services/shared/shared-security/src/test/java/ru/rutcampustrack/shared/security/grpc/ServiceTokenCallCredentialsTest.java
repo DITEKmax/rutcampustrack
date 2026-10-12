@@ -1,33 +1,35 @@
 package ru.rutcampustrack.shared.security.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.grpc.Attributes;
-import io.grpc.CallOptions;
 import io.grpc.CallCredentials;
+import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.SecurityLevel;
 import io.grpc.Status;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ServiceTokenCallCredentialsTest {
 
-    private static final String METHOD = ServiceIdentityServerInterceptor.SCHEDULE_INSTALL_ASSIGNMENT_CLOSE_CAP;
-    private static final String OTHER_METHOD = "rutcampustrack.schedule.ScheduleGrpcService/ResolveLesson";
+    private static final String METHOD =
+            ServiceIdentityServerInterceptor.SCHEDULE_INSTALL_ASSIGNMENT_CLOSE_CAP;
+    private static final String OTHER_METHOD =
+            "rutcampustrack.schedule.ScheduleGrpcService/ResolveLesson";
     private static final String AUTHORITY = "schedule.local";
     private static final String TOKEN = token((byte) 0x44);
 
-    private final DirectedServiceCredential credential = new DirectedServiceCredential(
-            ServicePrincipal.ACADEMIC_SERVICE, ServicePrincipal.SCHEDULE_SERVICE, TOKEN);
+    private final DirectedServiceCredential credential =
+            new DirectedServiceCredential(
+                    ServicePrincipal.ACADEMIC_SERVICE, ServicePrincipal.SCHEDULE_SERVICE, TOKEN);
     private final ServiceTokenCallCredentials callCredentials =
             ServiceTokenCallCredentials.forMethod(credential, AUTHORITY, METHOD);
 
@@ -42,12 +44,14 @@ class ServiceTokenCallCredentialsTest {
 
         assertThat(failed).hasValue(null);
         assertThat(applied).isNotNull();
-        assertThat(applied.get().get(DirectedServiceCredential.TOKEN_METADATA_KEY)).isEqualTo(TOKEN);
+        assertThat(applied.get().get(DirectedServiceCredential.TOKEN_METADATA_KEY))
+                .isEqualTo(TOKEN);
     }
 
     @Test
     void wrongMethodAndAuthorityFailBeforeTokenEmission() {
-        assertScopeDenied(requestInfo(OTHER_METHOD, AUTHORITY, SecurityLevel.PRIVACY_AND_INTEGRITY));
+        assertScopeDenied(
+                requestInfo(OTHER_METHOD, AUTHORITY, SecurityLevel.PRIVACY_AND_INTEGRITY));
         assertScopeDenied(requestInfo(METHOD, "other.local", SecurityLevel.PRIVACY_AND_INTEGRITY));
     }
 
@@ -69,28 +73,29 @@ class ServiceTokenCallCredentialsTest {
     void clientAdapterRemovesSuppliedTokenAndLeavesUnrelatedMethodUncredentialed() {
         AtomicReference<CallOptions> options = new AtomicReference<>();
         RecordingClientCall delegate = new RecordingClientCall();
-        Channel channel = new Channel() {
-            @Override
-            public <ReqT, RespT> ClientCall<ReqT, RespT> newCall(
-                    MethodDescriptor<ReqT, RespT> method, CallOptions callOptions) {
-                options.set(callOptions);
-                @SuppressWarnings("unchecked")
-                ClientCall<ReqT, RespT> typed = (ClientCall<ReqT, RespT>) delegate;
-                return typed;
-            }
+        Channel channel =
+                new Channel() {
+                    @Override
+                    public <ReqT, RespT> ClientCall<ReqT, RespT> newCall(
+                            MethodDescriptor<ReqT, RespT> method, CallOptions callOptions) {
+                        options.set(callOptions);
+                        @SuppressWarnings("unchecked")
+                        ClientCall<ReqT, RespT> typed = (ClientCall<ReqT, RespT>) delegate;
+                        return typed;
+                    }
 
-            @Override
-            public String authority() {
-                return AUTHORITY;
-            }
-        };
+                    @Override
+                    public String authority() {
+                        return AUTHORITY;
+                    }
+                };
         ServiceTokenClientInterceptor adapter = new ServiceTokenClientInterceptor(callCredentials);
 
-        ClientCall<String, String> protectedCall = adapter.interceptCall(
-                descriptor(METHOD), CallOptions.DEFAULT, channel);
+        ClientCall<String, String> protectedCall =
+                adapter.interceptCall(descriptor(METHOD), CallOptions.DEFAULT, channel);
         Metadata supplied = new Metadata();
         supplied.put(DirectedServiceCredential.TOKEN_METADATA_KEY, "caller-supplied");
-        protectedCall.start(new ClientCall.Listener<>() { }, supplied);
+        protectedCall.start(new ClientCall.Listener<>() {}, supplied);
 
         assertThat(supplied.get(DirectedServiceCredential.TOKEN_METADATA_KEY)).isNull();
         assertThat(options.get().getCredentials()).isSameAs(callCredentials);
@@ -101,8 +106,11 @@ class ServiceTokenCallCredentialsTest {
 
     @Test
     void malformedConfigurationIsRejectedWithoutTokenFallback() {
-        assertThat(DirectedServiceCredential.tryCreate(
-                ServicePrincipal.ACADEMIC_SERVICE, ServicePrincipal.SCHEDULE_SERVICE, "short"))
+        assertThat(
+                        DirectedServiceCredential.tryCreate(
+                                ServicePrincipal.ACADEMIC_SERVICE,
+                                ServicePrincipal.SCHEDULE_SERVICE,
+                                "short"))
                 .isEmpty();
     }
 
@@ -116,8 +124,7 @@ class ServiceTokenCallCredentialsTest {
     }
 
     private static CallCredentials.MetadataApplier applier(
-            AtomicReference<Metadata> applied,
-            AtomicReference<Status> failed) {
+            AtomicReference<Metadata> applied, AtomicReference<Status> failed) {
         return new CallCredentials.MetadataApplier() {
             @Override
             public void apply(Metadata metadata) {
@@ -132,9 +139,7 @@ class ServiceTokenCallCredentialsTest {
     }
 
     private static CallCredentials.RequestInfo requestInfo(
-            String method,
-            String authority,
-            SecurityLevel securityLevel) {
+            String method, String authority, SecurityLevel securityLevel) {
         return new CallCredentials.RequestInfo() {
             @Override
             public MethodDescriptor<?, ?> getMethodDescriptor() {
@@ -171,19 +176,19 @@ class ServiceTokenCallCredentialsTest {
 
     private static final class RecordingClientCall extends ClientCall<String, String> {
         @Override
-        public void start(Listener<String> responseListener, Metadata headers) { }
+        public void start(Listener<String> responseListener, Metadata headers) {}
 
         @Override
-        public void request(int numMessages) { }
+        public void request(int numMessages) {}
 
         @Override
-        public void cancel(String message, Throwable cause) { }
+        public void cancel(String message, Throwable cause) {}
 
         @Override
-        public void halfClose() { }
+        public void halfClose() {}
 
         @Override
-        public void sendMessage(String message) { }
+        public void sendMessage(String message) {}
     }
 
     private static final MethodDescriptor.Marshaller<String> STRING_MARSHALLER =

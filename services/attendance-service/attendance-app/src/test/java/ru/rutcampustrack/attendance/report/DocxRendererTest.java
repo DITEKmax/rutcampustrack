@@ -1,6 +1,6 @@
 package ru.rutcampustrack.attendance.report;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,8 +8,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class DocxRendererTest {
 
@@ -17,7 +16,8 @@ class DocxRendererTest {
 
     @Test
     void renderSingleWeekReplacesEveryPlaceholder() throws IOException {
-        byte[] docx = renderer.render(List.of(model(LocalDate.of(2026, 4, 27), "Math", "\u041b\u041a")));
+        byte[] docx =
+                renderer.render(List.of(model(LocalDate.of(2026, 4, 27), "Math", "\u041b\u041a")));
         writeQaArtifact("headman-weekly-single.docx", docx);
 
         String documentXml = DocxRenderer.readDocumentXml(docx);
@@ -37,9 +37,11 @@ class DocxRendererTest {
 
     @Test
     void renderMultipleWeeksCreatesOneDocumentWithPageBreaks() throws IOException {
-        byte[] docx = renderer.render(List.of(
-                model(LocalDate.of(2026, 4, 27), "Math", "\u041b\u041a"),
-                model(LocalDate.of(2026, 5, 11), "Physics", "\u041f\u0417")));
+        byte[] docx =
+                renderer.render(
+                        List.of(
+                                model(LocalDate.of(2026, 4, 27), "Math", "\u041b\u041a"),
+                                model(LocalDate.of(2026, 5, 11), "Physics", "\u041f\u0417")));
         writeQaArtifact("headman-weekly-multi.docx", docx);
 
         String documentXml = DocxRenderer.readDocumentXml(docx);
@@ -49,10 +51,15 @@ class DocxRendererTest {
         assertThat(documentXml).contains("Math").contains("Physics");
     }
 
-    private static HeadmanWeeklyReportModel model(LocalDate weekStart, String subjectName, String lessonType) {
+    private static HeadmanWeeklyReportModel model(
+            LocalDate weekStart, String subjectName, String lessonType) {
         List<HeadmanWeeklyReportModel.Day> days = new ArrayList<>();
-        days.add(new HeadmanWeeklyReportModel.Day(weekStart, List.of(
-                new HeadmanWeeklyReportModel.LessonSlot(100L, 1, 5L, subjectName, lessonType))));
+        days.add(
+                new HeadmanWeeklyReportModel.Day(
+                        weekStart,
+                        List.of(
+                                new HeadmanWeeklyReportModel.LessonSlot(
+                                        100L, 1, 5L, subjectName, lessonType))));
         for (int i = 1; i < HeadmanWeeklyReportModel.TEMPLATE_DAYS; i++) {
             days.add(new HeadmanWeeklyReportModel.Day(weekStart.plusDays(i), List.of()));
         }
@@ -67,14 +74,13 @@ class DocxRendererTest {
                 weekStart,
                 weekStart.plusDays(6),
                 days,
-                List.of(new HeadmanWeeklyReportModel.Student(
-                        1L,
-                        "Student 01",
-                        List.of(new HeadmanWeeklyReportModel.AttendanceMark(
-                                100L,
-                                weekStart,
-                                1,
-                        "+")))));
+                List.of(
+                        new HeadmanWeeklyReportModel.Student(
+                                1L,
+                                "Student 01",
+                                List.of(
+                                        new HeadmanWeeklyReportModel.AttendanceMark(
+                                                100L, weekStart, 1, "+")))));
     }
 
     private static void writeQaArtifact(String fileName, byte[] docx) throws IOException {

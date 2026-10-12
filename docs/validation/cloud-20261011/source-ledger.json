@@ -1925,6 +1925,69 @@
       "revision": "2774ccbd8513fd7244c2c4df1cca428b59a6ddb3",
       "registered_at": "2026-10-12T12:10:04.429804+00:00",
       "source_authority": "technical synthetic runtime T004; not product policy"
+    },
+    {
+      "id": "SAFE-host-v5-identity",
+      "path": "docs/validation/cloud-20261011/receipts/host-v5-identity/immutable-original-receipts.zip",
+      "sha256": "abb26a26744d8e68ce185dbed8de79f09d909159a97d694e85660cbdf9cf45b3",
+      "status": "source-correction-approved-not-runtime-acceptance",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "SAFE-host-v5-launch-schema",
+      "path": "docs/validation/cloud-20261011/receipts/host-v5-launch-schema/immutable-original-receipts.zip",
+      "sha256": "72cd6b787e330b5c8db3c7279691797cc47a1aa46bfb50f5e4c7eb6c1496a90c",
+      "status": "authoritative-effective-source-command-map",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "SAFE-host-v5-correction-review",
+      "path": "docs/validation/cloud-20261011/receipts/host-v5-correction-review/immutable-original-receipts.zip",
+      "sha256": "fb9e03c4816b2c94e48fc4cd5fba920ef343f31eaac74699517b3f811332dcb8",
+      "status": "independent-source-approve-both-P2-closed",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "SAFE-host-v5-actual-terminal",
+      "path": "docs/validation/cloud-20261011/receipts/host-v5-actual-terminal/immutable-original-receipts.zip",
+      "sha256": "073774b2f85ec78d5d50bb9c3bae60624c5418212899d8b22bd44e253265255d",
+      "status": "actual-partial-stand-terminal-data-retained-cleanup-qualified",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "SAFE-host-restart-source",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-source/immutable-original-receipts.zip",
+      "sha256": "f05c922802abcbd8fb07608b05890cfe040f9b5c8ccd86ee0c3f16cb461a2383",
+      "status": "source-ready-independent-review-pending-NOT_RUN",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "SAFE-membership-clock-diagnosis",
+      "path": "docs/validation/cloud-20261011/receipts/membership-clock-diagnosis/immutable-original-receipts.zip",
+      "sha256": "a84a6d38773e686a84bd70a21a36d92e71992099d565e67c6c5580aa32e907b2",
+      "status": "specific-clock-hypothesis-source-disproved-causes-UNKNOWN",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
+    },
+    {
+      "id": "SAFE-ci_eb0_receipts",
+      "path": "docs/validation/cloud-20261011/receipts/ci_eb0_receipts/immutable-original-receipts.zip",
+      "sha256": "92a709401bc632ddc8ddaaa9f389e0841b4bb4f2721a56c1a8b15aab85cba6f4",
+      "status": "actual-current-four-gates-success-not-full-acceptance",
+      "revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+      "registered_at": "2026-10-12T13:59:27.978099+00:00",
+      "source_authority": "verification evidence, does not add product authority"
     }
   ],
   "research_receipt": {

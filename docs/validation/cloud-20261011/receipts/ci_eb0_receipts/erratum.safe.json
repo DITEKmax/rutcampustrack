@@ -1,0 +1,19 @@
+{
+  "status": "WORDING_CORRECTION_ONLY",
+  "main_manifest_sha256": "55c41f91be5a62ec96a824661d779cfaa8ac41a092cd9d72be6a8b9bf8072977",
+  "main_zip_sha256": "92a709401bc632ddc8ddaaa9f389e0841b4bb4f2721a56c1a8b15aab85cba6f4",
+  "corrections": [
+    {
+      "report": "REPORT.md",
+      "phrase": "Only19 already accepted critical test files were stream-read",
+      "actual": "Only19 accepted critical public test source files were read using Path.read_bytes for bounded SHA comparisons; not streaming. No full historical scan."
+    },
+    {
+      "report": "REPORT.md",
+      "phrase": "No raw XML, original large report ZIPs, request bodies, display names or stdout/stderr payloads were downloaded",
+      "clarification": "This describes the12SAFE artifact ZIP contents/selection. Approved job-log tool returns raw decoded text inside the isolate for whitelist projection; raw job text was not emitted or persisted. Unrelated request/body sections were ignored."
+    }
+  ],
+  "counts_verdict_source_identity_unchanged": true,
+  "main_seals_preserved": true
+}

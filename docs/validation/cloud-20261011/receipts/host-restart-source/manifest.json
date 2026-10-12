@@ -1,0 +1,96 @@
+{
+  "status": "SOURCE_READY_NOT_RUNTIME_PASS",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "867ddd49f9d6f9b288364974f93895bc1f0f7ed5b894555905e1e9211d4bb4c5",
+      "bytes": 454
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "b27c3379b072394995cc2732edf0f1f0ac8493b3abd525cc6ae3e11799f92ffa",
+      "bytes": 3112
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/artifact-mapping.safe.json",
+      "name": "artifact-mapping.safe.json",
+      "sha256": "d6dfbc23a93a9a195f021f1a5d75fcd10dfca716ac839aaf8efe764314604337",
+      "bytes": 9723
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/docker-up-restart.py",
+      "name": "docker-up-restart.py",
+      "sha256": "3b5e48bf6e89f5220f3eb8998b0f323ac214bac771da57f24c93de4e540a04ae",
+      "bytes": 6214
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/effective-launch-inputs.json",
+      "name": "effective-launch-inputs.json",
+      "sha256": "3778d8a3b62483b12c1544bb8ad17257288f25beea7731675ce207b3ffdd133b",
+      "bytes": 4517
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/existing-volume-identities.safe.json",
+      "name": "existing-volume-identities.safe.json",
+      "sha256": "37c8d152a51405be70ead590810f0f642ec53c4f2af63ea46e168c78178fb4d5",
+      "bytes": 2404
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/mongo-restart-readiness.js",
+      "name": "mongo-restart-readiness.js",
+      "sha256": "cca7027805e742831e510fff619b1f0793d8cb8843bc43827212d9de3cb18b71",
+      "bytes": 2112
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/prior-seals.safe.json",
+      "name": "prior-seals.safe.json",
+      "sha256": "7f41f1a48509b8d302872336d43c6f876d43c8c3f186b8a72c9c7e38bc2d1766",
+      "bytes": 2267
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/resources.safe.json",
+      "name": "resources.safe.json",
+      "sha256": "4126fece60bafd666b94498b138a3f5ef021475930a5a45fae499a5839dfe308",
+      "bytes": 467
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/restart-boundary.py",
+      "name": "restart-boundary.py",
+      "sha256": "03090d20570f355f0078d9073310ab18fe1483b9bb0652642befc3318cb347c5",
+      "bytes": 5496
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/run-mongo-restart.py",
+      "name": "run-mongo-restart.py",
+      "sha256": "895b076fecc4aa93532171df9147ea91a91162d98d74dbe0d9478f46f65be66d",
+      "bytes": 11396
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/run-service-restart.py",
+      "name": "run-service-restart.py",
+      "sha256": "06617753cadc2fb346bb009b11d03dd0a358a9ed221bde8ddd7a4cae1e64c876",
+      "bytes": 7578
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/source-controls.py",
+      "name": "source-controls.py",
+      "sha256": "eaad9b9ef3416d4835d5cc10c9849d42cd69e12106a87fe5b6473e3f1bcca1d9",
+      "bytes": 6539
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/source-controls.safe.json",
+      "name": "source-controls.safe.json",
+      "sha256": "b5e9b650625244123f1aaba46cdfd92fa4c3b27e952e3b74ad2bd35a5fdcf790",
+      "bytes": 5054
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/stopped-native-data-fence.safe.json",
+      "name": "stopped-native-data-fence.safe.json",
+      "sha256": "524c8c48d325c9e6f0d27167a7bb681eb3a78221ac7a6429b513f2a6a32a5e71",
+      "bytes": 54789
+    }
+  ],
+  "private_data_or_log_content_included": false
+}

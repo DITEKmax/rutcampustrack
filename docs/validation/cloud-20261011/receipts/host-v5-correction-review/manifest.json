@@ -1,0 +1,48 @@
+{
+  "utc": "2026-10-12T12:44:29.385865+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "closed_findings": [
+    "HOSTCFG-V5-REDIRECT-QUERY",
+    "HOSTCFG-V5-MONGO-IDENTITY"
+  ],
+  "source_only": true,
+  "runtime": false,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/correction_recheck/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 201,
+      "sha256": "5a6cf83750e31f099bbcbfda62a4a69da94aba039d4433d0f30543d98fc46434"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/correction_recheck/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 5569,
+      "sha256": "b06141c4628e26cd36af574e9bf7a573b106bd30080f49ace960b3456afa42e1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/correction_recheck/check.py",
+      "relative_path": "check.py",
+      "bytes": 9349,
+      "sha256": "f5df3c4e3d07ec568015d3cda8a4380096234841a0dbc8705cffb528608f6a9b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/correction_recheck/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "bytes": 10900,
+      "sha256": "445b43ac2b5b8f27d115ca0d6f466aad6f594091192ab0cabdc9b582a645c0c8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/correction_recheck/input-ledger.json",
+      "relative_path": "input-ledger.json",
+      "bytes": 1312,
+      "sha256": "d2d9505db47b12693c9f7c4b2a89ee4f6da7fa5967a87b75fdfaa784dba8c381"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/hostcfg_v5_independent_recheck/correction_recheck/runner-delta.safe.diff",
+      "relative_path": "runner-delta.safe.diff",
+      "bytes": 3302,
+      "sha256": "035802f9c87e98b4f1f1007d18b90c231846324aa1f9240e2925cc99029394e1"
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+{
+  "utc": "2026-10-12T13:36:27.665707+00:00",
+  "status": "TERMINAL_ACTUAL_PARTIAL_STAND_RECEIPTS",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/academic-terminal.safe.json",
+      "relative_path": "academic-terminal.safe.json",
+      "bytes": 525,
+      "sha256": "c80a2e3f54a5a8649173f3fd1394af1427a502d8dc4dadc5d3675b8a8889eb23"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/attendance-terminal.safe.json",
+      "relative_path": "attendance-terminal.safe.json",
+      "bytes": 525,
+      "sha256": "c71833e2010a4a04521d8caaec03069dcbfe91b880c67545e00d6a26b7a531ee"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/auth-terminal.safe.json",
+      "relative_path": "auth-terminal.safe.json",
+      "bytes": 525,
+      "sha256": "c6ae4fdc6029a1c07601e3c266b8323ef886d8a53cc72a38e2693f44a61eb2d1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/bff-terminal.safe.json",
+      "relative_path": "bff-terminal.safe.json",
+      "bytes": 526,
+      "sha256": "9fa0183cec2f07b36d42e409202b1c3f9b57cc08f354010a4d658faf0ff05663"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/gateway-terminal.safe.json",
+      "relative_path": "gateway-terminal.safe.json",
+      "bytes": 525,
+      "sha256": "b2542bdfb2648066e5fc57ee4235343c3d3f2a126a5faac851f266f3e19bfc70"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mongo-bootstrap-terminal.safe.json",
+      "relative_path": "mongo-bootstrap-terminal.safe.json",
+      "bytes": 511,
+      "sha256": "fca322a6c83810b9ce956771ab567a99fd1d3bf229bf8bdb4d9209dc9ac1fb33"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mongo-server-terminal.safe.json",
+      "relative_path": "mongo-server-terminal.safe.json",
+      "bytes": 509,
+      "sha256": "11248181da075d5117d32681731e6ce8ef8b6ac7fae43625181ab4a106193339"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/notification-terminal.safe.json",
+      "relative_path": "notification-terminal.safe.json",
+      "bytes": 525,
+      "sha256": "890efe14d2503cfe787a3b2fa27b68e3eb2bd36b71566ddd8d786753b7b6fe64"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/schedule-terminal.safe.json",
+      "relative_path": "schedule-terminal.safe.json",
+      "bytes": 525,
+      "sha256": "26a483984d7e2c9e7e83cd1b8958601f375e59d7db5f2d4ef68ba7c8c7b9a2e1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/RESULT.safe.json",
+      "relative_path": "RESULT.safe.json",
+      "bytes": 342,
+      "sha256": "4d01aec44d60b858ecfd4654f2a02a586b61e14134ad36c8777c97893d1fa05d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/academic-launch.safe.json",
+      "relative_path": "academic-launch.safe.json",
+      "bytes": 499,
+      "sha256": "447490a15d993972d173aca6eed05fd6482e38990d85f588372c692a2dd56407"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/academic-migrations-readiness.safe.json",
+      "relative_path": "academic-migrations-readiness.safe.json",
+      "bytes": 205,
+      "sha256": "b3721633f70a98d1639450c520e06c02025e892d7029942bfa112ad7f7895f22"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/artifact-stage-native-JDK.safe.json",
+      "relative_path": "artifact-stage-native-JDK.safe.json",
+      "bytes": 296,
+      "sha256": "5117db90bbef038d0d0775d999ba567747652e7d8c525c0d1dc06972cd96248b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/attendance-launch.safe.json",
+      "relative_path": "attendance-launch.safe.json",
+      "bytes": 448,
+      "sha256": "a22a0cd687db169b476ba4d2da44cfb1b2e49fb0e965412b1893ed985ff9fa66"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/auth-launch.safe.json",
+      "relative_path": "auth-launch.safe.json",
+      "bytes": 453,
+      "sha256": "d2695714d32e7a74f43a788f9deedefdb35e1612dae4f446bb8f59a55da9b5ae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/auth-start-readiness.safe.json",
+      "relative_path": "auth-start-readiness.safe.json",
+      "bytes": 216,
+      "sha256": "ea23e49c0f1c5bc220608341a913576f7554e93d1c9c2348cced6f44cf300b13"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/bff-launch.safe.json",
+      "relative_path": "bff-launch.safe.json",
+      "bytes": 441,
+      "sha256": "ad8ae17e5acb5bb67e315a428e5c98f3f339551f74d7ce58760ed250a52daf15"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/check-mongo-readiness.py",
+      "relative_path": "check-mongo-readiness.py",
+      "bytes": 3069,
+      "sha256": "a47946ca091bffcfb47c032d1a5d11a6f2f81c2fc53b0b9da981537f8b21e6b6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/cleanup-docker-owned.py",
+      "relative_path": "cleanup-docker-owned.py",
+      "bytes": 3524,
+      "sha256": "69528270771e94bdc4cb98bd2a80ffb4be57314d69c33664e9c42f9a98ad0441"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/cleanup-timing-PID-qualification.safe.json",
+      "relative_path": "cleanup-timing-PID-qualification.safe.json",
+      "bytes": 1186,
+      "sha256": "a7de49c4f35d9bacefb11aaeb109d2bd266fce2730cf8a47a9cbc5329060b882"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/continuation-to132900.safe.json",
+      "relative_path": "continuation-to132900.safe.json",
+      "bytes": 2460,
+      "sha256": "ccdaac896fff2682dd502556c37e3adaa9005cbd12c7c624c86639a78fe993fa"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/critical-ready-resource.safe.json",
+      "relative_path": "critical-ready-resource.safe.json",
+      "bytes": 672,
+      "sha256": "577e333a4658e49ed30e32dcb2327c67b750131b9a60e8c125b91db74ba29b62"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/data6-status.safe.json",
+      "relative_path": "data6-status.safe.json",
+      "bytes": 2243,
+      "sha256": "1ce472a53c3f8899ff6d2b699462d2de3cbef4c15c0e8ef1df955fbed78ad977"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-cleanup-before.safe.json",
+      "relative_path": "docker-cleanup-before.safe.json",
+      "bytes": 824,
+      "sha256": "1c581296a39e3df65898a8ded66f7fb7b049ef1bc3b6f59191c1d01dc6bd0850"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-cleanup-process.safe.json",
+      "relative_path": "docker-cleanup-process.safe.json",
+      "bytes": 147,
+      "sha256": "a1954ed1d3379c99484e44e56120ca07d02347aa916b3dd5f6a6b8999ee460ad"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-cleanup-terminal.safe.json",
+      "relative_path": "docker-cleanup-terminal.safe.json",
+      "bytes": 738,
+      "sha256": "77a94185c69fdce00a8f989589d67923835bf395cdfa532bea5a6567757199ed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-up-launch.safe.json",
+      "relative_path": "docker-up-launch.safe.json",
+      "bytes": 1004,
+      "sha256": "5a54da5ffbe98afce06310c9e9304d285478eeceebf99f37f2f9728c89128403"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-up-owned.py",
+      "relative_path": "docker-up-owned.py",
+      "bytes": 5170,
+      "sha256": "6c788e25a99de4171c886a104eedb8399d3ec3a3f36f48260ce90eb4095db846"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-up-process.safe.json",
+      "relative_path": "docker-up-process.safe.json",
+      "bytes": 147,
+      "sha256": "d9e669682716af2e7d78dc24ce3865e333b099e0ca5017a537d474b1223a65bd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/docker-up-terminal.safe.json",
+      "relative_path": "docker-up-terminal.safe.json",
+      "bytes": 845,
+      "sha256": "2a239ac23d7bad4136e7cce21146cc4c8cbb0d40a1fa97f41147273e2cac1c7d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/foreground-stop-attempts.safe.json",
+      "relative_path": "foreground-stop-attempts.safe.json",
+      "bytes": 923,
+      "sha256": "cf6e7c0263d11011ac3d04c30d66a4d7161fde9b6ac2a9e854fd36ad4b757cbc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/foreground-stop-terminal.safe.json",
+      "relative_path": "foreground-stop-terminal.safe.json",
+      "bytes": 1450,
+      "sha256": "e5b74fa205664a0876a9c2fd860f23f04ba94821b154fc676e9a5bcf4e41a239"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/fresh-before-native.safe.json",
+      "relative_path": "fresh-before-native.safe.json",
+      "bytes": 174,
+      "sha256": "9f729babb73d64260e939d01bfb9df13f2e66401741d5af94e2b3dd4f0f0aaf8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/gateway-launch.safe.json",
+      "relative_path": "gateway-launch.safe.json",
+      "bytes": 445,
+      "sha256": "9fb130ef3e5e12bf74fef247aebeb7353a6dec7159cef57a34a5f9e66bf24ef6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/live8-identities.safe.json",
+      "relative_path": "live8-identities.safe.json",
+      "bytes": 2511,
+      "sha256": "24272f048e97460346fda07d91a64155e170a0533adf3b7b0c8fd79fb1649244"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mongo-protocol.safe.json",
+      "relative_path": "mongo-protocol.safe.json",
+      "bytes": 313,
+      "sha256": "da534856fd23648f7365758865964bab0edffdae6e921875fed3f3e47047df82"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mongo-readiness-process.safe.json",
+      "relative_path": "mongo-readiness-process.safe.json",
+      "bytes": 147,
+      "sha256": "be87d6b4e631c566da11bd62fd1abf563f7a3b24baa576a9b90cc6eff2e46180"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mongo-readiness-terminal.safe.json",
+      "relative_path": "mongo-readiness-terminal.safe.json",
+      "bytes": 394,
+      "sha256": "213942cc7840cc8fd1fcd42f178aad283fb086ae7a9d9711fa56864e407a46e6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mongo-readiness.js",
+      "relative_path": "mongo-readiness.js",
+      "bytes": 2179,
+      "sha256": "1b8d7cb77f2ba8d0aac92d974111227a0b46b9e997ea05abae5d59534b056803"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/mount-private-metadata.safe.json",
+      "relative_path": "mount-private-metadata.safe.json",
+      "bytes": 2822,
+      "sha256": "7db4fbe18c228be983b6cd9257660f63e9eba208f0fe9a49282334478de0b554"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/namespace-images-volumes-ports.safe.json",
+      "relative_path": "namespace-images-volumes-ports.safe.json",
+      "bytes": 4176,
+      "sha256": "279bd8a272479d1142a4dcd341fbdd4d8427746fab68fbec7983af0554984c06"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/native-bootstrap-launch.safe.json",
+      "relative_path": "native-bootstrap-launch.safe.json",
+      "bytes": 282,
+      "sha256": "5a35df397593caa0cb9822f9df8f1f044dae9485a5a04c13077099d9d78308b7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/native-mongo-launch.safe.json",
+      "relative_path": "native-mongo-launch.safe.json",
+      "bytes": 496,
+      "sha256": "485150d9a7a5fe17fdc088d8f27ee3cb8196a80aaf8eeea84b6cdf0e14914125"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/native-server-prelaunch-attempt01.safe.json",
+      "relative_path": "native-server-prelaunch-attempt01.safe.json",
+      "bytes": 324,
+      "sha256": "1523b2f324a59f5b220b16f6f9bb44e1fed51c949697ecb85182bafe6a240dc6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/notification-launch.safe.json",
+      "relative_path": "notification-launch.safe.json",
+      "bytes": 450,
+      "sha256": "07ef2a18d3c71dca056b391cf4570b614c5fb7476b791c5155ab4b2f27bb60b6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/post-docker-resource-barrier.safe.json",
+      "relative_path": "post-docker-resource-barrier.safe.json",
+      "bytes": 517,
+      "sha256": "ecd1454a3e930e246927a74852bd9aec545278c68da1a01dc7e3f784c66e5d2b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/preflight-terminal.safe.json",
+      "relative_path": "preflight-terminal.safe.json",
+      "bytes": 523,
+      "sha256": "fb53e37dac501c5257786382d520a12d652c0d2deeb24a7a169593c5821b3b0b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/preflight.py",
+      "relative_path": "preflight.py",
+      "bytes": 11062,
+      "sha256": "b43643b96d659c082f1ce1d37e6d21bcc21e2640fc7c1cdf83b7374eb26b31fd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/resources-before.safe.json",
+      "relative_path": "resources-before.safe.json",
+      "bytes": 180,
+      "sha256": "913dcd106a7137ebae7811256a9b50cee88b969af38e5208e88f796d47226ba8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/resources-live.safe.json",
+      "relative_path": "resources-live.safe.json",
+      "bytes": 181,
+      "sha256": "dfc58a2bbc446efd5778be8a87e89689f074e441ebcf268a4e46a6f62d73186d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/schedule-launch.safe.json",
+      "relative_path": "schedule-launch.safe.json",
+      "bytes": 446,
+      "sha256": "74d351aa3bc130b597fe518e69c959dac74ab71ad37629e5af97b4528311aca3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/seals.safe.json",
+      "relative_path": "seals.safe.json",
+      "bytes": 1208,
+      "sha256": "49794167a844161381f29ae6aa32df6d9b3be788f22ecb4391efba952182f2be"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/stand-readiness.partial.safe.json",
+      "relative_path": "stand-readiness.partial.safe.json",
+      "bytes": 3213,
+      "sha256": "7b4198cd4b30d148632629341fd80b800d3d6566cef23922543b9461e30008eb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/stand-readiness.py",
+      "relative_path": "stand-readiness.py",
+      "bytes": 7475,
+      "sha256": "442735e4e1ed33171fdcd5777c1aa5ee5d78251b2514582a3348c4616cd2d213"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/stand-readiness.safe.json",
+      "relative_path": "stand-readiness.safe.json",
+      "bytes": 3261,
+      "sha256": "a11215d0141828991f3ea4a35708485198454f9f5587bf124a29bbfacc501407"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/stop-foreground-owned.py",
+      "relative_path": "stop-foreground-owned.py",
+      "bytes": 2850,
+      "sha256": "2719137abe61e85f45cd5ac025914abbc8cef48b59b00a5cf361a50c865b7259"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/runtime/stand-attempt03/terminal-seal/terminal-outcome.safe.json",
+      "relative_path": "terminal-outcome.safe.json",
+      "bytes": 1102,
+      "sha256": "24fa8c181726411a23b20c187e7d7a33e929d4f370bb66cfb77dc6ab4e89a4d8"
+    }
+  ],
+  "private_values_ENV_keys_rawlogs_databodies_excluded": true,
+  "client_acceptance": "FAILED_FIRST3_INCOMPLETE8_OWNED_SEPARATELY",
+  "all8_reaped6removed5volumes_tmp_preserved": true,
+  "formal_deadline_overrun_seconds": 1.202341
+}

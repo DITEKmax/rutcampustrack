@@ -388,11 +388,13 @@ async def supervisor():
 
             result = await until(
                 observe,
-                lambda value: value[0] is not None
-                and value[0]["ack"] > previous_ack
-                and value[0]["ready"] == value[0]["unacked"] == 0
-                and value[1]
-                and value[2]["pending"] == value[2]["outbox_pending"] == 0,
+                lambda value: (
+                    value[0] is not None
+                    and value[0]["ack"] > previous_ack
+                    and value[0]["ready"] == value[0]["unacked"] == 0
+                    and value[1]
+                    and value[2]["pending"] == value[2]["outbox_pending"] == 0
+                ),
             )
             check(result[1] and result[2]["initial_cleared"])
             return result[0]
@@ -502,12 +504,14 @@ async def supervisor():
 
             retry = await until(
                 retry_facts,
-                lambda value: value[0] is not None
-                and value[0]["redeliver"] > baseline["redeliver"]
-                and value[0]["ack"] == baseline["ack"]
-                and value[1] is None
-                and value[2]["pending"] > 0
-                and provider.delete_attempts >= deletes + 2,
+                lambda value: (
+                    value[0] is not None
+                    and value[0]["redeliver"] > baseline["redeliver"]
+                    and value[0]["ack"] == baseline["ack"]
+                    and value[1] is None
+                    and value[2]["pending"] > 0
+                    and provider.delete_attempts >= deletes + 2
+                ),
             )
             check(retry[1] is None and not await guard.is_completed(event_id))
             check(provider.contains(uncertain_marker) and provider.edit_count == edits)
@@ -518,10 +522,9 @@ async def supervisor():
             await stop_worker(force=True)  # Actual process death after a verified real Redis release.
             stopped = await until(
                 queue_facts,
-                lambda fact: fact is not None
-                and fact["consumers"] == 0
-                and fact["ready"] == 1
-                and fact["unacked"] == 0,
+                lambda fact: (
+                    fact is not None and fact["consumers"] == 0 and fact["ready"] == 1 and fact["unacked"] == 0
+                ),
             )
             check(stopped["ack"] == baseline["ack"] and await key_state(event_id) is None)
             check((await control("facts"))["pending"] > 0 and provider.contains(uncertain_marker))
@@ -561,10 +564,9 @@ async def supervisor():
             await stop_worker(force=True)
             stopped = await until(
                 queue_facts,
-                lambda fact: fact is not None
-                and fact["consumers"] == 0
-                and fact["ready"] == 1
-                and fact["unacked"] == 0,
+                lambda fact: (
+                    fact is not None and fact["consumers"] == 0 and fact["ready"] == 1 and fact["unacked"] == 0
+                ),
             )
             check(await key_state(event_id) == held_value)
             await start_worker()
@@ -577,9 +579,11 @@ async def supervisor():
             # the fresh worker while it cannot acquire the original lease.
             requeued = await until(
                 queue_facts,
-                lambda fact: fact is not None
-                and fact["redeliver"] >= stopped["redeliver"] + 2
-                and fact["ack"] == baseline["ack"],
+                lambda fact: (
+                    fact is not None
+                    and fact["redeliver"] >= stopped["redeliver"] + 2
+                    and fact["ack"] == baseline["ack"]
+                ),
             )
             _held_lease_redeliveries = requeued["redeliver"] - stopped["redeliver"]
             check(await key_state(event_id) == held_value)

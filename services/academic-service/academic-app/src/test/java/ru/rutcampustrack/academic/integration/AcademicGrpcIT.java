@@ -324,6 +324,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void getSubjectsByIds_returnsSubjectNamesAndTypes() {
+        jdbcTemplate.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES (?,'practice') ON CONFLICT DO NOTHING", subjectId);
         SubjectsByIdsRequest request = SubjectsByIdsRequest.newBuilder()
                 .addSubjectIds(subjectId)
                 .build();
@@ -333,6 +334,8 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         assertThat(response.getSubjectsList()).hasSize(1);
         assertThat(response.getSubjectsList().get(0).getSubjectName()).startsWith("Algorithms ");
         assertThat(response.getSubjectsList().get(0).getSubjectType()).isEqualTo("lecture");
+        assertThat(response.getSubjectsList().get(0).getGroupId()).isEqualTo(1L);
+        assertThat(response.getSubjectsList().get(0).getLessonTypesList()).containsExactly("lecture", "practice");
     }
 
     // =====================================================================

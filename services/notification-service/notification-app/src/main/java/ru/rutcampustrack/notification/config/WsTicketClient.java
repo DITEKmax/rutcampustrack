@@ -14,6 +14,8 @@ import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
+import ru.rutcampustrack.auth.dto.ExportJobModels;
 
 /**
  * M03b Группа 4: клиент для consume WebSocket ticket из auth-service.
@@ -77,6 +79,17 @@ public class WsTicketClient {
 
     public boolean admitDashboard(WsSessionAdmissionRequest identity) {
         return admit(identity, "/internal/auth/admit-dashboard-session");
+    }
+
+    public boolean admitExport(UUID jobId, WsSessionAdmissionRequest identity) {
+        try {
+            return restClient.post().uri("/internal/export-jobs/admit").contentType(MediaType.APPLICATION_JSON)
+                    .header(INTERNAL_SECRET_HEADER, internalSecret).body(new ExportJobModels.Admit(jobId, identity))
+                    .retrieve().toBodilessEntity().getStatusCode().value() == 204;
+        } catch (RestClientException failure) {
+            log.debug("Export session admission rejected ({})", failure.getClass().getSimpleName());
+            return false;
+        }
     }
 
     private boolean admit(WsSessionAdmissionRequest identity, String path) {

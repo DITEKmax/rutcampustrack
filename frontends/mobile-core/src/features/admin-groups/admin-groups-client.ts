@@ -1,3 +1,4 @@
+import { parseReportFormats, type ReportFormatOption } from '../../shared/report-download-client'
 import type { MobileProblemDetails } from '../../api/types'
 
 export type AdminGroupStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
@@ -308,6 +309,10 @@ export class AdminGroupsClient {
       body: JSON.stringify({ cycleSemesterId, previewVersion, groupId }),
       ...(signal ? { signal } : {}),
     }).then(normalizePromotionSummary)
+  }
+
+  async exportFormats(): Promise<readonly ReportFormatOption[]> {
+    return parseReportFormats(await this.request<unknown>('/api/academic/registry-exports/groups/formats'))
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {

@@ -5,6 +5,7 @@ import RecoveryLinkPanel from './RecoveryLinkPanel.vue'
 import { AdminUsersApiError } from './admin-users-client'
 import { AdminAccessApiError, type AdminAccessProfile } from '../admin-access/admin-access-client'
 import { createAdminUsersReviewApis } from '../../dev/admin-users-fixtures'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 
 // Runs the actual SFC handlers and v-model in memory; no browser/live credentials.
 class TestElement extends EventTarget {
@@ -13,10 +14,13 @@ class TestElement extends EventTarget {
   props: Record<string, unknown> = {}
   value = ''
   checked = false
+  selected = false
+  selectedIndex = -1
   text = ''
   composing = false
   constructor(readonly tag: string) { super(); markRaw(this) }
   get tagName(): string { return this.tag.toUpperCase() }
+  get options(): TestElement[] { return this.children.filter(node => node.tag === 'option') }
   get type(): string { return String(this.props.type ?? '') }
   getRootNode(): typeof testDocument { return testDocument }
   get open(): boolean { return Boolean(this.props.open) }
@@ -191,6 +195,31 @@ async function accessEditor(baseline:AdminAccessProfile) {
   return {root,update}
 }
 const accessBaseline:AdminAccessProfile={userId:3,assigned:true,mode:'LIMITED',permissions:['USERS_VIEW','GROUPS_VIEW'],version:4}
+describe('user export follows the displayed registry', () => {
+  it('keeps an unapplied search draft out of the export, then exports the successfully applied search', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const list = vi.spyOn(client, 'listUsers')
+    vi.spyOn(client, 'exportFormats').mockResolvedValue([{ code: 'html', label: 'HTML' }])
+    const download = vi.fn<ReportDownloadPort['download']>(async () => 'accepted')
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority, reportDownload: { carrier: 'browser', download } }))
+    await flush()
+    const applied = list.mock.calls.at(-1)![0]!
+    expect(applied.search).toBe('')
+    await input(nodes(root).find(node => node.props['aria-label'] === 'Найти пользователя')!, 'Новый поиск')
+    expect(list).toHaveBeenCalledTimes(1)
+    await click(button(root, 'Выгрузка'))
+    await click(button(root, 'Скачать'))
+    expect(download.mock.calls[0]![0]).toMatchObject({ kind: 'ADMIN_USERS', adminUsers: { format: 'html' } })
+    expect((download.mock.calls[0]![0] as { adminUsers: { search?: string } }).adminUsers.search).toBeUndefined()
+    await submit(root)
+    expect(list).toHaveBeenCalledTimes(2)
+    const nextApplied = list.mock.calls.at(-1)![0]!
+    expect(nextApplied.search).toBe('Новый поиск')
+    await click(button(root, 'Выгрузка'))
+    await click(button(root, 'Скачать'))
+    expect((download.mock.calls[1]![0] as { adminUsers: { search: string } }).adminUsers.search).toBe(nextApplied.search)
+  })
+})
 describe('R2 actual screen permission confirmations',() => {
   it('sends one immutable CAS only after both revoke and grant steps',async () => {
     const {root,update}=await accessEditor(accessBaseline)

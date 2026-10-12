@@ -1,3 +1,5 @@
+import { HeadmanJournalApi, type HeadmanWeeklyWeekOption } from '../headman-journal/headman-journal-client'
+import { parseReportFormats, type ReportFormatOption } from '../../shared/report-download-client'
 import { academicDate, normalizeAcademicWeekPolicy, type AcademicWeekPolicy } from '../../domain/academic-week'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { normalizeHeadmanStatsSemesterCatalog, normalizeHeadmanStatsOverview, normalizeHeadmanStatsLessons, type HeadmanStatsSemesterCatalog, type HeadmanStatsOverview, type HeadmanStatsLessonPage, type HeadmanStatsLessonQuery } from './headman-stats-history-client'
@@ -432,6 +434,13 @@ export class HeadmanStatsApi {
       filename,
       contentType,
     }
+  }
+
+  async subjectJournalFormats(): Promise<readonly ReportFormatOption[]> {
+    return parseReportFormats(await this.request<unknown>('/api/attendance/reports/headman/subject-journal/formats'))
+  }
+  async subjectJournalWeeks(): Promise<readonly HeadmanWeeklyWeekOption[]> {
+    return (await new HeadmanJournalApi(this.options).getWeeklyExportOptions()).weeks
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {

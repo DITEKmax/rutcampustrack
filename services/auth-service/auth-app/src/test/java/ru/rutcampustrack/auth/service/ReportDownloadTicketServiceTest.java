@@ -16,6 +16,7 @@ import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 import java.security.SecureRandom;
 import java.time.Clock;
@@ -43,6 +44,53 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ReportDownloadTicketServiceTest {
+    @Test
+    void workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow() {
+        var auth = mock(AuthService.class);
+        var jwt = mock(JwtService.class);
+        var issuer = new InternalIssuerProperties();
+        issuer.setTokenTtlSeconds(300);
+        var clock = new MutableClock(NOW);
+        var actor = principal();
+        var admitted = snapshot(NOW);
+        when(auth.admit(actor)).thenReturn(admitted);
+        when(jwt.generateInternalReportDownloadToken(eq(admitted), any(), any(), anyString(), any()))
+                .thenReturn("synthetic-signed-worker-authority");
+        var service = service(new MemoryStore(), auth, jwt, issuer, clock);
+        Instant durableExpiry = NOW.plusSeconds(600);
+        var fresh = service.authorizeJob(actor, report(), durableExpiry);
+        assertEquals(NOW.plusSeconds(60), fresh.ticketExpiresAt());
+        assertEquals(fresh.ticketExpiresAt(), fresh.admission().expiresAt());
+        verify(jwt).generateInternalReportDownloadToken(eq(admitted), eq(NOW),
+                eq(NOW.plusSeconds(60)), eq(report().bindingHash()), eq(NOW.plusSeconds(60)));
+        Instant nearExpiry = NOW.plusSeconds(15);
+        var remaining = service.authorizeJob(actor, report(), nearExpiry);
+        assertEquals(nearExpiry, remaining.ticketExpiresAt());
+        assertEquals(nearExpiry, remaining.admission().expiresAt());
+        verify(jwt).generateInternalReportDownloadToken(eq(admitted), eq(NOW),
+                eq(nearExpiry), eq(report().bindingHash()), eq(nearExpiry));
+        clock.set(nearExpiry);
+        assertThrows(SessionAdmissionException.class,
+                () -> service.authorizeJob(actor, report(), nearExpiry));
+    }
+
+    @Test
+    void readyJobCapabilityCannotOutliveItsCommittedFileExpiry() {
+        var store = new MemoryStore();
+        var auth = mock(AuthService.class);
+        var jwt = mock(JwtService.class);
+        var issuer = new InternalIssuerProperties();
+        var clock = new MutableClock(NOW);
+        var actor = principal();
+        when(auth.admit(actor)).thenReturn(snapshot(NOW));
+        var service = service(store, auth, jwt, issuer, clock);
+        Instant fileExpiry = NOW.plusSeconds(15);
+        var issued = service.issueReadyJob(actor, report(), UUID.randomUUID(), fileExpiry);
+        assertEquals(fileExpiry, issued.expiresAt());
+        assertEquals(Duration.ofSeconds(15), store.ticketTtl);
+        clock.set(fileExpiry);
+        assertTrue(service.redeem(issued.downloadPath().substring("/api/report-download/".length())).isEmpty());
+    }
 
     private static final long USER_ID = 17L;
     private static final UUID SESSION_ID = UUID.fromString("11111111-2222-4333-8444-555555555555");
@@ -226,7 +274,8 @@ class ReportDownloadTicketServiceTest {
                                                         Clock clock,
                                                         AcademicAssistantPermissionClient academic) {
         return new ReportDownloadTicketService(store, auth, jwt, issuer,
-                new ObjectMapper().registerModule(new JavaTimeModule()), clock, new SecureRandom(), academic);
+                new ObjectMapper().registerModule(new JavaTimeModule()), clock, new SecureRandom(), academic,
+                mock(AdminAccessJdbcAuthority.class));
     }
 
     private static SessionPrincipal principal() {

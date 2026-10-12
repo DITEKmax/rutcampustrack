@@ -1,6 +1,8 @@
 package ru.rutcampustrack.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
@@ -22,14 +24,17 @@ import java.util.Objects;
 /** Typed, bounded report selector stored with a short-lived report capability. */
 @Schema(description = "One allowlisted report and its bounded export parameters")
 public record IssueReportDownloadTicketRequest(
-        @NotNull ReportDownloadKind kind,
+        @NotNull @JsonSetter(nulls = Nulls.FAIL) ReportDownloadKind kind,
         @Valid TeacherJournalParameters teacherJournal,
         @Valid TeacherStatsParameters teacherStats,
         @Valid HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
         @Valid HeadmanWeeklySelectedParameters headmanWeeklySelected,
         @Valid HeadmanStatsParameters headmanStats,
         @Valid HeadmanStatsTrendParameters headmanStatsTrend,
-        @Valid HeadmanGroupCompositionParameters headmanGroupComposition
+        @Valid HeadmanGroupCompositionParameters headmanGroupComposition,
+        @Valid HeadmanSubjectJournalParameters headmanSubjectJournal,
+        @Valid AdminUsersParameters adminUsers,
+        @Valid AdminGroupsParameters adminGroups
 ) {
     private static final int MAX_PARAMETER_VALUES = 20;
     private static final int MAX_PARAMETER_LENGTH = 128;
@@ -37,36 +42,37 @@ public record IssueReportDownloadTicketRequest(
     @AssertTrue(message = "Exactly the parameter object for the selected report kind is required")
     @JsonIgnore
     public boolean isParametersConsistent() {
-        if (kind == null) {
-            return false;
-        }
-        if (kind != ReportDownloadKind.HEADMAN_GROUP_COMPOSITION && headmanGroupComposition != null) {
-            return false;
-        }
-        return switch (kind) {
-            case TEACHER_JOURNAL -> teacherJournal != null && teacherJournal.isLessonIdValid() && teacherStats == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null
-                    && headmanStatsTrend == null;
-            case TEACHER_STATS -> teacherStats != null && teacherJournal == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null
-                    && headmanStatsTrend == null;
-            case HEADMAN_WEEKLY_CURRENT -> headmanWeeklyCurrent != null && teacherJournal == null
-                    && teacherStats == null && headmanWeeklySelected == null && headmanStats == null
-                    && headmanStatsTrend == null;
-            case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected != null && teacherJournal == null
-                    && teacherStats == null && headmanWeeklyCurrent == null && headmanStats == null
-                    && headmanStatsTrend == null;
-            case HEADMAN_STATS -> headmanStats != null && teacherJournal == null && teacherStats == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null
-                    && headmanStatsTrend == null;
-            case HEADMAN_STATS_TREND -> headmanStatsTrend != null && teacherJournal == null
-                    && teacherStats == null && headmanWeeklyCurrent == null && headmanWeeklySelected == null
-                    && headmanStats == null && headmanStatsTrend.isConsistent();
-            case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition != null
-                    && headmanGroupComposition.format() != null && teacherJournal == null && teacherStats == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null
-                    && headmanStats == null && headmanStatsTrend == null;
+        if (kind == null) return false;
+        Object selected = switch (kind) {
+            case TEACHER_JOURNAL -> teacherJournal;
+            case TEACHER_STATS -> teacherStats;
+            case HEADMAN_WEEKLY_CURRENT -> headmanWeeklyCurrent;
+            case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected;
+            case HEADMAN_STATS -> headmanStats;
+            case HEADMAN_STATS_TREND -> headmanStatsTrend;
+            case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition;
+            case HEADMAN_SUBJECT_JOURNAL -> headmanSubjectJournal;
+            case ADMIN_USERS -> adminUsers;
+            case ADMIN_GROUPS -> adminGroups;
         };
+        long count = java.util.stream.Stream.of(teacherJournal, teacherStats, headmanWeeklyCurrent,
+                headmanWeeklySelected, headmanStats, headmanStatsTrend, headmanGroupComposition,
+                headmanSubjectJournal, adminUsers, adminGroups).filter(Objects::nonNull).count();
+        if (selected == null || count != 1) return false;
+        return switch (kind) {
+            case TEACHER_JOURNAL -> teacherJournal.isLessonIdValid();
+            case HEADMAN_STATS_TREND -> headmanStatsTrend.isConsistent();
+            case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition.format() != null;
+            default -> true;
+        };
+    }
+
+    public IssueReportDownloadTicketRequest(ReportDownloadKind kind, TeacherJournalParameters teacherJournal,
+            TeacherStatsParameters teacherStats, HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
+            HeadmanWeeklySelectedParameters headmanWeeklySelected, HeadmanStatsParameters headmanStats,
+            HeadmanStatsTrendParameters headmanStatsTrend, HeadmanGroupCompositionParameters headmanGroupComposition) {
+        this(kind, teacherJournal, teacherStats, headmanWeeklyCurrent, headmanWeeklySelected,
+                headmanStats, headmanStatsTrend, headmanGroupComposition, null, null, null);
     }
 
     /** Retains source compatibility for callers constructing existing ticket kinds. */
@@ -102,7 +108,7 @@ public record IssueReportDownloadTicketRequest(
             throw new IllegalArgumentException("Report parameters do not match the selected kind");
         }
         StringBuilder canonical = new StringBuilder(512);
-        append(canonical, kind.name());
+        append(canonical, kind.code());
         switch (kind) {
             case TEACHER_JOURNAL -> {
                 append(canonical, teacherJournal.semesterId());
@@ -180,6 +186,23 @@ public record IssueReportDownloadTicketRequest(
                 }
             }
             case HEADMAN_GROUP_COMPOSITION -> append(canonical, headmanGroupComposition.format().code());
+            case HEADMAN_SUBJECT_JOURNAL -> {
+                append(canonical, headmanSubjectJournal.subjectId());
+                appendList(canonical, headmanSubjectJournal.lessonTypes());
+                appendList(canonical, headmanSubjectJournal.weekStarts() == null ? null : headmanSubjectJournal.weekStarts().stream().map(LocalDate::toString).toList());
+                append(canonical, headmanSubjectJournal.format().code());
+            }
+            case ADMIN_USERS -> {
+                append(canonical, adminUsers.search()); append(canonical, adminUsers.role());
+                append(canonical, adminUsers.status()); append(canonical, adminUsers.roleStatus());
+                appendSorts(canonical, adminUsers.sorts()); append(canonical, adminUsers.format().code());
+            }
+            case ADMIN_GROUPS -> {
+                append(canonical, adminGroups.status()); append(canonical, adminGroups.search());
+                append(canonical, adminGroups.course()); append(canonical, adminGroups.studyMode());
+                append(canonical, adminGroups.educationLevel()); appendSorts(canonical, adminGroups.sorts());
+                append(canonical, adminGroups.format().code());
+            }
         }
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -203,6 +226,9 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_STATS -> "headman-stats";
             case HEADMAN_STATS_TREND -> "headman-stats-trend";
             case HEADMAN_GROUP_COMPOSITION -> "headman-group-composition";
+            case HEADMAN_SUBJECT_JOURNAL -> "headman-subject-journal";
+            case ADMIN_USERS -> "admin-users";
+            case ADMIN_GROUPS -> "admin-groups";
         };
         String extension = kind == ReportDownloadKind.HEADMAN_STATS_TREND
                 ? headmanStatsTrend.format().code()
@@ -226,7 +252,35 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_STATS -> headmanStats.format();
             case HEADMAN_STATS_TREND -> headmanStatsTrend.format();
             case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition.format();
+            case HEADMAN_SUBJECT_JOURNAL -> headmanSubjectJournal.format();
+            case ADMIN_USERS -> adminUsers.format();
+            case ADMIN_GROUPS -> adminGroups.format();
         };
+    }
+
+    private static void appendSorts(StringBuilder canonical, List<RegistrySort> sorts) {
+        append(canonical, sorts == null ? null : sorts.size());
+        if (sorts != null) for (RegistrySort sort : sorts) { append(canonical, sort.field()); append(canonical, sort.descending()); }
+    }
+
+    public record HeadmanSubjectJournalParameters(@NotNull @Positive Long subjectId,
+            @NotNull @Size(min = 1, max = 3) List<@NotBlank String> lessonTypes,
+            @Size(max = 64) List<@NotNull LocalDate> weekStarts, @NotNull ReportDownloadFormat format) {
+        public HeadmanSubjectJournalParameters { lessonTypes = immutable(lessonTypes); weekStarts = immutable(weekStarts); }
+    }
+    public record RegistrySort(@NotBlank @Size(max = 64) String field, boolean descending) {}
+    public record AdminUsersParameters(@Size(max = 255) String search,
+            @Pattern(regexp = "STUDENT|TEACHER|ADMIN|HEADMAN") String role, @Pattern(regexp = "ACTIVE|EXPELLED|SUSPENDED|ARCHIVED") String status,
+            @Pattern(regexp = "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED") String roleStatus,
+            @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts, @NotNull ReportDownloadFormat format) {
+        public AdminUsersParameters { sorts = immutable(sorts); }
+    }
+    public record AdminGroupsParameters(@Pattern(regexp = "ACTIVE|DRAFT|ARCHIVED") String status,
+            @Size(max = 255) String search, @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(5) Integer course,
+            @Pattern(regexp = "FULL_TIME|PART_TIME|EXTRAMURAL") String studyMode,
+            @Pattern(regexp = "BACHELOR|SPECIALIST|MASTER") String educationLevel,
+            @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts, @NotNull ReportDownloadFormat format) {
+        public AdminGroupsParameters { sorts = immutable(sorts); }
     }
 
     private static String canonicalDecimal(java.math.BigDecimal value) {

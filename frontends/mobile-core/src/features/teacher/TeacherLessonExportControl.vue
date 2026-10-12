@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { exportStateLabel, reportDownloadAcceptedMessage } from '../../shared/report-download-client'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
@@ -69,10 +70,10 @@ async function download(format: TeacherExportFormatCode): Promise<void> {
   status.value = null
   try {
     if (port) {
-      const result = await port.download(toTeacherJournalReportRequest(query, format), isCurrent)
+      const result = await port.download(toTeacherJournalReportRequest(query, format), isCurrent, value => { if (isCurrent()) status.value = exportStateLabel(value) })
       if (!isCurrent() || result === 'stale') return
       if (result === 'unsupported') error.value = 'Скачивание недоступно в этой версии Telegram.'
-      else status.value = result === 'accepted' ? 'Telegram принял запрос на скачивание. Завершение проверь в Telegram.' : 'Скачивание отменено.'
+      else status.value = result === 'accepted' ? reportDownloadAcceptedMessage(port) : 'Скачивание отменено.'
       return
     }
     const file = await api.exportJournal({ ...query, format })

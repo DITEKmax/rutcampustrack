@@ -26,7 +26,7 @@ public final class AcademicFixtureResetListener extends AbstractTestExecutionLis
             "account_security_events", "academic_outbox", "academic_semester_archive_barriers",
             "academic_semester_archive_effect_receipts", "academic_semester_archive_publication_admissions",
             "admin_access_profiles", "assignment_replacement_operations", "assignments",
-            "attendance_thresholds", "audit_log", "auth_outbox", "auth_sessions",
+            "attendance_thresholds", "audit_log", "auth_export_jobs", "auth_outbox", "auth_sessions",
             "campus_map_activity_coverage", "campus_map_asset", "campus_map_building",
             "campus_map_catalog_revision", "campus_map_deletion_receipt", "campus_map_floor",
             "campus_map_floor_daily_demand", "campus_map_floor_demand_dedupe",

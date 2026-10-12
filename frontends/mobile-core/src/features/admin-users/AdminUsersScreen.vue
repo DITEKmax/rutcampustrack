@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportButton from '../../shared/components/ExportButton.vue'
+import type { ReportDownloadPort, ReportDownloadFormat, ReportDownloadTicketRequest } from '../../shared/report-download-client'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
@@ -11,6 +13,7 @@ import {
   type UpdateAdminRoleInput,
   type UpdateAdminUserProfileInput,
   type AdminUsersClient,
+  type AdminUsersListInput,
   type AdminUserArchivePreview,
   type ArchiveAdminUserInput,
 } from './admin-users-client'
@@ -28,12 +31,14 @@ import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
 import { AdminAccessConfirmationFlow, type AdminAccessConfirmationContext, type AdminAccessConfirmationState } from '../admin-access/admin-access-confirmation'
 
 const props = withDefaults(defineProps<{
+  reportDownload?: ReportDownloadPort | null
   client: AdminUsersClient
   accessClient?: AdminAccessClient | null
   authority?: AdminAccessProfile | null
   theme?: 'dark' | 'light'
 }>(), {
   theme: 'dark',
+  reportDownload: null,
   accessClient: null,
   authority: null,
 })
@@ -46,6 +51,7 @@ const emit = defineEmits<{
 const users = ref<readonly AdminUser[]>([])
 const selectedUser = ref<AdminUser | null>(null)
 const search = ref('')
+const appliedListQuery = ref<Pick<AdminUsersListInput, 'search' | 'role' | 'roleStatus' | 'sortDirection'> | null>(null)
 const roleFilter = ref<AdminManagedRole | ''>('')
 const statusFilter = ref<AdminRoleStatus | ''>('')
 const pageSize = 3
@@ -242,6 +248,12 @@ function back(): void {
 defineExpose({ back })
 watch(view, value => { addRoleExpanded.value = false; emit('navigationVisibility', value === 'list') }, { immediate: true })
 watch(() => [accessDraft.value,accessProfile.value,props.authority,selectedUser.value?.id,selectedUser.value?.fullName], () => { if(accessConfirmation.value) closeAccessConfirmation() }, {deep:true,flush:'sync'})
+const exportScope = computed(() => JSON.stringify([appliedListQuery.value, props.authority]))
+function exportRequest(format: ReportDownloadFormat): ReportDownloadTicketRequest {
+  const query = appliedListQuery.value
+  if (!query) throw new Error('Список пользователей ещё не загружен.')
+  return { kind: 'ADMIN_USERS', adminUsers: { ...(query.search?.trim() ? { search: query.search.trim() } : {}), ...(query.role ? { role: query.role } : {}), ...(query.roleStatus ? { roleStatus: query.roleStatus } : {}), sorts: ['lastName','firstName','middleName','id'].map(field => ({ field, descending: query.sortDirection === 'desc' })), format } }
+}
 function openFilters(): void { draftRole.value = roleFilter.value; draftStatus.value = statusFilter.value; draftSort.value = sortDirection.value; view.value = 'filters' }
 function applyFilters(): void { roleFilter.value = draftRole.value; statusFilter.value = draftRole.value ? draftStatus.value : ''; sortDirection.value = draftSort.value; page.value = 0; view.value = 'list'; void refresh() }
 function resetFilters(): void { search.value = ''; roleFilter.value = ''; statusFilter.value = ''; sortDirection.value = 'asc'; page.value = 0; void refresh() }
@@ -437,19 +449,21 @@ function cancelProfileLoad(): void {
 }
 
 async function refresh(): Promise<void> {
+  appliedListQuery.value = null
   if (!canRead.value) { users.value = []; loading.value = false; return }
   const { revision, controller } = beginListRequest()
   loading.value = true
   error.value = null
   try {
-    const result = await props.client.listUsers({
+    const query = {
       search: search.value,
       role: roleFilter.value,
       roleStatus: statusFilter.value,
       page: page.value,
       size: pageSize,
       sortDirection: sortDirection.value,
-    }, controller.signal)
+    } satisfies AdminUsersListInput
+    const result = await props.client.listUsers(query, controller.signal)
     if (!isCurrentListRequest(revision, controller)) return
     users.value = result.items
     totalPages.value = result.totalPages
@@ -458,6 +472,7 @@ async function refresh(): Promise<void> {
       page.value = result.totalPages - 1
       return
     }
+    appliedListQuery.value = { search: query.search, role: query.role, roleStatus: query.roleStatus, sortDirection: query.sortDirection }
     const selectedId = selectedUser.value?.id
     if (selectedId !== undefined && view.value === 'list') selectedUser.value = null
   } catch (cause) {
@@ -930,6 +945,14 @@ onBeforeUnmount(() => {
           />
         </button>
       </form>
+      <ExportButton
+        :port="reportDownload"
+        :formats="() => client.exportFormats()"
+        :request="exportRequest"
+        :scope-key="exportScope"
+        :disabled="!adminHasPermission(authority, 'USERS_VIEW') || loading || !appliedListQuery"
+        @error="ownerError"
+      />
       <div class="admin-users-tools">
         <button
           class="admin-users-action admin-users-action--secondary"

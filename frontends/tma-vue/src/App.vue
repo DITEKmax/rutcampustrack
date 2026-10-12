@@ -1230,6 +1230,7 @@ onBeforeUnmount(() => {
   >
     <AdminUsersScreen
       ref="adminTaskOwner"
+      :report-download="reportDownload"
       :access-client="adminAccessActionsApi"
       :authority="adminAuthority"
       :client="adminUsersApi"
@@ -1249,6 +1250,7 @@ onBeforeUnmount(() => {
   >
     <AdminGroupsScreen
       ref="adminTaskOwner"
+      :report-download="reportDownload"
       :authority="adminAuthority"
       :client="adminGroupsApi"
       theme="dark"

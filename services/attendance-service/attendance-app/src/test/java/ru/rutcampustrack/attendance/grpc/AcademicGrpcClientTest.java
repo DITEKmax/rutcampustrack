@@ -191,6 +191,15 @@ class AcademicGrpcClientTest {
     }
 
     @Test
+    void subjectOwnerAndActualTypesRemainDistinctFromLegacyPrimaryType() {
+        when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
+                .addSubjects(SubjectInfo.newBuilder().setSubjectId(5).setSubjectName("Math").setSubjectType("lecture")
+                        .setGroupId(10).addAllLessonTypes(List.of("lecture", "practice")).build()).build());
+        assertThat(client.getSubjectDetailsByIds(List.of(5L))).containsEntry(5L,
+                new AcademicGrpcClient.SubjectDetails("Math", "lecture", 10, List.of("lecture", "practice")));
+    }
+
+    @Test
     void getSubjectsByIds_keepsNameOnlyCompatibility() {
         when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
                 .addSubjects(SubjectInfo.newBuilder()

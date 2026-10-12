@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { exportStateLabel, reportDownloadAcceptedMessage } from '../../shared/report-download-client'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
@@ -107,7 +108,7 @@ async function exportJournal():Promise<void>{
   const selector={...value,pastOnly:true,...(lessonId!==null?{lessonId:String(lessonId)}:{})}
   exportLoading.value=true;exportError.value=null;exportStatus.value=null
   try{
-    if(port){const result=await port.download(toTeacherJournalReportRequest(selector,format),active);if(!active()||result==='stale')return;if(result==='unsupported')exportError.value='Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.';else exportStatus.value=result==='accepted'?'Telegram принял запрос на скачивание; проверь завершение в Telegram.':'Скачивание отменено.';return}
+    if(port){const result=await port.download(toTeacherJournalReportRequest(selector,format),active,state=>{if(active())exportStatus.value=exportStateLabel(state)});if(!active()||result==='stale')return;if(result==='unsupported')exportError.value='Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.';else exportStatus.value=result==='accepted'?reportDownloadAcceptedMessage(port):'Скачивание отменено.';return}
     const file=await api.exportJournal({semesterId:value.semesterId,groupId:value.groupId,subjectId:value.subjectId,lessonTypes:teacherJournalTypes(value),...(value.dateFrom!==undefined?{dateFrom:value.dateFrom}:{}),...(value.dateTo!==undefined?{dateTo:value.dateTo}:{}),pastOnly:true,...(lessonId!==null?{lessonId:String(lessonId)}:{}),format})
     if(!active())return
     const url=URL.createObjectURL(file.blob);objectUrls.add(url);const link=document.createElement('a');link.href=url;link.download=file.filename;link.click();exportStatus.value='Журнал подготовлен, скачивание началось.'
@@ -134,7 +135,7 @@ function changeStudent(value:string):void{studentId.value=value==='group'?null:N
       <span
         class="teacher-journal__spinner"
         aria-hidden="true"
-      />Готовим выгрузку…
+      /> {{ exportStatus ?? 'Готовим выгрузку…' }}
     </section>
     <header
       v-if="!embedded"

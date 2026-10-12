@@ -14,6 +14,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
+    @Query(value = "select subject_id, lesson_type::text from subject_lesson_types where subject_id in (:ids) order by subject_id, lesson_type::text", nativeQuery = true)
+    List<Object[]> findLessonTypeCodes(@Param("ids") List<Long> ids);
+
     List<Subject> findByType(SubjectType type);
 
     List<Subject> findByNameContainingIgnoreCase(String name);

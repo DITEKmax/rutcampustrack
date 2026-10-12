@@ -43,10 +43,13 @@ final class HeadmanWeeklyTabularRenderer {
         }
         for (TeacherAttendanceExportModel model : models) {
             TeacherAttendanceExportModel.Context context = model.context();
-            html.append("<section><h2>Неделя ")
+            html.append("<section><h2>").append(context.subjectId() == null ? "Неделя " : "Период ")
                     .append(escapeHtml(context.periodFrom().toString()))
                     .append(" — ").append(escapeHtml(context.periodTo().toString())).append("</h2>")
-                    .append("<small>Типы занятий: ").append(escapeHtml(String.join(", ", context.typeLabels())))
+                    .append("<p>Предмет: ").append(escapeHtml(context.subjectLabel())).append("</p>");
+            if (!context.selectedWeekStarts().isEmpty()) html.append("<p>Выбранные недели: ")
+                    .append(escapeHtml(context.selectedWeekStarts().toString())).append("</p>");
+            html.append("<small>Типы занятий: ").append(escapeHtml(String.join(", ", context.typeLabels())))
                     .append("</small><div class=\"table-wrap\"><table><thead><tr><th scope=\"col\">Студент</th>");
             for (Column column : model.columns()) {
                 html.append("<th scope=\"col\">").append(escapeHtml(columnHeader(column))).append("</th>");
@@ -107,7 +110,9 @@ final class HeadmanWeeklyTabularRenderer {
         rowIndex++;
         for (TeacherAttendanceExportModel model : models) {
             var context = model.context();
-            appendTextRow(sheet, rowIndex++, List.of("Неделя", context.periodFrom().toString() + " — " + context.periodTo()));
+            appendTextRow(sheet, rowIndex++, List.of(context.subjectId() == null ? "Неделя" : "Период", context.periodFrom().toString() + " — " + context.periodTo()));
+            if (context.subjectId() != null) appendTextRow(sheet, rowIndex++, List.of("Предмет", context.subjectLabel()));
+            if (!context.selectedWeekStarts().isEmpty()) appendTextRow(sheet, rowIndex++, List.of("Выбранные недели", context.selectedWeekStarts().toString()));
             List<String> headers = new ArrayList<>(model.columns().size() + 1);
             headers.add("Студент");
             model.columns().stream().map(HeadmanWeeklyTabularRenderer::columnHeader).forEach(headers::add);

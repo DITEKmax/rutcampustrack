@@ -109,6 +109,7 @@ export * from './shared/theme-preference'
 export * from './shared/shell-contract'
 export * from './shared/session-owner'
 export * from './shared/report-download-client'
+export * from './shared/report-download-browser'
 export type * from './shared/host'
 
 export { NotificationsUnreadState, type NotificationsUnreadView } from './features/notifications/notifications-unread'

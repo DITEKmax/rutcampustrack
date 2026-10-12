@@ -1,5 +1,6 @@
 import {
   ReportDownloadResponseError,
+  reportFormat,
   type ReportDownloadPort,
   type ReportDownloadTicketIssuer,
   type ReportDownloadTicketRequest,
@@ -31,12 +32,13 @@ export function createTelegramReportDownloadPort(
   trustedOrigin: () => string = () => window.location.origin,
 ): ReportDownloadPort {
   return {
-    async download(request, isCurrent) {
+    carrier: 'telegram',
+    async download(request, isCurrent, onState) {
       if (!isCurrent()) return 'stale'
       tickets.assertCurrent()
       if (!host.supportsFileDownload()) return 'unsupported'
 
-      const ticket = await tickets.issueTicket(request)
+      const ticket = await tickets.issueTicket(request, onState, isCurrent)
       tickets.assertCurrent()
       if (!isCurrent()) return 'stale'
 
@@ -89,13 +91,7 @@ export function validateSuggestedFilename(
   filename: string,
   request: ReportDownloadTicketRequest,
 ): string {
-  const format = request.kind === 'TEACHER_JOURNAL' ? request.teacherJournal.format
-    : request.kind === 'TEACHER_STATS' ? request.teacherStats.format
-      : request.kind === 'HEADMAN_WEEKLY_CURRENT' ? request.headmanWeeklyCurrent.format
-        : request.kind === 'HEADMAN_WEEKLY_SELECTED' ? request.headmanWeeklySelected.format
-          : request.kind === 'HEADMAN_STATS' ? request.headmanStats.format
-            : request.kind === 'HEADMAN_GROUP_COMPOSITION' ? request.headmanGroupComposition.format
-              : request.headmanStatsTrend.format
+  const format = reportFormat(request)
   const extension = request.kind === 'HEADMAN_STATS_TREND' ? format : format === 'png' ? 'zip' : format
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(filename) || !filename.endsWith(`.${extension}`)) {
     throw new ReportDownloadResponseError()

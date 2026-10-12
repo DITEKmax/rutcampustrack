@@ -37,6 +37,7 @@ public record TeacherAttendanceExportModel(
 
     public enum ReportKind {
         WEEKLY_ATTENDANCE,
+        HEADMAN_SUBJECT_JOURNAL,
         SUBJECT_JOURNAL
     }
 
@@ -51,8 +52,15 @@ public record TeacherAttendanceExportModel(
             LocalDate periodFrom,
             LocalDate periodTo,
             List<String> typeLabels,
-            Instant generatedAt
+            Instant generatedAt,
+            List<LocalDate> selectedWeekStarts
     ) {
+        public Context(ReportKind kind, long semesterId, String semesterLabel, long groupId, String groupLabel,
+                Long subjectId, String subjectLabel, LocalDate periodFrom, LocalDate periodTo,
+                List<String> typeLabels, Instant generatedAt) {
+            this(kind, semesterId, semesterLabel, groupId, groupLabel, subjectId, subjectLabel, periodFrom, periodTo,
+                    typeLabels, generatedAt, List.of());
+        }
         public Context {
             kind = Objects.requireNonNull(kind, "kind");
             semesterLabel = Objects.requireNonNullElse(semesterLabel, "");
@@ -62,6 +70,7 @@ public record TeacherAttendanceExportModel(
             periodTo = Objects.requireNonNull(periodTo, "periodTo");
             typeLabels = List.copyOf(Objects.requireNonNull(typeLabels, "typeLabels"));
             generatedAt = Objects.requireNonNull(generatedAt, "generatedAt");
+            selectedWeekStarts = List.copyOf(Objects.requireNonNull(selectedWeekStarts, "selectedWeekStarts"));
         }
     }
 

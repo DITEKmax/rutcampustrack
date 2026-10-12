@@ -1,3 +1,4 @@
+import { parseReportFormats, type ReportFormatOption } from '../../shared/report-download-client'
 import type { AdminAccessSelection } from '../admin-access/admin-access-client'
 import type { MobileProblemDetails } from '../../api/types'
 
@@ -250,6 +251,10 @@ export class AdminUsersClient {
       || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(expiresAt)
       || !Number.isFinite(Date.parse(expiresAt))) throw new Error('Сервер вернул некорректную ссылку восстановления.')
     return { url, expiresAt, expiresInSeconds: positiveInteger(value.expiresInSeconds, 'recovery link.expiresInSeconds') }
+  }
+
+  async exportFormats(): Promise<readonly ReportFormatOption[]> {
+    return parseReportFormats(await this.request<unknown>('/api/academic/registry-exports/users/formats'))
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {

@@ -55,7 +55,7 @@ public final class TeacherAttendanceDocxRenderer {
         ReportKind kind = model.context().kind();
         String template = switch (kind) {
             case WEEKLY_ATTENDANCE -> WEEKLY_TEMPLATE;
-            case SUBJECT_JOURNAL -> SUBJECT_TEMPLATE;
+            case SUBJECT_JOURNAL, HEADMAN_SUBJECT_JOURNAL -> SUBJECT_TEMPLATE;
         };
         TemplatePackage templatePackage = readTemplate(template);
         return writePackage(templatePackage.entries(), renderDocumentXml(templatePackage.documentXml(), model));
@@ -99,8 +99,10 @@ public final class TeacherAttendanceDocxRenderer {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             documentXml = documentXml.replace("${" + entry.getKey() + "}", escapeXml(entry.getValue()));
         }
-        documentXml = replacePlaceholderParagraph(documentXml, "MATRIX_TABLE", matrixTables(model));
-        String summaryTable = context.kind() == ReportKind.WEEKLY_ATTENDANCE ? "" : summary(model);
+        String selection = context.selectedWeekStarts().isEmpty() ? "" : paragraph(
+                "Выбранные недели: " + context.selectedWeekStarts(), false, false, 18, true);
+        documentXml = replacePlaceholderParagraph(documentXml, "MATRIX_TABLE", selection + matrixTables(model));
+        String summaryTable = context.kind() == ReportKind.SUBJECT_JOURNAL ? summary(model) : "";
         documentXml = replacePreviousTitleAndPlaceholderParagraph(
                 documentXml, "Итоги по студентам", "SUMMARY_TABLE", summaryTable);
         Matcher unresolved = PLACEHOLDER.matcher(documentXml);

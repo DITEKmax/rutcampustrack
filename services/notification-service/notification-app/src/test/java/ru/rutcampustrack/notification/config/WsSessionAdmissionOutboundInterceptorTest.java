@@ -87,6 +87,42 @@ class WsSessionAdmissionOutboundInterceptorTest {
         verify(ticketClient, never()).admit(any());
     }
 
+    @Test
+    void exportDeliveryRequiresTheExactSocketSessionAudienceAndFreshJobAdmissionForEveryHint() {
+        bind("stomp-export", "ADMIN");
+        interceptor = new WsSessionAdmissionOutboundInterceptor(registry, ticketClient);
+        var identity = registry.identity("stomp-export").orElseThrow();
+        UUID job = UUID.randomUUID();
+        when(ticketClient.admit(identity)).thenReturn(true);
+        when(ticketClient.admitExport(job, identity)).thenReturn(true, false);
+        Message<byte[]> message = exportMessage("stomp-export", "/topic/user/7", job.toString(), identity.sessionId());
+        assertThat(interceptor.preSend(message, null)).isSameAs(message);
+        assertThat(interceptor.preSend(message, null)).isNull();
+        verify(ticketClient, times(2)).admitExport(job, identity);
+        assertThat(registry.identity("stomp-export")).isPresent();
+    }
+
+    @Test
+    void forgedSessionAudiencePartialOrMalformedExportHeadersNeverReachJobAdmission() {
+        bind("stomp-export", "ADMIN");
+        interceptor = new WsSessionAdmissionOutboundInterceptor(registry, ticketClient);
+        var identity = registry.identity("stomp-export").orElseThrow();
+        UUID job = UUID.randomUUID(); when(ticketClient.admit(identity)).thenReturn(true);
+        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/7", job.toString(), UUID.randomUUID().toString()), null)).isNull();
+        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/8", job.toString(), identity.sessionId()), null)).isNull();
+        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/7", "invalid", identity.sessionId()), null)).isNull();
+        assertThat(interceptor.preSend(exportMessage("stomp-export", "/topic/user/7", job.toString(), null), null)).isNull();
+        verify(ticketClient, never()).admitExport(any(), any());
+    }
+
+    private static Message<byte[]> exportMessage(String socket, String destination, String job, String session) {
+        StompHeaderAccessor headers = StompHeaderAccessor.create(StompCommand.MESSAGE);
+        headers.setSessionId(socket); headers.setDestination(destination);
+        headers.setHeader(WsSessionAdmissionOutboundInterceptor.EXPORT_JOB_HEADER, job);
+        if (session != null) headers.setHeader(WsSessionAdmissionOutboundInterceptor.EXPORT_SESSION_HEADER, session);
+        return MessageBuilder.createMessage(new byte[]{1}, headers.getMessageHeaders());
+    }
+
     private static Message<byte[]> outboundMessage(String sessionId) {
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.MESSAGE);
         accessor.setSessionId(sessionId);

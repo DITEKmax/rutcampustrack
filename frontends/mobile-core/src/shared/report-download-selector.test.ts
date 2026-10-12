@@ -26,7 +26,10 @@ describe('teacher exact export selector', () => {
     let sent: unknown
     const client = new ReportDownloadClient({ accessToken: () => null, assertCurrent: () => undefined,
       fetcher: async (_input, init) => {
-        sent = JSON.parse(String(init?.body))
+        if (!String(_input).endsWith('/ticket')) {
+          sent = (JSON.parse(String(init?.body)) as { report: unknown }).report
+          return Response.json({ jobId: '00000000-0000-4000-8000-000000000001', state: 'ready', expiresAt: new Date(Date.now() + 60000).toISOString(), suggestedFilename: 'journal.pdf', errorCode: null })
+        }
         return Response.json({ downloadPath: `/api/report-download/${'a'.repeat(43)}`, expiresAt: new Date(Date.now() + 60000).toISOString(), suggestedFilename: 'journal.pdf' })
       } })
     await client.issueTicket(request)
@@ -50,7 +53,10 @@ describe('headman selected semester export boundary', () => {
     let sent: unknown
     const client = new ReportDownloadClient({ accessToken: () => null, assertCurrent: () => undefined,
       fetcher: async (_input, init) => {
-        sent = JSON.parse(String(init?.body))
+        if (!String(_input).endsWith('/ticket')) {
+          sent = (JSON.parse(String(init?.body)) as { report: unknown }).report
+          return Response.json({ jobId: '00000000-0000-4000-8000-000000000001', state: 'ready', expiresAt: new Date(Date.now() + 60000).toISOString(), suggestedFilename: kind === 'HEADMAN_STATS' ? 'headman-stats.xlsx' : 'headman-stats-trend.png', errorCode: null })
+        }
         return new Response(JSON.stringify({ downloadPath: `/api/report-download/${'a'.repeat(43)}`, expiresAt: new Date(Date.now() + 60000).toISOString(), suggestedFilename: kind === 'HEADMAN_STATS' ? 'headman-stats.xlsx' : 'headman-stats-trend.png' }), { headers: { 'Content-Type': 'application/json' } })
       },
     })

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportButton from '../../shared/components/ExportButton.vue'
+import { toTeacherStatsReportSelector } from './teacher-client'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
@@ -544,6 +546,15 @@ function isCurrent(requestRevision: number): boolean {
     aria-labelledby="teacher-stats-title"
     :aria-busy="loading"
   >
+    <ExportButton
+      v-if="api && statsQuery"
+      :port="reportDownload"
+      :formats="() => api!.statsExportFormats()"
+      :request="format => ({ kind: 'TEACHER_STATS', teacherStats: toTeacherStatsReportSelector(statsQuery!, format) })"
+      :scope-key="JSON.stringify(statsQuery)"
+      :disabled="loading || !!error"
+      @error="emit('error', $event)"
+    />
     <h1 id="teacher-stats-title">
       Статистика
     </h1>

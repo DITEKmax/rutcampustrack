@@ -324,7 +324,8 @@ public class AcademicGrpcClient {
             return response.getSubjectsList().stream()
                     .collect(Collectors.toMap(
                             SubjectInfo::getSubjectId,
-                            subject -> new SubjectDetails(subject.getSubjectName(), subject.getSubjectType()),
+                            subject -> new SubjectDetails(subject.getSubjectName(), subject.getSubjectType(),
+                                    subject.getGroupId(), subject.getLessonTypesList()),
                             (a, b) -> a));
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
@@ -372,5 +373,8 @@ public class AcademicGrpcClient {
         }
     }
 
-    public record SubjectDetails(String name, String type) {}
+    public record SubjectDetails(String name, String type, long groupId, List<String> lessonTypes) {
+        public SubjectDetails { lessonTypes = List.copyOf(lessonTypes); }
+        public SubjectDetails(String name, String type) { this(name, type, 0L, List.of()); }
+    }
 }

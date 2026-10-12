@@ -371,6 +371,105 @@
         }
       }
     },
+    "/attendance/reports/headman/subject-journal/export" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "operationId" : "exportHeadmanSubjectJournal",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanSubjectJournalExportRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/reports/headman/stats/trend" : {
       "post" : {
         "tags" : [ "Reports" ],
@@ -2817,6 +2916,97 @@
         }
       }
     },
+    "/attendance/reports/headman/subject-journal/formats" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "operationId" : "getHeadmanSubjectJournalFormats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/HeadmanWeeklyExportFormatOption"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/reports/headman/stats/students/{studentId}/lessons" : {
       "get" : {
         "tags" : [ "Reports" ],
@@ -4886,6 +5076,38 @@
           }
         }
       },
+      "HeadmanSubjectJournalExportRequest" : {
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "minLength" : 1
+            },
+            "maxItems" : 3,
+            "minItems" : 1
+          },
+          "weekStarts" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "maxItems" : 64,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "format", "lessonTypes", "subjectId" ]
+      },
       "HeadmanStatsTrendQueryRequest" : {
         "type" : "object",
         "properties" : {
@@ -6233,6 +6455,28 @@
           }
         }
       },
+      "HeadmanWeeklyExportFormatOption" : {
+        "type" : "object",
+        "description" : "Server-supported format for a headman weekly attendance export",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "docx"
+          },
+          "label" : {
+            "type" : "string",
+            "example" : "Word (.docx)"
+          },
+          "contentType" : {
+            "type" : "string",
+            "example" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          },
+          "extension" : {
+            "type" : "string",
+            "example" : "docx"
+          }
+        }
+      },
       "HeadmanStatsStudentLessonsResponse" : {
         "type" : "object",
         "properties" : {
@@ -6728,28 +6972,6 @@
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
-          }
-        }
-      },
-      "HeadmanWeeklyExportFormatOption" : {
-        "type" : "object",
-        "description" : "Server-supported format for a headman weekly attendance export",
-        "properties" : {
-          "code" : {
-            "type" : "string",
-            "example" : "docx"
-          },
-          "label" : {
-            "type" : "string",
-            "example" : "Word (.docx)"
-          },
-          "contentType" : {
-            "type" : "string",
-            "example" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          },
-          "extension" : {
-            "type" : "string",
-            "example" : "docx"
           }
         }
       },

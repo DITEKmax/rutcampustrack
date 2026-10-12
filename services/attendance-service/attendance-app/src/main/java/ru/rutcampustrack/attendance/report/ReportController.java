@@ -49,6 +49,21 @@ public class ReportController implements ReportApi {
 
     @RequireRole(UserRole.STUDENT)
     @Override
+    public ResponseEntity<java.util.List<ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportFormatOption>> getHeadmanSubjectJournalFormats() {
+        headmanWeeklyReportService.getActiveSemesterWeeks();
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(HeadmanWeeklyReportFormat.catalogue());
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<byte[]> exportHeadmanSubjectJournal(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest request) {
+        return download(headmanWeeklyReportService.exportSubjectJournal(request));
+    }
+
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
     public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse>
             getHeadmanGroupCompositionFormats() {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(groupCompositionService.formats());

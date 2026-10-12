@@ -5,6 +5,7 @@ import {
   type StompSubscription,
 } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import { isExportJobState, notifyExportJobHint } from '../../shared/report-download-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { NotificationsSessionOwner } from './notifications-client'
 
@@ -187,7 +188,12 @@ export function createGenerationBoundNotificationsRealtime(
       if (!isCurrent()) return
       subscriptions = destinations.map((destination) => client!.subscribe(
         destination,
-        () => scheduleInvalidation(),
+        (message) => {
+          if (!isCurrent()) return
+          const jobId = exportHint(message.body)
+          if (jobId !== null) { notifyExportJobHint(jobId); return }
+          scheduleInvalidation()
+        },
       ))
       if (options.scope.adminDashboard) subscriptions.push(client!.subscribe('/topic/admin/dashboard', (message) => {
         if (isDashboardInvalidation(message.body)) scheduleDashboardInvalidation()
@@ -258,4 +264,11 @@ function isDashboardInvalidation(body: string): boolean {
     const payload = asRecord(envelope?.payload)
     return envelope?.type === 'dashboard.invalidated' && payload !== null && Object.keys(payload).length === 0
   } catch { return false }
+}
+
+function exportHint(body: string): string | null {
+  try {
+    const event = asRecord(JSON.parse(body))
+    return event?.type === 'export.state.changed' && typeof event.jobId === 'string' && isUuid(event.jobId) && isExportJobState(event.state) ? event.jobId : null
+  } catch { return null }
 }

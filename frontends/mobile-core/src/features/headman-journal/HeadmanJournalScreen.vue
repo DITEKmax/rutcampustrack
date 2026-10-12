@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { exportStateLabel, reportDownloadAcceptedMessage } from '../../shared/report-download-client'
 import { defineAsyncComponent, computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { HeadmanManualPreview, type ManualPreviewState } from './headman-manual-preview'
 const AttachmentPdfPreview = defineAsyncComponent(() => import('../../shared/components/AttachmentPdfPreview.vue'))
@@ -408,13 +409,13 @@ async function downloadWeeklyExport(): Promise<void> {
         && options === weeklyExportOptions.value && canExportWeekly()
         && selectedWeeklyFormat.value?.code === format.code
         && JSON.stringify(selectedWeeklyStarts.value) === JSON.stringify(weekStarts)
-      const result = await reportDownload.download(request, isCurrent)
+      const result = await reportDownload.download(request, isCurrent, state => { if (isCurrent()) weeklyExportStatus.value = exportStateLabel(state) })
       if (result === 'stale' || !isCurrent()) return
       if (result === 'unsupported') {
         weeklyExportStatus.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
       } else {
         weeklyExportStatus.value = result === 'accepted'
-          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
+          ? reportDownloadAcceptedMessage(reportDownload)
           : 'Скачивание отменено.'
       }
       return

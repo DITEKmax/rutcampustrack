@@ -202,6 +202,81 @@ public class HeadmanWeeklyReportService {
         return List.copyOf(result);
     }
 
+    public HeadmanWeeklyExportResult exportSubjectJournal(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest request) {
+        HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(request == null ? null : request.format());
+        TeacherAttendanceExportModel model = buildSubjectJournalModel(request);
+        byte[] bytes = switch (format) {
+            case DOCX -> docxRenderer.render(model);
+            case HTML -> tabularRenderer.renderHtml(List.of(model));
+            case XLSX -> tabularRenderer.renderXlsx(List.of(model));
+            case PDF, PNG -> {
+                try {
+                    yield documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(
+                            docxRenderer.render(model), format == HeadmanWeeklyReportFormat.PDF
+                                    ? TargetFormat.PDF : TargetFormat.PNG_PAGES_ZIP);
+                } catch (io.grpc.StatusRuntimeException failure) {
+                    if (failure.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
+                        throw new ReportExportTooLargeException("Журнал превышает лимит рендеринга");
+                    }
+                    throw new ReportExportUnavailableException("Не удалось сформировать файл журнала");
+                }
+            }
+        };
+        if (bytes == null || bytes.length == 0) throw new ReportExportUnavailableException("Файл журнала не сформирован");
+        if (bytes.length > MAX_EXPORT_RESPONSE_BYTES) throw new ReportExportTooLargeException("Журнал превышает лимит ответа");
+        String name = "journal_" + model.context().groupId() + "_" + model.context().subjectId()
+                + "_" + model.context().periodFrom() + "_" + model.context().periodTo() + "." + format.extension();
+        return new HeadmanWeeklyExportResult(name, format.contentType(), bytes);
+    }
+
+    TeacherAttendanceExportModel buildSubjectJournalModel(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest request) {
+        ensureHeadman();
+        if (request == null || request.subjectId() == null || request.subjectId() <= 0
+                || request.lessonTypes() == null || request.lessonTypes().isEmpty()
+                || request.lessonTypes().size() > 3 || request.lessonTypes().stream().anyMatch(Objects::isNull)) {
+            throw new ReportValidationException("Выбери предмет и типы занятий");
+        }
+        long groupId = requestContext.getGroupId();
+        SemesterResponse semester = requireActiveSemester(academicGrpcClient.getActiveSemester());
+        LocalDate from = parseUpstreamDate(semester.getDateFrom(), "semester date_from");
+        LocalDate end = parseUpstreamDate(semester.getDateTo(), "semester date_to");
+        if (end.isBefore(from)) throw new AcademicServiceUnavailableException("Некорректный период семестра");
+        LocalDate to = mondayOf(LocalDate.now(clock)).plusDays(6);
+        if (to.isAfter(end)) to = end;
+        if (to.isBefore(from)) throw new ReportValidationException("Семестр ещё не начался");
+        var subject = academicGrpcClient.getSubjectDetailsByIds(List.of(request.subjectId())).get(request.subjectId());
+        if (subject == null || subject.groupId() != groupId) throw new AccessDeniedException("Предмет не принадлежит твоей группе");
+        if (subject.name() == null || subject.name().isBlank() || subject.lessonTypes().isEmpty()) {
+            throw new AcademicServiceUnavailableException("Не получены типы выбранного предмета");
+        }
+        List<String> types = request.lessonTypes().stream().map(HeadmanWeeklyReportService::normalizeType).distinct().sorted().toList();
+        Set<String> actual = subject.lessonTypes().stream().map(HeadmanWeeklyReportService::normalizeType)
+                .collect(java.util.stream.Collectors.toSet());
+        if (!actual.containsAll(types) || types.stream().anyMatch(type -> !Set.of("lecture", "practice", "lab").contains(type))) {
+            throw new ReportValidationException("Выбери существующие типы занятий предмета");
+        }
+        Set<LocalDate> weeks = request.weekStarts() == null || request.weekStarts().isEmpty() ? Set.of()
+                : Set.copyOf(normalizeWeekStarts(request.weekStarts(), semester, LocalDate.now(clock)));
+        GroupResponse group = academicGrpcClient.getGroup(groupId);
+        if (group == null || group.getId() != groupId || group.getName().isBlank()) {
+            throw new AcademicServiceUnavailableException("Не получены данные группы");
+        }
+        var model = buildPeriodModel(groupId, group.getName(), semester, from, end, from, to,
+                clock.instant(), request.subjectId(), types, weeks, true);
+        return new TeacherAttendanceExportModel(new Context(ReportKind.HEADMAN_SUBJECT_JOURNAL,
+                semester.getId(), semester.getName(), groupId, group.getName(), request.subjectId(), subject.name(),
+                from, to, types.stream().map(HeadmanWeeklyReportService::typeLabel).toList(), clock.instant(),
+                weeks == null ? List.of() : weeks.stream().sorted().toList()),
+                model.columns(), model.rows());
+    }
+
+    private static String normalizeType(String value) {
+        String type = normalize(value);
+        return "laboratory".equals(type) ? "lab" : type;
+    }
+
     private TeacherAttendanceExportModel buildSingleWeekModel(long groupId,
                                                                String groupName,
                                                                SemesterResponse semester,
@@ -209,11 +284,22 @@ public class HeadmanWeeklyReportService {
                                                                LocalDate semesterEnd,
                                                                LocalDate weekStart,
                                                                java.time.Instant generatedAt) {
-        LocalDate weekEnd = weekStart.plusDays(6);
+        return buildPeriodModel(groupId, groupName, semester, semesterStart, semesterEnd, weekStart,
+                weekStart.plusDays(6), generatedAt, null, List.of(), Set.of(), false);
+    }
+
+    private TeacherAttendanceExportModel buildPeriodModel(long groupId, String groupName,
+            SemesterResponse semester, LocalDate semesterStart, LocalDate semesterEnd,
+            LocalDate weekStart, LocalDate weekEnd, java.time.Instant generatedAt,
+            Long subjectId, List<String> types, Set<LocalDate> weeks, boolean includeCancelled) {
         LessonsResponse response = scheduleGrpcClient.getLessonsByGroup(
                 groupId, semester.getId(), weekStart.toString(), weekEnd.toString());
         List<WeeklyLesson> lessons = validateLessons(response, groupId, semester.getId(),
-                semesterStart, semesterEnd, weekStart, weekEnd);
+                semesterStart, semesterEnd, weekStart, weekEnd, includeCancelled).stream()
+                .filter(value -> subjectId == null || value.lesson().getSubjectId() == subjectId)
+                .filter(value -> types.isEmpty() || types.contains(normalizeType(value.lesson().getLessonType())))
+                .filter(value -> weeks.isEmpty() || weeks.contains(mondayOf(value.date())))
+                .toList();
         Map<Long, AcademicGrpcClient.SubjectDetails> subjects = academicGrpcClient.getSubjectDetailsByIds(
                 lessons.stream().map(lesson -> lesson.lesson().getSubjectId()).distinct().toList());
         List<Column> columns = lessons.stream().map(lesson -> {
@@ -287,7 +373,8 @@ public class HeadmanWeeklyReportService {
                     for (WeeklyLesson lesson : lessons) {
                         long lessonId = lesson.lesson().getId();
                         if (!membersByLesson.getOrDefault(lessonId, Set.of()).contains(student.studentId)
-                                || !lesson.timing().hasStarted(generatedAt)) continue;
+                                || !lesson.timing().hasStarted(generatedAt)
+                                || "CANCELLED".equals(lesson.timing().status())) continue;
                         AttendanceRecord mark = attendance.get(new AttendanceKey(lessonId, student.studentId));
                         if (mark == null || mark.status() == null || mark.status() == AttendanceStatus.CANCELLED) continue;
                         cells.put(lessonId, new Cell(symbolFor(mark.status()), mark.status(), true));
@@ -310,7 +397,7 @@ public class HeadmanWeeklyReportService {
                                                LocalDate semesterStart,
                                                LocalDate semesterEnd,
                                                LocalDate weekStart,
-                                               LocalDate weekEnd) {
+                                               LocalDate weekEnd, boolean includeCancelled) {
         if (response == null) {
             throw new AcademicServiceUnavailableException("Schedule returned no weekly lesson response");
         }
@@ -332,7 +419,7 @@ public class HeadmanWeeklyReportService {
                     || timing.date().isBefore(semesterStart) || timing.date().isAfter(semesterEnd)) {
                 throw new AcademicServiceUnavailableException("Schedule returned a lesson outside the selected report context");
             }
-            if ("CANCELLED".equals(timing.status())) continue;
+            if (!includeCancelled && "CANCELLED".equals(timing.status())) continue;
             result.add(new WeeklyLesson(lesson, timing, timing.date(), LocalTime.parse(lesson.getStartTime())));
         }
         result.sort(Comparator.comparing(WeeklyLesson::date)

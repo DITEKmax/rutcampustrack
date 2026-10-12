@@ -58,6 +58,18 @@ class ReportControllerMvcTest {
         verify(groupCompositionService).export("html");
     }
 
+    @Test
+    void headmanSubjectJournalCatalogueExposesTheAcceptedFiveFormats() throws Exception {
+        mockMvc.perform(get("/attendance/reports/headman/subject-journal/formats"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")))
+                .andExpect(jsonPath("$[0].code").value("docx"))
+                .andExpect(jsonPath("$[1].code").value("pdf"))
+                .andExpect(jsonPath("$[2].code").value("png"))
+                .andExpect(jsonPath("$[3].code").value("html"))
+                .andExpect(jsonPath("$[4].code").value("xlsx"));
+    }
+
     @Autowired
     private MockMvc mockMvc;
 

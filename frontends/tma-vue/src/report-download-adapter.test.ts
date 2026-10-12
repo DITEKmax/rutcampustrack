@@ -61,6 +61,10 @@ function fakeTicketIssuer(value = ticket()): ReportDownloadTicketIssuer {
   }
 }
 
+function readyJob(filename = 'teacher-journal.pdf') {
+  return { jobId: '00000000-0000-4000-8000-000000000001', state: 'ready', suggestedFilename: filename, expiresAt: new Date(Date.now() + 60_000).toISOString(), errorCode: null }
+}
+
 function fakeHost(
   accepted: boolean,
   supportsFileDownload = true,
@@ -108,7 +112,7 @@ describe('report ticket boundary', () => {
 
   it('posts only the typed selector with the current bearer and validates the ticket response', async () => {
     const request = teacherJournalRequest()
-    const fetcher = vi.fn<typeof fetch>(async () => new Response(JSON.stringify(ticket()), {
+    const fetcher = vi.fn<typeof fetch>(async (input) => new Response(JSON.stringify(String(input).endsWith('/ticket') ? ticket() : readyJob()), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     }))
@@ -122,11 +126,12 @@ describe('report ticket boundary', () => {
     const [path, init] = fetcher.mock.calls[0]!
     const body = JSON.parse(String(init?.body)) as Record<string, unknown>
 
-    expect(path).toBe('/api/auth/report-download-tickets')
+    expect(path).toBe('/api/auth/export-jobs')
     expect(init?.method).toBe('POST')
     expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer synthetic-bearer')
-    expect(Object.keys(body).sort()).toEqual(['kind', 'teacherJournal'])
-    expect(body).toEqual(request)
+    expect(Object.keys(body).sort()).toEqual(['report', 'requestId'])
+    expect(body.report).toEqual(request)
+    expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/)
     expect(issued.downloadPath).toMatch(/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/)
     expect(JSON.stringify(body)).not.toContain('synthetic-bearer')
   })
@@ -461,9 +466,9 @@ describe('Telegram download adapter', () => {
       currentGeneration: () => generation,
       accessTokenFor: () => 'synthetic-bearer',
       refreshFor: async () => undefined,
-    }, async () => {
+    }, async (_input) => {
       generation = 2
-      return new Response(JSON.stringify(ticket()), { status: 200 })
+      return new Response(JSON.stringify(String(_input).endsWith('/ticket') ? ticket() : readyJob()), { status: 200 })
     })
     const port = createTelegramReportDownloadPort(client, host, () => 'https://rutcampustrack.example')
 
@@ -481,7 +486,7 @@ describe('Telegram download adapter', () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const authorization = new Headers(init?.headers).get('Authorization')
       if (authorization === 'Bearer expired-synthetic-bearer') return new Response(null, { status: 401 })
-      return new Response(JSON.stringify(ticket()), { status: 200 })
+      return new Response(JSON.stringify(String(_input).endsWith('/ticket') ? ticket() : readyJob()), { status: 200 })
     })
     const client = createGenerationBoundReportDownloadClient({
       currentGeneration: () => generation,
@@ -494,7 +499,7 @@ describe('Telegram download adapter', () => {
     })
 
     expect(refreshFor).toHaveBeenCalledTimes(1)
-    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(fetcher).toHaveBeenCalledTimes(3)
     expect(new Headers(fetcher.mock.calls[0]![1]?.headers).get('Authorization'))
       .toBe('Bearer expired-synthetic-bearer')
     expect(new Headers(fetcher.mock.calls[1]![1]?.headers).get('Authorization'))

@@ -1123,12 +1123,21 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     public void getSubjectsByIds(SubjectsByIdsRequest request, StreamObserver<SubjectsByIdsResponse> responseObserver) {
         List<Long> ids = request.getSubjectIdsList();
         List<Subject> subjects = subjectRepository.findAllById(ids);
+        java.util.Map<Long, java.util.List<String>> types = new java.util.HashMap<>();
+        if (!subjects.isEmpty()) {
+            for (Object[] row : subjectRepository.findLessonTypeCodes(subjects.stream().map(Subject::getId).toList())) {
+                types.computeIfAbsent(((Number) row[0]).longValue(), ignored -> new java.util.ArrayList<>())
+                        .add(row[1].toString().toLowerCase(Locale.ROOT));
+            }
+        }
 
         List<SubjectInfo> subjectInfos = subjects.stream()
                 .map(s -> SubjectInfo.newBuilder()
                         .setSubjectId(s.getId())
                         .setSubjectName(s.getName())
                         .setSubjectType(s.getType() != null ? s.getType().name().toLowerCase(Locale.ROOT) : "")
+                        .setGroupId(s.getGroupId())
+                        .addAllLessonTypes(types.getOrDefault(s.getId(), java.util.List.of()))
                         .build())
                 .toList();
 

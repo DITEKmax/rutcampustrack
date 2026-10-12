@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { exportStateLabel, reportDownloadAcceptedMessage } from '../../shared/report-download-client'
+import ExportButton from '../../shared/components/ExportButton.vue'
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
@@ -633,13 +635,13 @@ async function exportCurrent(): Promise<void> {
         && !props.offline && canView.value && canExport.value
         && selectedFormat.value === format.code
         && JSON.stringify(queryForCurrentBlock(false)) === querySnapshot
-      const result = await reportDownload.download(toHeadmanStatsReportRequest(query, format.code), isCurrent)
+      const result = await reportDownload.download(toHeadmanStatsReportRequest(query, format.code), isCurrent, state => { if (isCurrent()) exportStatus.value = exportStateLabel(state) })
       if (result === 'stale' || !isCurrent()) return
       if (result === 'unsupported') {
         error.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
       } else {
         exportStatus.value = result === 'accepted'
-          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
+          ? reportDownloadAcceptedMessage(reportDownload)
           : 'Скачивание отменено.'
       }
       return
@@ -687,13 +689,13 @@ async function exportTrend(formatCode: HeadmanStatsTrendFormat['code']): Promise
         && !props.offline && canView.value && !denied.value
         && key === currentTrendKey.value
         && JSON.stringify(currentTrendQuery.value) === querySnapshot
-      const result = await reportDownload.download(toHeadmanStatsTrendReportRequest(query, format.code), isCurrent)
+      const result = await reportDownload.download(toHeadmanStatsTrendReportRequest(query, format.code), isCurrent, state => { if (isCurrent()) trendExportStatus.value = exportStateLabel(state) })
       if (result === 'stale' || !isCurrent()) return
       if (result === 'unsupported') {
         trendExportError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
       } else {
         trendExportStatus.value = result === 'accepted'
-          ? 'Telegram принял запрос на скачивание графика; проверь завершение в Telegram.'
+          ? reportDownloadAcceptedMessage(reportDownload)
           : 'Скачивание графика отменено.'
       }
       return
@@ -1295,6 +1297,17 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
         </template>
       </template>
       <template v-else-if="statsTool === 'export'">
+        <ExportButton
+          v-if="api && selectedSubjectId !== null && block === 'subject'"
+          label="Журнал по предмету"
+          :port="reportDownload"
+          :formats="() => api!.subjectJournalFormats()"
+          :weeks="() => api!.subjectJournalWeeks()"
+          :request="(format, weekStarts) => ({ kind: 'HEADMAN_SUBJECT_JOURNAL', headmanSubjectJournal: { subjectId: selectedSubjectId!, lessonTypes: [...selectedTypes], ...(weekStarts ? { weekStarts } : {}), format } })"
+          :scope-key="JSON.stringify([selectedSubjectId, selectedTypes, semesterId])"
+          :disabled="offline || !canView || selectedTypes.length === 0 || semesterId !== semesterCatalog?.activeSemesterId"
+          @error="emit('error', $event)"
+        />
         <div class="headman-stats__download">
           <HeadmanStatsSelect
             label="Формат выгрузки"

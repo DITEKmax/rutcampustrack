@@ -22,7 +22,8 @@ public record StoredReportDownloadTicket(
         boolean headman,
         boolean readOnly,
         IssueReportDownloadTicketRequest report,
-        Instant expiresAt
+        Instant expiresAt,
+        UUID exportJobId
 ) {
     public static final int CURRENT_SCHEMA_VERSION = 1;
 
@@ -45,6 +46,13 @@ public record StoredReportDownloadTicket(
             throw new IllegalArgumentException("ticket report parameters are invalid");
         }
         Objects.requireNonNull(expiresAt, "expiresAt");
+    }
+
+    public StoredReportDownloadTicket(int schemaVersion, long userId, UUID sessionId,
+            long sessionVersion, long rolesVersion, AuthRole role, RoleStatus status, Long groupId,
+            boolean headman, boolean readOnly, IssueReportDownloadTicketRequest report, Instant expiresAt) {
+        this(schemaVersion, userId, sessionId, sessionVersion, rolesVersion, role, status, groupId,
+                headman, readOnly, report, expiresAt, null);
     }
 
     public SessionPrincipal principal() {

@@ -42,6 +42,13 @@ import java.time.LocalDate;
 @Tag(name = "Reports", description = "Attendance reports")
 @RequestMapping("/attendance/reports")
 public interface ReportApi {
+    @GetMapping("/headman/subject-journal/formats")
+    ResponseEntity<java.util.List<ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportFormatOption>> getHeadmanSubjectJournalFormats();
+
+    @PostMapping("/headman/subject-journal/export")
+    ResponseEntity<byte[]> exportHeadmanSubjectJournal(@Valid @RequestBody
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest request);
+
     @GetMapping("/headman/stats/semesters")
     ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSemestersResponse> getHeadmanStatsSemesters();
 

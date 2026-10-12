@@ -57,6 +57,8 @@ import {
   createFixtureTransport,
   createGenerationBoundNotificationsV2Api,
   createGenerationBoundNotificationsRealtime,
+  createGenerationBoundReportDownloadClient,
+  createBrowserReportDownloadPort,
   createMobileTheme,
   createMobileThemePreference,
   studentFeatureScope,
@@ -122,6 +124,14 @@ const pwaFetcher = createPwaFetcher()
 const requestFetcher: typeof fetch = fixtureTransport ?? pwaFetcher
 const push = createPushController(createBrowserPushPort(!fixtureMode && import.meta.env.MODE === 'production', import.meta.env.BASE_URL), requestFetcher)
 const auth = usePwaAuth({ fetcher: requestFetcher, beforeClear: () => push.invalidate() })
+const reportDownload = computed(() => createBrowserReportDownloadPort(createGenerationBoundReportDownloadClient({
+  currentGeneration: () => auth.currentGeneration(),
+  accessTokenFor: generation => {
+    if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError()
+    return auth.accessToken.value
+  },
+  refreshFor: generation => auth.refreshFor(generation),
+}, currentFetcher()), currentFetcher()))
 const mapClient = new CampusMapClient({
   accessToken: () => auth.accessToken.value,
   currentGeneration: () => auth.currentGeneration(),
@@ -1748,6 +1758,7 @@ onBeforeUnmount(() => {
     v-else-if="headmanViewVisible"
     ref="headmanNotificationOwner"
     :key="`headman-${ownerRevision}`"
+    :report-download="reportDownload"
     :on-notifications="openNotifications"
     :unread-count="notificationUnread.count"
     :api="headmanApi"
@@ -1777,6 +1788,7 @@ onBeforeUnmount(() => {
     v-else-if="teacherViewVisible"
     ref="teacherNotificationOwner"
     :key="`teacher-${ownerRevision}`"
+    :report-download="reportDownload"
     :on-notifications="openNotifications"
     :unread-count="notificationUnread.count"
     :api="teacherApi"
@@ -1893,6 +1905,7 @@ onBeforeUnmount(() => {
   >
     <AdminUsersScreen
       ref="adminTaskOwner"
+      :report-download="reportDownload"
       :access-client="adminAccessActionsApi"
       :authority="adminAuthority"
       :client="adminUsersApi"
@@ -1912,6 +1925,7 @@ onBeforeUnmount(() => {
   >
     <AdminGroupsScreen
       ref="adminTaskOwner"
+      :report-download="reportDownload"
       :authority="adminAuthority"
       :client="adminGroupsApi"
       theme="dark"
@@ -1987,6 +2001,7 @@ onBeforeUnmount(() => {
     v-else-if="studentViewVisible"
     ref="studentNotificationOwner"
     :key="ownerKey"
+    :report-download="reportDownload"
     :owner-key="ownerKey"
     :api="api"
     :scope="scope"

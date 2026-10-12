@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportButton from '../../shared/components/ExportButton.vue'
+import type { ReportDownloadPort, ReportDownloadFormat, ReportDownloadTicketRequest } from '../../shared/report-download-client'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { adminHasPermission, type AdminAccessProfile } from '../admin-access/admin-access-client'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
@@ -19,11 +21,13 @@ import {
 import './admin-groups-screen.pcss'
 
 const props = withDefaults(defineProps<{
+  reportDownload?: ReportDownloadPort | null
   client: AdminGroupsClient
   authority: AdminAccessProfile | null
   theme?: 'dark' | 'light'
 }>(), {
   theme: 'dark',
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -56,6 +60,12 @@ const sortOptions: readonly { value: AdminGroupSort | null; label: string }[] = 
   { value: 'currentCourse,asc', label: 'По курсу: сначала младшие' }, { value: 'currentCourse,desc', label: 'По курсу: сначала старшие' },
   { value: 'programType,asc', label: 'По типу программы: 1–9' }, { value: 'programType,desc', label: 'По типу программы: 9–1' },
 ]
+const exportScope = computed(() => JSON.stringify([status.value, search.value, course.value, programType.value, registrySort.value, props.authority]))
+function exportRequest(format: ReportDownloadFormat): ReportDownloadTicketRequest {
+  const program = adminGroupProgramTypes.find(item => item.digit === programType.value)
+  const sort = registrySort.value?.split(',')
+  return { kind: 'ADMIN_GROUPS', adminGroups: { status: status.value, ...(search.value.trim() ? { search: search.value.trim() } : {}), ...(course.value === null ? {} : { course: course.value }), ...(program ? { studyMode: program.studyMode, educationLevel: program.educationLevel } : {}), ...(sort ? { sorts: [{ field: sort[0]!, descending: sort[1] === 'desc' }] } : {}), format } }
+}
 function openFilters(): void { filterStatus.value = status.value; filterCourse.value = course.value; filterProgramType.value = programType.value; filterSort.value = registrySort.value; expandedFilter.value = null; filtersVisible.value = true }
 function applyFilters(): void { invalidateRestoreForScopeChange(); course.value = filterCourse.value; programType.value = filterProgramType.value; registrySort.value = filterSort.value; status.value = filterStatus.value; page.value = 0; expandedGroupId.value = null; filtersVisible.value = false; void refresh() }
 function resetFilters(): void { course.value = null; programType.value = null; registrySort.value = null; search.value = ''; status.value = 'ACTIVE'; submitSearch() }
@@ -1165,6 +1175,14 @@ onBeforeUnmount(() => {
           ×
         </button>
       </form>
+      <ExportButton
+        :port="reportDownload"
+        :formats="() => client.exportFormats()"
+        :request="exportRequest"
+        :scope-key="exportScope"
+        :disabled="!canView"
+        @error="emit('ownerError', $event)"
+      />
       <div class="admin-groups-filterbar">
         <button
           type="button"

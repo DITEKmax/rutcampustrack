@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
@@ -12,6 +13,7 @@ import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketResponse;
 import ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException;
+import ru.rutcampustrack.auth.export.RegistryExportAdmission;
 import ru.rutcampustrack.auth.grpc.AcademicAssistantPermissionClient;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.session.AuthSessionException;
@@ -19,6 +21,7 @@ import ru.rutcampustrack.auth.session.SessionAdmissionException;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -50,6 +53,7 @@ public final class ReportDownloadTicketService {
     private final InternalIssuerProperties issuerProperties;
     private final ObjectMapper objectMapper;
     private final AcademicAssistantPermissionClient academicAssistantPermissionClient;
+    private final AdminAccessJdbcAuthority admins;
     private final Clock clock;
     private final SecureRandom secureRandom;
 
@@ -60,10 +64,12 @@ public final class ReportDownloadTicketService {
             JwtService jwtService,
             InternalIssuerProperties issuerProperties,
             ObjectMapper objectMapper,
-            AcademicAssistantPermissionClient academicAssistantPermissionClient
+            AcademicAssistantPermissionClient academicAssistantPermissionClient,
+            JdbcTemplate jdbc
     ) {
         this(ticketStore, authService, jwtService, issuerProperties, objectMapper,
-                Clock.systemUTC(), new SecureRandom(), academicAssistantPermissionClient);
+                Clock.systemUTC(), new SecureRandom(), academicAssistantPermissionClient,
+                new AdminAccessJdbcAuthority(jdbc));
     }
 
     ReportDownloadTicketService(
@@ -74,7 +80,8 @@ public final class ReportDownloadTicketService {
             ObjectMapper objectMapper,
             Clock clock,
             SecureRandom secureRandom,
-            AcademicAssistantPermissionClient academicAssistantPermissionClient
+            AcademicAssistantPermissionClient academicAssistantPermissionClient,
+            AdminAccessJdbcAuthority admins
     ) {
         this.ticketStore = Objects.requireNonNull(ticketStore, "ticketStore");
         this.authService = Objects.requireNonNull(authService, "authService");
@@ -82,6 +89,7 @@ public final class ReportDownloadTicketService {
         this.issuerProperties = Objects.requireNonNull(issuerProperties, "issuerProperties");
         this.academicAssistantPermissionClient = Objects.requireNonNull(
                 academicAssistantPermissionClient, "academicAssistantPermissionClient");
+        this.admins = Objects.requireNonNull(admins, "admins");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper").copy()
                 .registerModule(new JavaTimeModule())
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -94,6 +102,16 @@ public final class ReportDownloadTicketService {
             SessionPrincipal principal,
             IssueReportDownloadTicketRequest report
     ) {
+        return issueReadyJob(principal, report, null);
+    }
+
+    public ReportDownloadTicketResponse issueReadyJob(SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report, java.util.UUID exportJobId) {
+        return issueReadyJob(principal, report, exportJobId, null);
+    }
+
+    public ReportDownloadTicketResponse issueReadyJob(SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report, java.util.UUID exportJobId, Instant jobExpiresAt) {
         Objects.requireNonNull(principal, "principal");
         if (report == null || !report.isParametersConsistent()) {
             throw new InvalidReportDownloadTicketRequestException();
@@ -103,6 +121,7 @@ public final class ReportDownloadTicketService {
         if (principal.isBootstrap() || selectedRole == null || !selectedRole.isSelectable()) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
         }
+        RegistryExportAdmission.requireCurrent(admins, principal, report.kind());
         if (report.kind() == ReportDownloadKind.HEADMAN_STATS_TREND) {
             requireCurrentViewStats(snapshot, selectedRole);
         }
@@ -116,17 +135,21 @@ public final class ReportDownloadTicketService {
             throw new ReportDownloadTicketRateLimitException();
         }
 
-        Instant expiresAt = clock.instant().plus(TICKET_TTL);
+        Instant now = clock.instant();
+        Instant defaultExpiry = now.plus(TICKET_TTL);
+        Instant expiresAt = jobExpiresAt != null && jobExpiresAt.isBefore(defaultExpiry) ? jobExpiresAt : defaultExpiry;
+        if (!now.isBefore(expiresAt)) throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
+        Duration storeTtl = Duration.between(now, expiresAt);
         StoredReportDownloadTicket stored = new StoredReportDownloadTicket(
                 StoredReportDownloadTicket.CURRENT_SCHEMA_VERSION,
                 snapshot.userId(), snapshot.sessionId(), snapshot.sessionVersion(), snapshot.rolesVersion(),
                 selectedRole.role(), selectedRole.status(), selectedRole.groupId(),
-                selectedRole.role() == AuthRole.HEADMAN, selectedRole.isReadOnly(), report, expiresAt);
+                selectedRole.role() == AuthRole.HEADMAN, selectedRole.isReadOnly(), report, expiresAt, exportJobId);
         String payload = serialize(stored);
         for (int attempt = 0; attempt < TOKEN_COLLISION_ATTEMPTS; attempt++) {
             String ticket = randomTicket();
             String ticketDigest = digest(ticket);
-            if (storeCall(() -> ticketStore.putIfAbsent(ticketDigest, payload, TICKET_TTL))) {
+            if (storeCall(() -> ticketStore.putIfAbsent(ticketDigest, payload, storeTtl))) {
                 return new ReportDownloadTicketResponse(
                         "/api/report-download/" + ticket, expiresAt, report.suggestedFilename());
             }
@@ -182,6 +205,7 @@ public final class ReportDownloadTicketService {
 
         // AuthService.admit performs the same selected-identity and version checks used by live auth routes.
         SessionSnapshot snapshot = authService.admit(stored.principal());
+        RegistryExportAdmission.requireCurrent(admins, stored.principal(), stored.report().kind());
         if (stored.report().kind() == ReportDownloadKind.HEADMAN_GROUP_COMPOSITION) {
             requireCurrentHeadman(snapshot.activeRole());
         }
@@ -214,7 +238,40 @@ public final class ReportDownloadTicketService {
         }
         AuthAdmissionResponse admission = admission(snapshot, internalToken, internalExpiry);
         return Optional.of(new ReportDownloadTicketRedemptionResponse(
-                admission, stored.expiresAt(), reportBindingHash, stored.report()));
+                admission, stored.expiresAt(), reportBindingHash, stored.report(), stored.exportJobId()));
+    }
+
+    /** Remints report authority for a durable queue job without retaining bearer credentials. */
+    public ReportDownloadTicketRedemptionResponse authorizeJob(SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report, Instant expiresAt) {
+        if (report == null || !report.isParametersConsistent()) throw new InvalidReportDownloadTicketRequestException();
+        SessionSnapshot snapshot = authService.admit(principal);
+        RoleGrant role = snapshot.activeRole();
+        if (principal.isBootstrap() || role == null || !role.isSelectable()) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
+        }
+        RegistryExportAdmission.requireCurrent(admins, principal, report.kind());
+        switch (report.kind()) {
+            case TEACHER_JOURNAL, TEACHER_STATS -> {
+                if (role.role() != AuthRole.TEACHER) throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+            }
+            case HEADMAN_GROUP_COMPOSITION -> requireCurrentHeadman(role);
+            case HEADMAN_WEEKLY_CURRENT, HEADMAN_WEEKLY_SELECTED, HEADMAN_STATS, HEADMAN_STATS_TREND, HEADMAN_SUBJECT_JOURNAL -> {
+                if (role.role() != AuthRole.HEADMAN && role.role() != AuthRole.STUDENT) throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+                requireCurrentViewStats(snapshot, role);
+            }
+            case ADMIN_USERS, ADMIN_GROUPS -> {
+                if (role.role() != AuthRole.ADMIN) throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+            }
+        }
+        Instant now = clock.instant();
+        Instant issuedAt = now.truncatedTo(ChronoUnit.SECONDS);
+        Instant capabilityExpiry = expiresAt.isBefore(now.plus(TICKET_TTL)) ? expiresAt : now.plus(TICKET_TTL);
+        Instant expiry = min(capabilityExpiry, snapshot.refreshExpiresAt(), now.plusSeconds(issuerProperties.getTokenTtlSeconds())).truncatedTo(ChronoUnit.SECONDS);
+        if (!now.isBefore(expiry)) throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
+        String hash = report.bindingHash();
+        String token = jwtService.generateInternalReportDownloadToken(snapshot, issuedAt, expiry, hash, capabilityExpiry);
+        return new ReportDownloadTicketRedemptionResponse(admission(snapshot, token, expiry), capabilityExpiry, hash, report);
     }
 
     private String serialize(StoredReportDownloadTicket stored) {

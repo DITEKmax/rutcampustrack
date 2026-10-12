@@ -24,6 +24,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
+import ru.rutcampustrack.auth.dto.ExportJobModels;
+import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 
 /**
  * Per-request client for the auth authority's live session admission endpoint.
@@ -132,6 +137,66 @@ public class InternalJwtIssuerClient {
                         error.getClass().getSimpleName()));
     }
 
+    public Mono<Optional<ExportJobModels.Claim>> claimExport() {
+        return webClient.post().uri("/internal/export-jobs/claim").header(SECRET_HEADER, properties.getSecret())
+                .exchangeToMono(response -> {
+                    if (response.statusCode().value() == 204) return response.releaseBody().thenReturn(Optional.<ExportJobModels.Claim>empty());
+                    if (response.statusCode().value() != 200) return response.releaseBody().then(Mono.error(unavailable()));
+                    return boundedBody(response).flatMap(body -> {
+                        try {
+                            JsonNode tree = reportTicketObjectMapper.readTree(body);
+                            validateReportTicketWire(tree.get("authority"));
+                            ExportJobModels.Claim claim = reportTicketObjectMapper.treeToValue(tree, ExportJobModels.Claim.class);
+                            if (claim.jobId() == null || claim.leaseId() == null || claim.authority() == null) return Mono.error(unavailable());
+                            return Mono.just(Optional.of(claim));
+                        } catch (Exception malformed) { return Mono.error(unavailable()); }
+                    });
+                }).timeout(Duration.ofMillis(properties.getTimeoutMillis()));
+    }
+
+    public Mono<Void> completeExport(UUID id, ExportJobModels.Complete result) {
+        return exportMutation(id, "complete", result, 200);
+    }
+
+    public Mono<Void> failExport(UUID id, ExportJobModels.Fail failure) {
+        return exportMutation(id, "fail", failure, 204);
+    }
+
+    private Mono<Void> exportMutation(UUID id, String action, Object body, int success) {
+        return webClient.post().uri("/internal/export-jobs/{id}/" + action, id)
+                .header(SECRET_HEADER, properties.getSecret()).contentType(MediaType.APPLICATION_JSON).bodyValue(body)
+                .exchangeToMono(response -> {
+                    int status = response.statusCode().value();
+                    return response.releaseBody().then(status == success ? Mono.<Void>empty() : Mono.error(exportError(status)));
+                }).timeout(Duration.ofMillis(properties.getTimeoutMillis()));
+    }
+
+    /** Job capabilities serve the committed file; they never repeat generation. */
+    public Mono<byte[]> exportFile(UUID id, AuthAdmissionResponse actor, String expectedMediaType) {
+        var identity = new WsSessionAdmissionRequest(Long.parseLong(actor.userId()), actor.sessionId(),
+                Long.parseLong(actor.sessionVersion()), Long.parseLong(actor.rolesVersion()), actor.role(), actor.status(),
+                actor.groupId() == null ? null : Long.parseLong(actor.groupId()), actor.isHeadman(), actor.readOnly());
+        return webClient.post().uri("/internal/export-jobs/{id}/file", id).header(SECRET_HEADER, properties.getSecret())
+                .contentType(MediaType.APPLICATION_JSON).bodyValue(identity).exchangeToMono(response -> {
+                    if (response.statusCode().value() != 200) return response.releaseBody().then(Mono.error(exportError(response.statusCode().value())));
+                    MediaType actual = response.headers().contentType().orElse(null);
+                    if (actual == null || !MediaType.parseMediaType(expectedMediaType).isCompatibleWith(actual)
+                            || response.headers().contentLength().orElse(0) > 20 * 1024 * 1024) return response.releaseBody().then(Mono.error(unavailable()));
+                    return DataBufferUtils.join(response.bodyToFlux(DataBuffer.class), 20 * 1024 * 1024)
+                            .switchIfEmpty(Mono.error(unavailable())).flatMap(buffer -> {
+                                try {
+                                    if (buffer.readableByteCount() < 1) return Mono.error(unavailable());
+                                    byte[] content = new byte[buffer.readableByteCount()]; buffer.read(content); return Mono.just(content);
+                                } finally { DataBufferUtils.release(buffer); }
+                            });
+                }).timeout(Duration.ofMillis(properties.getTimeoutMillis()));
+    }
+
+    private static RuntimeException exportError(int status) {
+        if (status == 401 || status == 403) return new InternalAdmissionDeniedException(HttpStatus.valueOf(status), "INVALID_SESSION");
+        return unavailable();
+    }
+
     private Mono<Optional<ReportDownloadTicketRedemptionResponse>> decodeReportTicket(ClientResponse response) {
         return boundedBody(response)
                 .flatMap(body -> {
@@ -179,6 +244,10 @@ public class InternalJwtIssuerClient {
         if (bindingHash == null || !bindingHash.isTextual()
                 || !bindingHash.textValue().matches("[0-9a-f]{64}")) {
             throw new IllegalArgumentException("reportBindingHash must be a SHA-256 hex digest");
+        }
+        JsonNode job = root.get("exportJobId");
+        if (job != null && !job.isNull() && (!job.isTextual() || !UUID.fromString(job.textValue()).toString().equals(job.textValue()))) {
+            throw new IllegalArgumentException("export job id must be a canonical UUID");
         }
         JsonNode report = root.get("report");
         if (report == null || !report.isObject()) {

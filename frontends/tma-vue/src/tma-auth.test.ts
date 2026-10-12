@@ -164,6 +164,7 @@ describe('generation-bound report ticket session', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'expired-synthetic-bearer' }), { status: 200 }))
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'fresh-synthetic-bearer' }), { status: 200 }))
+      .mockResolvedValueOnce(Response.json({ jobId: '00000000-0000-4000-8000-000000000001', state: 'ready', expiresAt: new Date(Date.now() + 60_000).toISOString(), suggestedFilename: 'journal.pdf', errorCode: null }))
       .mockResolvedValueOnce(new Response(JSON.stringify({
         downloadPath: `/api/report-download/${'a'.repeat(43)}`,
         expiresAt: new Date(Date.now() + 60_000).toISOString(),
@@ -185,7 +186,7 @@ describe('generation-bound report ticket session', () => {
     const client = session.createReportDownloadClient(fetcher)
     await expect(client.issueTicket(request)).resolves.toMatchObject({ suggestedFilename: 'journal.pdf' })
 
-    expect(fetcher).toHaveBeenCalledTimes(4)
+    expect(fetcher).toHaveBeenCalledTimes(5)
     expect(fetcher.mock.calls[0]?.[0]).toBe('/api/auth/tma')
     expect(fetcher.mock.calls[2]?.[0]).toBe('/api/auth/tma')
     expect(new Headers(fetcher.mock.calls[1]?.[1]?.headers).get('Authorization'))

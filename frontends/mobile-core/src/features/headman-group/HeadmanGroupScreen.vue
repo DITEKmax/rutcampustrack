@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { exportStateLabel, reportDownloadAcceptedMessage } from '../../shared/report-download-client'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { HeadmanGroupApiError, type HeadmanAssistantPermission, type HeadmanAssistant, type HeadmanGroupApi, type HeadmanGroupMember, type HeadmanPermissionOption, type HeadmanRosterFormat } from './headman-group-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
@@ -93,13 +94,13 @@ async function downloadRoster(): Promise<void> {
     if (reportDownload) {
       const result = await reportDownload.download({
         kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format: format.code },
-      }, isCurrent)
+      }, isCurrent, state => { if (isCurrent()) rosterNotice.value = exportStateLabel(state) })
       if (result === 'stale' || !isCurrent()) return
       if (result === 'unsupported') {
         rosterError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
       } else {
         rosterNotice.value = result === 'accepted'
-          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.' : 'Скачивание отменено.'
+          ? reportDownloadAcceptedMessage(reportDownload) : 'Скачивание отменено.'
       }
       return
     }

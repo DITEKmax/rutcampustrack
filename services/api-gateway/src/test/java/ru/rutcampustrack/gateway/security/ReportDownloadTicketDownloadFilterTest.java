@@ -53,6 +53,69 @@ class ReportDownloadTicketDownloadFilterTest {
     private static final String TICKET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq";
     private static final String INTERNAL_TOKEN = "signed-short-lived-internal-token";
 
+    @Test
+    void readyJobCapabilityReadsCommittedBytesWithoutCallingAnyGenerator() {
+        var auth = mock(InternalJwtIssuerClient.class);
+        var verifier = mock(InternalJwtIssuerFilter.class);
+        var backend = mock(WebClient.class);
+        var original = redemption(rosterReport(ReportDownloadFormat.HTML));
+        UUID job = UUID.randomUUID();
+        var ready = new ReportDownloadTicketRedemptionResponse(original.admission(), original.ticketExpiresAt(),
+                original.reportBindingHash(), original.report(), job);
+        when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(ready)));
+        byte[] saved = "<html>committed</html>".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        when(auth.exportFile(job, ready.admission(), "text/html")).thenReturn(Mono.just(saved));
+        var filter = new ReportDownloadTicketDownloadFilter(auth, verifier, properties("http://127.0.0.1:1"),
+                allowedAttemptRateLimiter(), backend, backend, backend);
+        var exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET, false, null);
+        assertStatus(filter, exchange, HttpStatus.OK);
+        assertArrayEquals(saved, responseBytes(exchange));
+        verify(auth).exportFile(job, ready.admission(), "text/html");
+        verifyNoInteractions(backend);
+    }
+
+    @ParameterizedTest
+    @EnumSource(ReportDownloadFormat.class)
+    void registryWorkerDispatchBindsPrivateLeaseExactFiltersAndPrivilegeMetadata(ReportDownloadFormat format) {
+        WireMockServer academic = server(); academic.start();
+        try {
+            UUID job = UUID.randomUUID(), lease = UUID.randomUUID();
+            byte[] bytes = {1, 2, 3};
+            academic.stubFor(post(urlEqualTo("/academic/registry-exports/users"))
+                    .withHeader("X-Internal-Token", equalTo(INTERNAL_TOKEN))
+                    .withHeader("X-Export-Job-Id", equalTo(job.toString())).withHeader("X-Export-Job-Lease", equalTo(lease.toString()))
+                    .withHeader(HttpHeaders.AUTHORIZATION, absent()).withRequestBody(matchingJsonPath("$.role", equalTo("HEADMAN")))
+                    .withRequestBody(matchingJsonPath("$.search", equalTo("ЭК"))).withRequestBody(matchingJsonPath("$.format", equalTo(format.code())))
+                    .willReturn(aResponse().withStatus(200).withHeader(HttpHeaders.CONTENT_TYPE, format.mediaType())
+                            .withHeader("X-Export-Row-Count", "123").withHeader("X-Export-Requires-Full", "true").withBody(bytes)));
+            var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.ADMIN_USERS, null, null, null, null,
+                    null, null, null, null, new IssueReportDownloadTicketRequest.AdminUsersParameters("ЭК", "HEADMAN", null, "ACTIVE",
+                            List.of(new IssueReportDownloadTicketRequest.RegistrySort("id", true)), format), null);
+            var settings = properties(academic.baseUrl()); settings.setTimeoutMillis(30_000);
+            var filter = new ReportDownloadTicketDownloadFilter(mock(InternalJwtIssuerClient.class), mock(InternalJwtIssuerFilter.class), settings,
+                    allowedAttemptRateLimiter(), mock(WebClient.class), mock(WebClient.class), WebClient.builder().baseUrl(academic.baseUrl()).build());
+            var generated = filter.generate(redemption(report), job, lease).block();
+            assertArrayEquals(bytes, generated.content()); assertEquals(123, generated.rowCount()); assertTrue(generated.requiresFull());
+            academic.verify(postRequestedFor(urlEqualTo("/academic/registry-exports/users")));
+        } finally { academic.stop(); }
+    }
+
+    @Test
+    void missingRegistryPrivilegeMetadataNeverProducesAFile() {
+        WireMockServer academic = server(); academic.start();
+        try {
+            academic.stubFor(post(urlEqualTo("/academic/registry-exports/groups"))
+                    .willReturn(aResponse().withStatus(200).withHeader(HttpHeaders.CONTENT_TYPE, "text/html").withBody("safe")));
+            var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.ADMIN_GROUPS, null, null, null, null,
+                    null, null, null, null, null, new IssueReportDownloadTicketRequest.AdminGroupsParameters("DRAFT", null, null, null, null, null, ReportDownloadFormat.HTML));
+            var settings = properties(academic.baseUrl()); settings.setTimeoutMillis(30_000);
+            var filter = new ReportDownloadTicketDownloadFilter(mock(InternalJwtIssuerClient.class), mock(InternalJwtIssuerFilter.class), settings,
+                    allowedAttemptRateLimiter(), mock(WebClient.class), mock(WebClient.class), WebClient.builder().baseUrl(academic.baseUrl()).build());
+            StepVerifier.create(filter.generate(redemption(report), UUID.randomUUID(), UUID.randomUUID()))
+                    .expectErrorMatches(failure -> ReportDownloadTicketDownloadFilter.failureCode(failure).equals("GENERATION_FAILED")).verify();
+        } finally { academic.stop(); }
+    }
+
     @ParameterizedTest
     @EnumSource(ReportDownloadFormat.class)
     void rosterUsesOwnGroupAttendanceRouteAndBoundAttachmentForEveryFormat(ReportDownloadFormat format) {
@@ -517,9 +580,10 @@ class ReportDownloadTicketDownloadFilterTest {
     private static ReportDownloadTicketRedemptionResponse redemption(IssueReportDownloadTicketRequest report) {
         Instant expiry = Instant.now().plusSeconds(45).truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         boolean headman = report.kind().name().startsWith("HEADMAN");
+        boolean admin = report.kind().name().startsWith("ADMIN_");
         AuthAdmissionResponse admission = new AuthAdmissionResponse(INTERNAL_TOKEN, expiry,
                 "11111111-2222-4333-8444-555555555555", "17", "1", "1",
-                headman ? "HEADMAN" : "TEACHER", "ACTIVE", headman ? "31" : null,
+                headman ? "HEADMAN" : admin ? "ADMIN" : "TEACHER", "ACTIVE", headman ? "31" : null,
                 headman, false);
         return new ReportDownloadTicketRedemptionResponse(admission, expiry,
                 report.bindingHash(), report);

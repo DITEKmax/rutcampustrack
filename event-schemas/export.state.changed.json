@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "export.state.changed",
+  "description": "Private metadata hint for one export job and authenticated session. Consumers must recheck live job authority; this event never carries files, credentials or report contents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_type", "event_id", "event_version", "occurred_at", "trace_id", "source", "payload"],
+  "properties": {
+    "event_type": {"const": "export.state.changed"},
+    "event_id": {"$ref": "_common.json#/$defs/eventId"},
+    "event_version": {"const": 1},
+    "occurred_at": {"$ref": "_common.json#/$defs/occurredAt"},
+    "trace_id": {"$ref": "_common.json#/$defs/traceId"},
+    "source": {"const": "auth-service"},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id", "user_id", "session_id", "state"],
+      "properties": {
+        "job_id": {"type": "string", "format": "uuid"},
+        "user_id": {"type": "integer", "minimum": 1},
+        "session_id": {"type": "string", "format": "uuid"},
+        "state": {"enum": ["queued", "preparing", "ready", "error"]}
+      }
+    }
+  }
+}

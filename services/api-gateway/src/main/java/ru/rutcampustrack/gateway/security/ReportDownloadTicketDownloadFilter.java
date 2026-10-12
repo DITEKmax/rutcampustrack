@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.UUID;
 
 /** Handles only the exact one-segment bearer-free report download route. */
 @Component
@@ -54,6 +55,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
     private final ReportDownloadAttemptRateLimiter attemptRateLimiter;
     private final WebClient mobileBffClient;
     private final WebClient attendanceClient;
+    private final WebClient academicClient;
 
     @Autowired
     public ReportDownloadTicketDownloadFilter(
@@ -75,12 +77,20 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             WebClient mobileBffClient,
             WebClient attendanceClient
     ) {
+        this(authClient, tokenVerifier, properties, attemptRateLimiter, mobileBffClient, attendanceClient,
+                WebClient.builder().baseUrl(properties.getAcademicServiceUrl()).build());
+    }
+
+    ReportDownloadTicketDownloadFilter(InternalJwtIssuerClient authClient, InternalJwtIssuerFilter tokenVerifier,
+            ReportDownloadBackendProperties properties, ReportDownloadAttemptRateLimiter attemptRateLimiter,
+            WebClient mobileBffClient, WebClient attendanceClient, WebClient academicClient) {
         this.authClient = authClient;
         this.tokenVerifier = tokenVerifier;
         this.properties = properties;
         this.attemptRateLimiter = attemptRateLimiter;
         this.mobileBffClient = mobileBffClient;
         this.attendanceClient = attendanceClient;
+        this.academicClient = academicClient;
     }
 
     @Override
@@ -147,70 +157,77 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                 });
     }
 
-    private Mono<Void> download(ServerWebExchange exchange,
-                                ReportDownloadTicketRedemptionResponse redemption) {
-        final Dispatch dispatch;
-        try {
-            validateRedemption(redemption);
-            dispatch = dispatch(redemption);
-        } catch (RuntimeException exception) {
-            return writeProblem(exchange, HttpStatus.SERVICE_UNAVAILABLE,
-                    "Service Unavailable", "Report authority response is invalid");
+    private Mono<Void> download(ServerWebExchange exchange, ReportDownloadTicketRedemptionResponse redemption) {
+        if (redemption.exportJobId() != null) {
+            try { validateRedemption(redemption); }
+            catch (RuntimeException invalid) { return Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE)); }
+            return authClient.exportFile(redemption.exportJobId(), redemption.admission(), redemption.report().expectedMediaType())
+                    .flatMap(bytes -> writeReport(exchange, dispatch(redemption), bytes));
         }
-
-        WebClient client = dispatch.backend() == Backend.MOBILE_BFF ? mobileBffClient : attendanceClient;
-        WebClient.RequestBodySpec request = client.method(dispatch.method())
-                .uri(builder -> buildUri(builder, dispatch))
-                .header(INTERNAL_TOKEN_HEADER, redemption.admission().internalToken())
-                .accept(dispatch.backend() == Backend.MOBILE_BFF
-                        ? MediaType.ALL : MediaType.parseMediaType(dispatch.expectedMediaType()));
-        WebClient.RequestHeadersSpec<?> requestSpec = dispatch.body() == null
-                ? request
-                : request.contentType(MediaType.APPLICATION_JSON).bodyValue(dispatch.body());
-
-        return requestSpec.exchangeToMono(response -> handleDownstreamResponse(exchange, response, dispatch))
-                .timeout(Duration.ofMillis(properties.getTimeoutMillis()))
-                .onErrorMap(DataBufferLimitException.class, ignored ->
-                        new ReportDownloadResponseException(HttpStatus.PAYLOAD_TOO_LARGE))
-                .onErrorMap(error -> !(error instanceof ReportDownloadResponseException),
-                        error -> new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE, error));
+        return generate(redemption, null, null).flatMap(file -> writeReport(exchange, dispatch(redemption), file.content()));
     }
 
-    private Mono<Void> handleDownstreamResponse(ServerWebExchange exchange,
-                                                 ClientResponse response,
-                                                 Dispatch dispatch) {
-        if (!response.statusCode().is2xxSuccessful()) {
-            HttpStatus status = downstreamStatus(response.statusCode().value());
-            return response.releaseBody().then(Mono.error(new ReportDownloadResponseException(status)));
-        }
+    /** The same fixed dispatch and response bounds serve synchronous compatibility and the durable worker. */
+    public Mono<GeneratedFile> generate(ReportDownloadTicketRedemptionResponse redemption, UUID jobId, UUID leaseId) {
+        final Dispatch dispatch;
+        try { validateRedemption(redemption); dispatch = dispatch(redemption); }
+        catch (RuntimeException invalid) { return Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE)); }
+        WebClient client = switch (dispatch.backend()) {
+            case MOBILE_BFF -> mobileBffClient;
+            case ATTENDANCE -> attendanceClient;
+            case ACADEMIC -> academicClient;
+        };
+        WebClient.RequestBodySpec request = client.method(dispatch.method()).uri(builder -> buildUri(builder, dispatch))
+                .header(INTERNAL_TOKEN_HEADER, redemption.admission().internalToken())
+                .accept(dispatch.backend() == Backend.MOBILE_BFF ? MediaType.ALL : MediaType.parseMediaType(dispatch.expectedMediaType()));
+        if (jobId != null && leaseId != null) request.header("X-Export-Job-Id", jobId.toString()).header("X-Export-Job-Lease", leaseId.toString());
+        WebClient.RequestHeadersSpec<?> requestSpec = dispatch.body() == null ? request : request.contentType(MediaType.APPLICATION_JSON).bodyValue(dispatch.body());
+        return requestSpec.exchangeToMono(response -> handleDownstreamResponse(response, dispatch))
+                .timeout(Duration.ofMillis(properties.getTimeoutMillis()))
+                .onErrorMap(DataBufferLimitException.class, ignored -> new ReportDownloadResponseException(HttpStatus.PAYLOAD_TOO_LARGE))
+                .onErrorMap(error -> !(error instanceof ReportDownloadResponseException), error -> new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE, error));
+    }
 
+    private Mono<GeneratedFile> handleDownstreamResponse(ClientResponse response, Dispatch dispatch) {
+        if (!response.statusCode().is2xxSuccessful()) return response.releaseBody().then(Mono.error(new ReportDownloadResponseException(downstreamStatus(response.statusCode().value()))));
         MediaType expected = MediaType.parseMediaType(dispatch.expectedMediaType());
         MediaType actual = response.headers().contentType().orElse(null);
-        if (actual == null || !expected.isCompatibleWith(actual)) {
-            return response.releaseBody().then(Mono.error(
-                    new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE)));
-        }
-        java.util.OptionalLong declaredLength = response.headers().contentLength();
-        if (declaredLength.isPresent() && declaredLength.getAsLong() > MAX_REPORT_BYTES) {
-            return response.releaseBody().then(Mono.error(
-                    new ReportDownloadResponseException(HttpStatus.PAYLOAD_TOO_LARGE)));
-        }
-
+        if (actual == null || !expected.isCompatibleWith(actual)) return response.releaseBody().then(Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE)));
+        var declaredLength = response.headers().contentLength();
+        if (declaredLength.isPresent() && declaredLength.getAsLong() > MAX_REPORT_BYTES) return response.releaseBody().then(Mono.error(new ReportDownloadResponseException(HttpStatus.PAYLOAD_TOO_LARGE)));
+        final int rows;
+        final boolean full;
+        try {
+            if (dispatch.backend() == Backend.ACADEMIC) {
+                String count = response.headers().asHttpHeaders().getFirst("X-Export-Row-Count");
+                String privilege = response.headers().asHttpHeaders().getFirst("X-Export-Requires-Full");
+                if (count == null || !count.matches("[0-9]{1,5}") || !("true".equals(privilege) || "false".equals(privilege))) throw new IllegalArgumentException();
+                rows = Integer.parseInt(count); full = Boolean.parseBoolean(privilege);
+                if (rows > 10000) throw new IllegalArgumentException();
+            } else { rows = 0; full = false; }
+        } catch (RuntimeException malformed) { return response.releaseBody().then(Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE))); }
         return DataBufferUtils.join(response.bodyToFlux(DataBuffer.class), MAX_REPORT_BYTES)
                 .switchIfEmpty(Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE)))
                 .flatMap(buffer -> {
                     try {
-                        int length = buffer.readableByteCount();
-                        if (length <= 0) {
-                            return Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE));
-                        }
-                        byte[] bytes = new byte[length];
-                        buffer.read(bytes);
-                        return writeReport(exchange, dispatch, bytes);
-                    } finally {
-                        DataBufferUtils.release(buffer);
-                    }
+                        if (buffer.readableByteCount() <= 0) return Mono.error(new ReportDownloadResponseException(HttpStatus.SERVICE_UNAVAILABLE));
+                        byte[] bytes = new byte[buffer.readableByteCount()]; buffer.read(bytes);
+                        return Mono.just(new GeneratedFile(bytes, dispatch.expectedMediaType(), rows, full));
+                    } finally { DataBufferUtils.release(buffer); }
                 });
+    }
+
+    public record GeneratedFile(byte[] content, String contentType, int rowCount, boolean requiresFull) {
+        @Override public String toString() { return "GeneratedExport[bytes=" + content.length + "]"; }
+    }
+
+    public static String failureCode(Throwable failure) {
+        if (failure instanceof InternalAdmissionDeniedException) return "AUTHORITY_DENIED";
+        if (failure instanceof ReportDownloadResponseException response) {
+            if (response.status == HttpStatus.PAYLOAD_TOO_LARGE) return "EXPORT_TOO_LARGE";
+            if (response.status == HttpStatus.UNAUTHORIZED || response.status == HttpStatus.FORBIDDEN) return "AUTHORITY_DENIED";
+        }
+        return "GENERATION_FAILED";
     }
 
     private Mono<Void> writeReport(ServerWebExchange exchange, Dispatch dispatch, byte[] bytes) {
@@ -313,6 +330,17 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                 yield new Dispatch(Backend.ATTENDANCE, HttpMethod.POST,
                         "/attendance/reports/headman/stats/trend/export", query, body,
                         expectedMediaType, filename);
+            }
+            case HEADMAN_SUBJECT_JOURNAL -> {
+                var selected = report.headmanSubjectJournal();
+                yield new Dispatch(Backend.ATTENDANCE, HttpMethod.POST, "/attendance/reports/headman/subject-journal/export", query,
+                        new SubjectJournalPayload(selected.subjectId(), selected.lessonTypes(), selected.weekStarts(), selected.format().code()), expectedMediaType, filename);
+            }
+            case ADMIN_USERS -> {
+                yield new Dispatch(Backend.ACADEMIC, HttpMethod.POST, "/academic/registry-exports/users", query, report.adminUsers(), expectedMediaType, filename);
+            }
+            case ADMIN_GROUPS -> {
+                yield new Dispatch(Backend.ACADEMIC, HttpMethod.POST, "/academic/registry-exports/groups", query, report.adminGroups(), expectedMediaType, filename);
             }
             case HEADMAN_GROUP_COMPOSITION -> {
                 query.put("format", values(report.headmanGroupComposition().format().code()));
@@ -452,7 +480,8 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
 
     private enum Backend {
         MOBILE_BFF,
-        ATTENDANCE
+        ATTENDANCE,
+        ACADEMIC
     }
 
     private record Dispatch(
@@ -465,6 +494,8 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             String filename
     ) {
     }
+
+    public record SubjectJournalPayload(Long subjectId, List<String> lessonTypes, List<java.time.LocalDate> weekStarts, String format) {}
 
     public record WeeklyExportPayload(List<String> weekStarts, String format) {
     }

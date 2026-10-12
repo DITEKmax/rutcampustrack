@@ -1,0 +1,56 @@
+{
+  "review": "independent cf067 narrow client correction source recheck",
+  "source_commit": "cf067a008d732ca77f385a3eb1f53e0a79234687",
+  "before": "8fe9fe946ded3174796778b33f84385c6f98473b",
+  "verdict": "APPROVE_SOURCE",
+  "closed": [
+    "CRA-EXPORT-T01",
+    "CRA-VIEWPORT-T02"
+  ],
+  "actual_model_effort": "UNKNOWN",
+  "runtime": "NOT_RUN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 672,
+      "sha256": "83f122a924720f3c56efc0049a24e99e1c978c4eb39846d91553466f14f93673"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1396,
+      "sha256": "5b53b348907afcca31a4e4812010cd4749bf3a86614f2b413d113a59aacbf915"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 12803,
+      "sha256": "5272288d10f13d23a0582728530c15979f4524224a23ea36a262e98eb266d97e"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 1072,
+      "sha256": "3e0a44c401605b2317412d7418fa1e559438b52e9095ee4ab8f089b6d25c4902"
+    },
+    {
+      "path": "critical-source-reuse.safe.json",
+      "bytes": 10165,
+      "sha256": "e1b9ac3fd302fd6e0de8cd2ce4734563bf84b3ea764e20ce465d0b8fae98cfdd"
+    },
+    {
+      "path": "findings.safe.json",
+      "bytes": 1378,
+      "sha256": "64fe66dabd4c1bc77a5b58bec7b2cbe4db769eda0e2a7c5c7d78ff0c54626fa5"
+    },
+    {
+      "path": "native-source-receipts.safe.json",
+      "bytes": 5093,
+      "sha256": "b5b8c20a27f714244b55a6cff94b46d4a55726650752375048455cf608398059"
+    },
+    {
+      "path": "source-and-preservation.safe.json",
+      "bytes": 4619,
+      "sha256": "9b47ffe4022031c36cc8b7041838500743f6191ab7a96f946f7eb608da838a3f"
+    }
+  ],
+  "private_values_raw_bodies": false,
+  "immutable_after_seal": true
+}

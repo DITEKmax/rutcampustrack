@@ -1871,6 +1871,51 @@
       "status": "verified-safe-native-qualified-evidence",
       "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
       "registered_at": "2026-10-12T11:04:21.076671+00:00"
+    },
+    {
+      "id": "SAFE-vue-format-corrective-final",
+      "path": "docs/validation/cloud-20261011/receipts/vue-format-corrective-final/final-transfer-manifest.json",
+      "sha256": "c07d7f0378a28ba009cf9492cca1831cd03d661d6b98005a8a70a4652b2218c6",
+      "status": "verified-native-source-checks-independent-review-pending",
+      "revision": "9a77f68205df2cbd41892373e261fa05adae0265",
+      "registered_at": "2026-10-12T12:07:48.780004+00:00",
+      "source_authority": "evidence only; no new product policy"
+    },
+    {
+      "id": "SAFE-client-acceptance-source-packages",
+      "path": "docs/validation/cloud-20261011/receipts/client-acceptance-source-packages/review-corrections-transfer-manifest.json",
+      "sha256": "0e164e19d6498aa9c3e71544d1e69127b05ccd471679d0ccc38e418fd3368844",
+      "status": "verified-source-corrections-runtime-not-run",
+      "revision": "cf067a008d732ca77f385a3eb1f53e0a79234687",
+      "registered_at": "2026-10-12T12:07:48.780004+00:00",
+      "source_authority": "evidence only; no new product policy"
+    },
+    {
+      "id": "SAFE-client-source-independent-review",
+      "path": "docs/validation/cloud-20261011/receipts/client-source-independent-review/immutable-review-manifest.json",
+      "sha256": "757e64224b016975ae50b39d8d171e55b6af4f2f0b0efc938704cccb9e4be3e5",
+      "status": "independent-source-changes-requested",
+      "revision": "8fe9fe946ded3174796778b33f84385c6f98473b",
+      "registered_at": "2026-10-12T12:07:48.780004+00:00",
+      "source_authority": "evidence only; no new product policy"
+    },
+    {
+      "id": "SAFE-client-source-independent-recheck",
+      "path": "docs/validation/cloud-20261011/receipts/client-source-independent-recheck/immutable-review-manifest.json",
+      "sha256": "b6e4be15ba245eb981db74d45147b4027a38e76c705dc883d3b582fa361bb3ae",
+      "status": "independent-source-approved-runtime-not-run",
+      "revision": "cf067a008d732ca77f385a3eb1f53e0a79234687",
+      "registered_at": "2026-10-12T12:07:48.780004+00:00",
+      "source_authority": "evidence only; no new product policy"
+    },
+    {
+      "id": "SAFE-stand-attempt02",
+      "path": "docs/validation/cloud-20261011/receipts/stand-attempt02/manifest.json",
+      "sha256": "b0422fdd488a1ed34ef5ae5086c3d1d182cc5a3e2dd083ed417ba60ba1e3491e",
+      "status": "native-disk-floor-stop-cleaned-original-data-preserved",
+      "revision": "690324a1d9b56962b323a9ecec260aa430fbec79",
+      "registered_at": "2026-10-12T12:07:48.780004+00:00",
+      "source_authority": "evidence only; no new product policy"
     }
   ],
   "research_receipt": {

@@ -1,0 +1,1 @@
+Immutable safe original receipt archive SHA256 2dc7f02288abb307f7459f6125fc39f879aad8c5b04a05bc9b71755360822ee1. Verified 8 member byte hashes. APPROVE_SOURCE. Actual complete client acceptance NOT_RUN.

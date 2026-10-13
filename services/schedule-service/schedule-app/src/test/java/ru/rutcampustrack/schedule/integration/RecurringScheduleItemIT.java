@@ -871,12 +871,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                             () ->
                                                     transactions.executeWithoutResult(
                                                             status -> {
-                                                                // Match production's semester-before-assignment lock order.
+                                                                // Match production's
+                                                                // semester-before-assignment lock
+                                                                // order.
                                                                 archiveFence.lockForBusinessWrite(
                                                                         SEMESTER_ID);
                                                                 lockFence(ASSIGNMENT_ID);
                                                                 fenceLocked.countDown();
-                                                                // The insert waits on the semester guard, not the assignment fence.
+                                                                // The insert waits on the semester
+                                                                // guard, not the assignment fence.
                                                                 awaitPhysicalInsertBlockedByThisTransaction(
                                                                         insertBackendPid);
                                                                 replacementService.install(

@@ -1,12 +1,16 @@
 import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
+import { classifySafeFailure, safeFailureAnnotation, safeFailureDiagnostics } from './safe-reporter';
 
 /** Automatic fixtures start before explicit page/dataset fixtures and finish after their teardown. */
 export const test = base.extend<{ privateArtifacts: void }>({
   privateArtifacts: [
     async ({}, use, info) => {
-      requirePrivateArtifacts(info);
       try {
+        requirePrivateArtifacts(info);
         await use();
+      } catch (error) {
+        recordSafeFailure(info, error);
+        throw error;
       } finally {
         // afterEach cannot cover errors added by page/context/request fixture teardown.
         sanitizeTestErrors(info);
@@ -38,9 +42,24 @@ export function requirePrivateArtifacts(info: WorkerInfo): void {
   }
 }
 
+function recordSafeFailure(info: TestInfo, error: unknown): void {
+  const diagnostic = classifySafeFailure(error);
+  const previous = safeFailureDiagnostics(info.annotations);
+  if (previous.length >= 8 || previous.some((item) => item.cause === diagnostic.cause && item.httpStatus === diagnostic.httpStatus))
+    return;
+  info.annotations.push({
+    type: safeFailureAnnotation,
+    description: `${diagnostic.cause}:${diagnostic.httpStatus}`,
+  });
+}
+
 /** Run before Playwright writes automatic error-context.md, which otherwise includes raw call logs. */
 export function sanitizeTestErrors(info: TestInfo): void {
   for (const error of info.errors) {
+    // The generic rewritten message adds no new cause on repeated sanitizer passes.
+    const message = Object.getOwnPropertyDescriptor(error, 'message');
+    if (message?.value !== 'Check failed; source location and outcome are recorded in safe-results.json')
+      recordSafeFailure(info, error);
     const record = error as Record<string, unknown>;
     const location = record.location;
     for (const key of Object.keys(error)) delete record[key];

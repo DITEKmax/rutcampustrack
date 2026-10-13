@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
@@ -48,6 +50,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /**
  * Business logic for all 4 attendance report endpoints (RPRT-01..04).
@@ -60,7 +63,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
  * RequestContext)
  */
 @Service
-@RequiredArgsConstructor(onConstructor_ = @org.springframework.beans.factory.annotation.Autowired)
+@RequiredArgsConstructor
 public class ReportService {
 
     /** Status symbols per D-08 specification. */
@@ -80,6 +83,30 @@ public class ReportService {
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
     private final HeadmanApprovedTicketResolver approvedTicketResolver;
+
+    @Autowired
+    public ReportService(
+            AttendanceReadPort attendanceReadPort,
+            AcademicGrpcClient academicGrpcClient,
+            ScheduleGrpcClient scheduleGrpcClient,
+            SemesterCacheService semesterCacheService,
+            RequestContext requestContext,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort,
+            HeadmanApprovedTicketResolver approvedTicketResolver,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                attendanceReadPort,
+                academicGrpcClient,
+                scheduleGrpcClient,
+                semesterCacheService,
+                requestContext,
+                educationalTime == null
+                        ? clock
+                        : educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
+                journalAttachmentPort,
+                approvedTicketResolver);
+    }
 
     /** Existing dedicated teacher readers do not resolve headman ticket references. */
     public ReportService(

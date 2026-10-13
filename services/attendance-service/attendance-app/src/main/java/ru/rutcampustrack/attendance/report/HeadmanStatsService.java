@@ -302,7 +302,8 @@ public class HeadmanStatsService {
         var semesterState =
                 capture.context.semesterId() == null
                         ? null
-                        : academicGrpcClient.getSemesterState(capture.context.semesterId());
+                        : academicGrpcClient.getHeadmanJournalSemesterState(
+                                groupId, capture.context.semesterId());
         if (semesterState != null && semesterState.getId() != capture.context.semesterId()) {
             throw new AcademicServiceUnavailableException(
                     "Academic returned mismatched lesson-history semester");

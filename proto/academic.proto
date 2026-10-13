@@ -13,6 +13,8 @@ service AcademicGrpcService {
   rpc CheckAdminPermission (AdminPermissionCheckRequest) returns (AdminPermissionCheckResponse);
   // Fresh signed current-group statistics authority, catalog and selected semester.
   rpc ResolveHeadmanStatsScope (HeadmanStatsScopeRequest) returns (HeadmanStatsScopeResponse);
+  // Fresh own-group journal admission, separate from the Schedule-only state RPC.
+  rpc GetHeadmanJournalSemesterState (HeadmanJournalSemesterStateRequest) returns (SemesterStateResponse);
   // Fresh own-group roster for HEADMAN exports; signed identity is mandatory.
   rpc GetHeadmanGroupComposition (GroupRequest) returns (HeadmanGroupCompositionResponse);
 
@@ -282,6 +284,11 @@ enum SemesterTransition {
 
 message SemesterStateRequest {
   int64 semester_id = 1;
+}
+
+message HeadmanJournalSemesterStateRequest {
+  int64 group_id = 1;
+  int64 semester_id = 2;
 }
 
 message SemesterStateResponse {

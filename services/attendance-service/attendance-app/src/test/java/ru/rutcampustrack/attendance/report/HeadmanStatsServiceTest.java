@@ -974,7 +974,7 @@ class HeadmanStatsServiceTest {
                 .thenReturn(
                         Map.of(5L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
         when(attendanceReadPort.findByGroupAndDateRange(10L, FROM, TO)).thenReturn(List.of());
-        when(academicGrpcClient.getSemesterState(1L))
+        when(academicGrpcClient.getHeadmanJournalSemesterState(10L, 1L))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
                                 .setId(1L)

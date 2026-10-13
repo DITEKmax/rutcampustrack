@@ -151,7 +151,10 @@ public class ReportService {
         String blockedReason = editBlockedReason(timing, now);
         boolean headmanActor = !teacherBoundary && requestContext.getRole() == UserRole.STUDENT;
         var scope =
-                headmanActor ? academicGrpcClient.getSemesterState(lesson.getSemesterId()) : null;
+                headmanActor
+                        ? academicGrpcClient.getHeadmanJournalSemesterState(
+                                lesson.getGroupId(), lesson.getSemesterId())
+                        : null;
         if (headmanActor && (scope == null || scope.getId() != lesson.getSemesterId())) {
             throw new AcademicServiceUnavailableException(
                     "Academic returned mismatched journal semester");

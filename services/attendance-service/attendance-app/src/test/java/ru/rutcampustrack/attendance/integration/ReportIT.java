@@ -162,7 +162,7 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
     @Test
     void getLessonAttendance_headman_returnsAllGroupMembers() throws Exception {
         when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenReturn(true);
-        when(academicGrpcClient.getSemesterState(SEMESTER_ID))
+        when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
                                 .setId(SEMESTER_ID)

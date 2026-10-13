@@ -41,6 +41,8 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHeadmanGroupComposition";
     static final String HEADMAN_STATS_SCOPE_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/ResolveHeadmanStatsScope";
+    static final String HEADMAN_JOURNAL_STATE_METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHeadmanJournalSemesterState";
     static final Metadata.Key<String> INTERNAL_TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
 
@@ -64,7 +66,8 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
                 && !ADMIN_PERMISSION_METHOD_NAME.equals(methodName)
                 && !ASSISTANT_PERMISSION_METHOD_NAME.equals(methodName)
                 && !GROUP_COMPOSITION_METHOD_NAME.equals(methodName)
-                && !HEADMAN_STATS_SCOPE_METHOD_NAME.equals(methodName)) {
+                && !HEADMAN_STATS_SCOPE_METHOD_NAME.equals(methodName)
+                && !HEADMAN_JOURNAL_STATE_METHOD_NAME.equals(methodName)) {
             return next.startCall(call, headers);
         }
         try {

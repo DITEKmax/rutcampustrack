@@ -363,7 +363,7 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void journal_historicalRoster_authorizedFileAndClear() throws Exception {
         long semesterId = 7L;
         byte[] pdf = "%PDF-1.7\nheadman-journal\n".getBytes(StandardCharsets.US_ASCII);
-        when(academicGrpcClient.getSemesterState(semesterId))
+        when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, semesterId))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
                                 .setId(semesterId)

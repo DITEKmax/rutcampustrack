@@ -86,7 +86,7 @@ class ReportServiceTest {
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
         lenient()
-                .when(academicGrpcClient.getSemesterState(SEMESTER_ID))
+                .when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
                                 .setId(SEMESTER_ID)
@@ -458,7 +458,7 @@ class ReportServiceTest {
         var redacted = reportService.getLessonAttendance(LESSON_ID);
         assertThat(redacted.getEntries().get(2).getApprovedTicket()).isNull();
         assertThat(redacted.getEntries().get(1).getStatus()).isEqualTo("excused");
-        when(academicGrpcClient.getSemesterState(SEMESTER_ID))
+        when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
                                 .setId(SEMESTER_ID)

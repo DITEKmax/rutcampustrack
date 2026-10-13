@@ -1010,6 +1010,88 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         responseObserver.onCompleted();
     }
 
+    /**
+     * Uncached journal state for the exact signed actor, admitted by current own-group journal
+     * capabilities. Schedule's separate directed service/TLS state boundary remains unchanged.
+     */
+    @Override
+    public void getHeadmanJournalSemesterState(
+            HeadmanJournalSemesterStateRequest request,
+            StreamObserver<SemesterStateResponse> observer) {
+        final InternalJwtClaims actor;
+        try {
+            actor = StudentHomeworkGrpcIdentity.requireClaims();
+        } catch (IllegalStateException error) {
+            observer.onError(
+                    Status.UNAUTHENTICATED
+                            .withDescription("signed internal identity required")
+                            .asRuntimeException());
+            return;
+        }
+        try {
+            long groupId = request.getGroupId();
+            long semesterId = request.getSemesterId();
+            if (groupId <= 0 || semesterId <= 0) {
+                throw Status.INVALID_ARGUMENT
+                        .withDescription("group_id and semester_id must be positive")
+                        .asRuntimeException();
+            }
+            if (!assistantPermissionAuthority.allows(actor, groupId, "VIEW_STATS")
+                    && !assistantPermissionAuthority.allows(actor, groupId, "MARK_ATTENDANCE")) {
+                throw Status.PERMISSION_DENIED
+                        .withDescription("current own-group journal capability required")
+                        .asRuntimeException();
+            }
+            groupRepository
+                    .findById(groupId)
+                    .filter(Group::isActive)
+                    .orElseThrow(
+                            () ->
+                                    Status.PERMISSION_DENIED
+                                            .withDescription("current group unavailable")
+                                            .asRuntimeException());
+            var semester =
+                    semesterRepository
+                            .findByIdUncached(semesterId)
+                            .filter(value -> value.getDeletionPhase() == null)
+                            .orElseThrow(
+                                    () ->
+                                            Status.NOT_FOUND
+                                                    .withDescription("requested semester unavailable")
+                                                    .asRuntimeException());
+            observer.onNext(
+                    SemesterStateResponse.newBuilder()
+                            .setId(semester.getId())
+                            .setActive(semester.isActive())
+                            .setArchived(semester.isArchived())
+                            .setStateVersion(semester.getStateVersion())
+                            .setTransition(
+                                    ru.rutcampustrack.academic.grpc.SemesterTransition.valueOf(
+                                            semester.getArchiveTransition().name()))
+                            .setWriteBlocked(
+                                    semester.isArchived()
+                                            || semester.isReleasePending()
+                                            || semester.getArchiveTransition()
+                                                    != ru.rutcampustrack.academic.contract.enums
+                                                            .SemesterTransition.NONE)
+                            .setReleasePending(semester.isReleasePending())
+                            .setDeletionPhase("")
+                            .setTransitionOperationId(
+                                    semester.getTransitionOperationId() == null
+                                            ? ""
+                                            : semester.getTransitionOperationId().toString())
+                            .build());
+            observer.onCompleted();
+        } catch (io.grpc.StatusRuntimeException error) {
+            observer.onError(error);
+        } catch (RuntimeException error) {
+            observer.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("journal semester authority unavailable")
+                            .asRuntimeException());
+        }
+    }
+
     /** Uncached authoritative semester state used by server-side write guards. */
     @Override
     public void getSemesterState(

@@ -69,6 +69,50 @@ public class AcademicGrpcClient {
         }
     }
 
+    /** Journal state using the original signed actor and Academic's fresh own-group admission. */
+    public ru.rutcampustrack.academic.grpc.SemesterStateResponse getHeadmanJournalSemesterState(
+            long groupId, long semesterId) {
+        String token = requestContext == null ? null : requestContext.getInternalToken();
+        if (token == null || token.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(INTERNAL_TOKEN, token);
+        try {
+            var response =
+                    stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                            .withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getHeadmanJournalSemesterState(
+                                    ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterStateRequest
+                                            .newBuilder()
+                                            .setGroupId(groupId)
+                                            .setSemesterId(semesterId)
+                                            .build());
+            if (response.getId() != semesterId) {
+                throw new AcademicServiceUnavailableException("Mismatched journal semester state");
+            }
+            return response;
+        } catch (StatusRuntimeException error) {
+            switch (error.getStatus().getCode()) {
+                case INVALID_ARGUMENT ->
+                        throw new ru.rutcampustrack.attendance.exception.BadRequestException(
+                                "Некорректный семестр или группа");
+                case NOT_FOUND ->
+                        throw new ResourceNotFoundException("Semester", "id", semesterId);
+                case PERMISSION_DENIED ->
+                        throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                                "Отсутствует право просмотра журнала своей группы");
+                case UNAUTHENTICATED ->
+                        throw new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
+                default ->
+                        throw new AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + error.getStatus());
+            }
+        }
+    }
+
     public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(
             long groupId, Long semesterId) {
         return resolveHeadmanStatsScope(groupId, semesterId, null);

@@ -1319,6 +1319,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     }
 
     private void cleanUnicodePasswordActors(Long... userIds) {
+        // Audit is append-only and keeps user/session foreign keys. Retain those rows
+        // for these unique actors until the fresh, non-reused PostgreSQL fixture is disposed.
+        // Only mutable actor-owned intents are cleared here, including the global outbox count.
         RuntimeException cleanupFailure = null;
         for (Long userId : userIds) {
             if (userId == null) continue;
@@ -1332,15 +1335,6 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                     jdbc.update(
                                             "DELETE FROM password_reset_tokens WHERE user_id = ?",
                                             userId);
-                                    jdbc.update(
-                                            "DELETE FROM account_security_events WHERE user_id = ?",
-                                            userId);
-                                    jdbc.update(
-                                            "DELETE FROM auth_sessions WHERE user_id = ?", userId);
-                                    jdbc.update(
-                                            "DELETE FROM user_role_grants WHERE user_id = ?",
-                                            userId);
-                                    jdbc.update("DELETE FROM users WHERE id = ?", userId);
                                 });
             } catch (RuntimeException failure) {
                 if (cleanupFailure == null) cleanupFailure = failure;

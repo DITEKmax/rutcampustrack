@@ -12330,6 +12330,102 @@
       "status": "actual-infra-failure-before-seed-backup-target-owned-empty-runtime-cleaned-artifacts-retained",
       "revision": "82fce657471980b710d50b50a80187ac6c5215d3",
       "kind": "runtime-evidence-not-product-spec"
+    },
+    {
+      "id": "A852-AUTH-IT-NO-RESULTS",
+      "path": "docs/validation/cloud-20261011/receipts/current-a852-AuthIT-no-results.safe.json",
+      "sha256": "51ec70728a857fe9ed12cf82b812d0e22642393e08a0e702cbe592ae6bb5a1ce",
+      "status": "actual-NO_RESULTS-not-test-PASS",
+      "revision": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "A852-AUTH-IT-PRETEST-DIAGNOSIS",
+      "path": "docs/validation/cloud-20261011/receipts/current-a852-AuthIT-pretest-diagnosis.safe.json",
+      "sha256": "249c480fe5dc38a1e4074bff5968ab206cab7359f6366725631a600c455acac9",
+      "status": "actual-dependency-resolution-before-tests-deepercause-UNKNOWN",
+      "revision": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "A852-ACTUAL-CHECKOUT",
+      "path": "docs/validation/cloud-20261011/receipts/current-a852-actual-checkout.safe.json",
+      "sha256": "8efe8974647cc227dc9d7eaaf16ad717af0a60a52afa5b0b84a4e12132759de9",
+      "status": "actual-Git-parent-tree-join",
+      "revision": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "A852-FIRST3-CLOSED-OUTCOME",
+      "path": "docs/validation/cloud-20261011/receipts/current-a852-FIRST3.safe.json",
+      "sha256": "f79017921bbc8355b6a708cf1f9de3b81f2a5ebfc06a7af44c28e86703b16de9",
+      "status": "actual-studentPASS-headman-helperFAIL-editability-causeUNKNOWN",
+      "revision": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "A852-TERMINAL-GATES",
+      "path": "docs/validation/cloud-20261011/receipts/current-a852-CI-terminal.safe.json",
+      "sha256": "dd81109a78a2a59ce62b0a5d090663594b9ef74f0970bfbac739d0b717b0400f",
+      "status": "actual-CI-FAIL-Coverage-Security-OpenAPI-success",
+      "revision": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "SCHEDULE-CURRENT-UPGRADE-RED-RESTORED-GREEN",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-current-upgrade-red-restored-green.safe.json",
+      "sha256": "3acf762d09710a9bc77e014a3e0450282e9fbabc72356d429cab7c8932cc88d2",
+      "status": "actual-selected-data-PASS-sensitive-exact-restored",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "SCHEDULE-CURRENT-UPGRADE-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-current-upgrade-independent-review.safe.md",
+      "sha256": "d2c2270ea2f2fbad930ca84915dbda5f6e2f49a7c36904cbc3ee7078294c9686",
+      "status": "independent-APPROVE-narrow-selecteddataset",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "AUTH-ONLY-DEPENDENCY-REFRESH-PACKAGE",
+      "path": "docs/validation/cloud-20261011/receipts/Auth-only-dependency-refresh-package.safe.json",
+      "sha256": "802e27b777e41496a6bea72d6589d3b2ec557887a8b8011f74dc24f0bf71a806",
+      "status": "source-checks-PASS-current-nativeCIpending-causalityUNKNOWN",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "FIRST3-ACTUALFIELD-DIAGNOSTIC-RED-RESTORED-GREEN",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-editability-diagnostic-red-restored-green.safe.json",
+      "sha256": "72f9707dd231264d1bb2739a11de7d773a287d4e1acebb8d74026d2e01ddf67e",
+      "status": "actual-formatter-type-controls-PASS-productcauseUNKNOWN",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "P09-REAL-AUTH-WS-RED-RESTORED-GREEN",
+      "path": "docs/validation/cloud-20261011/receipts/P09-real-auth-open-socket-red-restored-green.safe.json",
+      "sha256": "c1111061d8d3143a1b38f4c82a1bd5ea0cd5d193ba327eae43837f0ee0bfc35d",
+      "status": "actual-distinct-outbound-gate-sensitive-exact-restored-realGREEN",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "P09-FIRST3-WHOLE-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/P09-and-FIRST3-independent-review.safe.md",
+      "sha256": "a38faf2f2d257fc38bab8062b9a6b1802fc490f3c50c6c4e4443991f35d953b7",
+      "status": "independent-APPROVE-bounded-DISTINCT-B013-frozen",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-COHERENT-NORMAL-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/current-coherent-P18-P09-Auth-FIRST3-normalchecks.safe.json",
+      "sha256": "73e0ef45361e58071839e42dec568e9b4f335fdb064632c24cc8b61865cbd659",
+      "status": "actual-six-hooks-PASS-reaped",
+      "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
+      "kind": "validation-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

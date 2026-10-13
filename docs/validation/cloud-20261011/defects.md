@@ -206,3 +206,11 @@ Severity: checking blocker for mandatory concurrent schedule acceptance. Current
 ## CHECK-CLOCK-REPORT-01 — current1aa6 journal acceptance clock seam
 
 CurrentCI38467301679/SAFE11851226481: student14PASS, headman61 disabled mark button (frames68/76), helper142FAIL159. Actualroster200/reportEditablefalse/rowEditablefalse, correctrole/group/subject/semester/date. ReportService uses injected realClock.instant for lessonhasStarted; ClockInitializer overrides only EducationalTime, deliberately preserving securityClock. Run21UTC crossesMoscowmidnight: seeded09:00nextday is future for realClock but started for selectedteachingclock. Normalproductfuture-lesson denial remains correct; classification checking/domain-clock selection gap, not granted-authority bug or flaky verdict. Notificationsolewriter minimalReportService domain-clock wiring +observable timebehavior regression, legacyClockconstructors/defaultrealclock retained. Beforebehavior reproduction, sufficientchecks/independentreview/currentrealbrowser stillrequired. No UI/auth/grants/ClockInitializer/sharedClock changes or B013 action.
+
+## Current a852 outcome — 2026-10-13
+
+CHECK-CLOCK-REPORT-01: finite constructor/domainclock regression fixed and independently checked; genuine a852 journal still FAIL61/142 at disabled marks. Prior clock explanation alone does not explain current Source. Student14 PASS; actual current backend editability cause UNKNOWN, no productbug/flaky/familyPASS verdict.
+
+CHECK-FIRST3-EDIT-BLOCK-FIELD-01: checking blocker, observer read obsolete blockedReason while DTO supplies editBlockedReason. Cause confirmed by currentsource; corrected to bool+closedreportedEditBlock category, rawreason discarded. Existingprivacy oldfield RED1 then exactrestoredGREEN0; formatter/TSC PASS, independentAPPROVE. Root e0fa integrated; new ordinaryCI diagnostics pending.
+
+CHECK-AUTH-CI-DEPENDENCY-RESOLUTION: a852 AuthIT stopped at extractIncludeProto/compileProtoPath before tests, 13 missingstaticMaven dependencies/exit1/24s/SAFE NO_RESULTS. Resolver/cache cause UNKNOWN. Auth-only metadata refresh condition integratedc0f10 with scopedsourcechecks; current ordinaryCI pending. No dependencies/tests/product/gates weakened.

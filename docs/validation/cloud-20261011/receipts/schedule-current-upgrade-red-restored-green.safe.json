@@ -1,0 +1,303 @@
+{
+  "base": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "branch": "codex/schedule-historical-upgrade-20261013",
+  "source": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+  "source_sha256": "53a976a533cf04949d8385df06651dd50e38e225d15cfb7ec34b21ddf591d504",
+  "state": "CURRENT_UPGRADE_PASS_SEQUENCE_SENSITIVE_RESTORED_GREEN",
+  "finite_scope": "Existing populatedV17 canonical cancelled physical lesson/current occurrence plus explicit synthetic CANCELLED lifecycle row; existing V18 assertions then migrate untouched current V19\u2013V30, original checksums/data/history/IDs/indexes/sequence states and repeat no-op. Parent P18/B50 remain UNKNOWN.",
+  "modified": [
+    "/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java"
+  ],
+  "created": [],
+  "deleted": [],
+  "reuse": "Existing current clean-schema and legacy refusal checks; schedule migration/tests original unchanged 48124\u2192a852. Existing class postgres:16 image unchanged.",
+  "sensitivity_proposal": "After native PASS, temporary isolated test-only setval(lesson sequence,lastID,false) after current.migrate and before state equality; expected exact sequence is_called mismatch. Restore exact test and compiled source; no migrations/rights/gates/product mutation.",
+  "native": "ONE_SELECTED_CURRENT_UPGRADE_PASS",
+  "review": "PENDING_ROOT_INDEPENDENT_WHOLE_REVIEW",
+  "format": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "-PspotlessIdeHook=/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "spotlessJavaApply",
+      "spotlessJavaCheck"
+    ],
+    "result": {
+      "direct_pid": 574837,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 574837,
+          "start_ticks": 18621483
+        },
+        {
+          "pid": 574871,
+          "start_ticks": 18621591
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "elapsed_seconds": 20.62,
+    "peaks": {
+      "rss": null,
+      "shared": 6757048320,
+      "min_free": 6528884736
+    },
+    "log": "/workspace/scratch/rct-validation/schedule_historical_upgrade/format.raw.private.log",
+    "tmp_removed": true,
+    "rss_qualification": "UNKNOWN: callback key corrected for PG only; disk/shared guards intact; no unchanged repeat."
+  },
+  "actual": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      ":services:schedule-service:schedule-app:compileTestJava",
+      ":services:schedule-service:schedule-app:integrationTest",
+      "--tests",
+      "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots",
+      "--rerun"
+    ],
+    "result": {
+      "direct_pid": 575159,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 575159,
+          "start_ticks": 18629752
+        },
+        {
+          "pid": 575193,
+          "start_ticks": 18629869
+        },
+        {
+          "pid": 575367,
+          "start_ticks": 18631476
+        },
+        {
+          "pid": 575371,
+          "start_ticks": 18631492
+        },
+        {
+          "pid": 575477,
+          "start_ticks": 18633124
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "elapsed_seconds": 55.61,
+    "peaks": {
+      "rss": 1269145600,
+      "shared": 8410165248,
+      "min_free": 5503606784
+    },
+    "xml": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.xml",
+    "proof": {
+      "fresh": true,
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots()",
+          "failure_type": null
+        }
+      ]
+    },
+    "log": "/workspace/scratch/rct-validation/schedule_historical_upgrade/current-upgrade.raw.private.log",
+    "container_metadata": "/tmp/rct-schedule-upgrade-pg-20261013/containers.safe.json",
+    "container_settled": true,
+    "observer_failure": null,
+    "tmp_removed": true,
+    "source_intact": true
+  },
+  "green_compiled_class_sha256": "8053ecef567dd716251c892674467cc7357a7a55ab08cb8c4857cf9fe5c8b070",
+  "sensitivity": {
+    "mutation": "        jdbc.queryForObject(\n                \"SELECT setval(pg_get_serial_sequence(?, 'id'), ?, false)\",\n                Long.class, table(schema, \"lessons\"), lessonId);\n",
+    "mutant_source_sha256": "e4f220460ff871b6f160a002dc85e746244371fb57efce4c0e043058489d8a8a",
+    "phases": [
+      {
+        "phase": "sequence-control",
+        "command": [
+          "bash",
+          "./gradlew",
+          "--offline",
+          "--no-daemon",
+          "--no-parallel",
+          "--max-workers=1",
+          "--console=plain",
+          "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+          ":services:schedule-service:schedule-app:compileTestJava",
+          ":services:schedule-service:schedule-app:integrationTest",
+          "--tests",
+          "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots",
+          "--rerun"
+        ],
+        "result": {
+          "direct_pid": 577739,
+          "native_exit": 1,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 577739,
+              "start_ticks": 18662131
+            },
+            {
+              "pid": 577773,
+              "start_ticks": 18662252
+            },
+            {
+              "pid": 578233,
+              "start_ticks": 18664746
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": false
+        },
+        "elapsed_seconds": 47.86,
+        "peaks": {
+          "rss": 1203261440,
+          "shared": 8524853248,
+          "min_free": 5503037440
+        },
+        "xml": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.xml",
+        "proof": {
+          "fresh": true,
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "cases": [
+            "populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots()"
+          ],
+          "failure_type": "org.opentest4j.AssertionFailedError",
+          "is_called_false_seen": true,
+          "is_called_true_seen": true,
+          "source_assertion_frame": [
+            "at app//ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots(StudentOccurrenceMigrationIT.java:445)"
+          ]
+        },
+        "log": "/workspace/scratch/rct-validation/schedule_historical_upgrade/sequence-control.raw.private.log",
+        "container_metadata": "/tmp/rct-schedule-upgrade-sequence-control-20261013/containers.safe.json",
+        "container_settled": true,
+        "observer_failure": null,
+        "tmp_removed": true,
+        "source_intact": true
+      },
+      {
+        "phase": "restored-green",
+        "command": [
+          "bash",
+          "./gradlew",
+          "--offline",
+          "--no-daemon",
+          "--no-parallel",
+          "--max-workers=1",
+          "--console=plain",
+          "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+          ":services:schedule-service:schedule-app:compileTestJava",
+          ":services:schedule-service:schedule-app:integrationTest",
+          "--tests",
+          "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots",
+          "--rerun"
+        ],
+        "result": {
+          "direct_pid": 579220,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 579220,
+              "start_ticks": 18666917
+            },
+            {
+              "pid": 579256,
+              "start_ticks": 18666992
+            },
+            {
+              "pid": 579706,
+              "start_ticks": 18669551
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "elapsed_seconds": 50.01,
+        "peaks": {
+          "rss": 1250684928,
+          "shared": 8563134464,
+          "min_free": 5502939136
+        },
+        "xml": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.xml",
+        "proof": {
+          "fresh": true,
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": [
+            "populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots()"
+          ]
+        },
+        "log": "/workspace/scratch/rct-validation/schedule_historical_upgrade/restored-green.raw.private.log",
+        "container_metadata": "/tmp/rct-schedule-upgrade-restored-green-20261013/containers.safe.json",
+        "container_settled": true,
+        "observer_failure": null,
+        "tmp_removed": true,
+        "source_intact": true
+      }
+    ],
+    "source_restored": true,
+    "meaningful_assertion_red": true,
+    "exact_restored_green": true
+  },
+  "finite_disposition": "Canonical V17 history can upgrade through untouched V18 to current V30 with preserved rows/checksums/selectedindexes/sequence state; preV17 refusal and clean-schema proofs reused. Parent P18/B50 remain UNKNOWN outside this finite schedule dataset.",
+  "restored_compiled_class_sha256": "8053ecef567dd716251c892674467cc7357a7a55ab08cb8c4857cf9fe5c8b070",
+  "compiled_class_exact_restore": true,
+  "commit": "ca2aeaa1d930d35f1f1b57be824a46b31f3c4b63",
+  "worktree_clean": true,
+  "source_ready": true,
+  "heavy_lease": "RELEASED",
+  "repeat_reason": "First actual currentV30; one meaningful sequence-state RED; exact restored selectedPG GREEN required by Root sensitivity grant; no other migration suites repeated.",
+  "checks_invocations": 4,
+  "native_selected_pg_invocations": 3,
+  "native_phase_seconds_total": 174.1,
+  "updated_utc": "2026-10-13T23:09:49.495902+00:00",
+  "source_restored_exact": true
+}

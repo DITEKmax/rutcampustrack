@@ -1,0 +1,35 @@
+{
+  "schema": "RCT_HEADMAN_REASON_LOCATOR_SOURCE_V1",
+  "root_origin": "64b4874fef1bd445a84c715edc6d7232c974de9b",
+  "author_base": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "scope": "tests/e2e/specs/mobile-real-server.spec.ts:90",
+  "before_source_sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+  "after_source_sha256": "a2bf0239a58a4d3e2602d5d3f455ced9f12dddb2b80e8ff6c8592b6fa12d13a7",
+  "vue_source_sha256": "1a4f3b7add5d4e0de42a54b1ddc7b0300443134f89eda8cb1696a41c502ae3df",
+  "pinned_Playwright_version": "1.59.1",
+  "injected_library_sha256": "53aac4133e2d1bfa605c7c33590d95e4edb57078412f895d21b5a08663296975",
+  "source_before64b_equal": true,
+  "selected_function_RAM_controls": {
+    "pinned_exact_label_engine_match": false,
+    "option_text_included": true,
+    "positive_label_without_options_matches": true,
+    "unchanged_comment_label_matches": true,
+    "option_count": 9
+  },
+  "one_line_inverse_exact": true,
+  "case_titles_and_lines_unchanged": [
+    14,
+    61,
+    142,
+    212,
+    239,
+    260,
+    278,
+    367
+  ],
+  "total_lines": 411,
+  "all_remaining_source_bytes_and_mode_unchanged": true,
+  "git_diff_check": "PASS",
+  "native_formatter_type_browser": "NOT_RUN",
+  "qualification": "Selected pinned functions on synthetic own RAM nodes establish Source locator mismatch; historical CI failure-stage remains UNKNOWN. Only strict scoped existing native SELECT replaces exact wrapped-label locator; exact ILLNESS/action and all subsequent server/upload/download/teacher assertions unchanged. No UI/product/config/reporter/clock/workflow change; remaining5 implementation HOLD."
+}

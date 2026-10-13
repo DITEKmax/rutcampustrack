@@ -1,0 +1,108 @@
+{
+  "schema": "RCT_CAP_FORMAT01_ACTUAL_V1",
+  "utc": "2026-10-13T19:55:38.539324+00:00",
+  "tool_session": 66239,
+  "start_chunk": "d40523",
+  "terminal_chunk": "23f654",
+  "terminal": {
+    "direct_pid": 553158,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 553158,
+        "start_ticks": 17503422
+      },
+      {
+        "pid": 553159,
+        "start_ticks": 17503427
+      },
+      {
+        "pid": 553191,
+        "start_ticks": 17503551
+      },
+      {
+        "pid": 553295,
+        "start_ticks": 17505092
+      },
+      {
+        "pid": 553332,
+        "start_ticks": 17505193
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 553191,
+        "start_ticks": 17503551,
+        "native_exit": 0
+      }
+    ],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T19:54:32.736604+00:00",
+    "peaks": {
+      "memory": 6333341696,
+      "min_workspace_free": 6468603904,
+      "owned_rss": 582246400,
+      "log_bytes": 1003
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "before_source_sha256": "b62a4546b84cc02e21105a0471fef1cc74d24e5324f23a8cac55c7d93fbd0731",
+  "formatted_source_sha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9",
+  "formatter_apply": "EXECUTED",
+  "formatter_check": "EXECUTED",
+  "exact_one_target_marker_count": 2,
+  "build_success_count": 2,
+  "whole_tokens_literals_imports_equivalent": true,
+  "diff_only_comment_wrapping": true,
+  "protected15_pins_exact": true,
+  "all6_owned_births_fresh_absent": true,
+  "births": [
+    {
+      "pid": 553154,
+      "start_ticks": 17503399,
+      "birth_absent": true
+    },
+    {
+      "pid": 553158,
+      "start_ticks": 17503422,
+      "birth_absent": true
+    },
+    {
+      "pid": 553159,
+      "start_ticks": 17503427,
+      "birth_absent": true
+    },
+    {
+      "pid": 553191,
+      "start_ticks": 17503551,
+      "birth_absent": true
+    },
+    {
+      "pid": 553295,
+      "start_ticks": 17505092,
+      "birth_absent": true
+    },
+    {
+      "pid": 553332,
+      "start_ticks": 17505193,
+      "birth_absent": true
+    }
+  ],
+  "private_TMP_absent": true,
+  "authority_absent": true,
+  "private_log_mode600_unhashed": true,
+  "terminal_and_final_before_active_margin": true,
+  "margin_remaining_seconds": 165.374,
+  "qualification": "Canonicalonefile Spotless AOSP actualapply/check; comments only mechanicallywrapped. No compiler/test/PG/Docker/API executed. Semanticb594 retained; separatemechanicalcommit next; freshcompilergrant required."
+}

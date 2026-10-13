@@ -1,0 +1,100 @@
+{
+  "utc": "2026-10-13T20:01:28.573478+00:00",
+  "state": "SOURCE_READY_NODE_NOT_RUN_REVIEW_AND_FRESH_GRANT_REQUIRED",
+  "worktree": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+  "base": "8ac4125263218d6de49bc54931be1b57edc115fe",
+  "semantic_commit": "1fd53710ecb61c8ec85d62c3863ee91d9492041d",
+  "tracked_clean": true,
+  "cause": "sanitizeTestErrors erased original stack before reporter and rewrote it to test declaration; reporter-only fallback cannot recover original assertion frame. No actual Headman61 cause classified.",
+  "files": {
+    "tests/e2e/fixtures/artifact-privacy.ts": "50ce668929c541faf03de696261ad65ceab41241bd90cf74661123a66f43ad53",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "1e62165db1271ba8e32848ab549ffedd0745378694ff20728444bfc8d59d20d9"
+  },
+  "protected_source": {
+    "tests/e2e/fixtures/safe-reporter.ts": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336",
+    "tests/e2e/specs/mobile-real-server.spec.ts": "a2bf0239a58a4d3e2602d5d3f455ced9f12dddb2b80e8ff6c8592b6fa12d13a7",
+    "tests/e2e/fixtures/first3-observer.ts": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+    "tests/e2e/check-artifact-privacy.mjs": "59fff34c92a07654965d6815b94171081131d5dd2f0fb8608cdc39f62f038d2a",
+    "tests/e2e/playwright.artifact-control.config.ts": "5e7c3d84578c1d83492ac55ed40d0903d50a332702c5acc2e7980b74abc4e2e2",
+    "tests/e2e/tsconfig.real-mobile.json": "5c314fbb420d7dc2db15ae33f1de2e04efeead7cb82014007d0f427d450379b6",
+    "tests/e2e/package.json": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+    "tests/e2e/package-lock.json": "d1b110e5339f0fd13219892a0d2de315e2037fc98602772007243a6c2a1a3e48"
+  },
+  "static_source_checks": {
+    "git_diff_check": true,
+    "changed_paths_only_owned_two": true,
+    "original_case_counts_preserved": true,
+    "source_line_column_bounds": "Exact canonical mobile-real-server.spec.ts, actual Source lines+UTF16 line length; trailing empty split line excluded.",
+    "source_limits": "Own stack descriptor only,8192codeunits/64lines/1024perframe, exactpath/no normalization,positive<=6digitline/column, framecontrolchars/malformed refused. Header/message lines ignored, never interpreted/output."
+  },
+  "runtime_commands": [
+    {
+      "phase": "format_apply",
+      "cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "tests/e2e/fixtures/artifact-privacy.ts",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts"
+      ]
+    },
+    {
+      "phase": "format_check",
+      "cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "tests/e2e/fixtures/artifact-privacy.ts",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts"
+      ]
+    },
+    {
+      "phase": "types",
+      "cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "tests/e2e/tsconfig.real-mobile.json"
+      ]
+    },
+    {
+      "phase": "privacy_controls",
+      "cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "check-artifact-privacy.mjs"
+      ]
+    }
+  ],
+  "cache_input_required": "Only if absent, known-own tests/e2e/node_modules symlink to /workspace/rutcampustrack/tests/e2e/node_modules after grant. No install/dependency/lockfile changes. Frontends cache only absolute binaries, no symlink currently needed.",
+  "existing_checker": {
+    "source": "tests/e2e/check-artifact-privacy.mjs",
+    "sha256": "59fff34c92a07654965d6815b94171081131d5dd2f0fb8608cdc39f62f038d2a",
+    "requires_browser": false,
+    "actual_runs": "Normal browser-free Playwright worker suite(3PASS/3expectedFAIL); interruption producer boundary; missing-guard rejection before explicit fixture. Existing assertion/guard count budget untouched.",
+    "requires_cached_dependencies": true
+  },
+  "controls_not_yet_executed": [
+    "public frame+first frame priority and markerabsence",
+    "named and bare vendor-frame forms",
+    "exact forged publicframe remains failed/untrusted",
+    "private/fileURL/traversal paths refuse",
+    "zero/out-of-Source line/column refuse",
+    "frame NUL/ESC/CR/U2028/malformed refuse",
+    "8192stack/64lines/1024frame oversize refuse",
+    "non-string/null refuse",
+    "message/location/name/toString/stack getters and inheritedstack getter not read",
+    "idempotent sanitizer preserves safe frame, errorcount1/statusfailed"
+  ],
+  "native_state": "No Node/Java/Docker/browser/API/native-check session; normal semantic git commit completed0/no hook output/bypass.",
+  "root_reused_node_checker": "root_headman_locator_checks contains safe receipts only, no runnable callback Source file; reuse Root existing b78 inline callback/commands, do not invent new framework.",
+  "qualification": "Untrusted reported public Source hint only. No message/body/rawstack/name/hash/secret emitted. Preserve privacy deletion and safe output schema; no original scenario/assertion/observer/reporter/workflow/UI/gates/Angular/B013 edits. Root owns all shared bindings, integration, docs and fresh grants."
+}

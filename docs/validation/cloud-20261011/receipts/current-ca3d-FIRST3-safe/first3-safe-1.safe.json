@@ -1,0 +1,141 @@
+{
+  "artifact_id": 11838022990,
+  "producer": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+  "run_id": 38443009381,
+  "event": "pull_request",
+  "actual_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+  "archive_sha256": "8a6ef721cafaea6364d732c687f9f51706dc2fa8f301007ac46a3d4e05bbe091",
+  "archive_bytes": 551,
+  "member_names": [
+    "artifacts/safe-results.json"
+  ],
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 14,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 48,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "DATASET_HTTP",
+            "cause": "DATASET_SUBJECT_CREATE_HTTP",
+            "httpStatus": 503
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_ERROR",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_FRAME_DATASET_CALL",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 14
+          }
+        ]
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 61,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 59,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "DATASET_HTTP",
+            "cause": "DATASET_SUBJECT_CREATE_HTTP",
+            "httpStatus": 503
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_ERROR",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_FRAME_DATASET_CALL",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 61
+          }
+        ]
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 142,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 55,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "DATASET_HTTP",
+            "cause": "DATASET_SUBJECT_CREATE_HTTP",
+            "httpStatus": 503
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_ERROR",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_FRAME_DATASET_CALL",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 142
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "STUDENT",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HEADMAN",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "observations": {},
+  "missing_members": [
+    "supervision/observations-headman.safe.json",
+    "supervision/observations-helper.safe.json",
+    "supervision/observations-student.safe.json"
+  ],
+  "source_assertions": "UNCHANGED_ACCEPTED_FIRST3",
+  "raw_logs_XML_HTML_error_context_read": false,
+  "buffer_limit": "POST_BUFFER_CLASSIFIER_NOT_HARD_RSS_BOUND",
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

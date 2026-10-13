@@ -1,0 +1,164 @@
+{
+  "utc": "2026-10-13T20:34:44.594818+00:00",
+  "session": 4055,
+  "overall_native_exit": 1,
+  "reason": "Strict raw token comparison treats formatter optional trailingcomma as difference; original lex false and RAM_CONTROL_FAILED retained.",
+  "four_required_phases": [
+    {
+      "phase": "format_apply",
+      "native_exit": 0,
+      "settled": true
+    },
+    {
+      "phase": "format_check",
+      "native_exit": 0,
+      "settled": true
+    },
+    {
+      "phase": "types",
+      "native_exit": 0,
+      "settled": true
+    },
+    {
+      "phase": "privacy_controls",
+      "native_exit": 0,
+      "settled": true
+    }
+  ],
+  "functional_ram_counterexample": {
+    "before": {
+      "line": 61,
+      "status": "failed",
+      "errorCount": 1
+    },
+    "after": {
+      "line": 91,
+      "status": "failed",
+      "errorCount": 1
+    },
+    "rule_pass": true
+  },
+  "strict_lexical_equivalence": false,
+  "privacy_closed": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "normalChildStatus": 0,
+    "markerAbsent": true,
+    "producerBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": false
+    },
+    "originalMetadataLeakReproduced": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "guardControl": {
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "videoRejected": true,
+      "screenshotRejected": true,
+      "missingSnapshotGuardRejected": true,
+      "wrongSnapshotGuardRejected": true
+    },
+    "interruptedChildStatus": 0,
+    "interruptedChildSignal": null,
+    "interruptionBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": true
+    },
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "recorded_births": [
+    {
+      "pid": 557550,
+      "start_ticks": 17736181,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557573,
+      "start_ticks": 17736200,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557584,
+      "start_ticks": 17736285,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557595,
+      "start_ticks": 17736337,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557602,
+      "start_ticks": 17736639,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557609,
+      "start_ticks": 17736647,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557622,
+      "start_ticks": 17736813,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557635,
+      "start_ticks": 17737011,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557648,
+      "start_ticks": 17737170,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557669,
+      "start_ticks": 17740289,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557682,
+      "start_ticks": 17740388,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 557695,
+      "start_ticks": 17740512,
+      "state": "ABSENT"
+    }
+  ],
+  "protected8_exact": true,
+  "formatted_files": {
+    "tests/e2e/fixtures/artifact-privacy.ts": "12c5c0cb6b8a49c815c763812177a76aa4d186e1873f6fa0ef341066a1dbaa67",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "48e808d36221a3cfb72f80c2b4b35b8513a0ca71ada1da4ee4aa7f67610fd734"
+  },
+  "cache_link_absent": true,
+  "private_tmp_absent": true,
+  "source_rollback_or_product_mutation": false,
+  "qualification": "No browser/network/server/Java/Docker/API/realkeys; raw output discarded; reported publicframe untrusted, nonmobiledeclarationfallback reduceddetail. No actualHeadman61cause claim/no wholecaller PASS.",
+  "final_utc": "2026-10-13T20:37:06.398662+00:00",
+  "semantic_commit": "1fd53710ecb61c8ec85d62c3863ee91d9492041d",
+  "mechanical_commit": "a286ee49e0d727344228ab00e2e4a79a7db5d0dc",
+  "tracked_clean": true,
+  "mechanical_qualification": "Author opened entire exact19+/6- diff: whitespace/layout plus exactly two optional trailing commas, one Object.create object getter and one RegExp.exec argument. Actual formatter check and TypeScript accept syntax; no assertion/guard/body/schema/status/observer/scenario change. Strict raw token equivalence remains false; Root narrow mechanical Source recheck needed. No passed-check replay.",
+  "mechanical_literal_texts_equal": {
+    "tests/e2e/fixtures/artifact-privacy.ts": true,
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": true
+  },
+  "mechanical_paths": [
+    "tests/e2e/artifact-controls/privacy.control.spec.ts",
+    "tests/e2e/fixtures/artifact-privacy.ts"
+  ],
+  "normal_commit_hook_output": "NONE_OBSERVED_NO_BYPASS"
+}

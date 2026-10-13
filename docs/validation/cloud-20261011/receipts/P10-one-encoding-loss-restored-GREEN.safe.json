@@ -1,0 +1,146 @@
+{
+  "schema": "RCT_P10_CREDENTIAL_RESTORED_GREEN01_ACTUAL_V1",
+  "utc": "2026-10-13T18:48:05.218304+00:00",
+  "status": "PASS",
+  "session": 74497,
+  "start_chunk": "15c342",
+  "final_chunk": "bdd793",
+  "grant_sha256": "70571c7ac9e134241c2fd422d8636653d2e61c89f4a63be4e67a0071d26e1963",
+  "RED_actual_sha256": "26606040b91ad0c5e1be12df4807760af9bd98b5095a969c433732ed496b8002",
+  "terminal": {
+    "direct_pid": 545409,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 545409,
+        "start_ticks": 17088101
+      },
+      {
+        "pid": 545410,
+        "start_ticks": 17088107
+      },
+      {
+        "pid": 545442,
+        "start_ticks": 17088316
+      },
+      {
+        "pid": 545646,
+        "start_ticks": 17090965
+      },
+      {
+        "pid": 545649,
+        "start_ticks": 17090987
+      },
+      {
+        "pid": 545854,
+        "start_ticks": 17093750
+      },
+      {
+        "pid": 546874,
+        "start_ticks": 17098957
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "container_settled": true,
+    "utc": "2026-10-13T18:46:49.775517+00:00",
+    "peaks": {
+      "memory": 9310535680,
+      "min_workspace_free": 5526724608,
+      "owned_rss": 1934102528,
+      "log_bytes": 6897
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "fresh_selected_JUnit": {
+    "parseaccepted": true,
+    "source_path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+    "class": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries()",
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "selected_case_count": 1,
+    "all_case_and_suite_counts_consistent": true,
+    "mtime_after_grant": true,
+    "mode600_nofollow_UID_nlink1_bound1MiB": true,
+    "strictUTF8_declaration_DTD_entity_NUL_gate": true,
+    "raw_XML_retained_unhashed": true
+  },
+  "births": [
+    {
+      "pid": 545299,
+      "start_ticks": 17088038,
+      "birth_absent": true
+    },
+    {
+      "pid": 545409,
+      "start_ticks": 17088101,
+      "birth_absent": true
+    },
+    {
+      "pid": 545410,
+      "start_ticks": 17088107,
+      "birth_absent": true
+    },
+    {
+      "pid": 545442,
+      "start_ticks": 17088316,
+      "birth_absent": true
+    },
+    {
+      "pid": 545646,
+      "start_ticks": 17090965,
+      "birth_absent": true
+    },
+    {
+      "pid": 545649,
+      "start_ticks": 17090987,
+      "birth_absent": true
+    },
+    {
+      "pid": 545854,
+      "start_ticks": 17093750,
+      "birth_absent": true
+    },
+    {
+      "pid": 546874,
+      "start_ticks": 17098957,
+      "birth_absent": true
+    }
+  ],
+  "all8_owned_births_fresh_absent": true,
+  "container_settled": true,
+  "container_failure_none": true,
+  "owned_active_ids_empty": true,
+  "original_foreign0_11_3_exact": true,
+  "TMP_absent": true,
+  "authority_absent": true,
+  "all18_source_inputs_match": true,
+  "source_supplement_match": true,
+  "source_commit": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "test_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "original_Source_sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a",
+  "restored_compiled_public_code_sha256": "00089b2e3d7109dc5c9eaf9793695fed9fbef4fe8ace21f46ca86c63804f77eb",
+  "WT_clean": true,
+  "native_terminal_before_active_margin": true,
+  "final_before_active_margin": true,
+  "final_before_hard_stop": true,
+  "margin_remaining_seconds": 37.807,
+  "no_private_body_message_stack_credential_ENV_URI_or_private_content_hash_export": true,
+  "qualification": "Exactly one unchanged genuine UnicodeHTTP method PASS following causal ASCII encoding-loss RED at1270/core292 and exactSource/freshcompiledrestore. All later fullbody credential/login/reset/session assertions execute in original GREEN. Composition normalization not covered; parent P10/matrix not automatically closed. Current Root64b only unrelated CI synthetic.env change, own relevant AuthSource unchangeda0e. No rights/TLS/policy fault/B013 action or runtime repeats."
+}

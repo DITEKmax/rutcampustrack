@@ -1,0 +1,21 @@
+{
+  "direct_pid": 541605,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 541605,
+      "start_ticks": 16984652
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "fresh_all_births_absent": true,
+  "private_request_gone": true,
+  "completed_utc": "2026-10-13T18:27:34.216729+00:00"
+}

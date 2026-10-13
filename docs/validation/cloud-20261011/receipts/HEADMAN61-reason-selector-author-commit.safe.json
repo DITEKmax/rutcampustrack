@@ -1,0 +1,16 @@
+{
+  "schema": "RCT_HEADMAN_REASON_LOCATOR_COMMIT_V1",
+  "utc": "2026-10-13T19:11:17.593401+00:00",
+  "head": "37bb8ba21cf2cd8bb5f744afb30f53759a382e9b",
+  "parent": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "scope": [
+    "tests/e2e/specs/mobile-real-server.spec.ts"
+  ],
+  "source_sha256": "a2bf0239a58a4d3e2602d5d3f455ced9f12dddb2b80e8ff6c8592b6fa12d13a7",
+  "source_receipt_sha256": "2d3e0ce1315645bc4b21fded30bdcc65c69999cf756e9e190b98cbb97b5f9aa6",
+  "WT_clean": true,
+  "semantic_only_1insertion_1deletion": true,
+  "mechanical_commit": "NONE_NO_FORMATTER_WRITE",
+  "formatter_type_native": "NOT_RUN_AWAITS_ROOT_EXECUTION_BINDING",
+  "runtime_userpath": "NOT_RUN_CURRENT64B_BEFORE_RECEIPT_RETAINED"
+}

@@ -1,0 +1,160 @@
+{
+  "schema": "RCT_P10_CREDENTIAL_RED01_ACTUAL_V1",
+  "sealed_utc": "2026-10-13T18:41:13.817524+00:00",
+  "terminal_utc": "2026-10-13T18:36:25.136875+00:00",
+  "qualification": "Native terminal/restoration/cleanup recorded before active margin18:37:04.310576Z. Fresh read-only final seal after hard18:38:04.310576Z; no late native effects. RED stops at exact credential assertion; later checks require separately granted original GREEN. Composition normalization not covered. Parent P10 UNKNOWN.",
+  "tool_session": 66908,
+  "start_chunk": "5f3d94",
+  "terminal_chunk": "2de93d",
+  "namespace": "/tmp/rct-p10-credential-data-red-restore-20261013-attempt01",
+  "supervisor": {
+    "pid": 542190,
+    "start_ticks": 17018400
+  },
+  "operator_native_exit": 0,
+  "causal_selected_test": {
+    "schema": "RCT_P10_CREDENTIAL_CAUSAL_RED_V1",
+    "native_exit": 1,
+    "class": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+    "counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "fresh_after_stage": true,
+    "causal_exact_credential_assertion": true,
+    "expected_Auth_helper_line": 1270,
+    "expected_Auth_core_line": 292,
+    "compiled_class_differs": true,
+    "mutation_source_exact": true,
+    "no_private_body_hash_or_failure_export": true,
+    "qualification": "RED stops at exact stored-credential Boolean assertion; later login/reset/session checks require restored separate GREEN. No credential/hash/failure message values exported."
+  },
+  "restore_compiler": {
+    "native_exit": 0,
+    "source_exact": true,
+    "compiled_exact": true,
+    "no_second_pg_test": true
+  },
+  "child_exit": {
+    "native_exit": 0,
+    "mutant_causal_exact_credential_mismatch": true,
+    "source_and_compiled_restored": true,
+    "second_pg_test_executed": false
+  },
+  "settled": true,
+  "all_owned_reaped": true,
+  "signals": 0,
+  "birth_absences": [
+    {
+      "pid": 542190,
+      "start_ticks": 17018400,
+      "birth_absent": true
+    },
+    {
+      "pid": 542302,
+      "start_ticks": 17018463,
+      "birth_absent": true
+    },
+    {
+      "pid": 542303,
+      "start_ticks": 17018468,
+      "birth_absent": true
+    },
+    {
+      "pid": 542337,
+      "start_ticks": 17018619,
+      "birth_absent": true
+    },
+    {
+      "pid": 542591,
+      "start_ticks": 17021675,
+      "birth_absent": true
+    },
+    {
+      "pid": 542594,
+      "start_ticks": 17021697,
+      "birth_absent": true
+    },
+    {
+      "pid": 542762,
+      "start_ticks": 17024259,
+      "birth_absent": true
+    },
+    {
+      "pid": 543840,
+      "start_ticks": 17029876,
+      "birth_absent": true
+    },
+    {
+      "pid": 543943,
+      "start_ticks": 17030474,
+      "birth_absent": true
+    },
+    {
+      "pid": 543992,
+      "start_ticks": 17030572,
+      "birth_absent": true
+    },
+    {
+      "pid": 544468,
+      "start_ticks": 17034323,
+      "birth_absent": true
+    },
+    {
+      "pid": 544472,
+      "start_ticks": 17034349,
+      "birth_absent": true
+    }
+  ],
+  "source_restored_exact": true,
+  "source_mode": "0o600",
+  "compiled_restored_exact": true,
+  "source_sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a",
+  "compiled_public_code_sha256": "00089b2e3d7109dc5c9eaf9793695fed9fbef4fe8ace21f46ca86c63804f77eb",
+  "test_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "head": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "worktree_clean": true,
+  "manifest_input_count": 18,
+  "supplement_input_count": 65,
+  "all_pins_exact": true,
+  "container_settled": true,
+  "container_failure_none": true,
+  "active_owned_empty": true,
+  "foreign_baseline_exact": true,
+  "foreign_counts": [
+    0,
+    11,
+    3
+  ],
+  "private_tmp_absent": true,
+  "authority_absent": true,
+  "private_retention": [
+    {
+      "role": "selected_private_xml",
+      "regular": true,
+      "mode600": true,
+      "owned_uid": true,
+      "nlink1": true,
+      "unhashed": true
+    },
+    {
+      "role": "native_private_log",
+      "regular": true,
+      "mode600": true,
+      "owned_uid": true,
+      "nlink1": true,
+      "unhashed": true
+    }
+  ],
+  "sampled_peaks": {
+    "memory": 9126514688,
+    "min_workspace_free": 5527027712,
+    "owned_rss": 1750581248,
+    "log_bytes": 11868
+  },
+  "second_pg_test_executed": false,
+  "restored_green": "NOT_RUN_REQUIRES_FRESH_ROOT_GRANT"
+}

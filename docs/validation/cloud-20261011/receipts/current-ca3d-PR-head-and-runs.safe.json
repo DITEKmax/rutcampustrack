@@ -1,0 +1,57 @@
+{
+  "utc": "2026-10-13T18:01:53Z",
+  "scope": "REAL_API_AUTH_DRAFT_PR_HEAD_AND_CURRENT_RUNS",
+  "pr": {
+    "pr_number": 2,
+    "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+    "base_ref": "main",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "merge_commit_sha": "e3488c02a73d57b14cd22566c984e6a02fff2f2c",
+    "html_url": "https://github.com/DITEKmax/rutcampustrack/pull/2"
+  },
+  "runs": [
+    {
+      "id": 38443009381,
+      "event": "pull_request",
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "status": "queued",
+      "conclusion": null,
+      "run_attempt": 1,
+      "path": ".github/workflows/ci.yml",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38443009381"
+    },
+    {
+      "id": 38443009579,
+      "event": "pull_request",
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "status": "queued",
+      "conclusion": null,
+      "run_attempt": 1,
+      "path": ".github/workflows/coverage.yml",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38443009579"
+    },
+    {
+      "id": 38443009379,
+      "event": "pull_request",
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1,
+      "path": ".github/workflows/security.yml",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38443009379"
+    },
+    {
+      "id": 38443009549,
+      "event": "pull_request",
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1,
+      "path": ".github/workflows/openapi-drift.yml",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38443009549"
+    }
+  ],
+  "qualification": "Actual fixed authorized repository API reads; local=remote=PR ca3d. Advertised merge SHA only, actual jobs checkoutUNKNOWN pending logs. CI/Coverage queued, Security/OpenAPI success; no fullacceptance/D009/DONE. Old1742 receipts historical."
+}

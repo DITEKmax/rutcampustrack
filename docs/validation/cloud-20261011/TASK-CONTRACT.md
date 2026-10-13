@@ -438,3 +438,11 @@ Affected scope: retained coherent8 Cloud stand and dependent real PWA/TMA scenar
 ## D013 — Owner critical-path priority, received 2026-10-13
 
 Supersedes D011 sequencing only where incompatible; original goal/scope/DONE/WAITING, models, security and independent review unchanged. First diagnose current CI/Coverage/Unicode FAIL from concrete evidence, classify product versus oracle/fixture versus environment, correct minimally and pass affected normal CI; no unchanged repeat. Then genuine browser headman/helper journal with actual backend containing T008 RPC fix, roster/accepted operations/negative live-rights boundaries. Then remaining matrix, reuse sufficient unchanged checks without promoting incomplete families. Reduce new documents/copies/packets/receipts/checkpoint commits to necessary reproducibility/security/recovery; retain existing historical evidence and shared ledgers, no duplicate registry/framework. Checking changes only for concrete blockers; return promptly to user scenario. Safe completion/cleanup of current operations before queue change. No new product/deploy authority, threshold weakening or platform-control bypass.
+
+
+---
+## D014 — Q011 explicit local Node checking approval
+
+Owner answered Q011: «Подтверждаю эти конкретные локальные проверки». Received UTC 2026-10-13T20:29:47.870838+00:00.
+
+Explicitly confirms the already reviewed package in isolated worktree1fd53710: formatter apply/check of artifact-privacy.ts and existing privacy.control.spec.ts, existing TypeScript check, unchanged browser-free artifact privacy controls with synthetic markers and a short baseline implementation control. No browser, Docker, network, server startup, production/deploy or real credentials. This restates authorized TASK sections4/5 after automaticreview rejected the exact Node caller for ZIP/delegatedcontext mismatch. Present this trusted owneranswer for the SAME reviewed caller with fresh resource/time/source grant; no alternate launcher/indirect execution or approval bypass. Another rejection remains a platform blocker. Original goal/scope/DONE, B013 and independentreview/security constraints unchanged.

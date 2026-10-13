@@ -1,3 +1,15 @@
+# Current partial handoff — 2026-10-13T19:26:10.278220+00:00
+
+IN_PROGRESS, not DONE/finalD009. Baseline3908fad; local/remote/draftPR8ac4125263218d6de49bc54931be1b57edc115fe, PR https://github.com/DITEKmax/rutcampustrack/pull/2 targetmain/unmerged. Read TASK-CONTRACT/CURRENT/decisions/questions/resources beforecontinuing; CURRENT is authoritative for activequeue, older sections below historical.
+
+Criticalresults: actualUnicode Source954 HTTP+normalca3dCI PASS; controlledencoding RED/exactSource+freshclass restore/separateGREEN independently910349 ACCEPT. Genuine64b browser Student14PASS/helper142PASS with roster200/mark200/live revoke403/stateunchanged/routehidden; headmanroster/markalso200 but61 reason-selector failed. CI64b17PASS/1E2EFAIL, Coverage9/Security/OpenAPI PASS at actualmerge211103/treeequal64b. Onepublicsynthetic CI.env reversecredential canonicalization64b preservesSAME32bytes/strictTLS-predicate. PinnedPlaywright label Sourcecounterexample correctedONLYspecL90/newa2bf; indcd8599/Prettier/scopedTS/precommitPASS, realnormalpush8ac/readbacksverified; current8ac CI38454198721/Cov38454198569/Sec38454198770 pending/OpenAPI38454198696success, exactHeadmanafterpathawaiting.
+
+Matrix218overlappingfamilies2PASS/0DEFECT/211UNKNOWN/5EXCLUDED, boundaries52UNKNOWN,86finitePASS records; no percent/wholefamilypromotion. Originalroster503 currentboundedfailureclosed, broaderjournal/helper actions incomplete. B013requiredrights sensitivity BLOCKED_PLATFORM/frozen/no workaround; independentwork remains. Rootno liveprocess/heavyleasefree; ci731 onlycurrentordinaryCI readonly. Next5acceptedclientpaths Sourceplan helduntilactualHeadmanclosure. No production/main/merge/Ready/deploy/newWeb/Angular.
+
+Newevidence in existing receipts/current-64b-FIRST3-safe, current-ca3d-auth-Unicode-safe, P10-one-encoding-loss-RED-exact-restore.safe.json, P10-one-encoding-loss-restored-GREEN.safe.json, p10-credential-data-sensitivity-actual-pair-review.safe.json, HEADMAN61-reason-selector-source.safe.json, headman-reason-locator-review.safe.json and HEADMAN61-8ac-real-push-readback.safe.json. OriginalFAILs/late readonlyREDseal/sourcefilesystem600vsGit100644 correction retained attempts/defects. Rootpostca3d taskdocsWIP tocheckpoint coherently; exact25machineworkingcopies excludedunchanged, original15machinearchive9e298 unchanged.
+
+---
+
 # Morning handoff — partial checkpoint, IN_PROGRESS
 
 Latest checkpoint 2026-10-13T17:51Z supersedes earlier status below. Restore full TASK-CONTRACT.md (current9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91,440lines,D002–D013), CURRENT.md, decisions/questions/resources and relevant safe evidence. No DONE/finalD009/STOP.

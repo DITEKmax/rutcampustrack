@@ -71,3 +71,11 @@ State: ANSWERED / PLATFORM_APPROVAL_ACCEPTED; same exact owned Docker caller acc
 ## B013 — platform content rejection of T008 rights sensitivity preparation
 
 State: BLOCKED_PLATFORM, no new product question. Author turn rejected for possible cybersecurity risk during authorized one-rule mutation Source preparation. Existing real PostgreSQL rights test PASS; sensitivity proof remains open. Do not retry via rephrasing, another agent/model or launcher. Continue independent integration/CI/client/auth test work. Exact displayed recommendation: Daybreak access before retry; no claim that owner confirmation alone removes platform control.
+
+## Q011 — platform approval rejects concrete Node checking package
+
+State: PENDING. Source: actualautomaticreview functions cell99 refused beforeexec: operation unrelated to user ZIP upload; delegatedauthorization insufficient; no alternatelauncher/indirectbypass. Owner TASK sections4/5 already authorizes checks/formatting, but currentapprovaldidnotacceptdelegatedcontext. Scope: exact Notification ownWT1fd, artifact-privacy.ts + existingprivacy.control.spec.ts, Sourceprivacyreview371bf; cachedPrettierapply/check, existingreal-mobileTSC, unchangedbrowserfreeprivacychecker59fff andoneRAMbaseline8ac counterexample; no Java/Docker/browser/network/server/prod/deploy/credentials. Choices: A explicittrustedOwnerconfirm theseexactlocalchecks (recommended); B deferonlythesechecks/retainSourceWIP whileindependentCAPordinaryCI/matrixworkcontinues. Missinganswer blocksNodechecks/integration ofthispackage/currentHeadmanafterdiagnostic only. Rejectionreceipt: receipts/first3-spec-frame-node-approval-rejection.safe.json. No effects/privatecachelinks/processes; Rootmustnotretryviaanotherlauncher.
+
+2026-10-13T20:29:47.870838+00:00: Q011 ANSWERED affirmative «Подтверждаю эти конкретные локальные проверки». D014 confirms SAMEalreadyreviewed scopedNodecaller afteractualrejection; new Rootfreshgrant andautomaticapproval stillrequired. No effects/bypass/changedproductrule.
+
+2026-10-13T20:34:12.877350+00:00: Q011/D014 SAMEfunctionsaction automaticapproval ACCEPTED; Node4055 started, formatterapply0. Originalrejectionpreserved; no alternativecaller/bypass. Exacttype/control/sensitivity/cleanup results pending.

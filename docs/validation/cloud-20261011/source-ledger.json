@@ -5,7 +5,7 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91",
+      "sha256": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
       "status": "authoritative-owner-contract",
       "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
@@ -16,7 +16,8 @@
       "previous_sha256_before_D011": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
       "previous_sha256_before_D012": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27",
       "original_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
-      "owner_decisions_through": "D013"
+      "owner_decisions_through": "D014",
+      "previous_sha256_before_D014": "9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91"
     },
     {
       "id": "AGENTS.md",
@@ -11859,6 +11860,412 @@
       "sha256": "eeac28bbc579ad651a3529c304a307f93f0ea6a171ea4f807d030d632fa09804",
       "status": "actual-normal-doc267-hooks-pass-source-byte-identity-birth-cleanup",
       "revision": "52a95a8f38753f17277de616ebf608cf34937cb9"
+    },
+    {
+      "id": "current-ca3d-PR-head-and-runs.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-PR-head-and-runs.safe.json",
+      "sha256": "fab6bb581ea96a587964e32482e6080dc65490988204bacb9708e950559747c7",
+      "status": "actual-API-auth-PR-current-head-runs-snapshot-pendingCI-Cov",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-CI-progress.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-CI-progress.safe.json",
+      "sha256": "b4dc146bf9808ffc5f0f7bbc0433c2a43d5de29cf8f8efd8e9b5b60ca9995027",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-FIRST3-safe--run-binding.actual.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-FIRST3-safe/run-binding.actual.safe.json",
+      "sha256": "223d189a5a769db66dc7be4d949acf337090cb676715c2989308b3fd02883623",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-FIRST3-safe--first3-safe-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-FIRST3-safe/first3-safe-1.safe.json",
+      "sha256": "6bfa9fbed84883e627fb49f7757285e00de9ac4536226463c6b039e098a93834",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-FIRST3-safe--first3-safe-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-FIRST3-safe/first3-safe-1.zip",
+      "sha256": "8a6ef721cafaea6364d732c687f9f51706dc2fa8f301007ac46a3d4e05bbe091",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-FIRST3-safe--first3-reader-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-FIRST3-safe/first3-reader-terminal.safe.json",
+      "sha256": "9aa64703bd6dc7f64bdde881832d497c6c1afcd13d959e3a52bd7f4eb51b5bf5",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-FIRST3-safe--root-first3-grant.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-FIRST3-safe/root-first3-grant.safe.json",
+      "sha256": "4ab15df0f2c44ae6fdbae70c3a136e15a5252dc821e8d146fd11d6393a1462f8",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-Unicode-safe--safe-integration-outcomes-auth-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-Unicode-safe/safe-integration-outcomes-auth-service-1.zip",
+      "sha256": "e747ce04485e8f0f10d4cee68db43209405dd27096cdd52d2c9e5b72075f2470",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-Unicode-safe--safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-Unicode-safe/safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "sha256": "61780934d507ddf6a8427ce84884cab4d23fe84f63c609971b42169121eb7faf",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-Unicode-safe--auth-reader02-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-Unicode-safe/auth-reader02-terminal.safe.json",
+      "sha256": "25664407f96408f8f875798c072fba6dd3a31bc71481de88e83400933f0e7522",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-Unicode-safe--root-auth-grant02.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-Unicode-safe/root-auth-grant02.safe.json",
+      "sha256": "f8e069696daae8907b6cc7b9a235ccaf2e2a9494f21ad659ad04657333482ac2",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-Unicode-safe--safe-integration-outcomes-auth-service-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-Unicode-safe/safe-integration-outcomes-auth-service-1.safe.json",
+      "sha256": "69e191382759319a636bb987b3c760777b068ca87ad81ef9d55afca09b080e76",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-artifact-read-FAIL--root-auth-grant.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-artifact-read-FAIL/root-auth-grant.safe.json",
+      "sha256": "99d5dfae0305620bd104a6c87eb66cfdcb6f11cd0b9d0bd6f6f3c651e93f923f",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "CURRENT-CA3D-current-ca3d-auth-artifact-read-FAIL--auth-reader-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-ca3d-auth-artifact-read-FAIL/auth-reader-terminal.safe.json",
+      "sha256": "461dce7c2948787d19dfed1d0a5800c2b30ba455b516e4aceaab38f75a3d5ffa",
+      "status": "actual-current-safe-evidence-finite-only-no-parent-promotion",
+      "revision": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+    },
+    {
+      "id": "POST-CA3D-P10-one-encoding-loss-RED-exact-restore.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-encoding-loss-RED-exact-restore.safe.json",
+      "sha256": "26606040b91ad0c5e1be12df4807760af9bd98b5095a969c433732ed496b8002",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-P10-one-encoding-loss-restored-GREEN.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-encoding-loss-restored-GREEN.safe.json",
+      "sha256": "c48ef3a6b1819a16bd9a2efeb1646bb0f89f8ac2da50a271da138e7ce7319b4f",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-p10-credential-data-sensitivity-actual-pair-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-credential-data-sensitivity-actual-pair-review.md",
+      "sha256": "7bff01893d4b3c196e089f35c54abbd5b415cfab574d413df5e5e6089f05deca",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-p10-credential-data-sensitivity-actual-pair-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-credential-data-sensitivity-actual-pair-review.safe.json",
+      "sha256": "9103491fcbe48a0e125cd059ef91af6fb441d56e47e40c6e3657cdf36909124d",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-current-64b-CI-progress.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-64b-CI-progress.safe.json",
+      "sha256": "7a0c9441b0572e0212060d1a61043bbc3acbe0489fe44782323fa256a309ed5c",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-CI-reverse-synthetic-fixture-correction.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-reverse-synthetic-fixture-correction.safe.json",
+      "sha256": "d9e357abc5a62e8f72bc3b15b4d6d9f158d280d5cedc135a1305c169288afa9d",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-ci-reverse-fixture-canonicalization-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/ci-reverse-fixture-canonicalization-review.md",
+      "sha256": "f33916461a6cf6143ab59fa64831299209df5bccffda412f1ef4dd4a0d619b2c",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-ci-reverse-fixture-canonicalization-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-reverse-fixture-canonicalization-review.safe.json",
+      "sha256": "0141f7cffb04a0d678a458ce422acb51f7eb1980e130b3b2f54e9796cb85ac49",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-CI-reverse-fixture64b-real-push-readback.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-reverse-fixture64b-real-push-readback.safe.json",
+      "sha256": "fbf0f2472645904cbc8249ec6fe0bf2751dd9437b48ee45259c6a9225abb5bd2",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-CI-reverse-fixture64b-normal-checks.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-reverse-fixture64b-normal-checks.safe.json",
+      "sha256": "2c0ae6cc2eca2e12137c299e23ee241cf73409b5c399a26b68d5c8ddba7635e1",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-p10-credential-data-sensitivity-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-credential-data-sensitivity-review.md",
+      "sha256": "90e99f7eb60a7d426ab20acc197a28b81d1b1086b8a225ec0aaa0acefeb77438",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "POST-CA3D-p10-credential-data-sensitivity-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-credential-data-sensitivity-review.safe.json",
+      "sha256": "65e87622da665aac7f2c467201f8c5ba0ddd59c3f83608cc5e941c5adcc76099",
+      "status": "actual-finite-evidence-or-independent-source-review-no-parent-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "CURRENT64B-FIRST3-run-binding.actual.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-64b-FIRST3-safe/run-binding.actual.safe.json",
+      "sha256": "dad7f928c04310d497b92c7f546649b9be36b4d0c28ec791fc019d7e0eaf2183",
+      "status": "actual-current-3case-2PASS-1FAIL-allobservers-finite-no-family-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "CURRENT64B-FIRST3-first3-safe-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-64b-FIRST3-safe/first3-safe-1.safe.json",
+      "sha256": "424898769d174e9069ecb543ac6d98719750cbaacae72c49935077768560b8f5",
+      "status": "actual-current-3case-2PASS-1FAIL-allobservers-finite-no-family-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "CURRENT64B-FIRST3-first3-safe-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-64b-FIRST3-safe/first3-safe-1.zip",
+      "sha256": "ccc74161cc42916b812404c201138901c445fd526d8781ae10da38901341a72e",
+      "status": "actual-current-3case-2PASS-1FAIL-allobservers-finite-no-family-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "CURRENT64B-FIRST3-root-first3-grant.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-64b-FIRST3-safe/root-first3-grant.safe.json",
+      "sha256": "5e149c29d03431c5b6fe15ac128d189d9a6482435debd34d47720b6ea2ec5916",
+      "status": "actual-current-3case-2PASS-1FAIL-allobservers-finite-no-family-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "CURRENT64B-FIRST3-reader-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-64b-FIRST3-safe/reader-terminal.safe.json",
+      "sha256": "a913a451cd39972987edbf2b7bafadf4e3527a8614fa3d1ec40af5b186f102a1",
+      "status": "actual-current-3case-2PASS-1FAIL-allobservers-finite-no-family-promotion",
+      "revision": "64b4874fef1bd445a84c715edc6d7232c974de9b"
+    },
+    {
+      "id": "CURRENT8AC-HEADMAN61-onefile-configured-hooks-PASS.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/HEADMAN61-onefile-configured-hooks-PASS.safe.json",
+      "sha256": "d6c6fc66b13865deb6a11ce538698445f1e220885788fa32c983c5f801ff2ab9",
+      "status": "source-review-scoped-checks-real-publish-or-current-gates-pending-finite-only",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-HEADMAN61-reason-selector-source.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/HEADMAN61-reason-selector-source.safe.json",
+      "sha256": "2d3e0ce1315645bc4b21fded30bdcc65c69999cf756e9e190b98cbb97b5f9aa6",
+      "status": "source-review-scoped-checks-real-publish-or-current-gates-pending-finite-only",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-headman-reason-locator-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/headman-reason-locator-review.safe.json",
+      "sha256": "cd85996104452d4a0bdf8e25d8f19163c6cd9fc42ea9a2993371889f9ac6eb0d",
+      "status": "source-review-scoped-checks-real-publish-or-current-gates-pending-finite-only",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-current-8ac-CI-progress.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-CI-progress.safe.json",
+      "sha256": "aab956388f6a5e9e306ce673866ac8ae701d21061a4c4583a412cb25cd2c75db",
+      "status": "current8ac-final-CI-two-fail-CovSecOpenAPI-success-Headman-cause-unknown",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-HEADMAN61-8ac-real-push-readback.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/HEADMAN61-8ac-real-push-readback.safe.json",
+      "sha256": "2be8438476d68af151117d11a31994f93135fe032e1d917f53de20df49123493",
+      "status": "source-review-scoped-checks-real-publish-or-current-gates-pending-finite-only",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-HEADMAN61-onefile-prettier-scoped-types-PASS.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/HEADMAN61-onefile-prettier-scoped-types-PASS.safe.json",
+      "sha256": "cb9847922934efdfe2ca8bde9f865d5c9cbac77756d9c449e399fa488b1dfdb1",
+      "status": "source-review-scoped-checks-real-publish-or-current-gates-pending-finite-only",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-HEADMAN61-reason-selector-author-commit.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/HEADMAN61-reason-selector-author-commit.safe.json",
+      "sha256": "5bead7961a27e7e4197a1527311d9238b94d59c06661544f527204fb1b3345b7",
+      "status": "source-review-scoped-checks-real-publish-or-current-gates-pending-finite-only",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-CAP-run-binding.actual.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-Schedule-CAP-safe/run-binding.actual.safe.json",
+      "sha256": "3fe2bb2597b9c918974bf4aec5d755d43def916976bf021cadab56eab0e9b5a0",
+      "status": "actual-closed-safe-diagnostic-only-not-whole-scenario-pass",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-CAP-safe-integration-outcomes-schedule-service-1-integrationTest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-Schedule-CAP-safe/safe-integration-outcomes-schedule-service-1-integrationTest.json",
+      "sha256": "7000388c61ee10f252da6d80f688c7e0158d3f90412b14390b5a9e5a55e3d9b3",
+      "status": "actual-closed-safe-diagnostic-only-not-whole-scenario-pass",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-CAP-safe-integration-outcomes-schedule-service-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-Schedule-CAP-safe/safe-integration-outcomes-schedule-service-1.safe.json",
+      "sha256": "bf77ea7f13e3ee2a3e98458dfb40f30db5c51a5eeaf553ef9ac3dfc88e596d49",
+      "status": "actual-closed-safe-diagnostic-only-not-whole-scenario-pass",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-CAP-safe-integration-outcomes-schedule-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-Schedule-CAP-safe/safe-integration-outcomes-schedule-service-1.zip",
+      "sha256": "f46d22e3ede33163a025d82c3bcc0daa4d97672baf0cde56be434586c10e01bb",
+      "status": "actual-closed-safe-diagnostic-only-not-whole-scenario-pass",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-CAP-root-cap-grant02.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-Schedule-CAP-safe/root-cap-grant02.safe.json",
+      "sha256": "1fa2520d1285532943c310e9702b8a42be5af08d3d75038be5c97ec718b48a53",
+      "status": "actual-closed-safe-diagnostic-only-not-whole-scenario-pass",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-CAP-reader02-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-Schedule-CAP-safe/reader02-terminal.safe.json",
+      "sha256": "74aebcfb0bc7e0006f217efb9e213c10f9ca339784d5414e9f1c8f55d5d650cc",
+      "status": "actual-closed-safe-diagnostic-only-not-whole-scenario-pass",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-FIRST3-run-binding.actual.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-FIRST3-safe/run-binding.actual.safe.json",
+      "sha256": "3fe2bb2597b9c918974bf4aec5d755d43def916976bf021cadab56eab0e9b5a0",
+      "status": "actual-current-finite-first3-results-no-family-promotion",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-FIRST3-first3-safe-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-FIRST3-safe/first3-safe-1.safe.json",
+      "sha256": "afed4856ca532d8251df8c6fba1234885df6f9552b190a502044d69d495e34d7",
+      "status": "actual-current-finite-first3-results-no-family-promotion",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-FIRST3-first3-safe-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-FIRST3-safe/first3-safe-1.zip",
+      "sha256": "9013ae05a945962d8f9ba9aa274ba60cd532c4244a205527febb88643fd7635a",
+      "status": "actual-current-finite-first3-results-no-family-promotion",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-FIRST3-first3-reader-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-FIRST3-safe/first3-reader-terminal.safe.json",
+      "sha256": "535ef828d78d372e53c9ef40bd703ce8be5aa63f6f4761917ef66204f4b8e4f0",
+      "status": "actual-current-finite-first3-results-no-family-promotion",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CURRENT8AC-FIRST3-root-first3-grant.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-8ac-FIRST3-safe/root-first3-grant.safe.json",
+      "sha256": "6cf767e22c1362263dfd8ecd483b5a736ed89cb6abfaf28dd6f59bf2995a4cd5",
+      "status": "actual-current-finite-first3-results-no-family-promotion",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CAP-FIXTURE-INDEPENDENT-SOURCE-REVIEW-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-cap-lock-order-review.safe.json",
+      "sha256": "7f1c6b14d0f7d3e6a582c77dac0ce42afe0b1426ee35e7cbd78ef930145fbdf7",
+      "status": "approve-source-real-PG-after-pending",
+      "revision": "8ac4125263218d6de49bc54931be1b57edc115fe"
+    },
+    {
+      "id": "CAP-FIXTURE-FORMAT-ACTUAL-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-cap-lock-order-format-actual.safe.json",
+      "sha256": "5fdd6375fab4590f59bcd8658bd6c97940e25340b6dc501462b490ae1d1b080c",
+      "status": "real-onefile-AOSP-apply-check-pass-semantic-tokens-equivalent",
+      "revision": "141a4d3c4a00a841ff4eedbb4378b022bf5fbf9e"
+    },
+    {
+      "id": "CAP-FIXTURE-COMPILE-ACTUAL-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-cap-lock-order-compile-actual.safe.json",
+      "sha256": "cb6e9b64c17efb2d48b0cd98ed365dfcd2d73315bb9d2c195534bb8e74646cbb",
+      "status": "real-scoped-main-test-compiler-pass-no-PG-acceptance",
+      "revision": "141a4d3c4a00a841ff4eedbb4378b022bf5fbf9e"
+    },
+    {
+      "id": "FIRST3-BOUNDED-PUBLIC-SOURCE-FRAME-PRODUCER-SOURCE-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/first3-spec-frame-source.safe.json",
+      "sha256": "a6c1802c9d42bc182a84c70ec6409285e99d2f72dd15c6591f34d5587f87c023",
+      "status": "stable-source-node-and-independent-review-pending",
+      "revision": "1fd53710ecb61c8ec85d62c3863ee91d9492041d"
+    },
+    {
+      "id": "CAP-FIXTURE-ONE-PG-ACTUAL-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-cap-lock-order-onePG-actual.safe.json",
+      "sha256": "f6a5178041d62328ebe07fc4702879d9e642266e29cb9a63db6d684e809ac301",
+      "status": "real-one-canonical-PG-pass-Root-independent-strictXML-currentremote-after-pending",
+      "revision": "141a4d3c4a00a841ff4eedbb4378b022bf5fbf9e"
+    },
+    {
+      "id": "CAP-FIXTURE-ONE-PG-INDEPENDENT-FINITE-ACCEPT-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-cap-onePG-finite-acceptance.safe.json",
+      "sha256": "a8712473a0393420a16f2cfd56b6e3a4911aa642ae81e4b0f8c632d43074c30b",
+      "status": "finite-actual-accept-no-findings-currentordinary-after-pending",
+      "revision": "9346fd7c20751cb5a259a834acccc53a14f76f42"
+    },
+    {
+      "id": "FIRST3-PUBLIC-FRAME-PRIVACY-SOURCE-INDEPENDENT-REVIEW-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/first3-spec-frame-source-review.safe.json",
+      "sha256": "371bf2cf5980ae6df352c8a8d3b4206e82e8c0fd3b3de606f55f69587e333836",
+      "status": "approve-source-node-runtime-pending",
+      "revision": "1fd53710ecb61c8ec85d62c3863ee91d9492041d"
+    },
+    {
+      "id": "FIRST3-PRIVACY-NODE-PLATFORM-REJECTION-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/first3-spec-frame-node-approval-rejection.safe.json",
+      "sha256": "92e15e5b352fdf95fea289017c5a8e5117068ca5341f0982fdf8b87abd3456b7",
+      "status": "blocked-platform-no-effects-trustedOwnerconfirmation-pending",
+      "revision": "1fd53710ecb61c8ec85d62c3863ee91d9492041d"
+    },
+    {
+      "id": "FIRST3-FRAME-ACTUAL-NODE-CONTROLS-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/first3-spec-frame-node-actual.safe.json",
+      "sha256": "8a2ac0301e1aa7bbfaf1c3ef53105dad2e63c906d8b1e65a8b1a4a8fde1d9660",
+      "status": "four-native-checks-pass-RAM-functional-counterexample-pass-overall-post-lex-metadata-failure-qualified",
+      "revision": "a286ee49e0d727344228ab00e2e4a79a7db5d0dc"
     }
   ],
   "research_receipt": {

@@ -1,0 +1,13 @@
+{
+  "native_exit": 0,
+  "hooks": {
+    "Gitleaks secret detection": true,
+    "check for added large files": true,
+    "fix end of files": true,
+    "trim trailing whitespace": true
+  },
+  "all_recorded_births_absent": true,
+  "recorded_births": 4,
+  "exact_reviewed_fixture_bytes": true,
+  "JSON_YAML_no_applicable_file": true
+}

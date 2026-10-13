@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
@@ -21,7 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-/** PostgreSQL behavior checks for the B0 schedule V1-V17 chain. */
+/** PostgreSQL behavior checks for the schedule migration chain and retained B0 history. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
 class StudentOccurrenceMigrationIT {
@@ -293,6 +295,16 @@ class StudentOccurrenceMigrationIT {
                         + " SET current_lesson_id = ? WHERE id = ?",
                 lessonId,
                 occurrenceId);
+        Long historyId =
+                jdbc.queryForObject(
+                        "INSERT INTO "
+                                + table(schema, "lesson_lifecycle_entries")
+                                + " (occurrence_id, revision, action, lesson_id, generation, reason, actor_id, occurred_at)"
+                                + " VALUES (?, 1, 'CANCELLED', ?, 1, 'historical cancellation', 2,"
+                                + " TIMESTAMPTZ '2026-03-01 06:00:00Z') RETURNING id",
+                        Long.class,
+                        occurrenceId,
+                        lessonId);
 
         MigrateResult result = flyway(schema, "18").migrate();
 
@@ -336,6 +348,125 @@ class StudentOccurrenceMigrationIT {
                                         + table(schema, "schedule_assignment_fences"),
                                 Integer.class))
                 .isZero();
+
+        List<Map<String, Object>> originalChecksums =
+                jdbc.queryForList(
+                        "SELECT version, script, checksum FROM "
+                                + table(schema, "flyway_schema_history")
+                                + " ORDER BY installed_rank");
+        assertThat(originalChecksums).hasSize(18);
+        List<Map<String, Object>> physicalHistory =
+                jdbc.queryForList(
+                        "SELECT to_jsonb(retained) AS snapshot FROM "
+                                + table(schema, "lessons")
+                                + " retained ORDER BY id");
+        List<Map<String, Object>> occurrences =
+                jdbc.queryForList(
+                        "SELECT to_jsonb(retained) AS snapshot FROM "
+                                + table(schema, "lesson_occurrences")
+                                + " retained ORDER BY id");
+        List<Map<String, Object>> templates =
+                jdbc.queryForList(
+                        "SELECT to_jsonb(retained) AS snapshot FROM "
+                                + table(schema, "schedule_items")
+                                + " retained ORDER BY id");
+        List<Map<String, Object>> lifecycleHistory =
+                jdbc.queryForList(
+                        "SELECT to_jsonb(retained) AS snapshot FROM "
+                                + table(schema, "lesson_lifecycle_entries")
+                                + " retained ORDER BY id");
+        List<Map<String, Object>> originalIndexes = retainedHistoryIndexes(schema);
+        assertThat(originalIndexes)
+                .hasSize(5)
+                .allSatisfy(
+                        index -> {
+                            assertThat(index.get("indisvalid")).isEqualTo(true);
+                            assertThat(index.get("indisready")).isEqualTo(true);
+                        });
+        Map<String, Map<String, Object>> sequences = retainedHistorySequences(schema);
+
+        Flyway current = flyway(schema, null);
+        MigrateResult upgrade = current.migrate();
+
+        assertThat(upgrade.success).isTrue();
+        assertThat(upgrade.migrationsExecuted).isEqualTo(12);
+        assertThat(current.info().current().getVersion().getVersion()).isEqualTo("30");
+        assertThat(current.info().pending()).isEmpty();
+        current.validate();
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT version, script, checksum FROM "
+                                        + table(schema, "flyway_schema_history")
+                                        + " WHERE installed_rank <= 18 ORDER BY installed_rank"))
+                .isEqualTo(originalChecksums);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT to_jsonb(retained) AS snapshot FROM "
+                                        + table(schema, "lessons")
+                                        + " retained ORDER BY id"))
+                .isEqualTo(physicalHistory);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT to_jsonb(retained) AS snapshot FROM "
+                                        + table(schema, "lesson_occurrences")
+                                        + " retained ORDER BY id"))
+                .isEqualTo(occurrences);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT to_jsonb(retained) - ARRAY['lifecycle_revision', 'deactivated_at', 'generation_not_before'] AS snapshot FROM "
+                                        + table(schema, "schedule_items")
+                                        + " retained ORDER BY id"))
+                .isEqualTo(templates);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT to_jsonb(retained) - ARRAY['restore_operation_id', 'transfer_operation_id', 'one_off_restore_operation_id', 'template_operation_id'] AS snapshot FROM "
+                                        + table(schema, "lesson_lifecycle_entries")
+                                        + " retained ORDER BY id"))
+                .isEqualTo(lifecycleHistory);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM "
+                                        + table(schema, "lesson_lifecycle_entries")
+                                        + " WHERE restore_operation_id IS NOT NULL OR transfer_operation_id IS NOT NULL"
+                                        + " OR one_off_restore_operation_id IS NOT NULL OR template_operation_id IS NOT NULL",
+                                Integer.class))
+                .isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM "
+                                        + table(schema, "schedule_items")
+                                        + " WHERE lifecycle_revision = 1 AND deactivated_at IS NULL AND generation_not_before IS NULL",
+                                Integer.class))
+                .isEqualTo(1);
+        assertThat(retainedHistoryIndexes(schema)).isEqualTo(originalIndexes);
+        assertThat(retainedHistorySequences(schema)).isEqualTo(sequences);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid"
+                                        + " JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = ?"
+                                        + " AND i.indisvalid AND i.indisready AND c.relname IN"
+                                        + " ('idx_lesson_transfer_pending', 'idx_recurring_lifecycle_item', 'homework_binding_semester_pending_idx')",
+                                Integer.class,
+                                schema))
+                .isEqualTo(3);
+
+        assertThat(current.migrate().migrationsExecuted).isZero();
+        assertThat(retainedHistorySequences(schema)).isEqualTo(sequences);
+        for (var identity :
+                Map.of(
+                                "schedule_items", templateId,
+                                "lesson_occurrences", occurrenceId,
+                                "lessons", lessonId,
+                                "lesson_lifecycle_entries", historyId)
+                        .entrySet()) {
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT nextval(pg_get_serial_sequence(?, ?))",
+                                    Long.class,
+                                    table(schema, identity.getKey()),
+                                    "id"))
+                    .isEqualTo(identity.getValue() + 1);
+        }
     }
 
     @Test
@@ -884,6 +1015,35 @@ class StudentOccurrenceMigrationIT {
                                                 + " (assignment_id, group_id, subject_id, semester_id, day_of_week, lesson_number,"
                                                 + " start_time, end_time, week_type) VALUES (0, 1, 2, 3, 1, 1, '09:00', '10:00', 'all')"))
                 .isInstanceOf(DataAccessException.class);
+    }
+
+    private List<Map<String, Object>> retainedHistoryIndexes(String schema) {
+        return jdbc.queryForList(
+                "SELECT c.relname, i.indisvalid, i.indisready, pg_get_indexdef(i.indexrelid) AS definition"
+                        + " FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid"
+                        + " JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = ?"
+                        + " AND c.relname IN ('uq_lesson_occurrences_recurring_origin', 'uq_lesson_occurrences_one_off_origin',"
+                        + " 'uq_lessons_included_occurrence', 'idx_lessons_occurrence_history', 'idx_lesson_lifecycle_entries_occurrence')"
+                        + " ORDER BY c.relname",
+                schema);
+    }
+
+    private Map<String, Map<String, Object>> retainedHistorySequences(String schema) {
+        Map<String, Map<String, Object>> result = new java.util.LinkedHashMap<>();
+        for (String name :
+                List.of(
+                        "schedule_items",
+                        "lesson_occurrences",
+                        "lessons",
+                        "lesson_lifecycle_entries")) {
+            String sequence =
+                    jdbc.queryForObject(
+                            "SELECT pg_get_serial_sequence(?, 'id')",
+                            String.class,
+                            table(schema, name));
+            result.put(name, jdbc.queryForMap("SELECT last_value, is_called FROM " + sequence));
+        }
+        return result;
     }
 
     private Long insertTemplate(

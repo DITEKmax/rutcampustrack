@@ -55,8 +55,7 @@ function recordReportedHints(info: TestInfo, error: unknown): void {
     const prefix = diagnostic.cause.startsWith('REPORTED_CLASS_')
       ? 'REPORTED_CLASS_'
       : 'REPORTED_FRAME_';
-    if (previous.length >= 8 || previous.some((item) => item.cause.startsWith(prefix)))
-      continue;
+    if (previous.length >= 8 || previous.some((item) => item.cause.startsWith(prefix))) continue;
     info.annotations.push({
       type: safeFailureAnnotation,
       description: `${diagnostic.cause}:0`,

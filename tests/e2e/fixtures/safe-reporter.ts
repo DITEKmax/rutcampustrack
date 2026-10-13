@@ -119,9 +119,8 @@ export function reportedFailureHints(error: unknown): SafeFailureDiagnostic[] {
     /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(message)
   )
     return [];
-  const classMatch = /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|TimeoutError): .+$/.exec(
-    message,
-  );
+  const classMatch =
+    /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|TimeoutError): .+$/.exec(message);
   if (!classMatch) return [];
   const cause = reportedClassHints[classMatch[1] as keyof typeof reportedClassHints];
   const hints: SafeFailureDiagnostic[] = [{ stage: 'UNKNOWN', cause, httpStatus: 0 }];
@@ -221,8 +220,7 @@ export function safeFailureDiagnostics(
         if (
           reportedHints.some(
             (item) =>
-              isReportedHint(item.cause) &&
-              item.cause.startsWith('REPORTED_CLASS_') === classHint,
+              isReportedHint(item.cause) && item.cause.startsWith('REPORTED_CLASS_') === classHint,
           )
         )
           continue;

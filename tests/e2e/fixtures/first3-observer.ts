@@ -109,18 +109,38 @@ const enumValues: Record<string, readonly string[]> = {
   failureBoundary: ['GATEWAY_ISSUER', 'ATTENDANCE_DEPENDENCY', 'UNKNOWN'],
   dependency: ['ACADEMIC', 'SCHEDULE', 'UNKNOWN'],
   reportedCode: [
-    'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND',
-    'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION',
-    'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS',
+    'CANCELLED',
+    'UNKNOWN',
+    'INVALID_ARGUMENT',
+    'DEADLINE_EXCEEDED',
+    'NOT_FOUND',
+    'ALREADY_EXISTS',
+    'PERMISSION_DENIED',
+    'RESOURCE_EXHAUSTED',
+    'FAILED_PRECONDITION',
+    'ABORTED',
+    'OUT_OF_RANGE',
+    'UNIMPLEMENTED',
+    'INTERNAL',
+    'UNAVAILABLE',
+    'DATA_LOSS',
     'UNAUTHENTICATED',
   ],
   operationHint: [
-    'GET_SEMESTER_STATE_SHAPE', 'GET_GROUP_MEMBERS_SHAPE', 'GET_LESSON_BY_ID_SHAPE',
+    'GET_SEMESTER_STATE_SHAPE',
+    'GET_GROUP_MEMBERS_SHAPE',
+    'GET_LESSON_BY_ID_SHAPE',
     'UNKNOWN',
   ],
   problemBodyState: [
-    'CLASSIFIED', 'UNKNOWN', 'EMPTY', 'OVERSIZE', 'INVALID_LENGTH', 'MALFORMED',
-    'UNAVAILABLE', 'NOT_503',
+    'CLASSIFIED',
+    'UNKNOWN',
+    'EMPTY',
+    'OVERSIZE',
+    'INVALID_LENGTH',
+    'MALFORMED',
+    'UNAVAILABLE',
+    'NOT_503',
   ],
   activeRole: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN', 'NONE', 'UNKNOWN'],
   targetStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'CANCELLED', 'UNSUPPORTED'],
@@ -178,18 +198,36 @@ export function classifyRosterProblem(
   contentLength?: string,
 ): Facts {
   const facts: Facts = {
-    failureBoundary: 'UNKNOWN', dependency: 'UNKNOWN', reportedCode: 'UNKNOWN',
-    operationHint: 'UNKNOWN', problemBodyState: 'UNKNOWN',
+    failureBoundary: 'UNKNOWN',
+    dependency: 'UNKNOWN',
+    reportedCode: 'UNKNOWN',
+    operationHint: 'UNKNOWN',
+    problemBodyState: 'UNKNOWN',
   };
-  if (httpStatus !== 503) { facts.problemBodyState = 'NOT_503'; return facts; }
+  if (httpStatus !== 503) {
+    facts.problemBodyState = 'NOT_503';
+    return facts;
+  }
   const lengthState = rosterProblemLengthState(contentLength);
-  if (lengthState !== 'UNKNOWN') { facts.problemBodyState = lengthState; return facts; }
-  if (bytes.byteLength > rosterProblemByteLimit) { facts.problemBodyState = 'OVERSIZE'; return facts; }
-  if (bytes.byteLength === 0) { facts.problemBodyState = 'EMPTY'; return facts; }
+  if (lengthState !== 'UNKNOWN') {
+    facts.problemBodyState = lengthState;
+    return facts;
+  }
+  if (bytes.byteLength > rosterProblemByteLimit) {
+    facts.problemBodyState = 'OVERSIZE';
+    return facts;
+  }
+  if (bytes.byteLength === 0) {
+    facts.problemBodyState = 'EMPTY';
+    return facts;
+  }
   let body: Record<string, unknown> | undefined;
   try {
     body = record(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
-  } catch { facts.problemBodyState = 'MALFORMED'; return facts; }
+  } catch {
+    facts.problemBodyState = 'MALFORMED';
+    return facts;
+  }
   if (!body || body.status !== 503) return facts;
   if (body.code === 'DEPENDENCY_UNAVAILABLE' && body.detail === 'Dependency unavailable') {
     facts.failureBoundary = 'GATEWAY_ISSUER';
@@ -203,8 +241,15 @@ export function classifyRosterProblem(
   // The same Academic prefix serves several RPCs: its status never identifies the operation.
   // Deliberately narrow Status subset: fixed field order, cause=null, no brace/delimiter ambiguity.
   // Other valid Status forms remain UNKNOWN; this does not parse a stack or general Java grammar.
-  const rpc = /^(Academic|Schedule) Service unavailable: Status\{code=([A-Z_]+), description=([^{}]*), cause=null\}$/.exec(body.detail);
-  if (rpc && enumValues.reportedCode.includes(rpc[2]) && !/,\s*(?:code|description|cause)\s*=/.test(rpc[3])) {
+  const rpc =
+    /^(Academic|Schedule) Service unavailable: Status\{code=([A-Z_]+), description=([^{}]*), cause=null\}$/.exec(
+      body.detail,
+    );
+  if (
+    rpc &&
+    enumValues.reportedCode.includes(rpc[2]) &&
+    !/,\s*(?:code|description|cause)\s*=/.test(rpc[3])
+  ) {
     facts.dependency = rpc[1] === 'Academic' ? 'ACADEMIC' : 'SCHEDULE';
     facts.reportedCode = rpc[2];
     return facts;
@@ -212,10 +257,19 @@ export function classifyRosterProblem(
   const hints: Record<string, readonly [string, string]> = {
     'Mismatched semester state': ['ACADEMIC', 'GET_SEMESTER_STATE_SHAPE'],
     'Academic returned mismatched journal semester': ['ACADEMIC', 'GET_SEMESTER_STATE_SHAPE'],
-    'Academic returned a missing or mismatched historical roster echo': ['ACADEMIC', 'GET_GROUP_MEMBERS_SHAPE'],
-    'Academic returned duplicate or invalid historical student identity': ['ACADEMIC', 'GET_GROUP_MEMBERS_SHAPE'],
+    'Academic returned a missing or mismatched historical roster echo': [
+      'ACADEMIC',
+      'GET_GROUP_MEMBERS_SHAPE',
+    ],
+    'Academic returned duplicate or invalid historical student identity': [
+      'ACADEMIC',
+      'GET_GROUP_MEMBERS_SHAPE',
+    ],
     'Schedule returned no lesson snapshot': ['SCHEDULE', 'GET_LESSON_BY_ID_SHAPE'],
-    'Schedule returned a lesson without a positive semester': ['SCHEDULE', 'GET_LESSON_BY_ID_SHAPE'],
+    'Schedule returned a lesson without a positive semester': [
+      'SCHEDULE',
+      'GET_LESSON_BY_ID_SHAPE',
+    ],
   };
   if (Object.hasOwn(hints, body.detail)) {
     [facts.dependency, facts.operationHint] = hints[body.detail];

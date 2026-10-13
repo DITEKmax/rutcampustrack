@@ -106,6 +106,22 @@ const countKeys = new Set([
 ]);
 const enumValues: Record<string, readonly string[]> = {
   httpStatus: [...httpStatuses.map(String), 'OTHER'],
+  failureBoundary: ['GATEWAY_ISSUER', 'ATTENDANCE_DEPENDENCY', 'UNKNOWN'],
+  dependency: ['ACADEMIC', 'SCHEDULE', 'UNKNOWN'],
+  reportedCode: [
+    'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND',
+    'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION',
+    'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS',
+    'UNAUTHENTICATED',
+  ],
+  operationHint: [
+    'GET_SEMESTER_STATE_SHAPE', 'GET_GROUP_MEMBERS_SHAPE', 'GET_LESSON_BY_ID_SHAPE',
+    'UNKNOWN',
+  ],
+  problemBodyState: [
+    'CLASSIFIED', 'UNKNOWN', 'EMPTY', 'OVERSIZE', 'INVALID_LENGTH', 'MALFORMED',
+    'UNAVAILABLE', 'NOT_503',
+  ],
   activeRole: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN', 'NONE', 'UNKNOWN'],
   targetStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'CANCELLED', 'UNSUPPORTED'],
   domStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'CANCELLED', 'UNSUPPORTED', 'ABSENT_ROW'],
@@ -147,6 +163,70 @@ function record(value: unknown): Record<string, unknown> | undefined {
     ? (value as Record<string, unknown>)
     : undefined;
 }
+
+const rosterProblemByteLimit = 8192;
+function rosterProblemLengthState(value?: string): 'UNKNOWN' | 'OVERSIZE' | 'INVALID_LENGTH' {
+  if (value === undefined) return 'UNKNOWN';
+  if (!/^\d{1,10}$/.test(value)) return 'INVALID_LENGTH';
+  return Number(value) > rosterProblemByteLimit ? 'OVERSIZE' : 'UNKNOWN';
+}
+
+/** Only closed facts leave this RAM-only classifier; no response field is copied into output. */
+export function classifyRosterProblem(
+  httpStatus: number,
+  bytes: Uint8Array,
+  contentLength?: string,
+): Facts {
+  const facts: Facts = {
+    failureBoundary: 'UNKNOWN', dependency: 'UNKNOWN', reportedCode: 'UNKNOWN',
+    operationHint: 'UNKNOWN', problemBodyState: 'UNKNOWN',
+  };
+  if (httpStatus !== 503) { facts.problemBodyState = 'NOT_503'; return facts; }
+  const lengthState = rosterProblemLengthState(contentLength);
+  if (lengthState !== 'UNKNOWN') { facts.problemBodyState = lengthState; return facts; }
+  if (bytes.byteLength > rosterProblemByteLimit) { facts.problemBodyState = 'OVERSIZE'; return facts; }
+  if (bytes.byteLength === 0) { facts.problemBodyState = 'EMPTY'; return facts; }
+  let body: Record<string, unknown> | undefined;
+  try {
+    body = record(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
+  } catch { facts.problemBodyState = 'MALFORMED'; return facts; }
+  if (!body || body.status !== 503) return facts;
+  if (body.code === 'DEPENDENCY_UNAVAILABLE' && body.detail === 'Dependency unavailable') {
+    facts.failureBoundary = 'GATEWAY_ISSUER';
+    facts.problemBodyState = 'CLASSIFIED';
+    return facts;
+  }
+  if (body.type !== 'https://api.rutcampustrack.ru/problems/service-unavailable') return facts;
+  facts.failureBoundary = 'ATTENDANCE_DEPENDENCY';
+  facts.problemBodyState = 'CLASSIFIED';
+  if (typeof body.detail !== 'string') return facts;
+  // The same Academic prefix serves several RPCs: its status never identifies the operation.
+  // Deliberately narrow Status subset: fixed field order, cause=null, no brace/delimiter ambiguity.
+  // Other valid Status forms remain UNKNOWN; this does not parse a stack or general Java grammar.
+  const rpc = /^(Academic|Schedule) Service unavailable: Status\{code=([A-Z_]+), description=([^{}]*), cause=null\}$/.exec(body.detail);
+  if (rpc && enumValues.reportedCode.includes(rpc[2]) && !/,\s*(?:code|description|cause)\s*=/.test(rpc[3])) {
+    facts.dependency = rpc[1] === 'Academic' ? 'ACADEMIC' : 'SCHEDULE';
+    facts.reportedCode = rpc[2];
+    return facts;
+  }
+  const hints: Record<string, readonly [string, string]> = {
+    'Mismatched semester state': ['ACADEMIC', 'GET_SEMESTER_STATE_SHAPE'],
+    'Academic returned mismatched journal semester': ['ACADEMIC', 'GET_SEMESTER_STATE_SHAPE'],
+    'Academic returned a missing or mismatched historical roster echo': ['ACADEMIC', 'GET_GROUP_MEMBERS_SHAPE'],
+    'Academic returned duplicate or invalid historical student identity': ['ACADEMIC', 'GET_GROUP_MEMBERS_SHAPE'],
+    'Schedule returned no lesson snapshot': ['SCHEDULE', 'GET_LESSON_BY_ID_SHAPE'],
+    'Schedule returned a lesson without a positive semester': ['SCHEDULE', 'GET_LESSON_BY_ID_SHAPE'],
+  };
+  if (Object.hasOwn(hints, body.detail)) {
+    [facts.dependency, facts.operationHint] = hints[body.detail];
+  }
+  return facts;
+}
+
+type RosterProblemResponse = {
+  headers(): Record<string, string>;
+  body(): Promise<Buffer>;
+};
 function unwrap(value: unknown): Record<string, unknown> | undefined {
   const raw = record(value);
   return record(raw?.content) ?? raw;
@@ -517,6 +597,10 @@ export class FocusObserver {
       facts.requestedRangeEqual =
         url.searchParams.get('from') === this.dataset.today &&
         url.searchParams.get('to') === this.dataset.tomorrow;
+    if (endpoint === 'LESSON_ROSTER' && response.status() === 503 && facts.lessonPathEqual) {
+      Object.assign(facts, await this.rosterUnavailableFacts(response));
+      this.requireRunning();
+    }
     if (response.status() === 200 && !['MARK_WRITE', 'COMPLETION_WRITE'].includes(endpoint)) {
       let body: unknown;
       try {
@@ -544,6 +628,22 @@ export class FocusObserver {
     if (this.active) this.add('UI_RESPONSE', facts, endpoint);
   }
 
+  private async rosterUnavailableFacts(response: RosterProblemResponse): Promise<Facts> {
+    this.requireRunning();
+    const contentLength = response.headers()['content-length'];
+    if (rosterProblemLengthState(contentLength) !== 'UNKNOWN')
+      return classifyRosterProblem(503, new Uint8Array(), contentLength);
+    try {
+      // Public Playwright body() buffers first. 8KiB bounds classification, not allocation.
+      const bytes = await this.wait(response.body(), 1500);
+      this.requireRunning();
+      return classifyRosterProblem(503, bytes, contentLength);
+    } catch {
+      this.requireRunning();
+      return { ...classifyRosterProblem(503, new Uint8Array()), problemBodyState: 'UNAVAILABLE' };
+    }
+  }
+
   private async failureRead(endpoint: Endpoint, path: string): Promise<void> {
     if (this.stopped || this.ended || !this.token) return;
     const facts: Facts = {};
@@ -561,6 +661,10 @@ export class FocusObserver {
       );
       this.requireRunning();
       facts.httpStatus = status(response.status());
+      if (endpoint === 'LESSON_ROSTER' && response.status() === 503) {
+        Object.assign(facts, await this.rosterUnavailableFacts(response));
+        this.requireRunning();
+      }
       if (response.status() === 200) {
         const body: unknown = await this.wait(response.json() as Promise<unknown>, 1500);
         this.requireRunning();

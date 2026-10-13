@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-13T10:54:54.618407+00:00",
+  "scope": "ROOT_PARTIAL50_TASKDOCS_CHECKPOINT",
+  "result": "NORMAL_DOCS_ONLY_COMMIT_SCOPED_HOOKS_AND_STAGED_SECRET_SCAN_PASS",
+  "checkpoint_sha": "c352ac3112d75b53d79ad2869622f3d342888758",
+  "product_test_revision": "a80edb0e649548ed8f8de285beede775f2890007",
+  "checks": {
+    "passed": 5,
+    "not_applicable_skipped": 1,
+    "failed": false
+  },
+  "qualification": "Exact50taskdocs source-equivalent/a80 executabletree unchanged; native17714zero/allreaped/superabsent/nohookbypass. Original45430FAIL20publicGitSHA20proved4reports archived5ea5/25exactcopiesunstaged/unmodified/rulesunchanged. P10Source+formatcompile independent1301 integration-ready, HTTP/sensitivitystillNOT_RUN. Thischeckpointunpublished/notfinalD009/DONE; latestRootdocupdates/reviewreceipts remainWIPfornextcheckpoint."
+}

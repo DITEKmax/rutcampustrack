@@ -9452,6 +9452,55 @@
       "sha256": "0bb0cf148839af434634e70bd4a4d97dd4c7cdd6a8d2c8f839817f4a4add31e1",
       "status": "ACTUAL_COMPILE_ONLY_PASS_REAL_HTTP_NOT_RUN",
       "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/P10-format-and-compile-independent-finite-ACCEPT/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-format-and-compile-independent-finite-ACCEPT/REPORT.safe.json",
+      "sha256": "1301d3fae510c0e85ff59f913eebeabe242df582cb772c23366629c66ec1f967",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/P10-format-and-compile-independent-finite-ACCEPT/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-format-and-compile-independent-finite-ACCEPT/manifest.safe.json",
+      "sha256": "2c5a51284c15659c094eca25d5a92f9c52dbfb16f6dba010f67ebb57869ae64e",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/P10-format-and-compile-independent-finite-ACCEPT/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P10-format-and-compile-independent-finite-ACCEPT/review.safe.zip",
+      "sha256": "864f7477f7ee15c74f3c0b2ad24211836aa5665be678d22991de54fb4102153f",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/Root-A80-partial50-taskdoc-hooks/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-A80-partial50-taskdoc-hooks/REPORT.safe.json",
+      "sha256": "5f1e7b7c962c77195ba6a04dbd7fbe829c9c357b713f4cf16f86addb071fd451",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/Root-A80-partial50-taskdoc-hooks/safe-hook-outcomes.zip",
+      "path": "docs/validation/cloud-20261011/receipts/Root-A80-partial50-taskdoc-hooks/safe-hook-outcomes.zip",
+      "sha256": "5dc465833856662a83c29dd3ffeebb2d0a76c1a4eb6e1569935c71a0c26b445a",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/Root-P10-one-AuthOtp-integration-scoped-hooks/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-P10-one-AuthOtp-integration-scoped-hooks/REPORT.safe.json",
+      "sha256": "9d37f5b5b8a411a61ac0f19f9bcced5b6de045c81bf9121e14b73502c96091ab",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
+    },
+    {
+      "id": "ROOT-POST-P10-INTEGRATION-EVIDENCE/Root-P10-one-AuthOtp-integration-scoped-hooks/safe-scoped-hook-outcomes.zip",
+      "path": "docs/validation/cloud-20261011/receipts/Root-P10-one-AuthOtp-integration-scoped-hooks/safe-scoped-hook-outcomes.zip",
+      "sha256": "0ecd67caf6833ff72e44bcdcc02e03501e67dfd0a6f036adc91b3631a2f164e5",
+      "status": "READ_VERIFIED_FINITE_SCOPE_IN_ORIGINAL_HTTP_NOT_RUN",
+      "revision": "4c946bedff221094ccc9bf052570347736b22a83"
     }
   ],
   "research_receipt": {

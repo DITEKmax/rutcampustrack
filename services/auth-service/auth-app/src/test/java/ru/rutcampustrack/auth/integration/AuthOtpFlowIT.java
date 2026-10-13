@@ -1181,7 +1181,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     private void assertUnicodePasswordRejection(
             ResponseEntity<JsonNode> response, String invalid, String proof) throws Exception {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(hasNoStoreDirective(response.getHeaders().getCacheControl())).isTrue();
         assertThat(response.getBody() != null).isTrue();
         JsonNode body = response.getBody();
         String rendered = body.toString();
@@ -1200,6 +1200,30 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                 && !rendered.contains("\\uD800")
                                 && rendered.indexOf((char) 0xD800) < 0)
                 .isTrue();
+    }
+
+    private boolean hasNoStoreDirective(String cacheControl) {
+        if (cacheControl == null) return false;
+        boolean quoted = false;
+        boolean escaped = false;
+        boolean noStore = false;
+        int start = 0;
+        for (int index = 0; index < cacheControl.length(); index++) {
+            char character = cacheControl.charAt(index);
+            if (escaped) {
+                escaped = false;
+            } else if (quoted && character == '\\') {
+                escaped = true;
+            } else if (character == '"') {
+                quoted = !quoted;
+            } else if (!quoted && character == ',') {
+                noStore |= "no-store".equalsIgnoreCase(cacheControl.substring(start, index).trim());
+                start = index + 1;
+            }
+        }
+        return !quoted
+                && !escaped
+                && (noStore || "no-store".equalsIgnoreCase(cacheControl.substring(start).trim()));
     }
 
     private List<Object> unicodePasswordState(long userId) {

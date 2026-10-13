@@ -171,7 +171,9 @@ jobs:
 
       - name: Integration tests ${{ matrix.service.name }}
         id: java-tests
-        run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon
+        # Auth failed before tests while resolving compileProtoPath dependencies.
+        # Refresh resolution metadata for this lane; keep the same task and gates.
+        run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon ${{ matrix.service.name == 'auth-service' && '--refresh-dependencies' || '' }}
 
       - name: Upload integration test reports
         if: failure()

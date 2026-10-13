@@ -1,5 +1,9 @@
 import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
-import { classifySafeFailure, safeFailureAnnotation, safeFailureDiagnostics } from './safe-reporter';
+import {
+  classifySafeFailure,
+  safeFailureAnnotation,
+  safeFailureDiagnostics,
+} from './safe-reporter';
 
 /** Automatic fixtures start before explicit page/dataset fixtures and finish after their teardown. */
 export const test = base.extend<{ privateArtifacts: void }>({
@@ -45,7 +49,12 @@ export function requirePrivateArtifacts(info: WorkerInfo): void {
 function recordSafeFailure(info: TestInfo, error: unknown): void {
   const diagnostic = classifySafeFailure(error);
   const previous = safeFailureDiagnostics(info.annotations);
-  if (previous.length >= 8 || previous.some((item) => item.cause === diagnostic.cause && item.httpStatus === diagnostic.httpStatus))
+  if (
+    previous.length >= 8 ||
+    previous.some(
+      (item) => item.cause === diagnostic.cause && item.httpStatus === diagnostic.httpStatus,
+    )
+  )
     return;
   info.annotations.push({
     type: safeFailureAnnotation,
@@ -58,7 +67,10 @@ export function sanitizeTestErrors(info: TestInfo): void {
   for (const error of info.errors) {
     // The generic rewritten message adds no new cause on repeated sanitizer passes.
     const message = Object.getOwnPropertyDescriptor(error, 'message');
-    if (message?.value !== 'Check failed; source location and outcome are recorded in safe-results.json')
+    if (
+      message?.value !==
+      'Check failed; source location and outcome are recorded in safe-results.json'
+    )
       recordSafeFailure(info, error);
     const record = error as Record<string, unknown>;
     const location = record.location;

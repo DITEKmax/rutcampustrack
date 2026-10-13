@@ -183,9 +183,13 @@ class InternalSessionAdmissionIT {
                         liveSession.sessionId(),
                         user.userId());
         SessionAdmissionService originalAdmission = admissionService(now);
-        assertThat(Long.toString(user.userId()).equals(originalAdmission.admit(revokedAccess).userId()))
+        assertThat(
+                        Long.toString(user.userId())
+                                .equals(originalAdmission.admit(revokedAccess).userId()))
                 .isTrue();
-        assertThat(Long.toString(user.userId()).equals(originalAdmission.admit(liveAccess).userId()))
+        assertThat(
+                        Long.toString(user.userId())
+                                .equals(originalAdmission.admit(liveAccess).userId()))
                 .isTrue();
         assertThat(
                         authorityHolder
@@ -228,7 +232,12 @@ class InternalSessionAdmissionIT {
                         Clock.fixed(checkedAt, ZoneOffset.UTC));
         MockMvc receiver = mockMvc(rebuiltAdmission, properties);
         assertDurabilityAdmission(
-                receiver, revokedAccess, properties, 401, "SESSION_REVOKED", revokedSession.snapshot());
+                receiver,
+                revokedAccess,
+                properties,
+                401,
+                "SESSION_REVOKED",
+                revokedSession.snapshot());
         assertThat(
                         rebuiltAuthority
                                 .refresh(
@@ -240,7 +249,8 @@ class InternalSessionAdmissionIT {
                                                 checkedAt))
                                 .failureCode())
                 .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
-        assertDurabilityAdmission(receiver, liveAccess, properties, 200, null, liveSession.snapshot());
+        assertDurabilityAdmission(
+                receiver, liveAccess, properties, 200, null, liveSession.snapshot());
         UUID rotatedLiveJti = UUID.randomUUID();
         assertThat(
                         rebuiltAuthority
@@ -261,7 +271,10 @@ class InternalSessionAdmissionIT {
         assertThat(POSTGRES.isRunning()).isTrue();
         assertThat(
                         Boolean.TRUE.equals(
-                                docker.inspectContainerCmd(containerId).exec().getState().getPaused()))
+                                docker.inspectContainerCmd(containerId)
+                                        .exec()
+                                        .getState()
+                                        .getPaused()))
                 .isFalse();
         boolean pauseAttempted = false;
         Throwable primaryFailure = null;
@@ -270,10 +283,18 @@ class InternalSessionAdmissionIT {
             docker.pauseContainerCmd(containerId).exec();
             assertThat(
                             Boolean.TRUE.equals(
-                                    docker.inspectContainerCmd(containerId).exec().getState().getPaused()))
+                                    docker.inspectContainerCmd(containerId)
+                                            .exec()
+                                            .getState()
+                                            .getPaused()))
                     .isTrue();
             assertDurabilityAdmission(
-                    receiver, liveAccess, properties, 503, "AUTHORITY_UNAVAILABLE", liveSession.snapshot());
+                    receiver,
+                    liveAccess,
+                    properties,
+                    503,
+                    "AUTHORITY_UNAVAILABLE",
+                    liveSession.snapshot());
             assertThat(
                             rebuiltAuthority
                                     .refresh(
@@ -305,11 +326,20 @@ class InternalSessionAdmissionIT {
         }
         assertThat(
                         Boolean.TRUE.equals(
-                                docker.inspectContainerCmd(containerId).exec().getState().getPaused()))
+                                docker.inspectContainerCmd(containerId)
+                                        .exec()
+                                        .getState()
+                                        .getPaused()))
                 .isFalse();
-        assertDurabilityAdmission(receiver, liveAccess, properties, 200, null, liveSession.snapshot());
         assertDurabilityAdmission(
-                receiver, revokedAccess, properties, 401, "SESSION_REVOKED", revokedSession.snapshot());
+                receiver, liveAccess, properties, 200, null, liveSession.snapshot());
+        assertDurabilityAdmission(
+                receiver,
+                revokedAccess,
+                properties,
+                401,
+                "SESSION_REVOKED",
+                revokedSession.snapshot());
         // Compare in RAM so an assertion failure cannot render refresh JTIs or session identifiers.
         assertThat(beforeOutage.equals(durabilityState(rebuiltJdbc, user.userId())))
                 .as("Outage and recovery preserve the durable session, JTI and event tuple")
@@ -1361,9 +1391,12 @@ class InternalSessionAdmissionIT {
                             .build()
                             .parseSignedClaims(internal)
                             .getPayload();
-            assertThat(Long.toString(expectedSnapshot.userId()).equals(claims.getSubject())).isTrue();
+            assertThat(Long.toString(expectedSnapshot.userId()).equals(claims.getSubject()))
+                    .isTrue();
             assertThat(
-                            expectedSnapshot.sessionId().toString()
+                            expectedSnapshot
+                                    .sessionId()
+                                    .toString()
                                     .equals(claims.get("sid", String.class)))
                     .isTrue();
             assertThat(

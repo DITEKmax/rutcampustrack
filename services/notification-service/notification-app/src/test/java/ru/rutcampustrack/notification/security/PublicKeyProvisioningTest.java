@@ -50,7 +50,8 @@ class PublicKeyProvisioningTest {
                     try (exchange) {
                         int status = responseStatus.get();
                         exchange.getResponseHeaders().set("Content-Type", "application/json");
-                        exchange.sendResponseHeaders(status, status == 200 ? publicResponse.length : -1);
+                        exchange.sendResponseHeaders(
+                                status, status == 200 ? publicResponse.length : -1);
                         if (status == 200) {
                             exchange.getResponseBody().write(publicResponse);
                         }
@@ -60,7 +61,12 @@ class PublicKeyProvisioningTest {
         InternalJwtProperties properties =
                 new InternalJwtProperties(
                         "http://127.0.0.1:" + server.getAddress().getPort(),
-                        60, 0, false, null, null, null);
+                        60,
+                        0,
+                        false,
+                        null,
+                        null,
+                        null);
         InternalJwtConfig configuration = new InternalJwtConfig();
         provider = configuration.publicKeyProvider(properties);
         validator = configuration.internalJwtValidator(provider, properties);
@@ -79,8 +85,12 @@ class PublicKeyProvisioningTest {
 
         assertSamePublicKey();
         assertThat(validator.validate(token(signer)))
-                .isEqualTo(new InternalJwtClaims(42L, SESSION_ID, 3L, 7L, "STUDENT", "ACTIVE", 9L, false, false));
-        assertThrows(InternalJwtException.class, () -> validator.validate(token(new InternalJwtTestFactory())));
+                .isEqualTo(
+                        new InternalJwtClaims(
+                                42L, SESSION_ID, 3L, 7L, "STUDENT", "ACTIVE", 9L, false, false));
+        assertThrows(
+                InternalJwtException.class,
+                () -> validator.validate(token(new InternalJwtTestFactory())));
     }
 
     @Test
@@ -101,7 +111,10 @@ class PublicKeyProvisioningTest {
 
     private void assertSamePublicKey() {
         // A failed assertion reports a boolean, never key bytes or a compact token.
-        assertThat(Arrays.equals(provider.getPublicKey().getEncoded(), signer.publicKey().getEncoded()))
+        assertThat(
+                        Arrays.equals(
+                                provider.getPublicKey().getEncoded(),
+                                signer.publicKey().getEncoded()))
                 .isTrue();
     }
 

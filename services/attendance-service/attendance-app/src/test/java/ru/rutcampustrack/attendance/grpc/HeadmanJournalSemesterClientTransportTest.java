@@ -35,8 +35,8 @@ import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterStateRequest;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
@@ -176,8 +176,13 @@ class HeadmanJournalSemesterClientTransportTest {
                     .isInstanceOfSatisfying(
                             ResponseStatusException.class,
                             error -> assertThat(error.getStatusCode().value()).isEqualTo(401));
-            for (var code : new Status.Code[] {Status.Code.INVALID_ARGUMENT, Status.Code.NOT_FOUND,
-                    Status.Code.PERMISSION_DENIED, Status.Code.UNAVAILABLE}) {
+            for (var code :
+                    new Status.Code[] {
+                        Status.Code.INVALID_ARGUMENT,
+                        Status.Code.NOT_FOUND,
+                        Status.Code.PERMISSION_DENIED,
+                        Status.Code.UNAVAILABLE
+                    }) {
                 failure.set(Status.fromCode(code));
                 Class<? extends RuntimeException> expected =
                         switch (code) {

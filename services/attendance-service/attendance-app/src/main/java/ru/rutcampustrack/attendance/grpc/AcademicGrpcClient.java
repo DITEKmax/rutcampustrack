@@ -84,8 +84,8 @@ public class AcademicGrpcClient {
                     stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                             .withDeadlineAfter(3, TimeUnit.SECONDS)
                             .getHeadmanJournalSemesterState(
-                                    ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterStateRequest
-                                            .newBuilder()
+                                    ru.rutcampustrack.academic.grpc
+                                            .HeadmanJournalSemesterStateRequest.newBuilder()
                                             .setGroupId(groupId)
                                             .setSemesterId(semesterId)
                                             .build());
@@ -98,14 +98,14 @@ public class AcademicGrpcClient {
                 case INVALID_ARGUMENT ->
                         throw new ru.rutcampustrack.attendance.exception.BadRequestException(
                                 "Некорректный семестр или группа");
-                case NOT_FOUND ->
-                        throw new ResourceNotFoundException("Semester", "id", semesterId);
+                case NOT_FOUND -> throw new ResourceNotFoundException("Semester", "id", semesterId);
                 case PERMISSION_DENIED ->
                         throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
                                 "Отсутствует право просмотра журнала своей группы");
                 case UNAUTHENTICATED ->
                         throw new ResponseStatusException(
-                                HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
+                                HttpStatus.UNAUTHORIZED,
+                                "Academic Service отклонил internal-сессию");
                 default ->
                         throw new AcademicServiceUnavailableException(
                                 "Academic Service unavailable: " + error.getStatus());

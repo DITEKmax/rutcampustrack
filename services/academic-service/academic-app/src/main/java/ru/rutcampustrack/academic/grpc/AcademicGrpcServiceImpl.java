@@ -1057,7 +1057,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                             .orElseThrow(
                                     () ->
                                             Status.NOT_FOUND
-                                                    .withDescription("requested semester unavailable")
+                                                    .withDescription(
+                                                            "requested semester unavailable")
                                                     .asRuntimeException());
             observer.onNext(
                     SemesterStateResponse.newBuilder()

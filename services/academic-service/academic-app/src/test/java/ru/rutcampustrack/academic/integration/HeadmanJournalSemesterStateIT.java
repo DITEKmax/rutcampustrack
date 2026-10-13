@@ -114,7 +114,8 @@ class HeadmanJournalSemesterStateIT extends AbstractAcademicIntegrationTest {
                 helper);
         entityManager.clear();
         assertDenied(() -> read(helperActor, group, semester), Status.Code.PERMISSION_DENIED);
-        assertDenied(() -> read(headmanActor, foreignGroup, semester), Status.Code.PERMISSION_DENIED);
+        assertDenied(
+                () -> read(headmanActor, foreignGroup, semester), Status.Code.PERMISSION_DENIED);
         assertDenied(() -> read(headmanActor, 0, semester), Status.Code.INVALID_ARGUMENT);
         assertDenied(() -> read(headmanActor, group, 0), Status.Code.INVALID_ARGUMENT);
         assertDenied(() -> read(headmanActor, group, Long.MAX_VALUE), Status.Code.NOT_FOUND);
@@ -188,11 +189,22 @@ class HeadmanJournalSemesterStateIT extends AbstractAcademicIntegrationTest {
 
     private static InternalJwtClaims claims(long user, String role, long group) {
         return new InternalJwtClaims(
-                user, UUID.randomUUID(), 1, 1, role, "ACTIVE", group, "HEADMAN".equals(role), false);
+                user,
+                UUID.randomUUID(),
+                1,
+                1,
+                role,
+                "ACTIVE",
+                group,
+                "HEADMAN".equals(role),
+                false);
     }
 
     private static void assertDenied(Runnable action, Status.Code expected) {
         assertThatThrownBy(action::run)
-                .satisfies(error -> assertThat(Status.fromThrowable(error).getCode()).isEqualTo(expected));
+                .satisfies(
+                        error ->
+                                assertThat(Status.fromThrowable(error).getCode())
+                                        .isEqualTo(expected));
     }
 }

@@ -202,8 +202,10 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Test
     @Timeout(value = 30, unit = TimeUnit.SECONDS)
     void unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries() throws Exception {
-        String changeLogin = "uni-c-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
-        String resetLogin = "uni-r-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        String changeLogin =
+                "uni-c-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        String resetLogin =
+                "uni-r-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         long resetTelegram = (UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE) | 1L;
         String twelveScalars = "abcdefghij\u0661!";
         String seventyTwoBytes = "\uD83D\uDE00".repeat(17) + "ab1!";
@@ -211,7 +213,10 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 List.of("abcdefghi\u0661!", seventyTwoBytes + "a", "unpaired");
         assertThat(twelveScalars.codePointCount(0, twelveScalars.length())).isEqualTo(12);
         assertThat(seventyTwoBytes.getBytes(StandardCharsets.UTF_8).length).isEqualTo(72);
-        assertThat(invalidPasswords.getFirst().codePointCount(0, invalidPasswords.getFirst().length()))
+        assertThat(
+                        invalidPasswords
+                                .getFirst()
+                                .codePointCount(0, invalidPasswords.getFirst().length()))
                 .isEqualTo(11);
         assertThat(invalidPasswords.get(1).getBytes(StandardCharsets.UTF_8).length).isEqualTo(73);
         Long changeUser = null;
@@ -221,9 +226,11 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             changeUser = seedUnicodePasswordActor(changeLogin, null);
             resetUser = seedUnicodePasswordActor(resetLogin, resetTelegram);
             for (long userId : List.of(changeUser, resetUser)) {
-                assertThat(jdbc.queryForObject(
-                                "SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE id = ?",
-                                Boolean.class, userId))
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE id = ?",
+                                        Boolean.class,
+                                        userId))
                         .isTrue();
             }
             TokenResponse changeSession = unicodePasswordLogin(changeLogin, "password");
@@ -238,8 +245,12 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                 Map.of("currentPassword", "password", "newPassword", invalid),
                                 invalid.equals("unpaired"));
                 assertUnicodePasswordRejection(rejected, invalid, "password");
-                assertThat(rejected.getBody().path("extras").path("code").asText()
-                                .equals("PASSWORD_POLICY_VIOLATION"))
+                assertThat(
+                                rejected.getBody()
+                                        .path("extras")
+                                        .path("code")
+                                        .asText()
+                                        .equals("PASSWORD_POLICY_VIOLATION"))
                         .isTrue();
                 assertThat(unicodePasswordState(changeUser).equals(changeBefore)).isTrue();
             }
@@ -247,11 +258,20 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                     unicodePasswordPost(
                             "/auth/change-password",
                             changeHeaders,
-                            Map.of("currentPassword", "wrong-password", "newPassword", twelveScalars),
+                            Map.of(
+                                    "currentPassword",
+                                    "wrong-password",
+                                    "newPassword",
+                                    twelveScalars),
                             false);
             assertUnicodePasswordRejection(wrongCurrent, "wrong-password", twelveScalars);
-            assertThat(wrongCurrent.getBody().path("extras").path("code").asText()
-                            .equals("CURRENT_PASSWORD_INVALID"))
+            assertThat(
+                            wrongCurrent
+                                    .getBody()
+                                    .path("extras")
+                                    .path("code")
+                                    .asText()
+                                    .equals("CURRENT_PASSWORD_INVALID"))
                     .isTrue();
             assertThat(unicodePasswordState(changeUser).equals(changeBefore)).isTrue();
             ResponseEntity<JsonNode> changed =
@@ -263,12 +283,17 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             assertThat(changed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             assertThat(changed.getHeaders().getCacheControl()).isEqualTo("no-store");
             assertThat(changed.getBody() == null).isTrue();
-            assertThat(changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE) != null
-                            && changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE).contains("Max-Age=0"))
+            assertThat(
+                            changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE) != null
+                                    && changed.getHeaders()
+                                            .getFirst(HttpHeaders.SET_COOKIE)
+                                            .contains("Max-Age=0"))
                     .isTrue();
             assertUnicodePasswordCommitted(changeUser, twelveScalars, "abcdefghik\u0661!");
-            assertThat(bearerSessionStatus(changeSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
-            assertThat(refreshStatus(changeSession.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(bearerSessionStatus(changeSession.accessToken()))
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refreshStatus(changeSession.refreshToken()))
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
             assertUnicodePasswordLoginDenied(changeLogin, "password");
             assertUnicodePasswordLoginDenied(changeLogin, "abcdefghik\u0661!");
             unicodePasswordLogin(changeLogin, twelveScalars);
@@ -277,7 +302,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             TokenResponse resetSecond = unicodePasswordLogin(resetLogin, "password");
             ResponseEntity<JsonNode> requested =
                     restTemplate.postForEntity(
-                            "/auth/password-reset/request", Map.of("login", resetLogin), JsonNode.class);
+                            "/auth/password-reset/request",
+                            Map.of("login", resetLogin),
+                            JsonNode.class);
             assertThat(requested.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
             assertThat(requested.getHeaders().getCacheControl()).isEqualTo("no-store");
             assertThat(requested.getBody() != null).isTrue();
@@ -285,9 +312,10 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             Message message = receiveWithRetry(TEST_QUEUE);
             assertThat(message != null).isTrue();
             JsonNode payload = objectMapper.readTree(message.getBody()).path("payload");
-            assertThat(payload.path("purpose").asText().equals("password_reset")
-                            && payload.path("challenge_id").asText().equals(challenge)
-                            && payload.path("telegram_id").asLong() == resetTelegram)
+            assertThat(
+                            payload.path("purpose").asText().equals("password_reset")
+                                    && payload.path("challenge_id").asText().equals(challenge)
+                                    && payload.path("telegram_id").asLong() == resetTelegram)
                     .isTrue();
             String code = payload.path("code").asText();
             ResponseEntity<JsonNode> verified =
@@ -299,14 +327,17 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             assertThat(verified.getHeaders().getCacheControl()).isEqualTo("no-store");
             assertThat(verified.getBody() != null).isTrue();
             String ticket = verified.getBody().path("resetTicket").asText();
-            assertThat(!ticket.isBlank()
-                            && !verified.getBody().has("accessToken")
-                            && !verified.getBody().has("refreshToken"))
+            assertThat(
+                            !ticket.isBlank()
+                                    && !verified.getBody().has("accessToken")
+                                    && !verified.getBody().has("refreshToken"))
                     .isTrue();
             List<Object> resetBefore = unicodePasswordState(resetUser);
-            assertThat(jdbc.queryForObject(
-                            "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL",
-                            Integer.class, resetUser))
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL",
+                                    Integer.class,
+                                    resetUser))
                     .isEqualTo(1);
             for (String invalid : invalidPasswords) {
                 ResponseEntity<JsonNode> rejected =
@@ -316,12 +347,17 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                 Map.of("resetTicket", ticket, "newPassword", invalid),
                                 invalid.equals("unpaired"));
                 assertUnicodePasswordRejection(rejected, invalid, ticket);
-                assertThat(rejected.getBody().path("extras").path("code").asText()
-                                .equals("PASSWORD_POLICY_VIOLATION"))
+                assertThat(
+                                rejected.getBody()
+                                        .path("extras")
+                                        .path("code")
+                                        .asText()
+                                        .equals("PASSWORD_POLICY_VIOLATION"))
                         .isTrue();
                 assertThat(unicodePasswordState(resetUser).equals(resetBefore)).isTrue();
             }
-            // The same real proof survives every invalid password; no fabricated replacement ticket.
+            // The same real proof survives every invalid password; no fabricated replacement
+            // ticket.
             ResponseEntity<JsonNode> completed =
                     unicodePasswordPost(
                             "/auth/password-reset/complete",
@@ -331,15 +367,21 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             assertThat(completed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             assertThat(completed.getHeaders().getCacheControl()).isEqualTo("no-store");
             assertThat(completed.getBody() == null).isTrue();
-            assertUnicodePasswordCommitted(resetUser, seventyTwoBytes, "\uD83D\uDE00".repeat(17) + "ac1!");
-            assertThat(jdbc.queryForObject(
-                            "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NOT NULL",
-                            Integer.class, resetUser))
+            assertUnicodePasswordCommitted(
+                    resetUser, seventyTwoBytes, "\uD83D\uDE00".repeat(17) + "ac1!");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NOT NULL",
+                                    Integer.class,
+                                    resetUser))
                     .isEqualTo(1);
-            assertThat(bearerSessionStatus(resetFirst.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
-            assertThat(bearerSessionStatus(resetSecond.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(bearerSessionStatus(resetFirst.accessToken()))
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(bearerSessionStatus(resetSecond.accessToken()))
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
             assertThat(refreshStatus(resetFirst.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
-            assertThat(refreshStatus(resetSecond.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refreshStatus(resetSecond.refreshToken()))
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
             assertUnicodePasswordLoginDenied(resetLogin, "password");
             assertUnicodePasswordLoginDenied(resetLogin, "\uD83D\uDE00".repeat(17) + "ac1!");
             unicodePasswordLogin(resetLogin, seventyTwoBytes);
@@ -1092,22 +1134,29 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     }
 
     private long seedUnicodePasswordActor(String login, Long telegramId) {
-        Long userId = new TransactionTemplate(transactionManager).execute(status -> {
-            Long id = jdbc.queryForObject(
-                    """
+        Long userId =
+                new TransactionTemplate(transactionManager)
+                        .execute(
+                                status -> {
+                                    Long id =
+                                            jdbc.queryForObject(
+                                                    """
                     INSERT INTO users (login, password_hash, last_name, first_name, role, status,
                         is_headman, initial_password, password_changed, telegram_id, created_at, updated_at)
                     VALUES (?, ?, 'Unicode', 'Boundary', CAST('student' AS user_role),
                         CAST('active' AS account_status), FALSE, 'password', FALSE, ?, NOW(), NOW())
                     RETURNING id
                     """,
-                    Long.class, login, PASSWORD_HASH, telegramId);
-            jdbc.update(
-                    "INSERT INTO user_role_grants (user_id, role, status, created_at, updated_at) "
-                            + "VALUES (?, 'student', 'active', NOW(), NOW())",
-                    id);
-            return id;
-        });
+                                                    Long.class,
+                                                    login,
+                                                    PASSWORD_HASH,
+                                                    telegramId);
+                                    jdbc.update(
+                                            "INSERT INTO user_role_grants (user_id, role, status, created_at, updated_at) "
+                                                    + "VALUES (?, 'student', 'active', NOW(), NOW())",
+                                            id);
+                                    return id;
+                                });
         assertThat(userId != null).isTrue();
         return userId;
     }
@@ -1120,11 +1169,13 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         if (malformed) {
             // Send an actual escaped lone surrogate; UTF-8 conversion must not replace it first.
             assertThat(json.contains("\"newPassword\":\"unpaired\"")).isTrue();
-            json = json.replace(
-                    "\"newPassword\":\"unpaired\"",
-                    "\"newPassword\":\"abcdefghij\\u0661!\\uD800\"");
+            json =
+                    json.replace(
+                            "\"newPassword\":\"unpaired\"",
+                            "\"newPassword\":\"abcdefghij\\u0661!\\uD800\"");
         }
-        return restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(json, headers), JsonNode.class);
+        return restTemplate.exchange(
+                path, HttpMethod.POST, new HttpEntity<>(json, headers), JsonNode.class);
     }
 
     private void assertUnicodePasswordRejection(
@@ -1134,14 +1185,20 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(response.getBody() != null).isTrue();
         JsonNode body = response.getBody();
         String rendered = body.toString();
-        assertThat(!body.has("accessToken") && !body.has("refreshToken")
-                        && !body.has("resetTicket") && !body.has("session"))
+        assertThat(
+                        !body.has("accessToken")
+                                && !body.has("refreshToken")
+                                && !body.has("resetTicket")
+                                && !body.has("session"))
                 .isTrue();
         // Comparisons stay in RAM. The legacy fixture password is a common diagnostic word,
         // so test its quoted value rather than rejecting legitimate prose containing that word.
-        assertThat(!rendered.contains(invalid) && !rendered.contains(objectMapper.writeValueAsString(proof))
-                        && !rendered.contains("abcdefghij\u0661!")
-                        && !rendered.contains("\\uD800") && rendered.indexOf((char) 0xD800) < 0)
+        assertThat(
+                        !rendered.contains(invalid)
+                                && !rendered.contains(objectMapper.writeValueAsString(proof))
+                                && !rendered.contains("abcdefghij\u0661!")
+                                && !rendered.contains("\\uD800")
+                                && rendered.indexOf((char) 0xD800) < 0)
                 .isTrue();
     }
 
@@ -1150,63 +1207,89 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         return List.of(
                 jdbc.queryForList(
                         "SELECT password_hash, initial_password, password_changed, credentials_version "
-                                + "FROM users WHERE id = ?", userId),
+                                + "FROM users WHERE id = ?",
+                        userId),
                 jdbc.queryForList(
                         "SELECT sid, active_role_grant_id, session_version, current_refresh_jti, "
                                 + "previous_refresh_jti, refresh_expires_at, revoked_at, revoke_reason "
-                                + "FROM auth_sessions WHERE user_id = ? ORDER BY sid", userId),
-                jdbc.queryForList("SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id", userId),
+                                + "FROM auth_sessions WHERE user_id = ? ORDER BY sid",
+                        userId),
+                jdbc.queryForList(
+                        "SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id",
+                        userId),
                 jdbc.queryForList(
                         "SELECT * FROM account_security_events WHERE user_id = ? "
-                                + "AND event_type = 'PASSWORD_CHANGED' ORDER BY id", userId),
+                                + "AND event_type = 'PASSWORD_CHANGED' ORDER BY id",
+                        userId),
                 jdbc.queryForList(
                         "SELECT id, event_type, payload, created_at FROM auth_outbox WHERE event_type = 'password.changed' "
-                                + "AND payload -> 'payload' ->> 'user_id' = ? ORDER BY id", Long.toString(userId)));
+                                + "AND payload -> 'payload' ->> 'user_id' = ? ORDER BY id",
+                        Long.toString(userId)));
     }
 
     private void assertUnicodePasswordCommitted(long userId, String exact, String different) {
-        assertThat(jdbc.queryForObject(
-                        "SELECT initial_password IS NULL AND password_changed FROM users WHERE id = ?",
-                        Boolean.class, userId))
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT initial_password IS NULL AND password_changed FROM users WHERE id = ?",
+                                Boolean.class,
+                                userId))
                 .isTrue();
-        String hash = jdbc.queryForObject("SELECT password_hash FROM users WHERE id = ?", String.class, userId);
+        String hash =
+                jdbc.queryForObject(
+                        "SELECT password_hash FROM users WHERE id = ?", String.class, userId);
         BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
-        assertThat(hash != null && !hash.equals(exact)
-                        && bcrypt.matches(exact, hash) && !bcrypt.matches(different, hash))
+        assertThat(
+                        hash != null
+                                && !hash.equals(exact)
+                                && bcrypt.matches(exact, hash)
+                                && !bcrypt.matches(different, hash))
                 .isTrue();
-        assertThat(jdbc.queryForObject(
-                        "SELECT COUNT(*) FROM auth_sessions WHERE user_id = ? AND revoked_at IS NULL",
-                        Integer.class, userId))
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM auth_sessions WHERE user_id = ? AND revoked_at IS NULL",
+                                Integer.class,
+                                userId))
                 .isZero();
-        assertThat(jdbc.queryForObject(
-                        "SELECT COUNT(*) FROM account_security_events WHERE user_id = ? "
-                                + "AND event_type = 'PASSWORD_CHANGED'", Integer.class, userId))
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM account_security_events WHERE user_id = ? "
+                                        + "AND event_type = 'PASSWORD_CHANGED'",
+                                Integer.class,
+                                userId))
                 .isEqualTo(1);
     }
 
     private TokenResponse unicodePasswordLogin(String login, String password) {
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", new LoginRequest(login, password), TokenResponse.class);
+        ResponseEntity<TokenResponse> response =
+                restTemplate.postForEntity(
+                        "/auth/login", new LoginRequest(login, password), TokenResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
-        assertThat(response.getBody() != null && response.getBody().accessToken() != null
-                        && !response.getBody().accessToken().isBlank()
-                        && response.getBody().refreshToken() != null && !response.getBody().refreshToken().isBlank())
+        assertThat(
+                        response.getBody() != null
+                                && response.getBody().accessToken() != null
+                                && !response.getBody().accessToken().isBlank()
+                                && response.getBody().refreshToken() != null
+                                && !response.getBody().refreshToken().isBlank())
                 .isTrue();
         assertThat(bearerSessionStatus(response.getBody().accessToken())).isEqualTo(HttpStatus.OK);
         return response.getBody();
     }
 
     private void assertUnicodePasswordLoginDenied(String login, String password) {
-        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
+        long userId =
+                jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
         List<Object> before = unicodePasswordState(userId);
-        ResponseEntity<JsonNode> response = restTemplate.postForEntity(
-                "/auth/login", new LoginRequest(login, password), JsonNode.class);
+        ResponseEntity<JsonNode> response =
+                restTemplate.postForEntity(
+                        "/auth/login", new LoginRequest(login, password), JsonNode.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
-        assertThat(response.getBody() != null && !response.getBody().has("accessToken")
-                        && !response.getBody().has("refreshToken")
-                        && !response.getBody().toString().contains("\"" + password + "\""))
+        assertThat(
+                        response.getBody() != null
+                                && !response.getBody().has("accessToken")
+                                && !response.getBody().has("refreshToken")
+                                && !response.getBody().toString().contains("\"" + password + "\""))
                 .isTrue();
         assertThat(unicodePasswordState(userId).equals(before)).isTrue();
     }
@@ -1216,14 +1299,25 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         for (Long userId : userIds) {
             if (userId == null) continue;
             try {
-                new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-                    jdbc.update("DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'user_id' = ?", Long.toString(userId));
-                    jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", userId);
-                    jdbc.update("DELETE FROM account_security_events WHERE user_id = ?", userId);
-                    jdbc.update("DELETE FROM auth_sessions WHERE user_id = ?", userId);
-                    jdbc.update("DELETE FROM user_role_grants WHERE user_id = ?", userId);
-                    jdbc.update("DELETE FROM users WHERE id = ?", userId);
-                });
+                new TransactionTemplate(transactionManager)
+                        .executeWithoutResult(
+                                status -> {
+                                    jdbc.update(
+                                            "DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'user_id' = ?",
+                                            Long.toString(userId));
+                                    jdbc.update(
+                                            "DELETE FROM password_reset_tokens WHERE user_id = ?",
+                                            userId);
+                                    jdbc.update(
+                                            "DELETE FROM account_security_events WHERE user_id = ?",
+                                            userId);
+                                    jdbc.update(
+                                            "DELETE FROM auth_sessions WHERE user_id = ?", userId);
+                                    jdbc.update(
+                                            "DELETE FROM user_role_grants WHERE user_id = ?",
+                                            userId);
+                                    jdbc.update("DELETE FROM users WHERE id = ?", userId);
+                                });
             } catch (RuntimeException failure) {
                 if (cleanupFailure == null) cleanupFailure = failure;
                 else cleanupFailure.addSuppressed(failure);

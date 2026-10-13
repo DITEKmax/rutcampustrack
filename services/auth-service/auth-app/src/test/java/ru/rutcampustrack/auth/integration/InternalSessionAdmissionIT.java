@@ -162,6 +162,172 @@ class InternalSessionAdmissionIT {
     }
 
     @Test
+    @org.junit.jupiter.api.Timeout(60)
+    void durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed() throws Exception {
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession revokedSession = createSession(user, now, AuthRole.STUDENT);
+        CreatedSession liveSession = createSession(user, now, AuthRole.STUDENT);
+        String revokedAccess = accessToken(revokedSession.snapshot(), now);
+        String liveAccess = accessToken(liveSession.snapshot(), now);
+        UUID revokedJti =
+                jdbc.queryForObject(
+                        "SELECT current_refresh_jti FROM auth_sessions WHERE sid = ? AND user_id = ?",
+                        UUID.class,
+                        revokedSession.sessionId(),
+                        user.userId());
+        UUID liveJti =
+                jdbc.queryForObject(
+                        "SELECT current_refresh_jti FROM auth_sessions WHERE sid = ? AND user_id = ?",
+                        UUID.class,
+                        liveSession.sessionId(),
+                        user.userId());
+        SessionAdmissionService originalAdmission = admissionService(now);
+        assertThat(Long.toString(user.userId()).equals(originalAdmission.admit(revokedAccess).userId()))
+                .isTrue();
+        assertThat(Long.toString(user.userId()).equals(originalAdmission.admit(liveAccess).userId()))
+                .isTrue();
+        assertThat(
+                        authorityHolder
+                                .authority()
+                                .revokeCurrent(
+                                        new SessionStatePort.RevokeCurrentCommand(
+                                                user.userId(),
+                                                revokedSession.sessionId(),
+                                                now.plusSeconds(1),
+                                                event(
+                                                        user.userId(),
+                                                        revokedSession.sessionId(),
+                                                        SecurityEvent.Type.CURRENT_LOGOUT,
+                                                        now.plusSeconds(1))))
+                                .succeeded())
+                .isTrue();
+
+        // Only this case uses bounded connections; the existing fixture defaults stay unchanged.
+        String jdbcUrl = POSTGRES.getJdbcUrl();
+        DriverManagerDataSource rebuiltSource = new DriverManagerDataSource();
+        rebuiltSource.setDriverClassName("org.postgresql.Driver");
+        rebuiltSource.setUrl(
+                jdbcUrl + (jdbcUrl.contains("?") ? "&" : "?") + "connectTimeout=2&socketTimeout=2");
+        rebuiltSource.setUsername(POSTGRES.getUsername());
+        rebuiltSource.setPassword(POSTGRES.getPassword());
+        JdbcTemplate rebuiltJdbc = new JdbcTemplate(rebuiltSource);
+        var rebuiltAuthority =
+                new ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority(
+                        rebuiltJdbc,
+                        new DataSourceTransactionManager(rebuiltSource),
+                        new ru.rutcampustrack.auth.event.PasswordChangedOutbox(
+                                rebuiltJdbc, new ObjectMapper().findAndRegisterModules()));
+        Instant checkedAt = now.plusSeconds(2);
+        InternalIssuerProperties properties = issuerProperties();
+        SessionAdmissionService rebuiltAdmission =
+                new SessionAdmissionService(
+                        signingService,
+                        rebuiltAuthority,
+                        properties,
+                        Clock.fixed(checkedAt, ZoneOffset.UTC));
+        MockMvc receiver = mockMvc(rebuiltAdmission, properties);
+        assertDurabilityAdmission(
+                receiver, revokedAccess, properties, 401, "SESSION_REVOKED", revokedSession.snapshot());
+        assertThat(
+                        rebuiltAuthority
+                                .refresh(
+                                        new SessionStatePort.RefreshCommand(
+                                                user.userId(),
+                                                revokedSession.sessionId(),
+                                                revokedJti,
+                                                UUID.randomUUID(),
+                                                checkedAt))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
+        assertDurabilityAdmission(receiver, liveAccess, properties, 200, null, liveSession.snapshot());
+        UUID rotatedLiveJti = UUID.randomUUID();
+        assertThat(
+                        rebuiltAuthority
+                                .refresh(
+                                        new SessionStatePort.RefreshCommand(
+                                                user.userId(),
+                                                liveSession.sessionId(),
+                                                liveJti,
+                                                rotatedLiveJti,
+                                                checkedAt))
+                                .succeeded())
+                .isTrue();
+        var beforeOutage = durabilityState(rebuiltJdbc, user.userId());
+
+        // Pause only this non-reusable fixture's exact PostgreSQL, retaining its durable state.
+        var docker = org.testcontainers.DockerClientFactory.instance().client();
+        String containerId = POSTGRES.getContainerId();
+        assertThat(POSTGRES.isRunning()).isTrue();
+        assertThat(
+                        Boolean.TRUE.equals(
+                                docker.inspectContainerCmd(containerId).exec().getState().getPaused()))
+                .isFalse();
+        boolean pauseAttempted = false;
+        Throwable primaryFailure = null;
+        try {
+            pauseAttempted = true;
+            docker.pauseContainerCmd(containerId).exec();
+            assertThat(
+                            Boolean.TRUE.equals(
+                                    docker.inspectContainerCmd(containerId).exec().getState().getPaused()))
+                    .isTrue();
+            assertDurabilityAdmission(
+                    receiver, liveAccess, properties, 503, "AUTHORITY_UNAVAILABLE", liveSession.snapshot());
+            assertThat(
+                            rebuiltAuthority
+                                    .refresh(
+                                            new SessionStatePort.RefreshCommand(
+                                                    user.userId(),
+                                                    liveSession.sessionId(),
+                                                    rotatedLiveJti,
+                                                    UUID.randomUUID(),
+                                                    checkedAt))
+                                    .failureCode())
+                    .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
+        } catch (Throwable failure) {
+            primaryFailure = failure;
+            throw failure;
+        } finally {
+            // A lost pause response or unavailable inspect cannot prevent the release attempt.
+            if (pauseAttempted) {
+                try {
+                    docker.unpauseContainerCmd(containerId).exec();
+                } catch (Throwable cleanupFailure) {
+                    if (primaryFailure == null) {
+                        throw cleanupFailure;
+                    }
+                    if (primaryFailure != cleanupFailure) {
+                        primaryFailure.addSuppressed(cleanupFailure);
+                    }
+                }
+            }
+        }
+        assertThat(
+                        Boolean.TRUE.equals(
+                                docker.inspectContainerCmd(containerId).exec().getState().getPaused()))
+                .isFalse();
+        assertDurabilityAdmission(receiver, liveAccess, properties, 200, null, liveSession.snapshot());
+        assertDurabilityAdmission(
+                receiver, revokedAccess, properties, 401, "SESSION_REVOKED", revokedSession.snapshot());
+        // Compare in RAM so an assertion failure cannot render refresh JTIs or session identifiers.
+        assertThat(beforeOutage.equals(durabilityState(rebuiltJdbc, user.userId())))
+                .as("Outage and recovery preserve the durable session, JTI and event tuple")
+                .isTrue();
+        assertThat(
+                        rebuiltAuthority
+                                .refresh(
+                                        new SessionStatePort.RefreshCommand(
+                                                user.userId(),
+                                                liveSession.sessionId(),
+                                                rotatedLiveJti,
+                                                UUID.randomUUID(),
+                                                checkedAt))
+                                .succeeded())
+                .isTrue();
+    }
+
+    @Test
     void rolesVersionAndSessionVersionChangesProduceStaleDenial() throws Exception {
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         UserFixture user =
@@ -1164,6 +1330,81 @@ class InternalSessionAdmissionIT {
         var field = target.getClass().getDeclaredField(name);
         field.setAccessible(true);
         field.set(target, value);
+    }
+
+    private void assertDurabilityAdmission(
+            MockMvc receiver,
+            String access,
+            InternalIssuerProperties properties,
+            int expectedStatus,
+            String expectedCode,
+            SessionSnapshot expectedSnapshot)
+            throws Exception {
+        MvcResult response =
+                receiver.perform(
+                                post("/internal/auth/admit")
+                                        .header(
+                                                InternalIssuerSecretFilter.HEADER,
+                                                properties.getSecret())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"accessToken\":\"" + access + "\"}"))
+                        .andExpect(status().is(expectedStatus))
+                        .andExpect(header().string("Cache-Control", "no-store"))
+                        .andReturn();
+        JsonNode body = new ObjectMapper().readTree(response.getResponse().getContentAsString());
+        if (expectedCode == null) {
+            String internal = body.path("internalToken").asText();
+            assertThat(!internal.isBlank()).isTrue();
+            Claims claims =
+                    Jwts.parser()
+                            .verifyWith(publicKey())
+                            .build()
+                            .parseSignedClaims(internal)
+                            .getPayload();
+            assertThat(Long.toString(expectedSnapshot.userId()).equals(claims.getSubject())).isTrue();
+            assertThat(
+                            expectedSnapshot.sessionId().toString()
+                                    .equals(claims.get("sid", String.class)))
+                    .isTrue();
+            assertThat(
+                            Long.toString(expectedSnapshot.sessionVersion())
+                                    .equals(claims.get("sv", String.class)))
+                    .isTrue();
+            assertThat(
+                            Long.toString(expectedSnapshot.rolesVersion())
+                                    .equals(claims.get("rv", String.class)))
+                    .isTrue();
+            assertThat("STUDENT".equals(claims.get("role", String.class))).isTrue();
+            assertThat("ACTIVE".equals(claims.get("status", String.class))).isTrue();
+            assertThat(
+                            Long.toString(expectedSnapshot.activeRole().groupId())
+                                    .equals(claims.get("group_id", String.class)))
+                    .isTrue();
+        } else {
+            assertThat(expectedCode.equals(body.path("extras").path("code").asText())).isTrue();
+            assertThat(body.has("internalToken")).isFalse();
+        }
+    }
+
+    private java.util.Map<String, Object> durabilityState(JdbcTemplate database, long userId) {
+        return java.util.Map.of(
+                "sessions",
+                database.queryForList(
+                        "SELECT sid, active_role_grant_id, session_version, current_refresh_jti, "
+                                + "previous_refresh_jti, refresh_expires_at, created_at, last_seen_at, revoked_at, "
+                                + "revoke_reason, auth_method, client_label, location_label "
+                                + "FROM auth_sessions WHERE user_id = ? ORDER BY sid",
+                        userId),
+                "rolesVersion",
+                database.queryForObject(
+                        "SELECT roles_version FROM users WHERE id = ?", Long.class, userId),
+                "events",
+                database.queryForList(
+                        "SELECT id, sid, event_type, occurred_at, auth_method, client_label, location_label "
+                                + "FROM account_security_events WHERE user_id = ? ORDER BY id",
+                        userId),
+                "outbox",
+                database.queryForObject("SELECT count(*) FROM auth_outbox", Long.class));
     }
 
     private record JdbcSessionAuthorityHolder(

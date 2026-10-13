@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -859,7 +860,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         .build();
         TransactionTemplate transactions = new TransactionTemplate(transactionManager);
         CountDownLatch fenceLocked = new CountDownLatch(1);
-        CountDownLatch insertStarted = new CountDownLatch(1);
+        AtomicInteger insertBackendPid = new AtomicInteger();
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         try {
@@ -870,9 +871,14 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                             () ->
                                                     transactions.executeWithoutResult(
                                                             status -> {
+                                                                // Match production's semester-before-assignment lock order.
+                                                                archiveFence.lockForBusinessWrite(
+                                                                        SEMESTER_ID);
                                                                 lockFence(ASSIGNMENT_ID);
                                                                 fenceLocked.countDown();
-                                                                awaitBarrier(insertStarted);
+                                                                // The insert waits on the semester guard, not the assignment fence.
+                                                                awaitPhysicalInsertBlockedByThisTransaction(
+                                                                        insertBackendPid);
                                                                 replacementService.install(
                                                                         installCap);
                                                             })));
@@ -884,7 +890,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                                 awaitBarrier(fenceLocked);
                                                 transactions.executeWithoutResult(
                                                         status -> {
-                                                            insertStarted.countDown();
+                                                            insertBackendPid.set(
+                                                                    jdbcTemplate.queryForObject(
+                                                                            "SELECT pg_backend_pid()",
+                                                                            Integer.class));
                                                             insertOccurrence(
                                                                     seeded.scheduleItemId(),
                                                                     ASSIGNMENT_ID,
@@ -2245,6 +2254,28 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 + sqlState
                 + " barrier="
                 + barrier;
+    }
+
+    private void awaitPhysicalInsertBlockedByThisTransaction(AtomicInteger insertBackendPid) {
+        long until = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (System.nanoTime() < until) {
+            int pid = insertBackendPid.get();
+            if (pid > 0
+                    && Boolean.TRUE.equals(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT pg_backend_pid() = ANY(pg_blocking_pids(?))",
+                                    Boolean.class,
+                                    pid))) {
+                return;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError("bounded coordination barrier interrupted", interrupted);
+            }
+        }
+        throw new AssertionError("bounded coordination barrier timed out");
     }
 
     private static void awaitBarrier(CountDownLatch latch) {

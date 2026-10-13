@@ -87,7 +87,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         exact: true,
       })
       .click();
-    await page.getByLabel('Причина', { exact: true }).selectOption('ILLNESS');
+    await page.locator('.headman-journal__excuse-form select').selectOption('ILLNESS');
     await page.getByLabel('Комментарий', { exact: true }).fill('Синтетическая причина');
     await page.locator('.headman-journal__excuse-form input[type="file"]').setInputFiles({
       name: 'синтетическая-справка.png',

@@ -318,10 +318,6 @@ jobs:
     name: Playwright E2E auth flow
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      RCT_E2E_TEACHING_CLOCK_DIR: ${{ runner.temp }}/rct-first3-clock-${{ github.run_id }}-${{ github.run_attempt }}
-      RCT_FOCUS3_RUN: ${{ runner.temp }}/rct-first3-${{ github.run_id }}-${{ github.run_attempt }}
-      RCT_FOCUS3_OBSERVATIONS: ${{ runner.temp }}/rct-first3-${{ github.run_id }}-${{ github.run_attempt }}/supervision/observations.safe.json
     steps:
       - uses: actions/checkout@v4
 
@@ -340,10 +336,18 @@ jobs:
 
       - name: Prepare disposable FIRST3 clock and private artifacts
         env:
+          RCT_E2E_TEACHING_CLOCK_DIR: ${{ runner.temp }}/rct-first3-clock-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_FOCUS3_RUN: ${{ runner.temp }}/rct-first3-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_FOCUS3_OBSERVATIONS: ${{ runner.temp }}/rct-first3-${{ github.run_id }}-${{ github.run_attempt }}/supervision/observations.safe.json
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
         run: |
           umask 077
+          {
+            printf 'RCT_E2E_TEACHING_CLOCK_DIR=%s\n' "$RCT_E2E_TEACHING_CLOCK_DIR"
+            printf 'RCT_FOCUS3_RUN=%s\n' "$RCT_FOCUS3_RUN"
+            printf 'RCT_FOCUS3_OBSERVATIONS=%s\n' "$RCT_FOCUS3_OBSERVATIONS"
+          } >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_FOCUS3_RUN"
           mkdir -m 700 -- "$RCT_FOCUS3_RUN/artifacts" "$RCT_FOCUS3_RUN/supervision"
           chmod +x gradlew

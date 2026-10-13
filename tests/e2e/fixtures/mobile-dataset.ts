@@ -3,6 +3,7 @@ import { expect, type APIRequestContext, type Page } from '@playwright/test';
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
 import { test as base, requirePrivateArtifacts } from './artifact-privacy';
+import { datasetHttpFailure } from './safe-reporter';
 
 type Role = Exclude<CurrentSession['activeRole'], null>;
 type Model = Record<string, any>;
@@ -35,9 +36,7 @@ export class Actor {
       headers: { ...this.headers(), ...extraHeaders },
     });
     if (!statuses.includes(response.status()))
-      throw new Error(
-        `${method} ${path}: HTTP ${response.status()}, expected ${statuses.join('/')}`,
-      );
+      throw datasetHttpFailure(method, path, response.status());
     return response.status() === 204 ? {} : response.json();
   }
 }
@@ -187,7 +186,8 @@ export class MobileDataset {
         '/api/academic/groups/registry',
         {
           alphabeticCode: suffix().slice(0, 4),
-          numericCode: `1${randomBytes(1)[0] % 100}`.padEnd(3, '0'),
+          // Course 1, registered programme digit 1–9 and ordinal 0–9; all 90 valid codes remain.
+          numericCode: `1${10 + (randomBytes(1)[0] % 90)}`,
           trainingDurationYears: 4,
         },
         [201],

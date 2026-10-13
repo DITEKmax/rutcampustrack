@@ -11,6 +11,31 @@ import type {
 
 export const safeFailureAnnotation = 'rct-safe-failure-v1';
 
+/** Closed source routes only; IDs are matched in RAM and never copied into diagnostics. */
+const datasetHttpOperations = {
+  DATASET_SEMESTERS_READ_HTTP: { method: 'GET', path: /^\/api\/academic\/semesters\?size=100$/ },
+  DATASET_SEMESTER_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/semesters$/ },
+  DATASET_SEMESTER_ACTIVATE_HTTP: {
+    method: 'PATCH',
+    path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/activate$/,
+  },
+  DATASET_GROUP_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/groups\/registry$/ },
+  DATASET_USER_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/users$/ },
+  DATASET_HEADMAN_SET_HTTP: {
+    method: 'PUT',
+    path: /^\/api\/academic\/groups\/[1-9][0-9]{0,18}\/headman$/,
+  },
+  DATASET_SUBJECT_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/subjects$/ },
+  DATASET_SUBJECT_READ_HTTP: { method: 'GET', path: /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}$/ },
+  DATASET_LESSON_CREATE_HTTP: { method: 'POST', path: /^\/api\/schedule\/one-off-lessons$/ },
+  DATASET_HOMEWORK_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/homeworks$/ },
+  DATASET_ASSISTANT_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/assistants$/ },
+} as const;
+type DatasetHttpCause = keyof typeof datasetHttpOperations;
+const datasetHttpStages = Object.fromEntries(
+  Object.keys(datasetHttpOperations).map((cause) => [cause, 'DATASET_HTTP']),
+) as Record<DatasetHttpCause, 'DATASET_HTTP'>;
+
 const failureStages = {
   UNKNOWN: 'UNKNOWN',
   ARTIFACT_REPORTER_GUARD: 'ARTIFACT_PRIVACY',
@@ -27,6 +52,7 @@ const failureStages = {
   CLOCK_INSTANT_GUARD: 'TEACHING_CLOCK',
   CLOCK_WINDOW_GUARD: 'TEACHING_CLOCK',
   INVALID_TIME_VALUE: 'UNKNOWN',
+  ...datasetHttpStages,
 } as const;
 type FailureCause = keyof typeof failureStages;
 const reportedClassHints = {
@@ -49,6 +75,25 @@ const failureHttpStatuses = [
   0, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504,
 ] as const;
 type FailureHttpStatus = (typeof failureHttpStatuses)[number];
+
+/** This marker reports source context; serialized/forged text authenticates no operation or cause. */
+export function datasetHttpFailure(method: unknown, path: unknown, httpStatus: unknown): Error {
+  if (
+    typeof method !== 'string' ||
+    typeof path !== 'string' ||
+    path.length > 128 ||
+    /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(path) ||
+    typeof httpStatus !== 'number' ||
+    !failureHttpStatuses.some((status) => status !== 0 && status === httpStatus)
+  )
+    return new Error('Synthetic dataset request failed');
+  for (const [cause, operation] of Object.entries(datasetHttpOperations)) {
+    if (method === operation.method && operation.path.test(path))
+      return new Error(`Reported synthetic dataset ${cause}: HTTP ${httpStatus}`);
+  }
+  return new Error('Synthetic dataset request failed');
+}
+
 export interface SafeFailureDiagnostic {
   stage: (typeof failureStages)[FailureCause];
   cause: FailureCause | ReportedFailureHint;
@@ -169,6 +214,10 @@ export function classifySafeFailure(error: unknown): SafeFailureDiagnostic {
     : rawMessage;
   if (Object.prototype.hasOwnProperty.call(knownFailureMessages, message))
     return failureDiagnostic(knownFailureMessages[message]);
+  // Exact closed reported marker only; it cannot authenticate source execution or admit an actor.
+  const datasetStatus = /^Reported synthetic dataset ([A-Z_]+): HTTP (400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(message);
+  if (datasetStatus && datasetStatus[0] === message && Object.prototype.hasOwnProperty.call(datasetHttpOperations, datasetStatus[1]))
+    return failureDiagnostic(datasetStatus[1] as DatasetHttpCause, Number(datasetStatus[2]) as FailureHttpStatus);
   const status =
     /^Synthetic actor (login|session|role (?:STUDENT|HEADMAN|TEACHER|ADMIN)): HTTP (400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(
       message,
@@ -206,8 +255,8 @@ export function safeFailureDiagnostics(
         : reported && match[2] === '0'
           ? { stage: 'UNKNOWN', cause: match[1] as ReportedFailureHint, httpStatus: 0 }
           : failureDiagnostic();
-      // Only the three source HTTP checks may carry a nonzero public status.
-      const httpCause = ['ACTOR_LOGIN_HTTP', 'ACTOR_SESSION_HTTP', 'ACTOR_ROLE_HTTP'].includes(
+      // Only the existing actor and closed dataset HTTP markers may carry a public status.
+      const httpCause = Object.prototype.hasOwnProperty.call(datasetHttpOperations, diagnostic.cause) || ['ACTOR_LOGIN_HTTP', 'ACTOR_SESSION_HTTP', 'ACTOR_ROLE_HTTP'].includes(
         diagnostic.cause,
       );
       const value =

@@ -9141,6 +9141,317 @@
       "status": "retained-finite-reviewed-outcome-or-source",
       "revision": "ae027b11fba4908a22039e9c22249836a63df243",
       "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "EXACT_PUBLIC_GIT_SOURCE_REPORT_ARCHIVE/Cloud-FIRST3-date-coherence-r2-source",
+      "path": "docs/validation/cloud-20261011/receipts/Cloud-FIRST3-date-coherence-r2-source/READY.safe.json",
+      "sha256": "0dcc8a2ac9b118d2cd1a57f6928b492b7077ef228d62646e2b0ef91542389ce8",
+      "status": "exact-source-evidence-archive-primary-untracked-standalone",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "0/READY.safe.json",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "Report producer/native source scope insideoriginalbytes; falsepositivepublicGitSHA verified, notproductspec/currentwholeacceptance."
+    },
+    {
+      "id": "EXACT_PUBLIC_GIT_SOURCE_REPORT_ARCHIVE/P06-existing-reconstruction-outage-not-covered",
+      "path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
+      "sha256": "4bc2b95f67002d1f2c0941098f0abf39d9a33b16f8fbe3224abaceafa8fda9f9",
+      "status": "exact-source-evidence-archive-primary-untracked-standalone",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "1/REPORT.safe.json",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "Report producer/native source scope insideoriginalbytes; falsepositivepublicGitSHA verified, notproductspec/currentwholeacceptance."
+    },
+    {
+      "id": "EXACT_PUBLIC_GIT_SOURCE_REPORT_ARCHIVE/client-FIRST3-existing-CI-clock-date-correction",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/correction-controls.safe.json",
+      "sha256": "590a31852009d50038866f9319d33f60fe01e42160405c24f1ad27c86f5a1fe0",
+      "status": "exact-source-evidence-archive-primary-untracked-standalone",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "2/correction-controls.safe.json",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "Report producer/native source scope insideoriginalbytes; falsepositivepublicGitSHA verified, notproductspec/currentwholeacceptance."
+    },
+    {
+      "id": "EXACT_PUBLIC_GIT_SOURCE_REPORT_ARCHIVE/matrix-five-family-evidence-boundaries",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "sha256": "8d9bdcc55d2e45360e7c86d768a41d3f3c258a416f384054b1fbc4a7680a7e7a",
+      "status": "exact-source-evidence-archive-primary-untracked-standalone",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "3/REPORT.safe.json",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "Report producer/native source scope insideoriginalbytes; falsepositivepublicGitSHA verified, notproductspec/currentwholeacceptance."
+    },
+    {
+      "id": "EXACT_PUBLIC_GIT_SOURCE_REPORT_ARCHIVE/receipts",
+      "path": "docs/validation/cloud-20261011/receipts/root597-Auth-parent-Angular-readonly.safe.json",
+      "sha256": "7845f2e87bc07b3b5e7986128bc846bdcb638d72a4cee0558ef0f3a4f0803b04",
+      "status": "exact-source-evidence-archive-primary-untracked-standalone",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "4/root597-Auth-parent-Angular-readonly.safe.json",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "Report producer/native source scope insideoriginalbytes; falsepositivepublicGitSHA verified, notproductspec/currentwholeacceptance."
+    },
+    {
+      "id": "FIRST3-LIFECYCLE-R1-INDEPENDENT-manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-link-lifecycle-r1-independent-APPROVE/manifest.safe.json",
+      "sha256": "e2d91778706bff82bda52ff21f690637fb5220f70d0cd378a97e2d1ebc6df735",
+      "status": "READ_VERIFIED_INDEPENDENT_SOURCE_ONLY",
+      "scope": "FIRST3 lifecycle narrow recheck; native NOT_RUN"
+    },
+    {
+      "id": "FIRST3-LIFECYCLE-R1-INDEPENDENT-safe-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-link-lifecycle-r1-independent-APPROVE/safe-recheck.zip",
+      "sha256": "2e411dbf88be68b76fdd6817fb4caf40a3ab3d244a148e80e09b5253bc6bf594",
+      "status": "READ_VERIFIED_INDEPENDENT_SOURCE_ONLY",
+      "scope": "FIRST3 lifecycle narrow recheck; native NOT_RUN"
+    },
+    {
+      "id": "FIRST3-LIFECYCLE-R1-INDEPENDENT-REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-link-lifecycle-r1-independent-APPROVE/REPORT.md",
+      "sha256": "9795dac0e9f0ec1c182fc20547d662ccfa5be1d01989ef2cec7a8d84ed0a2759",
+      "status": "READ_VERIFIED_INDEPENDENT_SOURCE_ONLY",
+      "scope": "FIRST3 lifecycle narrow recheck; native NOT_RUN"
+    },
+    {
+      "id": "FIRST3-LIFECYCLE-R1-INDEPENDENT-bindings.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-link-lifecycle-r1-independent-APPROVE/bindings.safe.json",
+      "sha256": "c414d96a5d498d79a35ddc4cc78fff03b01b07910584aa6f18a174b4ce1c6079",
+      "status": "READ_VERIFIED_INDEPENDENT_SOURCE_ONLY",
+      "scope": "FIRST3 lifecycle narrow recheck; native NOT_RUN"
+    },
+    {
+      "id": "FIRST3-LIFECYCLE-R1-INDEPENDENT-counterexamples-r1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-link-lifecycle-r1-independent-APPROVE/counterexamples-r1.safe.json",
+      "sha256": "26dddf3c201eb711140cced3f119dfa6b2d838465c6bbb1db5dc44d178b9b4fd",
+      "status": "READ_VERIFIED_INDEPENDENT_SOURCE_ONLY",
+      "scope": "FIRST3 lifecycle narrow recheck; native NOT_RUN"
+    },
+    {
+      "id": "P10-UNICODE-HTTP-ONE-TEST-SOURCE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "sha256": "9616383cbe24afe2ae2520fa49c1ace6bd77dbb8bfdfcaacbb7463a2e306b3d2",
+      "status": "EXACT_PUBLIC_SOURCE_REPORT_ARCHIVE_PRIMARY_UNTRACKED_STANDALONE",
+      "revision": "425b40dd43dbc729ed923a586c6a280891a435cf",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-A80-P10-exact-public-source-SHA-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "1/REPORT.safe.json"
+    },
+    {
+      "id": "P10-UNICODE-HTTP-ONE-TEST-SOURCE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/manifest.safe.json",
+      "sha256": "d914531e1d3ab58a2e5145804581e831400b418ddbafdbbd831690322c5bdd6c",
+      "status": "SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "425b40dd43dbc729ed923a586c6a280891a435cf"
+    },
+    {
+      "id": "P10-UNICODE-HTTP-ONE-TEST-SOURCE/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/SOURCE.safe.zip",
+      "sha256": "6b2d2006e542aff5ff0b21e3e26ddac502e357cf436a29d5dda5a8eecaac7676",
+      "status": "SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "425b40dd43dbc729ed923a586c6a280891a435cf"
+    },
+    {
+      "id": "P10-UNICODE-HTTP-ONE-TEST-SOURCE/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/controls.safe.json",
+      "sha256": "9c11656cf1c7a1d9adecc0aa9d9d7a5a62a1848dc5ba6c082734baf0715f9eba",
+      "status": "SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "425b40dd43dbc729ed923a586c6a280891a435cf"
+    },
+    {
+      "id": "FIRST3-SEVENPHASE-R1-ACTUAL/ACTUAL.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-r1-actual-PASS/ACTUAL.safe.json",
+      "sha256": "33b084dfeeb295a2c7557c6c0d41290b0a19e5f64a7e0724ff4cdb2835b86347",
+      "status": "ACTUAL_CHECKING_PASS_FINITE_RECHECK_PENDING",
+      "revision": "a5443e644ad6b635e5a5be0bbbf5b631d1a807cc"
+    },
+    {
+      "id": "FIRST3-SEVENPHASE-R1-ACTUAL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-r1-actual-PASS/manifest.safe.json",
+      "sha256": "856b67f8f15bb8978d8123e82e84bafc77878c67cf9171452b73a738a8abd7e6",
+      "status": "ACTUAL_CHECKING_PASS_FINITE_RECHECK_PENDING",
+      "revision": "a5443e644ad6b635e5a5be0bbbf5b631d1a807cc"
+    },
+    {
+      "id": "FIRST3-SEVENPHASE-R1-ACTUAL/first3-sevenphase-actual-r1-attempt01.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-r1-actual-PASS/first3-sevenphase-actual-r1-attempt01.safe.zip",
+      "sha256": "445be0d9525ad5d7afe359d5667127f2f52052b2cc1667d0c5e2a7cde7e73254",
+      "status": "ACTUAL_CHECKING_PASS_FINITE_RECHECK_PENDING",
+      "revision": "a5443e644ad6b635e5a5be0bbbf5b631d1a807cc"
+    },
+    {
+      "id": "FIRST3-CONSUMER-FORMATTER-ONE-SHA/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-consumer-formatter-one-SHA-repin/REPORT.safe.json",
+      "sha256": "481bc879e34be301bbb6bf93c7f086cb0c80b254bdc0398ec7d794337ea0dac2",
+      "status": "SOURCE_UNBOUND_FINITE_RECHECK_PENDING"
+    },
+    {
+      "id": "FIRST3-CONSUMER-FORMATTER-ONE-SHA/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-consumer-formatter-one-SHA-repin/manifest.safe.json",
+      "sha256": "defb9fa39e11a5b0f231d139ea7ec593795eee9cf1fcdf1f29396552335cdb61",
+      "status": "SOURCE_UNBOUND_FINITE_RECHECK_PENDING"
+    },
+    {
+      "id": "FIRST3-CONSUMER-FORMATTER-ONE-SHA/safe-repin-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-consumer-formatter-one-SHA-repin/safe-repin-source.zip",
+      "sha256": "b80290d23788046f8efdc7b2427b89721b49a3fce916023416281e1def1a38d8",
+      "status": "SOURCE_UNBOUND_FINITE_RECHECK_PENDING"
+    },
+    {
+      "id": "ROOT-CURRENT-RESOURCES-COMPACT-20261013T102126Z",
+      "path": "docs/validation/cloud-20261011/receipts/task-state-before-20261013T102126Z.zip",
+      "sha256": "fb2d8cd2507d2302b6e5b3869227692f1e623a8a8645a7cf9b076023a8e4f9e5",
+      "status": "EXACT_STATE_CHRONOLOGY_ARCHIVE"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/REPORT.md",
+      "sha256": "34d87dcab6946ecf2dedd2e7b7747b821db8cb60311ba19a72361725c3d9b947",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/manifest.safe.json",
+      "sha256": "de70b38a7fd66cf015965c01ec345ce12d23b44f1533ac3ab2712c7cbac26281",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/safe-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/safe-recheck.zip",
+      "sha256": "822a332091f610bb01cfc61554bd8eec81c3f478b04dd677f2af3fae3fba7a41",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/verification.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-sevenphase-and-one-SHA-repin-independent-APPROVE/verification.safe.json",
+      "sha256": "0c0fefd811e6973ed0a562f064e3ed6842ac316c2a8fba39ad04572612813108",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "sha256": "0537a736112ceb6d5c2c55b5256a45534652eb8d203895d51217cb6de6d89b9b",
+      "status": "EXACT_PUBLIC_SOURCE_REPORT_ARCHIVE_PRIMARY_UNTRACKED_STANDALONE",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-A80-P10-exact-public-source-SHA-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "0/REPORT.safe.json"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/P10-Unicode-HTTP-critical-Source-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/manifest.safe.json",
+      "sha256": "9a2b6d9afcf12a42ddc84a19b0776cb50982b27eac41bca484dd1779e9a443f5",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/P10-Unicode-HTTP-critical-Source-independent-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/review.safe.zip",
+      "sha256": "4fe26e0719cdcdd97b696c35ecce45b9979ad746af17746dfe28882738c8f621",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/P10-format-compile-existing-callers-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-format-compile-existing-callers-Source/READY.safe.json",
+      "sha256": "22f512e8322bb2435774837f211feeba6a3856356e36e552a7c599c892ab5f50",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/P10-format-compile-existing-callers-Source/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P10-format-compile-existing-callers-Source/SOURCE.safe.zip",
+      "sha256": "03a89af076823457f5ab2da478a840608633a3e3042da60b38f9150b0b1826a9",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/P10-format-compile-existing-callers-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-format-compile-existing-callers-Source/manifest.safe.json",
+      "sha256": "94449e878d0c481b42b5eacb3fc13a9990f731e22c515e5ed1e6c6de2d3ea4f5",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/Root-FIRST3-two-TS-integration-scoped-hooks/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-FIRST3-two-TS-integration-scoped-hooks/REPORT.safe.json",
+      "sha256": "6bba8c9bdfd05354fde1a8d7ecd5ace3579e76cbaa2176812fa9e956b7a3c181",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/Root-FIRST3-two-TS-integration-scoped-hooks/safe-scoped-hook-outcomes.zip",
+      "path": "docs/validation/cloud-20261011/receipts/Root-FIRST3-two-TS-integration-scoped-hooks/safe-scoped-hook-outcomes.zip",
+      "sha256": "2eaad6e87d8da327c4fcc4782e7bc1be38219d3ebc61cfcf558999b237cbd64a",
+      "status": "SAFE_RETAINED_CURRENT_READ_VERIFIED_SCOPE_IN_ORIGINAL",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-BOUNDED-PACKAGE-RECEIPT/Root-FIRST3-P10-source-parent-joins/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-FIRST3-P10-source-parent-joins/REPORT.safe.json",
+      "sha256": "aafb63bc030f99dd3b3c879b9f982ffe75efe3fb3d2709bcad9b2e4892622da0",
+      "status": "EXACT_PUBLIC_SOURCE_REPORT_ARCHIVE_PRIMARY_UNTRACKED_STANDALONE",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-A80-P10-exact-public-source-SHA-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "3/REPORT.safe.json"
+    },
+    {
+      "id": "P10-ONE-FILE-CANONICAL-FORMAT-ACTUAL/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-file-canonical-format-actual-PASS/REPORT.safe.json",
+      "sha256": "2d2fb1d8cd4adf634927676a98111fafd9ed136167206c5a12e63eb4ca5e9923",
+      "status": "ACTUAL_FORMAT_ONLY_PASS_REAL_HTTP_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-ONE-FILE-CANONICAL-FORMAT-ACTUAL/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-file-canonical-format-actual-PASS/evidence.safe.zip",
+      "sha256": "97a8985825ab990688fe54a0e243a6bbfbda622f05049b5fd8a9b1b169be75a2",
+      "status": "ACTUAL_FORMAT_ONLY_PASS_REAL_HTTP_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-ONE-FILE-CANONICAL-FORMAT-ACTUAL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-file-canonical-format-actual-PASS/manifest.safe.json",
+      "sha256": "ed0a969d3b0008fcc37033fc67513442f319c516a07548a90f2b534ff81f68e4",
+      "status": "ACTUAL_FORMAT_ONLY_PASS_REAL_HTTP_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "ROOT-A80-P10-EXACT-PUBLIC-SOURCE-EXTRACTIONS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-A80-P10-exact-public-source-SHA-extractions/REPORT.safe.json",
+      "sha256": "1350ff07b31bb97bc84d41e0a16946705c823351aff8869a2bdf274cad52008b",
+      "status": "SAFE_ARCHIVED_EXACT_PUBLIC_GIT_SOURCE_REPORTS",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "ROOT-A80-P10-EXACT-PUBLIC-SOURCE-EXTRACTIONS/original-public-source-reports.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/Root-A80-P10-exact-public-source-SHA-extractions/original-public-source-reports.safe.zip",
+      "sha256": "5ea56bf5635106f110a40c6a371644c77897102b73e1042b106ae7ec7ec4a459",
+      "status": "SAFE_ARCHIVED_EXACT_PUBLIC_GIT_SOURCE_REPORTS",
+      "revision": "a80edb0e649548ed8f8de285beede775f2890007"
+    },
+    {
+      "id": "P10-AUTH-COMPILE-ACTUAL/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Auth-main-test-compile-actual-PASS/evidence.safe.zip",
+      "sha256": "1eca9a67f2080e601446b36f5cf56e0d180fb70f2d921844f2af99b492b817eb",
+      "status": "ACTUAL_COMPILE_ONLY_PASS_REAL_HTTP_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-AUTH-COMPILE-ACTUAL/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Auth-main-test-compile-actual-PASS/REPORT.safe.json",
+      "sha256": "4d29961f41675fd978400483f4b4e9d869ef04fa97ba956bb9deb9e8ef58adfa",
+      "status": "ACTUAL_COMPILE_ONLY_PASS_REAL_HTTP_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-AUTH-COMPILE-ACTUAL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-Auth-main-test-compile-actual-PASS/manifest.safe.json",
+      "sha256": "0bb0cf148839af434634e70bd4a4d97dd4c7cdd6a8d2c8f839817f4a4add31e1",
+      "status": "ACTUAL_COMPILE_ONLY_PASS_REAL_HTTP_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
     }
   ],
   "research_receipt": {

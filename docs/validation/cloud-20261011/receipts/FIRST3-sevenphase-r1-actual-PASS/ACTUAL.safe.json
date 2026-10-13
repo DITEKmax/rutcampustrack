@@ -1,0 +1,146 @@
+{
+  "schema": "RCT_FIRST3_SEVENPHASE_ACTUAL_R1_V1",
+  "utc": "2026-10-13T10:24:43.089148+00:00",
+  "state": "ACTUAL_SEVENPHASE_ACCEPTED_ALL_KNOWN_BIRTHS_ABSENT_LEASE_RELEASED",
+  "actual_tool_session": 51645,
+  "actual_native_exit": 0,
+  "supervisor": {
+    "pid": 508933,
+    "birth_ticks": 14068046
+  },
+  "source_head_at_launch": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "canonical_format_commit": "a5443e644ad6b635e5a5be0bbbf5b631d1a807cc",
+  "semantic_commit_retained": "2ffd36d390e19879451e855d6e974f97ab5b4c5c",
+  "manual_mechanical_commit_retained": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "plan_sha256": "97ed159fda15ddb6d8cf3cd5da04a12313d0ef7ea6c2e7ebf6f77ca442408d20",
+  "caller_sha256": "b278d0ee9f3eac08f57ff2ce658d7d2d249e57f2b60b19f6e0de9d038f9bb1b2",
+  "source_ready_sha256": "cf91218db4d87965ec67213f9ca1e6c704dd430a839bb1ce5680cb524d49f315",
+  "fresh_grant_sha256": "bf53103d7e26b7b37e92da7097b51d3d0173a124c01d05b1e374192da3cf7845",
+  "independent_source_manifest_sha256": "e2d91778706bff82bda52ff21f690637fb5220f70d0cd378a97e2d1ebc6df735",
+  "native_attempts": 1,
+  "automatic_replays": 0,
+  "phases": [
+    {
+      "phase": "dataset-red",
+      "native_exit": 1,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "dataset-green",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "worker",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "privacy",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "format-write",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "format-check",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "types",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    }
+  ],
+  "actual_oracles": {
+    "red": "Native1/exact4causal failures of6: byte0/100/200 canonical validity + oldactualActor400 closed tuple absent; retention/privatewipe pass/parser0.",
+    "green": "Native0/all40controls PASS; all256 initialized firstgroup codes accepted/exact90validvalues preserved; actualActorcall stub 11routes x13failureHTTP statuses; unknown/private/accessor/prototype/core8/first32/forgedmarker/failurecounts unchanged.",
+    "worker": "Real browser-free Playwright worker, one expected failed test retained/bodies notstarted/private marker absent/closedreportedGroup400 transported; no real HTTP response or current CI cause proof.",
+    "privacy": "Original producer/setup/interruption/missingguard real controls PASS; browser NOT_STARTED.",
+    "formatter_types": "Canonical2TS apply/check native0; safe-reporter only one block wrap; mobile byteexact; scopedstrictTS5.9.3 fouroriginalentrypoints error0."
+  },
+  "source_mapping": [
+    {
+      "path": "/workspace/rct-worktrees/first3-dataset-correction-20261013/tests/e2e/fixtures/mobile-dataset.ts",
+      "pre_formatter_sha256": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+      "post_formatter_sha256": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+      "changed": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/first3-dataset-correction-20261013/tests/e2e/fixtures/safe-reporter.ts",
+      "pre_formatter_sha256": "9e975dc7ec7410cee2d0fc603f2c60039f6eb9b1966f486959dfdc483d4ff9aa",
+      "post_formatter_sha256": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336",
+      "changed": true
+    }
+  ],
+  "format_delta_semantic": "Whitespace-only line wrap of DATASET_SUBJECT_READ_HTTP object; no changed tokens or status/guard/map behavior.",
+  "worktree_clean": true,
+  "net_product_inventory": [
+    "tests/e2e/fixtures/mobile-dataset.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "all26_immutable_pins_post_run_exact": true,
+  "all_known_original_births_absent": true,
+  "known_birth_count": 16,
+  "dependency_link_absent": true,
+  "temporary_artifacts_absent": true,
+  "outcome": {
+    "pass": true,
+    "settled": true,
+    "completedPhases": 7,
+    "peaks": {
+      "owned_rss_bytes": 366215168,
+      "run_allocated_bytes": 1699840,
+      "shared_memory_bytes": 5694279680
+    },
+    "ownedTempArtifactsRemoved": true,
+    "nativeClientAcceptance": false,
+    "actualCIcause": "UNKNOWN",
+    "sampledSoftMonitoring": true,
+    "ownedDependencyLinkRemoved": true,
+    "ownedLinkIdentityRecorded": true,
+    "activeOwnedCallUnknown": false,
+    "primaryExceptionRetained": false,
+    "cleanupExceptionRetained": false
+  },
+  "run_namespace": "/tmp/rct-first3-dataset-check-20261013-attempt01-lifecycle-r1",
+  "remaining_artifacts": "Only known safe supervision receipts retained in own namespace; actual producer private artifacts removed by same reviewed caller.",
+  "resource_qualification": "RSS/disk/shared peaks are sampled soft monitoring, not hard OS isolation/allocation maxima; managed512MiB heap is not a hard whole-process cap.",
+  "current_three_client_actual_cause": "UNKNOWN",
+  "reported_context_authenticates_actual_HTTP_or_admission_or_PASS": false,
+  "client_acceptance": false,
+  "Root_consumer_schema": "Root517b/111e mirror UNBOUND; needs reporter source SHA updated to2b6c at integration if Root accepts format delta; author did not edit/run consumer.",
+  "remaining": "Independent finite actual receipt recheck and Root scoped integration/hooks/publish/currentCI; no browser/server/redundant suite replay."
+}

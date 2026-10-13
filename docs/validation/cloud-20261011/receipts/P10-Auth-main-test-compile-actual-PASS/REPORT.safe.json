@@ -1,0 +1,104 @@
+{
+  "schema": "P10_AUTH_MAIN_TEST_COMPILE_ACTUAL_V1",
+  "utc": "2026-10-13T10:45:27.213753+00:00",
+  "tool_session": 63002,
+  "tool_exit": 0,
+  "semantic_commit": "425b40dd43dbc729ed923a586c6a280891a435cf",
+  "mechanical_commit": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "test_source_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "source_manifest_sha256": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+  "plan_sha256": "b4fc9144eec1531006526b9108f655c2d987fb7891ecc445ea1fe7a895f0d5d3",
+  "grant_sha256": "c28bd0b43a4e355aa017e7fa24241bbf4ce40276872dd2c4e46ff04bbc6cb21c",
+  "exact_completion_marker_counts": {
+    "RCT_P06_AUTH_COMPILE_MAIN_OK": 1,
+    "RCT_P06_AUTH_COMPILE_TEST_OK": 1
+  },
+  "native0_fresh_both_compile_tasks": true,
+  "all6_births_absent": true,
+  "identities": [
+    {
+      "pid": 511719,
+      "start_ticks": 14199685
+    },
+    {
+      "pid": 511723,
+      "start_ticks": 14199711
+    },
+    {
+      "pid": 511724,
+      "start_ticks": 14199718
+    },
+    {
+      "pid": 511758,
+      "start_ticks": 14199826
+    },
+    {
+      "pid": 511833,
+      "start_ticks": 14201859
+    },
+    {
+      "pid": 511837,
+      "start_ticks": 14201880
+    }
+  ],
+  "terminal": {
+    "direct_pid": 511723,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 511723,
+        "start_ticks": 14199711
+      },
+      {
+        "pid": 511724,
+        "start_ticks": 14199718
+      },
+      {
+        "pid": 511758,
+        "start_ticks": 14199826
+      },
+      {
+        "pid": 511833,
+        "start_ticks": 14201859
+      },
+      {
+        "pid": 511837,
+        "start_ticks": 14201880
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T10:44:13.263961+00:00",
+    "peaks": {
+      "memory": 6457790464,
+      "min_workspace_free": 8144617472,
+      "owned_rss": 1105481728,
+      "log_bytes": 4235
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "worktree_source_inputs_preserved": 17,
+  "protected_checking_init_pin_preserved": true,
+  "effective_manifest_inputs_preserved": 18,
+  "callbacks_init_b78_unchanged": true,
+  "private_tmp_authority_envelope_absent": true,
+  "worktree_clean": true,
+  "private_log_read_only_bounded_marker_projection": true,
+  "private_log_body_hash_export": false,
+  "tests_HTTP_PG_Redis_Rabbit_Docker_API_browser_NOT_RUN": true,
+  "XML_evidence": "NONE_EXPECTED_COMPILE_ONLY_INHERITED_GENERIC_TERMINAL_WORDING_NOT_TEST_PROOF",
+  "source_behavior_changes": 0,
+  "native_lease": "RELEASED_AFTER_THIS_SIX_BIRTH_ABSENCE_AND_SOURCE_PROOF",
+  "parent_P10": "UNKNOWN",
+  "significant_sensitivity": "OUTSTANDING_DEFER_UNTIL_REAL_HTTP_RULE_PASS",
+  "independent_finite_recheck": "REQUIRED_FORMAT_AND_COMPILE_BEFORE_ROOT_INTEGRATION",
+  "B013_reuse": false
+}

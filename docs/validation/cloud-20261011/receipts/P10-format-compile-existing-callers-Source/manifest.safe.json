@@ -1,0 +1,58 @@
+{
+  "schema": "P10_CHECKING_SOURCE_SEAL_V1",
+  "files": {
+    "READY.safe.json": {
+      "sha256": "22f512e8322bb2435774837f211feeba6a3856356e36e552a7c599c892ab5f50",
+      "bytes": 8154
+    },
+    "compile01/compile-p06.init.gradle": {
+      "sha256": "2090000e8198fd1e04c03ab9887d25db222d5a1f6eb686be47d0e7a584ad87b0",
+      "bytes": 414
+    },
+    "compile01/formatted-source-manifest.safe.json": {
+      "sha256": "d6db3e0de71fc0455dc0157a42c1ae323774a0511846c133b6fe7f79b00b9e69",
+      "bytes": 2742
+    },
+    "compile01/grant-template.private.json": {
+      "sha256": "b07dd01b513dffacd84bfff3514c0f8fdb2efa483802b0d021e8753420893016",
+      "bytes": 961
+    },
+    "compile01/green-plan.safe.json": {
+      "sha256": "75dfb30f400a2723e926724d4620079a1665c622b5c260af3115223625c54549",
+      "bytes": 1481
+    },
+    "compile01/logged-green-child.py": {
+      "sha256": "7cd5a5befea7efbb68ce426530851e0c8221203f56dcda56ce0eed6480bfaf66",
+      "bytes": 4819
+    },
+    "compile01/run-green-owned.py": {
+      "sha256": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+      "bytes": 7635
+    },
+    "format01/format-journal.init.gradle": {
+      "sha256": "90933926b19e792e941c15b2649560fdce53ea730b40456f4a4931a25cc6eaad",
+      "bytes": 748
+    },
+    "format01/format-plan.safe.json": {
+      "sha256": "4ad0c324c42e0141840958c8f7741810ca60cadff38f948b381632edde2ebd19",
+      "bytes": 1723
+    },
+    "format01/grant-template.private.json": {
+      "sha256": "b2856c9d6d5480a2ab98b90e587c825c1377dba01fef433342a506b752a49b02",
+      "bytes": 1084
+    },
+    "format01/logged-format-child.py": {
+      "sha256": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+      "bytes": 7173
+    },
+    "format01/run-format-owned.py": {
+      "sha256": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+      "bytes": 7705
+    },
+    "format01/semantic-source-manifest.safe.json": {
+      "sha256": "a8dfa763c0ab6ebb0783fbfc34920e16b6f9e9f540deb09825763ff155c205cf",
+      "bytes": 2715
+    }
+  },
+  "private_data": "No actualruntime/credentials/privatecontent included; templatesauthorizedfalse."
+}

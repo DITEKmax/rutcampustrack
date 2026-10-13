@@ -112,14 +112,22 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   }
   sanitize(getters);
   expect(getters.location).toEqual({ file: spec, line: 91, column: 1 });
-  const inherited = Object.create({ get stack() { getterCalls++; return frame(); } });
+  const inherited = Object.create({
+    get stack() {
+      getterCalls++;
+      return frame();
+    },
+  });
   sanitize(inherited);
   expect(inherited.location).toEqual(fallback);
   const stackGetter: Record<string, unknown> = {};
   Object.defineProperty(stackGetter, 'stack', {
     enumerable: true,
     configurable: true,
-    get() { getterCalls++; return frame(); },
+    get() {
+      getterCalls++;
+      return frame();
+    },
   });
   sanitize(stackGetter);
   expect(stackGetter.location).toEqual(fallback);

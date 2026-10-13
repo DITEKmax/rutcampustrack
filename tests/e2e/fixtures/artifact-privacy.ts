@@ -110,8 +110,9 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
     if (!line.startsWith('    at ')) continue;
     if (line.length > 1024 || /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(line)) return fallback;
     const frame =
-      /^    at (?:[^()\r\n]{1,128} )?\(([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})\)$/.exec(line) ??
-      /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})$/.exec(line);
+      /^    at (?:[^()\r\n]{1,128} )?\(([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})\)$/.exec(
+        line,
+      ) ?? /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})$/.exec(line);
     if (!frame) return fallback;
     if (frame[1] !== publicSpec) continue;
     const sourceLine = Number(frame[2]);
@@ -142,11 +143,15 @@ export function sanitizeTestErrors(info: TestInfo): void {
     Object.defineProperties(error, {
       message: {
         value: 'Check failed; source location and outcome are recorded in safe-results.json',
-        writable: true, enumerable: true, configurable: true,
+        writable: true,
+        enumerable: true,
+        configurable: true,
       },
       stack: {
         value: `Error: check failed\n    at (${location.file}:${location.line}:${location.column})`,
-        writable: true, enumerable: true, configurable: true,
+        writable: true,
+        enumerable: true,
+        configurable: true,
       },
       location: { value: location, writable: true, enumerable: true, configurable: true },
     });

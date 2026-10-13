@@ -146,6 +146,16 @@ const enumValues: Record<string, readonly string[]> = {
   targetStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'CANCELLED', 'UNSUPPORTED'],
   domStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'CANCELLED', 'UNSUPPORTED', 'ABSENT_ROW'],
   lessonStatus: ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED', 'TRANSFERRED', 'UNSUPPORTED'],
+  reportedEditBlock: [
+    'NONE',
+    'NOT_STARTED',
+    'PERMISSION_DENIED',
+    'SEMESTER_ARCHIVED',
+    'SEMESTER_WRITE_BLOCKED',
+    'TRANSFER_PENDING',
+    'LESSON_CANCELLED',
+    'UNKNOWN',
+  ],
   testStatus: ['passed', 'failed', 'timedOut', 'skipped', 'interrupted', 'UNKNOWN'],
   diagnosticState: [
     'OBSERVING',
@@ -182,6 +192,34 @@ function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : undefined;
+}
+
+/** Classify the actual roster DTO field without retaining server-provided text. */
+export function rosterEditBlockFacts(target: unknown): Facts {
+  const reason = record(target)?.editBlockedReason;
+  const present = reason !== undefined && reason !== null && reason !== '';
+  let reportedEditBlock = present ? 'UNKNOWN' : 'NONE';
+  switch (reason) {
+    case 'Пара ещё не началась':
+      reportedEditBlock = 'NOT_STARTED';
+      break;
+    case 'Отсутствует право изменять отметку':
+      reportedEditBlock = 'PERMISSION_DENIED';
+      break;
+    case 'Семестр архивирован':
+      reportedEditBlock = 'SEMESTER_ARCHIVED';
+      break;
+    case 'Изменения в семестре заблокированы':
+      reportedEditBlock = 'SEMESTER_WRITE_BLOCKED';
+      break;
+    case 'Перенос пары ещё не завершён':
+      reportedEditBlock = 'TRANSFER_PENDING';
+      break;
+    case 'Пара отменена':
+      reportedEditBlock = 'LESSON_CANCELLED';
+      break;
+  }
+  return { blockedReasonPresent: present, reportedEditBlock };
 }
 
 const rosterProblemByteLimit = 8192;
@@ -583,10 +621,7 @@ export class FocusObserver {
       rowEditableKnown: typeof target?.editable === 'boolean',
       rowEditable: target?.editable === true,
       normalizedRowEditable: !!target && body?.editable === true && target.editable !== false,
-      blockedReasonPresent:
-        target?.blockedReason !== undefined &&
-        target.blockedReason !== null &&
-        target.blockedReason !== '',
+      ...rosterEditBlockFacts(target),
       targetStatus: attendanceStatus(target?.status),
       lessonIdEqual: idEqual(body?.lessonId, this.dataset.lesson.physicalLessonId),
       groupEqual: idEqual(body?.groupId, this.dataset.group.id),

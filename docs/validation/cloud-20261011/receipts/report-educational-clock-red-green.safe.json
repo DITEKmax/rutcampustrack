@@ -1,0 +1,361 @@
+{
+  "scope": "CHECK-CLOCK-REPORT-01",
+  "author_sha": "bded95ef6e244693e45f6b37a484c5d65e518daf",
+  "integrated_sha": "82fce657471980b710d50b50a80187ac6c5215d3",
+  "base": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+  "source_sha256": {
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java": "cf13ed2e36f58ee84327b49731df86b50f5bd25507de771a4103736c6a9424fb",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceEducationalTimeTest.java": "aa4b9015bfc5145307a3e0de351b023d96249d3f145be24559fe4d03c57986e4"
+  },
+  "before": {
+    "report_sha256": "8b437351f07723d1e4f930e7ca1c4c6c29565cb20f7054d3c0a747b22844eb72",
+    "test_sha256": "aa4b9015bfc5145307a3e0de351b023d96249d3f145be24559fe4d03c57986e4",
+    "case": "ReportServiceEducationalTimeTest.lessonRosterUsesSelectedEducationalTimeAndFallsBackToRealClock",
+    "counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "failure_type": "org.opentest4j.AssertionFailedError",
+    "observation": "selecteddomainfuture false expected; originalreal-clockstarted true actual",
+    "elapsed_seconds": 55.78,
+    "terminal": {
+      "direct_pid": 566025,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 566025,
+          "start_ticks": 18386634
+        },
+        {
+          "pid": 566081,
+          "start_ticks": 18386732
+        },
+        {
+          "pid": 566223,
+          "start_ticks": 18388641
+        },
+        {
+          "pid": 566227,
+          "start_ticks": 18388662
+        },
+        {
+          "pid": 566406,
+          "start_ticks": 18391570
+        },
+        {
+          "pid": 566463,
+          "start_ticks": 18391784
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    }
+  },
+  "after": {
+    "counts": {
+      "tests": 112,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "classes": [
+      {
+        "class": "ru.rutcampustrack.attendance.report.DocxRendererTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanGroupCompositionServiceTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanStatsRendererTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanStatsTrendRendererTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanSubjectJournalServiceTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest",
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.HeadmanWeeklyTemplateSmokeTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.ReportControllerMvcTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.ReportServiceEducationalTimeTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.studentprojection.AttendanceMetricCalculatorTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest",
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceDocxRendererTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportServiceTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportServiceTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "phases": [
+      {
+        "phase": "format_report",
+        "command": [
+          "bash",
+          "./gradlew",
+          "--offline",
+          "--no-daemon",
+          "--no-parallel",
+          "--max-workers=1",
+          "--console=plain",
+          "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+          "-PspotlessIdeHook=/workspace/rct-worktrees/first3-spec-frame-20261013/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+          "spotlessJavaApply",
+          "spotlessJavaCheck"
+        ],
+        "terminal": {
+          "direct_pid": 567643,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 567643,
+              "start_ticks": 18410934
+            },
+            {
+              "pid": 567683,
+              "start_ticks": 18411040
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "peaks": {
+          "shared": 6431948800,
+          "rss": 799834112,
+          "min_free": 6533230592
+        },
+        "elapsed_seconds": 18.21,
+        "tmp_removed": true
+      },
+      {
+        "phase": "format_test",
+        "command": [
+          "bash",
+          "./gradlew",
+          "--offline",
+          "--no-daemon",
+          "--no-parallel",
+          "--max-workers=1",
+          "--console=plain",
+          "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+          "-PspotlessIdeHook=/workspace/rct-worktrees/first3-spec-frame-20261013/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceEducationalTimeTest.java",
+          "spotlessJavaApply",
+          "spotlessJavaCheck"
+        ],
+        "terminal": {
+          "direct_pid": 567848,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 567848,
+              "start_ticks": 18412754
+            },
+            {
+              "pid": 567882,
+              "start_ticks": 18412850
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "peaks": {
+          "shared": 6332588032,
+          "rss": 708423680,
+          "min_free": 6532472832
+        },
+        "elapsed_seconds": 16.95,
+        "tmp_removed": true
+      },
+      {
+        "phase": "green_report",
+        "command": [
+          "bash",
+          "./gradlew",
+          "--offline",
+          "--no-daemon",
+          "--no-parallel",
+          "--max-workers=1",
+          "--console=plain",
+          "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+          ":services:attendance-service:attendance-app:compileJava",
+          ":services:attendance-service:attendance-app:compileTestJava",
+          ":services:attendance-service:attendance-app:test",
+          "--tests",
+          "ru.rutcampustrack.attendance.report.*"
+        ],
+        "terminal": {
+          "direct_pid": 568032,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 568032,
+              "start_ticks": 18414451
+            },
+            {
+              "pid": 568069,
+              "start_ticks": 18414555
+            },
+            {
+              "pid": 568353,
+              "start_ticks": 18417488
+            },
+            {
+              "pid": 568411,
+              "start_ticks": 18417797
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "peaks": {
+          "shared": 7350734848,
+          "rss": 1720258560,
+          "min_free": 6530187264
+        },
+        "elapsed_seconds": 62.23,
+        "tmp_removed": true
+      }
+    ]
+  },
+  "initial_infra": {
+    "native_exit": 1,
+    "elapsed_seconds": 2.77,
+    "classification": "Gradle local socket java.net.SocketException Operation not permitted; no selected XML; NOT valid regression RED"
+  },
+  "token_equivalence": {
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java": true,
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceEducationalTimeTest.java": true
+  },
+  "all_native_births_absent": true,
+  "worktree_clean": true,
+  "author_top_native_field": "ObsoleteNOT_RUN; detailedactualphasesused",
+  "independent_review": "clock-next5-whole-review.safe.md",
+  "browser": "NOT_RUN_oncorrectedrevision",
+  "B013": "UNTOUCHED_FROZEN",
+  "qualification": "Finiteobservedtime-selection regression/defaultfallback, no whole-familyPASS"
+}

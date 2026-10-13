@@ -12266,6 +12266,70 @@
       "sha256": "8a2ac0301e1aa7bbfaf1c3ef53105dad2e63c906d8b1e65a8b1a4a8fde1d9660",
       "status": "four-native-checks-pass-RAM-functional-counterexample-pass-overall-post-lex-metadata-failure-qualified",
       "revision": "a286ee49e0d727344228ab00e2e4a79a7db5d0dc"
+    },
+    {
+      "id": "CURRENT1AA6-PUSH-READBACK",
+      "path": "docs/validation/cloud-20261011/receipts/CAP-FIRST3-1aa6-real-push-readback.safe.json",
+      "sha256": "d90e93d128c3c8f0786140e61b2861e8c24c175624bc2a69ebc5a359e348a93f",
+      "status": "published-exact-local-remote-drafthead",
+      "revision": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "CURRENT1AA6-SCHEDULE-CAP",
+      "path": "docs/validation/cloud-20261011/receipts/current-1aa6-Schedule-CAP-safe/actual-checkout.safe.json",
+      "sha256": "4da73c17a5dc850a3f2c6cf216f20ace42fc999a7643c8ea6313711352cc9742",
+      "status": "actual-current-CI-selected-case-PASS",
+      "revision": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "CURRENT1AA6-FIRST3-FAIL",
+      "path": "docs/validation/cloud-20261011/receipts/current-1aa6-FIRST3-safe/first3-safe-1.safe.json",
+      "sha256": "d9f798e80db7f5f6459145aac1c829286bb93f3f7676a366aaab358e622f3a90",
+      "status": "actual-current-browser-14PASS-61FAIL-142FAIL-time-seam",
+      "revision": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "CURRENT1AA6-THREE-GATES",
+      "path": "docs/validation/cloud-20261011/receipts/current-1aa6-CI-progress.safe.json",
+      "sha256": "0d1aea758689ef7ac87d62f0cafc1be5d607caac3e06ebb0eeeeed14c32dbaa7",
+      "status": "actual-CI-failure-Coverage-Security-success-qualified",
+      "revision": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "REMAINING5-CI-PACKAGE",
+      "path": "docs/validation/cloud-20261011/receipts/remaining5-ci-package.safe.json",
+      "sha256": "7b5a68f5e09b0419a38f355fff6e02bf72d7b12de5ddfbf0726a7ca597645925",
+      "status": "format-types-exact-discovery-pass-browser-notrun",
+      "revision": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "REPORT-CLOCK-RED-GREEN",
+      "path": "docs/validation/cloud-20261011/receipts/report-educational-clock-red-green.safe.json",
+      "sha256": "9248d8e02a7285b9e3df9004be11ecd50681d8d712c6739e3f5f9074a9eaf2c2",
+      "status": "meaningful-before-RED-after-report-GREEN-independent-approved",
+      "revision": "82fce657471980b710d50b50a80187ac6c5215d3",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "CLOCK-NEXT5-WHOLE-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/clock-next5-whole-review.safe.md",
+      "sha256": "30442e30669da8a882f989c164f975cfa3b6c1888cb0aa2f6ece2faea9d244d2",
+      "status": "independent-whole-package-APPROVE",
+      "revision": "82fce657471980b710d50b50a80187ac6c5215d3",
+      "kind": "task-evidence-not-new-product-specification"
+    },
+    {
+      "id": "NATIVE-RECOVERY-STARTUP-RESOURCE-FAILURE",
+      "path": "docs/validation/cloud-20261011/receipts/native-recovery-startup-resource-failure.safe.json",
+      "sha256": "7335a19a6024a2205931c490545c09df6c9bfe4f18704f0c514ea79466310937",
+      "status": "actual-infra-failure-before-seed-backup-target-owned-empty-runtime-cleaned-artifacts-retained",
+      "revision": "82fce657471980b710d50b50a80187ac6c5215d3",
+      "kind": "runtime-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

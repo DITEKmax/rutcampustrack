@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,8 +36,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -193,6 +197,163 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 .as("event.payload.code должен совпадать с Redis")
                 .isEqualTo(code);
         assertThat(payload.path("ttl_seconds").asInt()).isGreaterThan(0);
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries() throws Exception {
+        String changeLogin = "uni-c-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        String resetLogin = "uni-r-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        long resetTelegram = (UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE) | 1L;
+        String twelveScalars = "abcdefghij\u0661!";
+        String seventyTwoBytes = "\uD83D\uDE00".repeat(17) + "ab1!";
+        List<String> invalidPasswords =
+                List.of("abcdefghi\u0661!", seventyTwoBytes + "a", "unpaired");
+        assertThat(twelveScalars.codePointCount(0, twelveScalars.length())).isEqualTo(12);
+        assertThat(seventyTwoBytes.getBytes(StandardCharsets.UTF_8).length).isEqualTo(72);
+        assertThat(invalidPasswords.getFirst().codePointCount(0, invalidPasswords.getFirst().length()))
+                .isEqualTo(11);
+        assertThat(invalidPasswords.get(1).getBytes(StandardCharsets.UTF_8).length).isEqualTo(73);
+        Long changeUser = null;
+        Long resetUser = null;
+        Throwable primaryFailure = null;
+        try {
+            changeUser = seedUnicodePasswordActor(changeLogin, null);
+            resetUser = seedUnicodePasswordActor(resetLogin, resetTelegram);
+            for (long userId : List.of(changeUser, resetUser)) {
+                assertThat(jdbc.queryForObject(
+                                "SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE id = ?",
+                                Boolean.class, userId))
+                        .isTrue();
+            }
+            TokenResponse changeSession = unicodePasswordLogin(changeLogin, "password");
+            HttpHeaders changeHeaders = new HttpHeaders();
+            changeHeaders.setBearerAuth(changeSession.accessToken());
+            List<Object> changeBefore = unicodePasswordState(changeUser);
+            for (String invalid : invalidPasswords) {
+                ResponseEntity<JsonNode> rejected =
+                        unicodePasswordPost(
+                                "/auth/change-password",
+                                changeHeaders,
+                                Map.of("currentPassword", "password", "newPassword", invalid),
+                                invalid.equals("unpaired"));
+                assertUnicodePasswordRejection(rejected, invalid, "password");
+                assertThat(rejected.getBody().path("extras").path("code").asText()
+                                .equals("PASSWORD_POLICY_VIOLATION"))
+                        .isTrue();
+                assertThat(unicodePasswordState(changeUser).equals(changeBefore)).isTrue();
+            }
+            ResponseEntity<JsonNode> wrongCurrent =
+                    unicodePasswordPost(
+                            "/auth/change-password",
+                            changeHeaders,
+                            Map.of("currentPassword", "wrong-password", "newPassword", twelveScalars),
+                            false);
+            assertUnicodePasswordRejection(wrongCurrent, "wrong-password", twelveScalars);
+            assertThat(wrongCurrent.getBody().path("extras").path("code").asText()
+                            .equals("CURRENT_PASSWORD_INVALID"))
+                    .isTrue();
+            assertThat(unicodePasswordState(changeUser).equals(changeBefore)).isTrue();
+            ResponseEntity<JsonNode> changed =
+                    unicodePasswordPost(
+                            "/auth/change-password",
+                            changeHeaders,
+                            Map.of("currentPassword", "password", "newPassword", twelveScalars),
+                            false);
+            assertThat(changed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(changed.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertThat(changed.getBody() == null).isTrue();
+            assertThat(changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE) != null
+                            && changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE).contains("Max-Age=0"))
+                    .isTrue();
+            assertUnicodePasswordCommitted(changeUser, twelveScalars, "abcdefghik\u0661!");
+            assertThat(bearerSessionStatus(changeSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refreshStatus(changeSession.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertUnicodePasswordLoginDenied(changeLogin, "password");
+            assertUnicodePasswordLoginDenied(changeLogin, "abcdefghik\u0661!");
+            unicodePasswordLogin(changeLogin, twelveScalars);
+
+            TokenResponse resetFirst = unicodePasswordLogin(resetLogin, "password");
+            TokenResponse resetSecond = unicodePasswordLogin(resetLogin, "password");
+            ResponseEntity<JsonNode> requested =
+                    restTemplate.postForEntity(
+                            "/auth/password-reset/request", Map.of("login", resetLogin), JsonNode.class);
+            assertThat(requested.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(requested.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertThat(requested.getBody() != null).isTrue();
+            String challenge = requested.getBody().path("challengeId").asText();
+            Message message = receiveWithRetry(TEST_QUEUE);
+            assertThat(message != null).isTrue();
+            JsonNode payload = objectMapper.readTree(message.getBody()).path("payload");
+            assertThat(payload.path("purpose").asText().equals("password_reset")
+                            && payload.path("challenge_id").asText().equals(challenge)
+                            && payload.path("telegram_id").asLong() == resetTelegram)
+                    .isTrue();
+            String code = payload.path("code").asText();
+            ResponseEntity<JsonNode> verified =
+                    restTemplate.postForEntity(
+                            "/auth/password-reset/verify",
+                            Map.of("challengeId", challenge, "code", code),
+                            JsonNode.class);
+            assertThat(verified.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(verified.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertThat(verified.getBody() != null).isTrue();
+            String ticket = verified.getBody().path("resetTicket").asText();
+            assertThat(!ticket.isBlank()
+                            && !verified.getBody().has("accessToken")
+                            && !verified.getBody().has("refreshToken"))
+                    .isTrue();
+            List<Object> resetBefore = unicodePasswordState(resetUser);
+            assertThat(jdbc.queryForObject(
+                            "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL",
+                            Integer.class, resetUser))
+                    .isEqualTo(1);
+            for (String invalid : invalidPasswords) {
+                ResponseEntity<JsonNode> rejected =
+                        unicodePasswordPost(
+                                "/auth/password-reset/complete",
+                                new HttpHeaders(),
+                                Map.of("resetTicket", ticket, "newPassword", invalid),
+                                invalid.equals("unpaired"));
+                assertUnicodePasswordRejection(rejected, invalid, ticket);
+                assertThat(rejected.getBody().path("extras").path("code").asText()
+                                .equals("PASSWORD_POLICY_VIOLATION"))
+                        .isTrue();
+                assertThat(unicodePasswordState(resetUser).equals(resetBefore)).isTrue();
+            }
+            // The same real proof survives every invalid password; no fabricated replacement ticket.
+            ResponseEntity<JsonNode> completed =
+                    unicodePasswordPost(
+                            "/auth/password-reset/complete",
+                            new HttpHeaders(),
+                            Map.of("resetTicket", ticket, "newPassword", seventyTwoBytes),
+                            false);
+            assertThat(completed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(completed.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertThat(completed.getBody() == null).isTrue();
+            assertUnicodePasswordCommitted(resetUser, seventyTwoBytes, "\uD83D\uDE00".repeat(17) + "ac1!");
+            assertThat(jdbc.queryForObject(
+                            "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NOT NULL",
+                            Integer.class, resetUser))
+                    .isEqualTo(1);
+            assertThat(bearerSessionStatus(resetFirst.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(bearerSessionStatus(resetSecond.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refreshStatus(resetFirst.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refreshStatus(resetSecond.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertUnicodePasswordLoginDenied(resetLogin, "password");
+            assertUnicodePasswordLoginDenied(resetLogin, "\uD83D\uDE00".repeat(17) + "ac1!");
+            unicodePasswordLogin(resetLogin, seventyTwoBytes);
+        } catch (Exception | AssertionError failure) {
+            primaryFailure = failure;
+            throw failure;
+        } finally {
+            try {
+                cleanUnicodePasswordActors(changeUser, resetUser);
+            } catch (RuntimeException | AssertionError cleanupFailure) {
+                if (primaryFailure != null) primaryFailure.addSuppressed(cleanupFailure);
+                else throw cleanupFailure;
+            }
+        }
     }
 
     @Test
@@ -928,6 +1089,147 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     private static String recoveryTicket(String link) {
         String fragment = java.net.URI.create(link).getRawFragment();
         return fragment.substring("resetTicket=".length(), fragment.indexOf('&'));
+    }
+
+    private long seedUnicodePasswordActor(String login, Long telegramId) {
+        Long userId = new TransactionTemplate(transactionManager).execute(status -> {
+            Long id = jdbc.queryForObject(
+                    """
+                    INSERT INTO users (login, password_hash, last_name, first_name, role, status,
+                        is_headman, initial_password, password_changed, telegram_id, created_at, updated_at)
+                    VALUES (?, ?, 'Unicode', 'Boundary', CAST('student' AS user_role),
+                        CAST('active' AS account_status), FALSE, 'password', FALSE, ?, NOW(), NOW())
+                    RETURNING id
+                    """,
+                    Long.class, login, PASSWORD_HASH, telegramId);
+            jdbc.update(
+                    "INSERT INTO user_role_grants (user_id, role, status, created_at, updated_at) "
+                            + "VALUES (?, 'student', 'active', NOW(), NOW())",
+                    id);
+            return id;
+        });
+        assertThat(userId != null).isTrue();
+        return userId;
+    }
+
+    private ResponseEntity<JsonNode> unicodePasswordPost(
+            String path, HttpHeaders headers, Map<String, String> body, boolean malformed)
+            throws Exception {
+        headers.setContentType(new MediaType("application", "json", StandardCharsets.UTF_8));
+        String json = objectMapper.writeValueAsString(body);
+        if (malformed) {
+            // Send an actual escaped lone surrogate; UTF-8 conversion must not replace it first.
+            assertThat(json.contains("\"newPassword\":\"unpaired\"")).isTrue();
+            json = json.replace(
+                    "\"newPassword\":\"unpaired\"",
+                    "\"newPassword\":\"abcdefghij\\u0661!\\uD800\"");
+        }
+        return restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(json, headers), JsonNode.class);
+    }
+
+    private void assertUnicodePasswordRejection(
+            ResponseEntity<JsonNode> response, String invalid, String proof) throws Exception {
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(response.getBody() != null).isTrue();
+        JsonNode body = response.getBody();
+        String rendered = body.toString();
+        assertThat(!body.has("accessToken") && !body.has("refreshToken")
+                        && !body.has("resetTicket") && !body.has("session"))
+                .isTrue();
+        // Comparisons stay in RAM. The legacy fixture password is a common diagnostic word,
+        // so test its quoted value rather than rejecting legitimate prose containing that word.
+        assertThat(!rendered.contains(invalid) && !rendered.contains(objectMapper.writeValueAsString(proof))
+                        && !rendered.contains("abcdefghij\u0661!")
+                        && !rendered.contains("\\uD800") && rendered.indexOf((char) 0xD800) < 0)
+                .isTrue();
+    }
+
+    private List<Object> unicodePasswordState(long userId) {
+        // Admission may update last_seen_at; failed-attempt audit/counters remain permitted.
+        return List.of(
+                jdbc.queryForList(
+                        "SELECT password_hash, initial_password, password_changed, credentials_version "
+                                + "FROM users WHERE id = ?", userId),
+                jdbc.queryForList(
+                        "SELECT sid, active_role_grant_id, session_version, current_refresh_jti, "
+                                + "previous_refresh_jti, refresh_expires_at, revoked_at, revoke_reason "
+                                + "FROM auth_sessions WHERE user_id = ? ORDER BY sid", userId),
+                jdbc.queryForList("SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id", userId),
+                jdbc.queryForList(
+                        "SELECT * FROM account_security_events WHERE user_id = ? "
+                                + "AND event_type = 'PASSWORD_CHANGED' ORDER BY id", userId),
+                jdbc.queryForList(
+                        "SELECT id, event_type, payload, created_at FROM auth_outbox WHERE event_type = 'password.changed' "
+                                + "AND payload -> 'payload' ->> 'user_id' = ? ORDER BY id", Long.toString(userId)));
+    }
+
+    private void assertUnicodePasswordCommitted(long userId, String exact, String different) {
+        assertThat(jdbc.queryForObject(
+                        "SELECT initial_password IS NULL AND password_changed FROM users WHERE id = ?",
+                        Boolean.class, userId))
+                .isTrue();
+        String hash = jdbc.queryForObject("SELECT password_hash FROM users WHERE id = ?", String.class, userId);
+        BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
+        assertThat(hash != null && !hash.equals(exact)
+                        && bcrypt.matches(exact, hash) && !bcrypt.matches(different, hash))
+                .isTrue();
+        assertThat(jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM auth_sessions WHERE user_id = ? AND revoked_at IS NULL",
+                        Integer.class, userId))
+                .isZero();
+        assertThat(jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM account_security_events WHERE user_id = ? "
+                                + "AND event_type = 'PASSWORD_CHANGED'", Integer.class, userId))
+                .isEqualTo(1);
+    }
+
+    private TokenResponse unicodePasswordLogin(String login, String password) {
+        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest(login, password), TokenResponse.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(response.getBody() != null && response.getBody().accessToken() != null
+                        && !response.getBody().accessToken().isBlank()
+                        && response.getBody().refreshToken() != null && !response.getBody().refreshToken().isBlank())
+                .isTrue();
+        assertThat(bearerSessionStatus(response.getBody().accessToken())).isEqualTo(HttpStatus.OK);
+        return response.getBody();
+    }
+
+    private void assertUnicodePasswordLoginDenied(String login, String password) {
+        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
+        List<Object> before = unicodePasswordState(userId);
+        ResponseEntity<JsonNode> response = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest(login, password), JsonNode.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(response.getBody() != null && !response.getBody().has("accessToken")
+                        && !response.getBody().has("refreshToken")
+                        && !response.getBody().toString().contains("\"" + password + "\""))
+                .isTrue();
+        assertThat(unicodePasswordState(userId).equals(before)).isTrue();
+    }
+
+    private void cleanUnicodePasswordActors(Long... userIds) {
+        RuntimeException cleanupFailure = null;
+        for (Long userId : userIds) {
+            if (userId == null) continue;
+            try {
+                new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+                    jdbc.update("DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'user_id' = ?", Long.toString(userId));
+                    jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", userId);
+                    jdbc.update("DELETE FROM account_security_events WHERE user_id = ?", userId);
+                    jdbc.update("DELETE FROM auth_sessions WHERE user_id = ?", userId);
+                    jdbc.update("DELETE FROM user_role_grants WHERE user_id = ?", userId);
+                    jdbc.update("DELETE FROM users WHERE id = ?", userId);
+                });
+            } catch (RuntimeException failure) {
+                if (cleanupFailure == null) cleanupFailure = failure;
+                else cleanupFailure.addSuppressed(failure);
+            }
+        }
+        if (cleanupFailure != null) throw cleanupFailure;
     }
 
     private TokenResponse loginStudent(String password) {

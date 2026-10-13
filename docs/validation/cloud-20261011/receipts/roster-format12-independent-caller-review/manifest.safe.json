@@ -1,0 +1,20 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 729,
+      "sha256": "4a06f25314a9e1a2b30bb8ac13fb9cd0ee9d309e39715a536f25c1ffa83b29b6"
+    },
+    {
+      "path": "review.py",
+      "bytes": 7489,
+      "sha256": "7229a1eb218bf4745b4c5c1a9473251a5d0e61f3371c0b7200e3c4885b65894b"
+    },
+    {
+      "path": "review.safe.json",
+      "bytes": 9651,
+      "sha256": "e0824a1b18fe7ea6cd5db39aff3a6244c12bc447f0cb6ab5bbfd7df21a701cb2"
+    }
+  ]
+}

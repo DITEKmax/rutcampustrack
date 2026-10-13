@@ -1,0 +1,15 @@
+{
+  "schema": "RCT_P06_SAVED_XML_STATIC_PATTERN_DIAGNOSTIC_V1",
+  "utc": "2026-10-13T08:34:22.667962+00:00",
+  "predicates": {
+    "known_JavaAssertionError_prefix": true,
+    "503_expected_401_actual_static_values_pattern": true,
+    "known_Status_label_exact_message_with_optional_approved_type_prefix": false,
+    "known_Response_status_label_exact_message_with_optional_approved_type_prefix": true
+  },
+  "fixed_rejection_code": "STATIC_503401_VALUES_CONFIRMED_EXACT_MESSAGE_SHAPE_MISMATCH",
+  "original_strict_oracle_unchanged": true,
+  "checking47612FAIL_preserved": true,
+  "no_raw_private_attrs_errors_body_values_hash_export": true,
+  "native_replay": false
+}

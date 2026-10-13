@@ -1,0 +1,32 @@
+{
+  "schema": "RCT_P06_SAVED_XML_CLOSED_PREDICATE_DIAGNOSTIC_V1",
+  "utc": "2026-10-13T08:32:25.348754+00:00",
+  "predicates": {
+    "encoding_declaration_DTD_gate_accepted": true,
+    "parse_accepted": true,
+    "suite_exact_selected_class": true,
+    "suite_exact_1F_0E_0S": true,
+    "selected_class_method_match": true,
+    "exactly_one_failure_no_case_error_skip": true,
+    "type_equals_approved_JavaAssertionError": true,
+    "exact_503expected_401actual_message": false,
+    "known_JavaAssertionError_prefix_plus_exact_503401_message": false,
+    "required_own_case_and_helper_frames": true,
+    "current_source_original_hash_match": true,
+    "current_compiled_original_hash_match": true
+  },
+  "bounded_counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "bounded_testcase_count": 1,
+  "bounded_failure_count": 1,
+  "fixed_rejection_code": "OTHER_PREDICATE_MISMATCH",
+  "original_strict_oracle_unchanged": true,
+  "47612_FAIL_preserved": true,
+  "source_class_restore_and_cleanup_receipt_preserved": true,
+  "no_raw_unknown_names_errors_values_body_hash_export": true,
+  "qualifications": "SavedprivateXMLdata-only projection. Source/class hash predicates describe CURRENT restoredoriginal state; do not invent historical mutant hashes. No Native/test/GREEN replay or acceptance by loosening."
+}

@@ -1,0 +1,13 @@
+{
+  "formatted_source_commit": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "source_files": 13,
+  "caller_role": "One coherent GREEN compileBOTHmain/test then4selectedunit classes; noDBDocker",
+  "guard_callbacks_unchanged": "b78/status/observe/settlement/privateparentbinding remain exact; onlysource manifest gate and namespace/commands/expected0 changed",
+  "native_launch": false,
+  "pins": {
+    "run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "logged-green-child.py": "7cd5a5befea7efbb68ce426530851e0c8221203f56dcda56ce0eed6480bfaf66",
+    "green-plan.safe.json": "9a5deb1b716ecc08efddce71e5d6b952773e505d9bc0463047fc134172a1e87b",
+    "formatted-source13-manifest.safe.json": "f8cf8c4be77550d86de02f4687c508742e84b05171600c62bccc61149c1641a9"
+  }
+}

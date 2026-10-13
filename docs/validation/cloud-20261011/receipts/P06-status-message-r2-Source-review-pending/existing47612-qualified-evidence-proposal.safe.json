@@ -1,0 +1,49 @@
+{
+  "schema": "RCT_P06_EXISTING47612_QUALIFIED_EVIDENCE_PROPOSAL_V1",
+  "utc": "2026-10-13T08:47:48.290456+00:00",
+  "state": "PROPOSAL_FOR_INDEPENDENT_REVIEW_NOT_ACCEPTANCE",
+  "preserved_original_checking_FAIL": {
+    "report": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p06-outage-status-sensitivity-source-encoding-r1/actual-red01/REPORT.safe.json",
+    "sha256": "3fb3f89fbd9738c6f9d0fbcf528169d35b66c82b33fc4872b4db2a381ed171e8",
+    "zip_sha256": "423ac0c5063ed1ed9f957fbd24b3ac4a4afb824e66cab0c281a87a6eedf69cbe",
+    "tool_session": 47612,
+    "tool_exit": 1,
+    "python_mutation_child_exit": 1
+  },
+  "persisted_actual_facts": {
+    "fresh_bounded_private_XML_admitted_and_retained": true,
+    "selected_method_counts_1F0E0S": true,
+    "exact_selected_class_method_and_helper_frames": true,
+    "approved_failure_type": true,
+    "static_exact_known_current503401_shape": true,
+    "strict_encoding_declaration_DTD_PARSE": true,
+    "restore_compiler_native_exit": 0,
+    "exact_original_source_and_compiled_restore": true,
+    "all12_births_absent": true,
+    "onePG_oneRyuk_settled_original_foreign_baseline_restored": true,
+    "source_test_migrations_scaffold_pins_exact_and_worktree_clean": true
+  },
+  "values_NOT_PERSISTED_MUST_REMAIN_UNKNOWN": {
+    "native_gradle_selected_test_exit": "UNKNOWN; parent native_exit1 is Python checkingchild, not Gradle test exit",
+    "historical_mutated_compiled_class_hash_or_diff_boolean": "UNKNOWN; helper computed class digest but rejected before persisted causal receipt",
+    "historical_posttest_fault_source_hash_match": "UNKNOWN; strict expression short-circuited on message mismatch before sourcehash predicate, no causalreceipt",
+    "actual_RED_noJWT_data_JTI_state_assertions": "NOT_EXECUTED afterstatusfailure; Sourcequalifiedstatus-onlyfault, restoredGREENrequired"
+  },
+  "source_join_not_measurement": {
+    "exact_approved_status_only_fault_before_gradle_command": "Source path applies approved bytes before fixed Gradle command; aftercompile historical mutant Source/class hashes not measured in savedSAFE receipt",
+    "paused_ownedPG_before_expected503_call": "Pinned unchanged test linear Source path places ownpause/pausedassert before unique expected503helpercall; explicit individualstep witness notpersisted",
+    "known_current_public_message_shape": "Allowed closed booleans + publicSpring6.2.19 classconstant Source; no rawmessage read by Rootmodel"
+  },
+  "decision_for_independent_reviewer": {
+    "reuse_candidate": "Review whether selected actual freshJUnit503expected401actual plus exact test/fault Source/scaffold/executionjoin and actual Source/class restoration/cleanup suffices for qualified finite status-assertion sensitivity; preserve missing historical fields/old checkingFAIL and never relabelcallbackPASS",
+    "specific_missing_oracle_if_required": "If explicitGradle-test-exit and historical mutant-class/source predicates are mandatory for accepted sensitivity, reject finitepromotion pending ONE narrow newlygranted RED+restore with corrected exactproducer literal that persists those original fields; do not rerun solelyfor diagnostics or conceal 47612FAIL",
+    "GREEN": "Separate unchanged originalGREEN still requires fresh Rootgrant and exact currentoriginalSource/class/originalforeignbaseline/resourcejoin after independentreview"
+  },
+  "no_replay_no_product_mutation_no_api_pg_java": true,
+  "parent_disposition": "UNKNOWN",
+  "evidence_links": {
+    "closed_data_manifest": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p06-outage-status-sensitivity-source-encoding-r1/actual-red01/diagnostics-manifest.safe.json",
+    "closed_data_manifest_sha256": "ec7e1f48f18671ad6959c90b33ad347276ee0f04e5dac765780a4857fbf5bbb6",
+    "closed_data_zip_sha256": "01ff77ce663e4bb6368aa32f60284024e6e3636989cb349aec2ae735b9aa7a29"
+  }
+}

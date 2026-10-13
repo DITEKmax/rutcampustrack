@@ -1,0 +1,111 @@
+{
+  "schema": "RCT_P06_FORMAT_ACTUAL_V1",
+  "utc": "2026-10-13T07:19:36.291617+00:00",
+  "tool_session": 92761,
+  "tool_exit": 0,
+  "semantic_commit": "478204ab9fad28d145b1424de20bcd629ff71c0e",
+  "before_source_sha256": "64df4a761c29e99870e49400b67bd07c0497e285ca54861c32e25982a0598c3d",
+  "after_source_sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+  "one_owned_file_changed": true,
+  "protected15_source_pins_preserved": true,
+  "canonical_apply_check_native0": true,
+  "closed_exact_scope_marker_count": 2,
+  "java_tokens_equal": true,
+  "all_string_char_textblock_literal_bytes_equal": true,
+  "import_sets_equal": true,
+  "git_filemode_preserved100644": true,
+  "all6_births_absent": true,
+  "identities": [
+    {
+      "pid": 493429,
+      "start_ticks": 12953409,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 493430,
+      "start_ticks": 12953414,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 493464,
+      "start_ticks": 12953536,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 493625,
+      "start_ticks": 12954929,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 493659,
+      "start_ticks": 12955037,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 493425,
+      "start_ticks": 12953394,
+      "exact_birth_absent": true
+    }
+  ],
+  "private_tmp_envelope_removed": true,
+  "terminal": {
+    "direct_pid": 493429,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 493429,
+        "start_ticks": 12953409
+      },
+      {
+        "pid": 493430,
+        "start_ticks": 12953414
+      },
+      {
+        "pid": 493464,
+        "start_ticks": 12953536
+      },
+      {
+        "pid": 493625,
+        "start_ticks": 12954929
+      },
+      {
+        "pid": 493659,
+        "start_ticks": 12955037
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T07:16:09.609103+00:00",
+    "peaks": {
+      "memory": 6096011264,
+      "min_workspace_free": 8203694080,
+      "owned_rss": 565805056,
+      "log_bytes": 978
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "private_log_read_only_bounded_byte_marker_projection": true,
+  "private_log_body_hash_export": false,
+  "compile_tests_pg_docker_not_run": true,
+  "parent_disposition": "UNKNOWN",
+  "mechanical_commit": "4db89b1876ee7aa8a80b021dabdb7e664a4a0da3",
+  "mechanical_commit_one_file": true,
+  "worktree_clean": true,
+  "format_native_lease": "RELEASED",
+  "compile_binding": {
+    "plan_sha256": "86e74ee9c5011808f9566acedf70b6c4e2b29825fe661d810d3dea5a755c0b6d",
+    "manifest_sha256": "ec945b178988fcdc5d2efa4d96310b880be68d8846102e3882e2902e2858a394",
+    "driver_sha256": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "child_sha256": "7cd5a5befea7efbb68ce426530851e0c8221203f56dcda56ce0eed6480bfaf66",
+    "init_sha256": "2090000e8198fd1e04c03ab9887d25db222d5a1f6eb686be47d0e7a584ad87b0",
+    "native_granted": false
+  }
+}

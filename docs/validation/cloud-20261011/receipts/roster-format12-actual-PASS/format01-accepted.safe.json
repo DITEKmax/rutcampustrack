@@ -1,0 +1,158 @@
+{
+  "utc": "2026-10-13T05:01:34.303574+00:00",
+  "semantic_commit": "895d404f23beb47c93ca210be6f9161cd09945ec",
+  "formatter_apply_check_native0": true,
+  "closed_scope_marker12_count": 2,
+  "changed_java_files": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HeadmanJournalSemesterTransportTest.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanJournalSemesterStateIT.java",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/HeadmanJournalSemesterClientTransportTest.java"
+  ],
+  "all12_tokens_strings_import_sets_equal": true,
+  "java_proof": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "0fa25b2084fc9db9ba29b5e37b94802b46d2046c832257291547d7e1d597f2a1",
+      "mode": "0o600"
+    },
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "34b70251486f7e2ee521bc90dd5639a153b87c4dbc01b14f310b07d8754b6214",
+      "mode": "0o600"
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HeadmanJournalSemesterTransportTest.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "c377f4cf857dc6910794934b39467e9d214ad11176334dc4b9a3c81e2726df75",
+      "mode": "0o600"
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanJournalSemesterStateIT.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "4404fb71e3a455ce205814b7a6cdf621c6734f263fafdde604d1321118d8d437",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "de5280c787caa48245c2c882d303744006d4cf3735769154285de186aba1f741",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "bf18fe9c5cc313cb7e22eb8be18d0a7da358c259c86c36e157c7d4c233e77d9c",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "8b437351f07723d1e4f930e7ca1c4c6c29565cb20f7054d3c0a747b22844eb72",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/HeadmanJournalSemesterClientTransportTest.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "c83c74891358640afc248b4d1b1c76611ef258c34bb1ae381b0549e810921023",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "def754977de95b0c4a830ed58dbec449bf86910355381dc32562062b1949e161",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "e13a7a333f0501f4d5e52b9c38f729b21c061d8eab412bec727fb29d5d5f293a",
+      "mode": "0o600"
+    },
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java": {
+      "tokens_and_string_values_equal": true,
+      "post_sha256": "56e10dc24d6c5fc3be608dbda9e2c8e2211fcdbc12b171b5861f80b35e4074ed",
+      "mode": "0o600"
+    }
+  },
+  "proto_and_directed_tls_policy_files_exact": true,
+  "only_allowed_tracked_files_modified": true,
+  "owned_all6_births_absent": true,
+  "identities": [
+    {
+      "pid": 482469,
+      "start_ticks": 12126097,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 482470,
+      "start_ticks": 12126104,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 482504,
+      "start_ticks": 12126228,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 482607,
+      "start_ticks": 12127631,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 482642,
+      "start_ticks": 12127769,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 482465,
+      "start_ticks": 12126070,
+      "exact_birth_absent": true
+    }
+  ],
+  "private_tmp_removed": true,
+  "parent_envelope_removed": true,
+  "terminal": {
+    "direct_pid": 482469,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 482469,
+        "start_ticks": 12126097
+      },
+      {
+        "pid": 482470,
+        "start_ticks": 12126104
+      },
+      {
+        "pid": 482504,
+        "start_ticks": 12126228
+      },
+      {
+        "pid": 482607,
+        "start_ticks": 12127631
+      },
+      {
+        "pid": 482642,
+        "start_ticks": 12127769
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T04:58:18.506025+00:00",
+    "peaks": {
+      "memory": 6113173504,
+      "min_workspace_free": 8826454016,
+      "owned_rss": 621887488,
+      "log_bytes": 988
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "qualification": "Formatter only; post-fix compile/wire/SQL/mutation/client result NOT_RUN"
+}

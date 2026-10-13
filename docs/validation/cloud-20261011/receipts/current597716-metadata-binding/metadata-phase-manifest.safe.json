@@ -1,0 +1,33 @@
+{
+  "state": "METADATA_BINDING_READY_WAIT_ROOT_ARTIFACT_COLLECTION_GRANT",
+  "files": {
+    "metadata-initial.safe.json": {
+      "sha256": "b39d80d86c166d824f596b080f4fab1a465c298d07d7ed3eba0778648fa1069e",
+      "bytes": 81818
+    },
+    "run-binding.actual.safe.json": {
+      "sha256": "1b4eac0914078ed4ffd459362d45b37b319b75f18c67bede12ba09b143ff9646",
+      "bytes": 538
+    },
+    "artifact-availability.initial.safe.json": {
+      "sha256": "2efaa905651c6e86273e730ceb674b2a6963ad27dcbb55b28a94a08c675383a8",
+      "bytes": 1202
+    },
+    "artifact-collection-source-plan.safe.json": {
+      "sha256": "c6424894c2db9f35bb7730c51ef79d2713fcc5323d032a515b055c7dccee48bb",
+      "bytes": 2662
+    },
+    "download-safe.py": {
+      "sha256": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+      "bytes": 9052
+    },
+    "download-first3-safe.py": {
+      "sha256": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8",
+      "bytes": 5937
+    },
+    "strict-browser-schema.py": {
+      "sha256": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839",
+      "bytes": 6710
+    }
+  }
+}

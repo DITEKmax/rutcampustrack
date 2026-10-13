@@ -1,0 +1,11 @@
+{
+  "schema": "RCT_P06_CLOSED_DATA_DIAGNOSTICS_MANIFEST_V1",
+  "files": {
+    "saved-xml-predicates.safe.json": "8c8ec55c9e310e8b1a7e3b14418959376ccc1425ed1192e8174cb941e713e165",
+    "saved-xml-static-pattern.safe.json": "f5c6ef6b6bc23fdcf4a266345b57f3630327437ca135934cf5687749655737bd",
+    "public-status-label-source.safe.json": "eed51fed50e33931800d90fa9181905a2f49bda555996fce7154d1e7a68307f2"
+  },
+  "preserved_original_checking_FAIL_report_sha256": "3fb3f89fbd9738c6f9d0fbcf528169d35b66c82b33fc4872b4db2a381ed171e8",
+  "disposition": "DATA_REASON_IDENTIFIED_STRICT_ORACLE_UNCHANGED_NO_SENSITIVITY_PROMOTION",
+  "excluded": "RawprivateXML/log/unknownattrs/messages/text/body/contenthash; no native/test/GREEN replay."
+}

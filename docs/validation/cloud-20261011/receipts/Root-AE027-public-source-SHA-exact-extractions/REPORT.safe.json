@@ -1,0 +1,120 @@
+{
+  "utc": "2026-10-13T09:44:59.199549+00:00",
+  "scope": "ROOT_STAGED_SECRET_SCANNER_PUBLIC_SOURCE_IDENTITY",
+  "result": "10_GENERIC_API_KEY_FINDINGS_ALL_EXACT_PUBLIC_GIT_SOURCE_SHA256_NOT_CREDENTIALS",
+  "public_source_proofs": [
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/Cloud-FIRST3-date-coherence-r2-source/READY.safe.json",
+      "line": 15,
+      "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
+      "line": 16,
+      "public_source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
+      "line": 17,
+      "public_source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/correction-controls.safe.json",
+      "line": 73,
+      "public_source": "frontends/pwa-vue/src/auth.ts",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/correction-controls.safe.json",
+      "line": 74,
+      "public_source": "frontends/pwa-vue/src/auth-client.ts",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "line": 569,
+      "public_source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "line": 571,
+      "public_source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "line": 572,
+      "public_source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "line": 574,
+      "public_source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "public_git_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "matches_public_source_sha256": true
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/root597-Auth-parent-Angular-readonly.safe.json",
+      "line": 8,
+      "public_source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "public_git_revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "matches_public_source_sha256": true
+    }
+  ],
+  "standalone_extraction_retention": [
+    {
+      "path": "docs/validation/cloud-20261011/receipts/Cloud-FIRST3-date-coherence-r2-source/READY.safe.json",
+      "sha256": "0dcc8a2ac9b118d2cd1a57f6928b492b7077ef228d62646e2b0ef91542389ce8",
+      "archive_entry": "0/READY.safe.json",
+      "committed_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "exact_original_machine_source_evidence": true,
+      "standalone_remains_untracked_unformatted": true
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
+      "sha256": "4bc2b95f67002d1f2c0941098f0abf39d9a33b16f8fbe3224abaceafa8fda9f9",
+      "archive_entry": "1/REPORT.safe.json",
+      "committed_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "exact_original_machine_source_evidence": true,
+      "standalone_remains_untracked_unformatted": true
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/correction-controls.safe.json",
+      "sha256": "590a31852009d50038866f9319d33f60fe01e42160405c24f1ad27c86f5a1fe0",
+      "archive_entry": "2/correction-controls.safe.json",
+      "committed_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "exact_original_machine_source_evidence": true,
+      "standalone_remains_untracked_unformatted": true
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "sha256": "8d9bdcc55d2e45360e7c86d768a41d3f3c258a416f384054b1fbc4a7680a7e7a",
+      "archive_entry": "3/REPORT.safe.json",
+      "committed_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "exact_original_machine_source_evidence": true,
+      "standalone_remains_untracked_unformatted": true
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/root597-Auth-parent-Angular-readonly.safe.json",
+      "sha256": "7845f2e87bc07b3b5e7986128bc846bdcb638d72a4cee0558ef0f3a4f0803b04",
+      "archive_entry": "4/root597-Auth-parent-Angular-readonly.safe.json",
+      "committed_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "exact_original_machine_source_evidence": true,
+      "standalone_remains_untracked_unformatted": true
+    }
+  ],
+  "qualification": "All10values verifiedRAMagainstexactpublicGitblobs/oldAuthtest597; no values printedascredentials/model. Original6JSON exactZIPretained/localunchanged/untracked; scanner/detectors/allowlists unchanged/no gatebypass. Prior24833stagedscannerFAIL retained. Earlierstaging-check mistakenindextracked forHEAD-tracked refusedbeforeunstaging; correctedtoHEAD immutableGitlookup."
+}

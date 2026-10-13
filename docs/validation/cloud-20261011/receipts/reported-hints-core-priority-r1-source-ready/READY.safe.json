@@ -1,0 +1,89 @@
+{
+  "status": "CORE_PRIORITY_CORRECTION_SOURCE_READY_NATIVE_NOT_RUN",
+  "finding": "HINTS-CORE-CAP-EVICTION/P2",
+  "sourceReviewManifest": "220a58f3f42809a2ef8de877a823016208b03248b07005643499283787c2177a",
+  "ownHead": "0dc311c6fe89c71592a47b539eabce1a59d9d047",
+  "sourceProducerRoot": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "executionCheckoutHead": "9176c680f4f810816792b4e21f6e60f387f38740",
+  "contractSHA256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "source2": {
+    "artifact-privacy.ts": {
+      "beforeCore": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "beforeUncorrectedHints": "0229fdbea1c4032b98b830a297652fe52482a9bb03f098d449cb282e67cde8c4",
+      "corrected": "570d66e3a82543fa98960cb9d6a622597857066952d631e6cf9058a90b8e0232",
+      "bytes": 3828,
+      "mode": "0o600",
+      "nlink": 1,
+      "gitMode": "100644"
+    },
+    "safe-reporter.ts": {
+      "beforeCore": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "beforeUncorrectedHints": "810a3742a4d475a57c5edf8815779ea76d0b5e72084959060423d4e79b16023f",
+      "corrected": "40f8881ecaa963135edf3b7c4b6eec860a903d7861a1c9fdf372aff0b82ad686",
+      "bytes": 13243,
+      "mode": "0o600",
+      "nlink": 1,
+      "gitMode": "100644"
+    }
+  },
+  "sourceMechanism": "Core cap counts ONLYcores. Oncoreappend atfull8, discardone closedvalidreported-only annotation withinfirst32, nevercore. Decoder independently scansfirst32 andreturnscoresfirst+onlyavailablehintslots; max8results and max1class/max1frame. Owned recorder sourceannotations remain<=8 undercurrent captures/repetition.",
+  "classificationPrivacyUnchanged": "same15core classifier/14status codes/staticguard/wipe/reporter tail; same untrustedreported reader/class+frame codes/bounds/UNKNOWN0. No new resultfields/API/config/locks/runtime orproductpolicy.",
+  "sourcePreservation": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/source-preservation.safe.json",
+    "sha256": "f7022bdb1e92cc71015288387b4a07a655e4bf839b1a08d4f9fe437bae03da5c",
+    "actualSourceChecks": 10,
+    "allTrue": true,
+    "coreRecorderDecoderIntentionalSemanticChange": true
+  },
+  "counterexamplePlan": {
+    "helper": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/priority-controls.cjs",
+    "sha256": "08f2fa1c165b18ea63a7a96ef47f3d2ee9faef5a6be4a594eb1b499523d80104",
+    "cases": [
+      "CORE_BEFORE_HINTS",
+      "HINTS_BEFORE_CORES",
+      "REPEATED_HINTS_BEFORE_LATE_CORE",
+      "INTERLEAVED_HINTS_CORES",
+      "DIRECT_DECODER_CORE_PRIORITY"
+    ],
+    "oldExpected": "5controls/4causalFAIL/8baselinecores\u21926oldhintcores/CORE_BEFORE_HINTS passes/parser0/native1",
+    "newExpected": "5controls/0FAIL/8baselinecores\u21928correctedcores/total8/sourceannotations<=8/markerAbsent/errorsretained/parser0/native0",
+    "executedByAuthor": false
+  },
+  "nativePlan": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/native-plan/PLAN.safe.json",
+    "sha256": "6a70c9827d97e0a5636b8fec7b2848e17dcce6c387f146e3dd6a170aeeb2eb87",
+    "driver": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/native-plan/run-approved-node.py",
+    "driverSHA256": "f2a52fa35f1c695bd382ba9c394790fa2d4f4af74cb03eb19382f212ea36cb03",
+    "phaseCount": 9,
+    "originalCallbacksByteExact": true,
+    "authorization": false
+  },
+  "oldHintsArchivePreserved": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-48124/source.safe.zip",
+    "sha256": "ece3d042a74c0c59d94b19728dcb25b96974133eebed7317b54db9d955f487c9",
+    "status": "CHANGES_REQUESTED notAPPROVED"
+  },
+  "inventory": {
+    "Modified": [
+      "tests/e2e/fixtures/artifact-privacy.ts",
+      "tests/e2e/fixtures/safe-reporter.ts"
+    ],
+    "CreatedScratchRegression": [
+      "priority-controls.cjs"
+    ],
+    "CopiedParameterizedScratch": [
+      "hints-controls.cjs",
+      "worker-control.cjs",
+      "worker-control.config.ts",
+      "controls/reported-hints.control.spec.ts",
+      "native-plan/run-approved-node.py"
+    ],
+    "Deleted": []
+  },
+  "rootCurrentSourcePairPreserved": true,
+  "actualCIcause": "UNKNOWN",
+  "D002HookENDNotSuccessProof": true,
+  "runtime": "NOT_RUN",
+  "ownedNativeProcesses": "NONE",
+  "next": "Narrow independent core-priority recheck; fresh Root Node-only grant before any execution."
+}

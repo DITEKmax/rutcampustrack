@@ -1,0 +1,21 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "frozen_commit": "895d404f23beb47c93ca210be6f9161cd09945ec",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 834,
+      "sha256": "b256e39239729ee7047759225c8f87cf2d7f94b947d7eadcee0dacf557521a4a"
+    },
+    {
+      "path": "review-invariants.py",
+      "bytes": 10005,
+      "sha256": "857d3e8af273e87aa211d3bba0aefd9e7055c944e33c7f43e44f83a527d9d710"
+    },
+    {
+      "path": "review.safe.json",
+      "bytes": 7114,
+      "sha256": "3f2f3b6191dd2f5c647164ae6aa2d3b84e7dca9ac553b2ede3ce167783757b1b"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "RCT_P06_INDEPENDENT_RESTORED_GREEN_RECHECK_V1",
+  "utc": "2026-10-13T09:18:03.669773+00:00",
+  "OUTCOME": "ACCEPT_FINITE_RESTORED_GREEN_AND_QUALIFIED_SENSITIVITY_PAIR_ROOT_INTEGRATION_READY",
+  "findings": [],
+  "actual_green_report_sha256": "b8e36afab8e03366cc8326e587b93268abb5ba6590071b85bbf66d3b4da0094d",
+  "actual_green_manifest_sha256": "2066a6a89de2e4067540e2bdbc38cf8ca1bdf995627335cd9591ea1790589210",
+  "actual_green_zip_sha256": "e4345b049a73156aedf6d65e79dfc20eb0cd7acefe1b8696fd0fa1802760cf25",
+  "qualified_red_review_sha256": "0f73f3e89e3b7726a46e4b71bf53d0819183776d6a10f5d74d27fc15aabfcf72",
+  "verified": {
+    "safe_manifest_archive_exact_crc": true,
+    "public_source_pins": 76,
+    "original_compiled_handler_sha256": "a2cd53e50112f961c7eb15298ecef53e2f1a673dfaab4645c169be7e43738bd5",
+    "native_exit": 0,
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "test_seconds": 11.16,
+    "all8_births_absent_safe_receipt": true,
+    "foreign_baseline_exact_safe_join": {
+      "containers": 0,
+      "volumes": 11,
+      "networks": 3
+    },
+    "PG1_Ryuk1_probe0_session1": true
+  },
+  "assessment": "Unchanged complete selected GREEN executes reconstructed durable A-revoke/B-valid, exact-owned real PG outage 503/no-store/no-JWT, finally recovery and state/event/JTI assertions. Paired with qualified exact 503-expected/401-actual RED sufficient finite specification sensitivity; Root may integrate assigned one-test Source. No diagnostic-only RED replay required.",
+  "limits": [
+    "Original47612 checking FAIL/causal false retained; historical original Gradle-test exit, mutant class measurement and source-fault predicate UNKNOWN.",
+    "RED status assertion precedes noJWT/data assertions; later assertions established by restored GREEN.",
+    "Actual facts accepted from previously reviewed closed SAFE producer projection; no reviewer native execution/private XML/log/body/credential read.",
+    "Fresh authority reconstruction/own STUDENT MockMvc/JDBC/fresh real PG only; full OS restart/Gateway/PWA/TMA/all roles outside. Parent P06 UNKNOWN; B013 unchanged.",
+    "Sampled resources and uncaptured metadata-client births qualified; no instantaneous isolation or whole-task DONE claim."
+  ]
+}

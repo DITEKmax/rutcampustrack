@@ -1,0 +1,42 @@
+{
+  "direct_pid": 484140,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 484140,
+      "start_ticks": 12249530
+    },
+    {
+      "pid": 484141,
+      "start_ticks": 12249534
+    },
+    {
+      "pid": 484173,
+      "start_ticks": 12249632
+    },
+    {
+      "pid": 484269,
+      "start_ticks": 12251142
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "utc": "2026-10-13T05:18:45.170966+00:00",
+  "peaks": {
+    "memory": 6570192896,
+    "min_workspace_free": 8255881216,
+    "owned_rss": 976588800,
+    "log_bytes": 1721,
+    "private_run_bytes": 16384
+  },
+  "expected_native_exit": 0,
+  "source_intact": true,
+  "exact15_pass": true,
+  "qualification": "Native0 alone insufficient; exact15 fresh closed XML and unchanged source required; parentP07 UNKNOWN"
+}

@@ -1,0 +1,97 @@
+{
+  "status": "SOURCE_READY_FOR_TARGETED_REVIEW_NATIVE_NOT_RUN",
+  "scope": "OWN_TWO_FIXTURE_TS_REPORTED_UNTRUSTED_HINTS",
+  "ownHead": "0dc311c6fe89c71592a47b539eabce1a59d9d047",
+  "rootSourceProducer": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "executionCheckoutHead": "9176c680f4f810816792b4e21f6e60f387f38740",
+  "contractSHA256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "actualCIcause": "UNKNOWN",
+  "D002ClockBEGINENDMayIncludeERROR": true,
+  "source2": {
+    "artifact-privacy.ts": {
+      "before": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "after": "0229fdbea1c4032b98b830a297652fe52482a9bb03f098d449cb282e67cde8c4",
+      "bytes": 3628,
+      "physicalMode": "0o600",
+      "nlink": 1,
+      "gitMode": "100644"
+    },
+    "safe-reporter.ts": {
+      "before": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "after": "810a3742a4d475a57c5edf8815779ea76d0b5e72084959060423d4e79b16023f",
+      "bytes": 12314,
+      "physicalMode": "0o600",
+      "nlink": 1,
+      "gitMode": "100644"
+    }
+  },
+  "reportedClassCodes": [
+    "REPORTED_CLASS_ERROR",
+    "REPORTED_CLASS_TYPE_ERROR",
+    "REPORTED_CLASS_RANGE_ERROR",
+    "REPORTED_CLASS_REFERENCE_ERROR",
+    "REPORTED_CLASS_SYNTAX_ERROR",
+    "REPORTED_CLASS_TIMEOUT_ERROR"
+  ],
+  "reportedFrameCodes": {
+    "Actor.call": "REPORTED_FRAME_DATASET_CALL",
+    "moscowDate": "REPORTED_FRAME_DATASET_DATE",
+    "MobileDataset.initialize": "REPORTED_FRAME_DATASET_INITIALIZE"
+  },
+  "frameSourceSHA256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+  "frameLocationNeverExported": true,
+  "reportedHintsUntrusted": "Even exact fabricated class/frame text only yields reported metadata; hint stage alwaysUNKNOWN/http0. No authentication of error class/source/function/cause/operation/boundary. Original15 classifier remains separate andbyteexact.",
+  "preservationProof": "f386360364135c0abd2a11c70684ff773f1e88cfaed32fae099ee167ca41a46b",
+  "plannedControls": {
+    "old": {
+      "count": 4,
+      "expectedFailed": 2,
+      "expectedNativeExit": 1,
+      "causalRedPredicateRequired": true
+    },
+    "new": {
+      "count": 23,
+      "expectedFailed": 0,
+      "expectedNativeExit": 0
+    },
+    "actualBrowserFreeWorker": {
+      "caseCount": 3,
+      "sourceLines": [
+        9,
+        23,
+        29
+      ],
+      "expectedFailuresRetained": true,
+      "qualification": "Public synthetic errors + intentionally fabricated public frame. Actual native worker transport NOT_RUN; no actual client/API/seed/login."
+    },
+    "unchangedPrivacyProducerInterruptionMissingGuard": "NOT_RUN_ON_NEW_SOURCE"
+  },
+  "nativePlan": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-48124/native-plan/PLAN.safe.json",
+    "sha256": "39e341b02838f531c94920a93ebdfe62bd8f261abedf71277ec2b48d314f9be3",
+    "driverPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-48124/native-plan/run-approved-node.py",
+    "driverSHA256": "ade6fc50ee582533d0e42c6cd49021b713672560f35c2f7928f1ecfad06713eb",
+    "freshGrantRequired": true,
+    "authorized": false,
+    "phaseCount": 7
+  },
+  "rootStrictCollectorCompatibility": "Root sole writer must recognize nine REPORTED_* causes onlyasUNKNOWN/http0 in existing closed schema before nextCI collection; no added rowfields or collector edits here.",
+  "inventory": {
+    "Modified": [
+      "tests/e2e/fixtures/artifact-privacy.ts",
+      "tests/e2e/fixtures/safe-reporter.ts"
+    ],
+    "CreatedSourceControls": [
+      "hints-controls.cjs",
+      "worker-control.cjs",
+      "worker-control.config.ts",
+      "controls/reported-hints.control.spec.ts",
+      "native-plan/run-approved-node.py"
+    ],
+    "Deleted": []
+  },
+  "runtime": "NOT_RUN",
+  "nativeOwnedProcesses": "NONE",
+  "noRootSourceConfigWorkflowProtocolFieldsLockApiVendorAngularWrites": true,
+  "noActualErrorLogBodyCredentialPrivateDataRead": true
+}

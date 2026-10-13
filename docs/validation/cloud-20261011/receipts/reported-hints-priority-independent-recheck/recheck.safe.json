@@ -1,0 +1,33 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "scope": "HINTS-CORE-CAP-EVICTION_ONLY",
+  "pair": {
+    "artifact_privacy": "570d66e3a82543fa98960cb9d6a622597857066952d631e6cf9058a90b8e0232",
+    "safe_reporter": "40f8881ecaa963135edf3b7c4b6eec860a903d7861a1c9fdf372aff0b82ad686"
+  },
+  "author_manifest_sha256": "0a44014405d3add7126f01bca6673882c80b70dfdc969403b2dd7cc9a4ecddb1",
+  "author_zip_sha256": "39cc4ad1a524a0f019200288db9809022f41260ceab6c55b8361f4ccf5f476b6",
+  "author_zip_members": 22,
+  "author_zip_crc_errors": 0,
+  "original_hints_seal_unchanged": true,
+  "narrow_source_checks": {
+    "reportedClassHints_exact_old_hints": true,
+    "reportedFrameHints_exact_old_hints": true,
+    "reportedFailureHints_exact_old_hints": true,
+    "isReportedHint_exact_old_hints": true,
+    "reported_recorder_exact": true,
+    "status_caller_byte_exact": true,
+    "observe_caller_byte_exact": true
+  },
+  "actual_selected_source_controls": "5ordering+7closeddiscard/decoder controls in functionsV8 RAM with exact source logic/type erasure; producer native NOT_RUN",
+  "mechanism": "Original8core cap counts cores; only exact whitelistedreported:0 can be discarded within32. Decoder scans32, separates/deduplicates core and maxoneclass/oneframe, fills output core-first total8. Core tuples and repeated sanitized error count retained.",
+  "new_findings": [],
+  "prior_unchanged_privacy_review_reused": "220a58f3f42809a2ef8de877a823016208b03248b07005643499283787c2177a",
+  "native_plan": "9serial phases/source-pinned b78/statusobserve unchanged; new5old4causalRED/current5GREEN plus oldreported23/worker3/privacy/format/types; fresh Root900+60 grant required",
+  "limitations": [
+    "Reported hints remain untrusted UNKNOWN/0, not authenticated class/frame/cause/stage/success.",
+    "Priority guarantee is within existing32-scanned public annotation window; owned normal captured channel verified<=8. No adversarial same-UID/process or transport hard allocation isolation claim.",
+    "Full native producer/worker/privacy/formatter/types controls and actual currentCI cause remain NOT_RUN/UNKNOWN.",
+    "Independent Root collector32de already Source-approved but staysUNBOUND until finalcorrectedsource/native/integration/push metadata; no collector re-review by its author."
+  ]
+}

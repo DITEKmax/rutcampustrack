@@ -1,0 +1,20 @@
+{
+  "schema": "RCT_P07_PARSER_SEAL_R1_READY_V1",
+  "state": "SOURCE_READY_NARROW_RECHECK_REQUIRED_NATIVE_NOT_GRANTED",
+  "utc": "2026-10-13T05:14:27.735063+00:00",
+  "finding": "P07-PARSER-SEAL-BEFORE-EXEC",
+  "old_preserved_manifest_sha256": "d4ad25f898f7abf43971bb57ea460c3ed57f79376486e61cf58dad153b463419",
+  "old_child_sha256": "c8bcd370b330c61cd06bdb31a5a61367025e1dfa9af7ea7c13432761a87fdf17",
+  "new_child_sha256": "8ab926807def8d428db4a4b45296dc5565f167a6599af8e011683883a9aea960",
+  "unchanged": {
+    "run-validator-owned.py": "5ddb54370ddfb0f4bd35619c7d14743145cbba4d8e953cd615c0fd7b28b9b0b8",
+    "closed-validator-xml.py": "ff5edff4f42b75dc653ebac04d55d92e69616408397afc4d6e1bdcd29470c65c",
+    "execution-plan.safe.json": "060c4c812b2220272112775203c5fea18e6033aabece4a3be92bf8b11f8bd7eb",
+    "source17.safe.json": "daef63d9c253f7e27b580843b10790c925c0c74d3fbbaa5e9693e9f7a4078634",
+    "parser-controls.safe.json": "baef2ac1f68092834ee135ad306205dc83d68b7bf20fceb52bbaa145bf05cb47"
+  },
+  "delta": "Single exact parserSHA check immediately before spec.loader.exec_module; oldchild restored by removing3lineguard. New own Source folder names onlyruntimepath binding; sameWT481/private namespace/grant schema/limits/exact15XML/parserunchanged.",
+  "controls": "Changedparser beforeloaderenters causalunsafe\u2192afterrefused; exactpin afterloaderenters, pureRAMstubnotrealmodule.",
+  "native": "NOT_RUN",
+  "familyP07": "UNKNOWN"
+}

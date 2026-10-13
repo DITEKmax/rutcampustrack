@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-13T05:48:11.958445+00:00",
+  "scope": "IT01_IMAGE_METADATA",
+  "result": "NORMAL_READ_APPROVED_5PRESENT_2ACTUAL_ABSENT",
+  "tool_chunk": "e4d626",
+  "present": [
+    {
+      "image": "postgres:16",
+      "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "bytes": 451303453
+    },
+    {
+      "image": "mongo:7.0",
+      "id": "sha256:ac1502203bffd13c241ca25a7bae60cbd968fd0011247f6727524634b3f2f6e3",
+      "bytes": 867016700
+    },
+    {
+      "image": "rabbitmq:3.13-management",
+      "id": "sha256:de912cbbf07f938bb8aaa5682464a73a00c6a996efdf0880423aeb4eae006c34",
+      "bytes": 251482532
+    },
+    {
+      "image": "redis:7.2",
+      "id": "sha256:711ce61d970663b9dc4b0c4dcd2dee6d3d72c900f1a31b9599703dde61bf730a",
+      "bytes": 119781891
+    },
+    {
+      "image": "testcontainers/ryuk:0.11.0",
+      "id": "sha256:0cd5951d043f34c6fdb61274eb61c42bbb15aa8e05eab35c110ffd69a84e9463",
+      "bytes": 15293388
+    }
+  ],
+  "absent": [
+    "alpine:3.17",
+    "testcontainers/ryuk:0.12.0"
+  ],
+  "qualification": "Read-only local imageinspect ID+Size; explicitNO_SUCH_IMAGE for2, noPull/run/delete/network/data changes. Earlierdefaultctxall7exit1 didnotproveabsence. Need bounded missingdependency preparation, notimplicitpull insideIT ordisablechecks."
+}

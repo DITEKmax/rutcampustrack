@@ -161,3 +161,14 @@ PREOBSERVER-PUBLIC-WORKER-TRANSPORT — OPEN checking-source failure: actual1127
 ROSTER-SINGLE-WITNESS-SOURCE cleanup002 remainsOPEN afterr1 recheck: PW storescookie beforeabortedfetchreject, loginIssuedfalse skipscookieinspect→falseconfirmed. Otherclassifier001/pagination003 SOURCEsatisfied; actualcontrols/APINOT_RUN. Minimalowner-contextcookiecleanup+one relevantcontrol, no productsessionleak inference.
 
 PREOBSERVER-TYPES — OPEN checking-source finaltypecheck3 errors2345/2538 afteractualserialization18/worker3/privacy/format5PASS. PreserveFAIL; Source-only cause→minimaltypecorrection/prove relevantbehavior unchanged→fresh scopedcheck, no any/ruleweakening/repeatpassedphaseswithoutchangedrisk.
+
+
+## DF-FIRST3-DATASET-GROUP-CODE-001 — OPEN P2 harness Source defect
+
+Frozen current597716 source receipt4416 identifies mobile-dataset.ts synthetic group generator `1${byte%100}` padded to three characters. Exhaustive 256-byte V8 computation gives three invalid `100` values (bytes0/100/200) and253 valid values. Current canonical ProgramType digit codes1–9 and GroupCodeRules reject middle digit0; GroupService maps this reference failure to field-specific400, while dataset helper expects201. This is a deterministic checking-fixture counterexample, not proof of the current three CI failures, whose actual operation/status/cause remain UNKNOWN.
+
+Assigned sole writer first3_dataset_call_source in isolated sparse597 branchcodex/first3-dataset-correction-20261013. Proposed generator `1${10+byte%90}` preserves90 valid codes110–199. Minimal closed setup-operation/status diagnostics preserve exact HTTP assertions and producer privacy/core priority. Source implementation/review/native checking/current remote acceptance pending; latest selected-model capacity rejection leaves WIP preserved and no fallback. Product group-code rules unchanged. Evidence: receipts/FIRST3-dataset-public-Source-counterexample.
+
+## T008-BUILD-MODE-001 — confirmed P2 checking preparation failure
+
+Actual normal-approved64266 completed clone/sparse-config/checkout and stopped before BootJar at exact input metadata validation. All787 Git blobs/sizes/UIDGID1000/nlink1 matched; all actual source modes600 differ from canonical100644→644. Historical launch umask is NOT_CAPTURED; inherited mask is a Source-grounded hypothesis only. Allfour known births absent/reaped, lease released; partial own prefix and original sources/grant preserved. No Java build/JAR/STAGE/runtime or product failure claimed. Author minimal future own-process explicit022 checkout mask with restoration is Source-only; preserve exact mode guard and old prefix without chmod. Evidence: receipts/T008-two-JAR-BUILD01-prebuild-mode-FAIL.

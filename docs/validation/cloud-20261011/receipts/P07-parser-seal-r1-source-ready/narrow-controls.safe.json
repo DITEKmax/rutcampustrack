@@ -1,0 +1,18 @@
+{
+  "schema": "RCT_P07_PARSER_SEAL_SELECTED_RAM_V1",
+  "qualification": "Selectedactualbefore/afterASTnodes only; stubloader neverexecutesmodule; noJava/Gradle/Node/privateXML/socket/API.",
+  "old_changed_parser_counterexample": {
+    "loader_entered": true,
+    "refused": false
+  },
+  "new_changed_parser_refusal": {
+    "loader_entered": false,
+    "refused": true
+  },
+  "new_exact_parser_positive": {
+    "loader_entered": true,
+    "refused": false
+  },
+  "pass": true,
+  "inverse_restores_old_child_bytes": true
+}

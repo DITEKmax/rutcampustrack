@@ -1,0 +1,73 @@
+{
+  "utc": "2026-10-13T08:22:13.562727+00:00",
+  "scope": "BUILD_ONLY_TWO_CURRENT_JARS",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/HANDOFF.md",
+      "sha256": "edf643a676b45cfd653257d5cc09a9eac9f0b39c3a17468ca6fcd2f207f91855",
+      "size": 2828
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/build-academic.py",
+      "sha256": "64fc7df53b3ae22fdded3089ace09ee019e5d6b87a5ede9638e01475c03d98a1",
+      "size": 11469
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/build-grant.template.safe.json",
+      "sha256": "454199bc0c035d8bc755e8f759bf764d4130580e7b974b8c40c4c4c1c9e954d2",
+      "size": 1038
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/inspect-academic.py",
+      "sha256": "a33f45dfd19fa765d30ae64d8292b85dbf20bc6ae3225d3b9a7d9e30b37dcc68",
+      "size": 6881
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/launch-schema.safe.json",
+      "sha256": "b25b84a1ede316699707190541f0a54cae2c5b5d9fac86bfd9bdd95d0572e6b6",
+      "size": 2873
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/refresh-boundary.py",
+      "sha256": "f24c7782057347bdd4043a589bab6adbb9c2399125c5f6765e722aa5ee73a117",
+      "size": 13683
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/required-journal-inputs.safe.json",
+      "sha256": "88f94ccebc5c103b002f40d8c504fb77a980465a9a6301d327fb0270f57de9ef",
+      "size": 1345
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/source-controls.py",
+      "sha256": "2b7e8c2a445e6cb87359f35d9e07f539e54cb48f7d634f3f0142190fa48cea5a",
+      "size": 17233
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/source-controls.safe.json",
+      "sha256": "0ce86b959d5473082eecd0e94f87dc577cf803c23bc456e303fb729ef7387c2e",
+      "size": 5249
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/source-delta.safe.json",
+      "sha256": "f7b91571da4c1016c65ba3eca31e83de2363c6273ef437c32a6267d999679e23",
+      "size": 22753
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/tmp-anchors.safe.json",
+      "sha256": "f188a1b7c614897df4aebe55a33af7f31ecc8dc17b9f9ab36400ba60a4344fca",
+      "size": 667
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/tool-inputs.safe.json",
+      "sha256": "12c3399942d94bef7b611793702dd5d7541fe941ba74156f3b199b83503b645b",
+      "size": 1279
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/tracked-inputs597.safe.json",
+      "sha256": "5e9e6162ce34eedb1f7329d8dd295be7b35dcdbf131cf2663a61990571783b41",
+      "size": 203574
+    }
+  ],
+  "private_inputs_excluded": true,
+  "original89d6_manifest_sha256": "89d65e95b77227fa2e6b0f7c3d177331697c1ff48348d50172c8e72ab62170cf"
+}

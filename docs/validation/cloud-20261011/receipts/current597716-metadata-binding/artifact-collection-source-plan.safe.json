@@ -1,0 +1,54 @@
+{
+  "state": "METADATA_BINDING_READY_WAIT_ROOT_ARTIFACT_COLLECTION_GRANT",
+  "runtime_binding": {
+    "path": "/workspace/scratch/rct-validation/ci_597716_receipts/run-binding.actual.safe.json",
+    "sha256": "1b4eac0914078ed4ffd459362d45b37b319b75f18c67bede12ba09b143ff9646",
+    "keys_exact8": true,
+    "verified_runs_event_attempt_head": true
+  },
+  "reader_sources": {
+    "download-safe.py": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+    "download-first3-safe.py": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8",
+    "strict-browser-schema.py": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839"
+  },
+  "caller_reference": {
+    "source": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+    "sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "function": "run_owned",
+    "no_new_executable_or_logic": true,
+    "argv_per_artifact": [
+      "python3",
+      "/workspace/scratch/rct-validation/ci_597716_receipts/download-safe.py"
+    ],
+    "first3_when_available": [
+      "python3",
+      "/workspace/scratch/rct-validation/ci_597716_receipts/download-first3-safe.py"
+    ],
+    "qualification": "Existing reviewed b78 inline call/resource observation pattern must be bound to fresh Root grant before invoking; no new caller file prepared or execution performed."
+  },
+  "proposed_bounded_resources": {
+    "one_artifact_at_a_time": true,
+    "reader_archive_max_bytes": 33554432,
+    "reader_total_decompressed_max_bytes": 33554432,
+    "request_timeout_seconds": 30,
+    "per_owned_reader_phase_seconds": 45,
+    "term_seconds": 5,
+    "kill_seconds": 5,
+    "cleanup_margin_seconds": 30,
+    "workspace_floor_bytes": 4294967296,
+    "soft_owned_rss_bytes": 536870912,
+    "shared_stop_bytes": 16106127360,
+    "shared_reserve_bytes": 1073741824,
+    "proposed_collection_disk_growth_bytes": 268435456,
+    "private_one_use_request_mode": "0600",
+    "private_request_unlink_in_reader_finally": true,
+    "buffers": "Existing post-read/decompression checks plus sampled RSS; no hard allocation claim"
+  },
+  "metadata_only_artifacts_ready": [
+    "safe-integration-outcomes-attendance-service-1",
+    "safe-coverage-outcomes-attendance-service-1"
+  ],
+  "first3": "MISSING_CURRENT_LIST_NOT_RUN_BY_COLLECTOR",
+  "actual_PR_checkout": "PENDING_CURRENT_SAFE_ARTIFACT_PROJECTION",
+  "qualification": "No raw XML/log/HTML/request/body/private fields. Exact Attendance8 case/source statuses and checkout must be read from current validated SAFE packets before finite promotion; job success alone insufficient. B013 never retried."
+}

@@ -1,0 +1,127 @@
+{
+  "schema": "RCT_P06_MESSAGE_R2_AND_QUALIFIED_HISTORY_INDEPENDENT_RECHECK_V1",
+  "source_verdict": "APPROVE_EXACT_MESSAGE_CORRECTION",
+  "historical_evidence_verdict": "ACCEPT_QUALIFIED_SPECIFICATION_SENSITIVITY_RED_PENDING_SEPARATE_GREEN",
+  "findings": [],
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "checks": {
+    "ready_sha256": "e0dc4823a0ee85129c91d4152a13a6e26dc7afb5cc028ecbff3d6229a512322a",
+    "manifest_sha256": "7c6e8bd9c6a351333648bd304fc4e5fac029fd8d9228ad537d17c38ddc6928c2",
+    "archive_sha256": "7f27e353ad93f34bd7bd29b8fcac154bfb990efc39aea24410b9fec4ca9fdf93",
+    "all_ready_manifest_pins_match": true,
+    "whole_inverse_exact_single_literal": true,
+    "all14_selectedAST_controls_pass": true,
+    "controls": [
+      {
+        "control": "exact_current",
+        "accepted": true,
+        "expected": true,
+        "pass": true
+      },
+      {
+        "control": "wrong_expected",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "wrong_actual",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "missing_prefix",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "wrong_prefix",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "wrong_type",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "old_label_prefix",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "old_unprefixed",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "UTF8_DTD",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "UTF16_DTD",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "ENTITY",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "BOM",
+        "accepted": true,
+        "expected": true,
+        "pass": true
+      },
+      {
+        "control": "wrong_helper",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      },
+      {
+        "control": "wrong_method",
+        "accepted": false,
+        "expected": false,
+        "pass": true
+      }
+    ],
+    "public_spring6_2_19_Response_status_constant_present": true,
+    "public_framework_jar_sha256": "f1cb8549021f50630b4152291fdcde56786421b8448a5ab8bef9befe2ac86b37",
+    "old_packet_source_members_preserved": true,
+    "unchanged_old_files_except_child_PLAN": true,
+    "proposal_sha256": "6f88e6dc7ff66524964cd43cded2f60832513f78aebebaf7f25b4bfdee5b7f8f",
+    "historical_unknown_fields_preserved": {
+      "native_gradle_selected_test_exit": "UNKNOWN; parent native_exit1 is Python checkingchild, not Gradle test exit",
+      "historical_mutated_compiled_class_hash_or_diff_boolean": "UNKNOWN; helper computed class digest but rejected before persisted causal receipt",
+      "historical_posttest_fault_source_hash_match": "UNKNOWN; strict expression short-circuited on message mismatch before sourcehash predicate, no causalreceipt",
+      "actual_RED_noJWT_data_JTI_state_assertions": "NOT_EXECUTED afterstatusfailure; Sourcequalifiedstatus-onlyfault, restoredGREENrequired"
+    },
+    "qualification": "Source-only literal/selected-AST and public class constant pool data; no raw saved XML/log/body/native/module/callback invocation."
+  },
+  "source_assessment": "Exactly one full producer message literal changes, inverse restores the entire r1 child byte-for-byte. Public Spring6.2.19 StatusResultMatchers class constant pool independently contains Response status. Independent selected current AST14 controls accept only exact current known prefix+503expected401 shape and BOM positive; reject wrong expected/actual/type/prefix/old labels/DTD/entity/helper/method. No broad matching, alternatives, test/status/type/count/cap change. Prior23 encoding and20 restore invariants are unchanged/reused.",
+  "evidence_assessment": {
+    "basis": "Evaluate the supplied pinned SAFE proposal6f88 and Root-recorded closed diagnostic facts, plus previously independently reviewed test/fault/scaffold. No saved private XML/log was opened. Proposal reports fresh selected actual testcase1F0E0S, approved AssertionError/exact own helper+case and current exact503expected401 shape, while original source/class were subsequently restored with compiler0 and all12 births/resources settled.",
+    "what_is_accepted": "Specification-relevant finite test sensitivity: the unchanged selected test actually failed on an expected503/observed401 outage-status assertion, the relevant wrong behavior being the deliberately selected one-constant classification fault. This is an assertion-level JUnit RED supported by reviewed execution Source joining, rather than syntax/bootstrap/infra-only failure.",
+    "source_join_limit": "The reviewed linear test puts the unique expected503 helper call after B healthy/reconstruction controls and exact-owned pause+paused assertion. Reviewed child applies only approved status bytes before fixed rerun compile/test command. These path/attribution joins are Source inferences, not newly measured individual steps or exact historical loaded-class hashes.",
+    "original_checking_outcome": "47612 remains checking FAIL/native Python-child1/causal_red_valid:false due the old literal; original REPORT3fb3/ZIP423a and diagnostics remain immutable. Do not relabel it callbackPASS or claim it passed every original strict gate.",
+    "unknowns": "Original Gradle selected-test exit, historical mutant compiled class hash/diff boolean, and historical posttest fault-source predicate remain UNKNOWN. Current restored class/source hashes do not reconstruct those historical facts. RED noJWT/data/JTI/state assertions were NOT_EXECUTED after status failure.",
+    "no_fresh_red_required": "No concrete missing rule/cleanup risk found that requires repeating RED. Capturing missing historical diagnostic fields alone is insufficient reason to rerun an otherwise meaningful finite violation witness under D011. Qualified acceptance must retain these limits; it is not a strict full-gate mutation receipt.",
+    "green_required": "Separate unchanged selected restored GREEN under NEW Root grant/namespace is still required, after exact current original Source/class and original foreign baseline/resource joining. It executes the full503/noJWT/JTI/state/recovery assertions and completes the post-restore PASS pair. Prior original GREEN remains retained; no new GREEN run occurred in this review.",
+    "limits": "One finite STUDENT/JDBC/standalone MockMvc authority reconstruction case, not full OS Auth restart/Gateway/PWA/TMA/all roles or parentP06 closure. Original approved actualPG PASS unchanged; B013 journal rights action untouched."
+  },
+  "read_scope": "Full governing contract/state restored via public documents; only approved public Source, fixed SAFE proposal/control files and public framework constant-pool data for this narrow review. No raw private XML/log/failure/body/token/credentials or private-body hashes read/exported.",
+  "effects": "Own safe review receipt/manifest/archive only; selected AST/RAM synthetic controls, no full callback invocation/Java/Gradle/Docker/PG/API/mutation/product/shared writes/children."
+}

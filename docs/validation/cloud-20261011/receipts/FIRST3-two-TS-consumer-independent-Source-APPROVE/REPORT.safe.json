@@ -1,0 +1,92 @@
+{
+  "schema": "RCT_FIRST3_INDEPENDENT_PRODUCER_CONSUMER_SOURCE_REVIEW_V1",
+  "utc": "2026-10-13T09:23:32.446Z",
+  "reviewer": "p06_test_review",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "OUTCOME": "APPROVE_COHERENT_TWO_TS_AND_ROOT_CONSUMER_SOURCE_ONLY_NATIVE_CHECKS_REQUIRED",
+  "findings": [],
+  "scope": {
+    "worktree": "/workspace/rct-worktrees/first3-dataset-correction-20261013",
+    "base": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+    "semantic": "2ffd36d390e19879451e855d6e974f97ab5b4c5c",
+    "mechanical": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+    "clean": true,
+    "inventory": [
+      "tests/e2e/fixtures/mobile-dataset.ts",
+      "tests/e2e/fixtures/safe-reporter.ts"
+    ],
+    "producer_receipt_sha256": "67b602f0802dc00e13575db1e00d175af3652aa47f597e7fba8f71e6921f68f0",
+    "source_finding_receipt_sha256": "4416ae9789cbc92e1aec85de055e421afe2c03c67c488fad8802906438365fb0"
+  },
+  "pins": {
+    "mobile_dataset": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+    "safe_reporter": "9e975dc7ec7410cee2d0fc603f2c60039f6eb9b1966f486959dfdc483d4ff9aa",
+    "artifact_privacy": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+    "consumer": "517ba6261f0ff8251151f25835178f54505fadce426cedce19501b9b01d6a213",
+    "consumer_manifest": "111e9c6d103f899a001b1a2aef31b80f1972730b934f823dcdf9e1b795cd542b",
+    "consumer_zip": "d443ce52aeb3c0c3c5cb248f6f2337f99bcbcaa47b3559627c0dbca5956ef803",
+    "preserved_current597_consumer": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839"
+  },
+  "assessment": [
+    "Actual canonical GroupCodeRules.fromParts/ProgramType1..9/explicit duration4 and GroupService->BadRequest400 chain independently reopened from frozen Git blobs (author sparse checkout omits Java). Old bytes0/100/200 produce100 with unknown middle0; new expression enumerates all256 to accepted110..199 and preserves exactly90 original valid codes. This fixes a Source harness-input defect; no observed cause of current three CI failures inferred.",
+    "All11 mapping rows match actual Actor.call setup routes/methods. Helper inspects only primitive method/path/status, bounds path128/control chars/dynamic positive1..19 digit route shape, then emits only closed cause and finite status. Paths/IDs/body/tokens/expected-status arrays are never copied or hashed into new diagnostics. Unknown route/method/status/object/overlong/error forms produce generic failure then UNKNOWN0; ownData classifier invokes no getter or prototype message.",
+    "Exact fabricated marker intentionally classifies to the same closed DATASET_HTTP tuple. It is untrusted declared context, authenticates no operation, actual HTTP, product cause, admission or success. Outcome/error accounting, assertions and all expected status arrays remain byte exact by whole mobile inverse. No grants or result status are affected.",
+    "Old15 core stage rows/14 statuses including0, nine reported hints, ownData/eviction helpers and reporter/outcome methods remain exact. New dataset causes require nonzero existing13 statuses; decoder32/core priority cap8/failure fallback retained. Annotation serialization emits only stage/cause/httpStatus.",
+    "Root consumer maps precisely same11 causes to DATASET_HTTP and requires finite nonzero HTTP, exact3 keys, duplicate/cap/error fallback unchanged. Whole inverse yields exact original de1837 bytes; safe archive/manifest CRC and members verified. Header remains UNBOUND_FUTURE_ROOT_PUSH and actual selected load_binding rejects even a synthetic otherwise correct binding. No downloads or future runtime authority supplied."
+  ],
+  "independent_controls": {
+    "selected_actual_TS_type_erasure_V8_RAM": {
+      "checks": 1088,
+      "passed": true,
+      "knownRouteStatusPairs": 143,
+      "generatorInputs": 256,
+      "oldBadBytes": [
+        0,
+        100,
+        200
+      ],
+      "preservedDomain": 90,
+      "getterCalls": 0,
+      "forgedExactMarker": "CLOSED_CONTEXT_ACCEPTED_UNTRUSTED_NO_RUNTIME_CAUSE_OR_ACCESS"
+    },
+    "selected_Actor_call_synthetic_response_RAM": {
+      "checks": 7,
+      "pass": true,
+      "unexpectedStatusStillThrows": true,
+      "errorBodyReads": 0,
+      "syntheticStubOnly": true
+    },
+    "selected_public_consumer_AST_Python_RAM": {
+      "checks": 250,
+      "passed": true,
+      "mappingExact": true,
+      "wholeInverseExact": true,
+      "archiveExactCRC": true,
+      "futureUnboundRejected": true
+    },
+    "static": {
+      "exact_two_file_clean_head": true,
+      "thirteen_public_source_joins": true,
+      "mobile_whole_inverse_exact": true,
+      "old15_stages_14statuses_and9hints_preserved": true,
+      "outcome_methods_exact": true,
+      "git_diff_check": true
+    }
+  },
+  "required_native_checking_risks": [
+    "V8 type-only erasure and synthetic response stubs do not establish strict TS compilation, canonical formatter conformance or full Playwright worker/serialization behavior. Under a fresh Root grant run existing scoped OLD/NEW controls with canonical worktree reporter import, existing privacy worker (including setup/interruption/no raw marker capture), two-file formatter/check and strict TS5.9.3 checking; retain assertions/caps/decoder/private fixture.",
+    "After any actual mechanical formatter change, repin reporter Source SHA in future consumer and prove limited equivalence; bind consumer only to actual integrated/pushed Source and authenticated current run metadata. Then one appropriate unchanged FIRST3/current CI cycle can establish actual behavior/cause; current original three FAIL remain UNKNOWN."
+  ],
+  "limits": [
+    "SOURCE_ONLY_NOT_NATIVE_PASS_OR_DONE",
+    "Reviewer ran no Node/JVM/Gradle/Docker/browser/API/network and read no private values/XML/log/body/env/credentials.",
+    "RAM controls use selected real source with type-only erasure, closed public inputs and stubs; no full runtime/server proof. Initial reviewer erasure adapter left one type annotation and failed syntax before corrected RAM adapter; no author Source or oracle change.",
+    "No author/Root/shared files changed; own safe receipt only. B013 blocked journal-rights action untouched; no fallback or new framework."
+  ],
+  "prior_sequential_outcome": {
+    "path": "/workspace/scratch/rct-validation/p06_one_test_independent_review/restored-green-actual-recheck/REPORT.safe.json",
+    "sha256": "fe75a306e2e7f24c5934a8cd32ae657fbd591be04bd2162fd533e53c6f8a6317"
+  }
+}

@@ -7652,7 +7652,10 @@
       "path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
       "sha256": "8d9bdcc55d2e45360e7c86d768a41d3f3c258a416f384054b1fbc4a7680a7e7a",
       "status": "retained-independent-evidence-not-product-specification",
-      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "3/REPORT.safe.json",
+      "standalone_retention": "UNTRACKED_EXACT_MACHINE_COPY; archive is branch recovery source"
     },
     {
       "id": "receipt:docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/manifest.safe.json",
@@ -7974,7 +7977,10 @@
       "path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
       "sha256": "4bc2b95f67002d1f2c0941098f0abf39d9a33b16f8fbe3224abaceafa8fda9f9",
       "status": "retained-qualified-evidence-see-outcome-not-product-specification",
-      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740",
+      "committed_exact_archive": "docs/validation/cloud-20261011/receipts/Root-AE027-public-source-SHA-exact-extractions/original-public-source-reports.safe.zip",
+      "archive_entry": "1/REPORT.safe.json",
+      "standalone_retention": "UNTRACKED_EXACT_MACHINE_COPY; archive is branch recovery source"
     },
     {
       "id": "receipt:docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/manifest.safe.json",
@@ -8348,6 +8354,793 @@
       "status": "retained-actual-or-independent-review-evidence",
       "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
       "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:receipts/P06-format-onefile-actual-PASS/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-format-onefile-actual-PASS/evidence.safe.zip",
+      "sha256": "115024f5ac904181a4bcdd5313166ce8a62570b57e519d57f1fc4c64b4e472e0",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-format-onefile-actual-PASS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-format-onefile-actual-PASS/REPORT.safe.json",
+      "sha256": "c321d0842d30a047031ce2d4bc4e8b7c6a1cf63e1666a32004e7f13102bbedd6",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-format-onefile-actual-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-format-onefile-actual-PASS/manifest.safe.json",
+      "sha256": "fe5ead0887529a81ee0aa16d41f7fe132826f3e30fc9910b1650776d5a80c8d4",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-compile-auth-actual-PASS/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-compile-auth-actual-PASS/evidence.safe.zip",
+      "sha256": "b153c613e62ee69dc479b9e45243570f7d6e259f445b94504ca564396f1126ff",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-compile-auth-actual-PASS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-compile-auth-actual-PASS/REPORT.safe.json",
+      "sha256": "66f22a9b55befe66cb557190a0bb945b43957fbcd32aa92b013b48d9cced3878",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-compile-auth-actual-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-compile-auth-actual-PASS/manifest.safe.json",
+      "sha256": "9958c339a32b561f1eb3a3ec6ee631b88dcc07e4f9d7e157bb2c93ef064e0019",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-independent-source-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-source-APPROVE/review.safe.zip",
+      "sha256": "a763f55660075564bf35c20cb488f849ba26df747ddce04ff398de1814fc0a7a",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-independent-source-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-source-APPROVE/REPORT.safe.json",
+      "sha256": "8b44ea3da93703d3c4c5bf91e751f5495b8849dc0e0519458630a6382bd4df7a",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-independent-source-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-source-APPROVE/manifest.safe.json",
+      "sha256": "483d3e325852e8227fc969ed172cd699c99d32db98d88c477b7b136c005b2c4e",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-one-actual-PASS/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS/evidence.safe.zip",
+      "sha256": "31e385836449b1bdec199cf98726cade935286eefdb0ba80eac0916ffbb5d170",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-one-actual-PASS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS/REPORT.safe.json",
+      "sha256": "d02086694afd80efcbbd64b4726e161a4da57d9fe728e732166f90da1567b249",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-one-actual-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS/manifest.safe.json",
+      "sha256": "012ef6f88a94d6c73e510d85012655742f82b2cf6a9341801033877c97d15b81",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-independent-actual-ACCEPT/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-actual-ACCEPT/review.safe.zip",
+      "sha256": "9fcb22974a402349d289b38d7d62da00e6c3f3b6109136b5a1d450ff0a54d5f1",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-independent-actual-ACCEPT/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-actual-ACCEPT/REPORT.safe.json",
+      "sha256": "61ee97999b3b0cb9e32d416f72b87489b3812020f8da2f1396701b9ebc90bbfd",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/P06-real-PG-independent-actual-ACCEPT/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-actual-ACCEPT/manifest.safe.json",
+      "sha256": "31061f2c8c430364b03610f9e1d4a1ea87da9869faf1adeae49eefdaa4ce92ed",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/current597716-collector-3parameter-APPROVE/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-collector-3parameter-APPROVE/HANDOFF.md",
+      "sha256": "5b70663f068075b3d4a974660b73f550724b3a89f7e57e30aec43a88d279862f",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/current597716-collector-3parameter-APPROVE/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-collector-3parameter-APPROVE/READY.safe.json",
+      "sha256": "6d1287125d716b68740cc97547a79e8f83862e602ec5c9aa363a5a01300fe7e7",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/current597716-collector-3parameter-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-collector-3parameter-APPROVE/manifest.safe.json",
+      "sha256": "001623fc407881fd3ac8e973da9a6cdd8996e27c08a6943033c5ed60473065a8",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/current597716-collector-3parameter-APPROVE/safe-binding-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-collector-3parameter-APPROVE/safe-binding-source.zip",
+      "sha256": "8592559a8bba87df6ba5740fd67ac90f4cf8f37b2f8af5090663ed7f87ab5abb",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/current597716-collector-3parameter-APPROVE/strict-browser-schema.py",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-collector-3parameter-APPROVE/strict-browser-schema.py",
+      "sha256": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/current597716-collector-3parameter-APPROVE/parameter.delta.patch",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-collector-3parameter-APPROVE/parameter.delta.patch",
+      "sha256": "716878026ba873689d483aa463ac3f981b5623065c9e7530185a548cd9b1f813",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/task-state-before-20261013T071924Z.zip",
+      "path": "docs/validation/cloud-20261011/receipts/task-state-before-20261013T071924Z.zip",
+      "sha256": "ed1f970ead5fe06c7ee5df4ca35286062f73c64bed5ea371bd141225a94dd0e9",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "receipt:receipts/morning-handoff-before-20261013T073936Z.zip",
+      "path": "docs/validation/cloud-20261011/receipts/morning-handoff-before-20261013T073936Z.zip",
+      "sha256": "2004da8b978ed8b1842d243ef97c9f2b2eb92acf2b6debb84f3cfea100b1d066",
+      "status": "retained-actual-independent-review-or-checkpoint-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer revision governs; finitecase/sourceapproval does not assert globalparent/client/currentCI PASS."
+    },
+    {
+      "id": "CHECKPOINT597-current597716-full-current-gates-SAFE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-full-current-gates-SAFE/manifest.safe.json",
+      "sha256": "80db0805766a9fbe83b17d2567002cc12b268a8530fe584cb45adecbd054cd6e",
+      "bytes": 28833,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-current597716-full-current-gates-SAFE/safe-current-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-full-current-gates-SAFE/safe-current-evidence.zip",
+      "sha256": "3713c5e5a0249065818ef9c7d049831897d69525314cb8ad7c9ffedfbb222a4f",
+      "bytes": 571203,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-current597716-Attendance8-CI-PASS/attendance8-CI-current.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-Attendance8-CI-PASS/attendance8-CI-current.safe.json",
+      "sha256": "c850467bf3d22175a461c8f84c521f0df7d65addfbbc8a853c1441343482a39c",
+      "bytes": 3121,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-current597716-Attendance8-Cov-PASS/attendance8-Coverage-current.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-Attendance8-Cov-PASS/attendance8-Coverage-current.safe.json",
+      "sha256": "ffb3ffb72f31e2a5af48c7344c876b38a378cd77955eac5d46e1c20a42177729",
+      "bytes": 3044,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-current597716-FIRST3-untrusted-dataset-hint-FAIL/first3-safe-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current597716-FIRST3-untrusted-dataset-hint-FAIL/first3-safe-1.safe.json",
+      "sha256": "4c9ef4b458d097e4dc804cbafde39f0d196487a5c883e12713cd169b1558ba03",
+      "bytes": 3685,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-real-PG-one-actual-PASS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS/REPORT.safe.json",
+      "sha256": "d02086694afd80efcbbd64b4726e161a4da57d9fe728e732166f90da1567b249",
+      "bytes": 4198,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-real-PG-one-actual-PASS/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS/evidence.safe.zip",
+      "sha256": "31e385836449b1bdec199cf98726cade935286eefdb0ba80eac0916ffbb5d170",
+      "bytes": 2172,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-real-PG-one-actual-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS/manifest.safe.json",
+      "sha256": "012ef6f88a94d6c73e510d85012655742f82b2cf6a9341801033877c97d15b81",
+      "bytes": 264,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-real-PG-independent-actual-ACCEPT/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-actual-ACCEPT/REPORT.safe.json",
+      "sha256": "61ee97999b3b0cb9e32d416f72b87489b3812020f8da2f1396701b9ebc90bbfd",
+      "bytes": 2964,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-real-PG-independent-actual-ACCEPT/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-actual-ACCEPT/manifest.safe.json",
+      "sha256": "31061f2c8c430364b03610f9e1d4a1ea87da9869faf1adeae49eefdaa4ce92ed",
+      "bytes": 156,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-real-PG-independent-actual-ACCEPT/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-real-PG-independent-actual-ACCEPT/review.safe.zip",
+      "sha256": "9fcb22974a402349d289b38d7d62da00e6c3f3b6109136b5a1d450ff0a54d5f1",
+      "bytes": 2002,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-XML-encoding-independent-recheck-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-XML-encoding-independent-recheck-APPROVE/REPORT.safe.json",
+      "sha256": "ef63304b12108bad2388aeeedfcbb5cdb56638a4926a3a3ab59ea67b85fcd7e1",
+      "bytes": 5577,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-XML-encoding-independent-recheck-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-XML-encoding-independent-recheck-APPROVE/manifest.safe.json",
+      "sha256": "0983130a9c97a2ffcef0de36d6c5afdba5ea31e06252c169218a8206e8f9ce8c",
+      "bytes": 225,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-XML-encoding-independent-recheck-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-XML-encoding-independent-recheck-APPROVE/review.safe.zip",
+      "sha256": "6f05df35f57f991714310bea7dad961806c4eb54c359222128eb0452d87509a1",
+      "bytes": 2438,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/REPORT.safe.json",
+      "sha256": "3fb3f89fbd9738c6f9d0fbcf528169d35b66c82b33fc4872b4db2a381ed171e8",
+      "bytes": 4539,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/closed-data-diagnostics.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/closed-data-diagnostics.safe.zip",
+      "sha256": "01ff77ce663e4bb6368aa32f60284024e6e3636989cb349aec2ae735b9aa7a29",
+      "bytes": 2559,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/diagnostics-manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/diagnostics-manifest.safe.json",
+      "sha256": "ec7e1f48f18671ad6959c90b33ad347276ee0f04e5dac765780a4857fbf5bbb6",
+      "bytes": 728,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/evidence.safe.zip",
+      "sha256": "423ac0c5063ed1ed9f957fbd24b3ac4a4afb824e66cab0c281a87a6eedf69cbe",
+      "bytes": 1910,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/manifest.safe.json",
+      "sha256": "eb50a655601443bd9cad7d989ff6569e72ee597b2de0ac2ca93b5067efdf7253",
+      "bytes": 200,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/saved-xml-predicates.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/saved-xml-predicates.safe.json",
+      "sha256": "8c8ec55c9e310e8b1a7e3b14418959376ccc1425ed1192e8174cb941e713e165",
+      "bytes": 1341,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-firstRED-checking-FAIL-restored/saved-xml-static-pattern.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-firstRED-checking-FAIL-restored/saved-xml-static-pattern.safe.json",
+      "sha256": "f5c6ef6b6bc23fdcf4a266345b57f3630327437ca135934cf5687749655737bd",
+      "bytes": 669,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-refresh-source-plan/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-refresh-source-plan/HANDOFF.md",
+      "sha256": "99f749152abc4ee0a17629aa107b064d7d60a7850a224dd9d4cecddaa4cd7dc8",
+      "bytes": 1465,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-refresh-source-plan/PLAN.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-refresh-source-plan/PLAN.safe.json",
+      "sha256": "eff4246114cd9031eadf7bf2c1cb3876220a0e42f43534ddfca26d16bca010e7",
+      "bytes": 10683,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-refresh-source-plan/existing-input-pins.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-refresh-source-plan/existing-input-pins.safe.json",
+      "sha256": "8c7d080c4e738cf01c8a25fcb0024db08481a48e124392de391170cf05c52fcc",
+      "bytes": 1638,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-refresh-source-plan/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-refresh-source-plan/manifest.json",
+      "sha256": "a004475377b37753aac5c269326b9330bfced182f35bf02b74d509445e632554",
+      "bytes": 976,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-refresh-source-plan/t008-twojar-refresh-source-plan.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-refresh-source-plan/t008-twojar-refresh-source-plan.safe.zip",
+      "sha256": "105fd7357730ffa5816e75b3f5f8403cb47c40c85c95654fe2cd9984f8200f54",
+      "bytes": 40347,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-refresh-source-plan/tracked-inputs597.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-refresh-source-plan/tracked-inputs597.safe.json",
+      "sha256": "5e9e6162ce34eedb1f7329d8dd295be7b35dcdbf131cf2663a61990571783b41",
+      "bytes": 203574,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-stand-capacity-readonly-blocker/CAPACITY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-stand-capacity-readonly-blocker/CAPACITY.safe.json",
+      "sha256": "442e5eb01001c0465371b77afa64baff90189c6841cb5fd94f0894a86c5249b8",
+      "bytes": 171732,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-stand-capacity-readonly-blocker/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/T008-stand-capacity-readonly-blocker/HANDOFF.md",
+      "sha256": "b00246d79252d0e214911a8c97fa032e8617e12d87f71ccc49ef469571d719c7",
+      "bytes": 829,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-stand-capacity-readonly-blocker/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-stand-capacity-readonly-blocker/manifest.json",
+      "sha256": "0888295566c6cade586ab948bf014dc1164c771965791d11045eb4dab42b8841",
+      "bytes": 555,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-stand-capacity-readonly-blocker/t008-known-public-copy-capacity.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-stand-capacity-readonly-blocker/t008-known-public-copy-capacity.safe.zip",
+      "sha256": "37af5b92302c588b0fa952d634f563347207d6a2573a97f6cb220989c0573d8d",
+      "bytes": 29530,
+      "status": "retained-finite-evidence-read",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-source-ready/build-grant.template.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-source-ready/build-grant.template.safe.json",
+      "sha256": "454199bc0c035d8bc755e8f759bf764d4130580e7b974b8c40c4c4c1c9e954d2",
+      "bytes": 1038,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-source-ready/launch-schema.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-source-ready/launch-schema.safe.json",
+      "sha256": "b25b84a1ede316699707190541f0a54cae2c5b5d9fac86bfd9bdd95d0572e6b6",
+      "bytes": 2873,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-source-ready/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-source-ready/manifest.json",
+      "sha256": "59ab33f6c1163675d656fd5587adc7027933c4ffff97b32800f4f74aa34e37a7",
+      "bytes": 3225,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-source-ready/two-current-journal-jars-build-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-source-ready/two-current-journal-jars-build-source.safe.zip",
+      "sha256": "e5106fa77df1bfafaff9536f3a91f68854504d561339af879fc6352d9aa84775",
+      "bytes": 66305,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-independent-source-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-independent-source-APPROVE/REPORT.md",
+      "sha256": "7a93bfb9f9a6aefb135607e1a5b50ea282908e929de1d756499cd60f93022f3a",
+      "bytes": 1069,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-independent-source-APPROVE/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-independent-source-APPROVE/manifest.json",
+      "sha256": "7b9a340e3e1e93221b6d24506609cacbe7177dc6d1f2a8bd7b2314416093df4d",
+      "bytes": 628,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD-independent-source-APPROVE/safe-source-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD-independent-source-APPROVE/safe-source-review.zip",
+      "sha256": "e97becc52d8e411df213e22a81b96490ec36603dfb86d6feb92fda29ce1af4d9",
+      "bytes": 5231,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-FIRST3-dataset-public-Source-counterexample/source-receipt.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-dataset-public-Source-counterexample/source-receipt.safe.json",
+      "sha256": "4416ae9789cbc92e1aec85de055e421afe2c03c67c488fad8802906438365fb0",
+      "bytes": 15416,
+      "status": "read-source-checking-no-product-spec",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Receipt producer/revision/native status and finite limits inside exact receipt; retention revision is not execution SHA or blanket scenario PASS."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD01-prebuild-mode-FAIL/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD01-prebuild-mode-FAIL/manifest.json",
+      "sha256": "db7ea3b82adde742f4e2e8abdf938c5fa3dffc290b62191bf07a119b55d8c6a9",
+      "bytes": 1855,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-BUILD01-prebuild-mode-FAIL/twojar-build01-prebuild-mode-failure.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-BUILD01-prebuild-mode-FAIL/twojar-build01-prebuild-mode-failure.safe.zip",
+      "sha256": "66d003d5519d25b2c8be36bbcfa4e9c0999ad6db8469597932f97dfd25ac272c",
+      "bytes": 11979,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-checkout-mode-Source-recheck-pending/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-checkout-mode-Source-recheck-pending/manifest.json",
+      "sha256": "b38d7b7c9e932bf7d07a76104ce89427f4048c7e3158a90b6d7ff135d25206bc",
+      "bytes": 3868,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-T008-two-JAR-checkout-mode-Source-recheck-pending/twojar-checkout-creation-mode-correction.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-checkout-mode-Source-recheck-pending/twojar-checkout-creation-mode-correction.safe.zip",
+      "sha256": "9f069e7842bc4ff8671cf51c1eddf2f97aae7548c07815202b9248e91a7caa8a",
+      "bytes": 63560,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-message-r2-Source-review-pending/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-message-r2-Source-review-pending/READY.safe.json",
+      "sha256": "e0dc4823a0ee85129c91d4152a13a6e26dc7afb5cc028ecbff3d6229a512322a",
+      "bytes": 5395,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-message-r2-Source-review-pending/existing47612-qualified-evidence-proposal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-message-r2-Source-review-pending/existing47612-qualified-evidence-proposal.safe.json",
+      "sha256": "6f88e6dc7ff66524964cd43cded2f60832513f78aebebaf7f25b4bfdee5b7f8f",
+      "bytes": 3882,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-P06-status-message-r2-Source-review-pending/source-ready.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-message-r2-Source-review-pending/source-ready.safe.zip",
+      "sha256": "7f27e353ad93f34bd7bd29b8fcac154bfb990efc39aea24410b9fec4ca9fdf93",
+      "bytes": 61491,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-P06-message-r2-independent-APPROVE-qualified-RED/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-message-r2-independent-APPROVE-qualified-RED/REPORT.safe.json",
+      "sha256": "0f73f3e89e3b7726a46e4b71bf53d0819183776d6a10f5d74d27fc15aabfcf72",
+      "bytes": 7602,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-P06-message-r2-independent-APPROVE-qualified-RED/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-message-r2-independent-APPROVE-qualified-RED/manifest.safe.json",
+      "sha256": "3c3d3990bf966102220e35178179ff9a54a12bd9ca8dd10cd5fb0baef63b7ea2",
+      "bytes": 232,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT597-P06-message-r2-independent-APPROVE-qualified-RED/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-message-r2-independent-APPROVE-qualified-RED/review.safe.zip",
+      "sha256": "92093d6d15ea59169732643731b229950cbe18d9c079859a1f6000661fbf6391",
+      "bytes": 3469,
+      "status": "retained-finite-Source-or-actual-qualified-evidence",
+      "revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "qualification": "Execution/source producer/review disposition inside receipt; retainingrevision not runtimeclaim. No secret/privateXML/log hashes."
+    },
+    {
+      "id": "CHECKPOINT-AE027-T008-two-JAR-checkout-mode-independent-APPROVE/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-checkout-mode-independent-APPROVE/manifest.json",
+      "sha256": "e86cb0bc1a465ec676ec32ce84794a973e0fb7fdb598e2589643ccc47e8a59a7",
+      "bytes": 468,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-T008-two-JAR-checkout-mode-independent-APPROVE/safe-source-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-JAR-checkout-mode-independent-APPROVE/safe-source-recheck.zip",
+      "sha256": "df701354ac051e58c739f04390060cf5decc79e1667e520b7ad9e0e005915d14",
+      "bytes": 3627,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-T008-two-current-JARs-BUILD02-actual-PASS/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-current-JARs-BUILD02-actual-PASS/manifest.json",
+      "sha256": "685a9d370632583db0813b21dbe8d7e866c5e01a5e3a04d463ae299a95d7e072",
+      "bytes": 2169,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-T008-two-current-JARs-BUILD02-actual-PASS/twojar-build02-actual.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/T008-two-current-JARs-BUILD02-actual-PASS/twojar-build02-actual.safe.zip",
+      "sha256": "412c3487d2a5981956fa2cb64ff6318570be629cb3bbb11de2c3df9932d3712d",
+      "bytes": 200120,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-restored-GREEN-independent-ACCEPT-integration-ready/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-restored-GREEN-independent-ACCEPT-integration-ready/REPORT.safe.json",
+      "sha256": "fe75a306e2e7f24c5934a8cd32ae657fbd591be04bd2162fd533e53c6f8a6317",
+      "bytes": 2294,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-restored-GREEN-independent-ACCEPT-integration-ready/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-restored-GREEN-independent-ACCEPT-integration-ready/manifest.safe.json",
+      "sha256": "a7ec489953e3815f030a4e401ea02a0d9f43c389c5e007c0e73b4193ced9f79c",
+      "bytes": 112,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-restored-GREEN-independent-ACCEPT-integration-ready/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-restored-GREEN-independent-ACCEPT-integration-ready/review.safe.zip",
+      "sha256": "e0042954740dc85cd9bb97455f5b46594eee4884580ce7f8e07527dcdc0782ed",
+      "bytes": 1694,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-status-restored-GREEN01-actual-PASS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-restored-GREEN01-actual-PASS/REPORT.safe.json",
+      "sha256": "b8e36afab8e03366cc8326e587b93268abb5ba6590071b85bbf66d3b4da0094d",
+      "bytes": 4491,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-status-restored-GREEN01-actual-PASS/evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-restored-GREEN01-actual-PASS/evidence.safe.zip",
+      "sha256": "e4345b049a73156aedf6d65e79dfc20eb0cd7acefe1b8696fd0fa1802760cf25",
+      "bytes": 2295,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-status-restored-GREEN01-actual-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-status-restored-GREEN01-actual-PASS/manifest.safe.json",
+      "sha256": "2066a6a89de2e4067540e2bdbc38cf8ca1bdf995627335cd9591ea1790589210",
+      "bytes": 291,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-Root-integration-scoped-hooks/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-Root-integration-scoped-hooks/REPORT.safe.json",
+      "sha256": "f8ef963eee365e138414034f7ff7bd59f07837474accb170f23b7e46f08d1e1c",
+      "bytes": 1179,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-P06-Root-integration-scoped-hooks/safe-scoped-hook-outcomes.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-Root-integration-scoped-hooks/safe-scoped-hook-outcomes.zip",
+      "sha256": "462c525168b5cf3c72cf6cebce1481cdd5c1b571409c6f821f04dbd0270fa909",
+      "bytes": 2180,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-FIRST3-consumer-canonical11-Source-ready/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-consumer-canonical11-Source-ready/REPORT.safe.json",
+      "sha256": "9d283f50b55210dabfa47a81f2a1ac2813da2c017d5e6c27de6813bae0c80930",
+      "bytes": 1714,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-FIRST3-consumer-canonical11-Source-ready/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-consumer-canonical11-Source-ready/manifest.safe.json",
+      "sha256": "111e9c6d103f899a001b1a2aef31b80f1972730b934f823dcdf9e1b795cd542b",
+      "bytes": 393,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-FIRST3-consumer-canonical11-Source-ready/safe-consumer-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-consumer-canonical11-Source-ready/safe-consumer-source.zip",
+      "sha256": "d443ce52aeb3c0c3c5cb248f6f2337f99bcbcaa47b3559627c0dbca5956ef803",
+      "bytes": 5120,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-FIRST3-two-TS-consumer-independent-Source-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-two-TS-consumer-independent-Source-APPROVE/REPORT.safe.json",
+      "sha256": "f52c2eec51fb48e009058e8e8b1b1091c9fbd7f1df8c27c7516cf02df63b29f3",
+      "bytes": 6512,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-FIRST3-two-TS-consumer-independent-Source-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-two-TS-consumer-independent-Source-APPROVE/manifest.safe.json",
+      "sha256": "3808176332b9ac60bef83575e7b93a480794b38b0fe3d7e3f4f5577ecb67802b",
+      "bytes": 197,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
+    },
+    {
+      "id": "CHECKPOINT-AE027-FIRST3-two-TS-consumer-independent-Source-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-two-TS-consumer-independent-Source-APPROVE/review.safe.zip",
+      "sha256": "c7c3d79e640080572fd9214938a47b2573fec4849234aa339847d6080b1a79e8",
+      "bytes": 3747,
+      "status": "retained-finite-reviewed-outcome-or-source",
+      "revision": "ae027b11fba4908a22039e9c22249836a63df243",
+      "qualification": "RetentionSHA is not executionSHA; exactproducer/native/source-only andlimits inside originalreceipt. No privateXML/log hashes or scenario-family promotion."
     }
   ],
   "research_receipt": {

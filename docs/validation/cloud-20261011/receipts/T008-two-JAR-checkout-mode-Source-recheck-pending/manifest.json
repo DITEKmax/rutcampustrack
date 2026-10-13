@@ -1,0 +1,83 @@
+{
+  "utc": "2026-10-13T09:01:13.134127+00:00",
+  "scope": "BUILD_ONLY_TWO_CURRENT_JARS_CHECKOUT_CREATION_MODE_CORRECTION",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/HANDOFF.md",
+      "sha256": "aa9bde4784f9461554c30658e48bc3dab2e277415fb2ecdb2b902317b59baca1",
+      "size": 1782
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/build-academic.py",
+      "sha256": "60f54d8bbb128fd868e5d7fcf026a112206c84623ffd36ceeb510e7574a6fbe4",
+      "size": 11818
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/build-grant.template.safe.json",
+      "sha256": "65f97552b19f8963e64c343a8e55c2c4f345dbee9da7e8537a93d8744507986a",
+      "size": 1038
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/inspect-academic.py",
+      "sha256": "a33f45dfd19fa765d30ae64d8292b85dbf20bc6ae3225d3b9a7d9e30b37dcc68",
+      "size": 6881
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/launch-schema.safe.json",
+      "sha256": "35741dfa2a58cca231a1d3b9feda4944024f7a92da5811822eabc4aa38a451cc",
+      "size": 3316
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/mode-correction-controls.py",
+      "sha256": "316c01c8ebf6d2a81c3dccf2ad4f8cf4f9ff786429e227dc76c6a9aa6447533a",
+      "size": 5078
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/mode-correction-controls.safe.json",
+      "sha256": "648564f8d0609ae4827f10daff1c02526c6a50e9bd5ae74a2e6b2fd81d1b94a3",
+      "size": 1345
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/refresh-boundary.py",
+      "sha256": "a6b018ca3246f5cc63de40ba8d843cd53a0507a8f93dd965c0235ca77acf8568",
+      "size": 13683
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/required-journal-inputs.safe.json",
+      "sha256": "88f94ccebc5c103b002f40d8c504fb77a980465a9a6301d327fb0270f57de9ef",
+      "size": 1345
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/source-controls.py",
+      "sha256": "2b7e8c2a445e6cb87359f35d9e07f539e54cb48f7d634f3f0142190fa48cea5a",
+      "size": 17233
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/source-controls.safe.json",
+      "sha256": "0ce86b959d5473082eecd0e94f87dc577cf803c23bc456e303fb729ef7387c2e",
+      "size": 5249
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/source-delta.safe.json",
+      "sha256": "5c7d623fe1d0e9743f925840bf2accb3957aeb94ec1b620ef84a57ac0cf6d0a7",
+      "size": 3955
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/tmp-anchors.safe.json",
+      "sha256": "f188a1b7c614897df4aebe55a33af7f31ecc8dc17b9f9ab36400ba60a4344fca",
+      "size": 667
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/tool-inputs.safe.json",
+      "sha256": "12c3399942d94bef7b611793702dd5d7541fe941ba74156f3b199b83503b645b",
+      "size": 1279
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/tracked-inputs597.safe.json",
+      "sha256": "5e9e6162ce34eedb1f7329d8dd295be7b35dcdbf131cf2663a61990571783b41",
+      "size": 203574
+    }
+  ],
+  "private_inputs_excluded": true,
+  "prior_source_manifest_sha256": "59ab33f6c1163675d656fd5587adc7027933c4ffff97b32800f4f74aa34e37a7"
+}

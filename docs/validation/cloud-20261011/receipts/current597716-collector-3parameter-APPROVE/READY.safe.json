@@ -1,0 +1,48 @@
+{
+  "state": "SOURCE_READY_WAIT_ROOT_REVIEW_METADATA_AND_COLLECTION_GRANT",
+  "parameters": {
+    "SOURCE_HEAD": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+    "REPORTER_SHA": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+    "PRIVACY_SHA": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82"
+  },
+  "schema_sha256": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839",
+  "parameter_only_ast_and_fullbyte_inverse_equal": true,
+  "old_reviewed_manifest_sha256": "32de8b2a6b72f1a60a0c730a14013e51545b7acb58e915d0c122e54499b16745",
+  "old_reviewed_zip_sha256": "fbc4fd91fae0ea6a698456a478aa97f6d592b2949303ffe7c5af5980bc5dbf98",
+  "old_schema_sha256": "0be49815091c28997309d1f822348ed760bd45ce9da0aa659f19f51727e1d873",
+  "source2_current_committed_head": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "source2_hashes": {
+    "tests/e2e/fixtures/safe-reporter.ts": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+    "tests/e2e/fixtures/artifact-privacy.ts": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82"
+  },
+  "root_independent35_review": "docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/review.safe.json",
+  "proposed_exact_runs_not_independently_API_collected": {
+    "ci": 38363252108,
+    "coverage": 38363252073,
+    "security": 38363251853,
+    "openapi": 38363251976
+  },
+  "distinct_push_ci": 38363246567,
+  "actual_PR_checkout_sha": "PENDING_SAFE_CURRENT_EVIDENCE",
+  "actual8key_binding_created": false,
+  "reader_privacy_guard_PASS_policy_unchanged": true,
+  "reported_hints": "Same9 finite codes/max1class+1frame/max8/dedup/old3optionalfields; untrusted text matches UNKNOWN/http0 only, no actualcause/authenticatedclass/frame/stage proof",
+  "attendance8": {
+    "plan_sha256": "2ca2c403f25517dd87e9abfc118380808aee27f41a4304f5707ccbd24c46a388",
+    "unique_method_count": 8,
+    "source_hashes": [
+      "def754977de95b0c4a830ed58dbec449bf86910355381dc32562062b1949e161",
+      "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    ],
+    "required": "Each exact SOURCE_METHOD PASSED/collectionRESULTS/countsConsistent/current head+checkout+source join/zero selected skips-notexecuted-failures; counts alone insufficient"
+  },
+  "scope_limits": [
+    "No remote metadata/API/download/log/XML/native collection performed; fresh Root collection grant required",
+    "Original481 receipts/collectors/readers/b78 guard and old32de source archive unchanged",
+    "B013 platform-blocked rights mutation remains blocked; no retry/rephrasing/alternate path",
+    "P06 exclusive localPG runtime untouched; no runtime author role"
+  ],
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "utc": "2026-10-13T07:39:32.860443+00:00"
+}

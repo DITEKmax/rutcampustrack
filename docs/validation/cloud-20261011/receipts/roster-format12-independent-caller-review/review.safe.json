@@ -1,0 +1,215 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "semantic_review_reused": "81ced93df19d02a43d7711f406ec60f70ec40fbb50469e784f9a2f4612660eca",
+  "semantic_commit": "895d404f23beb47c93ca210be6f9161cd09945ec",
+  "source_manifest_sha256": "7e73d5cd4a3a6caf421176a10386018c0ff849c53a85e8d1dbab869434ce59c5",
+  "source_pins": {
+    "run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "format-plan.safe.json": "37a2ae22887e00c310173e31a8e47d61ef90777c1e8bc200f32578f2ea0d5586",
+    "format-journal.init.gradle": "b845b77ef867daeee26bb3faee9e0cd4a0fe145f4a941af0b5405601fab8a884",
+    "semantic-source13-manifest.safe.json": "7e73d5cd4a3a6caf421176a10386018c0ff849c53a85e8d1dbab869434ce59c5"
+  },
+  "target_set_exact": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HeadmanJournalSemesterTransportTest.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanJournalSemesterStateIT.java",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/HeadmanJournalSemesterClientTransportTest.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java"
+  ],
+  "canonical_rule": "Root build file byte exact; Spotless7.0.4/googleJavaFormat1.25.2/AOSP/steps unchanged; scratch init replaces only Java targets with exact12 and checks actual resolved target set before processing.",
+  "metadata": [
+    {
+      "path": "proto/academic.proto",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "5c6905b6137438ec80817fdcdc0901cc9f4d7a6a425b51037aa6384e6c7d847a"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "523cfeeb269b1624014503315271d7db3288a316fdf9c565fea4baadb85ddc1e"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "34b70251486f7e2ee521bc90dd5639a153b87c4dbc01b14f310b07d8754b6214"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HeadmanJournalSemesterTransportTest.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "e9d3abebd4dd9733841afabc96cb2d61bd269cfba2e21a4936c468a9bec6cd2c"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanJournalSemesterStateIT.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "ef1494f75ce911569e87da34ec53296be9fd56c634ca6c8829f8130c1a6afff9"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "feee60f7a1eedef941e6bdb8a6fb268781f90f436659c61efa85d360a017cd7f"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "bf18fe9c5cc313cb7e22eb8be18d0a7da358c259c86c36e157c7d4c233e77d9c"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "8b437351f07723d1e4f930e7ca1c4c6c29565cb20f7054d3c0a747b22844eb72"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/HeadmanJournalSemesterClientTransportTest.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "6109cac9b428c2ba555c540879d312f4ef81b49940fdc412ecab1cfaa81c2d8a"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "def754977de95b0c4a830ed58dbec449bf86910355381dc32562062b1949e161"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "e13a7a333f0501f4d5e52b9c38f729b21c061d8eab412bec727fb29d5d5f293a"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "56e10dc24d6c5fc3be608dbda9e2c8e2211fcdbc12b171b5861f80b35e4074ed"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "ddb426fb03a17d56e31d95f1b1735c706a1288de7446f9f2ca4f4a3a6277f79f"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o600",
+      "nlink": 1,
+      "sha256": "af23f982235b66e9d07add499b0788a1c2389340c876688f80f8257117ec50dc"
+    }
+  ],
+  "parent_functions_byte_exact": {
+    "digest": true,
+    "utc": true,
+    "write": true,
+    "observe": true,
+    "status": true
+  },
+  "child_existing_admission_primitives_byte_exact": {
+    "digest": true,
+    "private_json": true,
+    "identity": true
+  },
+  "selected_finite_set_oracles": [
+    {
+      "target_guard": "exact12",
+      "accepted": true
+    },
+    {
+      "target_guard": "missing1",
+      "accepted": false
+    },
+    {
+      "target_guard": "extraRootConfig",
+      "accepted": false
+    },
+    {
+      "target_guard": "extraGenerated",
+      "accepted": false
+    },
+    {
+      "target_guard": "sameCountForeign",
+      "accepted": false
+    },
+    {
+      "post_apply_guard": "onlyTargets",
+      "accepted": true
+    },
+    {
+      "post_apply_guard": "empty",
+      "accepted": true
+    },
+    {
+      "post_apply_guard": "proto",
+      "accepted": false
+    },
+    {
+      "post_apply_guard": "protectedTLS",
+      "accepted": false
+    },
+    {
+      "post_apply_guard": "RootConfig",
+      "accepted": false
+    }
+  ],
+  "gate_order": "Fresh sealed Root grant/private source closure/semantic13+protected2 and init pins/live direct parent birth+cmdline clock before apply; allowed changed subset and fresh parent/grant/source/clock recheck before second Gradle check. Parent envelope before dispatch; no STARTED race.",
+  "bounded_scope": "One owned540 phase contains apply then check, cleanup>=60/TERM15/KILL10,4GiB disk floor/2GiB growth/4GiB sampled ownedRSS/growth/15GiB shared stop/1GiB reserve/8MiB private log; unchanged b78/exact births and cleanup.",
+  "findings": [],
+  "native": "NOT_RUN",
+  "limits": [
+    "Source approval is not a fresh runtime grant/actual capacity/formatter PASS or semantic-equivalence receipt.",
+    "Actual resolved target marker12, two native outcomes, exact changed-path/mode/source snapshots and old13/protected2/config preservation must be retained after run.",
+    "Formatter can alter import layout; prove final token/literal/comment/qualified import equivalence to895 before reusing semantic approval. No blanket AST normalization or postformat product PASS.",
+    "Path resolution/O_NOFOLLOW/private600/live-parent checks provide normal accidental-bypass containment; no adversarial same-UID cryptographic isolation.",
+    "Private envelope/raw formatter log must stay outside SAFE artifacts; sampled resource monitoring is not hard OS allocation containment."
+  ]
+}

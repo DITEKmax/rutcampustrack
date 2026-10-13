@@ -1,0 +1,21 @@
+{
+  "state": "SOURCE_READY_WAIT_ROOT_REVIEW_METADATA_AND_COLLECTION_GRANT",
+  "files": {
+    "HANDOFF.md": {
+      "bytes": 923,
+      "sha256": "5b70663f068075b3d4a974660b73f550724b3a89f7e57e30aec43a88d279862f"
+    },
+    "READY.safe.json": {
+      "bytes": 2823,
+      "sha256": "6d1287125d716b68740cc97547a79e8f83862e602ec5c9aa363a5a01300fe7e7"
+    },
+    "parameter.delta.patch": {
+      "bytes": 1011,
+      "sha256": "716878026ba873689d483aa463ac3f981b5623065c9e7530185a548cd9b1f813"
+    },
+    "strict-browser-schema.py": {
+      "bytes": 6710,
+      "sha256": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839"
+    }
+  }
+}

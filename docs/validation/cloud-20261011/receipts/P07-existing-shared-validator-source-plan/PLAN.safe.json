@@ -1,0 +1,446 @@
+{
+  "schema": "RCT_P07_EXISTING_VALIDATOR_SOURCE_PLAN_V1",
+  "state": "SOURCE_READY_NATIVE_NOT_GRANTED_EXECUTION_CHECKOUT_UNBOUND",
+  "utc": "2026-10-13T04:57:29.027090+00:00",
+  "owner": "client_session_offline_acceptance",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "author_read_head": "9176c680f4f810816792b4e21f6e60f387f38740",
+  "execution_source_revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "goal": "Fill concrete missing executed shared-validator method evidence, preserving parentP07 UNKNOWN. One existing class, no new tests/workflow/source/framework.",
+  "source_hashes": {
+    "build.gradle.kts": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+    "settings.gradle.kts": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
+    "gradle/libs.versions.toml": "31f2c8b6a39801380de5674b74517b0707f1acc2bb3ac06f2ee767c9000dcdb8",
+    "gradlew": "c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0",
+    "gradle/wrapper/gradle-wrapper.properties": "ff27f2701f204c648a4322fcc1cbd1126764f9538d59c06532d014eaf7ff2b08",
+    "gradle/wrapper/gradle-wrapper.jar": "2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046",
+    "services/shared/shared-security/build.gradle.kts": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
+    "services/shared/shared-observability/build.gradle.kts": "c522feea6d2346b4e78d6856722197d2663ab6e27caceecd3dd4e5706c7b14aa",
+    "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java": "699c90b2021b02e27052bee919888bc770aa61c9e06a500c99786402409171b6",
+    "services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java": "54ef347154f0d44c1f153e2a0c6dff093c885bf0f0d873270796b50c23b0d79f",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java": "b434c44608541df89189c55516bc66e68f7438ab756f9e5888deeb6d6eed5e28",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtProperties.java": "401c60ad8fb9ed51d153770665c40d22a7df3416546e7b16d403ab378d0769d9",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java": "b816c3e8cb88edb47de27a3e406a384a46db238259b044308427c39a41c122a1",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtException.java": "c2e23a507e2f08838365b17f19a9e370343e754fe4e3ef32d64b5ffa4f553093",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/PublicKeyProvider.java": "6201b183dd264954054c2710a5fb18924ea56d6af839383e5e20b5698352be1a",
+    ".github/workflows/ci.yml": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+    ".github/workflows/coverage.yml": "561c6906c5a80725c638d4951e007aa54e7644d8e7a6b60c154d4b3a8e9db68b"
+  },
+  "command": {
+    "cwd": "ROOT_ASSIGNED_ISOLATED_FULL_CHECKOUT_WITH_17_PINS_MATCHING",
+    "argv": [
+      "./gradlew",
+      ":services:shared:shared-security:test",
+      "--tests",
+      "ru.rutcampustrack.shared.security.InternalJwtValidatorTest",
+      "--offline",
+      "--no-daemon",
+      "--max-workers=1",
+      "--rerun-tasks",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=384m"
+    ],
+    "environment": {
+      "GRADLE_USER_HOME": "/workspace/.gradle",
+      "JAVA_HOME": "/usr/lib/jvm/java-21-openjdk-amd64"
+    },
+    "umask": "0077",
+    "why_rerun_tasks": "Requires real test execution/freshXML rather than prior UP_TO_DATE orcached result. Only selected Test task and its normal compile dependencies; no suite/service/IT task added.",
+    "dependency_tasks_source_qualified": [
+      "shared-security compileJava/compileTestFixturesJava/compileTestJava/testClasses and shared-observability production compile/jar as required by project dependency; runtime task graph NOT_EXECUTED."
+    ],
+    "network": "OFFLINE; failandreport missing cached dependency, do not auto-download or change dependency versions."
+  },
+  "expected_xml": {
+    "relative_path": "services/shared/shared-security/build/test-results/test/TEST-ru.rutcampustrack.shared.security.InternalJwtValidatorTest.xml",
+    "classname": "ru.rutcampustrack.shared.security.InternalJwtValidatorTest",
+    "exact_methods": [
+      "validToken_returnsCompleteFrozenClaims",
+      "headmanTokenKeepsRawAdmissionRoleAndMapsToStudentDomainRole",
+      "terminalToken_isReadOnlyAndCanOmitGroup",
+      "expiredToken_throws",
+      "wrongSignatureIssuerAudienceAndPurpose_throw",
+      "onlyRs256Tokens_areAccepted",
+      "joseHeader_mustContainExactlyCanonicalAlgAndType",
+      "joseHeader_mayIncludeCanonicalJwtType",
+      "duplicateJoseHeader_withValidSignature_isRejected",
+      "duplicatePayload_withValidSignature_isRejected",
+      "missingAndWrongTypeClaims_throw",
+      "everyFrozenRequiredClaimMustBePresent",
+      "canonicalAndSemanticInvariants_areRequired",
+      "timeClaims_mustBeWholeSecondAndOrdered",
+      "blankAndNullToken_throwWithoutBearerInMessage"
+    ],
+    "expected_tests": 15,
+    "expected_failures": 0,
+    "expected_errors": 0,
+    "expected_skipped": 0,
+    "freshness": "New assigned run/checkout privatebuild directory, pinnedsource before/after, actualtaskcompletion and freshXML afterlaunch. Missing/stale/extra/duplicate/zero/UP_TO_DATE only result isnotPASS.",
+    "empty_run_guard": "Root build.gradle.kts90-95 isFailOnNoMatchingTests=false. Native0alone invalid; exact15 recognizedmethodrows mandatory.",
+    "closed_collection": "Private XML and suppressed Gradle stdout/stderr. Read only bounded JUnit suite counts, allowlistedclassname/15method names/status and exactpublicsource locations; do not emit/hash rawfailuretext/properties/systemout/systemerr/token/key/payload. Retain original native failure and closed failingmethod rows; no assertion relaxation."
+  },
+  "assertions": [
+    {
+      "method": "validToken_returnsCompleteFrozenClaims",
+      "source_line": 45,
+      "oracle": "Generated synthetic RSA2048 signer; productionvalidator with overriddenpublickeyprovider; exact UID/session/version/role/status/group/flags on acceptedADMIN."
+    },
+    {
+      "method": "wrongSignatureIssuerAudienceAndPurpose_throw",
+      "source_line": 115,
+      "oracle": "Wrong RSA signingpair; wrong issuer; wrong audience; access purpose each must throw exact InternalJwtException; positive tokens share canonicalrequiredidentity."
+    },
+    {
+      "method": "onlyRs256Tokens_areAccepted",
+      "source_line": 187,
+      "oracle": "Fully signed RS384,RS512,PS256 rejected. Existing synthetic helper signs canonical complete claims, so meaningful algorithm violations."
+    },
+    {
+      "method": "duplicateJoseHeader_withValidSignature_isRejected",
+      "source_line": 225,
+      "oracle": "Independent SHA256withRSA signature verification proves signaturevalid before rejecting duplicateJOSEfield."
+    },
+    {
+      "method": "duplicatePayload_withValidSignature_isRejected",
+      "source_line": 234,
+      "oracle": "Independent real signaturevalid positive check before duplicatepayloadrole rejection."
+    },
+    {
+      "method": "missingAndWrongTypeClaims_throw",
+      "source_line": 247,
+      "oracle": "WrongtypedUUID/version/booleans/group; unknownrole/status and multipleaudiences must reject."
+    },
+    {
+      "method": "everyFrozenRequiredClaimMustBePresent",
+      "source_line": 261,
+      "oracle": "Each of13 frozenrequiredclaims omitted under validsignature must reject."
+    },
+    {
+      "method": "canonicalAndSemanticInvariants_areRequired",
+      "source_line": 282,
+      "oracle": "NoncanonicalUUID/leadingzero/overflow/negativeidentity and inconsistentHEADMAN/group/readOnlystatus rejected."
+    },
+    {
+      "method": "timeClaims_mustBeWholeSecondAndOrdered",
+      "source_line": 297,
+      "oracle": "String/fraction/exponent/nonnumeric and unordered/futuretimes rejected."
+    }
+  ],
+  "test_level_limits": [
+    "Pure production-validator/realcryptography unit execution; test signer holds only synthetic in-memory privatekey, provider overridden to return syntheticpublickey; no Auth/Gateway/RPC/filter/HTTP/DB/session-live-grants/realconsumer execution.",
+    "Cannot establish runtime private signingkey confinement or allconsumer binding/configuration, so familyP07 staysUNKNOWN even15PASS.",
+    "Existing negative assertions demand InternalJwtException but do not assert per-causecode; only exact helper/type rejection may be claimed.",
+    "No new mutation proposed: existing independently-valid-signature controls and validRSApositive tokens are meaningful oracles. Prior family review preserved."
+  ],
+  "ci_gating": {
+    "ci": ".github/workflows/ci.yml:24-73 sixservice module test tasks only",
+    "coverage": ".github/workflows/coverage.yml:31-89 same sixservice test/IT/report tasks only",
+    "shared_dependency": "java-library + java-test-fixtures project dependency supplies compile/runtime fixtures; service :test doesnotexecute dependentshared :test merely by dependency. Current immutable SAFEcasecollection hasno InternalJwtValidatorTest rows.",
+    "workflow_change": "NOT_PROPOSED_NOT_AUTHORIZED_IN_THIS_PACKET"
+  },
+  "cached_dependencies": {
+    "state": "READONLY_PRESENT_DIRECT_ARTIFACTS_FULL_OFFLINE_RESOLUTION_UNKNOWN",
+    "gradle_binary": "/workspace/.gradle/wrapper/dists/gradle-8.12-bin/cetblhg4pflnnks72fxwobvgv/gradle-8.12/bin/gradle",
+    "gradle_wrapper_version": "8.12",
+    "jdk_binary": "/usr/lib/jvm/java-21-openjdk-amd64/bin/java",
+    "jdk_executed": false,
+    "coordinates": [
+      {
+        "coordinate": "io.jsonwebtoken:jjwt-api:0.12.6",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+            "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984",
+            "bytes": 140285
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/b4513087adafd3c727e889e57086fe1527828636/jjwt-api-0.12.6.pom",
+            "sha256": "a9a2721300276f100682b0d3e4eed2267c62ffd2c5982a28621d756c8c2649fe",
+            "bytes": 1778
+          }
+        ]
+      },
+      {
+        "coordinate": "io.jsonwebtoken:jjwt-impl:0.12.6",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-impl/0.12.6/3d10d22b722e77b68100943449a875261abb8b9d/jjwt-impl-0.12.6.pom",
+            "sha256": "22883c54bed0ebd85d4a82e0d30ec743a49a2164b88ba5a502e94bb08b8c0e58",
+            "bytes": 2532
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-impl/0.12.6/ac23673a84b6089e0369fb8ab2c69edd91cd6eb0/jjwt-impl-0.12.6.jar",
+            "sha256": "ad80ceda467ddab64f0e729257dd5f72f61487cc3b92e696270e620f0d88168f",
+            "bytes": 473271
+          }
+        ]
+      },
+      {
+        "coordinate": "io.jsonwebtoken:jjwt-jackson:0.12.6",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-jackson/0.12.6/d64d449217d81c26ef015457ca603662a19512/jjwt-jackson-0.12.6.pom",
+            "sha256": "b1ab3f1b8dcbd22ccf62449113f3e22221f366feba9b740d1fbe196e2f31c75c",
+            "bytes": 2884
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-jackson/0.12.6/f141e0c1136ba17f2632858238a31ae05642dbf8/jjwt-jackson-0.12.6.jar",
+            "sha256": "8f8c293730fa0241a0f882b6128c3e5b2c07f3ff3e6391126ef71e73ecb24ea0",
+            "bytes": 9431
+          }
+        ]
+      },
+      {
+        "coordinate": "org.springframework.boot:spring-boot-dependencies:3.5.16",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-dependencies/3.5.16/c7d6b11f985fb61d9cdc0544a933c0a5722ac221/spring-boot-dependencies-3.5.16.pom",
+            "sha256": "b99b1870802b9a652221c99c491678f37773a8c0ad14e80bd6b275ae9201638a",
+            "bytes": 97350
+          }
+        ]
+      },
+      {
+        "coordinate": "org.springframework.boot:spring-boot-starter-test:3.5.16",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-test/3.5.16/7f143e6e66fe16ad5a059eeefe1080dd830dff74/spring-boot-starter-test-3.5.16.pom",
+            "sha256": "e3f152257d0d238d9e5698af431fd8bbeb538d7bbf85fcc38ccca181d4356dab",
+            "bytes": 4889
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-test/3.5.16/8e42ec906ab5f761f36f022e9e5a2d55808a697c/spring-boot-starter-test-3.5.16.jar",
+            "sha256": "b71dbd8ff355aa339166ba47ff5c6c31c65ba6985f31480d6d312ee204b0f860",
+            "bytes": 4793
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-test/3.5.16/a1771a5eaab2e845afd10b4e70718e923b9abe5f/spring-boot-starter-test-3.5.16.module",
+            "sha256": "06e745cdd093284931f6cc438b4f967afb5d1190991114e6f1201262da1f9d08",
+            "bytes": 8970
+          }
+        ]
+      },
+      {
+        "coordinate": "org.springframework.boot:spring-boot-starter-web:3.5.16",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/3.5.16/2ef57d15b3f06ecb80d81e4df4279914d74fce59/spring-boot-starter-web-3.5.16.module",
+            "sha256": "100affd89c89adcdd4f455fc087a5341b80b25290c18afa895f171a47ad367b9",
+            "bytes": 5425
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/3.5.16/5c30cb2a0a69e25a8fc402d22e171dbca7b49278/spring-boot-starter-web-3.5.16.jar",
+            "sha256": "3272f145a6edd94896c60fba7d2a05b525c78f8efd0172e7bffb6c3b9857762e",
+            "bytes": 4805
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/3.5.16/cb67d44f5c1d267b5be922332717ac304d43092d/spring-boot-starter-web-3.5.16.pom",
+            "sha256": "bcd4e745ad52a631ccb38324c2ed1ee3373c2560e3f35192ece3f91c524fe0f4",
+            "bytes": 2937
+          }
+        ]
+      },
+      {
+        "coordinate": "org.springframework.boot:spring-boot-starter-security:3.5.16",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-security/3.5.16/417e43de11d5d775aef66b825a07aeeeebae2975/spring-boot-starter-security-3.5.16.module",
+            "sha256": "08f574c45dccc1feff8d043b452f6a17bfc6d1bf4ce0b748ae974bdf4fa59718",
+            "bytes": 5132
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-security/3.5.16/b32c27a95316b69df761455c6f29d30ecaba07f2/spring-boot-starter-security-3.5.16.jar",
+            "sha256": "826a677535c3a3a37c242c2de8061f2ecafb34d449ba1c5988079733dcb6d65d",
+            "bytes": 4744
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-security/3.5.16/dd7bfc2c901f5c970b3c4486fe262e07dc68806a/spring-boot-starter-security-3.5.16.pom",
+            "sha256": "671cb20cda0e35df959dd54bd6c7861d75182e26e58117eb9d40149e1dc98bed",
+            "bytes": 2672
+          }
+        ]
+      },
+      {
+        "coordinate": "org.junit.jupiter:junit-jupiter-api:5.12.2",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-api/5.12.2/25c911b89cdf08691f0b87ca03650510133a4c72/junit-jupiter-api-5.12.2.pom",
+            "sha256": "566282166489bd40b12c3507b995e48f8e025e09a05e7d16dd2b98dc642cf7de",
+            "bytes": 3184
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-api/5.12.2/58a1fb471ec2318a0660aaa86ef02feaadea6406/junit-jupiter-api-5.12.2.module",
+            "sha256": "5457f244ede18d11736f07eb9c5f30925aeb096e42c359b6a04a9a0e03b229eb",
+            "bytes": 5215
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-api/5.12.2/6de3a3256c5d90f4a439edcb6c2e8dc5180907b0/junit-jupiter-api-5.12.2.jar",
+            "sha256": "0b9ca728e4bcd9adc57f29deb9556ff9ed5e08b4e8843b875aba4e4e3e04f092",
+            "bytes": 233372
+          }
+        ]
+      },
+      {
+        "coordinate": "org.junit.jupiter:junit-jupiter-engine:5.12.2",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-engine/5.12.2/200bc2f93d719aa140a89acd2bf733d5cb6b098a/junit-jupiter-engine-5.12.2.module",
+            "sha256": "d16d308e6aa25a30b3ef924d9dfe4f889a9bff26eabd72ef30eea81fceb84815",
+            "bytes": 5262
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-engine/5.12.2/2e42272f390d44f5134de341a87b1962b6ec4d31/junit-jupiter-engine-5.12.2.pom",
+            "sha256": "3c719174509be9db1fa817ac63b78b21f1f67d068be471da3d04781bd4402aa3",
+            "bytes": 3203
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-engine/5.12.2/b8df7575b8cd3a94dbe27b481d1cd52c57864559/junit-jupiter-engine-5.12.2.jar",
+            "sha256": "f576c06b8accde9985063b8bc80526cb980eec24dee0b7221fc8ddd7ace65800",
+            "bytes": 292002
+          }
+        ]
+      },
+      {
+        "coordinate": "org.junit.platform:junit-platform-launcher:1.12.2",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-launcher/1.12.2/6885d5c49ab9e6cf26caa299bcc983e9dc615b81/junit-platform-launcher-1.12.2.pom",
+            "sha256": "619145cd215d32225372be625bba28683d74142fee1a5dfdb1c64b52fe9c0b51",
+            "bytes": 3029
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-launcher/1.12.2/79d49ad13017c67a8bf76e10ba5ac8937d811772/junit-platform-launcher-1.12.2.jar",
+            "sha256": "dccf2c1fa0a977c53ad094ad859bfdddd524d97594b76307ad787de71985757f",
+            "bytes": 207612
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-launcher/1.12.2/f42e8eec317fcb63264c464ebe975fe632c8c52d/junit-platform-launcher-1.12.2.module",
+            "sha256": "50a06a04374e300e7b861588c5dc0d021421e19f13a0bdb29b0617ff2fde85d1",
+            "bytes": 4736
+          }
+        ]
+      },
+      {
+        "coordinate": "org.assertj:assertj-core:3.27.7",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.assertj/assertj-core/3.27.7/2f4f64f054c9d618d4b1d89e7611559f5e2cfff7/assertj-core-3.27.7.jar",
+            "sha256": "c4a445426c3c2861666863b842cc4ec7bbb1c4226fefd370b6d2fe83d6c4ff0f",
+            "bytes": 1399383
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.assertj/assertj-core/3.27.7/85b34b36ca531996a44596c8cde4e47a916c51d/assertj-core-3.27.7.pom",
+            "sha256": "95a10dcfb3ba9aad4d0b5e9c523a8d583377bee5ecd4ba37e19e55a34667f079",
+            "bytes": 3804
+          }
+        ]
+      },
+      {
+        "coordinate": "io.grpc:grpc-api:1.82.4",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-api/1.82.4/5402dde7726a6d6d9ad0ac56f574f083e475fa9b/grpc-api-1.82.4.jar",
+            "sha256": "67a1211f66b3bdb6132fc91c561b98a0f326759bf22fdf8acc304525b154934a",
+            "bytes": 344782
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-api/1.82.4/df1d866cae610fd642bd386fc817f1e1397465ae/grpc-api-1.82.4.pom",
+            "sha256": "3b72fb2c684c64f36d145caa459ca4da5fd7c61af868560a4309a6fbedb9cc2f",
+            "bytes": 1799
+          }
+        ]
+      },
+      {
+        "coordinate": "io.grpc:grpc-inprocess:1.82.4",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-inprocess/1.82.4/5d1b38ffb7422645b25d0667819f61c333d1d771/grpc-inprocess-1.82.4.pom",
+            "sha256": "d2828a1ff6c871e5e9c8978190b8bbba2c7d53e440b129e542f0980dc629f4ac",
+            "bytes": 1775
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-inprocess/1.82.4/c022e4e6945b851adc4866fadc5b6da5c835f878/grpc-inprocess-1.82.4.jar",
+            "sha256": "8119506adf8bc7f0d9b6f3a058b6032c002f9be76c57f1f02f0743f8450f8685",
+            "bytes": 39598
+          }
+        ]
+      },
+      {
+        "coordinate": "io.grpc:grpc-netty:1.82.4",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-netty/1.82.4/570f2903ee82596c845a851de5a1bfe83eca74ca/grpc-netty-1.82.4.pom",
+            "sha256": "07e29d0d850708d1eeaff1b3ffb8a81acae3b2a8f8bb3f181576cf08090a57c3",
+            "bytes": 3080
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-netty/1.82.4/d39296653eb8388d52f1b75bd8dd26edb6f61283/grpc-netty-1.82.4.jar",
+            "sha256": "a0c43a1dbb450e5ffef011cce07d703e38fb8086a3958bc42be46b4203007236",
+            "bytes": 310046
+          }
+        ]
+      },
+      {
+        "coordinate": "io.grpc:grpc-stub:1.82.4",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-stub/1.82.4/a70394203501eccff6ce25a600a8cf76a0634f49/grpc-stub-1.82.4.jar",
+            "sha256": "ed825762b1aa427373ae1fdca88204d4754e5601deed013f19ccfec36bdd4c9a",
+            "bytes": 61672
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-stub/1.82.4/b117c34eee93aec1594b2c8b2c605de875222cb1/grpc-stub-1.82.4.pom",
+            "sha256": "16eadbd77db78b8a9632c86305bf9daa3216a72a136ae89dd2d8157b65b540c0",
+            "bytes": 1983
+          }
+        ]
+      },
+      {
+        "coordinate": "io.grpc:grpc-bom:1.82.4",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/io.grpc/grpc-bom/1.82.4/d41243aec0c46dabac993e9c6ef6bd1a263dfc78/grpc-bom-1.82.4.pom",
+            "sha256": "14c1982ab801126c4988e44da4dbc26bf507e5f7da4853dbed3fd171b67a7652",
+            "bytes": 6332
+          }
+        ]
+      },
+      {
+        "coordinate": "org.jacoco:org.jacoco.agent:0.8.12",
+        "files": [
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.jacoco/org.jacoco.agent/0.8.12/4f24f7fc6d471fcbad4ce0c9bf3f5ea8f79675d6/org.jacoco.agent-0.8.12.jar",
+            "sha256": "ab29507b750d325bbaf7ea094860fff26d27170038d8ee5f00c3074489f14637",
+            "bytes": 275620
+          },
+          {
+            "path": "/workspace/.gradle/caches/modules-2/files-2.1/org.jacoco/org.jacoco.agent/0.8.12/907f9b276b82958b7ff0423ee8af979059412da0/org.jacoco.agent-0.8.12.pom",
+            "sha256": "0f9da994abd9827f957fc1ba7c5bad3fe918f62601c1d743f216b0615efe480e",
+            "bytes": 3503
+          }
+        ]
+      }
+    ],
+    "qualification": "Presence/hash of existing immutable publicartifact files only; no Gradleconfiguration/dependencyresolution/Java execution done. Transitiveclosure and plugin offline resolution stillUNKNOWN until separatelygrantedexecution."
+  },
+  "resource_proposal": {
+    "active_seconds": 300,
+    "cleanup_seconds": 60,
+    "gradle_heap_mib": 512,
+    "gradle_metaspace_mib": 384,
+    "max_workers": 1,
+    "owned_sampled_rss_stop_bytes": 2147483648,
+    "private_tmp_stop_bytes": 33554432,
+    "workspace_floor_bytes": 4294967296,
+    "fresh_grant_required": true,
+    "priority": "Backend formatter/compiler leases first; oneheavy at a time unlessRootmeasured approvedcapacity.",
+    "qualification": "Proposal only; Root existing bounded Gradle supervisor/grant must pinexactcwd,grantsource,clockdeadline/output namespace and enforce freshmeasure/knownbirthreap. No new runner/framework authored."
+  },
+  "blockers": [
+    "Root must assign immutable isolated full checkout and private output namespace; current own sparseTSworktree lacks shared Gradle sources, Root checkout writes disallowed.",
+    "Fresh bounded native grant and available heavy lease after prioritized backend compile/format; no native authorization in this Source packet."
+  ],
+  "family_disposition": "P07 UNKNOWN; evidence gap narrowed to existing class execution only.",
+  "runtime": "NOT_RUN"
+}

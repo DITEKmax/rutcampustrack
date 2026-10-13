@@ -1,0 +1,13 @@
+{
+  "schema": "RCT_P06_FORMAT_ACTUAL_MANIFEST_V1",
+  "files": {
+    "compile-plan-bound.safe.json": "86e74ee9c5011808f9566acedf70b6c4e2b29825fe661d810d3dea5a755c0b6d",
+    "REPORT.safe.json": "c321d0842d30a047031ce2d4bc4e8b7c6a1cf63e1666a32004e7f13102bbedd6",
+    "compile-plan-unbound-before.safe.json": "1f07d6e1473217f6f879f7c4e7a987473bf2ce190accedf4983b4c706c1d6e3c",
+    "compile-manifest-unbound-before.safe.json": "4fbd95459a9677fa8b37ec76decfed087293c1f04fa74ad399fdc367419645c7",
+    "REPORT.precommit.safe.json": "01f0f1de1e88467e7f0a47ce44acd43ca789c45cc5847243a85700851c2d4426",
+    "compile-manifest-bound.safe.json": "ec945b178988fcdc5d2efa4d96310b880be68d8846102e3882e2902e2858a394",
+    "semantic-before.java": "64df4a761c29e99870e49400b67bd07c0497e285ca54861c32e25982a0598c3d"
+  },
+  "excluded": "Actual raw private Gradle log retained under owned /tmp; no log body/hash in SAFE evidence. Original SOURCE packet ZIP071b immutable retains UNBOUND templates."
+}

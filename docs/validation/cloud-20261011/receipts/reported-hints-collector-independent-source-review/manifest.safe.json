@@ -1,0 +1,47 @@
+{
+  "state": "SOURCE_READY_FOR_INDEPENDENT_REVIEW_NOT_APPROVED_FOR_USE",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1712,
+      "sha256": "aad2ea4afac14f418eb9a782cafde3b974e91d8e68a0af52eb0268d2743f2593",
+      "mode": "0o600"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 1343,
+      "sha256": "b26210bd2c1f438a52e0372f8dee953e640547471faa69bec62d038f0c6a92df",
+      "mode": "0o600"
+    },
+    {
+      "path": "before-strict-browser-schema.py",
+      "bytes": 5811,
+      "sha256": "f55cae0945b042d482a4395b1e8a21f255d80ccdd80da818fdd6ad5861b2bed8",
+      "mode": "0o600"
+    },
+    {
+      "path": "schema-controls.py",
+      "bytes": 6476,
+      "sha256": "310cead1bac6852ccd77c995ab21d883489525d8ade682f07a26dc79293dda4b",
+      "mode": "0o600"
+    },
+    {
+      "path": "schema-controls.safe.json",
+      "bytes": 18147,
+      "sha256": "9d71eaf452135875a2d182cb0de93dfddfe0f89ad8aa07cff24109c9864837c3",
+      "mode": "0o600"
+    },
+    {
+      "path": "source.delta.patch",
+      "bytes": 5336,
+      "sha256": "7821872ecfa562661d80b7facbe0747d631390a83d1cae91688bd4d07f7944e7",
+      "mode": "0o600"
+    },
+    {
+      "path": "strict-browser-schema.py",
+      "bytes": 6638,
+      "sha256": "0be49815091c28997309d1f822348ed760bd45ce9da0aa659f19f51727e1d873",
+      "mode": "0o600"
+    }
+  ]
+}

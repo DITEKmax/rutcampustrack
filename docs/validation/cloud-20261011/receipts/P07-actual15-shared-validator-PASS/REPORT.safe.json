@@ -1,0 +1,199 @@
+{
+  "schema": "RCT_P07_CLASS15_ACTUAL01_V1",
+  "state": "FINITE_VALIDATOR_REAL_CRYPTO_UNIT_PASS_PARENT_UNKNOWN",
+  "utc": "2026-10-13T05:19:47.166330+00:00",
+  "tool_session": 37927,
+  "tool_native_exit": 0,
+  "gradle_native_exit": 0,
+  "execution_checkout_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "worktree": "/workspace/rct-worktrees/shared-validator-execution-20261013",
+  "root_grant_sha256": "5c6893b1bcd9cbd933e9cb0129701f0171a05e2dbb4b560d80a2f107b93bed24",
+  "supervisor": {
+    "pid": 484116,
+    "start_ticks": 12249510
+  },
+  "result": {
+    "schema": "RCT_P07_CLOSED_XML_V1",
+    "schema_valid": true,
+    "code": "CLOSED",
+    "pass": true,
+    "classname": "ru.rutcampustrack.shared.security.InternalJwtValidatorTest",
+    "declared": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "PASSED": 15,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0
+    },
+    "cases": [
+      {
+        "method": "validToken_returnsCompleteFrozenClaims",
+        "status": "PASSED"
+      },
+      {
+        "method": "headmanTokenKeepsRawAdmissionRoleAndMapsToStudentDomainRole",
+        "status": "PASSED"
+      },
+      {
+        "method": "terminalToken_isReadOnlyAndCanOmitGroup",
+        "status": "PASSED"
+      },
+      {
+        "method": "expiredToken_throws",
+        "status": "PASSED"
+      },
+      {
+        "method": "wrongSignatureIssuerAudienceAndPurpose_throw",
+        "status": "PASSED"
+      },
+      {
+        "method": "onlyRs256Tokens_areAccepted",
+        "status": "PASSED"
+      },
+      {
+        "method": "joseHeader_mustContainExactlyCanonicalAlgAndType",
+        "status": "PASSED"
+      },
+      {
+        "method": "joseHeader_mayIncludeCanonicalJwtType",
+        "status": "PASSED"
+      },
+      {
+        "method": "duplicateJoseHeader_withValidSignature_isRejected",
+        "status": "PASSED"
+      },
+      {
+        "method": "duplicatePayload_withValidSignature_isRejected",
+        "status": "PASSED"
+      },
+      {
+        "method": "missingAndWrongTypeClaims_throw",
+        "status": "PASSED"
+      },
+      {
+        "method": "everyFrozenRequiredClaimMustBePresent",
+        "status": "PASSED"
+      },
+      {
+        "method": "canonicalAndSemanticInvariants_areRequired",
+        "status": "PASSED"
+      },
+      {
+        "method": "timeClaims_mustBeWholeSecondAndOrdered",
+        "status": "PASSED"
+      },
+      {
+        "method": "blankAndNullToken_throwWithoutBearerInMessage",
+        "status": "PASSED"
+      }
+    ],
+    "gradle_native_exit": 0
+  },
+  "terminal": {
+    "direct_pid": 484140,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 484140,
+        "start_ticks": 12249530
+      },
+      {
+        "pid": 484141,
+        "start_ticks": 12249534
+      },
+      {
+        "pid": 484173,
+        "start_ticks": 12249632
+      },
+      {
+        "pid": 484269,
+        "start_ticks": 12251142
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T05:18:45.170966+00:00",
+    "peaks": {
+      "memory": 6570192896,
+      "min_workspace_free": 8255881216,
+      "owned_rss": 976588800,
+      "log_bytes": 1721,
+      "private_run_bytes": 16384
+    },
+    "expected_native_exit": 0,
+    "source_intact": true,
+    "exact15_pass": true,
+    "qualification": "Native0 alone insufficient; exact15 fresh closed XML and unchanged source required; parentP07 UNKNOWN"
+  },
+  "births": [
+    {
+      "pid": 484116,
+      "start_ticks": 12249510,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 484140,
+      "start_ticks": 12249530,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 484141,
+      "start_ticks": 12249534,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 484173,
+      "start_ticks": 12249632,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 484269,
+      "start_ticks": 12251142,
+      "absent_or_replaced": true
+    }
+  ],
+  "all5births_absent_or_replaced": true,
+  "heavy_lease": "RELEASED",
+  "private_tmp_and_parent_witness_removed": true,
+  "source17_all_match": true,
+  "helper_pins": {
+    "driver": "5ddb54370ddfb0f4bd35619c7d14743145cbba4d8e953cd615c0fd7b28b9b0b8",
+    "child": "8ab926807def8d428db4a4b45296dc5565f167a6599af8e011683883a9aea960",
+    "parser": "ff5edff4f42b75dc653ebac04d55d92e69616408397afc4d6e1bdcd29470c65c",
+    "plan": "060c4c812b2220272112775203c5fea18e6033aabece4a3be92bf8b11f8bd7eb",
+    "source17": "daef63d9c253f7e27b580843b10790c925c0c74d3fbbaa5e9693e9f7a4078634",
+    "guard": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0"
+  },
+  "fresh_xml": {
+    "path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/shared/shared-security/build/test-results/test/TEST-ru.rutcampustrack.shared.security.InternalJwtValidatorTest.xml",
+    "mode": "0600",
+    "bytes": 2561,
+    "qualification": "Full new isolated481worktree build/XML absent atpreflight/admit; forcedrerun existing Testtask; mode600closedparser exact15 accepted. RawXML nothashed/copied/read bycollector; closedresult reused."
+  },
+  "private_raw_log": {
+    "path": "/tmp/rct-shared-validator-20261013-attempt01/native.raw.private.log",
+    "mode": "0600",
+    "bytes": 1721,
+    "body_read": false,
+    "body_hashed": false,
+    "safe_seal_included": false
+  },
+  "qualifications": [
+    "ActualproductionInternalJwtValidator with real syntheticRSA2048 validpositive and signednegativeoracles;15methods exactlypassed,noemptyrun/skip.",
+    "No HTTP/RPC/DB/Docker/Node/browser/application services or provider calls; Gradle mayuse normal local own-daemon IPC.",
+    "Doesnotprove liveconsumer/grants/configuration/privatekey confinement; P07familyUNKNOWN, no wholematrixpromotion.",
+    "ManagedGradle512MiB heap/1worker andsampled2GiBRSS/32MiBprivate namespace/floors/stop observed; sameUID/sample controls nothardOSisolation.",
+    "Parsersealr1 guard validated Source only; runtime unchangedpinnedparser executed onceafterGradle, oldsealed finding/counterexamples retained."
+  ]
+}

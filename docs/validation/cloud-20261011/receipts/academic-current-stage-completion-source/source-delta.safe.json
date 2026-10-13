@@ -1,0 +1,48 @@
+{
+  "scope": "NARROW_EXISTING_STAGE_CALLER_COMPLETION_ONLY",
+  "original_source_directory": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction",
+  "original_manifest_sha256": "bb2fdd40b594a06c3bca67ce93dd6f5690edc424d5342d58d2510901410356db",
+  "actual_full_payload_manifest_sha256": "15963c993dca297d0d8ffc6e5bda25dc2c478b20821cef6ec6dfa627c27982d6",
+  "actual_full_payload_receipt_sha256": "01a6f122bff2a4f20c2f6ef1a7e836ffcd46953e409c277e2418ae573e8223cd",
+  "modified_copied_files": [
+    "HANDOFF.md",
+    "launch-schema.safe.json",
+    "runtime-grant-addendum.template.safe.json",
+    "source-delta.safe.json",
+    "stage-academic.py",
+    "stage-grant.template.safe.json"
+  ],
+  "identical_copied_files": [
+    "academic-runner-delta.safe.json",
+    "build-academic.py",
+    "build-grant.template.safe.json",
+    "correction-controls.py",
+    "correction-controls.safe.json",
+    "inspect-academic.py",
+    "partial-resume.py",
+    "refresh-boundary.py",
+    "resources.safe.json",
+    "resume-controls.py",
+    "resume-controls.safe.json",
+    "run-academic-restart.py",
+    "runtime-binding.py",
+    "source-controls.py",
+    "source-controls.safe.json",
+    "source-cost.safe.json",
+    "stage-app-writer.py",
+    "stage-monitor.py",
+    "tmp-anchors.safe.json",
+    "tool-inputs.safe.json",
+    "tracked-inputs96.safe.json"
+  ],
+  "new_files": [
+    "boot-packager-proof.safe.json",
+    "completion-controls.py",
+    "completion-controls.safe.json"
+  ],
+  "source_or_payload_or_old_evidence_mutation": false,
+  "actual_native_completion": "NOT_RUN",
+  "targeted_RAM_controls": 35,
+  "numeric_grant_resource_deadline_publication_monitor_unchanged": true,
+  "only_index_exception": "Exact trusted current3.5.16 tools member retained outside182 application index"
+}

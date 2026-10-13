@@ -1,0 +1,16 @@
+{
+  "pass": false,
+  "settled": true,
+  "completedPhases": 2,
+  "typesAndListRun": false,
+  "peaks": {
+    "owned_rss_bytes": 138305536,
+    "run_allocated_bytes": 1495040,
+    "shared_memory_bytes": 4777283584
+  },
+  "ownedTmpRemoved": true,
+  "sourceWritten": true,
+  "candidateMechanicalOnly": true,
+  "noBrowserApiSeedServiceBuild": true,
+  "nativeClientAcceptance": false
+}

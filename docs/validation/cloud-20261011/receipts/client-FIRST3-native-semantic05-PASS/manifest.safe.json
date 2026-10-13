@@ -1,0 +1,50 @@
+{
+  "state": "ACTUAL05_EXACT_FORMATTING_SEMANTICS_PROOF_PASS",
+  "files": [
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 375,
+      "sha256": "469d3e520c29af4b5609db7e5b627b8dff5ba8bb0292ea7d5529455880d33aa3"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 881,
+      "sha256": "4d8c007bc13ac2b073ec3c7c1c5e7d11bf99382c45daede82e3568b0ffb011b6"
+    },
+    {
+      "path": "semantic05-launch.safe.json",
+      "bytes": 542,
+      "sha256": "b8e7796473386b8dfe8ac52695109953f39bd7bebdd2c933d9e6d8b9867bc0e2"
+    },
+    {
+      "path": "semantic05-outcome.safe.json",
+      "bytes": 67,
+      "sha256": "898c672669586059cdc67f4258f6f0770a586c868617cb969173782104ab845e"
+    },
+    {
+      "path": "semantic05-process.safe.json",
+      "bytes": 147,
+      "sha256": "7e9d487aa4ee7b85028bf0a56a09f791f2552b05731cacf669b16be113372a22"
+    },
+    {
+      "path": "semantic05-terminal.safe.json",
+      "bytes": 564,
+      "sha256": "2b8268473781f355a10f80dea8eb6a1f0fc51c2c77d9c4a7b10c7aef337ef467"
+    },
+    {
+      "path": "semantic05.safe.json",
+      "bytes": 3932,
+      "sha256": "b166574ceda95ea099588669c895902d3279b0efa93db029eeb21d2b9edbf178"
+    },
+    {
+      "path": "summary.safe.json",
+      "bytes": 858,
+      "sha256": "f100b2f690aa7ab0e7abe4325fa212453e1bce6eef548b84d0b1b943ac435841"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 120,
+      "sha256": "7664f359ad89656f02785b2918515ca3c70020ad148800590242b0a4e71d1caf"
+    }
+  ]
+}

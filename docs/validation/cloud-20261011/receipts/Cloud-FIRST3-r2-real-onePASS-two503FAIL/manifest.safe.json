@@ -1,0 +1,45 @@
+{
+  "kind": "SAFE_ACTUAL_CLOUD_R2_MANIFEST",
+  "entries": [
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 6306,
+      "sha256": "9eb7c075df8249f569690b71037bdfc8675119deaad996c9af198da27b66822c"
+    },
+    {
+      "path": "launch.safe.json",
+      "bytes": 1083,
+      "sha256": "6129a811d27a5438594c7f55356bcbd7d722c9ff386fb6d3084cd0580ceb8831"
+    },
+    {
+      "path": "observations-headman.safe.json",
+      "bytes": 5877,
+      "sha256": "68dbba5c72a5d079c23a6ae5e72ddcace05b8661f3e38488566b41c42736145c"
+    },
+    {
+      "path": "observations-helper.safe.json",
+      "bytes": 4736,
+      "sha256": "70db240d5494618036f18d46b5773ba8ce3aa91cdd926ba6b8bee41798d0d7a8"
+    },
+    {
+      "path": "observations-student.safe.json",
+      "bytes": 3850,
+      "sha256": "a0180b6ae8fc96ba93a64d2e069bb16f2d170150bccbc02ab9ce0f2efd386581"
+    },
+    {
+      "path": "process.safe.json",
+      "bytes": 147,
+      "sha256": "fe3997179db0b01176b2b6aac65f5a31a085817f28676d3ce2bd8f57f95644aa"
+    },
+    {
+      "path": "safe-results.json",
+      "bytes": 1158,
+      "sha256": "dd5f1bb14f4e5059b16cef7136705f0de07a986287f5f9de7461dc63463724d5"
+    },
+    {
+      "path": "terminal.safe.json",
+      "bytes": 2052,
+      "sha256": "ba8e12de5957adc3f2b47d29122504eaba45dc819640034428d76c68a95ab415"
+    }
+  ]
+}

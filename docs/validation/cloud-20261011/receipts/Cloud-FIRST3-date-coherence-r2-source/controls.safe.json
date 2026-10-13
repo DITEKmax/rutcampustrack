@@ -1,0 +1,17 @@
+{
+  "kind": "SOURCE_ONLY_CURRENT_DATE_COHERENCE_CORRECTION",
+  "observedUtc": "2026-10-12T23:11:04.641035+00:00",
+  "realBrowserMoscowDayBefore": "2026-10-13",
+  "retainedTeachingInstant": "2026-10-12T06:00:00+00:00",
+  "domainDatasetMoscowDay": "2026-10-12",
+  "oldDefaultDayMismatch": true,
+  "fixedBrowserDefaultDaySame": true,
+  "historicalThreeFailureCause": "UNKNOWN",
+  "reverseWrapperExactlyR1": true,
+  "reverseConfigExactlyNext96R1": true,
+  "reverseCallerNamespaceExactlyNext96R1": true,
+  "oldRoot19AndFrozenR1SourcesPreserved": true,
+  "PythonCallerParseOnly": "PASS",
+  "nodeBrowserApi": "NOT_RUN",
+  "qualification": "Python calendar/source controls; no actual browser clock/worker serialization/session expiry proof. Fixed browser Date only finite FIRST3; real timers/backend security clocks in source. Existing admitted-auth source proof from CI correction reused, no Date-expiry refresh comparison; password recovery/foreground cooldown/expiry boundary notcovered."
+}

@@ -1,0 +1,12 @@
+{
+  "utc": "2026-10-12T21:31:57.551625+00:00",
+  "scope": "SOURCE_ONLY_PUBLIC_METADATA",
+  "workspace_free": 9388810240,
+  "tmp_free": 7613546496,
+  "memory_current": 4702076928,
+  "memory_max": "17179869184",
+  "numeric_caps_unchanged": true,
+  "native_lease": "NONE",
+  "actual_stage_resume": "NOT_RUN",
+  "future_grant_fresh_measurement_required": true
+}

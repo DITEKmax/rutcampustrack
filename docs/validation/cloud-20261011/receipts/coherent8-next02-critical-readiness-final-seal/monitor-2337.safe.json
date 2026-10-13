@@ -1,0 +1,166 @@
+{
+  "utc": "2026-10-12T23:37:49.449647+00:00",
+  "cohort": "restart-20261012-next02",
+  "all8_live": true,
+  "services": [
+    {
+      "service": "mongo",
+      "wrapper": {
+        "pid": 402553,
+        "start_ticks": 10101460,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 402626,
+        "start_ticks": 10101657,
+        "state": "S",
+        "ppid": 402553,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "academic",
+      "wrapper": {
+        "pid": 404360,
+        "start_ticks": 10112750,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 404364,
+        "start_ticks": 10112830,
+        "state": "S",
+        "ppid": 404360,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "auth",
+      "wrapper": {
+        "pid": 406637,
+        "start_ticks": 10127866,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 406640,
+        "start_ticks": 10127882,
+        "state": "S",
+        "ppid": 406637,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "schedule",
+      "wrapper": {
+        "pid": 407322,
+        "start_ticks": 10133219,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 407325,
+        "start_ticks": 10133232,
+        "state": "S",
+        "ppid": 407322,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "attendance",
+      "wrapper": {
+        "pid": 407351,
+        "start_ticks": 10133761,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 407372,
+        "start_ticks": 10133800,
+        "state": "S",
+        "ppid": 407351,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "bff",
+      "wrapper": {
+        "pid": 407496,
+        "start_ticks": 10134366,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 407499,
+        "start_ticks": 10134410,
+        "state": "S",
+        "ppid": 407496,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "gateway",
+      "wrapper": {
+        "pid": 407598,
+        "start_ticks": 10134963,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 407604,
+        "start_ticks": 10135041,
+        "state": "S",
+        "ppid": 407598,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    },
+    {
+      "service": "notification",
+      "wrapper": {
+        "pid": 407714,
+        "start_ticks": 10135639,
+        "state": "R",
+        "ppid": 525,
+        "birth_equal": true
+      },
+      "child": {
+        "pid": 407718,
+        "start_ticks": 10135725,
+        "state": "S",
+        "ppid": 407714,
+        "birth_equal": true
+      },
+      "exact_live": true,
+      "direct_ppid": true
+    }
+  ],
+  "resources": {
+    "/workspace": 5516705792,
+    "/tmp": 7508889600,
+    "shared": 11456610304
+  },
+  "docker6_metadata_input": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/data6-status.safe.json",
+  "four_bound_files_unchanged": true
+}

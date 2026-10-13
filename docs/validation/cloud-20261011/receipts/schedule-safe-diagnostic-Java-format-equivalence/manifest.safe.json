@@ -1,0 +1,46 @@
+{
+  "verdict": "AUTHOR_MECHANICAL_SOURCE_EQUIVALENCE",
+  "modified_repo_paths": [
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java"
+  ],
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cap_diagnostic_java_format_correction/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 916,
+      "mode": "0o600",
+      "sha256": "9f3d5f7cd4743e1ce7392248df96150c57ac47b051232b8477c86e8eed0f9bec"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cap_diagnostic_java_format_correction/check-equivalence.py",
+      "relative_path": "check-equivalence.py",
+      "bytes": 5082,
+      "mode": "0o600",
+      "sha256": "b71186482e9d04cf50ff52f84b3032904d5f93104602d1b5a14c1e496c89f449"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cap_diagnostic_java_format_correction/equivalence.safe.json",
+      "relative_path": "equivalence.safe.json",
+      "bytes": 1045,
+      "mode": "0o600",
+      "sha256": "dc78a6333f7db83d3bc326679dcf1c31ac468d6e11d38bdc21b59476b4a4aa05"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cap_diagnostic_java_format_correction/mechanical-only.patch",
+      "relative_path": "mechanical-only.patch",
+      "bytes": 1169,
+      "mode": "0o600",
+      "sha256": "b5ce6fbd626be8e9e3ffb74e2ea14608e29ede9eea575b97cc93342309bc386d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cap_diagnostic_java_format_correction/source/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "relative_path": "source/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "bytes": 112166,
+      "mode": "0o600",
+      "sha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    }
+  ],
+  "count": 5,
+  "semantic_change": false,
+  "runtime": false
+}

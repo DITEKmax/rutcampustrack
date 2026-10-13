@@ -1,0 +1,6 @@
+{
+  "kind": "READONLY_SOURCE_FURTHER_GROUPING_OBSERVATION",
+  "parenthesizedAwaitBefore": 4,
+  "parenthesizedAwaitAfter": 14,
+  "qualification": "Source token-pattern counts only, no accepted AST normalization/semantic proof."
+}

@@ -1,0 +1,133 @@
+{
+  "scope": "READ_ONLY_ROSTER503_CAUSAL_SOURCE",
+  "source_inputs": [
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts",
+      "bytes": 39555,
+      "sha256": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application.yml",
+      "bytes": 23406,
+      "sha256": "fa6f345ef0dba0d8b4a93986585c3b044afb8efdb60dc6d5687fc4e1b5e0d04d",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+      "bytes": 13723,
+      "sha256": "9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "bytes": 74298,
+      "sha256": "f66bc69acc044aba1fee986fe091490f4afe8ee89078f4ec13251557180048b9",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/GlobalExceptionHandler.java",
+      "bytes": 8482,
+      "sha256": "e0ecafcf4c9f4eea93c7d8d4d499e67f273f0b92496392cffa0fad40f226341e",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "bytes": 8771,
+      "sha256": "333aaa9622b4d631122e9c22e51c40fca1293f0cc287798d7acf3adbf82e53cb",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "bytes": 21990,
+      "sha256": "8c0bf5625683daeed46f107d8b7bfd929b44eba8d5d2cc56656c01dd357c0752",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/GrpcSecretClientInterceptor.java",
+      "bytes": 1180,
+      "sha256": "e2668e8bc5340085c791964177cdcbacb28d58362e74672cfcd831a69561c346",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "bytes": 94740,
+      "sha256": "b6985bac8c367551d0197ee13a3d15ebd65b86a1ade347021d994c39663b388c",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+      "bytes": 2109,
+      "sha256": "ddb426fb03a17d56e31d95f1b1735c706a1288de7446f9f2ca4f4a3a6277f79f",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+      "bytes": 711,
+      "sha256": "9a3cbab741ae3e86cf7a2721a4b7ccdf2ac62ea34f3dbec10546fad478bb6b1a",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java",
+      "bytes": 1703,
+      "sha256": "3ee9f7713960e782dff7710cf35c8bf5dc04c901c2df7ae639c858c0d8d8d758",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/HistoricalMembershipService.java",
+      "bytes": 14752,
+      "sha256": "326d2abc8275671e635de8ddc58ac6073e2cfa58cb0f0356f521fadb21e2cea6",
+      "current_equals_Git96": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "bytes": 5819,
+      "sha256": "af23f982235b66e9d07add499b0788a1c2389340c876688f80f8257117ec50dc",
+      "current_equals_Git96": true
+    }
+  ],
+  "producer908_selected_bridges": [
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "selected_start": "public ru.rutcampustrack.academic.grpc.SemesterStateResponse getSemesterState",
+      "selected_end": "public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse",
+      "old908_current_selected_tokens_literals_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+      "selected_start": "public AssignmentCloseServiceIdentityInterceptor",
+      "selected_end": "@Override",
+      "old908_current_selected_tokens_literals_equal": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "selected_start": "private LessonAttendanceResponse buildLessonAttendance",
+      "selected_end": "List<AttendanceRecord> records",
+      "old908_current_selected_tokens_literals_equal": true
+    }
+  ],
+  "actual_SAFE_inputs": [
+    {
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/actual-01/REPORT.safe.json",
+      "bytes": 6306,
+      "sha256": "9eb7c075df8249f569690b71037bdfc8675119deaad996c9af198da27b66822c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/actual-01/observations-headman.safe.json",
+      "bytes": 5877,
+      "sha256": "68dbba5c72a5d079c23a6ae5e72ddcace05b8661f3e38488566b41c42736145c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/actual-01/observations-helper.safe.json",
+      "bytes": 4736,
+      "sha256": "70db240d5494618036f18d46b5773ba8ce3aa91cdd926ba6b8bee41798d0d7a8"
+    }
+  ],
+  "actual_cause": "UNKNOWN_NO_RESPONSE_TYPE_GRPC_CODE_CAPTURED",
+  "source_incompatibility_candidate": "GET_SEMESTER_STATE_SCHEDULE_ONLY_VS_ATTENDANCE_LEGACY_CALL",
+  "producer_qualification": "All14 current sources rawbytes equal96; old908 relevant client, policy constructor and journal assembly selected tokens/literals equal. Wholefile rawbyte/token equality not claimed; initial raw/wholefile reviewer assertions excluded, mechanical formatting scope differs. No JAR/native check.",
+  "no_native_API_logs_private_ENV_credentials_body_reads": true,
+  "no_product_source_changes": true,
+  "model_requested_selected": "Sol6.1/xhigh",
+  "model_actual": "UNKNOWN"
+}

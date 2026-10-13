@@ -1,0 +1,10 @@
+{
+  "phase": "new-green",
+  "nativeExit": 0,
+  "expectedNativeExit": 0,
+  "controlCount": 29,
+  "failedControlCount": 0,
+  "failedClosedCodes": [],
+  "causalExpectedRed": false,
+  "accepted": true
+}

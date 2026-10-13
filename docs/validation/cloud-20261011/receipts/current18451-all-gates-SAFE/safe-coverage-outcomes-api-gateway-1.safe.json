@@ -1,0 +1,66 @@
+{
+  "artifact_id": 11775677616,
+  "name": "safe-coverage-outcomes-api-gateway-1",
+  "archive_bytes": 7632,
+  "archive_sha256": "2c119a0c37e5950fc30c2bdbcc7fad3645899e2720c1b2dbc068b25044245de1",
+  "producer": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+        "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38313867586",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 9,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 3,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    },
+    {
+      "metadata": {
+        "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+        "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+        "service": "api-gateway",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38313867586",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 168,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

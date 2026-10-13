@@ -1,0 +1,89 @@
+{
+  "utc": "2026-10-12T22:32:12.608476+00:00",
+  "tool_session": 91335,
+  "native_exit": 0,
+  "supervisor_pid": 395577,
+  "supervisor_birth": 9807919,
+  "same_birth_present": false,
+  "stage_result": "/tmp/rct-academic-refresh-20261012-attempt01/stage-result.safe.json",
+  "stage_result_sha256": "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643",
+  "commit": "/tmp/rct-academic-refresh-20261012-attempt01/stage-committed.safe.json",
+  "commit_sha256": "10589f902536c9861a20a7fde981e9ad6c2b40a28d8147fcb7818fe3107b3449",
+  "commit_binds_exact_result": true,
+  "spec": "/tmp/rct-academic-refresh-20261012-attempt01/host-service-specs.safe.json",
+  "spec_sha256": "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e",
+  "regular_files": 1797,
+  "bundled_libs": 183,
+  "application_index_libs": 182,
+  "copied_this_operation": 0,
+  "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "all1797_files_never_modified": true,
+  "stage_monitor": {
+    "actual_allocated_last_inventory": 246661120,
+    "pending_own_effect_upper_bytes": 0,
+    "effects_since_inventory": 0,
+    "inventory_count": 4,
+    "maximum_interval_seconds": 1.0,
+    "maximum_effects": 64,
+    "maximum_single_effect_upper": 1048576,
+    "entry_sample_headroom": 67108864,
+    "protected_metadata_reconciled": true,
+    "qualification": "Sampled actual inode allocation plus conservative own-effect bookkeeping; same-UID writers and filesystem overhead are not hard OS isolation/caps."
+  },
+  "stage_final_inventory": {
+    "workspace_free": 9463644160,
+    "tmp_free": 7509946368,
+    "shared": 4708167680,
+    "maximum": 17179869184,
+    "new_tmp_allocated": 246661120
+  },
+  "started_utc": "2026-10-12T22:31:26.378948+00:00",
+  "elapsed_before_commit_seconds": 3.042990921996534,
+  "effective8_producers": [
+    {
+      "service": "auth",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95"
+    },
+    {
+      "service": "academic",
+      "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "sha256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88"
+    },
+    {
+      "service": "schedule",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03"
+    },
+    {
+      "service": "attendance",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f"
+    },
+    {
+      "service": "bff",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea"
+    },
+    {
+      "service": "gateway",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39"
+    },
+    {
+      "service": "notification",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c"
+    },
+    {
+      "service": "renderer",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712"
+    }
+  ],
+  "workspace_free": 9463599104,
+  "tmp_free": 7509909504,
+  "shared": 4688457728,
+  "native_lease": "RELEASED",
+  "actual_apps_browser_stand": "NOT_RUN"
+}

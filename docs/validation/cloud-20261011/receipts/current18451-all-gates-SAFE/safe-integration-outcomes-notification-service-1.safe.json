@@ -1,0 +1,37 @@
+{
+  "artifact_id": 11775872534,
+  "name": "safe-integration-outcomes-notification-service-1",
+  "archive_bytes": 4167,
+  "archive_sha256": "7bb5cc3ee4e5546fe159df15ba828e8288c6f743f28693d99d02048468fc337d",
+  "producer": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+        "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+        "service": "notification-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38313867449",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 62,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "RCT_FOCUS3_CURRENT96_COHORT_BIND_V1",
+  "utc": "2026-10-12T23:32:43.267975+00:00",
+  "cohort": "restart-20261012-next02",
+  "ready_sha256": "0dcc8a2ac9b118d2cd1a57f6928b492b7077ef228d62646e2b0ef91542389ce8",
+  "execution_checkout_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "current_academic_source_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "current_academic_payload_source_verified": true,
+  "critical_TLS_Admin_FULL_edge_directspoof": true,
+  "host_cleanup_dispatch_at": "2026-10-12T23:46:59.421341+00:00",
+  "stand_stop_utc": "2026-10-12T23:47:59.421341+00:00",
+  "receipts": {
+    "artifact_source": {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/artifact-source.safe.json",
+      "sha256": "ed76fc2e51f22831bbf7892204eb0d7e6cfe8196558232db5057e8d7358508b3"
+    },
+    "runtime_mapping": {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/runtime-mapping.safe.json",
+      "sha256": "bf8de2b8f5e13dd9a325ab62d7045e367984a392f1e3550d8117deb4ad02b806"
+    },
+    "critical_readiness": {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/stand-readiness.safe.json",
+      "sha256": "d8c28454cfcb7f424329e072fcc7ddd3cb00780b0c4a6c0e6009b7f4a635e335"
+    },
+    "host_live8": {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/host-live8.safe.json",
+      "sha256": "599a73b3f906543d1caa4edef55c3562bf116dac0d90ba39379cd0400ae6446b"
+    }
+  },
+  "live8": [
+    {
+      "service": "mongo",
+      "tool_session": 40737,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/mongo-server-process.safe.json",
+      "wrapper_pid": 402553,
+      "wrapper_birth_ticks": 10101460,
+      "child_pid": 402626,
+      "child_birth_ticks": 10101657
+    },
+    {
+      "service": "academic",
+      "tool_session": 50015,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/academic-process.safe.json",
+      "wrapper_pid": 404360,
+      "wrapper_birth_ticks": 10112750,
+      "child_pid": 404364,
+      "child_birth_ticks": 10112830
+    },
+    {
+      "service": "auth",
+      "tool_session": 50212,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/auth-process.safe.json",
+      "wrapper_pid": 406637,
+      "wrapper_birth_ticks": 10127866,
+      "child_pid": 406640,
+      "child_birth_ticks": 10127882
+    },
+    {
+      "service": "schedule",
+      "tool_session": 38098,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/schedule-process.safe.json",
+      "wrapper_pid": 407322,
+      "wrapper_birth_ticks": 10133219,
+      "child_pid": 407325,
+      "child_birth_ticks": 10133232
+    },
+    {
+      "service": "attendance",
+      "tool_session": 38477,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/attendance-process.safe.json",
+      "wrapper_pid": 407351,
+      "wrapper_birth_ticks": 10133761,
+      "child_pid": 407372,
+      "child_birth_ticks": 10133800
+    },
+    {
+      "service": "bff",
+      "tool_session": 13205,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/bff-process.safe.json",
+      "wrapper_pid": 407496,
+      "wrapper_birth_ticks": 10134366,
+      "child_pid": 407499,
+      "child_birth_ticks": 10134410
+    },
+    {
+      "service": "gateway",
+      "tool_session": 96843,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/gateway-process.safe.json",
+      "wrapper_pid": 407598,
+      "wrapper_birth_ticks": 10134963,
+      "child_pid": 407604,
+      "child_birth_ticks": 10135041
+    },
+    {
+      "service": "notification",
+      "tool_session": 11266,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/notification-process.safe.json",
+      "wrapper_pid": 407714,
+      "wrapper_birth_ticks": 10135639,
+      "child_pid": 407718,
+      "child_birth_ticks": 10135725
+    }
+  ],
+  "all16DistinctLiveDirectChildPPID": true,
+  "resources_at_join": {
+    "/workspace": 5517746176,
+    "/tmp": 7509073920,
+    "shared_memory_bytes": 10987175936
+  },
+  "teachingInstant": "2026-10-12T06:00:00.000Z",
+  "clock_sha256": "ffb6c41ae587278d82f8a950f3ea3ec3e529b6140ca5eff64dcc497ff1ca858d",
+  "attestation_qualification": "Four digest-bound actual current-cohort host attestations; fresh16birth/PPID and source/clock integrity. No additional API/body replay. Root fresh browser grant required.",
+  "browserActual": "NOT_RUN"
+}

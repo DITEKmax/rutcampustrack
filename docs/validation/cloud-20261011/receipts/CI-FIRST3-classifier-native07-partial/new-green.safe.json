@@ -1,0 +1,126 @@
+{
+  "schema": "RCT_CLASSIFIER_PUBLIC_SOURCE_ADAPTER_V1",
+  "pass": true,
+  "count": 29,
+  "failed": 0,
+  "controls": [
+    {
+      "code": "GATEWAY_STATIC",
+      "passed": true
+    },
+    {
+      "code": "SEMESTER_SHAPE",
+      "passed": true
+    },
+    {
+      "code": "ROSTER_SHAPE",
+      "passed": true
+    },
+    {
+      "code": "SCHEDULE_SHAPE",
+      "passed": true
+    },
+    {
+      "code": "ACADEMIC_RPC_OPERATION_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "SCHEDULE_RPC_OPERATION_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "UNKNOWN_SECRET_OBJECT",
+      "passed": true
+    },
+    {
+      "code": "NO_SUBSTRING_HINT",
+      "passed": true
+    },
+    {
+      "code": "BAD_STATUS_GRAMMAR",
+      "passed": true
+    },
+    {
+      "code": "COMPLETE_STATUS_GARBAGE_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "STATUS_MISORDER_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "STATUS_AMBIGUOUS_DELIMITER_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "STATUS_BRACED_DESCRIPTION_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "STATUS_NON_NULL_CAUSE_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "UNKNOWN_RPC_CODE",
+      "passed": true
+    },
+    {
+      "code": "FOREIGN_PROBLEM_TYPE",
+      "passed": true
+    },
+    {
+      "code": "ONLY_HTTP503",
+      "passed": true
+    },
+    {
+      "code": "BODY_STATUS_REQUIRED",
+      "passed": true
+    },
+    {
+      "code": "MALFORMED_JSON",
+      "passed": true
+    },
+    {
+      "code": "MALFORMED_UTF8",
+      "passed": true
+    },
+    {
+      "code": "BYTE_BOUNDARY_AT8192",
+      "passed": true
+    },
+    {
+      "code": "BYTE_BOUNDARY_OVER8192",
+      "passed": true
+    },
+    {
+      "code": "UTF8_BYTES_NOT_CHARACTERS",
+      "passed": true
+    },
+    {
+      "code": "DECLARED_LENGTH_REJECTS_BEFORE_BODY",
+      "passed": true
+    },
+    {
+      "code": "MALFORMED_LENGTH_REJECTS_BEFORE_BODY",
+      "passed": true
+    },
+    {
+      "code": "ABSENT_LENGTH_VALIDATED_AFTER_BODY",
+      "passed": true
+    },
+    {
+      "code": "LATE_BODY_AFTER_STOP_NO_EVENT_OR_TOKEN",
+      "passed": true
+    },
+    {
+      "code": "NON_TARGET_ROSTER_BODY_NOT_READ",
+      "passed": true
+    },
+    {
+      "code": "FACT_ALLOWLIST_REJECTS_RAW_DETAIL",
+      "passed": true
+    }
+  ],
+  "parserDiagnosticCount": 0,
+  "qualification": "Actual transpiled observer functions; public response/page adapters. No browser/API/real transport; not full worker ordering proof."
+}

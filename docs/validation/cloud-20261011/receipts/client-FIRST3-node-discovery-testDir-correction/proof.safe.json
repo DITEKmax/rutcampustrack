@@ -1,0 +1,59 @@
+{
+  "schema": "RCT_FIRST3_NODE_DISCOVERY_PATH_FIX_V1",
+  "state": "SOURCE_ONLY_NATIVE_NOT_RUN",
+  "parentSourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "parentManifestSha256": "3e7d4482b5a9bb0a14765a50369f3e1fa7531de502b9717ed31b16884285f4f1",
+  "oldHelper": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/source-discovery.config.ts",
+  "oldHelperSha256": "5bd006be502f38b46f829c3409d48660731a0969948dda0f7898c3059331136d",
+  "correctedHelper": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/discovery-helper-correction/source-discovery.config.ts",
+  "correctedHelperSha256": "5884a2745af99e32df0481ec9ef342d3a23ba8396b87118d3da0a6596a1cdf92",
+  "onlyDelta": "explicit testDir absolute own WT/tests/e2e/first3-specs after spread",
+  "exactReverseRestoresOldHelper": true,
+  "pinnedPlaywrightSource": "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/common/config.js:149",
+  "counterexample": {
+    "oldLoadedConfigDir": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1",
+    "inheritedTestDir": "./first3-specs",
+    "oldResolvedPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/first3-specs",
+    "oldResolvedDirectoryExists": false,
+    "newLoadedConfigDir": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/discovery-helper-correction",
+    "explicitAbsoluteTestDir": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/first3-specs",
+    "newResolvedDirectoryExists": true,
+    "wrapperExists": true
+  },
+  "remainingClosure": {
+    "importsAbsoluteExist": [
+      "/workspace/rutcampustrack/tests/e2e/node_modules/@playwright/test",
+      "/workspace/rct-worktrees/client-ci-first3/tests/e2e/playwright.first3.config"
+    ],
+    "listReporterAbsoluteExists": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/discovery-reporter.cjs",
+    "outputDirAbsoluteComputedFromRun": true,
+    "runObservationAndTeachingClockEnvPathsAbsolute": true,
+    "testMatchBasenameUnchanged": true,
+    "testIgnoreEmptyUnchanged": true,
+    "noProjectTestDirOverride": true,
+    "webServerUndefined": true,
+    "runtimeReporterCanonicalUnchanged": true
+  },
+  "commands": "Three phases preserved; only --list --config argument now correctedHelper. Same TS plan explicitly checks owned runtime3 files/original assertions and old extra list-helper source; new helper differs one already-valid string testDir property, separately exercised by actual --list. No new runner, type/rule weakening or old packet mutation.",
+  "lastPhaseArgv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+    "test",
+    "--list",
+    "--config",
+    "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/discovery-helper-correction/source-discovery.config.ts",
+    "--project=chromium"
+  ],
+  "limitsUnchanged": {
+    "heapMiB": 512,
+    "ownedRssBytes": 1073741824,
+    "tmpCacheBytes": 33554432,
+    "phaseSeconds": 180,
+    "serial": true,
+    "cleanupSeconds": 60
+  },
+  "actualTypesDiscoveryBrowserApi": "NOT_RUN",
+  "runtime4SourceChanged": false,
+  "parentPacketChanged": false
+}

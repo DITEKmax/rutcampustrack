@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-12T23:47:18.625927+00:00",
+  "cohort": "restart-20261012-next02",
+  "cleanup_dispatch_completed_before": "2026-10-12T23:46:59.421341+00:00",
+  "all8_tool_sessions_terminal_exit0": [
+    40737,
+    50015,
+    50212,
+    38098,
+    38477,
+    13205,
+    96843,
+    11266
+  ],
+  "foreground_cleanup_tool": {
+    "session": 65348,
+    "exit": 0
+  },
+  "docker_cleanup_tool": {
+    "session": 53573,
+    "exit": 0
+  },
+  "known16_exact_births_absent": true,
+  "native_codes_qualification": "Mongo0, BFF143, six JVM-9 after STOP_REQUEST; settled/reaped, not graceful PASS",
+  "five_volumes_preserved": true,
+  "new_stopped_metadata_fence": {
+    "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/stopped-native-data-fence-next02.safe.json",
+    "sha256": "152ceafcc5f392068ddbd0aaf68f856d92b68cd55cd61e1016941a68c75acd86",
+    "nodes": 158
+  },
+  "resources": {
+    "/workspace": 9458749440,
+    "/tmp": 7508799488
+  },
+  "shared": 5010288640,
+  "all_stand_leases_released": true,
+  "no_new_runtime_authority": true
+}

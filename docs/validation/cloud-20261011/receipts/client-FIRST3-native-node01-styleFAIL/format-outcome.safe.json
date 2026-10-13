@@ -1,0 +1,9 @@
+{
+  "phase": "format",
+  "nativeExit": 1,
+  "accepted": false,
+  "diagnosticBytes": 200,
+  "codeStyleMessageObserved": true,
+  "parserErrorPrefixObserved": false,
+  "cause": "FORMAT_STYLE_DIFFERENCE"
+}

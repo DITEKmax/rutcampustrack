@@ -1,0 +1,16 @@
+{
+  "scope": "EXACT_OBSERVER74FF_TO0A8F_MECHANICAL_FORMAT_ONLY",
+  "verdict": "APPROVE_MECHANICAL_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1217,
+      "sha256": "12a27662cbc0df9552286bcc84524c9c61063e568286e536c0b4d74375465ef9"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 1746,
+      "sha256": "080f3cd4bda98c6873fc8d14ec11d4a2d8751d382ef93089499210f1b64ef375"
+    }
+  ]
+}

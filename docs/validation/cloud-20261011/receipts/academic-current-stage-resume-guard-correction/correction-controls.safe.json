@@ -1,0 +1,33 @@
+{
+  "scope": "TARGETED_F01_F02_RAM_CORRECTION",
+  "passed": 24,
+  "controls": [
+    "whole_actual_manifest_consumer_stage-academic.py",
+    "whole_actual_manifest_consumer_run-academic-restart.py",
+    "unsealed_executing_source_denied",
+    "sealed_member_hash_mismatch_denied",
+    "nested_member_containment_denied",
+    "accepted_tool_hash_mismatch_denied",
+    "independent_review_hash_mismatch_denied",
+    "source_manifest_hash_mismatch_denied",
+    "old_actual_manifest_KeyError_files_counterexample",
+    "whole_verify_grant_fields_actual_manifest_tools_review_RAM_positive",
+    "receipt_positive_all_effects_gated_host-service-specs.safe.json",
+    "receipt_positive_all_effects_gated_stage-result.safe.json",
+    "receipt_positive_all_effects_gated_stage-committed.safe.json",
+    "serialization_crosses_boundary_before_first_create_denied",
+    "create_consumes_window_no_write_on_close",
+    "partial_raw_write_next_write_rechecks_no_close_flush",
+    "truncate_expiry_denied_before_truncate",
+    "fsync_expiry_denied",
+    "old_REAL_RAM_BufferedWriter_exception_close_witness",
+    "new_terminal_read_expiry_no_exception_close_write",
+    "new_read_failure_no_exception_close_write",
+    "new_app_partial_write_expiry_denied_before_next_write",
+    "new_app_complete_raw_write_positive_no_buffered_flush",
+    "internal_receipt_resource_floor_changes_before_write_denied"
+  ],
+  "actual_prefix_scan": false,
+  "actual_copy_private_native": false,
+  "original43_and_independent23_reused_not_rerun": true
+}

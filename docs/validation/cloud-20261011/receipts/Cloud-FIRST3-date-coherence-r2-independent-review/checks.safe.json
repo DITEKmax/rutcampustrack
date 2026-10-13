@@ -1,0 +1,41 @@
+{
+  "kind": "INDEPENDENT_CLOUD_FIRST3_FINITE_DATE_SOURCE_RECHECK",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "checks": {
+    "sealed_eight_members": true,
+    "full_caller_BASE_reverse": true,
+    "full_config_two_path_reverse": true,
+    "full_wrapper_clock_import_reverse": true,
+    "root19_r1sources13_and_parent_READY_preserved": true,
+    "absolute_test_run_config_and_private_modes_bound": true,
+    "clock_missing_guard_and_awaited_hook_order": true,
+    "calendar": [
+      {
+        "utc": "2026-10-12T20:59:59+00:00",
+        "old_default_matches_domain": true,
+        "fixed_default_matches_domain": true
+      },
+      {
+        "utc": "2026-10-12T21:00:00+00:00",
+        "old_default_matches_domain": false,
+        "fixed_default_matches_domain": true
+      },
+      {
+        "utc": "2026-10-12T23:11:04+00:00",
+        "old_default_matches_domain": false,
+        "fixed_default_matches_domain": true
+      }
+    ],
+    "accepted_auth_source_pins_unchanged": true
+  },
+  "native_Node_browser_API_stand": "NOT_RUN",
+  "historical_three_failure_cause": "UNKNOWN",
+  "qualifications": [
+    "Browser Date CHANGED for FIRST3",
+    "Timers supported API SOURCE only",
+    "Backend security sources unchanged; full client expiry/recovery/cooldown not proven",
+    "Fresh ordinary-context Node metadata and current cohort/readiness/grant required"
+  ]
+}

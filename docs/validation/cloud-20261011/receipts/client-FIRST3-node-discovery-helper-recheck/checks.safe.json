@@ -1,0 +1,20 @@
+{
+  "kind": "INDEPENDENT_HELPER_PARAMETER_ONLY_RECHECK",
+  "finding": "CI-F3-DISCOVERY-ORIGIN-003",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "status": "CLOSED_SOURCE",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "helper_sha256": "5884a2745af99e32df0481ec9ef342d3a23ba8396b87118d3da0a6596a1cdf92",
+  "author_proof_sha256": "de19e8b6710392a9c98ffa0e04bf18fd50b9e41e0c87e589ca1274bcdbe7e6cb",
+  "checks": {
+    "pinned_source_and_proof": true,
+    "exact_reverse_single_property": true,
+    "post_spread_override": true,
+    "old_relative_target_missing": true,
+    "absolute_target_and_wrapper_present": true,
+    "reporter_source_present": true,
+    "original_packet_and_runtime_review_seals_unchanged": true
+  },
+  "actual_Node_types_discovery_browser_API": "NOT_RUN"
+}

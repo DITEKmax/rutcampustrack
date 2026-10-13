@@ -1,0 +1,22 @@
+{
+  "academic_refresh_phase": "BUILD",
+  "execution_actor_uid": 1000,
+  "execution_actor_gid": 1000,
+  "new_tmp_prefix": "/tmp/rct-academic-refresh-20261012-attempt01",
+  "all_new_tmp_cap": 1610612736,
+  "workspace_floor": 4294967296,
+  "tmp_floor_plus_mongo_growth": 5368709120,
+  "shared_stop": 16106127360,
+  "shared_reserve": 1073741824,
+  "workspace_cache_growth_cap": 8388608,
+  "product_start_authorized": false,
+  "tests_authorized": false,
+  "frozen_source_revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "fixed_UserSpecifications_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "heavy_leases_released": true,
+  "not_before_utc": "ROOT_FRESH_UTC",
+  "stop_utc": "ROOT_FRESH_UTC_MAX960S_BUILD_OR600S_STAGE",
+  "academic_refresh_manifest_sha256": "ROOT_EXACT_SOURCE_MANIFEST_SHA",
+  "academic_refresh_review_manifest": "ROOT_FRESH_APPROVE_SOURCE_MANIFEST_PATH",
+  "academic_refresh_review_manifest_sha256": "ROOT_EXACT_FRESH_REVIEW_SHA"
+}

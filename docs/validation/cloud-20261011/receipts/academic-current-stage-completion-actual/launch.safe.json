@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-12T22:31:39.369367+00:00",
+  "tool_session": 91335,
+  "tool_chunk": "3a47d6",
+  "supervisor": {
+    "pid": 395577,
+    "start_ticks": 9807919,
+    "ppid": 525
+  },
+  "phase": "VALIDATING_ALL1797",
+  "completion_only": true,
+  "source": "89d6",
+  "review": "0c62",
+  "stop_utc": "2026-10-12T22:40:53.925626+00:00",
+  "cleanup_gate": "2026-10-12T22:39:53.925626+00:00",
+  "native_terminal": "PENDING"
+}

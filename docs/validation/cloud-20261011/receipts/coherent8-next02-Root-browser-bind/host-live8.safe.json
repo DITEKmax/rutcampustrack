@@ -1,0 +1,163 @@
+{
+  "utc": "2026-10-12T23:32:15.405342+00:00",
+  "cohort": "restart-20261012-next02",
+  "all8_exact_live": true,
+  "all16_unique_births": true,
+  "all8_child_direct_ppid": true,
+  "services": [
+    {
+      "service": "mongo",
+      "tool_session": 40737,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/mongo-server-process.safe.json",
+      "wrapper": {
+        "pid": 402553,
+        "start_ticks": 10101460,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 402626,
+        "start_ticks": 10101657,
+        "ppid": 402553,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "academic",
+      "tool_session": 50015,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/academic-process.safe.json",
+      "wrapper": {
+        "pid": 404360,
+        "start_ticks": 10112750,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 404364,
+        "start_ticks": 10112830,
+        "ppid": 404360,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "auth",
+      "tool_session": 50212,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/auth-process.safe.json",
+      "wrapper": {
+        "pid": 406637,
+        "start_ticks": 10127866,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 406640,
+        "start_ticks": 10127882,
+        "ppid": 406637,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "schedule",
+      "tool_session": 38098,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/schedule-process.safe.json",
+      "wrapper": {
+        "pid": 407322,
+        "start_ticks": 10133219,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407325,
+        "start_ticks": 10133232,
+        "ppid": 407322,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "attendance",
+      "tool_session": 38477,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/attendance-process.safe.json",
+      "wrapper": {
+        "pid": 407351,
+        "start_ticks": 10133761,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407372,
+        "start_ticks": 10133800,
+        "ppid": 407351,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "bff",
+      "tool_session": 13205,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/bff-process.safe.json",
+      "wrapper": {
+        "pid": 407496,
+        "start_ticks": 10134366,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407499,
+        "start_ticks": 10134410,
+        "ppid": 407496,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "gateway",
+      "tool_session": 96843,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/gateway-process.safe.json",
+      "wrapper": {
+        "pid": 407598,
+        "start_ticks": 10134963,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407604,
+        "start_ticks": 10135041,
+        "ppid": 407598,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "notification",
+      "tool_session": 11266,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/notification-process.safe.json",
+      "wrapper": {
+        "pid": 407714,
+        "start_ticks": 10135639,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407718,
+        "start_ticks": 10135725,
+        "ppid": 407714,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    }
+  ],
+  "stand_stop_utc": "2026-10-12T23:47:59.421341+00:00",
+  "cleanup_dispatch_by": "2026-10-12T23:46:59.421341+00:00"
+}

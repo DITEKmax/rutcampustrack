@@ -1,0 +1,95 @@
+{
+  "scope": "NARROW_INDEPENDENT_F01_F02_SOURCE_RAM_RECHECK",
+  "groups": [
+    {
+      "name": "F01_actual_manifest_absolute_relative_bijection27",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "F01_full_actual_grant_fields_package_stage_and_runtime_positive_RAM_private_tool_review_inputs",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "F01_unsealed_executing_source",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "Actual executing source must be sealed"
+    },
+    {
+      "name": "F01_member_hash",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "Refresh source identity changed"
+    },
+    {
+      "name": "F01_tool_hash",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "Accepted wrapper/JDK/guard/source input changed"
+    },
+    {
+      "name": "F01_original_exact_keyerror_witness_retained",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "F02_receipt_complete_partial_write_positive_exact_encoding_and_per_effect_charges",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "F02_optional_truncate_positive_separate_gate",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "F02_receipt_serialization_expiry",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_receipt_create_expiry",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_receipt_partial_write_expiry",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_optional_truncate_expiry",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_fsync_expiry",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_original_real_RAM_BufferedWriter_late_close_witness",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_corrected_complete_app_partial_writes_positive_no_implicit_flush",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "F02_corrected_app_late_terminal_read_no_close_write",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    },
+    {
+      "name": "F02_corrected_app_read_failure_no_close_write",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_READ_FAILURE"
+    },
+    {
+      "name": "F02_corrected_app_partial_write_no_close_write",
+      "outcome": "PASS_SOURCE_RAM",
+      "exact_denial": "RAM_CLEANUP_BOUNDARY"
+    }
+  ],
+  "old_findings_witnesses_reused_exact_source": true,
+  "native_stage_runtime": "NOT_RUN",
+  "actual_prefix_JAR_private_reads": false,
+  "original43_or23_suite_rerun": false,
+  "target_module_top_level_or_main": false,
+  "actual_IO_effects_outside_new_review": 0
+}

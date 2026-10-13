@@ -1,0 +1,256 @@
+{
+  "utc": "2026-10-12T23:32:15.405342+00:00",
+  "cohort": "restart-20261012-next02",
+  "runtime_directory": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02",
+  "actual_host_spec": {
+    "path": "/tmp/rct-academic-refresh-20261012-attempt01/host-service-specs.safe.json",
+    "sha256": "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e"
+  },
+  "effective8_artifacts": [
+    {
+      "service": "auth",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "unchanged": true
+    },
+    {
+      "service": "academic",
+      "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "jar": "/tmp/rct-academic-refresh-20261012-attempt01/checkout/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+      "app": "/tmp/rct-academic-refresh-20261012-attempt01/app"
+    },
+    {
+      "service": "schedule",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "unchanged": true
+    },
+    {
+      "service": "attendance",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "unchanged": true
+    },
+    {
+      "service": "bff",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "unchanged": true
+    },
+    {
+      "service": "gateway",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "unchanged": true
+    },
+    {
+      "service": "notification",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "unchanged": true
+    },
+    {
+      "service": "renderer",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "unchanged": true
+    }
+  ],
+  "actual_sessions": [
+    {
+      "service": "mongo",
+      "tool_session": 40737,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/mongo-server-process.safe.json",
+      "wrapper": {
+        "pid": 402553,
+        "start_ticks": 10101460,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 402626,
+        "start_ticks": 10101657,
+        "ppid": 402553,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "academic",
+      "tool_session": 50015,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/academic-process.safe.json",
+      "wrapper": {
+        "pid": 404360,
+        "start_ticks": 10112750,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 404364,
+        "start_ticks": 10112830,
+        "ppid": 404360,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "auth",
+      "tool_session": 50212,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/auth-process.safe.json",
+      "wrapper": {
+        "pid": 406637,
+        "start_ticks": 10127866,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 406640,
+        "start_ticks": 10127882,
+        "ppid": 406637,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "schedule",
+      "tool_session": 38098,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/schedule-process.safe.json",
+      "wrapper": {
+        "pid": 407322,
+        "start_ticks": 10133219,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407325,
+        "start_ticks": 10133232,
+        "ppid": 407322,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "attendance",
+      "tool_session": 38477,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/attendance-process.safe.json",
+      "wrapper": {
+        "pid": 407351,
+        "start_ticks": 10133761,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407372,
+        "start_ticks": 10133800,
+        "ppid": 407351,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "bff",
+      "tool_session": 13205,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/bff-process.safe.json",
+      "wrapper": {
+        "pid": 407496,
+        "start_ticks": 10134366,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407499,
+        "start_ticks": 10134410,
+        "ppid": 407496,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "gateway",
+      "tool_session": 96843,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/gateway-process.safe.json",
+      "wrapper": {
+        "pid": 407598,
+        "start_ticks": 10134963,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407604,
+        "start_ticks": 10135041,
+        "ppid": 407598,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    },
+    {
+      "service": "notification",
+      "tool_session": 11266,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/notification-process.safe.json",
+      "wrapper": {
+        "pid": 407714,
+        "start_ticks": 10135639,
+        "ppid": 525,
+        "state": "R"
+      },
+      "child": {
+        "pid": 407718,
+        "start_ticks": 10135725,
+        "ppid": 407714,
+        "state": "S"
+      },
+      "exact_live": true,
+      "child_direct_ppid_equal_wrapper": true
+    }
+  ],
+  "actual_host7_cwd": [
+    {
+      "service": "auth",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/auth/app"
+    },
+    {
+      "service": "academic",
+      "cwd": "/tmp/rct-academic-refresh-20261012-attempt01/app"
+    },
+    {
+      "service": "schedule",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/schedule/app"
+    },
+    {
+      "service": "attendance",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/attendance/app"
+    },
+    {
+      "service": "bff",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/bff/app"
+    },
+    {
+      "service": "gateway",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/gateway/app"
+    },
+    {
+      "service": "notification",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/notification/app"
+    }
+  ],
+  "Academic_application_index_libraries": 182,
+  "Academic_retained_nested_libraries": 183,
+  "no_source_or_privateENV_or_guard_config_change": true,
+  "stand_stop_utc": "2026-10-12T23:47:59.421341+00:00",
+  "cleanup_dispatch_by": "2026-10-12T23:46:59.421341+00:00"
+}

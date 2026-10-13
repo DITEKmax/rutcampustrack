@@ -1,0 +1,7 @@
+{
+  "stage": "READY_METADATA_ONLY",
+  "PythonSourcePreparationExit": 1,
+  "cause": "Optional future_grant key was assumed; originalREADY has native_next only.",
+  "effect": "No READY/archive/native execution was produced at that failure; source/config/wrapper/caller controls alreadycompleted.",
+  "corrected": "Use actual native_next metadata and freshRootgrant later; no oldpacket change."
+}

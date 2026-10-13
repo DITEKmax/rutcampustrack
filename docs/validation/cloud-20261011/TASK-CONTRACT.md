@@ -416,3 +416,19 @@ Supersedes: TASK-CONTRACT §3/§4 all-author-source formatting scope ONLY for th
 Model preference: Root remains requested/selected Sol6.1/ULTRA under the original contract; user observes an extra-high UI setting. Actual runtime model/effort remains UNKNOWN where tools do not expose it. No silent fallback or claim of measured ULTRA is permitted. Explicit selected child efforts may still vary by scope under the original contract. Continue authorized work with agents.
 
 Verification: net Root changes beneath frontends/web-panel/ must be zero versus the accepted Root revision and baseline; exclude the exact Angular subtree from reproducible formatter inventory/checks, while preserving all required non-Angular lint/build/security gates. Do not weaken unrelated rules or conceal failed required client/server checks.
+
+
+---
+## D011 — Owner-authorized process coordination, message dated 2026-10-13
+
+Apply owner-process-update-20261013.md within the unchanged original goal, mandatory scope, DONE/WAITING, product decisions, models and security/review requirements. Prioritize the measured preparation-walk correction, then the three original client FAIL causes and matrix groups on a reusable isolated stand. Assess suitable real server/E2E checks in existing normal CI; minimal required checking-workflow changes are authorized, keeping mandatory gates and avoiding artificial documentation triggers or platform-rejection workarounds. Improve targeted safe FAIL diagnostics. Use coherent bounded author/check/review packages and targeted rechecks; new hash/time parameters alone do not require full re-review. Detect foreign changes and reconcile or stop; sampled checks are not exact integrity/limit proof. Reuse sufficient unchanged artifacts/evidence; do not weaken thresholds/timeouts/assertions or build a universal orchestrator. This is process steering, not STOP/new task/product/deployment authority.
+
+
+---
+## D012 — Q010 explicit isolated synthetic stand startup approval
+
+Owner answered Q010: «Подтверждаю этот изолированный тестовый запуск». Received UTC 2026-10-12T23:15:49.431973+00:00.
+
+Explicitly confirms starting this task-owned isolated project rct-client-host-config-20261012: six Docker containers and eight foreground service processes, only synthetic data, existing test volumes and native Mongo data/key preserved, no reset or repeated bootstrap, no production/deploy. This restates concrete operations already within §5 synthetic-runtime authority after automatic approval rejected the exact original Docker157 caller before effects. It does not waive platform approval or authorize indirect/alternate-launcher bypass. Present this new explicit owner answer to automatic approval for the same reviewed bounded caller; another rejection remains a platform blocker and must be reported. Fresh resource/path/ownership/grant guards, cleanup and all product/security/acceptance criteria continue unchanged.
+
+Affected scope: retained coherent8 Cloud stand and dependent real PWA/TMA scenarios; independent CI/source checks continue. Supersedes only Q010 missing-explicit-startup-authorization branch, no product rule.

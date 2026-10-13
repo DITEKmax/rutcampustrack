@@ -1,0 +1,122 @@
+{
+  "scope": "INDEPENDENT_TARGETED_COMPLETION_SOURCE",
+  "groups": [
+    {
+      "name": "independent_JOIN_full1797_SAFE_rows_to_original_BUILD08dd_not_self_expected",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "actual_argparse_requires_completion_flag_and_main_has_no_recopy_mutation_dispatch",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "whole_fixed_completion_grant_original_BUILD_fullauthority1797_to_unchanged_FD_dispatch_positive",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "fixed_typed_grant_stage_completion_authorized",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact1797 completion-only grant binding required"
+    },
+    {
+      "name": "fixed_typed_grant_stage_resume_authorized",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact1797 completion-only grant binding required"
+    },
+    {
+      "name": "fixed_typed_grant_stage_full_payload_receipt_sha256",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact1797 completion-only grant binding required"
+    },
+    {
+      "name": "full_authority_hash_manifest",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact actual1797 proof seal required"
+    },
+    {
+      "name": "full_authority_hash_receipt",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact actual1797 proof seal required"
+    },
+    {
+      "name": "full_receipt_manifest_membership",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Full1797 receipt must belong to actual1596 seal"
+    },
+    {
+      "name": "full_member_sha256",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Complete1797 proof member identity required"
+    },
+    {
+      "name": "full_member_mode",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Complete1797 proof member identity required"
+    },
+    {
+      "name": "full_member_nlink",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Complete1797 proof member identity required"
+    },
+    {
+      "name": "incomplete1796_does_not_resume_copy",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact complete stopped1797 currentJAR authority required"
+    },
+    {
+      "name": "extra_directory",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Full current app directory composition missing/extra denied"
+    },
+    {
+      "name": "canonical182_of183_positive_preserves_supplied_index_order_tools_retained",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "original183_equality_counterexample",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact complete classpath index required"
+    },
+    {
+      "name": "canonical_duplicate182",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact canonical182 application libs plus sole bundled183rd tools required"
+    },
+    {
+      "name": "canonical_missing181",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact canonical182 application libs plus sole bundled183rd tools required"
+    },
+    {
+      "name": "canonical_indexed_tools182",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact canonical182 application libs plus sole bundled183rd tools required"
+    },
+    {
+      "name": "canonical_unknown_unindexed_same183",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact canonical182 application libs plus sole bundled183rd tools required"
+    },
+    {
+      "name": "canonical_wrong_fixed_tools_version",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact canonical182 application libs plus sole bundled183rd tools required"
+    },
+    {
+      "name": "canonical_traversal",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Canonical standard classpath line required"
+    },
+    {
+      "name": "provided_cached_packager_SAFE_code_SHA_refs_false_tools_flag_and_writtenLibraries_index",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "actual_cached_JAR_classfile_read": false,
+      "new_official_vendor_authentication": false
+    }
+  ],
+  "native_stage": "NOT_RUN",
+  "actual_prefix_JAR_private_reads": false,
+  "original43_24_18_rerun": false,
+  "unchanged_FD_dispatch_mocked_not_actual_scan": true,
+  "actual_index_line_body_not_read_synthetic_order_controls": true
+}

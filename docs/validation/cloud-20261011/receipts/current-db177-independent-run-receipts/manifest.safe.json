@@ -1,0 +1,52 @@
+{
+  "verdict": "APPROVE_FINITE_CURRENT_RUN_RECEIPTS",
+  "producer_head": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+  "actual_selected_checkout": "6930e93ee38ce2c1db256a9e7debc8d019f158d7",
+  "observed_utc": "2026-10-12T21:32:56.029941+00:00",
+  "members": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 5164,
+      "sha256": "9a051d53e17fcdf1550a0fcf68c34fcad2679e66ffdfb99272f64dd80707a7ad",
+      "mode": "0o600"
+    },
+    {
+      "path": "academic-safe-original.zip",
+      "bytes": 21411,
+      "sha256": "bd9a35b9fdc2a4ed7a04d83d6998282b147c51b0bd4b817c135400683bde175e",
+      "mode": "0o600"
+    },
+    {
+      "path": "pr-head.safe.json",
+      "bytes": 259,
+      "sha256": "6b41f89c5f9a7415fe3258529b9ac30a9058b74e7549b7ea5efef19b05f7aacb",
+      "mode": "0o600"
+    },
+    {
+      "path": "schedule-safe-original.zip",
+      "bytes": 10770,
+      "sha256": "df85df750afe09fd0f0c0d383a529dad1e2e34d7401331cc9b5b73924757b5c8",
+      "mode": "0o600"
+    },
+    {
+      "path": "selected-cases.safe.json",
+      "bytes": 3568,
+      "sha256": "bcd3f39f7a31404024a4c56311b9f08200c8d22da5aa76a8d2b0ba4f454f9991",
+      "mode": "0o600"
+    },
+    {
+      "path": "source-bridge.safe.json",
+      "bytes": 2363,
+      "sha256": "d9c6ca19b5e99e52fc3fe09f02cd6010ac1aac247aa0c6abca24b2d6f69249ad",
+      "mode": "0o600"
+    },
+    {
+      "path": "workflows-jobs.safe.json",
+      "bytes": 80362,
+      "sha256": "ffad0e791f71ef0ee2a229336ae9df63d674ad5bf91bac5504c0cfed9429e2e6",
+      "mode": "0o600"
+    }
+  ],
+  "historical96Cause": "UNKNOWN_PRESERVED",
+  "actual_local_native": "NOT_RUN"
+}

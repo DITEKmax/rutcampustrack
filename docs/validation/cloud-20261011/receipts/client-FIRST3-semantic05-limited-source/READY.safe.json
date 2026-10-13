@@ -1,0 +1,31 @@
+{
+  "schema": "RCT_EXACT_SEMANTIC05_SOURCE_READY",
+  "state": "SOURCE_ONLY_NATIVE_NOT_RUN",
+  "helper": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/semantic-proof05-source/semantic-proof05.cjs",
+  "helperSha256": "0371bb8c7598960d885d552d1c6956d53b903523361df84b8fcda21f0d54877d",
+  "inputs": {
+    "/tmp/rct-first3-ci-format-correction-20261012-attempt02/before/tests/e2e/fixtures/first3-observer.ts": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/first3-observer.ts": "80db172a5bc8defd789ddf6e47eb8f2eb35015b68fcbe7d8b355c968f626922e",
+    "/tmp/rct-first3-ci-readonly-diff-20261012-attempt04/supervision/diff04.safe.json": "4ef77381645ffb3b7d3b2931e9a5fcfb3dbbeceff2358439bdf53d51d68e309a"
+  },
+  "numericLimits": "Node512/RSS1GiB/tmp32MiB/180s+b78 same approved callbacks, freshRootgrant needed",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/semantic-proof05-source/semantic-proof05.cjs"
+  ],
+  "outputEnv": "RCT_SEMANTIC_PROOF_OUTPUT=<freshownrun>/supervision/semantic05.safe.json",
+  "negativeControls": [
+    "actualLiteral",
+    "actualOperator",
+    "actualBranch",
+    "actualCallStructure",
+    "strictDirectiveGrouping",
+    "strictDirectiveEscape",
+    "precedence",
+    "optionalChainBreak"
+  ],
+  "preciseScope": "multiLine ONLY3NodeKinds; ledger04 exact14TS/12JS addedgroup path+kind+owner+ancestor+operator; no blanket parentheses removal",
+  "sourceWrite": false,
+  "formatterTypesListApiBrowser": "NOT_RUN"
+}

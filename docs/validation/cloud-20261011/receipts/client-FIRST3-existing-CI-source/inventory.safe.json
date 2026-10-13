@@ -1,0 +1,67 @@
+{
+  "schema": "RCT_FIRST3_CI_SOURCE_V1",
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "createdUtc": "2026-10-12T22:04:41.434020+00:00",
+  "base": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+  "commit": "f5a0d60000332f6560856e527e91e3defcff8a54",
+  "worktree": "/workspace/rct-worktrees/client-ci-first3",
+  "clean": true,
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "kind": "MODIFIED",
+      "sha256": "f5ed69c04945354e7c759021c453e3a7f094e37c0e662bdc6aed60f046ce0f58",
+      "bytes": 16174,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "kind": "CREATED",
+      "sha256": "a7fa0e1ab77d24dd1badc98234ad60cbc9c5e0adc5ec507b67325eee30615bfc",
+      "bytes": 2141,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "kind": "CREATED",
+      "sha256": "d30ab60f39f163eda4398c84202d00d493ff86ec97f9b11a19f41923282880af",
+      "bytes": 656,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "kind": "CREATED",
+      "sha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+      "bytes": 28857,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "sourceChecksPassed": 37,
+  "sourceOnly": true,
+  "ownedRuntimeLease": "NONE",
+  "native": {
+    "node": "NOT_RUN",
+    "typecheck": "NOT_RUN",
+    "formatter": "NOT_RUN",
+    "playwrightDiscovery": "NOT_RUN",
+    "browser": "NOT_RUN",
+    "services": "NOT_RUN",
+    "actualCI": "NOT_RUN"
+  },
+  "claimedClientAcceptance": false,
+  "originalFailureCause": "UNKNOWN",
+  "limits": {
+    "writerWorktreeCapBytes": 33554432,
+    "ciJobMinutes": 30,
+    "composeWaitSeconds": 480,
+    "fixtureTimeoutSeconds": 180,
+    "testTimeoutSeconds": 60,
+    "workers": 1,
+    "retries": 0,
+    "nodeHeapMiB": 512
+  }
+}

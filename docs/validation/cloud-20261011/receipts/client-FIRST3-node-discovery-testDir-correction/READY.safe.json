@@ -1,0 +1,12 @@
+{
+  "schema": "RCT_FIRST3_DISCOVERY_HELPER_READY_V1",
+  "state": "HELPER_SOURCE_READY_NATIVE_NOT_RUN",
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "helper": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/discovery-helper-correction/source-discovery.config.ts",
+  "helperSha256": "5884a2745af99e32df0481ec9ef342d3a23ba8396b87118d3da0a6596a1cdf92",
+  "proof": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/discovery-helper-correction/proof.safe.json",
+  "proofSha256": "de19e8b6710392a9c98ffa0e04bf18fd50b9e41e0c87e589ca1274bcdbe7e6cb",
+  "onlyOneSourceLineAdded": true,
+  "oldPacketImmutable": true,
+  "requiresFreshRootNodeGrant": true
+}

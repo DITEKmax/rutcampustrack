@@ -1,0 +1,24 @@
+{
+  "kind": "INDEPENDENT_FINITE_HUMAN_SOURCE_FORMATTER_RECHECK",
+  "verdict": "APPROVE_MECHANICAL_SOURCE_ONLY",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "before_sha256": "74ff02435f49e5c334a5f569a6eed5bb4562677fed2841199ceaf0b2a6699066",
+  "after_sha256": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+  "source004_approval_retained": true,
+  "human_exact_diff": "Whitespace and four trailing commas only: one RPC.exec call argument and three two-element hint arrays",
+  "checks": {
+    "exact_two_input_SHA_pins": true,
+    "four_specific_trailing_comma_removals_leave_only_whitespace_delta": true,
+    "RPC_regex_enum_delimiter_guard_preserved": true,
+    "all_post_classifier_async_response_methods_byte_identical": true,
+    "prior004_seal_preserved": true
+  },
+  "new_native_or_parser_execution": "NONE",
+  "qualifications": [
+    "Source inspection plus narrowly selected four-comma byte check, not generic scanner/AST normalization",
+    "Actual08 strict inequality retained; oldAST PASS not promoted",
+    "Formatted29controls/format/types/exact3list separately Root authorized",
+    "Actual503 deepercause UNKNOWN; no browser/productPASS"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "scope": "DISCOVERY_ORIGIN003_HELPER_PARAMETER_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "finding": "CLOSED_SOURCE",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 805,
+      "sha256": "d747dfe81cd7736aa86043b9fb040c55fdc8472e2078cfc788836332ba3d964e"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 1839,
+      "sha256": "c3a067d35d8dd05504b5df3f533914bc6f31fad2e416b8556ca0a6b3ad423469"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/correction.patch",
+    "archive": "first3-ci-correction.safe.zip",
+    "entry": "correction.patch",
+    "sha256": "4d767945ec7d62aaba2770e260632ff1a87c1bdf713292cb8fd7a7621003af0a",
+    "retention": "Exact machine-generated patch kept in immutable ZIP; standalone extraction is not staged/formatted."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/source.patch",
+    "archive": "first3-ci-correction.safe.zip",
+    "entry": "source.patch",
+    "sha256": "98e09b5f021bb9626b3a59208c45c968fd0de64da77d300f426e217993266750",
+    "retention": "Exact machine-generated patch kept in immutable ZIP; standalone extraction is not staged/formatted."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-source/source.patch",
+    "archive": "first3-ci-source.safe.zip",
+    "entry": "source.patch",
+    "sha256": "d8e9d978d6acbf94e6c6661df674458a20cecd1137934630c1b19a7e46135d56",
+    "retention": "Exact machine-generated patch kept in immutable ZIP; standalone extraction is not staged/formatted."
+  }
+]

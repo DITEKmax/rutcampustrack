@@ -1,0 +1,34 @@
+{
+  "kind": "INDEPENDENT_NARROW_ROSTER503_PRIVACY_ASYNC_SOURCE_REVIEW",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "verdict": "CHANGES_REQUESTED",
+  "finding": "CI-F3-STATUS-SHAPE-004",
+  "severity": "P2",
+  "input_READY_sha256": "428df1f1659dcb5359c3da484502c1fbdac89e3f8747aa01772660d4ffbb5e93",
+  "source_sha256": "e75ef75b90ab87b067bc82514e185b7d809dddfb74a48dc34a85a3280e9dd27b",
+  "controls_sha256": "eeb6aa8f3af925966a4d86cf605ab8153ba7048c22d73b02a5d2f686ee0657af",
+  "source_map_sha256": "2779db3baf8e4a05da2ad483c8f69e0ac4c32af677524a34db1ae051a2e781d2",
+  "checks": {
+    "frozen_input_seals": true,
+    "five_insertions_reverse_entire_old_observer": true,
+    "other_three_CI_sources_unchanged": true,
+    "seven_server_map_sources_unchanged": true,
+    "closed_five_field_output_no_raw_serialization": true,
+    "existing_async_guards_reverse_preserved": true,
+    "planned_controls_count": 24,
+    "native_controls": "NOT_RUN"
+  },
+  "counterexample": {
+    "kind": "PUBLIC_SOURCE_REGEX_RAM_TRANSCRIPTION_ONLY",
+    "valid_shape_matches": true,
+    "complete_malformed_shape_matches_incorrectly": true,
+    "old_negative_only_missing_brace_rejected": true
+  },
+  "qualifications": [
+    "8KiB validation after full Playwright body buffering; declared Content-Length precheck only",
+    "RSS sampled soft guard; not hard transport/allocation cap",
+    "actual503 deepercause UNKNOWN",
+    "No new native/browser/API/service/targetimports"
+  ]
+}

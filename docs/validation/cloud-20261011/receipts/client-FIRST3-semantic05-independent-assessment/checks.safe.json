@@ -1,0 +1,22 @@
+{
+  "kind": "INDEPENDENT_FINITE_FORMATTER_BRIDGE_ASSESSMENT",
+  "verdict": "APPROVE_FINITE_FORMATTER_EQUIVALENCE_ONLY",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "helper_sha256": "0371bb8c7598960d885d552d1c6956d53b903523361df84b8fcda21f0d54877d",
+  "ledger_sha256": "4ef77381645ffb3b7d3b2931e9a5fcfb3dbbeceff2358439bdf53d51d68e309a",
+  "actual_manifest_sha256": "d87e3ee6b8807ca70842dcb765deaec92817a891e47658f77fb01270a010579e",
+  "actual_zip_sha256": "e9c555b30ca5e2e5de3b2dfdbf4c79dfe49564109a931c9f9fa060931aaf642e",
+  "exact04_group_counts": [
+    14,
+    12,
+    12
+  ],
+  "four_candidate_before_after_pins_unchanged": true,
+  "recorded_eight_semantic_negatives_rejected": true,
+  "recorded_native_exit": 0,
+  "recorded_two_births_absent": true,
+  "raw02_03_FAIL_and_emission_inequality_preserved": true,
+  "new_native_checks": "NONE",
+  "types_list_browser_API": "NOT_RUN"
+}

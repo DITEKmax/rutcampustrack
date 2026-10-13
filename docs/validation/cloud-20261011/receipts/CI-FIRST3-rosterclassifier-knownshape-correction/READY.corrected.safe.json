@@ -1,0 +1,62 @@
+{
+  "kind": "BOUNDED_CI_FIRST3_ROSTER503_CLASSIFIER_SOURCE",
+  "utc": "2026-10-13T00:09:15.065742+00:00",
+  "base": "c77de975cd8ac949611cae70cb515a9daa818c6c",
+  "writerScope": [
+    "tests/e2e/fixtures/first3-observer.ts"
+  ],
+  "sourceSha256": "74ff02435f49e5c334a5f569a6eed5bb4562677fed2841199ceaf0b2a6699066",
+  "snapshotPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-roster-classifier/corrected-source/first3-observer.ts",
+  "controlsPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-roster-classifier/classifier-controls.cjs",
+  "controlsSha256": "536f477ada60fbd61b33f34a97d91bbd0726441530324780ed87c87b8d0547c4",
+  "controlsExpectedCount": 29,
+  "controlsQualification": "Actualtranspiledobserver classifier+selectedread/capture methods withpublicresponse/page adapters; no transport/browser/workerfixtureordering claim.",
+  "meaningfulControls": [
+    "knownGateway",
+    "semester/roster/lesson exactshape hints",
+    "genericRPCoperationUNKNOWN",
+    "unknownsecret",
+    "no substringhint",
+    "malformedStatusgrammar",
+    "unknownRPCcode",
+    "foreignType",
+    "non503",
+    "missingBodystatus",
+    "malformedJSON/UTF8",
+    "8KiB boundary/Unicodebyteoversize",
+    "lengthrejectbeforebody",
+    "absentlengthpostvalidation",
+    "latebodyafterSTOP/END noevent/token/persist",
+    "nontargetbodyunread",
+    "rawfieldallowlistreject"
+  ],
+  "sourceChanges": [
+    "Fiveclosedenumfieldallowlists",
+    "Pure503RAMbyteclassifier8KiB/status/knownpublicfieldchecks",
+    "Target503passiveResponse.body await guarded byexistingwait/requireRunning",
+    "Existingtarget503failureGET body await withsame lifetime guards; noadditionalrequests"
+  ],
+  "unchanged": "Originalassertions14/61/142; original9smoke/triggers/gates/timeouts; other3assignedsourcebytes; requestmaxRedirects0/maxRetries0; protectedfixture/SafeReporter/flag; asyncpending/cancellation/token/BEGIN-END existingpaths",
+  "limitsQualification": "8KiB validated classifierinput afterpublicbody buffering, CLprecheck ifdeclared; notpreallocation/transport/globalretention cap. V8heap512managedonly, RSS/cacheownedguards sampledsoftmonitoring. No maliciouspeerhardlimit claim.",
+  "nativeChecksPlan": {
+    "format": "PinnedPrettier3.6.2 ownobserver only; --check, orRootexplicitmechanical--write first withscopedliteral/comment/AST preservation. No newlargeformatterframework.",
+    "controls": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-roster-classifier/classifier-controls.cjs"
+    ],
+    "types": "Existingtypecheck-safe.cjs includesnewobserver/currentfirst3 config/wrapper/originalspec/oldhelper; unchangedcurrenttypepreset5.9.3",
+    "discovery": "Existingcorrectedabsolutehelper5884 exactChromium3/original14,61,142; nofixture/API/browser/webserver",
+    "caller": "Existingb78/r1callbacks parameters onlyfreshRootgrant/TMP/output/pins, no newrunner",
+    "caps": "Node512heap/1GiBRSSsoft/32MiBownTMP/serial180phase; RootfreshgrantbeforeNode; source-onlycurrently"
+  },
+  "native": "NOT_RUN",
+  "APIbrowserseedservices": "NOT_RUN",
+  "deeperCurrent503Cause": "UNKNOWN",
+  "genericAcademicRPCHint": "UNKNOWN becausegetSemesterState/getGroupMembers shareexactprefix",
+  "sourceDiffCheck": 0,
+  "correctedFinding": "CI-F3-STATUS-SHAPE-004",
+  "oldSourceSha256": "e75ef75b90ab87b067bc82514e185b7d809dddfb74a48dc34a85a3280e9dd27b",
+  "statusSubset": "Onlyfixedcode\u2192description\u2192cause=null+closingbrace; no braces/embeddedfielddelimiters. OtherlegitimateStatus forms alsoUNKNOWN; no generalStatus/stack parser.",
+  "nativeCounterexamplePlan": "Sameactualfunctionhelper onolde75 snapshot expectedcausalRED1 with5malformedtail controls failing, thennewsource expectedGREEN0/all29. Privatepublicsyntheticdescription positive/sourcegenericAcademicoperationUNKNOWN retained."
+}

@@ -5,14 +5,15 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
+      "sha256": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27",
       "status": "authoritative-owner-contract",
       "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
       "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
       "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
       "previous_sha256_before_D009": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
-      "previous_sha256_before_D010": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+      "previous_sha256_before_D010": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+      "previous_sha256_before_D011": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e"
     },
     {
       "id": "AGENTS.md",
@@ -3825,6 +3826,631 @@
       "status": "root-retained-safe-evidence-not-product-authority",
       "revision_observed": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
       "producer_revision": "see sealed original; observation is not native execution at current head"
+    },
+    {
+      "id": "OWNER-PROCESS-UPDATE-20261013",
+      "path": "docs/validation/cloud-20261011/owner-process-update-20261013.md",
+      "sha256": "1f4eca2e865cc8fdd3deb16f03b2ae22843700b60ea14a16f4215d97c22123ab",
+      "status": "accepted-owner-process-steering-summary",
+      "owner_message_date": "2026-10-13",
+      "received_utc": "2026-10-12T21:06:54.707791+00:00",
+      "source_thread_id": "01a12bea-f8eb-7c43-afc1-242d08755c13",
+      "scope": "method only; original product/security/model/acceptance constraints unchanged"
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-source:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-source/manifest.json",
+      "sha256": "ac79d0c08f5c2c893a31ab9b30688eb11b2059f0ce18bf1e704373c24f4d076e",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-source:source-package.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-source/source-package.safe.zip",
+      "sha256": "d7fa9f971b29445511bbceac2892139891bd77a7026b9564096ab236f7818732",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-independent-review:academic-stage-resume-independent-review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-independent-review/academic-stage-resume-independent-review.safe.zip",
+      "sha256": "f1a02984d13b3cea82f1cc511f884838b71858b083f5e201408ac3e284694bf8",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-independent-review:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-independent-review/manifest.json",
+      "sha256": "e287b34485a3c5d4e5aab6ff34f1c14eaf6e0e310e647cf23a62482bfe0868e9",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-guard-correction:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-guard-correction/manifest.json",
+      "sha256": "bb2fdd40b594a06c3bca67ce93dd6f5690edc424d5342d58d2510901410356db",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-guard-correction:source-package.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-guard-correction/source-package.safe.zip",
+      "sha256": "636fe65dfba20f099daffad1e6cbc903f18afeb486f11533502e1b4cbc7140aa",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:safe-Schedule-diagnostic-whole-line-independent-recheck:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/safe-Schedule-diagnostic-whole-line-independent-recheck/manifest.json",
+      "sha256": "139f472a5e9bd46422a8ccc2abfc3a0531fd198382690b257ff1bc9faa19d97c",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:safe-Schedule-diagnostic-whole-line-independent-recheck:schedule-safe-diagnostics-line-recheck.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/safe-Schedule-diagnostic-whole-line-independent-recheck/schedule-safe-diagnostics-line-recheck.safe.zip",
+      "sha256": "079d3d96ea2b28b6dfa1f17778f2120be19f393689901898ee84c1998a6566af",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:safe-Schedule-diagnostic-independent-review:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/safe-Schedule-diagnostic-independent-review/manifest.json",
+      "sha256": "52a841257fbefa25fa057ef2ac90f3bb85580554d4a5490bf0c3dd0de1c30079",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:safe-Schedule-diagnostic-independent-review:schedule-safe-diagnostics-review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/safe-Schedule-diagnostic-independent-review/schedule-safe-diagnostics-review.safe.zip",
+      "sha256": "840588e5c044a53bd594941d1854ec45dbed72256636518ec29452a8cf92035d",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:safe-Schedule-diagnostic-whole-line-correction:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/safe-Schedule-diagnostic-whole-line-correction/manifest.safe.json",
+      "sha256": "50444d54dd0d5f117620ca00999366ab0f6ea60a631844849d35b4b31bac3e41",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:safe-Schedule-diagnostic-whole-line-correction:safe-source-correction.zip",
+      "path": "docs/validation/cloud-20261011/receipts/safe-Schedule-diagnostic-whole-line-correction/safe-source-correction.zip",
+      "sha256": "f03d0e47d15521ad0aea3379877f1c09677200d27b357a6206a2670d667a4206",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:schedule-Coverage-safe-diagnostic-source:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-Coverage-safe-diagnostic-source/manifest.safe.json",
+      "sha256": "9cafda102559d0f2b062fc0bfda816611d331121cee8e5c75a3412c761a0d3c9",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:schedule-Coverage-safe-diagnostic-source:safe-source-package.zip",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-Coverage-safe-diagnostic-source/safe-source-package.zip",
+      "sha256": "1628de2fef1f4d3eaadcd9444dc3fe75155bb3a1f9301e497d55deb3d68a59b8",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:current-db177-independent-run-receipts:ci-db177-receipt-review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current-db177-independent-run-receipts/ci-db177-receipt-review.safe.zip",
+      "sha256": "9ed6c6a68dd987cb035326affb993ed0615aa5f998b12d3a34f899706e54b6f0",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:current-db177-independent-run-receipts:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-db177-independent-run-receipts/manifest.safe.json",
+      "sha256": "3ed724224cc274eccae459d45c8a60701d8eb373c38a18c48505c10e08a939f9",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:current96-schedule-concurrency-source-plan:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current96-schedule-concurrency-source-plan/manifest.json",
+      "sha256": "7983604cd9e4b5e734e6b24663167e3f166bbfde5fdfccf6626b3984066a8938",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:current96-schedule-concurrency-source-plan:safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current96-schedule-concurrency-source-plan/safe-evidence.zip",
+      "sha256": "90ccd665a6b0a92bb8dee9c86f0a87f97710ab4ecc096d4b628e94c1e5b24061",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:D011-existing-CI-real-client-feasibility:decision.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/D011-existing-CI-real-client-feasibility/decision.safe.zip",
+      "sha256": "7cdae8425473be061b2af458a95220ece4252933841cc0d2cba4abec7d297195",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+      "qualification": "Producer revision and finite verdict are inside immutable manifest; source review is not native acceptance."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-independent-correction-recheck:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-independent-correction-recheck/manifest.json",
+      "sha256": "1eafeaef9f9194f0a6d9c3868d08cc21d3e04ed79bf9df3855115aa325616a09",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume-independent-correction-recheck:academic-stage-resume-correction-recheck.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume-independent-correction-recheck/academic-stage-resume-correction-recheck.safe.zip",
+      "sha256": "0bda9e8adef8f238099bf08eaf7ff2ceab8bb480097aa4d278e47ee401016e69",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume01-terminal:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume01-terminal/manifest.json",
+      "sha256": "3b6f8bcf8e5324079da32e93fe60dfa895ff4a1c187175dd3e90e5fe1c353def",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume01-terminal:actual-stage-resume01.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume01-terminal/actual-stage-resume01.safe.zip",
+      "sha256": "6719a72b4c1c7b36fe0c7a0646fc58ba7d56744d9443a9f4247b62d641f66729",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume02-fullcopy:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume02-fullcopy/manifest.json",
+      "sha256": "15963c993dca297d0d8ffc6e5bda25dc2c478b20821cef6ec6dfa627c27982d6",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-resume02-fullcopy:actual-stage-resume02.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-resume02-fullcopy/actual-stage-resume02.safe.zip",
+      "sha256": "5db8cc469d04ae96e0334a1f85da815a4fcaceea889843fe5b318e0a0d0208f5",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-completion-source:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-completion-source/manifest.json",
+      "sha256": "89d65e95b77227fa2e6b0f7c3d177331697c1ff48348d50172c8e72ab62170cf",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-completion-source:source-package.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-completion-source/source-package.safe.zip",
+      "sha256": "13ca7e405eff693cc8e71fbc7fd6a2f4a5bb12672cf646669857608502ce273d",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-existing-CI-source:first3-ci-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-source/first3-ci-source.safe.zip",
+      "sha256": "705151b0e25cfdbf7da4e311d73f222ddbe7fcad362d71cc5b84cb63333f8bdd",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-existing-CI-source:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-source/manifest.safe.json",
+      "sha256": "cb7cc19e14d52ece50ba2cb515e0f0f0b376c2479e7e59255968ac41ac11dc8d",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-existing-CI-independent-review:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-independent-review/manifest.json",
+      "sha256": "16271c059f11ffa99b733e20f3a7c80216287354b45e14c4369001b10b25c912",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-existing-CI-independent-review:ci-first3-independent-review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-independent-review/ci-first3-independent-review.safe.zip",
+      "sha256": "3acd37c67595864e9ea6d1b33ca6555a90e8177e4980c0ca259517655522c5db",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-coverage-outcomes-academic-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-academic-service-1.zip",
+      "sha256": "614ac70ad012dbb1df4c4326e81dcaeeb5a7c26b2eba779a8590396d7eba6988",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-unit-outcomes-api-gateway-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-unit-outcomes-api-gateway-1.zip",
+      "sha256": "0787918916cc1cab8a4f6c3379a499f1aab9b639896b68a87d062a57d2ea180d",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-integration-outcomes-api-gateway-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-api-gateway-1.zip",
+      "sha256": "118e0b51e09c95d0f7df07258bf4729ece722a4d2e076246887f2b62ccde373f",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-unit-outcomes-notification-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-unit-outcomes-notification-service-1.zip",
+      "sha256": "ef8b229daf10c8e170c443d52d7a038cbf094f16bc554f369c935a8d0407f9e7",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-coverage-outcomes-schedule-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-schedule-service-1.zip",
+      "sha256": "d7a5aab6e6f7c21c7f9044708f1f3e68d5511651d90e6fdc269247c285ac2bf6",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-integration-outcomes-auth-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-auth-service-1.zip",
+      "sha256": "1785af68215d5726696cc9219fcab7de7e9c2df9dd42b9f14dc36651a6dffa4a",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-unit-outcomes-academic-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-unit-outcomes-academic-service-1.zip",
+      "sha256": "3f65387cb379d0e04a9aa55ccdc868ab8725075f461eeb823351e9e4f05a6389",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-integration-outcomes-academic-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-academic-service-1.zip",
+      "sha256": "57a6957025a66cef0f32ad4fa7ac691b409c7398e439979aeb8507028627db1f",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-unit-outcomes-schedule-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-unit-outcomes-schedule-service-1.zip",
+      "sha256": "4e8d1a689a1384f435708639fec161c64bd4df784fa4dd3f513018f9d165d796",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-coverage-outcomes-api-gateway-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-api-gateway-1.zip",
+      "sha256": "2c119a0c37e5950fc30c2bdbcc7fad3645899e2720c1b2dbc068b25044245de1",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-coverage-outcomes-attendance-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-attendance-service-1.zip",
+      "sha256": "18d6c9313fe83737203ac9fea803045f8132864c1f3274e4dd8e12f16b5bfc2e",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-unit-outcomes-auth-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-unit-outcomes-auth-service-1.zip",
+      "sha256": "fd2bd92e113309a57187f602aa2fabd391dd456f41cc8398b989259e2cff59a6",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-integration-outcomes-schedule-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-schedule-service-1.zip",
+      "sha256": "ca75a3cb67c49be1ee1ada21d6c441b46891b7141570899dfbdf0cad1dc69a03",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-integration-outcomes-notification-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-notification-service-1.zip",
+      "sha256": "7bb5cc3ee4e5546fe159df15ba828e8288c6f743f28693d99d02048468fc337d",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-coverage-outcomes-notification-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-notification-service-1.zip",
+      "sha256": "aa51370168c5d23a08d952765e310fb6d9d23a00c79b1a3235917b3ef58d119a",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-coverage-outcomes-auth-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-auth-service-1.zip",
+      "sha256": "867058636d37b9a0689d76d7bc09a52316ef6a80369b3b3b12332cf5fb4b35ae",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/manifest.safe.json",
+      "sha256": "908e7bbfddca2968aa9ab7771421ebac6e1f45c96871ad5b5ce54a9317c7bea2",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-unit-outcomes-attendance-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-unit-outcomes-attendance-service-1.zip",
+      "sha256": "ceb26e4160370469f42bf2cca5dc2feeacf8ae167a32b0fe1563394da2ced9be",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-integration-outcomes-attendance-service-1.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-attendance-service-1.zip",
+      "sha256": "acc5315a349f1b6d1be351f32a0f3ac8c09fb02db9116276d0caff8fc0e389a0",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:current18451-all-gates-SAFE:safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-evidence.zip",
+      "sha256": "97885d5e7a6fdd240ea28722b21d82c70ecf38632f7e89ee3b44275eeff4b03b",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:schedule-safe-diagnostic-Java-format-equivalence:safe-mechanical-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-safe-diagnostic-Java-format-equivalence/safe-mechanical-source.zip",
+      "sha256": "3e67aacf6caaffae4e8f273eae6621c06fd39589e994f72729111a7f24d4a8f4",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:schedule-safe-diagnostic-Java-format-equivalence:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/schedule-safe-diagnostic-Java-format-equivalence/manifest.safe.json",
+      "sha256": "5a36487fb4e3eea444ec0acd383f5cf342a95187d3af4f0146132d3507acfd85",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Exact producer/finite verdict/native-vs-source boundaries in immutable manifest; no whole-matrix promotion."
+    },
+    {
+      "id": "receipt:academic-current-stage-completion-actual:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/academic-current-stage-completion-actual/manifest.json",
+      "sha256": "229e1feb703384470fda755203cb540eb95c663921b28e0cbfcb3f2124c7409a",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "receipt:current-coherent8-completion-runtime-bind-source:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-coherent8-completion-runtime-bind-source/manifest.json",
+      "sha256": "8ca101cb7024fb09718db7b5ef91eac4c0d4b531d12ae868034b6f16b375460f",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "receipt:current-coherent8-completion-runtime-bind-independent-review:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-coherent8-completion-runtime-bind-independent-review/manifest.json",
+      "sha256": "452107386f8421e8a3d05b1f0e17430bbfa063ae4889623fa5cc2af4ff4eb69e",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-native-readonly04-diagnosis:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-native-readonly04-diagnosis/manifest.safe.json",
+      "sha256": "95e91cefa54cdf9266192e51fd5a7d55116fbca138ced506f01cff9357b07301",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-native-parser03-FAIL:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-native-parser03-FAIL/manifest.safe.json",
+      "sha256": "49724b6f8f94f5d57b48564e1f24b66018b5220bf0ef6f493b022b9e43886c45",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-existing-CI-clock-date-correction:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-clock-date-correction/manifest.safe.json",
+      "sha256": "3e7d4482b5a9bb0a14765a50369f3e1fa7531de502b9717ed31b16884285f4f1",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-existing-CI-two-finding-recheck:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-existing-CI-two-finding-recheck/manifest.json",
+      "sha256": "a9afdeb3890716a5c748cf9ce270fdb165df62e64b828b0b1edbd5c1c7722623",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+      "qualification": "Receipt carries actual producer/native or SOURCE-only scope; current Root SHA is registration context, not artifact producer. No parent scenario promotion."
+    },
+    {
+      "id": "owner:cloud-isolated-stand-approval-Q010",
+      "path": "docs/validation/cloud-20261011/owner-isolated-stand-approval-Q010.md",
+      "sha256": "0a8a4960d7c48b8fe1da8b49814883a6ceb36809263841cb547ac3a5ad937e4f",
+      "status": "accepted-owner-explicit-startup-permission",
+      "qualification": "Root faithful context summary; owner answer in chat is primary; platformapproval not waived."
+    },
+    {
+      "id": "receipt:Cloud-FIRST3-r2-real-onePASS-two503FAIL:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Cloud-FIRST3-r2-real-onePASS-two503FAIL/manifest.safe.json",
+      "sha256": "eee6229cd1b2995907835a9ad02454ab809365a6154940edb5d2fef267b5be37",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:Cloud-FIRST3-date-coherence-r2-source:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Cloud-FIRST3-date-coherence-r2-source/manifest.safe.json",
+      "sha256": "9175c300ae768acff36a00e56052aaca47e691f587960ca68d969311ddce29f0",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:Cloud-FIRST3-date-coherence-r2-independent-review:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/Cloud-FIRST3-date-coherence-r2-independent-review/manifest.json",
+      "sha256": "e7b034e0b44f7024fa11363eaf2cc50268c789ed6eaf971162a338f33b72d158",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:coherent8-next02-terminal-and-data158:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/coherent8-next02-terminal-and-data158/manifest.json",
+      "sha256": "1a8c1080a02f5697a986d20f399effc3295394501fbf9e4dad651b50b68dc0ee",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:coherent8-next02-critical-readiness-final-seal:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/coherent8-next02-critical-readiness-final-seal/manifest.json",
+      "sha256": "8c399642975359949326f7a5456b181e5fde930f8860aa8fc146b56f9c7bd76d",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:roster503-independent-causal-source:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster503-independent-causal-source/manifest.json",
+      "sha256": "306c58033ba005b9ad37583ce7cf374435d12f5cd2d2b90a8b9b204b05b3390f",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:roster503-static-public-message-map:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster503-static-public-message-map/manifest.safe.json",
+      "sha256": "6ddcd83f6975878ea269e06327e052f1d42314c9c0300232f24b3e43b38e3ecc",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-native-final06-format-types-discovery:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-native-final06-format-types-discovery/manifest.safe.json",
+      "sha256": "3e4c027cbe549aad6c7ce3a64df82b9d4a6341359a6c90412a3e49a118715ba5",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:client-FIRST3-semantic05-independent-assessment:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-FIRST3-semantic05-independent-assessment/manifest.json",
+      "sha256": "5f152aa87d4a60c473dd9d667cb9ee9da890a39d797f2234f826fa0af6a731da",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:CI-FIRST3-final-c77-source:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-final-c77-source/manifest.safe.json",
+      "sha256": "dc555db7940d370014f7c292cca39c6613b301742d38d319e9812a8927921723",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Currentregistration context only. Exact producer/currentrealRoot184/JAR96+908/native-vs-source/finite verdict in receipt; no parentpromotion."
+    },
+    {
+      "id": "receipt:CI-FIRST3-status-shape004-recheck:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-status-shape004-recheck/manifest.json",
+      "sha256": "248690a5031b46daf4371a5948654ef13c64e4a30095410cbb3c6f64eea6494f",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Source-only review/correction; native29 controls pending and actual roster503 cause UNKNOWN. Original rejected source preserved."
+    },
+    {
+      "id": "receipt:CI-FIRST3-rosterclassifier-independent-review:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-rosterclassifier-independent-review/manifest.json",
+      "sha256": "fb815d8bd5107d91eb81914a3b9ac34c2402de3d50bb5025bf9a0fddba1855e6",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Source-only review/correction; native29 controls pending and actual roster503 cause UNKNOWN. Original rejected source preserved."
+    },
+    {
+      "id": "receipt:CI-FIRST3-classifier-native07:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-classifier-native07/manifest.safe.json",
+      "sha256": "4ecbc17a7eaa26c178592746a1369dfb7638aeed48b369f289b851d97f86c5b1",
+      "status": "observed-safe-native-evidence-not-product-authority",
+      "revision": "16b7dcfd0d31fb9a1e7d61658fabcbc564fa7978",
+      "qualification": "Actual ownWT observer74ff vs knownbad e75: oldRED5/newGREEN29; formatSTYLEFAIL, types/listNOT_RUN. Exact19manifestmembers verified/ZIP20. No browser/transport/API cause proof; fourbirthsabsent/leaseRELEASED."
+    },
+    {
+      "id": "receipt:CI-FIRST3-classifier-format08:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-classifier-format08/manifest.safe.json",
+      "sha256": "a3cc96b785a31e124df23de632ce2b833d17b5dde50b8b609800e92c4a5c3d17",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+      "qualification": "Registration current context; exact ownWT producers before74ff/after0a8f in receipt. Source-only4comma review, native08strictinequality retained/native09actual29+format/types/exact3PASS. No API/browser/transport503 cause proof."
+    },
+    {
+      "id": "receipt:CI-FIRST3-classifier-mechanical-recheck:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-classifier-mechanical-recheck/manifest.json",
+      "sha256": "ad1c64b4a65da9851c4b34c7d672b6aa35e743eabcee206201a7d104e4b546ab",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+      "qualification": "Registration current context; exact ownWT producers before74ff/after0a8f in receipt. Source-only4comma review, native08strictinequality retained/native09actual29+format/types/exact3PASS. No API/browser/transport503 cause proof."
+    },
+    {
+      "id": "receipt:CI-FIRST3-classifier-final09:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-FIRST3-classifier-final09/manifest.safe.json",
+      "sha256": "a49a6241c3e2d9ba3f2e34d1df92b9a169e330aaab6c357c845f8921bf0643dc",
+      "status": "observed-safe-evidence-not-product-authority",
+      "revision": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+      "qualification": "Registration current context; exact ownWT producers before74ff/after0a8f in receipt. Source-only4comma review, native08strictinequality retained/native09actual29+format/types/exact3PASS. No API/browser/transport503 cause proof."
     }
   ],
   "research_receipt": {

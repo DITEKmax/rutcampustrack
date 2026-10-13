@@ -1,0 +1,28 @@
+{
+  "state": "LAUNCHING",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "ready_sha256": "0dcc8a2ac9b118d2cd1a57f6928b492b7077ef228d62646e2b0ef91542389ce8",
+  "grant_sha256": "23261409286365e82713c08cdffc8b2b86dfde9764ca4064212b0d2cf433a738",
+  "issued_at": "2026-10-12T23:34:21.497411+00:00",
+  "absolute_stop_at": "2026-10-12T23:38:25.716112+00:00",
+  "deadline_seconds": 242,
+  "project": "chromium",
+  "case_count": 3,
+  "workers": 1,
+  "retries": 0,
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+    "test",
+    "--config",
+    "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/focus3.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0"
+  ],
+  "own_driver_pid": 414256,
+  "own_driver_birth": 10185425,
+  "requested_context": "approved VM network/IPC; ordinary actor1000/root0"
+}

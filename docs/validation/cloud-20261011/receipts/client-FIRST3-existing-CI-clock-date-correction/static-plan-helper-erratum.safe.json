@@ -1,0 +1,7 @@
+{
+  "stage": "OPTIONAL_FORMAT_METADATA",
+  "nativePythonExit": 1,
+  "errorClass": "FileNotFoundError",
+  "cause": "Assumed optional root EditorConfig existed; neither Root nor sparse WT has it. No source or native Node change.",
+  "correction": "Compare existence flags then bytes only when present. Existing correction/calendar/source checks already completed; no fake prior full-plan PASS."
+}

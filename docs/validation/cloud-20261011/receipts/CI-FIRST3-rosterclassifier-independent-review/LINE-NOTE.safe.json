@@ -1,0 +1,7 @@
+{
+  "report_manifest": "fb815d8bd5107d91eb81914a3b9ac34c2402de3d50bb5025bf9a0fddba1855e6",
+  "finding": "CI-F3-STATUS-SHAPE-004",
+  "correct_source_line": 204,
+  "report_line_209": "incorrect reference only; original immutable report preserved",
+  "effect_on_verdict": "NONE"
+}

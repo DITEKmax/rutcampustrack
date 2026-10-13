@@ -1,0 +1,28 @@
+# Current roster503 — bounded causal SOURCE result
+
+**Exact503 boundary identified; actual deeper cause remains UNKNOWN.** Strong source compatibility candidate: Attendance's current `GetSemesterState` call conflicts with Academic's unconditional Schedule-only directed-service identity policy. No native/API/test/log/private ENV/key/body operation or source edit. Selected Sol6.1/xhigh, actual UNKNOWN. Contract441728/D012, current state/resources and decisions context restored; Root sole docs writer.
+
+Actual CloudR2 SAFE report9eb7/observers retained: case14 WRITE200/reload PASS,61 current HEADMAN/actortrue/list200 correct date and target1,142 STUDENT/current MARK grant/actortrue/list200 target; both journal UI and same-target diagnostic roster read503, row0/alert1. Both BEGIN/END completed/dropped0; all17 known births absent. Current response type/code/body were not captured. These are current outcomes, not historical failure causes or full family PASS.
+
+## Exact chain
+
+`headman-journal-client.ts:304–306` calls **GET /api/attendance/reports/lesson/{lessonId}**. Gateway `application.yml:358` routes `/api/attendance/**` directly to Attendance. BFF is not in this roster path. ReportController103 →ReportService118:
+
+1. ScheduleGrpcClient.getLessonById:3-second RPC, NOT_FOUND→404, every other gRPC status→ScheduleServiceUnavailable.
+2. Current own-group admission: signed Academic.CheckAssistantPermission(VIEW_STATS, then MARK_ATTENDANCE). PERMISSION_DENIED is false; UNAUTHENTICATED→401; no allowed grant→403. Other RPC failures→AcademicServiceUnavailable.
+3. Historical Academic.GetGroupMembers(group, lesson date, semester), paired echo/unique IDs validated. NOT_FOUND→404; every other RPC status→AcademicServiceUnavailable. Missing history coverage/before-coverage/wrong writer/coherence failures produce FAILED_PRECONDITION via Academic GrpcExceptionAdvice. Current grants/list200 do not prove this historical boundary.
+4. For STUDENT/headman actor, GetSemesterState, repeated mark/manage capability reads, approved tickets and local attendance assembly. Local mismatched roster/semester/ticket-source failures can also produce503.
+
+Attendance GlobalExceptionHandler177 maps ScheduleServiceUnavailable, AcademicServiceUnavailable and ReportExportUnavailable to **HTTP503 https://api.rutcampustrack.ru/problems/service-unavailable**, no-store. Existing detail is a dependency/status or static validation message; do not publish it raw. An upstream Gateway availability failure is also still possible until problem origin/type is observed. Successful Schedule REST list does not establish Attendance→Schedule gRPC reachability/TLS/auth/deadline.
+
+## Specific compatibility candidate
+
+ReportService154 calls `academicGrpcClient.getSemesterState` for this actor. AcademicGrpcClient51 uses ordinary stub +3-second deadline, no directed call credentials/interceptor. Its application global client interceptors are legacy `x-grpc-secret` and metrics. Academic AssignmentCloseServiceAuthConfiguration registers AssignmentCloseServiceIdentityInterceptor unconditionally; its constructor39 maps **GetSemesterState→SCHEDULE_SERVICE**, and accepts only schedule-to-academic directed credentials. Shared ServiceIdentityServerInterceptor72 requires TLS and exactly one canonical `x-service-token`; absent token rejects UNAUTHENTICATED/`Invalid service identity` (TLS missing rejects its own fixed reason first). Attendance cannot acquire this contract by merely having a valid user/grant/shared secret. Its getSemesterState maps UNAUTHENTICATED/PERMISSION_DENIED to503.
+
+Opened current and producer908 critical method bodies/policy directly; selected client method, policy constructor and journal assembly tokens/literals match despite mechanical formatting. All14 recorded current source files equal Git96. Initial reviewer whole-file raw/token assertions failed on formatting differences and are excluded; no whole-file semantic/native/JAR equivalence is invented. This concrete candidate is present in the actual relevant producer source; execution reaching it is not proven by UI503 alone. Preserve method security, actor scope and assignment-close Schedule identity; do not borrow Schedule credentials, add fallback rights or silently widen method access.
+
+## Smallest actual witness
+
+Under separate existing Root/API owner authority, parse the **same failed same-session/same-target GET** privately and retain only closed fields: HTTP status, problem-type class, dependency={SCHEDULE,ACADEMIC,LOCAL,UNKNOWN}, grpc Status.Code enum or UNKNOWN, and exact known static-reason enum or UNKNOWN. No response body/detail/description/cause/request URI/IDs/names/token should be stored or printed. For the candidate, `ACADEMIC + UNAUTHENTICATED + INVALID_SERVICE_IDENTITY/TLS_REQUIRED` uniquely implicates GetSemesterState's directed boundary in the opened chain; PERMISSION_DENIED/FORBIDDEN_SERVICE_CALLER is the other policy branch. FAILED_PRECONDITION plus an exact historical coverage/coherence reason implicates historical roster; UNAVAILABLE/DEADLINE_EXCEEDED points transport/deadline but needs a method witness to locate the hop. Unknown/unrelated text must remain UNKNOWN, not a forced match. No new source/endpoint, login, write, native replay or bypass is proposed here.
+
+Stand fixed cleanup23:46:59 is unchanged. If that closed witness is unavailable, stop at these alternatives and retain deeper cause UNKNOWN for a later bounded authorized check. Root/host owns runtime-address/TLS/config/health facts. This receipt does not authorize execution or claim a product defect confirmed by actual RED.

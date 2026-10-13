@@ -1,0 +1,1 @@
+SEALED_CURRENT18451_ALL4GATES_SUCCESS.18SAFE archives/24task outcomes/currentcheckoutdb57/treeequalhead184; Academicdd0c446PASS/CAPb40d205PASS eachCI+Cov. Historical96causeUNKNOWN/currentFAIL-emitter notexercised/no matrix promotion. No rawlogs/XML/private/source/native writes.

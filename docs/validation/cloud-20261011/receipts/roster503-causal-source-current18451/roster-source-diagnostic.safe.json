@@ -1,0 +1,85 @@
+{
+  "utc": "2026-10-12T23:39:22.811238+00:00",
+  "cohort": "restart-20261012-next02",
+  "mode": "SOURCE_ONLY_NOT_API",
+  "endpoint": "GET /api/attendance/reports/lesson/{lessonId}",
+  "route": "Gateway StripPrefix1 directly Attendance; BFF not in this route",
+  "sources": [
+    {
+      "role": "gateway",
+      "path": "/workspace/rutcampustrack/services/api-gateway/src/main/resources/application.yml",
+      "line": 358,
+      "sha256": "fa6f345ef0dba0d8b4a93986585c3b044afb8efdb60dc6d5687fc4e1b5e0d04d"
+    },
+    {
+      "role": "controller",
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+      "line": 103,
+      "sha256": "9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4"
+    },
+    {
+      "role": "report",
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "line": 118,
+      "sha256": "f66bc69acc044aba1fee986fe091490f4afe8ee89078f4ec13251557180048b9"
+    },
+    {
+      "role": "academic_rpc",
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "line": 153,
+      "sha256": "8c0bf5625683daeed46f107d8b7bfd929b44eba8d5d2cc56656c01dd357c0752"
+    },
+    {
+      "role": "schedule_rpc",
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "line": 53,
+      "sha256": "333aaa9622b4d631122e9c22e51c40fca1293f0cc287798d7acf3adbf82e53cb"
+    },
+    {
+      "role": "http503",
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/GlobalExceptionHandler.java",
+      "line": 172,
+      "sha256": "e0ecafcf4c9f4eea93c7d8d4d499e67f273f0b92496392cffa0fad40f226341e"
+    }
+  ],
+  "order": [
+    "Schedule.GetLessonById",
+    "current same-group CheckAssistantPermission VIEW_STATS or MARK_ATTENDANCE with signed session",
+    "require canonical lesson timing",
+    "Academic.GetGroupMembers exact lesson date+semester; positive semester and returned echo/unique positive members required",
+    "Academic.GetSemesterState exact semester",
+    "MARK_ATTENDANCE and MANAGE_EXCUSES",
+    "own Mongo attendance/ticket reads"
+  ],
+  "shared503": [
+    "ScheduleServiceUnavailableException",
+    "AcademicServiceUnavailableException",
+    "ReportExportUnavailableException"
+  ],
+  "cause": "UNKNOWN",
+  "proposed_one_read_only_diagnostic": {
+    "requires_new_root_api_grant": true,
+    "existing_actor_and_existing_lesson_only": true,
+    "no_seed_reset_new_dataset": true,
+    "RAM_response_only": true,
+    "safe_fields": [
+      "http_status",
+      "problem_type_is_service_unavailable",
+      "closed_dependency_category",
+      "closed_grpc_status_enum",
+      "unknown_classification"
+    ],
+    "categories": [
+      "SCHEDULE_RPC",
+      "ACADEMIC_RPC",
+      "SCHEDULE_MISSING_SEMESTER",
+      "HISTORICAL_ROSTER_ECHO",
+      "HISTORICAL_ROSTER_IDENTITIES",
+      "SEMESTER_SNAPSHOT",
+      "UNKNOWN"
+    ],
+    "reject_raw_body_detail_or_logs": true
+  },
+  "no_actual_calls_or_runtime_changes": true,
+  "source_vs_running_payload": "Root sources inspected; seven old908 artifacts and new96 Academic retained; no hot-source changes"
+}

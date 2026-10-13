@@ -1,0 +1,27 @@
+{
+  "files": [
+    {
+      "path": "/workspace/rct-cloud-setup/run-gradle.py",
+      "sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95"
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/jdk21/bin/java",
+      "sha256": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+      "sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/host-service-specs.json",
+      "sha256": "8da6354c0d132975e4ec4f6172fb90484edc8975bb5e08e797824245f71d082a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/eight-production-jars.json",
+      "sha256": "118c657392261c7e55b4c456331f1f2a731deacf35957b2621242dcb2b1f71da"
+    }
+  ],
+  "build_java_release": "Existing retained Temurin21.0.12.1+1; no JVM/version execution during source prep",
+  "root_anchor_context": "Retained approved native root/tmpUID0 exact table; actor1000; defaultmasked65534 denied",
+  "source_fix_candidate": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b; Root commit not integrated during preparation"
+}

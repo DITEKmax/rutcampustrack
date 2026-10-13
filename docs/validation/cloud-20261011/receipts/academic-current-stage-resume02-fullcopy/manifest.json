@@ -1,0 +1,56 @@
+{
+  "scope": "ACTUAL_STAGE_RESUME02_TERMINAL_FULL_PAYLOAD_NOT_COMMITTED",
+  "source_manifest_sha256": "bb2fdd40b594a06c3bca67ce93dd6f5690edc424d5342d58d2510901410356db",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 997,
+      "sha256": "0fe227498e689fd136ebda716dfdddea4a5d1bac42fd889bb718e53c29d9091f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/classpath-index-difference.safe.json",
+      "name": "classpath-index-difference.safe.json",
+      "bytes": 454,
+      "sha256": "0f184ddab2e18552b8be5c8496cb274e4bd85c4938fd2a8d333cad230266b1be"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/full-payload-readonly.safe.json",
+      "name": "full-payload-readonly.safe.json",
+      "bytes": 722413,
+      "sha256": "01a6f122bff2a4f20c2f6ef1a7e836ffcd46953e409c277e2418ae573e8223cd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/launch.safe.json",
+      "name": "launch.safe.json",
+      "bytes": 467,
+      "sha256": "562eac771ed3c603e4f40dd38a07aaa13783eea113928ad3b52c63527cc3e4eb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/native-output.safe.json",
+      "name": "native-output.safe.json",
+      "bytes": 1051,
+      "sha256": "d8ff13c51e2cdb1e4b99ef3137136c2e5c7a53c447bcb9377419ed70ec5a178b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/partial-metadata.safe.json",
+      "name": "partial-metadata.safe.json",
+      "bytes": 383873,
+      "sha256": "3544e3f9625fb2c87dc5e2ea041609c56ecae55fb7f9c34f27d5be371b97919f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/readonly-final-gates.safe.json",
+      "name": "readonly-final-gates.safe.json",
+      "bytes": 145,
+      "sha256": "00b17390da228711829d4c43d10db7d64a36e25bb4608d7b763487e3b9a59c4a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume02/terminal.safe.json",
+      "name": "terminal.safe.json",
+      "bytes": 715,
+      "sha256": "acef42e194365b6acae4c970e3ccecb04f4289a90021487c91f16da422ed5d47"
+    }
+  ],
+  "private_excluded": true,
+  "native_lease": "RELEASED"
+}

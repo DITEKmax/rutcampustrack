@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/@types"
+    ]
+  },
+  "files": [
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/first3-observer.ts",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/first3-specs/mobile-first3.spec.ts",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/playwright.first3.config.ts",
+    "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/source-discovery.config.ts",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/specs/mobile-real-server.spec.ts"
+  ]
+}

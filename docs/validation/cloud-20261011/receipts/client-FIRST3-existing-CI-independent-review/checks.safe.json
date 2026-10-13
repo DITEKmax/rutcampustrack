@@ -1,0 +1,36 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "CI-F3-CLOCK-MODE-001",
+      "priority": 2,
+      "cause": "new prepare outer077 creates700 clockdir/600 marker+instant for distinct nonroot consumers"
+    },
+    {
+      "id": "CI-F3-DATE-COHERENCE-002",
+      "priority": 2,
+      "cause": "weekend teachingMonday dataset/domain versus browserSatSun HEADMAN selectedDate"
+    }
+  ],
+  "checks": [
+    "all9_manifest_members_ZIP10_CRC_paths_exact4_frozen_Git_sourcecopies",
+    "all_original_triggers_otherjobs_gates9smoke_TLS_seed_install_cleanup_exact_30min",
+    "FIRST3_after_successful_smoke_blocking_oneboot480",
+    "exact4_canonical_SAFE_JSON_upload_paths_4unsafe_mutations_rejected",
+    "reviewed4650_observer_only2_portable_import_substitutions",
+    "protected_dataset_safe_reporter_serial1_retry0_clock_worker_project_traceoff",
+    "exact_original_FIRST3_14_61_142_assertion_bodies_unchanged",
+    "actual16_graph_ALL10_Dockerfile_context_relative_reachability_4educational_overlay_only",
+    "P2_CLOCK_MODE_exact_new077_to700_600_denies_distinctUID10001_10002_DAC_RAM",
+    "scoped_public_clock022_private_artifact077_permission_positive_RAM_NOT_APPLIED",
+    "P2_weekend_browserSat_vs_teachingMonday_exact_HEADMAN_dayquery_source_RAM",
+    "public_synthetic_signer_admin_input_byte_preservation_boolean_only"
+  ],
+  "checks_count": 12,
+  "source_manifest_sha256": "cb7cc19e14d52ece50ba2cb515e0f0f0b376c2479e7e59255968ac41ac11dc8d",
+  "actual_Node_types_discovery_formatter_browser_CI": "NOT_RUN",
+  "target_imports_native_private_reads_or_sourcefix": false,
+  "Dockerfile_initial_guessed_path_hypothesis": "RETRACTED actual10 context-relative paths present",
+  "selected_requested_model": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

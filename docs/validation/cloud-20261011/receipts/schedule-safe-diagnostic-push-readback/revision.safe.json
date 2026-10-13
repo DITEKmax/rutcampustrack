@@ -1,0 +1,18 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "previous": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+  "local": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "real_remote": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "PR_head": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "PR": 2,
+  "draft": true,
+  "target": "main",
+  "merged": false,
+  "paths": [
+    ".github/workflows/coverage.yml",
+    "scripts/collect-ci-test-outcomes.py",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+    "tests/harness/test_ci_test_outcomes.py"
+  ],
+  "checks": "PENDING_CURRENT"
+}

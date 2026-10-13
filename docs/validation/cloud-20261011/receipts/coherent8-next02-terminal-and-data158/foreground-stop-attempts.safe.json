@@ -1,0 +1,50 @@
+[
+  {
+    "service": "mongo",
+    "pid": 402553,
+    "birth_ticks": 10101460,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "academic",
+    "pid": 404360,
+    "birth_ticks": 10112750,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "auth",
+    "pid": 406637,
+    "birth_ticks": 10127866,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "schedule",
+    "pid": 407322,
+    "birth_ticks": 10133219,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "attendance",
+    "pid": 407351,
+    "birth_ticks": 10133761,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "bff",
+    "pid": 407496,
+    "birth_ticks": 10134366,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "gateway",
+    "pid": 407598,
+    "birth_ticks": 10134963,
+    "exact_pidfd_SIGTERM": true
+  },
+  {
+    "service": "notification",
+    "pid": 407714,
+    "birth_ticks": 10135639,
+    "exact_pidfd_SIGTERM": true
+  }
+]

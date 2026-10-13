@@ -1,0 +1,29 @@
+{
+  "verdict": "AUTHOR_MECHANICAL_SOURCE_EQUIVALENCE",
+  "before_sha256": "4a9c9ac845d2fdf62b2b0f26497a897c42878eed8ca5c766e8747a6d00ef6ad0",
+  "after_sha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0",
+  "exact_one_whitespace_hunk": true,
+  "full_ordered_tokens_literals_comments_delimiters_equal": true,
+  "counts": {
+    "code": 11748,
+    "literals": 406,
+    "comments": 9,
+    "delimiters": 3320
+  },
+  "full_consuming_lexer": true,
+  "text_block_bytes_preserved": true,
+  "controls": {
+    "SQLState_literal_mutation": true,
+    "literal_internal_space_mutation": true,
+    "arrow_token_split": true,
+    "maximal_munch_positive": true
+  },
+  "all_original9caf_and5044_manifest_members_unchanged": true,
+  "Root_bytes_unchanged": true,
+  "formatter_required_layout": "eight SQLState literals separate lines; RHS state separate line",
+  "new_formatter_compiler_or_native": "NOT_RUN",
+  "source_file_mode": "0o600",
+  "nlink": 1,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

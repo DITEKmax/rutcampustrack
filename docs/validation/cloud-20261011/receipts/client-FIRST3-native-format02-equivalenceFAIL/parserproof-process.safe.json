@@ -1,0 +1,8 @@
+{
+  "state": "REAPED",
+  "child_pid": 397262,
+  "group": 397262,
+  "members_including_Z": [],
+  "reason": "NATIVE_TERMINAL",
+  "signal_count": 0
+}

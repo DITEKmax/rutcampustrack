@@ -1,0 +1,23 @@
+{
+  "schema": "RCT_FOCUS3_CLOSED_V1",
+  "caseCode": "HEADMAN",
+  "events": [
+    {
+      "caseCode": "HEADMAN",
+      "phase": "BEGIN",
+      "facts": {
+        "diagnosticState": "OBSERVING"
+      }
+    },
+    {
+      "caseCode": "HEADMAN",
+      "phase": "UI_RESPONSE",
+      "endpoint": "LESSON_ROSTER",
+      "facts": {
+        "httpStatus": "503",
+        "lessonPathEqual": false
+      }
+    }
+  ],
+  "droppedEventCount": 0
+}

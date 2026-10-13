@@ -1,0 +1,17 @@
+{
+  "original_157_runner": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+  "original_runner_sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd",
+  "new_runner": "/workspace/scratch/rct-validation/current_academic_refresh_prepare/run-academic-restart.py",
+  "allowed_changes": [
+    "Academic-only CLI selection",
+    "Exact next02 grant filename",
+    "New pinned runtime-binding helper + actual ownsource/package/review/JAR/stage/spec gate before privateENV",
+    "Existing157 original runner is the retained immutable source reference for original157 self/authority chain; actualNEWsource separatelychecked bynewmanifest",
+    "New specs provided only by verified same-layout full Academic payload",
+    "Additional tmp4GiB+1GiBMongo growth monitor/earlyuse-time check"
+  ],
+  "preserved": "Original157 boundary/config/guard/exact existingDB/key/fivevolumes and stopped157 fence; no data content read",
+  "data_nodes": 157,
+  "private_environment_source": "Same originalv5 Academic privateENV path; not read during sourceprep",
+  "runtime": "NOT_RUN"
+}

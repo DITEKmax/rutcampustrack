@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T23:14:57.164322+00:00",
+  "phase": "DOCKER6_DISPATCH_NOT_RUN",
+  "native_process_session_PID": "NONE_CREATED",
+  "executor": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/docker-up-restart.py",
+  "preflight_disposition": "READY_READONLY_METADATA_ONLY",
+  "grant_stop_utc": "2026-10-12T23:42:50.849633+00:00",
+  "automatic_approval_review": "REJECTED_BEFORE_EXECUTION",
+  "reason": "Trusted user content not seen as explicitly authorizing exact Docker6 startup; shared runtime/network/container and potential DB/migration mutation classified highrisk.",
+  "no_indirect_or_context_switch_bypass": true,
+  "data_volumes_keys_containers_mutation": false,
+  "source_shared_docs_edits": false,
+  "owner_authorization_evidence_or_user_approval_required_if_rejection_persists": true
+}

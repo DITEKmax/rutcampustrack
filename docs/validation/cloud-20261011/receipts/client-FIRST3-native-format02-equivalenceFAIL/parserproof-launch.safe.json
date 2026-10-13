@@ -1,0 +1,12 @@
+{
+  "phase": "parserproof",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/tmp/rct-first3-ci-format-correction-20261012-attempt02/parser-proof.cjs"
+  ],
+  "deadlineSeconds": 170,
+  "grantPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/private/node-format-correction-grant02.json",
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "diagnosticPublicSourceOnly": false
+}

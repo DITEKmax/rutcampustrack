@@ -1,0 +1,16 @@
+{
+  "meaning": "APPEND THESE EXACT FIELDS TO NEW FULL ORIGINAL157 DURABLE RESTART GRANT ONLY; not standalone permission",
+  "academic_refresh_runtime_authorized": true,
+  "frozen_source_revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "fixed_UserSpecifications_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "academic_refresh_manifest_sha256": "ROOT_EXACT_SOURCE_MANIFEST_SHA",
+  "academic_refresh_review_manifest": "ROOT_FRESH_APPROVE_SOURCE_MANIFEST_PATH",
+  "academic_refresh_review_manifest_sha256": "ROOT_EXACT_FRESH_REVIEW_SHA",
+  "academic_full_app_path": "/tmp/rct-academic-refresh-20261012-attempt01/app",
+  "academic_stage_receipt_path": "/tmp/rct-academic-refresh-20261012-attempt01/stage-result.safe.json",
+  "academic_stage_receipt_sha256": "ROOT_ACTUAL_FULL_STAGE_RECEIPT_SHA",
+  "effective_Academic_runner": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/run-academic-restart.py",
+  "other6_host_andDockerMongo_callers": "Original current_host_restart_data157_docker_correction only; original1e7/be10 approvals and stopped157 fence unchanged",
+  "academic_stage_commit_receipt_path": "/tmp/rct-academic-refresh-20261012-attempt01/stage-committed.safe.json",
+  "academic_stage_commit_receipt_sha256": "ROOT_ACTUAL_FINAL_RECONCILED_COMMIT_SHA"
+}

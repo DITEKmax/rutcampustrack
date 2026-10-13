@@ -1,0 +1,148 @@
+{
+  "scope": "CURRENT_ACTUAL_SAFE_ARTIFACT_BIND_AND_UNCHANGED_RESTART_AUTHORITY",
+  "refs": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/manifest.json",
+      "sha256": "89d65e95b77227fa2e6b0f7c3d177331697c1ff48348d50172c8e72ab62170cf"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/runtime-binding.py",
+      "sha256": "be1488b5995accb02212c36e4ce919fe2ddac61de50eeeb9d7d43d58571ecc24"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/run-academic-restart.py",
+      "sha256": "529188289a8c9d4c882eb52f626533b20ba4934fbc7ce2b3ee99974ada6fffb0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_review/manifest.json",
+      "sha256": "0c62f39e6a4043b6db866dd148f9920ecf34ed6109c058d451388801e4e74403"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/manifest.json",
+      "sha256": "229e1feb703384470fda755203cb540eb95c663921b28e0cbfcb3f2124c7409a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/manifest.json",
+      "sha256": "1e7e26e631f7ece9a0d1b7d30ec60d586a7ce4c4c4d9f5fcbe53e913258070c8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/restart-boundary.py",
+      "sha256": "f044c87bcf7041a79a174aab8b458de3e0029d45d55a8103f729b937882e5bcb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/docker-up-restart.py",
+      "sha256": "7cbd2c02a181b43128c49eee3c31576026d36f0065ed9dd6695743225b02a60e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-mongo-restart.py",
+      "sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/manifest.json",
+      "sha256": "be10ab5e53c9a0bdba6de125902859bd4745f0a55d97bc332e21d9ec9f0b5d2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/stopped-native-data-fence157.safe.json",
+      "sha256": "d368d1d211b71f0d364f86bb71ac5f79bfe0170a7f155e893fbd257d9e16e11f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+      "sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0"
+    }
+  ],
+  "stage_result_sha256": "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643",
+  "commit_sha256": "10589f902536c9861a20a7fde981e9ad6c2b40a28d8147fcb7818fe3107b3449",
+  "spec_sha256": "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e",
+  "commit_binds_exact_result": true,
+  "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "bundled_libs": 183,
+  "indexed_application_libs": 182,
+  "retained1797_payload_files": 1797,
+  "other6_specs_exact_equal": true,
+  "effective8_artifacts": [
+    {
+      "service": "auth",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "unchanged": true
+    },
+    {
+      "service": "academic",
+      "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "jar": "/tmp/rct-academic-refresh-20261012-attempt01/checkout/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+      "app": "/tmp/rct-academic-refresh-20261012-attempt01/app"
+    },
+    {
+      "service": "schedule",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "unchanged": true
+    },
+    {
+      "service": "attendance",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "unchanged": true
+    },
+    {
+      "service": "bff",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "unchanged": true
+    },
+    {
+      "service": "gateway",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "unchanged": true
+    },
+    {
+      "service": "notification",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "unchanged": true
+    },
+    {
+      "service": "renderer",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "unchanged": true
+    }
+  ],
+  "stopped_fence_nodes": 157,
+  "fence_scope": "Original157 metadata authority only; actual freshdata/key/5vols verification REQUIREDbeforeRootgrant; no body/hash read ofDB/key",
+  "key_and_data_values_read": false,
+  "JDK": {
+    "path": "/workspace/rct-cloud-setup/jdk21/bin/java",
+    "version": "Temurin21.0.12.1+1",
+    "measured_sha256": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d",
+    "actual_rehash_in_this_scope": "NOT_REPEATED"
+  },
+  "preDocker_workspace_required": 9380818650,
+  "postDocker_workspace_required_before8hosts": 5368709120,
+  "shared_stop": 16106127360,
+  "shared_reserve": 1073741824,
+  "workspace_floor": 4294967296,
+  "tmp_floor_plusMongoGrowth": 5368709120,
+  "maximum_seconds": 1800,
+  "cleanup_margin_seconds": 60,
+  "namespace": "rct-client-host-config-20261012",
+  "IPAM": "172.29.84.0/24",
+  "trusted_edge": ".10",
+  "HTTPS_port": 8443,
+  "Mongo_loopback_port": 28417,
+  "Docker6_old5vols": "Retain all; no-v cleanup only",
+  "actual_runtime_permission": "NONE"
+}

@@ -1,0 +1,94 @@
+{
+  "toolSession": 43392,
+  "supervisor": {
+    "pid": 425787,
+    "state": "R",
+    "ppid": 425786,
+    "pgrp": 425786,
+    "session": 425786,
+    "start_ticks": 10514457
+  },
+  "nativeExit": 0,
+  "controls": {
+    "count": 29,
+    "failed": 0,
+    "parserDiagnostics": 0
+  },
+  "formatCheckExit": 0,
+  "types": {
+    "phase": "SCOPED_TYPES_ONLY",
+    "typescript_version": "5.9.3",
+    "error_count": 0,
+    "diagnostic_codes": [],
+    "root_file_count": 5,
+    "pass": true
+  },
+  "discovery": {
+    "phase": "SOURCE_DISCOVERY_ONLY",
+    "case_count": 3,
+    "unexpected_case_count": 0,
+    "rows": [
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 14,
+        "project": "chromium"
+      },
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 61,
+        "project": "chromium"
+      },
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 142,
+        "project": "chromium"
+      }
+    ],
+    "pass": true
+  },
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 425787,
+      "start_ticks": 10514457,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 425791,
+      "start_ticks": 10514550,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 425799,
+      "start_ticks": 10514649,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 425810,
+      "start_ticks": 10514716,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 425817,
+      "start_ticks": 10515000,
+      "exactBirthAbsent": true
+    }
+  ],
+  "sourceBefore": "74ff02435f49e5c334a5f569a6eed5bb4562677fed2841199ceaf0b2a6699066",
+  "actualCheckedSource": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+  "sourceImmutableDuring09": true,
+  "other3SourceBytesUnchanged": true,
+  "sourceMode": "0o600",
+  "sourceNlink": 1,
+  "tmpRemoved": true,
+  "cacheRemoved": true,
+  "lease": "RELEASED",
+  "noAPIorBrowser": true,
+  "semanticQualifier": "08strict terminal/scanner inequality retained; only4known trailing commas +whitespace; source review2486 and independent mechanical reviewad1c; 09 actual29controls current source.",
+  "resourceQualifier": "512MiB managed heap; RSS/cache sampled soft monitoring;8KiB problem input validated after buffering, no hard maliciouspeer preallocation bound.",
+  "semanticCommit": "bd0b46033fe8bb64df8f01222879f2c46b4abd4b",
+  "mechanicalCommit": "390f6a4431c4d02a3ef15459f06afdb7b69e888f",
+  "ownWTclean": true,
+  "installedExecutableCommitHooks": [],
+  "commitDiffCheckExit": 0,
+  "onlyChangedPath": "tests/e2e/fixtures/first3-observer.ts"
+}

@@ -1,0 +1,28 @@
+{
+  "state": "READONLY03_PARTIAL_GROUPING_PROOF_FAILED",
+  "toolSession": 19970,
+  "nativeExit": 1,
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 397756,
+      "start_ticks": 9897354,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 397752,
+      "start_ticks": 9897323,
+      "exactBirthAbsent": true
+    }
+  ],
+  "sourceCandidateAndOriginalSnapshotsPreserved": true,
+  "oneAsGrouping0to1ProvenOnly": true,
+  "fullAstStillUnequal": true,
+  "negativeControls": 5,
+  "negativeControlsAllPass": true,
+  "literalAndCommentsEqual": true,
+  "lease": "RELEASED",
+  "typesListApiBrowser": "NOT_RUN",
+  "sourceWritten": false,
+  "noMechanicalCommit": true,
+  "ownedTmpRemoved": true
+}

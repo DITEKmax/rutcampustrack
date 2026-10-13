@@ -1,0 +1,26 @@
+{
+  "status": "COMMITTED_FULL_CURRENT_ACADEMIC_STAGE",
+  "stage_result_sha256": "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643",
+  "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "final_actual_inventory": {
+    "workspace_free": 9463644160,
+    "tmp_free": 7509946368,
+    "shared": 4708167680,
+    "maximum": 17179869184,
+    "new_tmp_allocated": 246661120
+  },
+  "allocation_monitor": {
+    "actual_allocated_last_inventory": 246661120,
+    "pending_own_effect_upper_bytes": 0,
+    "effects_since_inventory": 0,
+    "inventory_count": 4,
+    "maximum_interval_seconds": 1.0,
+    "maximum_effects": 64,
+    "maximum_single_effect_upper": 1048576,
+    "entry_sample_headroom": 67108864,
+    "protected_metadata_reconciled": true,
+    "qualification": "Sampled actual inode allocation plus conservative own-effect bookkeeping; same-UID writers and filesystem overhead are not hard OS isolation/caps."
+  },
+  "started_utc": "2026-10-12T22:31:26.378948+00:00",
+  "elapsed_before_commit_seconds": 3.042990921996534
+}

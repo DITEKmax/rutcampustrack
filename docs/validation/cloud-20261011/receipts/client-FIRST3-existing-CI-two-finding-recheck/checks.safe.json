@@ -1,0 +1,80 @@
+{
+  "kind": "INDEPENDENT_NARROW_SOURCE_RECHECK",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "runtime_four_paths": "APPROVE_SOURCE_ONLY",
+  "original_two_findings": "CLOSED_SOURCE",
+  "prospective_Node_discovery_helper": "CHANGES_REQUESTED",
+  "pass": true,
+  "checks": [
+    {
+      "check": "sealed_packet_and_four_frozen_source_copies",
+      "pass": true,
+      "evidence": "21 members; exact manifest, ZIP and four frozen Git blobs"
+    },
+    {
+      "check": "full_reverse_two_deltas",
+      "pass": true,
+      "evidence": "Both exact reverse transformations recover complete original bytes; config, observer and original assertion source unchanged"
+    },
+    {
+      "check": "public_clock_DAC_counterexample_and_scoped_positive",
+      "pass": true,
+      "evidence": "Old cross-UID directory traversal/read denied; corrected public 0755/0644 permit non-owner read; private 0700 remains denied. RAM mode algebra only"
+    },
+    {
+      "check": "six_calendar_cases",
+      "pass": true,
+      "evidence": [
+        {
+          "utc": "2026-10-16T17:00:00Z",
+          "old_query_has_target": true,
+          "fixed_query_has_target": true
+        },
+        {
+          "utc": "2026-10-17T12:00:00Z",
+          "old_query_has_target": false,
+          "fixed_query_has_target": true
+        },
+        {
+          "utc": "2026-10-18T20:59:59Z",
+          "old_query_has_target": false,
+          "fixed_query_has_target": true
+        },
+        {
+          "utc": "2026-10-18T21:00:00Z",
+          "old_query_has_target": true,
+          "fixed_query_has_target": true
+        },
+        {
+          "utc": "2026-10-16T21:30:00Z",
+          "old_query_has_target": false,
+          "fixed_query_has_target": true
+        },
+        {
+          "utc": "2026-10-14T21:00:00Z",
+          "old_query_has_target": true,
+          "fixed_query_has_target": true
+        }
+      ]
+    },
+    {
+      "check": "worker_fixture_and_hook_order_supported_clock_API",
+      "pass": true,
+      "evidence": "Worker dataset initialization precedes test body; awaited page clock precedes observer and all original navigation; missing date fails closed; pinned 1.59.1 public types retain real timers"
+    },
+    {
+      "check": "prospective_discovery_origin_counterexample",
+      "pass": true,
+      "evidence": {
+        "source_finding": "CI-F3-DISCOVERY-ORIGIN-003",
+        "loaded_helper_testDir": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/first3-specs",
+        "actual_wrapper_directory": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/first3-specs",
+        "native": "NOT_RUN",
+        "explicit_types_selection": 5
+      }
+    }
+  ],
+  "native_Node_browser_services_CI": "NOT_RUN",
+  "original_historical_client_causes": "UNKNOWN"
+}

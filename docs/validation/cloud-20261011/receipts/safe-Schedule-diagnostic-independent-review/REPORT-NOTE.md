@@ -1,0 +1,1 @@
+Report-only numeric clarification: the sample complete marker in REVIEW.md is77 characters, not72. Exact check.py uses len(good), so padding/cutoff counterexample and source finding are unchanged. Original sealed review52a841/840588 remains immutable. No source/private/native action or additional control rerun occurred.

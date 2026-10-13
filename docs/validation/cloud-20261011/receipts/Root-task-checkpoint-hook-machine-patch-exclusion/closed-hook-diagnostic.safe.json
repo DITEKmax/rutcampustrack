@@ -1,0 +1,30 @@
+{
+  "native_exit": 1,
+  "hooks": [
+    {
+      "hook": "Gitleaks secret detection",
+      "state": "FAILED"
+    },
+    {
+      "hook": "check yaml",
+      "state": "PASS"
+    },
+    {
+      "hook": "check json",
+      "state": "PASS"
+    },
+    {
+      "hook": "check for added large files",
+      "state": "PASS"
+    },
+    {
+      "hook": "fix end of files",
+      "state": "FAILED"
+    },
+    {
+      "hook": "trim trailing whitespace",
+      "state": "PASS"
+    }
+  ],
+  "private_diagnostic_bytes": 8215
+}

@@ -1,0 +1,42 @@
+{
+  "scope": "INDEPENDENT_EXISTING1797_COMPLETION_ONLY_SOURCE_REVIEW",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "source_manifest_sha256": "89d65e95b77227fa2e6b0f7c3d177331697c1ff48348d50172c8e72ab62170cf",
+  "source_ZIP_sha256": "13ca7e405eff693cc8e71fbc7fd6a2f4a5bb12672cf646669857608502ce273d",
+  "previous_full_review_manifest_sha256": "e287b34485a3c5d4e5aab6ff34f1c14eaf6e0e310e647cf23a62482bfe0868e9",
+  "previous_F01_F02_recheck_manifest_sha256": "1eafeaef9f9194f0a6d9c3868d08cc21d3e04ed79bf9df3855115aa325616a09",
+  "blocking_findings": [],
+  "native_completion": "NOT_RUN",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 801,
+      "sha256": "224e3c53545cafb67cdff1af9ec4d9aa1a0c1f743125c4b29c27c8b8cf7c4262",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 4920,
+      "sha256": "cc0d7723ca7a69f3f061f20b5491b7e2ed1a0c493b72be16347e2ce135c460c4",
+      "mode": "0o400"
+    },
+    {
+      "path": "check.py",
+      "bytes": 10850,
+      "sha256": "d567a7862ad22c6258b9a3435d5b62f14ab71fa026d5161e747157464a5d73c5",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 4388,
+      "sha256": "db86f29d0567d71c6a2318f6c41b88dbbd2f547a49469ae52e2bc5c1d6705a2a",
+      "mode": "0o400"
+    },
+    {
+      "path": "source-equality.safe.json",
+      "bytes": 8845,
+      "sha256": "739f6e6d5c9d20e8d075ac70d83d60c39fd5944897a4554833a6858b21df496a",
+      "mode": "0o400"
+    }
+  ]
+}

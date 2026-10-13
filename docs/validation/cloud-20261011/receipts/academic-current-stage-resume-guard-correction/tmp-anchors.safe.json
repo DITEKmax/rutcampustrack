@@ -1,0 +1,30 @@
+{
+  "anchors": [
+    {
+      "path": "/",
+      "identity": {
+        "device": 27,
+        "inode": 1310721,
+        "uid": 0,
+        "gid": 0,
+        "mode": 493
+      }
+    },
+    {
+      "path": "/tmp",
+      "identity": {
+        "device": 33,
+        "inode": 1,
+        "uid": 0,
+        "gid": 0,
+        "mode": 1023
+      }
+    }
+  ],
+  "shared_tmp_mode_1777": "Pinned existing public parent; only NEW atomic0700 child is created",
+  "new_namespace_owner": 1000,
+  "same_UID_isolation": "NOT_CLAIMED",
+  "execution_context": "Normal approved native context only; sandbox masked65534 denied",
+  "execution_actor_uid": 1000,
+  "execution_actor_gid": 1000
+}

@@ -1,0 +1,50 @@
+{
+  "state": "READONLY03_PARTIAL_GROUPING_PROOF_FAILED",
+  "files": [
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 376,
+      "sha256": "dea13b0243689c1ba7d267ebd588e367774fb99fb5c68b6519f79210557be847"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 686,
+      "sha256": "ba5b84cf79e51b09991b4b6fb2df3717c0a56896e3856dfd86c80d5ab93bd62e"
+    },
+    {
+      "path": "parserdiff-launch.safe.json",
+      "bytes": 483,
+      "sha256": "0d5f4e0f51412516ebf82a2a57a58ff1862184bebf84acf6c46dab8f9c5cf3c0"
+    },
+    {
+      "path": "parserdiff-outcome.safe.json",
+      "bytes": 68,
+      "sha256": "ad55ed6031a613defc27d34ca4be3461c6a472d866457e91f4ace21ad8b39580"
+    },
+    {
+      "path": "parserdiff-process.safe.json",
+      "bytes": 147,
+      "sha256": "ac7f5a173f718d146fe3e8edb33c5b1f4358affd932e94b484bd528d1f2063fb"
+    },
+    {
+      "path": "parserdiff-terminal.safe.json",
+      "bytes": 565,
+      "sha256": "1c65fbdf02322445cce9597208f25bbefec0e0c4887c673a7b0a2ac46a9f7602"
+    },
+    {
+      "path": "parserdiff.safe.json",
+      "bytes": 2932,
+      "sha256": "a4635789909286b36eaef55cffcbef5462930596755a3aa1beb0c44730faf99a"
+    },
+    {
+      "path": "source-observation.safe.json",
+      "bytes": 229,
+      "sha256": "42df3d89e95f3b75fe51e49dca45763fc4d01c438ae70f9ff1750c6ef111ae93"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 119,
+      "sha256": "2a3f7d8969e7e55f13ebe74e7d89169700ab87a0e416b4e6484988a7ec81fee8"
+    }
+  ]
+}

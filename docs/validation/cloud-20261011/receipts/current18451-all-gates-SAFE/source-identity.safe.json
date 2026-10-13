@@ -1,0 +1,62 @@
+{
+  "producer": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "public_sources": [
+    {
+      "identity": "Academic_locale",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "bytes": 40058,
+      "sha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+      "current_Root_equals_producer": true
+    },
+    {
+      "identity": "Schedule_CAP",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "bytes": 112166,
+      "sha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0",
+      "current_Root_equals_producer": true
+    },
+    {
+      "identity": "collector",
+      "path": "scripts/collect-ci-test-outcomes.py",
+      "bytes": 15464,
+      "sha256": "238a5a9fb3f7d1a62b138c51bffd9037636645e970d74bf21467afcde4488bd9",
+      "current_Root_equals_producer": true
+    },
+    {
+      "identity": "Coverage_workflow",
+      "path": ".github/workflows/coverage.yml",
+      "bytes": 10563,
+      "sha256": "561c6906c5a80725c638d4951e007aa54e7644d8e7a6b60c154d4b3a8e9db68b",
+      "current_Root_equals_producer": true
+    }
+  ],
+  "governing_state": [
+    {
+      "name": "TASK-CONTRACT.md",
+      "bytes": 89623,
+      "sha256": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27"
+    },
+    {
+      "name": "CURRENT.md",
+      "bytes": 65799,
+      "sha256": "c89157d286bcaefb3e45cfbc0771faffc8b01b7ff5adbf0145069a0e3086a961"
+    },
+    {
+      "name": "decisions.md",
+      "bytes": 24904,
+      "sha256": "64d6ed64378a5c0c3fb8fd7a064247da6ee1f558ae23525d7cd2c8ec9781ea24"
+    },
+    {
+      "name": "questions.md",
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65"
+    },
+    {
+      "name": "resources.md",
+      "bytes": 17602,
+      "sha256": "f44f65099d152c0de92ef3ce22963ea5eb00e2bf17ee3bd06dcd52bf1f2bb790"
+    }
+  ],
+  "historical96_CAP_cause": "UNKNOWN",
+  "actualNative": "NOT_YET_AVAILABLE"
+}

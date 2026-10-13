@@ -427,6 +427,34 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Run remaining five accepted mobile scenarios (chromium only)
+        id: remaining5
+        if: success() && steps.first3.outcome == 'success'
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-remaining5-${{ github.run_id }}-${{ github.run_attempt }}
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_REMAINING5_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium
+
+      - name: Upload safe remaining five outcomes
+        if: always() && steps.remaining5.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: remaining5-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_REMAINING5_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Stop isolated e2e containers
         if: always()
         run: docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml down

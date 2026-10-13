@@ -1,6 +1,8 @@
 import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
 import {
   classifySafeFailure,
+  discardReportedFailureHint,
+  reportedFailureHints,
   safeFailureAnnotation,
   safeFailureDiagnostics,
 } from './safe-reporter';
@@ -14,6 +16,7 @@ export const test = base.extend<{ privateArtifacts: void }>({
         await use();
       } catch (error) {
         recordSafeFailure(info, error);
+        recordReportedHints(info, error);
         throw error;
       } finally {
         // afterEach cannot cover errors added by page/context/request fixture teardown.
@@ -46,16 +49,33 @@ export function requirePrivateArtifacts(info: WorkerInfo): void {
   }
 }
 
+function recordReportedHints(info: TestInfo, error: unknown): void {
+  for (const diagnostic of reportedFailureHints(error)) {
+    const previous = safeFailureDiagnostics(info.annotations);
+    const prefix = diagnostic.cause.startsWith('REPORTED_CLASS_')
+      ? 'REPORTED_CLASS_'
+      : 'REPORTED_FRAME_';
+    if (previous.length >= 8 || previous.some((item) => item.cause.startsWith(prefix)))
+      continue;
+    info.annotations.push({
+      type: safeFailureAnnotation,
+      description: `${diagnostic.cause}:0`,
+    });
+  }
+}
+
 function recordSafeFailure(info: TestInfo, error: unknown): void {
   const diagnostic = classifySafeFailure(error);
   const previous = safeFailureDiagnostics(info.annotations);
+  const coreCount = previous.filter((item) => !item.cause.startsWith('REPORTED_')).length;
   if (
-    previous.length >= 8 ||
+    coreCount >= 8 ||
     previous.some(
       (item) => item.cause === diagnostic.cause && item.httpStatus === diagnostic.httpStatus,
     )
   )
     return;
+  if (previous.length >= 8 && !discardReportedFailureHint(info.annotations)) return;
   info.annotations.push({
     type: safeFailureAnnotation,
     description: `${diagnostic.cause}:${diagnostic.httpStatus}`,
@@ -70,8 +90,10 @@ export function sanitizeTestErrors(info: TestInfo): void {
     if (
       message?.value !==
       'Check failed; source location and outcome are recorded in safe-results.json'
-    )
+    ) {
       recordSafeFailure(info, error);
+      recordReportedHints(info, error);
+    }
     const record = error as Record<string, unknown>;
     const location = record.location;
     for (const key of Object.keys(error)) delete record[key];

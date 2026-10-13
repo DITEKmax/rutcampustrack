@@ -29,13 +29,29 @@ const failureStages = {
   INVALID_TIME_VALUE: 'UNKNOWN',
 } as const;
 type FailureCause = keyof typeof failureStages;
+const reportedClassHints = {
+  Error: 'REPORTED_CLASS_ERROR',
+  TypeError: 'REPORTED_CLASS_TYPE_ERROR',
+  RangeError: 'REPORTED_CLASS_RANGE_ERROR',
+  ReferenceError: 'REPORTED_CLASS_REFERENCE_ERROR',
+  SyntaxError: 'REPORTED_CLASS_SYNTAX_ERROR',
+  TimeoutError: 'REPORTED_CLASS_TIMEOUT_ERROR',
+} as const;
+const reportedFrameHints = {
+  'Actor.call': 'REPORTED_FRAME_DATASET_CALL',
+  moscowDate: 'REPORTED_FRAME_DATASET_DATE',
+  'MobileDataset.initialize': 'REPORTED_FRAME_DATASET_INITIALIZE',
+} as const;
+type ReportedFailureHint =
+  | (typeof reportedClassHints)[keyof typeof reportedClassHints]
+  | (typeof reportedFrameHints)[keyof typeof reportedFrameHints];
 const failureHttpStatuses = [
   0, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504,
 ] as const;
 type FailureHttpStatus = (typeof failureHttpStatuses)[number];
 export interface SafeFailureDiagnostic {
   stage: (typeof failureStages)[FailureCause];
-  cause: FailureCause;
+  cause: FailureCause | ReportedFailureHint;
   httpStatus: FailureHttpStatus;
 }
 const knownFailureMessages: Record<string, FailureCause> = {
@@ -68,6 +84,77 @@ function ownData(value: unknown, key: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+function isReportedHint(cause: string): cause is ReportedFailureHint {
+  return (
+    Object.values(reportedClassHints).some((value) => value === cause) ||
+    Object.values(reportedFrameHints).some((value) => value === cause)
+  );
+}
+
+/** Free an existing reported-only slot for a core fact; never remove a core annotation. */
+export function discardReportedFailureHint(annotations: TestResult['annotations']): boolean {
+  for (let index = Math.min(annotations.length, 32) - 1; index >= 0; index--) {
+    const annotation = ownData(annotations, String(index));
+    if (ownData(annotation, 'type') !== safeFailureAnnotation) continue;
+    const description = ownData(annotation, 'description');
+    const match =
+      typeof description === 'string' && description.length <= 96
+        ? /^(REPORTED_[A-Z_]+):0$/.exec(description)
+        : null;
+    if (!match || !isReportedHint(match[1])) continue;
+    annotations.splice(index, 1);
+    return true;
+  }
+  return false;
+}
+
+/** UNTRUSTED reported framing only: even an exact fabricated match proves no class, source, stage or HTTP fact. */
+export function reportedFailureHints(error: unknown): SafeFailureDiagnostic[] {
+  const message = ownData(error, 'message');
+  if (
+    typeof message !== 'string' ||
+    message.length > 512 ||
+    /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(message)
+  )
+    return [];
+  const classMatch = /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|TimeoutError): .+$/.exec(
+    message,
+  );
+  if (!classMatch) return [];
+  const cause = reportedClassHints[classMatch[1] as keyof typeof reportedClassHints];
+  const hints: SafeFailureDiagnostic[] = [{ stage: 'UNKNOWN', cause, httpStatus: 0 }];
+  const stack = ownData(error, 'stack');
+  if (
+    typeof stack !== 'string' ||
+    stack.length > 8192 ||
+    /[\x00-\x09\x0b-\x1f\x7f-\x9f\u2028\u2029]/.test(stack)
+  )
+    return hints;
+  const lines = stack.split('\n');
+  if (
+    lines.length > 16 ||
+    lines[0] !== message ||
+    lines.slice(1).some((line) => line.length > 1024 || !line.startsWith('    at '))
+  )
+    return hints;
+  // Exact repo symbols/path only; the pinned source map is recorded in the checking packet.
+  const datasetFile = resolve(__dirname, 'mobile-dataset.ts');
+  for (const line of lines.slice(1)) {
+    const frame =
+      /^    at (?:async )?(Actor\.call|moscowDate|MobileDataset\.initialize) \(([^\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})\)$/.exec(
+        line,
+      );
+    if (!frame || frame[2] !== datasetFile) continue;
+    hints.push({
+      stage: 'UNKNOWN',
+      cause: reportedFrameHints[frame[1] as keyof typeof reportedFrameHints],
+      httpStatus: 0,
+    });
+    break;
+  }
+  return hints;
 }
 
 /** Only bounded own message data is read in RAM; no name/stack/getter/toString or dynamic path is inspected. */
@@ -103,6 +190,7 @@ export function safeFailureDiagnostics(
   hasErrors = false,
 ): SafeFailureDiagnostic[] {
   const result: SafeFailureDiagnostic[] = [];
+  const reportedHints: SafeFailureDiagnostic[] = [];
   if (Array.isArray(annotations)) {
     for (let index = 0; index < Math.min(annotations.length, 32) && result.length < 8; index++) {
       const annotation = ownData(annotations, String(index));
@@ -113,9 +201,12 @@ export function safeFailureDiagnostics(
           ? /^([A-Z_]+):(0|400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(description)
           : null;
       const valid = match && Object.prototype.hasOwnProperty.call(failureStages, match[1]);
-      const diagnostic = valid
+      const reported = match && isReportedHint(match[1]);
+      const diagnostic: SafeFailureDiagnostic = valid
         ? failureDiagnostic(match[1] as FailureCause, Number(match[2]) as FailureHttpStatus)
-        : failureDiagnostic();
+        : reported && match[2] === '0'
+          ? { stage: 'UNKNOWN', cause: match[1] as ReportedFailureHint, httpStatus: 0 }
+          : failureDiagnostic();
       // Only the three source HTTP checks may carry a nonzero public status.
       const httpCause = ['ACTOR_LOGIN_HTTP', 'ACTOR_SESSION_HTTP', 'ACTOR_ROLE_HTTP'].includes(
         diagnostic.cause,
@@ -124,13 +215,28 @@ export function safeFailureDiagnostics(
         (httpCause && diagnostic.httpStatus === 0) || (!httpCause && diagnostic.httpStatus !== 0)
           ? failureDiagnostic()
           : diagnostic;
+      // Retain at most one class and one frame hint across repeated/late errors.
+      if (isReportedHint(value.cause)) {
+        const classHint = value.cause.startsWith('REPORTED_CLASS_');
+        if (
+          reportedHints.some(
+            (item) =>
+              isReportedHint(item.cause) &&
+              item.cause.startsWith('REPORTED_CLASS_') === classHint,
+          )
+        )
+          continue;
+        reportedHints.push(value);
+        continue;
+      }
       if (
         !result.some((item) => item.cause === value.cause && item.httpStatus === value.httpStatus)
       )
         result.push(value);
     }
   }
-  return result.length || !hasErrors ? result : [failureDiagnostic()];
+  const diagnostics = [...result, ...reportedHints].slice(0, 8);
+  return diagnostics.length || !hasErrors ? diagnostics : [failureDiagnostic()];
 }
 
 interface SafeResult {

@@ -1,0 +1,29 @@
+{
+  "state": "FIXED_INTERFACE_SOURCE_READY_FOR_INDEPENDENT_REVIEW",
+  "scope": "Closed predefined descriptor shape plus explicitly bound direct string only",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "actual_SDK_native_called": false,
+  "actual_schema": "UNKNOWN",
+  "actual_cause": "UNKNOWN",
+  "original_SingleText_read": "17char_NON_JSON_TEXT_not_log",
+  "old_b78_decoder_consumer_pureBridge": "UNMODIFIED",
+  "entries": [
+    {
+      "path": "PLAN.md",
+      "sha256": "8ed1a9fef4bdf3a1d8ff5edae7a730301a32a257012295f187a3a7c29b6c47ff",
+      "bytes": 4020
+    },
+    {
+      "path": "controls.safe.json",
+      "sha256": "04d55d53592a91f1fabf676652e00239fe028bea8dfdbcb022ed3ff9d5188495",
+      "bytes": 348
+    },
+    {
+      "path": "interface.js",
+      "sha256": "312cbee0aebbb97e935509ed7b03bae282c53efcb9017d847b7c8877ac71a57f",
+      "bytes": 3959
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "source_only": true,
+  "actual_connector_called": false,
+  "native_helpers_imported": false,
+  "js_groups": [
+    {
+      "name": "CRLF_LF_TRAILING_NEWLINE_AND_PATCH_TEXT_ROUNDTRIP",
+      "passed": true
+    },
+    {
+      "name": "NON_ASCII_AND_SURROGATE_PAIR_EXACT_ROUNDTRIP",
+      "passed": true
+    },
+    {
+      "name": "LONE_SURROGATE_AND_NUL_DENIED",
+      "passed": true
+    },
+    {
+      "name": "EMPTY_MIXED_NON_TEXT_ERROR_SERVICE_ONLY_DENIED",
+      "passed": true
+    },
+    {
+      "name": "CONTENT_AND_TEXT_GETTERS_NEVER_ENTERED",
+      "passed": true
+    },
+    {
+      "name": "INHERITED_TEXT_DENIED",
+      "passed": true
+    },
+    {
+      "name": "UNUSED_STRUCTURED_CONTENT_GETTER_NOT_ENTERED",
+      "passed": true
+    },
+    {
+      "name": "PAYLOAD_OVER_CAP_DENIED",
+      "passed": true
+    },
+    {
+      "name": "ENCODING_EXPANSION_DENIED_BEFORE_JSON_ALLOCATION",
+      "passed": true
+    }
+  ],
+  "recipe_groups": [
+    {
+      "name": "FALSE_ADMISSION_NO_TOOL_CALL",
+      "passed": true
+    },
+    {
+      "name": "THROWN_ADMISSION_NO_RAW_ERROR",
+      "passed": true
+    },
+    {
+      "name": "THROWN_CONNECTOR_NO_RAW_ERROR",
+      "passed": true
+    },
+    {
+      "name": "POST_RESPONSE_DENIAL_NO_CARRIER",
+      "passed": true
+    },
+    {
+      "name": "ONE_EXACT_JOB_CALL_TO_PRIVATE_CARRIER",
+      "passed": true
+    }
+  ]
+}

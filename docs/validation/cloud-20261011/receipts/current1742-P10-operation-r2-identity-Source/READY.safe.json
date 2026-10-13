@@ -1,0 +1,41 @@
+{
+  "schema": "P10_OPERATION_R2_SOURCE_READY_V1",
+  "state": "SOURCE_READY_PENDING_NARROW_SAME_REVIEWER_RECHECK",
+  "utc": "2026-10-13T13:05:54.758922+00:00",
+  "finding": "P10-EXCEPTION-TYPE-LOOKUP-METACLASS-HOOKS",
+  "original_review_sha256": "97e9c7fbc4e39b57b35ec08729a671462b979aff0d936705c54457cb027acf6b",
+  "delta": "Only arbitraryclass-hashing dictionary lookup replaced by fixed19 tuple + identity is loop. Unknown hash/equality hooks cannot execute; OTHER/status0 and primary BOUNDARY_UNKNOWN remain.",
+  "controls": "Exactlytwo selected actual catch AST/RAM oldcounterexamples (hashhook abort/equalityfalseHTTP) -> newnohooks OTHER + primary assigned. Ordinary19/status8/stages15/caps/parent/pins previously97e9 accepted and reused; no replay.",
+  "checking_source_helper_failure_preserved": "source-edit-attempt01.safe.json, AST Dict.values field was called before childwrite; corrected helper, no runtime/product effect.",
+  "source_inverse": "Whole inverse exact outside one mapping block; same19 type/code pairs. Allother stage/status/parser/primary/cleanup/imports/main/admission/parentenv code unchanged.",
+  "source_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "test_source": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "false_grant": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-operation-r2/grant-template.private.json",
+  "dispatch_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-operation-r2/run-green-owned.py",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-operation-r2/root-diagnostic-grant01.private.json",
+    "<FRESH_ROOT_GRANT_SHA256>"
+  ],
+  "Source_files": {
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "controls-metaclass-only.py": "bea7aeb74ea00116f047fb062ed9394b857e3cc724db87ef32260ba3a6cdd472",
+    "grant-template.private.json": "888f256fac89d48fc956f5ada55dc956472cedcdf591f5ca75743454f66ca9ac",
+    "green-plan.safe.json": "58d957e437407fc323fe85ca252f54db67cc2eb4652eb76f34cfbd9c7c1871b4",
+    "logged-green-child.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "metaclass-controls.safe.json": "fc611a43937dc5aa55b639636414ebf36f43507e35153ad08bfc29a6e80a15a0",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "network-context-proposal.safe.json": "737649353114acab7b31924cfb3661d2d05cca836dcc0da91c7ab63828524b97",
+    "run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "source-delta.patch": "3198ad353d8e538a0de7761f4cfd5810bbf3ce0c3d82f57234c2c9369f7115e5",
+    "source-edit-attempt01.safe.json": "1009061630a81dc0eed6f8061556a62f08342098eb6ff8320d7797975ffae952",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "source-proof.safe.json": "13706bcf3cbf44dedce533325b6bdbf9a504253daf0f48c56c5845a2da611bdf",
+    "tool-environment-policy.safe.json": "c0185c1e1b64af3645147981b09092cb4797ca553f74fe006dc0f6b19622669d"
+  },
+  "native_network_API_environment_or_privateXML_log_effects": 0,
+  "actual02_exception_operation_and_P10_cause": "UNKNOWN",
+  "actual02_response_still_retained_privately_in_RAM": true,
+  "network_context_proposal": "Separate public names/types policy only, not implemented and not runtime cause; network-context-proposal.safe.json",
+  "next": "Narrow same-reviewer recheck -> Root fresh grant only if justified. No duplicate connector/oldgrantuse/product/test/B013."
+}

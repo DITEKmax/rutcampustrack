@@ -1,0 +1,23 @@
+{
+  "state": "SOURCE_READY_INDEPENDENT_ROOT_REVIEW_PENDING",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "helper_sha256": "d15666183a74ad6caacdd25f16815131d818f2b2a04b2a99786f105a29d1fd44",
+  "scope": "Fixed prepare/consume own private files only",
+  "old_selector_decoder_recipe_unchanged": true,
+  "old20_controls_reused": true,
+  "new_selected_source_RAM_groups": 14,
+  "passed": true,
+  "actual_native": false,
+  "actual_connector_call": false,
+  "actual_private_files": false,
+  "runtime_grant": false,
+  "dispatch": "Root existing b78 only; no new supervisor",
+  "parser_calls_max": 1,
+  "carrier_retained_on_parser_refusal": true,
+  "cause": "UNKNOWN",
+  "FIRST3": "NOT_RUN",
+  "connector_limits_accepted_by_root_at": "2026-10-13T13:52:30.726577+00:00",
+  "new_independent_review": "PENDING"
+}

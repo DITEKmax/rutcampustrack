@@ -1,0 +1,27 @@
+{
+  "schema": "BOOT_PRIVATE_CONSUMER_REVIEW_SEAL_V1",
+  "verdict": "FINDINGS",
+  "files": {
+    "REPORT.md": {
+      "sha256": "5a401ed42871f18c9dc13ff45a957d6e224be1f689fcd7c8e83e8c0f5ded2c24",
+      "bytes": 8481
+    },
+    "REPORT.safe.json": {
+      "sha256": "d0011460b2cac9ddd947c6ef83fc8da75925307308ce3164bb58e7f6acc0e124",
+      "bytes": 2694
+    },
+    "controls.safe.json": {
+      "sha256": "cde8a4ff59afc6034d48c9b623f1d3fbb6b984183656d342e34881e1f8e876fd",
+      "bytes": 2579
+    },
+    "controls-attempt01.safe.json": {
+      "sha256": "4b970e8be1d151cfc988264dfed220d326215d8228c76b3b0c3a8466c90b11c0",
+      "bytes": 351
+    },
+    "review-controls.py": {
+      "sha256": "d6201134f2b3862d8cfcbc1bab69a69a8c057854d2f3e3e33ecfe40e0802bc0f",
+      "bytes": 11619
+    }
+  },
+  "private_runtime_data": "NONE"
+}

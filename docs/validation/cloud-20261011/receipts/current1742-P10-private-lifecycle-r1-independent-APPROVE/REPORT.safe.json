@@ -1,0 +1,37 @@
+{
+  "schema": "P10_LIFECYCLE_R1_INDEPENDENT_NARROW_APPROVAL_V1",
+  "utc": "2026-10-13T12:18:25.822399+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "closed_findings": [
+    "P10-REQUEST-CLEANUP-MODE",
+    "P10-PRIMARY-ERROR-MASKING"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "source": {
+    "directory": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-lifecycle-r1",
+    "ready_sha256": "0dcb740d0fe0bd731eed44ed4ee14ce5ea9a9abc46040c404b2293a3c838e3b8",
+    "manifest_sha256": "fdc76b32c62b874f458fa303a7f66091aba77518efbdeb040ffed9be9f226a56",
+    "zip_sha256": "7967ed89797314fcade41613c2f91bd950a128dffd63b7f75249450752156d31",
+    "child_sha256": "3e03b90d825ca66abac21f29d685d0b8d96aa011cd00c2adcd1c365f01adc766",
+    "plan_sha256": "2e79c298365f1a5bf2f2c315fcac244b1a92ab98d8bfd6e25bce7d7ae3874809"
+  },
+  "verification": {
+    "independent_selected_AST_RAM_cases": 16,
+    "result": "PASS",
+    "source_boundary_pins": "PASS",
+    "old17_plus6": "REUSED_NOT_RERUN",
+    "native": "NOT_RUN",
+    "cause": "UNKNOWN"
+  },
+  "effects": {
+    "product_checking_Source_changes": 0,
+    "private_reads": 0,
+    "network_native_observer": 0,
+    "actual_metadata_mutations": 0,
+    "child_agents": 0
+  },
+  "limitation": "Missing/unavailable lifecycle storage rejects observation; no durable primary record guarantee when saving is unavailable; no power-loss persistence guarantee.",
+  "next": "Fresh separate Root original artifact grant and normal approved exact caller; mandatory lifecycle/native/source/caps/birth joins. No test replay or cause acceptance."
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "P10_ATTEMPT05_PARAMETER_ONLY_INVERSE_V1",
+  "plan_only_changed_keys": [
+    "lease",
+    "run"
+  ],
+  "falsegrant_only_changed_keys": [
+    "lease",
+    "plan_sha256"
+  ],
+  "same_keysets_and_inverse_exact": true,
+  "unchanged_byte_files": {
+    "run-green-owned.py": "4611344f9af8a48b0e695545c4053994c1f72591929553b3336df4e2a8d311c9",
+    "logged-green-child.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4"
+  },
+  "numeric_limits_TLS_proxy_policy_observer_algorithm_18pin_manifest_metadata_equal": true,
+  "old_abf5_b001_source_immutable": true,
+  "new_run_namespace_request_absent": true,
+  "old_controls_and_review": "Accepted network-r1 d62d/66b0/dbe8 reused per Root; no rerun/re-review needed for parameter-only delta under D011",
+  "SDK_or_private_request_or_native_effects": 0,
+  "actual04_HTTP403_reason_and_currentP10_cause": "UNKNOWN"
+}

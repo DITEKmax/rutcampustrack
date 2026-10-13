@@ -1,0 +1,53 @@
+{
+  "state": "SOURCE_ONLY_ROOT_INDEPENDENT_REVIEW_PENDING",
+  "entries": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 7314,
+      "sha256": "d457749c25254e7f406ee88de3cf932b71151005c2d6e4623a6cf12611846d3e"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 1523,
+      "sha256": "1b536d86f2a3f22fe63e697b202bce12f87b807b8a299ea95c9039f829444375"
+    },
+    {
+      "path": "check-source.py",
+      "bytes": 2164,
+      "sha256": "c3783d8aedc9a90dc110c76abb5acb918115c0f09ccee8d5e6cab501e4d4b522"
+    },
+    {
+      "path": "connector-call.recipe.js",
+      "bytes": 1245,
+      "sha256": "26cb77e12b459b753026a448fd680b6e3bbebc14f9d9bb9ebda2e985659601f5"
+    },
+    {
+      "path": "decode-carrier.py",
+      "bytes": 1764,
+      "sha256": "5e13e5a145ff2cf5a9230de9323207fea74317afd27e789ec77f85099c6608cb"
+    },
+    {
+      "path": "decoder-controls.safe.json",
+      "bytes": 673,
+      "sha256": "3d483ae728730f00f3f7054433dc2f3fccb7403c65fab16047c278d7bb4ce839"
+    },
+    {
+      "path": "select-text-carrier.js",
+      "bytes": 2367,
+      "sha256": "c4be5803f3e7d41d057d0fabcc58d0d32aecaf3f696b9958fe74c3d3c6f9da9a"
+    },
+    {
+      "path": "source-bindings.safe.json",
+      "bytes": 2018,
+      "sha256": "2b30fa75d3b03ce4827c7d050369cd08846cd72b0976b5540a233b60b722a4b8"
+    },
+    {
+      "path": "v8-controls.safe.json",
+      "bytes": 1368,
+      "sha256": "e811d97b8959980f3427b4edb3f0e8a4b9741057ba96221ff0215e5a4c4583e0"
+    }
+  ],
+  "actual_connector_called": false,
+  "new_framework": false,
+  "live_dispatch": "UNBOUND"
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "P10_OPERATION_R2_NARROW_RECHECK_SEAL_V1",
+  "verdict": "APPROVE_SOURCE",
+  "files": {
+    "REPORT.md": {
+      "sha256": "74b842f4b5f9303f79462ad03efff8b48e9d9afcadfda103704808575fcb4a9e",
+      "bytes": 3358
+    },
+    "REPORT.safe.json": {
+      "sha256": "90a31e2cea4e982dee55c6111431b2b85fffc2f4c7ac018d388a69b892ef2b13",
+      "bytes": 1323
+    },
+    "controls.safe.json": {
+      "sha256": "e8f9657f47fadde07eccd3afe097d1fc7a49162be3d676a1c115a3d9905dae90",
+      "bytes": 2113
+    },
+    "recheck-controls.py": {
+      "sha256": "62196eb26bca41dfc6748fa8188f13e751ee23dc5ef7085ee27e1d2d3e7e1173",
+      "bytes": 6421
+    }
+  },
+  "private_runtime_data": "NONE"
+}

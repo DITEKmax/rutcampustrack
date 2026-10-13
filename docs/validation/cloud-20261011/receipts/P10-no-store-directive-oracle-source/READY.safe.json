@@ -1,0 +1,42 @@
+{
+  "schema": "P10_NO_STORE_DIRECTIVE_ORACLE_SOURCE_V1",
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "base_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "source_path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+  "source_before": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "source_after": "a1aae309d0a13e834de61cce1b41c768ddfdf452138d76f44238eca8a243e6d8",
+  "diff_sha256": "dcef6a0e177db6520bb0b4e7b9397dc98dea3808c4b7b3ba7d6add6441c279ed",
+  "observed_original": {
+    "receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current1742-P10-original-console-frame.safe.json",
+    "receipt_sha256": "bdd068bd83ff0d2780be5977b051aaacdeb409bdb91ff6d9722243e029a918ae",
+    "run": 38387263916,
+    "job": 115262001958,
+    "known_frame": 1184,
+    "qualifier": "Official console finite AssertionFailedError at exact Cache-Control equality; preceding400 passed. Not raw originalJUnit evidence."
+  },
+  "accepted_rule": "TASK-CONTRACT P16 no-store sensitive paths; exact bare header spelling is not required. Other cache directives do not authorize storage.",
+  "source_basis": {
+    "SecurityConfig": "Default SpringSecurity headers not disabled/overridden",
+    "cached_public_default": "SpringSecurity6.5.11 CacheControlHeadersWriter: no-cache, no-store, max-age=0, must-revalidate",
+    "public_class_sha256": "f099e90fc878cfde70faeaba57acf9adc5d80974bc1373d0d5affedc637abe91",
+    "shared_validation_advice": "No Cache-Control override; default security writer remains applicable",
+    "wire_header": "UNKNOWN; no actual header body read"
+  },
+  "change": "Only Arrays import plus original assertUnicodePasswordRejection Cache-Control boolean; null fails, comma-delimited trimmed exact token equalsIgnoreCase(no-store). No substring/quoted/parameterized token acceptance.",
+  "inverse_outside_exact_hunk": true,
+  "all_other_status_body_no_secret_state_credential_session_oracles_exact": true,
+  "targeted_source_RAM": {
+    "fixtures": 10,
+    "all_pass": true,
+    "old_default_header_strict_equality_false_new_directive_predicate_true": true,
+    "null_absent_and_no_store_lookalikes_false": true,
+    "qualification": "Pure RAM Java trim/split/equality semantics model plus exact source hunk/inverse; no Java/native/HTTP producer invocation"
+  },
+  "next": [
+    "Independent source oracle review",
+    "Reuse onefile AOSP formatter/check and scoped Auth compile callers with fresh grants",
+    "One genuine selected unchanged UnicodeHTTP method on existing normalCI actual path after Root integration; prove no-store/other rules via original assertions"
+  ],
+  "runtime": "NOT_RUN; originalCI case FAILED preserved; semantic classification Source-qualified oracle mismatch, actual header directives require genuine after-run.",
+  "constraints": "No product/config/API/policy/grants/password/assertion skip changes, no archive/SDK retry, no B013, no local3container preparation or native now."
+}

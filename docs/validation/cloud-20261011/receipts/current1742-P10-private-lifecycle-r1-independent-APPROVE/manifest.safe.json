@@ -1,0 +1,23 @@
+{
+  "schema": "P10_LIFECYCLE_R1_REVIEW_SEAL_V1",
+  "verdict": "APPROVE_SOURCE",
+  "files": {
+    "REPORT.md": {
+      "sha256": "6747c2bddcc4f705bdbc0ea58b365bcf738f76d5cc8ba1b756b63e1f3d32f39e",
+      "bytes": 5259
+    },
+    "REPORT.safe.json": {
+      "sha256": "1682a102f6e71941556ca3072af4a6f6f29891d30d85ec08317e83a1b2220b23",
+      "bytes": 1680
+    },
+    "controls.safe.json": {
+      "sha256": "2eb5d01e3e2e1d4d8520265c28d77cff335aff7c8ec5e1dce202e68edf19287e",
+      "bytes": 10846
+    },
+    "recheck-controls.py": {
+      "sha256": "6dcedad5bae9e2420cc720cc2f7aa9039316dccf44a8c49f8beab3ab28af513b",
+      "bytes": 13889
+    }
+  },
+  "private_runtime_data": "NONE"
+}

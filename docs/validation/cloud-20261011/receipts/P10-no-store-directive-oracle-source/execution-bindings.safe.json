@@ -1,0 +1,43 @@
+{
+  "schema": "P10_CACHE_DIRECTIVE_PARAMETER_REUSE_READY_V1",
+  "source_ready": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-cache-directive-oracle-source/READY.safe.json",
+  "source_ready_sha256": "cf089798059e53bb5943c47996a716a85fbfc78b40cd16a518337fb06f27c772",
+  "checks": {
+    "format_three_callbacks_and_init_byte_exact": true,
+    "IT_three_callbacks_byte_exact": true,
+    "17_protected_pins_exact": true,
+    "one_assigned_file_only": true,
+    "no_native_or_Docker_effects": true
+  },
+  "format_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-cache-directive-oracle-source/format01/run-format-owned.py",
+    "<fresh600Rootgrant>",
+    "<exactSHA>"
+  ],
+  "http_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-cache-directive-oracle-source/one-http01/run-it-owned.py",
+    "<fresh600Rootgrant>",
+    "<exactSHA>"
+  ],
+  "format_then_http_sequential": true,
+  "limits": "Same existing300active+60cleanup/768MiBJavaheap/256MiBmeta/workspacefloor4GiB/growth2GiB/sharedstop15GiB/reserve1GiB/ownedRSS4GiB/privateLog8MiB; no capraise",
+  "pins": {
+    "format01/semantic-source-manifest.safe.json": "8efc3273e0a03af1cc31b81600a473955d204a5f669b8a0489c6ef0208dedee1",
+    "format01/format-plan.safe.json": "0f867be7384e13689de179c578fb14bf4d455ceada20a33b3b1c8d8e39846da5",
+    "format01/run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "format01/logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "format01/grant-template.private.json": "f86f4491d1b16aee8fd471e41970a00e8e45788a4a31ac7495d732bdba63f57e",
+    "format01/format-journal.init.gradle": "90933926b19e792e941c15b2649560fdce53ea730b40456f4a4931a25cc6eaad",
+    "one-http01/logged-it-child.py": "130e8c367cb02762ece383704f899c3fafc97c064051cd12a9d6692711b4914a",
+    "one-http01/run-it-owned.py": "5b27e8fd4c1d658426c24e8abaf6950142682116294005b12252eba64d0673a7",
+    "one-http01/it-plan.safe.json": "5e7f7840254f032e84e6aa8bbc45129610a56b697e1e71eab5be667ed65d7004",
+    "one-http01/grant-template.private.json": "4b093431d9aa00e9ab96ceed58c03cfc8d3d97036e627efa023953ce497f1d4d",
+    "one-http01/it-source-supplement.safe.json": "d45f46b606130a17fbd757856b4466ad34a30e6c25572c53dfc01a76f042c7bc",
+    "one-http01/it_container_observer.py": "0dec9cb57458eb3f7d0dd97f882ba7d6f6f351b8727f293166178f4e2b6d95bb",
+    "one-http01/formatted-source-manifest.safe.json": "8efc3273e0a03af1cc31b81600a473955d204a5f669b8a0489c6ef0208dedee1"
+  },
+  "state": "Only Source bindings now; fresh review/grants required. HTTP base/test/manifest rebind after actual format+mechanical commit. No native/PGDocker/HTTP/compile performed.",
+  "XML_after_native": "Existing strictUTF8 declaration/DTD rejection + closed selectedcase parser pattern reused after exact native source join; expected exactly1 selectedcase/0fail0error0skip, fresh exact known class file. No rawXML/log/messages/export. Runtime classification requires actual safe receipt not exit alone."
+}

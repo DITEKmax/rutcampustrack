@@ -1,0 +1,65 @@
+{
+  "source_only": true,
+  "actual_native": false,
+  "actual_private_files": false,
+  "native_helper_imports": false,
+  "groups": 14,
+  "rows": [
+    {
+      "name": "UNBUFFERED64K_CHUNKS_AND_COMPLETE_WRITE",
+      "passed": true
+    },
+    {
+      "name": "PARTIAL_WRITE_PRIMARY_AND_OWN_CLEANUP",
+      "passed": true
+    },
+    {
+      "name": "DRIFT_MODE_RETAIN_PRIMARY_NO_UNLINK",
+      "passed": true
+    },
+    {
+      "name": "DRIFT_UID_RETAIN_PRIMARY_NO_UNLINK",
+      "passed": true
+    },
+    {
+      "name": "DRIFT_NLINK_RETAIN_PRIMARY_NO_UNLINK",
+      "passed": true
+    },
+    {
+      "name": "DRIFT_INODE_RETAIN_PRIMARY_NO_UNLINK",
+      "passed": true
+    },
+    {
+      "name": "UNLINK_AND_CLOSE_ERROR_DO_NOT_MASK_PRIMARY",
+      "passed": true
+    },
+    {
+      "name": "PREEXISTING_LEAF_NOT_ADOPTED_UNLINKED_OR_WRITTEN",
+      "passed": true
+    },
+    {
+      "name": "EXPIRED_OR_UNKNOWN_CLEANUP_DENIED_PRESERVES_PRIMARY",
+      "passed": true
+    },
+    {
+      "name": "FALSE_GRANT_BEFORE_PUBLIC_HELPER_OR_PRIVATE_EFFECT",
+      "passed": true
+    },
+    {
+      "name": "CHANGED_PUBLIC_HELPER_REFUSED_BEFORE_EXEC",
+      "passed": true
+    },
+    {
+      "name": "EXACT_PUBLIC_BUFFER_EXEC_HAS_FILE_IDENTITY",
+      "passed": true
+    },
+    {
+      "name": "SINGLE_EXACT_R2_CONSUME_CALL_SOURCE",
+      "passed": true
+    },
+    {
+      "name": "NO_NETWORK_SUBPROCESS_OR_ENV_SOURCE",
+      "passed": true
+    }
+  ]
+}

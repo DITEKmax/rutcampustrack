@@ -1,0 +1,36 @@
+{
+  "schema": "rct-independent-narrow-review-seal-v1",
+  "files": {
+    "OUTCOME.safe.json": {
+      "sha256": "77d6db231cc095cd378f4f29642c1b10d5c9b60b08679199a17f484e05ab60d7",
+      "bytes": 983
+    },
+    "REPORT.md": {
+      "sha256": "efe22952a7e7c9472c0aa4f686802b01f3e7963392a7f1b734cc7bcd6b144320",
+      "bytes": 4942
+    },
+    "before-seed-join.safe.json": {
+      "sha256": "9eeadc966b989726bf94d66d352e504816021f835c4c676bffe76872999f09fb",
+      "bytes": 542
+    },
+    "check-before-seed.py": {
+      "sha256": "46b1fe1575ac9a55d291228a818f91094d4dd422a5d46ca1090c5c7e4be6173a",
+      "bytes": 2713
+    },
+    "inputs-verified.safe.json": {
+      "sha256": "0b74c7a6b319a3446d4b962942693d821c9366f6aab06647395f1207a0fb5ada",
+      "bytes": 674
+    },
+    "review-selected-controls.py": {
+      "sha256": "8f28a9a6b9396812e5be6e01d026e1cc80cb93c41b5633ddba330b77de591c3f",
+      "bytes": 5953
+    },
+    "selected-controls.safe.json": {
+      "sha256": "ffe20f144179dbd300e83a06e1ae77e8cc2f2ff4ce2818595d7e53de35076340",
+      "bytes": 1112
+    }
+  },
+  "input_manifest_sha256": "aba63ccbedf1697c17595a3c95cb1bcbc3828ba711fb778b7376ca12489e660b",
+  "source_unchanged_at_seal": true,
+  "native": "NOT_RUN"
+}

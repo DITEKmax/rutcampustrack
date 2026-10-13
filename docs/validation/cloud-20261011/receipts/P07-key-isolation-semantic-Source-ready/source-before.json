@@ -1,0 +1,75 @@
+{
+  "utc": "2026-10-13T12:53:33.726595+00:00",
+  "base": "86a9c859d361399b2c0deeca0ec20f2c950ec698",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "finding": "DF-SEC-P07-PRIVATE-KEY-VOLUME-001",
+  "runtime": "NOT_RUN",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+    },
+    {
+      "path": ".agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+    },
+    {
+      "path": "services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3"
+    },
+    {
+      "path": "tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "252dfcfd5e7f834ff9571bf65ab9b0e350535eb0e5aec2b8e9dd6e79d3b43d49"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/decisions.md",
+      "sha256": "feafc4ffc89220ac932433d92d8b293e25c0ca288a48f61920ef9832de069da4"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/questions.md",
+      "sha256": "9a31f631bae3f062e5daa139aa09f863399b34bba80c55457b1bacf49773b20e"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/resources.md",
+      "sha256": "ea47c465f2a33185f226a8f931801229c660a7708d3accbb2079f7ea200553b8"
+    },
+    {
+      "path": "docker-compose.prod.yml",
+      "sha256": "9d59c265db7350fb6c873a03dd49d974d9ec5c167e5383fbb821b498e08b8565"
+    },
+    {
+      "path": "docker-compose.e2e.yml",
+      "sha256": "2807d5a8c4cec7ff8f87b30107f9c19c83bd3570330b35596192d7d2039daf76"
+    },
+    {
+      "path": "infra/local-stand/compose.yml",
+      "sha256": "f30e432faa4ecd69839318a48311961998e01018f5e34743b312e7db230794db"
+    },
+    {
+      "path": "services/auth-service/Dockerfile",
+      "sha256": "503fac94af3793c27933f9c4e6da6bb3d03568da5ea43052a640fdaf41c35ee8"
+    },
+    {
+      "path": "services/notification-service/notification-app/Dockerfile",
+      "sha256": "11209d2768bdb64c7e23d5e0d2f8b1283a9960b2c76a5eac2393b5872a9d2700"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "sha256": "5920334dd3eeed6d9ed23404e18411a1f32aa55b4ce4350f472e565677febbc7"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/PublicKeyProvider.java",
+      "sha256": "6201b183dd264954054c2710a5fb18924ea56d6af839383e5e20b5698352be1a"
+    }
+  ]
+}

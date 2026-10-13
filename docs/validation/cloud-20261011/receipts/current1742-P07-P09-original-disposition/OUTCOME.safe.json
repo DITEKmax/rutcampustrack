@@ -1,0 +1,31 @@
+{
+  "schema": "rct-independent-research-disposition-v1",
+  "utc": "2026-10-13T12:45:06.142693+00:00",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_model_metadata": "UNKNOWN",
+  "disposition": "ACCEPT_FINITE_RECONCILIATION_WITH_P07_SOURCE_DEFECT_P09_UNKNOWN",
+  "recommended_matrix_status": {
+    "RESEARCH-P07": "DEFECT",
+    "RESEARCH-P09": "UNKNOWN"
+  },
+  "finding": {
+    "id": "P07-PRIVATE-KEY-VOLUME-SHARED",
+    "priority": "P2",
+    "evidence_kind": "PUBLIC_SOURCE_CONFIGURATION",
+    "actual_private_key_contents_read": false,
+    "actual_consumer_readability": "UNKNOWN"
+  },
+  "missing_atom": "P09-REAL-AUTH-OPEN-SOCKET-REVOKE",
+  "current_producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "actual_java_checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+  "current_gates": "CI_AND_COVERAGE_FAIL",
+  "selected_current_case_records": 112,
+  "unique_source_methods": 56,
+  "overlapping_graphs": 2,
+  "native_runs": 0,
+  "new_product_tests_or_frameworks": 0,
+  "shared_or_product_writes": 0,
+  "B013_retry": false,
+  "root_only_matrix_writer": true
+}

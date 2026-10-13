@@ -1,0 +1,14 @@
+{
+  "files": {
+    "closed-validator-xml.py": "ca2374a8444acb225c399c578caed3184fa1ee18f979e440a5c95397ec039a8f",
+    "run-validator-owned.py": "caad5bd0f3597c5e5f68e89e6ae97866f000d98e7f6de9518dded0d702c75e91",
+    "closed-parser-controls.safe.json": "673f82a5ec32b9fbd49ee23e4a65063f569b73e4db7668cf7da329308a0c4cab",
+    "READY.safe.json": "f48d95cbad2557d761e890c57e33aac97f622508d8200b498dec320bc1416f90",
+    "logged-validator-child.py": "8ab926807def8d428db4a4b45296dc5565f167a6599af8e011683883a9aea960",
+    "grant.template.safe.json": "921d1f34738b593e942127b0775279159452e0af6ce93ecacd14ceccbc263a49",
+    "source17.safe.json": "d01f9ac98dcd8cf1399fad43e97e4c91c533052f2a851228f543d17a3b399ff5",
+    "execution-plan.safe.json": "967c04ae52916233eb246c976724dce6972cffe1582387e6561d674b84c66f84"
+  },
+  "native": "NOT_RUN",
+  "product_revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+}

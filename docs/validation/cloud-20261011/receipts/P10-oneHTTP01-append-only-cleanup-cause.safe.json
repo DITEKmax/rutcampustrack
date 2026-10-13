@@ -1,0 +1,14 @@
+{
+  "schema": "P10_APPEND_ONLY_CLEANUP_CLOSED_CAUSE_V1",
+  "utc": "2026-10-13T17:14:35.276051+00:00",
+  "known_Spring_UncategorizedSQLException_exact_type": true,
+  "known_public_append_only_trigger_literal_present": true,
+  "known_postgresql_exception_marker_present": true,
+  "suppressed_exception_marker_present": true,
+  "known_assertion_exception_marker_present": false,
+  "known_core_method_frame_module_prefix_allowed": true,
+  "source_cleanup_line1335": "DELETE account_security_events WHERE user_id = ?",
+  "source_trigger": "V24 append-only BEFORE UPDATE OR DELETE at200-205",
+  "qualification": "Definite cleanup SQL conflicts accepted append-only audit. This native test still FAIL; no independent full assertion-GREEN claim. Current product unchanged; correction scope must retain audit/data ownership and primary failures, no trigger disable or bypass.",
+  "no_private_XML_message_values_hash_export": true
+}

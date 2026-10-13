@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-13T13:53:55.584138+00:00",
+  "state": "PHYSICAL01_GROWTH_STOP_NEW_NOT_STARTED_CLEANUP_GROWTH_STOP",
+  "temp_metadata": [
+    {
+      "path": "/tmp/p07-key-isolation-20261013-01-wzsk09ux",
+      "device": 33,
+      "inode": 323971,
+      "uid": 1000,
+      "mode": 448,
+      "mtime_utc": "2026-10-13T13:51:33.908326+00:00",
+      "known_leaf_metadata": [
+        {
+          "name": "private.key",
+          "device": 33,
+          "inode": 323972,
+          "uid": 1000,
+          "mode": 384,
+          "nlink": 1,
+          "bytes": 2484
+        },
+        {
+          "name": "public.key",
+          "device": 33,
+          "inode": 323973,
+          "uid": 1000,
+          "mode": 420,
+          "nlink": 1,
+          "bytes": 625
+        }
+      ]
+    }
+  ],
+  "free_bytes": {
+    "/workspace": 7007662080,
+    "/tmp": 7229362176
+  },
+  "tool_session": 65486,
+  "native_exit": 1,
+  "source_caller_sha256": "0d82b00acc1ca90df2ca0761d40547c9acc11b410ed0d18e60e38af0d7b328cd",
+  "qualifications": "No key contents/hashes read; recordednewnamesonly; allocation causeUNKNOWN; originalphysicalreceipt absent dueguard."
+}

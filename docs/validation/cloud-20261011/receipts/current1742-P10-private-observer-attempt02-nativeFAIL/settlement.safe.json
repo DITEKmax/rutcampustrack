@@ -1,0 +1,43 @@
+{
+  "schema": "P10_ORIGINAL_ARTIFACT_ATTEMPT02_SETTLEMENT_V1",
+  "utc": "2026-10-13T12:30:09.401852+00:00",
+  "tool_chunk": "c9a17d",
+  "tool_session": null,
+  "caller_exit": 1,
+  "supervisor_birth": {
+    "pid": 519064,
+    "start_ticks": 14831225,
+    "known_birth_absent": true
+  },
+  "owned_births": [
+    {
+      "pid": 519068,
+      "start_ticks": 14831266,
+      "known_birth_absent": true
+    }
+  ],
+  "all2_known_births_absent": true,
+  "settled": true,
+  "native_reaped": true,
+  "terminal_utc": "2026-10-13T12:28:40.362408+00:00",
+  "cleanup_margin_utc": "2026-10-13T12:32:06.073985+00:00",
+  "terminal_before_cleanup_margin_seconds": 205.712,
+  "absence_checks_before_cleanup_margin": true,
+  "private_request_TMP_authority_absent": true,
+  "safe_case_and_private_XML_absent": true,
+  "18_source_inputs_match": true,
+  "worktree_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "worktree_clean": true,
+  "frozen_manifest_and_source_zip_unchanged": true,
+  "adapter_last_success_stage": "PRIVATE_REQUEST_UPDATED",
+  "connector_response_retained_in_RAM": true,
+  "primary_rejection": "BOUNDARY_UNKNOWN",
+  "cleanup_rejection": "NONE",
+  "cleanup_outcome": "REMOVED",
+  "result": "CHECKING_FAIL_BOUNDARY_UNKNOWN_NO_CASE_PROJECTION",
+  "case_cause": "UNKNOWN",
+  "selected_private_XML_read_or_exported": false,
+  "raw_XML_or_URL_or_log_hash_exported": false,
+  "effects": "Authorizedoneexactconnector plus one bounded native reader; no test/compiler/API/PG/browser/product effects",
+  "no_retry": true
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "P10_NETWORK_CONTEXT_REVIEW_SEAL_V1",
+  "verdict": "APPROVE_SOURCE",
+  "files": {
+    "REPORT.md": {
+      "sha256": "386941b0645400bdbda7a9441f741b96b903472c968e9aa6e2177b7b48a73f4d",
+      "bytes": 4305
+    },
+    "REPORT.safe.json": {
+      "sha256": "d62d1d353004c594020cf49c8df1210dde9f25b8b0084b5bb6ee77f518ba213e",
+      "bytes": 1524
+    },
+    "controls.safe.json": {
+      "sha256": "c6d7e86aa76886abc5f742023a775dba756a3f3e00b1d5a4d5e2b7db67c03834",
+      "bytes": 2028
+    },
+    "recheck-controls.py": {
+      "sha256": "b723f6d41555f4d6bf58bb0eacdee6b65d6feabfc9f2396103f93db1822e8213",
+      "bytes": 6506
+    }
+  },
+  "private_runtime_data": "NONE"
+}

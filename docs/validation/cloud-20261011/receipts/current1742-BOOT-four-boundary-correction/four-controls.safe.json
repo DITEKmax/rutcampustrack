@@ -1,0 +1,28 @@
+{
+  "source_only": true,
+  "native": false,
+  "real_private_files": false,
+  "actual_helper_imports": false,
+  "groups": [
+    {
+      "id": "CLOSE_ONLY_OWNERSHIP",
+      "passed": true,
+      "known_cleanup_and_drift_retention": true
+    },
+    {
+      "id": "IMMUTABLE_PARSER_CLOSE",
+      "passed": true,
+      "primary_and_close_only_failures": true
+    },
+    {
+      "id": "FRESH_CARRIER_READ",
+      "passed": true,
+      "late_private_open_count": 0
+    },
+    {
+      "id": "SAFE_RECEIPT_BEFORE_CLEANUP",
+      "passed": true,
+      "failed_receipt_retains_carrier": true
+    }
+  ]
+}

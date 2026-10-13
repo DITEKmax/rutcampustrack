@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-13T15:49:04.634378+00:00",
+  "scope": "BOOT_ACTUAL_SDK_SCHEMA_BINDING",
+  "result": "SC_CONTENT_TIMESTAMPED_TEXT_APPROVED_FROM_CLOSED_OWN_DESCRIPTOR_SHAPE",
+  "SDK_calls_this_changed_scope": 1,
+  "actual_payload_UTF16_units": 280748,
+  "status_TextContent_units": 17,
+  "qualification": "ActualstructuredContent.content STRING; nestedSCMISSING/no ambiguity. Source312c approvedPayload stillmust enforceisErrorfalse/object/framing/32MiB, originalUTF8encoder. Onlyclosedshape counts exported; fullresponse heldprivateV8; no raw/log/URI/unknownkeys/hash. CauseUNKNOWNuntil e7a6 qualifiedparse. PrioroneStatus-onlyFAIL unchanged, no repeatthatparser. Roottakesfreeone-nativelease for byteexact2runtimecopies/newnamespace; no Source/fullreview."
+}

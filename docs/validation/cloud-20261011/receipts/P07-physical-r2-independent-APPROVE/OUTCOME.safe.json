@@ -1,0 +1,26 @@
+{
+  "schema": "rct-independent-p07-physical-r2-recheck-v1",
+  "disposition": "APPROVE_SOURCE_BOTH_EXACT_P2_CLOSED",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "source_caller_sha256": "0d82b00acc1ca90df2ca0761d40547c9acc11b410ed0d18e60e38af0d7b328cd",
+  "closures": [
+    "P07-CALLER-VOLUME-CREATION-TIME-NOT-ADMITTED",
+    "P07-CALLER-PARTIAL-KEY-SETUP-UNTRACKED"
+  ],
+  "new_findings": [],
+  "selected_ram_controls": 9,
+  "additional_before_seed_ast_controls": 3,
+  "original20_rerun": false,
+  "whole_product_rereview": false,
+  "product_0ec_four_pins": "EXACT_SOURCE_APPROVE_REUSED",
+  "source_zip_sha256": "21dff138cd3cd5b6d4e7e508faa4303c37b95c776e23e2494b99eeb64f71719c",
+  "native": "NOT_RUN",
+  "fresh_root_grant": "STILL_REQUIRED",
+  "P07": "UNKNOWN",
+  "P09": "UNKNOWN",
+  "same_uid_atomic_ownership": "NOT_PROVEN",
+  "second_precision_creation_window": "EXPLICIT_QUALIFICATION",
+  "shared_product_author_writes": 0
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "rct-independent-key-isolation-source-review-v1",
+  "scope": "DF-SEC-P07-PRIVATE-KEY-VOLUME-001",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "disposition": "CHANGES_REQUESTED_PHYSICAL_CALLER_APPROVE_FOURPATH_PRODUCT_TEST_SOURCE",
+  "semantic_revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1",
+  "caller_sha256": "5130de07f6d02be0ea427a1b98d91d76aacb8d0327578a350849dde7068615fb",
+  "findings": [
+    {
+      "id": "P07-CALLER-VOLUME-CREATION-TIME-NOT-ADMITTED",
+      "priority": 2,
+      "source_line": 119
+    },
+    {
+      "id": "P07-CALLER-PARTIAL-KEY-SETUP-UNTRACKED",
+      "priority": 2,
+      "source_line": 108
+    }
+  ],
+  "independent_selected_ast_ram_counterexamples": 3,
+  "author20guards": "SOURCE_INSPECTED_REUSED_NOT_RERUN",
+  "native": "NOT_RUN",
+  "formatter_compile_new_http_tests": "NOT_RUN",
+  "physical_grant": "BLOCKED_UNTIL_CORRECTION_AND_RECHECK",
+  "parent_P07": "UNKNOWN",
+  "parent_P09": "UNKNOWN",
+  "product_shared_author_writes": 0,
+  "actual_key_contents_read": false,
+  "B013_retry": false
+}

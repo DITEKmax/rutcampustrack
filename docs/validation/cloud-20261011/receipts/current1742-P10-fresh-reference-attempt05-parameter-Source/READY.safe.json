@@ -1,0 +1,75 @@
+{
+  "schema": "P10_ATTEMPT05_PARAMETER_SOURCE_READY_V1",
+  "state": "READY_WAITING_FRESH_ROOT_GRANT",
+  "utc": "2026-10-13T13:48:03.525646+00:00",
+  "Goal": "One fresh normal SDK file reference of the same original Authartifact then one unchanged accepted private diagnostic; no identical oldURLretry.",
+  "Context_evidence": "Actual04 native1/directHTTP_ERROR403 URL_OPEN, settled/requestgone/birthsabsent. 403reason/expiry/auth/proxy remainsUNKNOWN. New approvedreference is changedcheckinginput; no expiredreference claim.",
+  "Relevant_scope": "Own NEW parameter sibling only; parent461134/child94e957 byteidentical, product5dac104e unchanged. Old Sources/receipts/privateRAMresponse retained.",
+  "Required_behavior": "Same artifact11806374316/run38387263916/head1742/check38d7/192040B selected9caseAuthXML, same onefileguardedprojection and closedlifecycle, original caps/8normalcontext/TLS. Storefreshresponse immediately; exact873d boundednestedreference adapter only, noURLconstructor/output.",
+  "Constraints": "No newSDK/request/native/network now; Rootformatlease may be active. No headers/auth/TLS/transport/product/test/B013change or oldURL retry.",
+  "Existing_patterns": "Reuse accepted461134/94e957/b78/18pins/context policy, sourceabf5/b001, reviewd62d/66b0/dbe8. Metadata8223 exact. Onlylease/run/planbinding hashes change.",
+  "Acceptance": "parameter-proof proves exactbyte callbacks/admission/manifest/metadata, only2plan+2falsegrant fields differ, limits equal, falseflags/nulltime, namespaceabsent. Runtime NOT_RUN; oldcontrols/review reused.",
+  "Verification": "Source-only byte/dictinverse; no unchanged controls or realENVread. Future exactnormalMCP call and sameapprovednormalcaller requirefreshRoot360wall/phase60cleanup60 grant.",
+  "Do_not": "No identicalURLretry/privateURI/body/stack/XML/log/env/keypresence/value/hash export, no scope/clock/capraise/newrunner/sourcebehavior/fullstand/testreplay/Sourceproductfix/B013.",
+  "SDK_arguments": {
+    "tool": "mcp__codex_apps__github_download_workflow_artifact",
+    "arguments": {
+      "artifact_id": 11806374316,
+      "repo_full_name": "DITEKmax/rutcampustrack",
+      "file_name": "p10-original-auth-11806374316.zip"
+    }
+  },
+  "dispatch_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1-attempt05/run-green-owned.py",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1-attempt05/root-diagnostic-grant01.private.json",
+    "<FRESH_ROOT_GRANT_SHA256>"
+  ],
+  "private_request": {
+    "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1-attempt05/.download-request.private.json",
+    "seven_keys": [
+      "artifact_id",
+      "run_id",
+      "name",
+      "size_bytes",
+      "head_sha",
+      "actual_checkout",
+      "private_url"
+    ],
+    "normal_existing_adapter": "O_EXCL600 create -> apply_patch Update fromRAMrequest, never result/URI/URLoutput; childcleanup ownsremove"
+  },
+  "grant_shape": {
+    "template": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1-attempt05/grant-template.private.json",
+    "all3_authorization_flags": false,
+    "issued_stop_utc": null,
+    "window_seconds": 360,
+    "phase_seconds": 60,
+    "cleanup_margin_seconds": 60,
+    "lease": "P10_CURRENT1742_FAILURE_XML01_NETWORK_R1_ATTEMPT05",
+    "required_bindings": [
+      "driver_sha256",
+      "child_sha256",
+      "plan_sha256",
+      "test_sha256",
+      "guard_sha256",
+      "source_manifest_sha256",
+      "artifact_id",
+      "producer_head",
+      "actual_checkout",
+      "selected_xml_projection_only"
+    ]
+  },
+  "Source_files": {
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "grant-template.private.json": "9c8a702017031ec01768007d2f3b47a9e46860f0c846cf3a427a83a906933145",
+    "green-plan.safe.json": "bf852c5b5147c31933fbd403e2148276ab57f395a2474f943ec311f8423c2bbd",
+    "logged-green-child.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "parameter-proof.safe.json": "fca310d3483d89ee22d0b9a1ae0d20bb09aedbcc5a613d80d98669bc54e0f1c8",
+    "run-green-owned.py": "4611344f9af8a48b0e695545c4053994c1f72591929553b3336df4e2a8d311c9",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780"
+  },
+  "actual04_reason_and_P10_cause": "UNKNOWN",
+  "effects": 0,
+  "next": "FreshRootgrant then onefreshSDKreference+samecaller normalapproval; no effects beforegrant."
+}

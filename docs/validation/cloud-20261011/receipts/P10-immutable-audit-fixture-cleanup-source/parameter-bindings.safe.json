@@ -1,0 +1,24 @@
+{
+  "schema": "P10_CLEANUP_R1_PARAMETER_REUSE_V1",
+  "source_ready_sha256": "5aa2d95721b0ebd49c64fe36845e456671c86512e0bad3c51186bf989fa1cdd3",
+  "prior_parameters_sha256": "184c6abb1395c47298eebb0f2da7a041db576d04a4cf012cc01642fdd68f2c7d",
+  "format_required_java_targets_exact": true,
+  "protected17_pins_current_exact": true,
+  "new_namespaces_absent": true,
+  "native": "NOT_RUN_AFTER_CLEANUP_FIX",
+  "pins": {
+    "format01/semantic-source-manifest.safe.json": "dc58cfa17040c49ab77c701afb1c8c57e86fe2e42160162f2690fea1ffab4286",
+    "format01/format-plan.safe.json": "b662cc7903222f00133c1799c8fff05742fb88e33b6b3422440c1e4c748c7cbc",
+    "format01/run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "format01/logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "format01/grant-template.private.json": "9efb0f518ff7fb69ecb1c532b529eb2322126d001e12b6e3b5f777b0dbb2afc1",
+    "format01/format-journal.init.gradle": "90933926b19e792e941c15b2649560fdce53ea730b40456f4a4931a25cc6eaad",
+    "one-http01/logged-it-child.py": "130e8c367cb02762ece383704f899c3fafc97c064051cd12a9d6692711b4914a",
+    "one-http01/run-it-owned.py": "5b27e8fd4c1d658426c24e8abaf6950142682116294005b12252eba64d0673a7",
+    "one-http01/it-plan.safe.json": "74920917f79f21486a056aff1b6f153984f0e936778bacc6079b4bede1f665e1",
+    "one-http01/grant-template.private.json": "76942ddc4dca1df25aac8f35d2409dab21a76ff82b756376442d6b5885ec13d7",
+    "one-http01/it_container_observer.py": "0dec9cb57458eb3f7d0dd97f882ba7d6f6f351b8727f293166178f4e2b6d95bb",
+    "one-http01/formatted-source-manifest.safe.json": "280a05e55f2777839e21b53e15c16e95de610b3a49a6351c712c79aebf9b89ac"
+  },
+  "qualification": "Only Source/test hash/manifests/lease/new namespace/provenance params changed. Callbacks/init/observer/numericcaps unchanged. Format03 then afteractualnewhead rebindHTTP02/fresh joins/grants, no unconditional native authorization."
+}

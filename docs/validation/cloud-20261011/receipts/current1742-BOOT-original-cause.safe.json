@@ -1,0 +1,36 @@
+{
+  "job": 115262001797,
+  "run": 38387263916,
+  "head": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "actual_cause": "SCHEDULE_DOCKER_GRADLE_DAEMON_CONNECTION_TIMEOUT",
+  "closed_evidence": {
+    "DAEMON_ADDRESSES_REGISTRY_LOCK_TIMEOUT": false,
+    "DAEMON_REGISTRY_LOCK_OWNER": false,
+    "DAEMON_REGISTRY_LOCK_OP": false,
+    "DAEMON_REGISTRY_LOCK_FILE": false,
+    "LOCK_HELD_BY_OTHER_GRADLE": false,
+    "LOCK_RELEASE_NOTICE": false,
+    "CACHE_SHARED_DOCKER_ROOT": false,
+    "AUTH_DOCKER_GRADLE_FAILED": false,
+    "ACADEMIC_DOCKER_GRADLE_FAILED": false,
+    "SCHEDULE_DOCKER_GRADLE_FAILED": true,
+    "NOTIFICATION_DOCKER_GRADLE_FAILED": false,
+    "MOBILE_DOCKER_GRADLE_FAILED": false,
+    "ATTENDANCE_DOCKER_GRADLE_FAILED": false
+  },
+  "qualification": "Original job console known-literal read/search establishes timeout waiting to connect to Gradle daemon, schedule bootJar builder exit1; no raw diagnostic text or lock PID exported. Browser NOT_RUN; no identical parser/MCP/build retry.",
+  "cause_flags": {
+    "TIMEOUT_CONNECT_DAEMON": true,
+    "TIMEOUT_START_DAEMON": false,
+    "TIMEOUT_LOG_DAEMON": true,
+    "DAEMON_LAUNCH_FAILED": false,
+    "DAEMON_STARTED_NOT_CONNECT": false,
+    "DAEMON_LOG_FILE": true,
+    "DAEMON_WORKING_DIR": true,
+    "LOCK_METADATA_RESERVED": true,
+    "WORKER_CONNECTION": false,
+    "DAEMON_MULTIPLE": false,
+    "SCHEDULE_GRADLE_FAILED": true
+  },
+  "classification": "BUILD_INFRASTRUCTURE_FAILURE; shared Gradle cache mechanism hypothesis requires source confirmation"
+}

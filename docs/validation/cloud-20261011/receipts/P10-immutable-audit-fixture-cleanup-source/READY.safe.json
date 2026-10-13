@@ -1,0 +1,35 @@
+{
+  "schema": "P10_APPEND_ONLY_FIXTURE_CLEANUP_SOURCE_READY_V1",
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "base": "0fc84656948ce40e87a71b967d9caa49b391ccf4",
+  "source_before": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "source_after": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "source_path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+  "delta_sha256": "1080dc54d43391f6a01d9ce8c96889faabd7e68ac810cdc61d17a732b8ed616a",
+  "actual_red_cause_receipt": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-cache-directive-oracle-source/one-http01-actual/append-only-cause.safe.json",
+  "actual_red_cause_sha256": "e3ec6e5e623064e3e5ea947391dcded133db72b57e527d4f55d383cec089bbf6",
+  "correction": "Only cleanup helper comment and removal of immutable audit DELETE plus audit-linked auth_sessions/grants/users DELETE. Retain two existing parameterized own-user outbox/reset-token deletes and exact error aggregation/outer finally primary suppression.",
+  "source_lifecycle": {
+    "AbstractIntegrationTest": "PG16 and Redis7 fresh withReuse(false), default Testcontainers JVM lifecycle; no reused/foreign DB",
+    "AuthOtpFlowIT": "Rabbit withReuse(false); actor logins UUID80-bit suffix/own returned user IDs, synthetic-only fixtures",
+    "V24": "Audit append-only BEFORE UPDATE/DELETE; users and (sid,user) auth_sessions FKs ON DELETE RESTRICT; grant/session/user rows retained",
+    "within_class_queries": "All security-event/session/credential/reset-state counts scoped current actor IDs or fixed student/admin; existing global auth_outbox count at710 requires retained scoped outbox DELETE. No unfiltered users/grants/audit/session cardinality query in this class.",
+    "scope_boundary": "Within-class source check only; broader class ordering remains normalCI verification, no universal isolation claim."
+  },
+  "targeted_Source_RAM": {
+    "actual_old_sql_sequence_hits_append_only_trigger": true,
+    "actual_new_two_mutable_sql_statements_scope_exact": true,
+    "no_audit_or_fk_linked_delete": true,
+    "cleanup_exception_aggregation_exact": true,
+    "outer_primary_and_cleanup_suppression_exact": true,
+    "all_other_header_body_password_credential_state_session_clock_assertions_byte_exact": true,
+    "model_qualification": "Selected exact Source statement extraction and finite fake immutable-audit behavior; no Java/JDBC/runtime invoked. Finally preservation proven byte identity, not new mirrored test framework."
+  },
+  "next": [
+    "Independent narrow cleanup Source review",
+    "Same callbacks/init/observer/caps format/HTTP parameter-only rebind to new source/hash/head/new owned namespace",
+    "Fresh Root format/oneHTTP grants and new foreign/image/resources joins"
+  ],
+  "no_product_configuration_policy_trigger_disable_TRUNCATE_or_assertion_skip": true,
+  "actual_HTTP_status": "Previous oneHTTP native1 retained. After-correction native NOT_RUN; true selected-case GREEN still required; sensitive-credential mutation remains outstanding."
+}

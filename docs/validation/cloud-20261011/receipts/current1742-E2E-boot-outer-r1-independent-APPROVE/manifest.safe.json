@@ -1,0 +1,31 @@
+{
+  "schema": "RCT_BOOT_OUTER_R1_NARROW_INDEPENDENT_MANIFEST_V1",
+  "utc": "2026-10-13T12:28:23.954719+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "closed_finding": "BOOT-OUTER-CLEANUP-IGNORES-FRESH-BIRTH-PRESENCE",
+  "findings": [],
+  "independent_selected_RAM_cases": 7,
+  "real_log_API_native_effects": false,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 3056,
+      "sha256": "dbaf92bc859100da6bbc54c0a2bf0b4418fb65acadf49107945c99521aed24a8"
+    },
+    {
+      "path": "bindings.safe.json",
+      "bytes": 1065,
+      "sha256": "12c772ec61a3fbade6c072395196d31a745c7fae8ee356a2e3332d48a9528b87"
+    },
+    {
+      "path": "check-fresh-settlement-ast.py",
+      "bytes": 2553,
+      "sha256": "a4184e99b95969b1f8f79153b65c9d191a9a2cb34ebd677b2813e3d7e6a7d0ff"
+    },
+    {
+      "path": "fresh-settlement-controls.safe.json",
+      "bytes": 1432,
+      "sha256": "d7e954d7d09c2114ca85292145aa590cc793e1fd001b32254a6b61d213701f75"
+    }
+  ]
+}

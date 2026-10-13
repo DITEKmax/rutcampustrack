@@ -1,0 +1,32 @@
+{
+  "authorized": false,
+  "source_review_approved": false,
+  "lease": "P10_FIXED_GITHUB_ARCHIVE_API01",
+  "issued_utc": null,
+  "stop_utc": null,
+  "driver_sha256": "c7c91634dac0ed6df56db86aa9e672c96989caa8b4570ba4606ea8056fbe89e6",
+  "child_sha256": "88f1a6a13e4b0515d14f0a27da5507a7944ca3967220a8910c0753b0f98e75de",
+  "plan_sha256": "5dae02eaf83dd4df4137f04bd483f57421ec13dfb217bc64efbb1f4ae1953b47",
+  "test_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "source_manifest_sha256": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+  "limits": {
+    "phase_seconds": 60,
+    "cleanup_margin_seconds": 60,
+    "workspace_floor_bytes": 4294967296,
+    "disk_growth_cap_bytes": 2147483648,
+    "shared_stop_bytes": 16106127360,
+    "shared_reserve_bytes": 1073741824,
+    "shared_growth_cap_bytes": 4294967296,
+    "owned_rss_cap_bytes": 4294967296,
+    "private_log_cap_bytes": 8388608
+  },
+  "qualification": "TEMPLATE_ONLY_ROOT_FRESH_GRANT_REQUIRED",
+  "original_artifact_observation_authorized": false,
+  "artifact_id": 11806374316,
+  "producer_head": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "actual_checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+  "selected_xml_projection_only": true,
+  "selector_sha256": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+  "github_archive_api_transport_authorized": false
+}

@@ -5,16 +5,18 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+      "sha256": "9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91",
       "status": "authoritative-owner-contract",
-      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
       "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
       "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
       "previous_sha256_before_D009": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
       "previous_sha256_before_D010": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
       "previous_sha256_before_D011": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
-      "previous_sha256_before_D012": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27"
+      "previous_sha256_before_D012": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27",
+      "original_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+      "owner_decisions_through": "D013"
     },
     {
       "id": "AGENTS.md",
@@ -9935,6 +9937,1928 @@
       "sha256": "29ef04e1b1c142d12c79ee7229817b188499dc68e6d98eaecbf0032b6681c43e",
       "status": "INDEPENDENT_APPROVE_MINIMAL_PARSER_ONLY_NATIVE_NOT_RUN",
       "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_ONE_FIXED_OUTER_CALLER_SOURCE/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-one-fixed-outer-caller-Source/manifest.json",
+      "sha256": "d3992a842e95ccb2a5998877d313c9253b54c6b06ceeaa040d7a7066a313b207",
+      "status": "SOURCE_READY_NATIVE_NOT_RUN_REVIEW_BEFORE_ROOT_GRANT",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_ONE_FIXED_OUTER_CALLER_SOURCE/current1742-boot-fixed-outer-caller-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-one-fixed-outer-caller-Source/current1742-boot-fixed-outer-caller-source.safe.zip",
+      "sha256": "8c2e19bcdb817b050efb9b5aae8dfd80df551e77115b04c9c5a8ca15357c42f1",
+      "status": "SOURCE_READY_NATIVE_NOT_RUN_REVIEW_BEFORE_ROOT_GRANT",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_ONE_FIXED_OUTER_CALLER_SOURCE/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-one-fixed-outer-caller-Source/HANDOFF.md",
+      "sha256": "6521c47ac1ff2e01115ff4d6e1e8005355567a1b408300c8b14af85d12d591d8",
+      "status": "SOURCE_READY_NATIVE_NOT_RUN_REVIEW_BEFORE_ROOT_GRANT",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_ONE_FIXED_OUTER_CALLER_SOURCE/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-one-fixed-outer-caller-Source/READY.safe.json",
+      "sha256": "8545c19668f3aa27261972873ae4283e32fbc2bdf09c2a4eaa20f54cd6391ec3",
+      "status": "SOURCE_READY_NATIVE_NOT_RUN_REVIEW_BEFORE_ROOT_GRANT",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_DIAGNOSTIC_LIFECYCLE_R1_SOURCE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-diagnostic-lifecycle-r1-Source/manifest.safe.json",
+      "sha256": "fdc76b32c62b874f458fa303a7f66091aba77518efbdeb040ffed9be9f226a56",
+      "status": "MINIMAL_TWO_P2_LIFECYCLE_SOURCE_FIX_NARROW_RECHECK_PENDING",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_DIAGNOSTIC_LIFECYCLE_R1_SOURCE/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-diagnostic-lifecycle-r1-Source/SOURCE.safe.zip",
+      "sha256": "7967ed89797314fcade41613c2f91bd950a128dffd63b7f75249450752156d31",
+      "status": "MINIMAL_TWO_P2_LIFECYCLE_SOURCE_FIX_NARROW_RECHECK_PENDING",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_DIAGNOSTIC_LIFECYCLE_R1_SOURCE/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-diagnostic-lifecycle-r1-Source/READY.safe.json",
+      "sha256": "0dcb740d0fe0bd731eed44ed4ee14ce5ea9a9abc46040c404b2293a3c838e3b8",
+      "status": "MINIMAL_TWO_P2_LIFECYCLE_SOURCE_FIX_NARROW_RECHECK_PENDING",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_DIAGNOSTIC_LIFECYCLE_R1_SOURCE/PLAN.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-diagnostic-lifecycle-r1-Source/PLAN.md",
+      "sha256": "af59b2ba105a738688117b62662e0b1b2239b67494a89e354e3494e44cae66d6",
+      "status": "MINIMAL_TWO_P2_LIFECYCLE_SOURCE_FIX_NARROW_RECHECK_PENDING",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "EXISTING_18_SAFE_CONNECTOR_PRIVATE_REQUEST_ADAPTER_SCHEMA",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-connector-private-request-existing-adapter-schema/adapter-public-schema.safe.json",
+      "sha256": "b4085568523d3e22c9f43eb8ca9711bd7f1c63ede3902df571483ce1ef982ab9",
+      "status": "HISTORICAL_ACTUAL_SCHEMA_ADAPTER_REUSE_NO_PRIVATE_VALUES",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_LIFECYCLE_R1_RECHECK_APPROVAL/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-lifecycle-r1-independent-APPROVE/REPORT.safe.json",
+      "sha256": "1682a102f6e71941556ca3072af4a6f6f29891d30d85ec08317e83a1b2220b23",
+      "status": "INDEPENDENT_NARROW_APPROVE_TWO_P2_CLOSED_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_LIFECYCLE_R1_RECHECK_APPROVAL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-lifecycle-r1-independent-APPROVE/manifest.safe.json",
+      "sha256": "f4b37943a2cc1fb6f8225df5a154610a2a5c3d3f217a06e9551d3d6af96f2120",
+      "status": "INDEPENDENT_NARROW_APPROVE_TWO_P2_CLOSED_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_LIFECYCLE_R1_RECHECK_APPROVAL/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-lifecycle-r1-independent-APPROVE/review.safe.zip",
+      "sha256": "7fde42a88cdd170abd4f0622f23056c39d4fd74757f126ac255616cf61adfefb",
+      "status": "INDEPENDENT_NARROW_APPROVE_TWO_P2_CLOSED_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_LIFECYCLE_R1_RECHECK_APPROVAL/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-lifecycle-r1-independent-APPROVE/REPORT.md",
+      "sha256": "6747c2bddcc4f705bdbc0ea58b365bcf738f76d5cc8ba1b756b63e1f3d32f39e",
+      "status": "INDEPENDENT_NARROW_APPROVE_TWO_P2_CLOSED_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_ADAPTER_ATTEMPT01_BLOCKED_NO_NATIVE",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-adapter-attempt01-BLOCKED/adapter-blocked.safe.json",
+      "sha256": "ff9573c45be88530eda16642ecbc37fd9ebd6bb2117d8631b5715e181d864904",
+      "status": "CHECKING_ADAPTER_BLOCKED_EXACT_CONNECTOR1_SUCCESS_AND_PREDICATE_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_ONE_P2_CONFIRMED/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-independent-one-P2/manifest.safe.json",
+      "sha256": "1ac0e752957befcb6885aa9c1fc3ddfd8acc009646262db1e7431224e37c7dc9",
+      "status": "INDEPENDENT_ONE_P2_FRESH_BIRTH_CHECKING_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_ONE_P2_CONFIRMED/safe-outer-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-independent-one-P2/safe-outer-review.zip",
+      "sha256": "23154f0670aff4069cbb6aa6968c28b5aa6eea3eae2c81041b118ec52d622c1b",
+      "status": "INDEPENDENT_ONE_P2_FRESH_BIRTH_CHECKING_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_ONE_P2_CONFIRMED/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-independent-one-P2/REPORT.md",
+      "sha256": "f56635e3b32c6032bd61ba889405efa7555eb469b483efa82ee4a265c4324798",
+      "status": "INDEPENDENT_ONE_P2_FRESH_BIRTH_CHECKING_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_MINIMAL_FRESH_BIRTH_R1_SOURCE/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-r1-Source/manifest.json",
+      "sha256": "ec9ee0e15a2363aedd153430b6b0a25b08775b89c629daaba6aa2dfefe8a1d01",
+      "status": "MINIMAL_ONE_P2_SOURCE_FIX_THREE_RAM_CASES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_MINIMAL_FRESH_BIRTH_R1_SOURCE/current1742-boot-outer-fresh-settlement-r1.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-r1-Source/current1742-boot-outer-fresh-settlement-r1.safe.zip",
+      "sha256": "7afba6fdd90bfae8cb6cbf5ab45ad1557c5b84579f7db8c633a16ed9bb4687eb",
+      "status": "MINIMAL_ONE_P2_SOURCE_FIX_THREE_RAM_CASES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_MINIMAL_FRESH_BIRTH_R1_SOURCE/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-r1-Source/HANDOFF.md",
+      "sha256": "1e38330deb1db5bc949a25e65ff3c20cee7da1154b5214f0e32d8db69589e8f8",
+      "status": "MINIMAL_ONE_P2_SOURCE_FIX_THREE_RAM_CASES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_MINIMAL_FRESH_BIRTH_R1_SOURCE/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-fixed-outer-r1-Source/READY.safe.json",
+      "sha256": "cf71db7f2dae7f00567c775ffdf0c68969a095e26b3f8b2da680b442e8dbf918",
+      "status": "MINIMAL_ONE_P2_SOURCE_FIX_THREE_RAM_CASES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_ADAPTER_CANONICAL_V8_SOURCE_FIX/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-adapter-known-V8-fix/READY.safe.json",
+      "sha256": "9278893f057de6597d9c41d17a747e7f581aba000f029c963c5548104c284b27",
+      "status": "TARGETED_ROOT_ACCEPT_KNOWN_UNAVAILABLE_CONSTRUCTOR_FIX_CHILD_FULL_URL_GATE_UNCHANGED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_ADAPTER_CANONICAL_V8_SOURCE_FIX/v8-controls-attempt01.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-adapter-known-V8-fix/v8-controls-attempt01.safe.json",
+      "sha256": "4866d0cfbf5f9baa154f59790316551637badf06465c91b1b439dcf3c9731acf",
+      "status": "TARGETED_ROOT_ACCEPT_KNOWN_UNAVAILABLE_CONSTRUCTOR_FIX_CHILD_FULL_URL_GATE_UNCHANGED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_ADAPTER_CANONICAL_V8_SOURCE_FIX/v8-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-adapter-known-V8-fix/v8-controls.safe.json",
+      "sha256": "8f3ac5f2e80e78e9b4981f50b5fb4561ce18577ccdd6f64ccc89eefe3895eda8",
+      "status": "TARGETED_ROOT_ACCEPT_KNOWN_UNAVAILABLE_CONSTRUCTOR_FIX_CHILD_FULL_URL_GATE_UNCHANGED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_ADAPTER_CANONICAL_V8_SOURCE_FIX/failed-predicate-chain.js.source",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-adapter-known-V8-fix/failed-predicate-chain.js.source",
+      "sha256": "2daf37bfa80f5f536bfc36092fc041e643bb17db18e5f0bb906bf2da846315b4",
+      "status": "TARGETED_ROOT_ACCEPT_KNOWN_UNAVAILABLE_CONSTRUCTOR_FIX_CHILD_FULL_URL_GATE_UNCHANGED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_ADAPTER_CANONICAL_V8_SOURCE_FIX/corrected-predicate-chain.js.source",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-adapter-known-V8-fix/corrected-predicate-chain.js.source",
+      "sha256": "873d7776b98b95329e5cbcc98bbd1b0cdd5e4558d24c7fc16e7bdbfc0f88b8df",
+      "status": "TARGETED_ROOT_ACCEPT_KNOWN_UNAVAILABLE_CONSTRUCTOR_FIX_CHILD_FULL_URL_GATE_UNCHANGED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_R1_NARROW_APPROVAL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-outer-r1-independent-APPROVE/manifest.safe.json",
+      "sha256": "34ef4af86db9801489722efcd4f7657f483ff1efe85b147f2d9b57a77aee9040",
+      "status": "NARROW_INDEPENDENT_APPROVE_ONE_P2_CLOSED_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_R1_NARROW_APPROVAL/safe-r1-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-outer-r1-independent-APPROVE/safe-r1-recheck.zip",
+      "sha256": "f4550485a789319b43174bad0dac08e9542287274a21b10bfa39f2183134d752",
+      "status": "NARROW_INDEPENDENT_APPROVE_ONE_P2_CLOSED_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_OUTER_R1_NARROW_APPROVAL/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-outer-r1-independent-APPROVE/REPORT.md",
+      "sha256": "dbaf92bc859100da6bbc54c0a2bf0b4418fb65acadf49107945c99521aed24a8",
+      "status": "NARROW_INDEPENDENT_APPROVE_ONE_P2_CLOSED_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_OBSERVER_ACTUAL02_NATIVE_FAIL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt02-nativeFAIL/manifest.safe.json",
+      "sha256": "6548089222908150f76611ca4f4dd71c6261a09de49ac45dec9e63c7af503adc",
+      "status": "ACTUAL_NATIVE1_REAPED_CLOSED_BOUNDARY_UNKNOWN_CLEANUP_SUCCESS_NO_CASE_PROJECTION",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_OBSERVER_ACTUAL02_NATIVE_FAIL/settlement.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt02-nativeFAIL/settlement.safe.json",
+      "sha256": "c248552e0eed503671519430731399839b093b8eef32e8607d1de0cb540ca1f3",
+      "status": "ACTUAL_NATIVE1_REAPED_CLOSED_BOUNDARY_UNKNOWN_CLEANUP_SUCCESS_NO_CASE_PROJECTION",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_OBSERVER_ACTUAL02_NATIVE_FAIL/case-observation-lifecycle.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt02-nativeFAIL/case-observation-lifecycle.safe.json",
+      "sha256": "45e728b7702b135484e40e7c5637f50bbc33152dd7b28f8ae1f94d0fccd6c95c",
+      "status": "ACTUAL_NATIVE1_REAPED_CLOSED_BOUNDARY_UNKNOWN_CLEANUP_SUCCESS_NO_CASE_PROJECTION",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_OBSERVER_ACTUAL02_NATIVE_FAIL/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt02-nativeFAIL/terminal.safe.json",
+      "sha256": "0518ef1e157ea031f9f00521bf2f268f1abf473d43db995f7979c10e2b5bbe89",
+      "status": "ACTUAL_NATIVE1_REAPED_CLOSED_BOUNDARY_UNKNOWN_CLEANUP_SUCCESS_NO_CASE_PROJECTION",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_OBSERVER_ACTUAL02_NATIVE_FAIL/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt02-nativeFAIL/process.safe.json",
+      "sha256": "803bb5e12cbe847c4c9652f82454503c39c2d2b0774509ea6e4314580cca8125",
+      "status": "ACTUAL_NATIVE1_REAPED_CLOSED_BOUNDARY_UNKNOWN_CLEANUP_SUCCESS_NO_CASE_PROJECTION",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10_PRIVATE_OBSERVER_ACTUAL02_NATIVE_FAIL/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt02-nativeFAIL/supervisor.safe.json",
+      "sha256": "475552f640215a0068f8766b90d6cc3eda9fe46247f2b7acc209f86bc4d80a26",
+      "status": "ACTUAL_NATIVE1_REAPED_CLOSED_BOUNDARY_UNKNOWN_CLEANUP_SUCCESS_NO_CASE_PROJECTION",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_EXACT_READ01_NATIVE_FAIL/FAILURE.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-private-read01-nativeFAIL/FAILURE.safe.json",
+      "sha256": "245ec55ce3826625659c2d5b426f9c6eaf121eb8e7c33d9180830cc4c2d11b44",
+      "status": "ACTUAL_NATIVE1_CAPTURE_FAIL_CLEANUP_REMOVED_REAPED_NO_HINT_CAUSE_PROOF",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_EXACT_READ01_NATIVE_FAIL/status-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-private-read01-nativeFAIL/status-1.safe.json",
+      "sha256": "6f5e954341ce3af03ec60f7f2e3242117a403500d1e88f72381030f19275e933",
+      "status": "ACTUAL_NATIVE1_CAPTURE_FAIL_CLEANUP_REMOVED_REAPED_NO_HINT_CAUSE_PROOF",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_EXACT_READ01_NATIVE_FAIL/status-2.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-private-read01-nativeFAIL/status-2.safe.json",
+      "sha256": "9d66167cec0133930aadd4a09adb6be49d6032982998f55ba7b1b81bd04d9701",
+      "status": "ACTUAL_NATIVE1_CAPTURE_FAIL_CLEANUP_REMOVED_REAPED_NO_HINT_CAUSE_PROOF",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_EXACT_READ01_NATIVE_FAIL/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-private-read01-nativeFAIL/supervisor.safe.json",
+      "sha256": "e0a95bd61961752a479f8e8f3cf9a73b2e1797021cbfc5c8c7b3cdbb711d7a25",
+      "status": "ACTUAL_NATIVE1_CAPTURE_FAIL_CLEANUP_REMOVED_REAPED_NO_HINT_CAUSE_PROOF",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "BOOT_EXACT_READ01_NATIVE_FAIL/capture-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-private-read01-nativeFAIL/capture-terminal.safe.json",
+      "sha256": "275c69f4fa35c89fececd9e283a9b197595dbf36248c4a9e9ac35f0e9ad8ab07",
+      "status": "ACTUAL_NATIVE1_CAPTURE_FAIL_CLEANUP_REMOVED_REAPED_NO_HINT_CAUSE_PROOF",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-original-disposition/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-original-disposition/manifest.safe.json",
+      "sha256": "03f6cd7d8937a46acba2fb1cbef84a43bf0b77a27350ae218f650742459647a7",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-original-disposition/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-original-disposition/review.safe.zip",
+      "sha256": "9a3ee8e048ec0394d1fa755773fba76eb483809a487ac13c8eb83b922c9869aa",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-original-disposition/OUTCOME.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-original-disposition/OUTCOME.safe.json",
+      "sha256": "187347f6a754547614585f0c8191e24f2587862d5f8b07b407456c2449169519",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-original-disposition/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-original-disposition/REPORT.md",
+      "sha256": "cc89fddcccb82587fc4ccc2031c991caf37d9f9c0a0e18dd303a49f658792c7d",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-qualified-disposition/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-qualified-disposition/manifest.safe.json",
+      "sha256": "b6b79ad93cd0f080212951219d008fffd6f52fd98a8558782fc88240d1a5a9ca",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-qualified-disposition/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-qualified-disposition/REPORT.md",
+      "sha256": "9e9129b4450b4636948d3f363b82f9a997176babae1397cd96397ef85312bf1e",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-qualified-disposition/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-qualified-disposition/review.safe.zip",
+      "sha256": "f18fad7d55e9293e57b463b5f8ec8768d7a37fd02d086b108399442ac1d5d94f",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P07-P09-qualified-disposition/OUTCOME.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P07-P09-qualified-disposition/OUTCOME.safe.json",
+      "sha256": "8db81f4644388524555c663eb9c79e2bf3b41dd29ec459ccaf188436a6c89aac",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-known-operation-exception-Source/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-known-operation-exception-Source/SOURCE.safe.zip",
+      "sha256": "57a9a5317fe236c87c25f0f29109ba462136d2738b6f5d5dcedc8233b7aa4208",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-known-operation-exception-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-known-operation-exception-Source/READY.safe.json",
+      "sha256": "cfbd8290d826180e57e4607180641655bbc344ef26701a725c89f5425c347121",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-known-operation-exception-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-known-operation-exception-Source/manifest.safe.json",
+      "sha256": "270111f261d0fade23cb22e8281c735e3fdee1f1dbfa95fda927f6dbbfe242d8",
+      "status": "FINITE_SOURCE_EVIDENCE_SCOPE_AND_LIMITS_PARENTS_UNKNOWN_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-new-fields-independent-one-P2/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-new-fields-independent-one-P2/REPORT.safe.json",
+      "sha256": "97e9c7fbc4e39b57b35ec08729a671462b979aff0d936705c54457cb027acf6b",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-new-fields-independent-one-P2/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-new-fields-independent-one-P2/REPORT.md",
+      "sha256": "98c9cc2631648ccfc123e991934f4dd17aee237a9e4e44493b0f8eed57b49f35",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-new-fields-independent-one-P2/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-new-fields-independent-one-P2/review.safe.zip",
+      "sha256": "7cdfb8841755e36e78791eb78dd0b6eb0c6128dd37381d16397c0e8f609515b3",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-new-fields-independent-one-P2/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-new-fields-independent-one-P2/manifest.safe.json",
+      "sha256": "4ee273a145c110e7fecda5c8ad98fbc71ba44ca177c4c4c1fce2b5dab8de92b7",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-stderr-known-code-Source/current1742-boot-cli-stderr-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-stderr-known-code-Source/current1742-boot-cli-stderr-source.safe.zip",
+      "sha256": "16a214b8bc8e921319e883dd97e8cc4f5b7c45cad802b8cc0408408224944db7",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-stderr-known-code-Source/receipt-count-erratum.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-stderr-known-code-Source/receipt-count-erratum.safe.json",
+      "sha256": "cc4a4ba819a2376c696491a8933ae55a68083739fa055daeca553080f06f0b42",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-stderr-known-code-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-stderr-known-code-Source/READY.safe.json",
+      "sha256": "c1833065f8dd21ca8a58cdd2637b670714c76e17c73ca6d7b939b44963deacac",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-stderr-known-code-Source/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-stderr-known-code-Source/HANDOFF.md",
+      "sha256": "3ed62f31ea732b56bab331e8e6a0183275f22a7fa941029db74d874704643587",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-stderr-known-code-Source/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-stderr-known-code-Source/manifest.json",
+      "sha256": "ad9c223893c3ab957a9f61f5e68089c2a7c4cf035b35b1e5dffb4a84c38e3399",
+      "status": "NARROW_SOURCE_FIELDS_PRIVACY_REVIEW_OR_FIXED_STDERR_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07_KEY_ISOLATION_INITIAL_SEMANTIC_SOURCE/PLAN.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-semantic-Source-ready/PLAN.safe.json",
+      "sha256": "e5f2a9e10aacb850b735dde177337c6e7e2c9ddbd5f3e6edd7aebaa9180e8243",
+      "status": "SOURCE_SEMANTIC0EC_CONFIG_AND_HTTP_TEST_RUNTIME_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07_KEY_ISOLATION_INITIAL_SEMANTIC_SOURCE/compose-source-inventory.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-semantic-Source-ready/compose-source-inventory.safe.json",
+      "sha256": "a364c56d553e0da7a922c023903fa90c37beef266ce95bfc2c347b218bf71fd2",
+      "status": "SOURCE_SEMANTIC0EC_CONFIG_AND_HTTP_TEST_RUNTIME_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07_KEY_ISOLATION_INITIAL_SEMANTIC_SOURCE/semantic.patch",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-semantic-Source-ready/semantic.patch",
+      "sha256": "671f3a1a5abd0c8c4867ed29e7f6a8af9b58fb04ee1b63478fbd4ca438acd4f0",
+      "status": "SOURCE_SEMANTIC0EC_CONFIG_AND_HTTP_TEST_RUNTIME_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07_KEY_ISOLATION_INITIAL_SEMANTIC_SOURCE/Auth-public-producer-existing.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-semantic-Source-ready/Auth-public-producer-existing.safe.json",
+      "sha256": "6a06231cdcb130be785746a12055cd1707eedfbfa30d9152c0eb37a3ee9a4ea8",
+      "status": "SOURCE_SEMANTIC0EC_CONFIG_AND_HTTP_TEST_RUNTIME_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07_KEY_ISOLATION_INITIAL_SEMANTIC_SOURCE/source-before.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-semantic-Source-ready/source-before.json",
+      "sha256": "f0b770242b3420201cd21fc91d34bfbab7f3a8266331c91d99941962c197a92a",
+      "status": "SOURCE_SEMANTIC0EC_CONFIG_AND_HTTP_TEST_RUNTIME_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-newscope-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-newscope-independent-APPROVE/manifest.safe.json",
+      "sha256": "dd2bb986802cea97fa1bfd6046c3b3c55f9bd7aaeec5afbbd92083ba1dfe3ae2",
+      "status": "NARROW_PRIVACY_SOURCE_FIX_OR_ACCEPTANCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-newscope-independent-APPROVE/safe-source-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-newscope-independent-APPROVE/safe-source-review.zip",
+      "sha256": "c35a48a4c21f03addd9c8aee19017a7ad194a71f839ce785d0ada828ff21bc07",
+      "status": "NARROW_PRIVACY_SOURCE_FIX_OR_ACCEPTANCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-newscope-independent-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-newscope-independent-APPROVE/REPORT.md",
+      "sha256": "92086a67aa580a114a8784bc1a92751d5252cfe69a3f512c9467b4d8f28ad22f",
+      "status": "NARROW_PRIVACY_SOURCE_FIX_OR_ACCEPTANCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-identity-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-identity-Source/READY.safe.json",
+      "sha256": "8ef8b8fe4292f84c556383fa15a19d4926fd91ef62665ea30ba48c827233532f",
+      "status": "NARROW_PRIVACY_SOURCE_FIX_OR_ACCEPTANCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-identity-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-identity-Source/manifest.safe.json",
+      "sha256": "ac4e581c3b770940b047d93aba4be03ca510d05bd24da767ee853624454333aa",
+      "status": "NARROW_PRIVACY_SOURCE_FIX_OR_ACCEPTANCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-identity-Source/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-identity-Source/SOURCE.safe.zip",
+      "sha256": "93edce30fde9355ad2524cd4954d5dac2899a96d7ac90efeeace42665e70b341",
+      "status": "NARROW_PRIVACY_SOURCE_FIX_OR_ACCEPTANCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-read02-nativeFAIL/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-read02-nativeFAIL/REPORT.safe.json",
+      "sha256": "18c07b2973bf2eb8074e1ea88b395c3c40b408d111b9715450763eaa0fbcf496",
+      "status": "ACTUAL_NATIVE1_CAUSE_UNKNOWN_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-read02-nativeFAIL/capture-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-read02-nativeFAIL/capture-terminal.safe.json",
+      "sha256": "69447bb5c48925b25b6243117908da58d684958295555a91700540f6f58514a1",
+      "status": "ACTUAL_NATIVE1_CAUSE_UNKNOWN_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-read02-nativeFAIL/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-read02-nativeFAIL/supervisor.safe.json",
+      "sha256": "8884ded960202b3fe5dabd3b21e29c056efa07c94e0a776eb6dad0688c5af680",
+      "status": "ACTUAL_NATIVE1_CAUSE_UNKNOWN_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-read02-nativeFAIL/status-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-read02-nativeFAIL/status-1.safe.json",
+      "sha256": "09ba384e0a8e4b78c2776fa3a987fe8dacb1ed8d7b48b44c300049d9e658eb27",
+      "status": "ACTUAL_NATIVE1_CAUSE_UNKNOWN_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-E2E-boot-CLI-private-read02-nativeFAIL/status-2.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-E2E-boot-CLI-private-read02-nativeFAIL/status-2.safe.json",
+      "sha256": "b2a7c30d4210e64060ae3f365bc7bc0e5d225bacc62f7633124e65262151c7a2",
+      "status": "ACTUAL_NATIVE1_CAUSE_UNKNOWN_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-independent-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-independent-APPROVE/REPORT.md",
+      "sha256": "74b842f4b5f9303f79462ad03efff8b48e9d9afcadfda103704808575fcb4a9e",
+      "status": "SOURCE_APPROVED_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-independent-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-independent-APPROVE/REPORT.safe.json",
+      "sha256": "90a31e2cea4e982dee55c6111431b2b85fffc2f4c7ac018d388a69b892ef2b13",
+      "status": "SOURCE_APPROVED_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-independent-APPROVE/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-independent-APPROVE/controls.safe.json",
+      "sha256": "e8f9657f47fadde07eccd3afe097d1fc7a49162be3d676a1c115a3d9905dae90",
+      "status": "SOURCE_APPROVED_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-independent-APPROVE/manifest.safe.json",
+      "sha256": "18c351c4e1a2f31175b3063a24f0decd83a06fc7e5af96e5d962c5e4ac521dd9",
+      "status": "SOURCE_APPROVED_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-operation-r2-independent-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-operation-r2-independent-APPROVE/review.safe.zip",
+      "sha256": "45f84f11d4e6b4b2dc481d510616710f17571e856135724b6e9a3debd496eca6",
+      "status": "SOURCE_APPROVED_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-checking-caller-r1-Source/caller-r1-READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/caller-r1-READY.safe.json",
+      "sha256": "9fcfc08021337d48a16a6c40829a528eb99f97987fe481dd2db6c617b4e48af8",
+      "status": "SOURCE_READY_AWAIT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-checking-caller-r1-Source/caller-r1-manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/caller-r1-manifest.safe.json",
+      "sha256": "deabbc13355ba3753ef9b2fae6b6144b55e92d24945be19c6ff8556f964817c8",
+      "status": "SOURCE_READY_AWAIT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-checking-caller-r1-Source/caller-r1-source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/caller-r1-source.safe.zip",
+      "sha256": "e1c60d48addd6a1f5d4b2308bd01a6744582561bb9a07872f4702f8e77b388ce",
+      "status": "SOURCE_READY_AWAIT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-checking-caller-r1-Source/grant.template.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/grant.template.safe.json",
+      "sha256": "b2fd2f7758d4e235150497164ab2438192a46f4ae85c200bd62e0ce437ba4f0a",
+      "status": "SOURCE_READY_AWAIT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-checking-caller-r1-Source/caller-r1-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/caller-r1-controls.safe.json",
+      "sha256": "7a9e5ffc0f4f1b76119959f0a5ed4bb0b994d552390b0cf46e2c230ebf9b2e7e",
+      "status": "SOURCE_READY_AWAIT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-checking-caller-r1-Source/caller-original-94926.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/caller-original-94926.zip",
+      "sha256": "88050599a68b76fbf537905a7b5418d424a526f839c13642aa2808345b15537a",
+      "status": "SOURCE_READY_AWAIT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt03-URL_ERROR/settlement.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt03-URL_ERROR/settlement.safe.json",
+      "sha256": "1a74c18f55e1a149c41a9a6fb2df63dc7ad8a40f108aeea8c096753ba91bd71a",
+      "status": "ACTUAL_URL_OPEN_URL_ERROR_NATIVE1_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt03-URL_ERROR/case-observation-lifecycle.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt03-URL_ERROR/case-observation-lifecycle.safe.json",
+      "sha256": "251f95a4ed9ef04e8a80465933a1396c3cf8b03294751476ccbe9df184b8c973",
+      "status": "ACTUAL_URL_OPEN_URL_ERROR_NATIVE1_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt03-URL_ERROR/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt03-URL_ERROR/terminal.safe.json",
+      "sha256": "718be9806347adba40aef5481e06416c713d8fa0cf9dbfaa30e62c51fd1bfd27",
+      "status": "ACTUAL_URL_OPEN_URL_ERROR_NATIVE1_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt03-URL_ERROR/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt03-URL_ERROR/manifest.safe.json",
+      "sha256": "3bc2b7f8331f0f9f61ef5b59d2db34ae02b1683216acea67ba28941a42bb6a2c",
+      "status": "ACTUAL_URL_OPEN_URL_ERROR_NATIVE1_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt03-URL_ERROR/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt03-URL_ERROR/process.safe.json",
+      "sha256": "9241c7f7af2e0d275a3e1501aa9d676933fa9de0f1a4abe3b99e112a4c63f5df",
+      "status": "ACTUAL_URL_OPEN_URL_ERROR_NATIVE1_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt03-URL_ERROR/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt03-URL_ERROR/supervisor.safe.json",
+      "sha256": "4e5e54451980821fdeaebb02f37d10b0fff5aeec406487f4ea3ad251dba812ee",
+      "status": "ACTUAL_URL_OPEN_URL_ERROR_NATIVE1_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "Root-current104-taskdocs-scoped-hooks/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-current104-taskdocs-scoped-hooks/supervisor.safe.json",
+      "sha256": "b33e4cee773ff701ef2b53aca63686fb85b103dca047873baf950dd8c0748df8",
+      "status": "SCOPED_HOOKS_NATIVE0_BIRTHSABSENT",
+      "revision": "86a9c859d361399b2c0deeca0ec20f2c950ec698"
+    },
+    {
+      "id": "Root-current104-taskdocs-scoped-hooks/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-current104-taskdocs-scoped-hooks/terminal.safe.json",
+      "sha256": "7b78fe957632378a502e2447404520572015110adcf89c93b9fe94beb2a4607c",
+      "status": "SCOPED_HOOKS_NATIVE0_BIRTHSABSENT",
+      "revision": "86a9c859d361399b2c0deeca0ec20f2c950ec698"
+    },
+    {
+      "id": "Root-current104-taskdocs-scoped-hooks/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-current104-taskdocs-scoped-hooks/process.safe.json",
+      "sha256": "5ade2a57cbf54881577ed1b0926a9649b25985eb6d94f6070d9a823f90f54ccf",
+      "status": "SCOPED_HOOKS_NATIVE0_BIRTHSABSENT",
+      "revision": "86a9c859d361399b2c0deeca0ec20f2c950ec698"
+    },
+    {
+      "id": "Root-current104-taskdocs-scoped-hooks/outcome.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-current104-taskdocs-scoped-hooks/outcome.safe.json",
+      "sha256": "7eb4b7d3b76b6483104743ca90f8af4f22adf9b0ac7a00948954519f4bf172d4",
+      "status": "SCOPED_HOOKS_NATIVE0_BIRTHSABSENT",
+      "revision": "86a9c859d361399b2c0deeca0ec20f2c950ec698"
+    },
+    {
+      "id": "Root-current104-taskdocs-scoped-hooks/paths.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-current104-taskdocs-scoped-hooks/paths.safe.json",
+      "sha256": "8b6db6032afe3d0009214e619824f504e6d9185a946dc22f3363c75ac884abb9",
+      "status": "SCOPED_HOOKS_NATIVE0_BIRTHSABSENT",
+      "revision": "86a9c859d361399b2c0deeca0ec20f2c950ec698"
+    },
+    {
+      "id": "P07-key-isolation-fourpath-Source-independent-review/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-fourpath-Source-independent-review/REPORT.md",
+      "sha256": "f6d236b262d621e227826d4b0ec5200a1174b710ccb1fd2fdd45ede55a21c380",
+      "status": "PRODUCT_SOURCE_APPROVED_PHYSICAL_CALLER_TWO_P2_CHANGES_REQUESTED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-key-isolation-fourpath-Source-independent-review/OUTCOME.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-fourpath-Source-independent-review/OUTCOME.safe.json",
+      "sha256": "a1da885da6499c6ad6ece464cb0d0270130ff17147ecfba8876c37f85d003079",
+      "status": "PRODUCT_SOURCE_APPROVED_PHYSICAL_CALLER_TWO_P2_CHANGES_REQUESTED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-key-isolation-fourpath-Source-independent-review/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-fourpath-Source-independent-review/manifest.safe.json",
+      "sha256": "6bceff6527b0cbde81c79a3840c688c48c3cbc8855f8b5a732eaccb17d11d45d",
+      "status": "PRODUCT_SOURCE_APPROVED_PHYSICAL_CALLER_TWO_P2_CHANGES_REQUESTED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-key-isolation-fourpath-Source-independent-review/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-fourpath-Source-independent-review/review.safe.zip",
+      "sha256": "3c3963078c139b6fff29713a1012dde64a466929f42cd6c1d1c5e1d19d5a87bb",
+      "status": "PRODUCT_SOURCE_APPROVED_PHYSICAL_CALLER_TWO_P2_CHANGES_REQUESTED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-key-isolation-fourpath-Source-independent-review/counterexamples.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-fourpath-Source-independent-review/counterexamples.safe.json",
+      "sha256": "114c879711307e7bb6b118d598bdd1dd3380c17e2871f523a88db0dfd1873e7f",
+      "status": "PRODUCT_SOURCE_APPROVED_PHYSICAL_CALLER_TWO_P2_CHANGES_REQUESTED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-Source/READY.safe.json",
+      "sha256": "9ee0c9327076d47f896b39629e119775debd5550ac080b1f3a854fddb3e7cd5a",
+      "status": "SCOPED_NETWORK_CONTEXT_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-Source/manifest.safe.json",
+      "sha256": "abf5a431f27cdab759248557f120caaef4ac9ff2cd9c8d84a3954f6da0a43c5f",
+      "status": "SCOPED_NETWORK_CONTEXT_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-Source/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-Source/SOURCE.safe.zip",
+      "sha256": "b001e0432cdcc1c143efbc6027d9e61bc9fd21010e00e6f61e5ca022e3684702",
+      "status": "SCOPED_NETWORK_CONTEXT_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-independent-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-independent-APPROVE/REPORT.md",
+      "sha256": "386941b0645400bdbda7a9441f741b96b903472c968e9aa6e2177b7b48a73f4d",
+      "status": "NARROW_NORMAL_NETWORK_CONTEXT_SOURCE_APPROVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-independent-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-independent-APPROVE/REPORT.safe.json",
+      "sha256": "d62d1d353004c594020cf49c8df1210dde9f25b8b0084b5bb6ee77f518ba213e",
+      "status": "NARROW_NORMAL_NETWORK_CONTEXT_SOURCE_APPROVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-independent-APPROVE/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-independent-APPROVE/controls.safe.json",
+      "sha256": "c6d7e86aa76886abc5f742023a775dba756a3f3e00b1d5a4d5e2b7db67c03834",
+      "status": "NARROW_NORMAL_NETWORK_CONTEXT_SOURCE_APPROVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-independent-APPROVE/manifest.safe.json",
+      "sha256": "66b0e6d929057c6031bb3c4c51ebdaa211845bceadc1a82b0f69aa9f34901992",
+      "status": "NARROW_NORMAL_NETWORK_CONTEXT_SOURCE_APPROVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-normal-network-context-independent-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-normal-network-context-independent-APPROVE/review.safe.zip",
+      "sha256": "dbe89101922e39aa94059f9dd4cd7c17bccd6a4a432d9e897fedaeb2fdd01b66",
+      "status": "NARROW_NORMAL_NETWORK_CONTEXT_SOURCE_APPROVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-key-isolation-physical-caller-r2-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-physical-caller-r2-Source/manifest.safe.json",
+      "sha256": "aba63ccbedf1697c17595a3c95cb1bcbc3828ba711fb778b7376ca12489e660b",
+      "status": "SOURCE_TWO_P2_CORRECTED_NATIVE_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-Source-ready/source-ready.md",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-Source-ready/source-ready.md",
+      "sha256": "ea9e9c08a1d7cffdb326e72397aa91717115c415bbb7cf175b5efe61b01a1f0c",
+      "status": "ONE_GENUINE_JOIN_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-Source-ready/source-plan.md",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-Source-ready/source-plan.md",
+      "sha256": "81d076e29d3ff0814517ad5af01cad6309aaca21d8eeea8481f1d4df29bf4eb4",
+      "status": "ONE_GENUINE_JOIN_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "P07-key-isolation-physical-caller-r2-Source/PLAN.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-physical-caller-r2-Source/PLAN.safe.json",
+      "sha256": "d3ab902dd0c5d102f3105871251b6bbd9f8688686ac9025482d71fbdeab731dc",
+      "status": "SOURCE_TWO_P2_CORRECTED_NATIVE_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-key-isolation-physical-caller-r2-Source/selected-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-physical-caller-r2-Source/selected-controls.safe.json",
+      "sha256": "ffe20f144179dbd300e83a06e1ae77e8cc2f2ff4ce2818595d7e53de35076340",
+      "status": "SOURCE_TWO_P2_CORRECTED_NATIVE_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-key-isolation-physical-caller-r2-Source/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-physical-caller-r2-Source/source.safe.zip",
+      "sha256": "21dff138cd3cd5b6d4e7e508faa4303c37b95c776e23e2494b99eeb64f71719c",
+      "status": "SOURCE_TWO_P2_CORRECTED_NATIVE_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt04-HTTP403/settlement.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt04-HTTP403/settlement.safe.json",
+      "sha256": "67fd8bf3cbee582c94958db2e1617eb505d17f4c0746689b9084db78bf34b147",
+      "status": "ACTUAL_URL_OPEN_HTTP403_BEFORE_BODY_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt04-HTTP403/case-observation-lifecycle.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt04-HTTP403/case-observation-lifecycle.safe.json",
+      "sha256": "c4334076e70840c4fd9523ccb7a1829449eae64aac4295be62d5f5ec21596506",
+      "status": "ACTUAL_URL_OPEN_HTTP403_BEFORE_BODY_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt04-HTTP403/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt04-HTTP403/terminal.safe.json",
+      "sha256": "f00740dff74e45c8a781520fda30dd63e33f8693d20de69aae452b31522000c8",
+      "status": "ACTUAL_URL_OPEN_HTTP403_BEFORE_BODY_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt04-HTTP403/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt04-HTTP403/manifest.safe.json",
+      "sha256": "1f768b1f46360546ac5b2fcaad7a6ffcf341c5966738763e5922c0f2839dead5",
+      "status": "ACTUAL_URL_OPEN_HTTP403_BEFORE_BODY_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt04-HTTP403/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt04-HTTP403/process.safe.json",
+      "sha256": "1b9473db98fd7f9b2be24016d3ce7da4ee2ba6a3644e40b2106873da92849b4f",
+      "status": "ACTUAL_URL_OPEN_HTTP403_BEFORE_BODY_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-private-observer-attempt04-HTTP403/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-private-observer-attempt04-HTTP403/supervisor.safe.json",
+      "sha256": "b9dcac6d3de25c92934f1aba32e6ed72812cd8736c2104baa60efbcfd82483cc",
+      "status": "ACTUAL_URL_OPEN_HTTP403_BEFORE_BODY_CLEANUP_REMOVED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-official-MCP-bridge-Source/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-official-MCP-bridge-Source/HANDOFF.md",
+      "sha256": "d457749c25254e7f406ee88de3cf932b71151005c2d6e4623a6cf12611846d3e",
+      "status": "SOURCE_ONLY_UNBOUND_REVIEW_AND_CONNECTOR_LIMIT_DISPOSITION_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-official-MCP-bridge-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-official-MCP-bridge-Source/READY.safe.json",
+      "sha256": "1b536d86f2a3f22fe63e697b202bce12f87b807b8a299ea95c9039f829444375",
+      "status": "SOURCE_ONLY_UNBOUND_REVIEW_AND_CONNECTOR_LIMIT_DISPOSITION_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-official-MCP-bridge-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-official-MCP-bridge-Source/manifest.safe.json",
+      "sha256": "310c33cf1af15d258635fcbabc245d1dabf7d2e045e86324b7a1a65cf1c96a5a",
+      "status": "SOURCE_ONLY_UNBOUND_REVIEW_AND_CONNECTOR_LIMIT_DISPOSITION_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-official-MCP-bridge-Source/safe-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-official-MCP-bridge-Source/safe-source.zip",
+      "sha256": "377ad51ae360d4cfcbc2c6411d9cc2bf83a480c2947d618f63b4a0f73eb2ede0",
+      "status": "SOURCE_ONLY_UNBOUND_REVIEW_AND_CONNECTOR_LIMIT_DISPOSITION_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-official-MCP-bridge-Source/v8-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-official-MCP-bridge-Source/v8-controls.safe.json",
+      "sha256": "e811d97b8959980f3427b4edb3f0e8a4b9741057ba96221ff0215e5a4c4583e0",
+      "status": "SOURCE_ONLY_UNBOUND_REVIEW_AND_CONNECTOR_LIMIT_DISPOSITION_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-official-MCP-bridge-Source/decoder-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-official-MCP-bridge-Source/decoder-controls.safe.json",
+      "sha256": "3d483ae728730f00f3f7054433dc2f3fccb7403c65fab16047c278d7bb4ce839",
+      "status": "SOURCE_ONLY_UNBOUND_REVIEW_AND_CONNECTOR_LIMIT_DISPOSITION_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/review.safe.zip",
+      "sha256": "854f429cdbde948d51a91845a21748ecd6a131377341d5a8c361cc9dade22824",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/REPORT.md",
+      "sha256": "efe22952a7e7c9472c0aa4f686802b01f3e7963392a7f1b734cc7bcd6b144320",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/OUTCOME.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/OUTCOME.safe.json",
+      "sha256": "77d6db231cc095cd378f4f29642c1b10d5c9b60b08679199a17f484e05ab60d7",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/manifest.safe.json",
+      "sha256": "51db64cbfaf7d0b6666bf56b106e3f848358a983b8ba989fae964cab20ee74fc",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/inputs-verified.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/inputs-verified.safe.json",
+      "sha256": "0b74c7a6b319a3446d4b962942693d821c9366f6aab06647395f1207a0fb5ada",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/selected-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/selected-controls.safe.json",
+      "sha256": "ffe20f144179dbd300e83a06e1ae77e8cc2f2ff4ce2818595d7e53de35076340",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-physical-r2-independent-APPROVE/before-seed-join.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical-r2-independent-APPROVE/before-seed-join.safe.json",
+      "sha256": "9eeadc966b989726bf94d66d352e504816021f835c4c676bffe76872999f09fb",
+      "status": "BOTH_PHYSICAL_CALLER_P2_CLOSED_NARROW_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-independent-Source-review/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-independent-Source-review/REPORT.md",
+      "sha256": "7bff3bb57749b6bc4c59896f6db9b1dab835683d459bcac538bd1f3b0ca0285a",
+      "status": "ONE_TEST_CLEANUP_P2_SOURCE_FINDING_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-independent-Source-review/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-independent-Source-review/REPORT.safe.json",
+      "sha256": "dc61a12ebbcfb23a9fa00d81b970e42a3f29efd14b369ecb4163768744cb397e",
+      "status": "ONE_TEST_CLEANUP_P2_SOURCE_FINDING_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-independent-Source-review/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-independent-Source-review/controls.safe.json",
+      "sha256": "cb33a8da20778b1831399d96ed1dbae4a1090b903101503ecdba6e5fb1c834ab",
+      "status": "ONE_TEST_CLEANUP_P2_SOURCE_FINDING_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-independent-Source-review/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-independent-Source-review/manifest.safe.json",
+      "sha256": "4e5fdf0ee3c1851294c39d5ab6cbefacb35a74c9008a42d73da94c760f32a099",
+      "status": "ONE_TEST_CLEANUP_P2_SOURCE_FINDING_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "P09-genuine-Auth-open-socket-independent-Source-review/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P09-genuine-Auth-open-socket-independent-Source-review/review.safe.zip",
+      "sha256": "82bab3346846540846fe8bfd97726ec7bda6a3c6ed668792ec09376f937a2b46",
+      "status": "ONE_TEST_CLEANUP_P2_SOURCE_FINDING_NATIVE_NOT_RUN",
+      "revision": "a7648c62e34eb75776603ffcc171e8aaf2f54f42"
+    },
+    {
+      "id": "current1742-P10-fresh-reference-attempt05-parameter-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-fresh-reference-attempt05-parameter-Source/READY.safe.json",
+      "sha256": "d110e1d7132827e8645a28b4e084eeecfbc50cd015d855f4860e5a57274157b0",
+      "status": "PARAMETERS_ONLY_FRESHREFERENCE_SOURCE_NOT_GRANTED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-fresh-reference-attempt05-parameter-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-fresh-reference-attempt05-parameter-Source/manifest.safe.json",
+      "sha256": "e3bff73ca41dfeaed9d9ef310c8f790b122c89fa800e8c9286fbc8120f4d93e6",
+      "status": "PARAMETERS_ONLY_FRESHREFERENCE_SOURCE_NOT_GRANTED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-fresh-reference-attempt05-parameter-Source/SOURCE.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-fresh-reference-attempt05-parameter-Source/SOURCE.safe.zip",
+      "sha256": "037415d32dad8f9d64b42390f54fc15ea34de1d60d9fec1b8c3c305c46f26758",
+      "status": "PARAMETERS_ONLY_FRESHREFERENCE_SOURCE_NOT_GRANTED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-fresh-reference-attempt05-parameter-Source/parameter-proof.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-fresh-reference-attempt05-parameter-Source/parameter-proof.safe.json",
+      "sha256": "fca310d3483d89ee22d0b9a1ae0d20bb09aedbcc5a613d80d98669bc54e0f1c8",
+      "status": "PARAMETERS_ONLY_FRESHREFERENCE_SOURCE_NOT_GRANTED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-fresh-reference-attempt05-parameter-Source/PLAN.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-fresh-reference-attempt05-parameter-Source/PLAN.md",
+      "sha256": "d1ea25b7d4cfc6ba5cd600dfe2da2cc131788fed8e2753d685c86ebbd4e89002",
+      "status": "PARAMETERS_ONLY_FRESHREFERENCE_SOURCE_NOT_GRANTED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-physical01-growth32MiB-stop-partial/actual01-growth-stop.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-physical01-growth32MiB-stop-partial/actual01-growth-stop.safe.json",
+      "sha256": "5290ea9d79d31e9850ecf7ad9fb241c09239d455ef158fb1048ac7c8050d9e70",
+      "status": "ACTUAL32MIBGROWTHFAIL_OWNRESIDUE_KNOWN_GREEN_NOT_RUN",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P09-open-socket-cleanup-primary-correction-Source/cleanup-correction.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-open-socket-cleanup-primary-correction-Source/cleanup-correction.safe.json",
+      "sha256": "0d0e3da7e8b18464152f999ad143e2d608181e81dd6983c212fb342e052b87d9",
+      "status": "ONE_P2_PRIMARY_CLEANUP_SOURCE_CORRECTED_NATIVE_NOT_RUN",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "P09-open-socket-cleanup-primary-correction-Source/cleanup-correction.md",
+      "path": "docs/validation/cloud-20261011/receipts/P09-open-socket-cleanup-primary-correction-Source/cleanup-correction.md",
+      "sha256": "842f2e9e212384d825a911d23de3b468b6f3c58106309e32489348d126ac7bb4",
+      "status": "ONE_P2_PRIMARY_CLEANUP_SOURCE_CORRECTED_NATIVE_NOT_RUN",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "P09-cleanup-narrow-independent-APPROVE/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P09-cleanup-narrow-independent-APPROVE/REPORT.md",
+      "sha256": "cb7ebb8ed23ee19f9f620885f1e48178e408b370cf57797355a444013c697934",
+      "status": "ONE_P2_TEST_CLEANUP_CLOSED_SOURCE_APPROVE",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "P09-cleanup-narrow-independent-APPROVE/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-cleanup-narrow-independent-APPROVE/REPORT.safe.json",
+      "sha256": "12556243ef83164170f11ed76b869a2d143ad8e1a3fa4aaf574a8275c924c01e",
+      "status": "ONE_P2_TEST_CLEANUP_CLOSED_SOURCE_APPROVE",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "P09-cleanup-narrow-independent-APPROVE/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-cleanup-narrow-independent-APPROVE/controls.safe.json",
+      "sha256": "45e9dbe3dd994ae4562f6fd5c64541f7fdc3ca394e59075f8efc448b6389518e",
+      "status": "ONE_P2_TEST_CLEANUP_CLOSED_SOURCE_APPROVE",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "P09-cleanup-narrow-independent-APPROVE/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P09-cleanup-narrow-independent-APPROVE/manifest.safe.json",
+      "sha256": "db96053ab77db4893206f217a6829a4e8ca4018a4ebdab31c1bf8b10d4b52160",
+      "status": "ONE_P2_TEST_CLEANUP_CLOSED_SOURCE_APPROVE",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "P09-cleanup-narrow-independent-APPROVE/review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P09-cleanup-narrow-independent-APPROVE/review.safe.zip",
+      "sha256": "28f1f1e4d2cda85e96c99d4baf45ce913c54871ee9dbd100ba814aacdba8634c",
+      "status": "ONE_P2_TEST_CLEANUP_CLOSED_SOURCE_APPROVE",
+      "revision": "80dc4070b0c011581d287b043a494aea91876d46"
+    },
+    {
+      "id": "current1742-BOOT-fixed-private-consumer-Source/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-fixed-private-consumer-Source/HANDOFF.md",
+      "sha256": "e171f4f4786d5f0a58f4a1725b433a1b533ae091db191231f6492bbc6d8862df",
+      "status": "BOUND_PRIVATE_ADMISSION_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-fixed-private-consumer-Source/PLAN.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-fixed-private-consumer-Source/PLAN.safe.json",
+      "sha256": "1411eeecfbd2e607b4a0daf685e45443abdafeb638eaa65cdb1c5972fe8d3d8c",
+      "status": "BOUND_PRIVATE_ADMISSION_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-fixed-private-consumer-Source/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-fixed-private-consumer-Source/READY.safe.json",
+      "sha256": "b0e944c35ae9e3533987db1e84f6ec4d0c2b83bd78c699943cb62e31e8b5b93e",
+      "status": "BOUND_PRIVATE_ADMISSION_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-fixed-private-consumer-Source/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-fixed-private-consumer-Source/controls.safe.json",
+      "sha256": "d2fdb86d94b0ed8b0f40caed9120a3bab5a73ba936ef3454750f419b77f96036",
+      "status": "BOUND_PRIVATE_ADMISSION_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-fixed-private-consumer-Source/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-fixed-private-consumer-Source/manifest.safe.json",
+      "sha256": "d0d42f5e33d4e939073e43482d58dd551bda8922a26816ba0eb1d563eb2804e6",
+      "status": "BOUND_PRIVATE_ADMISSION_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-fixed-private-consumer-Source/safe-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-fixed-private-consumer-Source/safe-source.zip",
+      "sha256": "1cb866bec696828ce521b1fe4c375c9ae6c753605f8046f972b3705f49d645d0",
+      "status": "BOUND_PRIVATE_ADMISSION_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-known-own-finish-cleanup-Source/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-known-own-finish-cleanup-Source/source.safe.zip",
+      "sha256": "84d4abbec6b87726e3e86889c60d6501538fcd68043396caec4c4293587aaabb",
+      "status": "ROOT_INDEPENDENT_NARROW_CLEANUP_SOURCE_APPROVE",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-public-key-HTTP-format-parameter-Source/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-public-key-HTTP-format-parameter-Source/source.safe.zip",
+      "sha256": "fd6176cc25561846a81831ef9cbb74d9a4028bdd1438fc15985b2bbfa58a0256",
+      "status": "EXACT_REUSED_FORMATTER_DRIVER_CHILD_ONLY_ONE_TARGET_PARAMETERS_READY",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-known-own-continuation-GREEN-cleanup-complete/ACTUAL.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-known-own-continuation-GREEN-cleanup-complete/ACTUAL.safe.json",
+      "sha256": "4d89e60c353b554373e54062a4773508001117ce5aa79bcdc7739066a6da0465",
+      "status": "FINITE_NEW_ORACLE_GREEN_KNOWN_OWN_RESOURCES_REMOVED_ORIGINALRESOURCEFAIL_RETAINED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-known-own-continuation-GREEN-cleanup-complete/actual.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-known-own-continuation-GREEN-cleanup-complete/actual.safe.zip",
+      "sha256": "bcffe4ba1807267406beefdad5b80359d8b9122c5e0d1241b3f057612ffafba5",
+      "status": "FINITE_NEW_ORACLE_GREEN_KNOWN_OWN_RESOURCES_REMOVED_ORIGINALRESOURCEFAIL_RETAINED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-known-own-continuation-GREEN-cleanup-complete/partial.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-known-own-continuation-GREEN-cleanup-complete/partial.safe.json",
+      "sha256": "00130de940c6723d60f1bd4b9d394bb0089410597e77cde5131d123f737a2551",
+      "status": "FINITE_NEW_ORACLE_GREEN_KNOWN_OWN_RESOURCES_REMOVED_ORIGINALRESOURCEFAIL_RETAINED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-known-own-continuation-GREEN-cleanup-complete/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-known-own-continuation-GREEN-cleanup-complete/manifest.safe.json",
+      "sha256": "33cdc7fbb14e6e6f695c700b914906a93634033217dc4568c92b412e1aa0322a",
+      "status": "FINITE_NEW_ORACLE_GREEN_KNOWN_OWN_RESOURCES_REMOVED_ORIGINALRESOURCEFAIL_RETAINED",
+      "revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+    },
+    {
+      "id": "P07-one-Java-format-native-PASS/ACTUAL.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-one-Java-format-native-PASS/ACTUAL.safe.json",
+      "sha256": "47ae926c88ca85b7558c236505ecab55e45ba17de453c70d4a2c26d456031c7b",
+      "status": "ONE_TARGET_FORMAT_APPLY_CHECK_NATIVE0_ALL6_RECORDED_BIRTHSABSENT",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-one-Java-format-native-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-one-Java-format-native-PASS/manifest.safe.json",
+      "sha256": "3dfe4e4bb47369a1f2f8b76e88af1ea2b94ac3427d4cbc5c9ead0275568c9a2b",
+      "status": "ONE_TARGET_FORMAT_APPLY_CHECK_NATIVE0_ALL6_RECORDED_BIRTHSABSENT",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-two-HTTP-methods-parameter-checking-Source/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-two-HTTP-methods-parameter-checking-Source/source.safe.zip",
+      "sha256": "e500b33a812f109e9d4eed86366694ead60c6d8759209b4c137fb443abefe050",
+      "status": "REUSED_PARSER_CLASS_COUNT_TARGET_PARAMETERS_ONLY_SOURCE_ACCEPTED",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-public-key-two-real-HTTP-tests-native-PASS/ACTUAL.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-public-key-two-real-HTTP-tests-native-PASS/ACTUAL.safe.json",
+      "sha256": "c9d2d0ebfbe351b74bc1579845b50cd792ed34fdda0794cfbc6ccd85e7764196",
+      "status": "ACTUAL_COMPILE_MAIN_TEST_AND_EXACT2_HTTP_METHODS_PASS_7BIRTHSABSENT",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-public-key-two-real-HTTP-tests-native-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-public-key-two-real-HTTP-tests-native-PASS/manifest.safe.json",
+      "sha256": "3fee209f347f531d84af4d72fd5476656bfc2967f574a76eaece344f77363487",
+      "status": "ACTUAL_COMPILE_MAIN_TEST_AND_EXACT2_HTTP_METHODS_PASS_7BIRTHSABSENT",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-key-isolation-coherent-package-handoff/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-coherent-package-handoff/HANDOFF.md",
+      "sha256": "79170edc949abc43d0e020422a20cfccd61ed7b7b49d84e38cd18045363c3726",
+      "status": "FOURPATH_SECURITY_PACKAGE_READY_FORMAT_COMPILE_2HTTP_PASS_PHYSICAL_QUALIFIED",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-key-isolation-coherent-package-handoff/product-final-inventory.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-coherent-package-handoff/product-final-inventory.safe.json",
+      "sha256": "57e817a88cf537c8944106a72d581bef5c97eb55213c82078c67a4c84a46d0e9",
+      "status": "FOURPATH_SECURITY_PACKAGE_READY_FORMAT_COMPILE_2HTTP_PASS_PHYSICAL_QUALIFIED",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-key-isolation-coherent-package-handoff/handoff-safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-coherent-package-handoff/handoff-safe-evidence.zip",
+      "sha256": "1a97d246ded51ef09ea6a179022a63e8af140fc75ee7aa20c4460c4405c126b5",
+      "status": "FOURPATH_SECURITY_PACKAGE_READY_FORMAT_COMPILE_2HTTP_PASS_PHYSICAL_QUALIFIED",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-key-isolation-coherent-package-handoff/handoff-manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-key-isolation-coherent-package-handoff/handoff-manifest.safe.json",
+      "sha256": "6597300f148e351cae4ae50636945dd786c7128c01c459c74263754b3f701460",
+      "status": "FOURPATH_SECURITY_PACKAGE_READY_FORMAT_COMPILE_2HTTP_PASS_PHYSICAL_QUALIFIED",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "current1742-P10-attempt05-fresh-SDK-reference-pre-native-HOLD/comparison-hold.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-attempt05-fresh-SDK-reference-pre-native-HOLD/comparison-hold.safe.json",
+      "sha256": "28dc174877f9c4f80f219881d2c5f3dfd874945f008e9c0345df941feef2af27",
+      "status": "FRESH_SDK_REFERENCE_VALID_OLD_COMPARISON_UNAVAILABLE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-attempt05-fresh-SDK-reference-pre-native-HOLD/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-attempt05-fresh-SDK-reference-pre-native-HOLD/manifest.safe.json",
+      "sha256": "74441c9553ef952a16edfae09808ad390567da896f2db8db0c66c8db8f9f65ea",
+      "status": "FRESH_SDK_REFERENCE_VALID_OLD_COMPARISON_UNAVAILABLE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-independent-FINDINGS/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-independent-FINDINGS/REPORT.md",
+      "sha256": "5a401ed42871f18c9dc13ff45a957d6e224be1f689fcd7c8e83e8c0f5ded2c24",
+      "status": "FOUR_CHECKING_BOUNDARY_P2_CONFIRMED_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-independent-FINDINGS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-independent-FINDINGS/REPORT.safe.json",
+      "sha256": "d0011460b2cac9ddd947c6ef83fc8da75925307308ce3164bb58e7f6acc0e124",
+      "status": "FOUR_CHECKING_BOUNDARY_P2_CONFIRMED_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-independent-FINDINGS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-independent-FINDINGS/manifest.safe.json",
+      "sha256": "1ac9c7fa6832b254657367c394cff58db174fe51c49461d009d92247d250a990",
+      "status": "FOUR_CHECKING_BOUNDARY_P2_CONFIRMED_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P07-final-finite-actual-independent-ACCEPT/OUTCOME.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-final-finite-actual-independent-ACCEPT/OUTCOME.safe.json",
+      "sha256": "886760cad0740e5d814ab20759ea5e78b1d0cbb02d8ad9e11d4709232c577267",
+      "status": "QUALIFIED_EXACT4PATHS_READY_PARENT_UNKNOWN",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-final-finite-actual-independent-ACCEPT/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-final-finite-actual-independent-ACCEPT/REPORT.md",
+      "sha256": "bd919dde5f63b18d7e74ac50af994f752adb1ca29f5666e79bfc03c915d16001",
+      "status": "QUALIFIED_EXACT4PATHS_READY_PARENT_UNKNOWN",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-final-finite-actual-independent-ACCEPT/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-final-finite-actual-independent-ACCEPT/manifest.safe.json",
+      "sha256": "43dc0f7ae3bb3cf89facd68e0ae6a16157a576a23f44b222ab33c34216bc6090",
+      "status": "QUALIFIED_EXACT4PATHS_READY_PARENT_UNKNOWN",
+      "revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d"
+    },
+    {
+      "id": "P07-integrated-d782/docker-compose.prod.yml",
+      "path": "docker-compose.prod.yml",
+      "sha256": "204835919afa8d14d203eb6d1a56d0cb8827622b9a90cab239a9982e776cb3be",
+      "status": "EXACT_AUTHOR_REVIEWED_CHECKED_BYTES_INTEGRATED_CURRENT_CI_NOT_RUN",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P07-integrated-d782/docker-compose.e2e.yml",
+      "path": "docker-compose.e2e.yml",
+      "sha256": "3de84c8cf87fa1e31ba8d92e3a59d150ce74bb6dddcc4a01211dd780b3b2f42c",
+      "status": "EXACT_AUTHOR_REVIEWED_CHECKED_BYTES_INTEGRATED_CURRENT_CI_NOT_RUN",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P07-integrated-d782/infra/local-stand/compose.yml",
+      "path": "infra/local-stand/compose.yml",
+      "sha256": "c4a832758858ea3124cbb40c1c3cb6147c50e4c5196d9b0719f64cfa6897ee4e",
+      "status": "EXACT_AUTHOR_REVIEWED_CHECKED_BYTES_INTEGRATED_CURRENT_CI_NOT_RUN",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P07-integrated-d782/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/PublicKeyProvisioningTest.java",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/PublicKeyProvisioningTest.java",
+      "sha256": "dc0fd1f3f3636ce5dccc03401036dcfbfc6c62c8aa12dae0932cacf3e2297875",
+      "status": "EXACT_AUTHOR_REVIEWED_CHECKED_BYTES_INTEGRATED_CURRENT_CI_NOT_RUN",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P10-wire-source-inspection",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-wire-source-inspection.safe.json",
+      "sha256": "d912d272176234392f6e99a22dc89a01b69770214d8616299373312b13cfc905",
+      "status": "NO_CONFIRMED_CHARSET_FIXTURE_POLICY_OR_ORACLE_MISMATCH_SOURCE_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/README.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/README.md",
+      "sha256": "023235ef950be7f0a62956fffb591b462a723cab0ead0c8a1f999bbed29e76b3",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/SOURCE.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/SOURCE.safe.json",
+      "sha256": "1517c2c5f246824c09ec5f7345ae85a7d1df6beb046db9f754f72c5c3b461fca",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/check-four.py",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/check-four.py",
+      "sha256": "c815da20994e54990997cbfb0b96a3b2873161b53b4c3974bc11f3dfda058a1c",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/dispatch-fixed.py",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/dispatch-fixed.py",
+      "sha256": "7fba14a14cf2ee3e49c21ca11339615ee8d61acf6f2dddbe6c9b3bd3fc039ede",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/four-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/four-controls.safe.json",
+      "sha256": "6add44a79c5abc0e5a410f7754bd7232cf71e2a5391635df9dbc891b8d86dec1",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/grant.template.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/grant.template.safe.json",
+      "sha256": "72e362c7965e8a80ccaaefcc0076e5c1ce9885f610e19662b0c0598ef35a4263",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/private-bridge.py",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/private-bridge.py",
+      "sha256": "6f763b5e42675fbdc5137f102e41429a29fa10ba2096b9f8015cb801562b6ab1",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/source.delta.patch",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-four-boundary-correction/source.delta.patch",
+      "sha256": "ee6dbb09108d976d572747dd36cf7856124568e221935910c54800da2eec396a",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/source.delta.patch",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-four-boundary-correction/source.delta.patch",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-four-boundary-correction/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-four-boundary-correction/manifest.safe.json",
+      "sha256": "8b45452eddf1ce8ce289a0255033f1639ce8c7a4350ff55c116c6734939af580",
+      "status": "FOUR_BOUNDARY_AND_FIXED_DISPATCH_SOURCE_READY_RECHECK_REQUIRED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-P10-original-artifact-fresh403.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-artifact-fresh403.safe.json",
+      "sha256": "f89d665e6e02cb8b86525bf42f7914a6a563130744ac887e4b248900c6984550",
+      "status": "NORMAL_NATIVE1_FRESH_REFERENCE_HTTP403_BEFOREBODY_CLEANUP_REMOVED_2BIRTHS_ABSENT_POSTSTOP_QUALIFIED",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "boot-private-consumer-four-boundary-r1-recheck.md",
+      "path": "docs/validation/cloud-20261011/receipts/boot-private-consumer-four-boundary-r1-recheck.md",
+      "sha256": "80721000c98026f838ae0ae33afd7afa173105af6cd37447395651a0638027b2",
+      "status": "NARROW4P2_AND_FIXED_DISPATCH_APPROVE_SOURCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "boot-private-consumer-four-boundary-r1-recheck.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/boot-private-consumer-four-boundary-r1-recheck.safe.json",
+      "sha256": "b33c8a5a7803421a47c5de244e5847508f4625549727acdac49d627b5f47c8ce",
+      "status": "NARROW4P2_AND_FIXED_DISPATCH_APPROVE_SOURCE_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "p10-gh-archive-transport-plan.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-gh-archive-transport-plan.safe.json",
+      "sha256": "5668c6a3463410b1cc294c061886e3249c77edd27f58acf9132aa5dd4a4e988a",
+      "status": "MINIMAL_ORIGINAL_GH_ARCHIVE_TRANSPORT_SOURCE_IMPLEMENTATION_AUTHORIZED_ONLY",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-actual-one-MCP-shape.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-actual-one-MCP-shape.safe.json",
+      "sha256": "bc0c5f8c705e00bbf350bef5e766a5081666c18e22a8d920e9ba0b672f1ebde9",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/OUTCOME.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/OUTCOME.safe.json",
+      "sha256": "4944697c531c5b0883a36f1f181d6d8d873981f41ed5fe9ab12a25c8eff7afa3",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/carrier-owner.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/carrier-owner.safe.json",
+      "sha256": "d348c00f44b486ec6acd595d554bb8ffff7b2c0de879f6e0816c93341eae643c",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/carrier-owner.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/carrier-owner.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/consume-status-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/consume-status-1.safe.json",
+      "sha256": "9e621fbc1a42099cfa05ee79ac42090784719a4d9fadbadaf2274b9be9495582",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/consume-status-1.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/consume-status-1.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/consume-status-2.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/consume-status-2.safe.json",
+      "sha256": "47b31aa5411439bb05f9cd9ecdc602958a21cf719442b5b15cdf87be3ddb1e3a",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/consume-status-2.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/consume-status-2.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/consume-supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/consume-supervisor.safe.json",
+      "sha256": "1f2aae356dd9ed657edecfe32fbe9912f852627b946bf872660740776e3277bc",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/consume-supervisor.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/consume-supervisor.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/consume-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/consume-terminal.safe.json",
+      "sha256": "5dedd84b3363b502b3ccc614733c6ca24fedab2602879f9b76b558e21485d478",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/consume-terminal.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/consume-terminal.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/prepare-status-1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/prepare-status-1.safe.json",
+      "sha256": "d37a2f365fcfe07f7d0b494d9313169b1b2f2d5eed191ca822767069fc3d56fb",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/prepare-status-1.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/prepare-status-1.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/prepare-status-2.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/prepare-status-2.safe.json",
+      "sha256": "f89e63d48df93c34c7c27ee64e3b8eebe7cf4dbe4970ff05bf40c3636f3f03e2",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/prepare-status-2.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/prepare-status-2.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/prepare-supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/prepare-supervisor.safe.json",
+      "sha256": "e419052f5b1d80dd4e772e7b819aa8d26d93f0f52e94535bdb0c06d8c5a4af4d",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/prepare-supervisor.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/prepare-supervisor.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-one-official-MCP-actual/prepare-terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-BOOT-one-official-MCP-actual/prepare-terminal.safe.json",
+      "sha256": "72a2fc59406a93d2ab344fd0c765e4a0f2fa1161564afd76b1996bf7ec89ed6a",
+      "status": "REAL_PREPARE_PASS_SINGLE_SDK_TEXT_UNQUALIFIED_CONSUME_FAIL_PRIVATECARRIER_RETAINED_4BIRTHS_ABSENT; NOT_BOOTCAUSE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-one-official-MCP-actual/prepare-terminal.safe.json",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-BOOT-one-official-MCP-actual/prepare-terminal.safe.json",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "current1742-BOOT-closed-SDK-interface/PLAN.md",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-closed-SDK-interface/PLAN.md",
+      "sha256": "8ed1a9fef4bdf3a1d8ff5edae7a730301a32a257012295f187a3a7c29b6c47ff",
+      "status": "MINIMAL_FIXED_SHAPE_INTERFACE_SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "current1742-BOOT-closed-SDK-interface/controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-closed-SDK-interface/controls.safe.json",
+      "sha256": "04d55d53592a91f1fabf676652e00239fe028bea8dfdbcb022ed3ff9d5188495",
+      "status": "MINIMAL_FIXED_SHAPE_INTERFACE_SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "current1742-BOOT-closed-SDK-interface/interface.js",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-closed-SDK-interface/interface.js",
+      "sha256": "312cbee0aebbb97e935509ed7b03bae282c53efcb9017d847b7c8877ac71a57f",
+      "status": "MINIMAL_FIXED_SHAPE_INTERFACE_SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "current1742-BOOT-closed-SDK-interface/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-closed-SDK-interface/manifest.safe.json",
+      "sha256": "a61de3f5a3478d4a4873c66f831c386d277210b383045a778b798eed507bfb82",
+      "status": "MINIMAL_FIXED_SHAPE_INTERFACE_SOURCE_ONLY_REVIEW_PENDING",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "own-build-output-disk-readonly.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/own-build-output-disk-readonly.safe.json",
+      "sha256": "c5451c97118fbc62c372727e8886298b5170595069f4edd7d81e54c9bad37e06",
+      "status": "OWN_30MIB_BUILD_OUTPUTS_SMALL_NOT_STAND_CAPACITY_SOLUTION_NO_DELETION",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P10-GH-transport/run-green-owned.py",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/run-green-owned.py",
+      "sha256": "c7c91634dac0ed6df56db86aa9e672c96989caa8b4570ba4606ea8056fbe89e6",
+      "status": "THREE_CHECKING_SEAMS_SOURCE_READY_NARROW_REVIEW_REQUIRED; ORIGINALCASEFAIL_CAUSEUNKNOWN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10-GH-transport/logged-green-child.py",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-P10-original-GH-transport-source/logged-green-child.py",
+      "sha256": "88f1a6a13e4b0515d14f0a27da5507a7944ca3967220a8910c0753b0f98e75de",
+      "status": "THREE_CHECKING_SEAMS_SOURCE_READY_NARROW_REVIEW_REQUIRED; ORIGINALCASEFAIL_CAUSEUNKNOWN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/logged-green-child.py",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-P10-original-GH-transport-source/logged-green-child.py",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "P10-GH-transport/source-delta.patch",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/current1742-P10-original-GH-transport-source/source-delta.patch",
+      "sha256": "00dbe356394ae83eb804de3952e98916435145005bd2ba495368263f7ad0abbc",
+      "status": "THREE_CHECKING_SEAMS_SOURCE_READY_NARROW_REVIEW_REQUIRED; ORIGINALCASEFAIL_CAUSEUNKNOWN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/source-delta.patch",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/current1742-P10-original-GH-transport-source/source-delta.patch",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "P10-GH-transport/checks.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/checks.safe.json",
+      "sha256": "7bc74ac0eb9299bba96cf1c1b4d0faedadde3fe56350ecc3cd6376e563edad87",
+      "status": "THREE_CHECKING_SEAMS_SOURCE_READY_NARROW_REVIEW_REQUIRED; ORIGINALCASEFAIL_CAUSEUNKNOWN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10-GH-transport/grant-template.private.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/grant-template.private.json",
+      "sha256": "c8eb69fb56359909ab963480c5c50a9660c3cec44d74ba3f386c3e3877c68fd3",
+      "status": "THREE_CHECKING_SEAMS_SOURCE_READY_NARROW_REVIEW_REQUIRED; ORIGINALCASEFAIL_CAUSEUNKNOWN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10-GH-transport/green-plan.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/green-plan.safe.json",
+      "sha256": "5dae02eaf83dd4df4137f04bd483f57421ec13dfb217bc64efbb1f4ae1953b47",
+      "status": "THREE_CHECKING_SEAMS_SOURCE_READY_NARROW_REVIEW_REQUIRED; ORIGINALCASEFAIL_CAUSEUNKNOWN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10-GH-transport/READY",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-P10-original-GH-transport-source/READY.safe.json",
+      "sha256": "5b6828ca12085159258cfd4d211c5f4a3e792911005b2414e0ac03487dd26614",
+      "status": "SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "boot-closed-sdk-interface-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/boot-closed-sdk-interface-review.md",
+      "sha256": "fe947fbd47c99d895859ebab47079a49c39980b3d6797989d5b95da6f7d114aa",
+      "status": "PURE_FIXED_SDK_INTERFACE_NARROW_APPROVE_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "boot-closed-sdk-interface-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/boot-closed-sdk-interface-review.safe.json",
+      "sha256": "dbd18540cfa3f699e0f6f85ebb29b2ec6525cc9b5da7168ae3c3a34d46530a1b",
+      "status": "PURE_FIXED_SDK_INTERFACE_NARROW_APPROVE_SOURCE_NO_NATIVE",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "p10-gh-transport-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-gh-transport-review.md",
+      "sha256": "ed386cb56ee8922ca44f095da57f07e892d298ce322f7dcb49cf99d8baec5350",
+      "status": "NARROW_SOURCE_APPROVE_UNCHANGED_RULES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "p10-gh-transport-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-gh-transport-review.safe.json",
+      "sha256": "0020c652fbfe072cac81c4cb3445a5feccccd082e7afd5e98afac385b7a0f16f",
+      "status": "NARROW_SOURCE_APPROVE_UNCHANGED_RULES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "boot-one-BOM-recheck.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/boot-one-BOM-recheck.safe.json",
+      "sha256": "cb64f15e569d32d34c1d16b541c423a1535521420bda8ad9b83fd2d90c7de400",
+      "status": "NARROW_SOURCE_APPROVE_UNCHANGED_RULES_NATIVE_NOT_RUN",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10-no-store-oracle/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-oracle-source/READY.safe.json",
+      "sha256": "cf089798059e53bb5943c47996a716a85fbfc78b40cd16a518337fb06f27c772",
+      "status": "MINIMAL_ACCEPTED_NOSTORE_ORACLE_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-no-store-oracle/source-delta.patch",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-oracle-source/source-delta.patch",
+      "sha256": "dcef6a0e177db6520bb0b4e7b9397dc98dea3808c4b7b3ba7d6add6441c279ed",
+      "status": "MINIMAL_ACCEPTED_NOSTORE_ORACLE_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-no-store-oracle/execution-bindings.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-oracle-source/execution-bindings.safe.json",
+      "sha256": "2e28bb8bd2c63aea3cd5de593fc3aec033e2a65a3cf8fcc625fe1e43e6b08fb8",
+      "status": "MINIMAL_ACCEPTED_NOSTORE_ORACLE_SOURCE_READY_NATIVE_NOT_RUN",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "current1742-BOOT-payload02-native-final.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-payload02-native-final.safe.json",
+      "sha256": "ae2ec97286ff55dc55a4080b6a2abcc061e88bb46fd8e85bd3c4fa67ffd6a7a8",
+      "status": "actual-safe-diagnostic-not-user-scenario-pass",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "current1742-BOOT-original-cause.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current1742-BOOT-original-cause.safe.json",
+      "sha256": "6eed444437b16033e560dcbc22586ba35a7f9665ede58f6b30345696eddf4bf7",
+      "status": "actual-safe-diagnostic-not-user-scenario-pass",
+      "revision": "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    },
+    {
+      "id": "P10-quote-r1-READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-oracle-source/quote-r1/READY.safe.json",
+      "sha256": "a0c99caca795f9c61319a008fa6843a9f3827f39ad0653d41ea0aa4a6978d992",
+      "status": "source-quote-correction-narrow-review-pending",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-quote-r1-source-delta.patch",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/P10-no-store-directive-oracle-source/quote-r1/source-delta.patch",
+      "sha256": "ebb546864f2d1ec367804c0b89236a91c88264ef9cc0ff924f1977c9a3353b72",
+      "status": "source-quote-correction-narrow-review-pending",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-oracle-source/quote-r1/source-delta.patch",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/P10-no-store-directive-oracle-source/quote-r1/source-delta.patch",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "p10-no-store-oracle-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-no-store-oracle-review.md",
+      "sha256": "888b11b99e4612bf8524f109e9dae56ea58237ef750c6b3636268ba70de54910",
+      "status": "independent-source-one-P2-before-quote-correction",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "p10-no-store-oracle-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-no-store-oracle-review.safe.json",
+      "sha256": "ea184c6dbe4c490e43a4bf670bb397e1c11758cb9033a03c80d9eb6bd2c53e21",
+      "status": "independent-source-one-P2-before-quote-correction",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "p10-no-store-oracle-quote-r1-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-no-store-oracle-quote-r1-review.md",
+      "sha256": "9551d151ae6cb393f80055ada9b995761cf696f7f7ea16f490f9ff07755c834e",
+      "status": "independent-narrow-quote-oracle-source-approve",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "p10-no-store-oracle-quote-r1-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-no-store-oracle-quote-r1-review.safe.json",
+      "sha256": "0aa4f9e42c01c90a7c2e7a8046673f540b7dbf9faf0ed33daa7d7e135907a328",
+      "status": "independent-narrow-quote-oracle-source-approve",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "CI-boot-cache-REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/CI-boot-gradle-cache-isolation-source/REPORT.md",
+      "sha256": "08a668191be021656dbae2bea23aba30cdcb07d95caaa08477692c2d312252f7",
+      "status": "build-cache-isolation-source-await-independent-review",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "CI-boot-cache-manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-boot-gradle-cache-isolation-source/manifest.safe.json",
+      "sha256": "e265b61ee99bf114f4af2fadbd1833d190f1dfb663af73e4c233ab75f172e55d",
+      "status": "build-cache-isolation-source-await-independent-review",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "CI-boot-cache-cache-isolation.patch",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/CI-boot-gradle-cache-isolation-source/cache-isolation.patch",
+      "sha256": "af369b677dd6ca021c4ed5d12c4c2ca35294d7b5df1893f00a33d1ccfebae506",
+      "status": "build-cache-isolation-source-await-independent-review",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/CI-boot-gradle-cache-isolation-source/cache-isolation.patch",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/CI-boot-gradle-cache-isolation-source/cache-isolation.patch",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "CI-boot-cache-gradle812-public-source.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-boot-gradle-cache-isolation-source/gradle812-public-source.safe.json",
+      "sha256": "81634eabcd76a9a2c3dd8c5a8adde358829d55f42d0827dc0521ab1cb94f049c",
+      "status": "source-only-8cache-invariant-checks-not-build",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "CI-boot-cache-source-checks.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/CI-boot-gradle-cache-isolation-source/source-checks.safe.json",
+      "sha256": "9cd673196400753a8b22e545df05799eabd6e1702f20444f2c742877d4dc948c",
+      "status": "source-only-8cache-invariant-checks-not-build",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P10-no-store-directive-format01-FAIL.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-format01-FAIL.safe.json",
+      "sha256": "6a8dd870398c518ee95cfa1fbfc511fbc0bbaae780e195eb3cc53869d1f87049",
+      "status": "actual-formatter-apply-pass-check-not-run-source-manifest-schema-gap",
+      "revision": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022"
+    },
+    {
+      "id": "P10-no-store-directive-format-manifest-r1.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-format-manifest-r1.safe.json",
+      "sha256": "8ca3c4136cee9e6c942b4d7464ef38b4e95f35826f8f8dcdb0082e8416733a12",
+      "status": "source-narrow-param-approved-or-8docker-review-accepted",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "boot-gradle-cache-isolation-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/boot-gradle-cache-isolation-review.md",
+      "sha256": "3f8df92c15df55106f015df49830bbc576659f15fde2a549378460abfc2560e3",
+      "status": "source-narrow-param-approved-or-8docker-review-accepted",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "boot-gradle-cache-isolation-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/boot-gradle-cache-isolation-review.safe.json",
+      "sha256": "46506ecc8f420a7a0fd37c1c8e884b84a7f62d27b59903769fdc906dce543226",
+      "status": "source-narrow-param-approved-or-8docker-review-accepted",
+      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0"
+    },
+    {
+      "id": "P10-no-store-directive-format02-native0.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-no-store-directive-format02-native0.safe.json",
+      "sha256": "7947c02b80f2f02136049846ab7d8801e333ce871e38bf8abf6753e24604a3c4",
+      "status": "actual-cached-formatter-apply-check-native0-qualified",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "P10-oneHTTP-fresh-resource-join.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-oneHTTP-fresh-resource-join.safe.json",
+      "sha256": "b2d2bc2090b9783e7f18849b6213129e7dbe6c692faea4b29bb19100e85f99b7",
+      "status": "readonly-current-original-foreign-and-selected-images-joined",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "P10-one-real-Unicode-HTTP01-FAIL.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-real-Unicode-HTTP01-FAIL.safe.json",
+      "sha256": "8efdf33307f5894cffc374d0d91a386992121e12a205e4610f10241618007586",
+      "status": "actual-selected-one-FAIL-cause-unknown-cleanup-qualified",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "P10-oneHTTP01-append-only-cleanup-cause.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-oneHTTP01-append-only-cleanup-cause.safe.json",
+      "sha256": "e3ec6e5e623064e3e5ea947391dcded133db72b57e527d4f55d383cec089bbf6",
+      "status": "actual-known-public-SQL-append-only-fixture-cleanup-failure",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "P10-immutable-cleanup-READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-immutable-audit-fixture-cleanup-source/READY.safe.json",
+      "sha256": "5aa2d95721b0ebd49c64fe36845e456671c86512e0bad3c51186bf989fa1cdd3",
+      "status": "test-only-immutable-audit-FK-cleanup-source-review-pending",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "P10-immutable-cleanup-source-delta.patch",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip#receipts/P10-immutable-audit-fixture-cleanup-source/source-delta.patch",
+      "sha256": "1080dc54d43391f6a01d9ce8c96889faabd7e68ac810cdc61d17a732b8ed616a",
+      "status": "test-only-immutable-audit-FK-cleanup-source-review-pending",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4",
+      "original_plain_path": "docs/validation/cloud-20261011/receipts/P10-immutable-audit-fixture-cleanup-source/source-delta.patch",
+      "archive": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "member": "receipts/P10-immutable-audit-fixture-cleanup-source/source-delta.patch",
+      "representation": "byte-exact-original-machine-member"
+    },
+    {
+      "id": "P10-cleanup-param-bindings",
+      "path": "docs/validation/cloud-20261011/receipts/P10-immutable-audit-fixture-cleanup-source/parameter-bindings.safe.json",
+      "sha256": "91c1dca800a4ba9476f2ea31cd65d12237887577c98503df1b3decaac6ab27ed",
+      "status": "same-callbacks-init-observer-caps-param-only-format03-http02",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "p10-immutable-audit-cleanup-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-immutable-audit-cleanup-review.md",
+      "sha256": "aaa0c9eeca87679aa56791bafa34e55aa24ef508347e54510587aad7b7cac599",
+      "status": "independent-narrow-immutable-audit-fixture-source-approve",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "p10-immutable-audit-cleanup-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-immutable-audit-cleanup-review.safe.json",
+      "sha256": "61f6885fa4cd8a110b8ea430fef35c5b502a38f2874429bb04cb54b67a6ae546",
+      "status": "independent-narrow-immutable-audit-fixture-source-approve",
+      "revision": "0fc84656948ce40e87a71b967d9caa49b391ccf4"
+    },
+    {
+      "id": "P10-immutable-cleanup-format03-native0.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-immutable-cleanup-format03-native0.safe.json",
+      "sha256": "9d0c12678454464ba76e8d51c382f814d677efd4d407c717e2fd2e66aa921c28",
+      "status": "actual-single-file-apply-executed-check-cached-native0",
+      "revision": "a0e3577ec98d7dfb2bc2638527debf4639d29db1"
+    },
+    {
+      "id": "P10-fresh-docker-resource-join-HTTP02.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-fresh-docker-resource-join-HTTP02.safe.json",
+      "sha256": "2d8fe9d774094f701fd4e6fac5487f482ba897b87017047260bcc1a2b4586321",
+      "status": "readonly-source-head-foreign-image-param-join-beforeHTTP02",
+      "revision": "a0e3577ec98d7dfb2bc2638527debf4639d29db1"
+    },
+    {
+      "id": "P10-current-head-HTTP02-bind.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-current-head-HTTP02-bind.safe.json",
+      "sha256": "8a0a51dacbfdf088d2839dbe8dc8e269ff5d095f9420ce3fe537119873116489",
+      "status": "readonly-source-head-foreign-image-param-join-beforeHTTP02",
+      "revision": "a0e3577ec98d7dfb2bc2638527debf4639d29db1"
+    },
+    {
+      "id": "P10-one-real-Unicode-HTTP02-PASS.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P10-one-real-Unicode-HTTP02-PASS.safe.json",
+      "sha256": "eb08da9a82549003493904cce90384d62a435897cabb9221ab130857df234678",
+      "status": "actual-single-selected-Unicode-HTTP-PASS-await-independent-finite-quality-check",
+      "revision": "a0e3577ec98d7dfb2bc2638527debf4639d29db1"
+    },
+    {
+      "id": "p10-one-http02-actual-review.md",
+      "path": "docs/validation/cloud-20261011/receipts/p10-one-http02-actual-review.md",
+      "sha256": "17e37bd4dfc795938edb61ba86fc86aeeb2d41b85e6dd8176e00e6f2e0a8c48b",
+      "status": "independent-finite-real-UnicodeHTTP02-ACCEPT-not-parent-closure",
+      "revision": "a0e3577ec98d7dfb2bc2638527debf4639d29db1"
+    },
+    {
+      "id": "p10-one-http02-actual-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/p10-one-http02-actual-review.safe.json",
+      "sha256": "84b613bc5942133b7ecd91c5041696b78487215c150f1196d5d869bc8bc12191",
+      "status": "independent-finite-real-UnicodeHTTP02-ACCEPT-not-parent-closure",
+      "revision": "a0e3577ec98d7dfb2bc2638527debf4639d29db1"
+    },
+    {
+      "id": "MACHINE-EXACT-PUBLICATION-20261013",
+      "path": "docs/validation/cloud-20261011/receipts/machine-exact-publication-20261013.zip",
+      "sha256": "9e2983a9ebbe0b4344919ab0b18a2021570c799e105830cf041de848ba043c9f",
+      "status": "15-original-publication-copies-preserved-byte-exact-after-normal-hook-format-conflict",
+      "revision": "52a95a8f38753f17277de616ebf608cf34937cb9"
+    },
+    {
+      "id": "Root-P10-cache-coherent-doc267-hooks-PASS.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-P10-cache-coherent-doc267-hooks-PASS.safe.json",
+      "sha256": "eeac28bbc579ad651a3529c304a307f93f0ea6a171ea4f807d030d632fa09804",
+      "status": "actual-normal-doc267-hooks-pass-source-byte-identity-birth-cleanup",
+      "revision": "52a95a8f38753f17277de616ebf608cf34937cb9"
     }
   ],
   "research_receipt": {

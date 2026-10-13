@@ -1,0 +1,15 @@
+{
+  "state": "CORRECTED_OUTER_SOURCE_READY_REQUIRES_NARROW_RECHECK",
+  "caller_sha256": "b518931a07594f25245617f67d478b2b97df9f44f02dbeb7b32f04a73c115985",
+  "actual_capture": "NOT_RUN",
+  "grant_created": false,
+  "targeted_RAM_cases": 3,
+  "old15_reused_NOT_RERUN": true,
+  "parent_r2_capture_parser_unchanged": true,
+  "command": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/read-existing-boot.py",
+    "--grant",
+    "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/private/read-grant.json"
+  ]
+}

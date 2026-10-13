@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-13T13:18:05.660498+00:00",
+  "result": "CORRECTED_SOURCE_READY_NATIVE_NOT_RUN",
+  "semantic_revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1",
+  "checking_defects": "Rootpregrantmetadata/probeissues corrected; product0ec untouched.",
+  "original_caller_sha256": "94926a4edb1eee323155e4436c9449f0593a2250c47e6f7e455a9647d41da6fd",
+  "original_archive_sha256": "88050599a68b76fbf537905a7b5418d424a526f839c13642aa2808345b15537a",
+  "corrected_caller_sha256": "5130de07f6d02be0ea427a1b98d91d76aacb8d0327578a350849dde7068615fb",
+  "controls_sha256": "7a9e5ffc0f4f1b76119959f0a5ed4bb0b994d552390b0cf46e2c230ebf9b2e7e",
+  "control_count": 20,
+  "formatter": "Ruffnotavailable; no checkingSourceformatter run. Java productformatter/compile/test pending freshRootgrant.",
+  "next": "Independent Source review then freshRoot physicalgrant/normalapproval; targetedformat/Gradle separatelease."
+}

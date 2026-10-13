@@ -1,0 +1,13 @@
+{
+  "schema": "P10_ADAPTER_V8_SELECTED_SYNTHETIC_CONTROL_V1",
+  "typeof_URL": "undefined",
+  "old_exact_predicates_before_constructor": "RESPONSE_IDENTITY_AND_STRING_ACCEPTED",
+  "old_caught": true,
+  "old_stage": "CONNECTOR",
+  "new_stage": "PRIVATE_STRING_BOUNDED_CHILD_FULL_URL_VALIDATION_REQUIRED",
+  "new_error": "NONE",
+  "response_stored_before_validation": false,
+  "closed_stage_stored": true,
+  "effects": "Synthetic RAM only; no connector/private writer/native/network/real response",
+  "historical_actual_response_failure_predicate": "UNKNOWN"
+}

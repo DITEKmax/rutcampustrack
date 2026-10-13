@@ -1,0 +1,1 @@
+{"result":{"direct_pid":519188,"native_exit":1,"terminal_reason":"NATIVE_TERMINAL","signal_count":0,"settled":true,"all_owned_processes_reaped":true,"all_members_including_Z_after":[],"known_owned_identities":[{"pid":519188,"start_ticks":14871425}],"adopted_waitpid_receipts":[],"supervision_error_type":null,"phase_success":false},"all_known_births_absent":true}

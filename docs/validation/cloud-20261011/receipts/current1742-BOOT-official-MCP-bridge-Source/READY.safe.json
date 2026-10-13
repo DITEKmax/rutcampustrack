@@ -1,0 +1,36 @@
+{
+  "state": "SOURCE_READY_FOR_INDEPENDENT_ROOT_REVIEW",
+  "author": "ci731_reconcile",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "actual_connector_called": false,
+  "native_called": false,
+  "actual_cause": "UNKNOWN",
+  "FIRST3": "NOT_RUN",
+  "runtime_dispatch": "UNBOUND",
+  "fresh_root_grant_required": true,
+  "response_schema": "UNKNOWN",
+  "transport_predecode_cap": "NOT_EXPOSED",
+  "transport_cancellable_deadline": "NOT_EXPOSED",
+  "postresponse_payload_cap_bytes": 33554432,
+  "encoded_carrier_cap_bytes": 33554432,
+  "author_source_controls": {
+    "v8_selector_groups": 9,
+    "v8_fixed_recipe_groups": 5,
+    "python_decoder_groups": 6,
+    "passed": true
+  },
+  "independent_review": "PENDING",
+  "existing_parser_sha256": "e7a6f7a522a5ae781a98a72bb08336fb19a4cca5364b9bd28df3215f7c3f0a0c",
+  "existing_binding_sha256": "3be4bfce8d095d2201e7e7de3619ca99f9f49dc0df4073ff83c4de7d23513ca1",
+  "actual_cli_60735": "native1_no_hints_removed_all2birthsabsent_causeUNKNOWN_no_third_identical_CLI",
+  "qualifications": [
+    "No predecode hard allocation guarantee",
+    "No remote tool process birth/cancellation guarantee",
+    "Single standard text response only; unknown schemas refused",
+    "ASCII carrier fidelity is decoded-string fidelity, not original transport bytes",
+    "Path-based apply_patch requires existing Root freeze; sameUID adversarial isolation not proved",
+    "No executable consumer/grant admitted by Source helper alone"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "P10_FORMAT_REQUIRED_TARGET_PARAMETER_CORRECTION_V1",
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "actual_partial_receipt": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-cache-directive-oracle-source/format01-actual/actual.safe.json",
+  "actual_partial_sha256": "6a8dd870398c518ee95cfa1fbfc511fbc0bbaae780e195eb3cc53869d1f87049",
+  "original_field_missing_cause": "MISSING_JAVA_TARGETS_SCHEMA_FIELD; successful apply and unchanged source, check NOT_RUN",
+  "correction": "Only add required canonical java_targets with exact assigned file. New run/lease and manifest/plan false-grant hashes parameter-only; callbacks/init/limits/testSource unchanged.",
+  "checks": {
+    "actual_selected_AST_old_field_lookup_KeyError": true,
+    "actual_selected_AST_new_exact_one_target": true,
+    "old_manifest_whole_inverse_outside_one_key": true,
+    "callbacks_and_init_byte_exact": true,
+    "limits_unchanged": true,
+    "new_namespace_absent": true
+  },
+  "pins": {
+    "run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "format-journal.init.gradle": "90933926b19e792e941c15b2649560fdce53ea730b40456f4a4931a25cc6eaad",
+    "semantic-source-manifest.safe.json": "5c7dc4706f95fd79eb977ae9aefd7db105ad46fb1462a881827ac185224b1f29",
+    "format-plan.safe.json": "2c88401a846aab8491f583c5b3828aea1d0c74db171c6a36c427527551a705b4",
+    "grant-template.private.json": "64174ab66c8cfd158ce387beac66eae166f0ad788ce27668d49e3d93e128f207"
+  },
+  "prior_parameters_sha256": "c2e70fc4f1bab2e0ad4b2485e1654d9a5230f86393cffe2225194fb9beacd95e",
+  "source_sha256": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "base": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "grant": "Fresh Root required; old grant01 retained/terminal and cannot retry. Same existing apply/check caller; known checking cause corrected before another invocation. Apply01 PASS partial reused as evidence, check still required.",
+  "native_or_private_log_values_export": false
+}

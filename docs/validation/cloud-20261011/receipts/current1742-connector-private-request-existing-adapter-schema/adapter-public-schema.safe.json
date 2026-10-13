@@ -1,0 +1,32 @@
+{
+  "scope": "Historical successful18 SAFEartifact adapter, schema only, not artifact/runtime authority",
+  "source": "ci731_reconcile actual successful18 call history, response2026-10-13",
+  "connector": "mcp__codex_apps__github_download_workflow_artifact",
+  "url_field_path": [
+    "structuredContent",
+    "structuredContent",
+    "download_url"
+  ],
+  "result_public_keys": [
+    "content",
+    "structuredContent",
+    "isError"
+  ],
+  "outer_public_keys": [
+    "file_uri",
+    "artifact_id",
+    "file_name",
+    "mime_type",
+    "structuredContent"
+  ],
+  "inner_public_keys": [
+    "file_uri",
+    "file_id",
+    "download_url",
+    "file_name",
+    "mime_type",
+    "artifact_id"
+  ],
+  "private_handling": "Check isError/type string inRAM; no fullresult/URI/URLtext-notify. Create exactOWN oneuse request O_EXCL0600 then tools.apply_patch UPDATE withJSON serializedRAM request, noURLinargv or persistentSource. Prior18actual Updatepreservedmode600; readerfinallycleanup ownsrequest. Do not print patch/request/output bodies; clear RAMrefs. Actualvaluesexcluded. Initial/dev/tty adapter unavailablebeforeprivateTransmission, do notretry.",
+  "qualification": "Root received exactpreviousschema/pattern, no newdownload/rawread/credentials/native. P10 separateoriginalartifactgrant/sourceacceptance mandatory."
+}

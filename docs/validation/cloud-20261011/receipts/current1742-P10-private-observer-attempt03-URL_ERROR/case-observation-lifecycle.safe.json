@@ -1,0 +1,12 @@
+{
+  "schema": "P10_REQUEST_LIFECYCLE_V1",
+  "diagnostic_valid": false,
+  "operation_stage": "URL_OPEN",
+  "exception_code": "URL_ERROR",
+  "http_status": 0,
+  "primary_rejection": "BOUNDARY_UNKNOWN",
+  "cleanup_rejection": "NONE",
+  "cleanup_outcome": "REMOVED",
+  "request_reconciliation_required": false,
+  "no_private_message_context_or_values_export": true
+}

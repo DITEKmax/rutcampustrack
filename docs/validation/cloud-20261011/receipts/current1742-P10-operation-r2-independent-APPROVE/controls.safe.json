@@ -1,0 +1,61 @@
+{
+  "schema": "P10_OPERATION_R2_NARROW_INDEPENDENT_RECHECK_V1",
+  "verdict": "APPROVE_SOURCE",
+  "closed_finding": "P10-EXCEPTION-TYPE-LOOKUP-METACLASS-HOOKS",
+  "two_actual_catch_AST_RAM": {
+    "hash_trap": {
+      "hooks_called": 0,
+      "closed_fields": {
+        "primary_rejection": "BOUNDARY_UNKNOWN",
+        "exception_code": "OTHER",
+        "http_status": 0,
+        "operation_stage": "URL_OPEN"
+      },
+      "PASS": true
+    },
+    "equality_trap": {
+      "hooks_called": 0,
+      "closed_fields": {
+        "primary_rejection": "BOUNDARY_UNKNOWN",
+        "exception_code": "OTHER",
+        "http_status": 0,
+        "operation_stage": "URL_OPEN"
+      },
+      "PASS": true
+    }
+  },
+  "source_boundary_checks": {
+    "same19_type_code_pairs": true,
+    "selection_only_identity": true,
+    "whole_inverse_exact_except_mapping": true,
+    "seal_PLAN.md": true,
+    "seal_READY.safe.json": true,
+    "seal_admission-reused.py.source": true,
+    "seal_controls-metaclass-only.py": true,
+    "seal_grant-template.private.json": true,
+    "seal_green-plan.safe.json": true,
+    "seal_logged-green-child.py": true,
+    "seal_metaclass-controls.safe.json": true,
+    "seal_metadata.safe.json": true,
+    "seal_network-context-proposal.safe.json": true,
+    "seal_run-green-owned.py": true,
+    "seal_source-delta.patch": true,
+    "seal_source-edit-attempt01.safe.json": true,
+    "seal_source-manifest.safe.json": true,
+    "seal_source-proof.safe.json": true,
+    "seal_tool-environment-policy.safe.json": true,
+    "parent_c5af_exact": true,
+    "caps_exact": true,
+    "18_public_inputs": true,
+    "b78": true,
+    "exact_READY.safe.json": true,
+    "exact_manifest.safe.json": true,
+    "exact_SOURCE.safe.zip": true,
+    "old_seals_preserved": true
+  },
+  "old19_plus8_plus15_and13_and17plus6": "REUSED_NOT_RERUN",
+  "native": "NOT_RUN",
+  "actual02_and_CI_P10_cause": "UNKNOWN",
+  "network_context_proposal": "OUTSIDE_APPROVAL_NOT_IMPLEMENTED",
+  "effects": "Public Source and RAM synthetic catch only; no private URL/log/XML/environment/native/API/network/test/Source edit/children/B013"
+}

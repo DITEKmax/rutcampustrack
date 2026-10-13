@@ -1,0 +1,29 @@
+{
+  "schema": "rct-independent-review-manifest-v1",
+  "utc": "2026-10-13T13:33:27.349431+00:00",
+  "files": {
+    "OUTCOME.safe.json": {
+      "bytes": 1099,
+      "sha256": "a1da885da6499c6ad6ece464cb0d0270130ff17147ecfba8876c37f85d003079"
+    },
+    "REPORT.md": {
+      "bytes": 11677,
+      "sha256": "f6d236b262d621e227826d4b0ec5200a1174b710ccb1fd2fdd45ede55a21c380"
+    },
+    "counterexamples.py": {
+      "bytes": 3972,
+      "sha256": "9674d2ca0f2dcf22b452c045f1582e8a7daf6e4860e453fdf5bd3777f03ccbfe"
+    },
+    "counterexamples.safe.json": {
+      "bytes": 753,
+      "sha256": "114c879711307e7bb6b118d598bdd1dd3380c17e2871f523a88db0dfd1873e7f"
+    },
+    "inputs-verified.safe.json": {
+      "bytes": 2581,
+      "sha256": "a189dcd5523c60ccb4af92964ee4c6dc8034df1c16d384a5fe1255e93e0d5d39"
+    }
+  },
+  "original_input_manifest_sha256": "deabbc13355ba3753ef9b2fae6b6144b55e92d24945be19c6ff8556f964817c8",
+  "source_unchanged_at_seal": true,
+  "no_native": true
+}

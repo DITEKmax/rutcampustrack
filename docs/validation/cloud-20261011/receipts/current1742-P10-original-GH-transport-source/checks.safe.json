@@ -1,0 +1,16 @@
+{
+  "schema": "P10_GH_THREE_SEAM_SELECTED_RAM_V1",
+  "checks": {
+    "one_byte_overcap_refused_before_any_archive_read": true,
+    "new_primary_read_and_close_failure_independent": true,
+    "old_finally_close_masks_primary_counterexample": true,
+    "normal_leaf_admitted_all_four_metadata_drifts_refused": true,
+    "journal_before_stdout_exec_hard_cap_stdout_only_stderr_null": true,
+    "normal_cleanup_unsafe_mode_retention_and_primary_independent_of_unlink_failure": true
+  },
+  "all_pass": true,
+  "FD_counterexamples_actual_selected_AST": true,
+  "real_os_private_files_environment_network_or_native_effects": false,
+  "canary_or_message_URI_body_typehash_export": false,
+  "cause": "UNKNOWN"
+}

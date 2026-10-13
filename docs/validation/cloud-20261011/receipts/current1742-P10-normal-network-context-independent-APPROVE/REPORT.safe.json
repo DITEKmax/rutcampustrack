@@ -1,0 +1,29 @@
+{
+  "schema": "P10_NETWORK_CONTEXT_NARROW_INDEPENDENT_APPROVAL_V1",
+  "utc": "2026-10-13T13:39:29.365860+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "findings": [],
+  "technical_authority": "Root decisions.md2026-10-13T13:28:25.553407",
+  "source_ready_sha256": "9ee0c9327076d47f896b39629e119775debd5550ac080b1f3a854fddb3e7cd5a",
+  "source_manifest_sha256": "abf5a431f27cdab759248557f120caaef4ac9ff2cd9c8d84a3954f6da0a43c5f",
+  "source_zip_sha256": "b001e0432cdcc1c143efbc6027d9e61bc9fd21010e00e6f61e5ca022e3684702",
+  "parent_sha256": "4611344f9af8a48b0e695545c4053994c1f72591929553b3336df4e2a8d311c9",
+  "child_sha256": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "checks": {
+    "selected_loop_AST_RAM": 8,
+    "result": "PASS",
+    "exact8_get_only_no_fullENV": "PASS",
+    "private_str_values_no_export": "PASS",
+    "inverse_loop_comment_only": "PASS",
+    "child_guard_caps_admission_meta_18pins": "PASS",
+    "old19_8_15_13_17plus6": "REUSED_NOT_RERUN"
+  },
+  "actual_env_values_presence_hashes_read_or_exported": false,
+  "native": "NOT_RUN",
+  "actual03_nestedreason_and_P10_cause": "UNKNOWN",
+  "effects": "Public Source/RAMsynthetic loop only; no native/network/API/privatebody/URL/log/XML/env/test/Source edit/children/B013",
+  "next": "Root fresh separate original artifact grant + normal exact caller; mandatory native/lifecycle/source/artifact/caps/timing/reap joins; no blind replay"
+}

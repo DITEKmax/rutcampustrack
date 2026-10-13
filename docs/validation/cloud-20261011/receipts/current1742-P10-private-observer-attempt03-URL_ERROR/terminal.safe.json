@@ -1,0 +1,28 @@
+{
+  "direct_pid": 521828,
+  "native_exit": 1,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 521828,
+      "start_ticks": 15173744
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": false,
+  "utc": "2026-10-13T13:25:49.971634+00:00",
+  "peaks": {
+    "memory": 5709778944,
+    "min_workspace_free": 7592366080,
+    "owned_rss": 20692992,
+    "log_bytes": 0
+  },
+  "expected_native_exit": 0,
+  "native_phase_pass": false,
+  "qualification": "Compile and selected class XML validation required before PASS"
+}

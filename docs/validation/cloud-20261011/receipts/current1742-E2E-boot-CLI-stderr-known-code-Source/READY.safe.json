@@ -1,0 +1,12 @@
+{
+  "state": "SOURCE_READY_NEW_STDERR_AND_NONZERO_CLOSED_BRANCH_REVIEW_REQUIRED",
+  "caller_sha256": "163324076e8d284b3a54fde5b36b8dab172277e33a0ba9700b532d8eb5fe8d37",
+  "capture_sha256": "f4280cc990d874235689c41e22c7fc190a1e147e180377e63b72b272f9b94ccf",
+  "cli_parser_sha256": "e72cb4d72b944e5accc37529aec8b535b91fa34419cfc2c94be388b7bf29928c",
+  "focused_source_RAM_groups": 17,
+  "original_controls_reused": true,
+  "old_actual42631_cause": "UNKNOWN",
+  "new_actual_API_log_native": "NOT_RUN",
+  "fresh_grant_required": true,
+  "MCP_selected": false
+}

@@ -1,4 +1,4 @@
-import { expect, test as unprotectedTest, type WorkerInfo } from '@playwright/test';
+import { expect, test as unprotectedTest, type TestInfo, type WorkerInfo } from '@playwright/test';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdtempSync, promises as fsPromises, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -32,6 +32,98 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     info.outputPath('control.json'),
     JSON.stringify({ originalFillTitleContainsMarker: true }),
   );
+
+  const spec = resolve(__dirname, '../specs/mobile-real-server.spec.ts');
+  const fallback = { file: spec, line: 61, column: 1 };
+  const frame = (line = 91, column = 1) => `    at (${spec}:${line}:${column})`;
+  const sanitize = (error: Record<string, unknown>) => {
+    const reported = {
+      file: spec,
+      line: 61,
+      status: 'failed',
+      errors: [error],
+      annotations: [],
+    } as unknown as TestInfo;
+    sanitizeTestErrors(reported);
+    expect(reported.status).toBe('failed');
+    expect(reported.errors.length).toBe(1);
+    expect(JSON.stringify(error).includes(marker)).toBe(false);
+    return reported;
+  };
+  const projected: Record<string, unknown> = {
+    message: marker,
+    stack: `Error: ${marker}\nprivate assertion details\n${frame()}\n${frame(102)}`,
+    location: fallback,
+  };
+  const reported = sanitize(projected);
+  expect(projected.location).toEqual({ file: spec, line: 91, column: 1 });
+  const firstPass = JSON.stringify(projected);
+  sanitizeTestErrors(reported);
+  expect(JSON.stringify(projected)).toBe(firstPass);
+  // The exact fabricated frame is deliberately accepted only as an untrusted reported hint.
+  expect(reported.status).toBe('failed');
+
+  const named: Record<string, unknown> = { stack: `Error\n    at async body (${spec}:102:1)` };
+  sanitize(named);
+  expect(named.location).toEqual({ file: spec, line: 102, column: 1 });
+  const bare: Record<string, unknown> = { stack: `Error\n    at ${spec}:91:1` };
+  sanitize(bare);
+  expect(bare.location).toEqual({ file: spec, line: 91, column: 1 });
+
+  for (const stack of [
+    `Error\n    at (/private/${marker}.ts:91:1)`,
+    `Error\n    at (file://${spec}:91:1)`,
+    `Error\n    at (${spec}/../mobile-real-server.spec.ts:91:1)`,
+    `Error\n    at (${spec}:0:1)`,
+    `Error\n    at (${spec}:412:1)`,
+    `Error\n    at (${spec}:91:999999)`,
+    `Error\n    at (${spec}:91:0)`,
+    `Error\n${frame()}\u0000`,
+    `Error\n${frame()}\u001b`,
+    `Error\n${frame()}\r`,
+    `Error\n${frame()}\u2028`,
+    `Error\n    at (${spec}:91:1`,
+    `Error\n    at unexpected frame\n${frame()}`,
+    `${'x'.repeat(8193)}\n${frame()}`,
+    `${'header\n'.repeat(64)}${frame()}`,
+    `Error\n    at ${'x'.repeat(1025)}\n${frame()}`,
+    42,
+    null,
+  ]) {
+    const refused: Record<string, unknown> = {
+      stack,
+      location: { file: `/private/${marker}.ts`, line: 987, column: 1 },
+    };
+    sanitize(refused);
+    expect(refused.location).toEqual(fallback);
+  }
+
+  let getterCalls = 0;
+  const getters: Record<string, unknown> = { stack: `Error\n${frame()}` };
+  for (const key of ['message', 'location', 'name', 'toString']) {
+    Object.defineProperty(getters, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        getterCalls++;
+        throw new Error(marker);
+      },
+    });
+  }
+  sanitize(getters);
+  expect(getters.location).toEqual({ file: spec, line: 91, column: 1 });
+  const inherited = Object.create({ get stack() { getterCalls++; return frame(); } });
+  sanitize(inherited);
+  expect(inherited.location).toEqual(fallback);
+  const stackGetter: Record<string, unknown> = {};
+  Object.defineProperty(stackGetter, 'stack', {
+    enumerable: true,
+    configurable: true,
+    get() { getterCalls++; return frame(); },
+  });
+  sanitize(stackGetter);
+  expect(stackGetter.location).toEqual(fallback);
+  expect(getterCalls).toBe(0);
 });
 
 test('failed sensitive call error and automatic context are redacted', async () => {

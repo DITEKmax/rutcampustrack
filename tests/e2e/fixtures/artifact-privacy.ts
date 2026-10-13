@@ -1,4 +1,6 @@
 import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   classifySafeFailure,
   discardReportedFailureHint,
@@ -81,6 +83,46 @@ function recordSafeFailure(info: TestInfo, error: unknown): void {
   });
 }
 
+const publicSpec = resolve(__dirname, '../specs/mobile-real-server.spec.ts');
+
+/** An untrusted reported frame, never proof of a cause, operation or successful assertion. */
+function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'line'>) {
+  const fallback = { file: info.file, line: info.line, column: 1 };
+  if (info.file !== publicSpec || typeof error !== 'object' || error === null) return fallback;
+  let stack: unknown;
+  try {
+    stack = Object.getOwnPropertyDescriptor(error, 'stack')?.value;
+  } catch {
+    return fallback;
+  }
+  if (typeof stack !== 'string' || stack.length > 8192) return fallback;
+  const lines = stack.split('\n');
+  if (lines.length > 64) return fallback;
+  let sourceLines: string[];
+  try {
+    sourceLines = readFileSync(publicSpec, 'utf8').split('\n');
+    if (sourceLines[sourceLines.length - 1] === '') sourceLines.pop();
+  } catch {
+    return fallback;
+  }
+  for (const line of lines) {
+    // Assertion messages may span lines; only exact stack frames are interpreted.
+    if (!line.startsWith('    at ')) continue;
+    if (line.length > 1024 || /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(line)) return fallback;
+    const frame =
+      /^    at (?:[^()\r\n]{1,128} )?\(([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})\)$/.exec(line) ??
+      /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})$/.exec(line);
+    if (!frame) return fallback;
+    if (frame[1] !== publicSpec) continue;
+    const sourceLine = Number(frame[2]);
+    const column = Number(frame[3]);
+    if (sourceLine > sourceLines.length || column > sourceLines[sourceLine - 1].length + 1)
+      return fallback;
+    return { file: publicSpec, line: sourceLine, column };
+  }
+  return fallback;
+}
+
 /** Run before Playwright writes automatic error-context.md, which otherwise includes raw call logs. */
 export function sanitizeTestErrors(info: TestInfo): void {
   for (const error of info.errors) {
@@ -94,10 +136,19 @@ export function sanitizeTestErrors(info: TestInfo): void {
       recordReportedHints(info, error);
     }
     const record = error as Record<string, unknown>;
-    const location = record.location;
+    const location = reportedSpecLocation(error, info);
     for (const key of Object.keys(error)) delete record[key];
-    error.message = 'Check failed; source location and outcome are recorded in safe-results.json';
-    error.stack = `Error: check failed\n    at (${info.file}:${info.line}:1)`;
-    if (location) record.location = location;
+    // Own data properties also prevent inherited accessors from observing the safe replacement.
+    Object.defineProperties(error, {
+      message: {
+        value: 'Check failed; source location and outcome are recorded in safe-results.json',
+        writable: true, enumerable: true, configurable: true,
+      },
+      stack: {
+        value: `Error: check failed\n    at (${location.file}:${location.line}:${location.column})`,
+        writable: true, enumerable: true, configurable: true,
+      },
+      location: { value: location, writable: true, enumerable: true, configurable: true },
+    });
   }
 }

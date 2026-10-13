@@ -1,0 +1,7 @@
+{
+  "schema": "RCT_FINITE_SAFE_RECONCILIATION_REVIEW_MANIFEST_V1",
+  "files": {
+    "REPORT.safe.json": "914cdc11ee6d65b5ba2a8baf2aa0d4e7c63ce47334439ac7ec0655faa76b163c"
+  },
+  "excluded": "No private raw payload/runtime/cause/credential files"
+}

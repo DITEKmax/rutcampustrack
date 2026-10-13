@@ -1,0 +1,74 @@
+{
+  "state": "SOURCE_READY_WAIT_ROOT_METADATA_GO_AND_FRESH_COLLECTION_GRANT",
+  "utc": "2026-10-13T11:05:44.855766+00:00",
+  "source_targets": {
+    "producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+    "product_revision": "4c946bedff221094ccc9bf052570347736b22a83",
+    "public_source_pins": {
+      "reporter": {
+        "path": "tests/e2e/fixtures/safe-reporter.ts",
+        "sha256": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336"
+      },
+      "privacy": {
+        "path": "tests/e2e/fixtures/artifact-privacy.ts",
+        "sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82"
+      },
+      "P06": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+        "sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2"
+      },
+      "P10": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+        "sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8"
+      }
+    },
+    "targets": [
+      {
+        "family": "P06",
+        "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+        "method": "durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+        "sourceSha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+        "require": "SOURCE_METHOD/PASSED/nonempty/collectionRESULTS/countsConsistent/currenthead+actualcheckout join/no selected SKIP-NOT_EXECUTED-FAIL-ERROR",
+        "acceptance": "NOT_ASSESSED_PENDING_CURRENT_NATIVE_SAFE_OUTCOME"
+      },
+      {
+        "family": "P10",
+        "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+        "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+        "sourceSha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+        "require": "SOURCE_METHOD/PASSED/nonempty/collectionRESULTS/countsConsistent/currenthead+actualcheckout join/no selected SKIP-NOT_EXECUTED-FAIL-ERROR",
+        "acceptance": "NOT_ASSESSED_PENDING_CURRENT_NATIVE_SAFE_OUTCOME"
+      }
+    ]
+  },
+  "runs_reported_by_Root_not_independently_API_verified": {
+    "ci": 38387263916,
+    "coverage": 38387263972,
+    "security": 38387263915,
+    "openapi": 38387263917
+  },
+  "distinct_push_ci": 38387255561,
+  "reader_hashes": {
+    "download-safe.py": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+    "download-first3-safe.py": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8"
+  },
+  "schema_hash": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e",
+  "exact_old_readers_preserved": true,
+  "root_schema_exact_copy": true,
+  "actual8keybinding_created": false,
+  "metadata_API_performed": false,
+  "artifact_download_or_native_performed": false,
+  "source_checks": "Only parameter/copy/published-publicSource hashes; no repeated controls or executable logic",
+  "governing": {
+    "TASK-CONTRACT.md": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+    "CURRENT.md": "f37dc404552c730c25c0d3cfd1ef44ef60afa3fbf3769b4cc8593a6862d60575",
+    "decisions.md": "feafc4ffc89220ac932433d92d8b293e25c0ca288a48f61920ef9832de069da4",
+    "questions.md": "9a31f631bae3f062e5daa139aa09f863399b34bba80c55457b1bacf49773b20e",
+    "resources.md": "3d2e49e1313f03c08d828c680d423a17a9b5c6baf77c043be7b3e537b9552db1"
+  },
+  "old597manifest_sha256": "80db0805766a9fbe83b17d2567002cc12b268a8530fe584cb45adecbd054cd6e",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

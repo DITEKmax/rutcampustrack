@@ -1,0 +1,20 @@
+{
+  "schema": "RCT_BOOT_DIAG_R2_NARROW_INDEPENDENT_MANIFEST_V1",
+  "utc": "2026-10-13T12:00:38.237496+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "closed_finding": "BOOT-CLEANUP-UNLINK-MASKS-PRIMARY",
+  "findings": [],
+  "actual_API_native_private_read": false,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 1838,
+      "sha256": "29ef04e1b1c142d12c79ee7229817b188499dc68e6d98eaecbf0032b6681c43e"
+    },
+    {
+      "path": "verification.safe.json",
+      "bytes": 1370,
+      "sha256": "8653810a3f15614134c0783548d5271c1fec131654d73111af89464aef6d152a"
+    }
+  ]
+}

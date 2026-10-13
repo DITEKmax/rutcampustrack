@@ -1,0 +1,178 @@
+{
+  "schema": "RCT_CURRENT1742_INDEPENDENT_FINITE_SAFE_RECONCILIATION_REVIEW_V1",
+  "utc": "2026-10-13T11:46:03.406Z",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "OUTCOME": "ACCEPT_FINITE_CURRENT1742_SAFE_RECONCILIATION_CURRENT_GATES_FAIL_NO_PARENT_PROMOTION",
+  "findings": [],
+  "source": {
+    "producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+    "product_source": "4c946bedff221094ccc9bf052570347736b22a83",
+    "actual_Java_PR_checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+    "checkout_parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "1742d1e806faa5c39c6d182a3554daa8f4239801"
+    ],
+    "tree": "4c4c60fce18f5f76d222847c95dbd311f4e54575",
+    "join": "All24 Java SAFE metadata head/event/attempt1/checkout exact; retained public Git parents/tree metadata matched local1742 tree. Checkout38d7 commit object is not locally available; no new Git/API read requested. All343 distinct nonNULL public test Source hashes independently matched local1742 Git blobs."
+  },
+  "original_seals": {
+    "manifest_sha256": "faa4d5c93f35c1b5cf090f07f1ccfb8246ccf99c8ff8491006df92d27c165ad2",
+    "archive_sha256": "1403cd72e242c42f07a5bd67d78d17ccbb75a507144d67258bf1e8667b04f805",
+    "archive_bytes": 1140870,
+    "entries": 168,
+    "manifest_files": 167,
+    "CRC_and_exact_members_bytes": true,
+    "Root_retained_raw_parts": [
+      750000,
+      390870
+    ],
+    "parts_concatenation_exact_original_archive": true,
+    "original18_canonical_SAFE_archive_hashes_CRC_and24_JSON_member_copies_exact": true
+  },
+  "current_gates": {
+    "CI": {
+      "run_id": 38387263916,
+      "status": "FAILURE"
+    },
+    "Coverage": {
+      "run_id": 38387263972,
+      "status": "FAILURE"
+    },
+    "Security": {
+      "run_id": 38387263915,
+      "status": "SUCCESS",
+      "built_images_Trivy": "SKIPPED"
+    },
+    "OpenAPI": {
+      "run_id": 38387263917,
+      "status": "SUCCESS"
+    },
+    "distinct_push_CI": 38387255561
+  },
+  "independent_accounting": {
+    "graphs_each": {
+      "unit": {
+        "PASSED": 1487,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "integration": {
+        "PASSED": 1113,
+        "FAILED": 1,
+        "ERROR": 0,
+        "SKIPPED": 3,
+        "NOT_EXECUTED": 0
+      },
+      "combined": {
+        "PASSED": 2600,
+        "FAILED": 1,
+        "ERROR": 0,
+        "SKIPPED": 3,
+        "NOT_EXECUTED": 0
+      }
+    },
+    "nonempty_task_JSONs": 24,
+    "suites_declared_observed_and_own_case_counts_checked": 734,
+    "unique_SOURCE_METHOD_keys_across_graphs": 1863,
+    "ORDINAL_ONLY_instances_each_graph": 741,
+    "JUnit_skip_qualification": "Each graph3 legacy Gateway CompositeLoginKeyResolverIT ORDINAL_ONLY cases. No source-method identity or implicit EXCLUDED/PASS claim.",
+    "explicit_PR_job_and_step_skips_reconstructed": 41,
+    "push_event_skips_not_mixed_into_PR_count": true,
+    "qualification": "Graphs are two executions of overlapping source inventory, not5200 independent accepted cases or readiness. Explicit job/step skips separate from JUnit counts; absent skipped-job step telemetry not invented."
+  },
+  "selected_cases": {
+    "P06": {
+      "source_sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+      "method": "durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+      "CI": "PASSED_SOURCE_METHOD_UNIQUE_NONEMPTY",
+      "Coverage": "PASSED_SOURCE_METHOD_UNIQUE_NONEMPTY",
+      "parent": "UNKNOWN",
+      "qualification": "Adds current execution evidence for prior reviewed finite STUDENT/MockMvc/JDBC/fresh-PG reconstruction/outage/recovery case. No full OS restart/Gateway/PWA/TMA/all-role proof."
+    },
+    "P10": {
+      "source_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+      "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+      "CI": "FAILED_SOURCE_METHOD_UNIQUE_SOLE_AUTH_FAILURE",
+      "Coverage": "FAILED_SOURCE_METHOD_UNIQUE_SOLE_AUTH_FAILURE",
+      "Auth_each": {
+        "PASSED": 170,
+        "FAILED": 1,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "cause": "UNKNOWN_NO_CAUSE_FIELDS",
+      "parent": "UNKNOWN",
+      "qualification": "Original failures preserved; no flaky/fixture/product-cause inference, assertion change, replay or data-sensitivity claim. Prior Source0537 and finite format/compile1301 remain qualified, not HTTP PASS."
+    },
+    "Attendance8": {
+      "CI": "ALL8_UNIQUE_SOURCE_METHOD_PASSED_NO_SKIP",
+      "Coverage": "ALL8_UNIQUE_SOURCE_METHOD_PASSED_NO_SKIP",
+      "Attendance_IT_each": {
+        "PASSED": 220,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "source_pins": "Report f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea / Marking def754; exact full hashes matched local1742 blobs",
+      "qualification": "Real Mongo/Rabbit/Redis, mocked Academic/Schedule/geofence and past teaching clock; not live client TLS or parent closure."
+    },
+    "FIRST3": {
+      "current": "NOT_RUN",
+      "job_id": 115262001797,
+      "boot_step9": "FAILED",
+      "browser_and_smoke": "SKIPPED",
+      "execution_step13": "SKIPPED",
+      "safe_upload_step14": "SKIPPED",
+      "SAFE_artifact": "ABSENT",
+      "qualification": "Preparation step success is not test execution. Historical597 three cases/causeUNKNOWN and Source/stub generator checking remain separate; current boot cause UNKNOWN."
+    }
+  },
+  "reader_cleanup": {
+    "readers": 18,
+    "native_exit_each": 0,
+    "all_settled_reaped_no_signals_or_supervision_error": true,
+    "exact_original_identities": 36,
+    "current_original_births_absent": true,
+    "current_private_one_use_request_absent": true,
+    "queue": [],
+    "grants_executed": [
+      "54103faf05fc1251d19bdd67fdbfbf8fb8e9ccf2b775cf6653dda389b97dcb7e",
+      "6555ddbd3210404fb44ff3eb090e2dc7498d7f6f38ab0b73f628a48fc43c25c0"
+    ],
+    "grant01_last_reader_completed_utc": "2026-10-13T11:21:49.611286+00:00",
+    "grant01_cleanup_margin_utc": "2026-10-13T11:22:00.462896+00:00",
+    "queued_only_request_cleanup_utc": "2026-10-13T11:22:30.741701+00:00",
+    "absolute_stop_utc": "2026-10-13T11:22:30.462896+00:00",
+    "late_cleanup_seconds": 0.278805,
+    "grant02": "REFUSED_BEFORE_PRIVATE_REQUEST_STARTED_GUARD_CHILD_NO_EFFECTS_REQUIRED75S_REMAINING61S",
+    "grant03": "ONLY_QUEUED_COV_ATTENDANCE11806867743_SUPERVISION03_ORIGINAL600S_ENVELOPE_NO_AUTH_OR_PRIOR17_REPLAY",
+    "grant03_reader_completed_utc": "2026-10-13T11:28:00.766042+00:00",
+    "grant03_cleanup_margin_utc": "2026-10-13T11:36:37.411390+00:00",
+    "qualification": "Every actual reader completion inside fresh separate grant before margin. Queued-only Source request cleanup exceeded old absolute stop; preserve explicit late qualification, do not assert whole-window compliance. 36 recorded births finite; hypothetical/utility processes not proven absent."
+  },
+  "reused_protected_sources": {
+    "reader": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+    "first3_reader": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8",
+    "schema": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e",
+    "binding": "a5747fbe40deac0a328793920cfc17d95ab640565813c8b1e9f94c6f341a74f9",
+    "guard": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "all_exact_no_whole_unchanged_code_rereview": true
+  },
+  "prior_review_seals_reused": {
+    "P06_finite_pair": "fe75a306e2e7f24c5934a8cd32ae657fbd591be04bd2162fd533e53c6f8a6317",
+    "P10_critical_Source": "0537a736112ceb6d5c2c55b5256a45534652eb8d203895d51217cb6de6d89b9b",
+    "P10_format_compile": "1301d3fae510c0e85ff59f913eebeabe242df582cb772c23366629c66ec1f967"
+  },
+  "limits": [
+    "Read-only existing public Source/Git metadata, SAFE archives/closed JSON and exact process-birth/file-existence metadata. No API/download/Java/Gradle/Node/Docker/browser/native reader/retest/raw XML/log/HTML/body/credential/URI/private cause or actual private grant read; own receipt only.",
+    "343 Source hashes establish byte identity, not new whole-source product review. Java actual checkout attested by SAFE metadata plus preserved public Git metadata; browser/Security/OpenAPI job checkout not independently established.",
+    "Reader limits include post-read/decompression and sampled512MiB RSS/disk/shared checks; not hard instantaneous allocation/OS isolation proof. No cap/window weakening or expired reader use inferred.",
+    "Mandatory current CI/Coverage FAIL and incomplete matrix prevent DONE. P10 original class/frame and boot closed diagnostic preparation belongs to separately granted reviewed scopes; not opened or prepared here. Significant P10 data sensitivity still outstanding after real HTTP GREEN.",
+    "Parent P06/P10/client families UNKNOWN, existing roster DEFECT and B013 blocked journal-rights action unchanged/frozen."
+  ]
+}

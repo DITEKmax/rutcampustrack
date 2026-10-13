@@ -1,0 +1,332 @@
+{
+  "entries": [
+    {
+      "run_id": 38387263916,
+      "job": "Java unit \u2014 api-gateway",
+      "job_id": 115262001494,
+      "step": "Upload unit test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java unit \u2014 attendance-service",
+      "job_id": 115262001599,
+      "step": "Upload unit test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java unit \u2014 auth-service",
+      "job_id": 115262001698,
+      "step": "Upload unit test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java unit \u2014 academic-service",
+      "job_id": 115262001736,
+      "step": "Upload unit test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 attendance-service",
+      "job_id": 115262001764,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 attendance-service",
+      "job_id": 115262001764,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 attendance-service",
+      "job_id": 115262001764,
+      "step": "Upload integration test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Playwright E2E auth flow",
+      "job_id": 115262001797,
+      "step": "Link synthetic Telegram teacher in the ephemeral database",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Playwright E2E auth flow",
+      "job_id": 115262001797,
+      "step": "Install Playwright + browsers",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Playwright E2E auth flow",
+      "job_id": 115262001797,
+      "step": "Run auth-flow @smoke specs (chromium only)",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Playwright E2E auth flow",
+      "job_id": 115262001797,
+      "step": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Playwright E2E auth flow",
+      "job_id": 115262001797,
+      "step": "Upload safe FIRST3 outcomes and observations",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Playwright E2E auth flow",
+      "job_id": 115262001797,
+      "step": "Post Run actions/setup-node@v4",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java unit \u2014 schedule-service",
+      "job_id": 115262001818,
+      "step": "Upload unit test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 api-gateway",
+      "job_id": 115262001855,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 api-gateway",
+      "job_id": 115262001855,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 api-gateway",
+      "job_id": 115262001855,
+      "step": "Upload integration test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 academic-service",
+      "job_id": 115262001892,
+      "step": "Upload integration test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 auth-service",
+      "job_id": 115262001958,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 auth-service",
+      "job_id": 115262001958,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 notification-service",
+      "job_id": 115262001999,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 notification-service",
+      "job_id": 115262001999,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 notification-service",
+      "job_id": 115262001999,
+      "step": "Upload integration test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 schedule-service",
+      "job_id": 115262002060,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 schedule-service",
+      "job_id": 115262002060,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java IT \u2014 schedule-service",
+      "job_id": 115262002060,
+      "step": "Upload integration test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263916,
+      "job": "Java unit \u2014 notification-service",
+      "job_id": 115262002119,
+      "step": "Upload unit test reports",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 auth-service",
+      "job_id": 115262001856,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 auth-service",
+      "job_id": 115262001856,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 auth-service",
+      "job_id": 115262001856,
+      "step": "Summarize JaCoCo report",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 auth-service",
+      "job_id": 115262001856,
+      "step": "Upload JaCoCo XML",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 attendance-service",
+      "job_id": 115262001858,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 attendance-service",
+      "job_id": 115262001858,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 api-gateway",
+      "job_id": 115262001921,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 api-gateway",
+      "job_id": 115262001921,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 notification-service",
+      "job_id": 115262001987,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 notification-service",
+      "job_id": 115262001987,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 schedule-service",
+      "job_id": 115262002334,
+      "step": "Setup Python for Academic credential bridge",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Java coverage \u2014 schedule-service",
+      "job_id": 115262002334,
+      "step": "Install isolated Academic credential bridge dependencies",
+      "scope": "STEP",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263972,
+      "job": "Diff coverage report",
+      "job_id": 115268362325,
+      "scope": "JOB",
+      "status": "SKIPPED"
+    },
+    {
+      "run_id": 38387263915,
+      "job": "Trivy (built images)",
+      "job_id": 115262002469,
+      "scope": "JOB",
+      "status": "SKIPPED"
+    }
+  ],
+  "count": 41,
+  "qualification": "Conditional metadata skips are distinct from native JUnit case skips"
+}

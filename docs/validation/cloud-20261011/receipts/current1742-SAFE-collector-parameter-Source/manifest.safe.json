@@ -1,0 +1,54 @@
+{
+  "schema": "RCT_CURRENT1742_COLLECTION_SOURCE_MANIFEST_V1",
+  "utc": "2026-10-13T11:06:46.013301+00:00",
+  "state": "SOURCE_READY_WAIT_ROOT_METADATA_GO_AND_FRESH_COLLECTION_GRANT",
+  "actual_metadata_API": false,
+  "artifact_native_execution": false,
+  "files": [
+    {
+      "path": "download-safe.py",
+      "bytes": 9052,
+      "sha256": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0"
+    },
+    {
+      "path": "download-first3-safe.py",
+      "bytes": 5937,
+      "sha256": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8"
+    },
+    {
+      "path": "strict-browser-schema.py",
+      "bytes": 7319,
+      "sha256": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e"
+    },
+    {
+      "path": "checking/HANDOFF.md",
+      "bytes": 4300,
+      "sha256": "8ec795704276b11c9cc0ceed2e6f22325feba6684f9f90aa20bc860ba8a472a7"
+    },
+    {
+      "path": "checking/PLAN.safe.json",
+      "bytes": 4754,
+      "sha256": "f70600b8468371eb1c94086a85f31be459348df61330a1dc07a6ecfde6c9f61c"
+    },
+    {
+      "path": "checking/READY.safe.json",
+      "bytes": 3930,
+      "sha256": "271dc5d689ce1a9f60262d894ad3549f5f8262095b738935e98c4eb04a715dd3"
+    },
+    {
+      "path": "checking/grant.template.safe.json",
+      "bytes": 1723,
+      "sha256": "97f5d767df85e4740775591b4357342c3e5a14d930f0ee311e9523c01c50f86d"
+    },
+    {
+      "path": "checking/run-binding.template.safe.json",
+      "bytes": 537,
+      "sha256": "c68b8c53063788afe659e0ebf731dc3290ccdba4c83ffb269e6552978b4044d0"
+    },
+    {
+      "path": "checking/source-targets.safe.json",
+      "bytes": 2242,
+      "sha256": "719d40618bbb8d17c3f2107186fe9bfb1c261601b95ff98db8a0aa86ba833cc8"
+    }
+  ]
+}

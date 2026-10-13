@@ -1,0 +1,55 @@
+{
+  "state": "SOURCE_ONLY_READY_FOR_NARROW_RECHECK",
+  "base_manifest_sha256": "04cb9cf3943311f6aec494758fa4fa105b10a12ee63abd91bd5bba11a888060f",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/HANDOFF.md",
+      "relative": "HANDOFF.md",
+      "sha256": "c719d8bbe1380d9249022cf9f3618a0cd9d4eca5dc494c74eb37c042bfdedbd6",
+      "bytes": 544
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/binding.actual.safe.json",
+      "relative": "binding.actual.safe.json",
+      "sha256": "3be4bfce8d095d2201e7e7de3619ca99f9f49dc0df4073ff83c4de7d23513ca1",
+      "bytes": 427
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/capture-job-private.py",
+      "relative": "capture-job-private.py",
+      "sha256": "10ef7d979e33a4bdd209ed46d1fabf82717b3e51e7efc6386e91c5abbd9107b4",
+      "bytes": 4067
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/check-unlink-primary.py",
+      "relative": "check-unlink-primary.py",
+      "sha256": "a7d4801a5f2068807f87d91e29608251f02aed69a71526b2a6ef2e71c57070c7",
+      "bytes": 2649
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/closed-boot-parser.py",
+      "relative": "closed-boot-parser.py",
+      "sha256": "e7a6f7a522a5ae781a98a72bb08336fb19a4cca5364b9bd28df3215f7c3f0a0c",
+      "bytes": 6574
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/delta.safe.json",
+      "relative": "delta.safe.json",
+      "sha256": "6414f4d4cc7baba543d673147b71726570af8b0c8983f138884df6891fd3f83f",
+      "bytes": 369
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/grant.template.safe.json",
+      "relative": "grant.template.safe.json",
+      "sha256": "d155da1d593a89ad8413d7dd6e70c2071b3aa64350914d45c1b1f6b0840dc3d1",
+      "bytes": 760
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/unlink-primary-controls.safe.json",
+      "relative": "unlink-primary-controls.safe.json",
+      "sha256": "bc26d475a591bfcafb6f72ff8994360ccc65cf72afc2a29d9f2df2b993c6bdba",
+      "bytes": 778
+    }
+  ],
+  "private_inputs_included": false
+}

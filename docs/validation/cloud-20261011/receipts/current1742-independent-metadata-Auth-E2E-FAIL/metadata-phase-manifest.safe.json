@@ -1,0 +1,28 @@
+{
+  "schema": "RCT_CURRENT1742_METADATA_PHASE_MANIFEST_V1",
+  "utc": "2026-10-13T11:11:10.025621+00:00",
+  "metadata_only": true,
+  "artifact_download_native": false,
+  "files": [
+    {
+      "path": "run-binding.actual.safe.json",
+      "bytes": 538,
+      "sha256": "a5747fbe40deac0a328793920cfc17d95ab640565813c8b1e9f94c6f341a74f9"
+    },
+    {
+      "path": "metadata.partial.safe.json",
+      "bytes": 137826,
+      "sha256": "4ec996d9cbe38bbd2053b9cdfdf8630f68ebc4ef1ead2753d2c42fd42509042b"
+    },
+    {
+      "path": "collection-grant-after-metadata.template.safe.json",
+      "bytes": 1834,
+      "sha256": "d70eae2ea8d94827ada4b3fe570226aab83a888b0e0d16f61bdb6c29eab48762"
+    },
+    {
+      "path": "metadata-READY.safe.json",
+      "bytes": 1519,
+      "sha256": "7cca00159a306de8e734abe62f1509657f27d59d3197ae4e0160a1491de73ac6"
+    }
+  ]
+}

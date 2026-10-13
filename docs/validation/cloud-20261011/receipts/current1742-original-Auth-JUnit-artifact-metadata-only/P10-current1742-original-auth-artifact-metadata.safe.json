@@ -1,0 +1,9 @@
+{
+  "run_id": 38387263916,
+  "artifact_id": 11806374316,
+  "name": "integration-test-reports-auth-service",
+  "size_bytes": 192040,
+  "expired": false,
+  "head_sha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "qualification": "Artifactmetadataonly/noarchiveURL/body/log/XMLread"
+}

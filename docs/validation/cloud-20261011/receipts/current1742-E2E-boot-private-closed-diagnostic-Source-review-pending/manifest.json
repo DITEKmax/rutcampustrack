@@ -1,0 +1,118 @@
+{
+  "state": "SOURCE_READY_NO_NATIVE_AUTHORITY",
+  "utc": "2026-10-13T11:33:23.791863+00:00",
+  "root_contract_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "scope": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source",
+  "root_head": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/CURRENT.md",
+      "relative": "CURRENT.md",
+      "bytes": 247,
+      "mode": "0o600",
+      "sha256": "62f0d5f6b89bce5f7802aa296f3a7af202692b3955fd0aaf6525c927478f21df"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/HANDOFF.md",
+      "relative": "HANDOFF.md",
+      "bytes": 5810,
+      "mode": "0o600",
+      "sha256": "8a7a185ba9ae4346b234c535baef8a72728913d2c7ff6b2a3b850a2829b59514"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/READY.safe.json",
+      "relative": "READY.safe.json",
+      "bytes": 1099,
+      "mode": "0o600",
+      "sha256": "d6e9b3631b24fca0e66860baf74486cc2dea97608bc945ac8a2a73a30af862b9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/binding.template.safe.json",
+      "relative": "binding.template.safe.json",
+      "bytes": 448,
+      "mode": "0o600",
+      "sha256": "7239d18e80c8edd31804ed96a49dd47349130c07f7f86ded3785bf03a009060e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/capture-gate-controls.safe.json",
+      "relative": "capture-gate-controls.safe.json",
+      "bytes": 986,
+      "mode": "0o600",
+      "sha256": "5ec627901219867e1a297775eb60fed665eb15897a5428732853a45f64608284"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/capture-job-private.py",
+      "relative": "capture-job-private.py",
+      "bytes": 4067,
+      "mode": "0o600",
+      "sha256": "10ef7d979e33a4bdd209ed46d1fabf82717b3e51e7efc6386e91c5abbd9107b4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/check-capture-source.py",
+      "relative": "check-capture-source.py",
+      "bytes": 2585,
+      "mode": "0o600",
+      "sha256": "e872ad8e04698b6a4fc4170e490d8bc6331c0198ab13493d4e0519a9d3ae30dc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/check-private-lifecycle.py",
+      "relative": "check-private-lifecycle.py",
+      "bytes": 2272,
+      "mode": "0o600",
+      "sha256": "6e05930ac20c74877099126c5eed2a436da0184a4bdf6f923f862f70b0264e71"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/check-source.py",
+      "relative": "check-source.py",
+      "bytes": 3778,
+      "mode": "0o600",
+      "sha256": "ba6ef3bbd66429e348245924e6e316852ebc413d45837fe62a37b62621929221"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/closed-boot-parser.py",
+      "relative": "closed-boot-parser.py",
+      "bytes": 5979,
+      "mode": "0o600",
+      "sha256": "ff5de57f4715cf3399e60de30947786f52da395b8b2976549ec6fbbbf1ea06f2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/grant.template.safe.json",
+      "relative": "grant.template.safe.json",
+      "bytes": 760,
+      "mode": "0o600",
+      "sha256": "e6405b917f4f16c0107d5f7b5b51488fadc4e195b32f68afb571e6fa5fec8793"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/launch-schema.safe.json",
+      "relative": "launch-schema.safe.json",
+      "bytes": 1911,
+      "mode": "0o600",
+      "sha256": "cba3df00a4ccf5824e38b8f5173d269a74e1a2706e1d3e7da993ac915752e5d8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/parser-controls.safe.json",
+      "relative": "parser-controls.safe.json",
+      "bytes": 1525,
+      "mode": "0o600",
+      "sha256": "6b7b1e53a334ac7d9f1a790c348c20156f550217c894b044dccfc616c149188a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/private-lifecycle-controls.safe.json",
+      "relative": "private-lifecycle-controls.safe.json",
+      "bytes": 478,
+      "mode": "0o600",
+      "sha256": "7493b02ebd5558ff650509059e596c6d2453b28930f5189f9c63d93f593a6a70"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/source-context.safe.json",
+      "relative": "source-context.safe.json",
+      "bytes": 2205,
+      "mode": "0o600",
+      "sha256": "ef1216bd26fe98d048f454b4ef454e17543d76691c0a44143e0fa09478623eae"
+    }
+  ],
+  "private_inputs_included": false,
+  "actual_read": "NOT_RUN",
+  "raw_log_hash_included": false,
+  "source_RAM_groups": 51
+}

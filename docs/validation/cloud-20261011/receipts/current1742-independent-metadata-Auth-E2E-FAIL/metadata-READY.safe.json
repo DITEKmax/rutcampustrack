@@ -1,0 +1,24 @@
+{
+  "state": "METADATA_VERIFIED_BINDING_READY_WAIT_FRESH_ROOT_ARTIFACT_COLLECTION_GRANT",
+  "utc": "2026-10-13T11:11:10.025621+00:00",
+  "binding_path": "/workspace/scratch/rct-validation/ci_1742d1_receipts/run-binding.actual.safe.json",
+  "binding_sha256": "a5747fbe40deac0a328793920cfc17d95ab640565813c8b1e9f94c6f341a74f9",
+  "schema_sha256": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e",
+  "reader_sources": {
+    "download-safe.py": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+    "download-first3-safe.py": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8"
+  },
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "collection_proposal_path": "/workspace/scratch/rct-validation/ci_1742d1_receipts/collection-grant-after-metadata.template.safe.json",
+  "collection_proposal_sha256": "d70eae2ea8d94827ada4b3fe570226aab83a888b0e0d16f61bdb6c29eab48762",
+  "no_download_or_native_reader": true,
+  "local_metadata_children": 0,
+  "metadata_process_proof": "Connector tool calls all completed synchronously; no local metadata child PID was created or exposed, not invented",
+  "priority_safe_auth_artifacts": [
+    11806699175,
+    11806923492
+  ],
+  "first3": "NOT_RUN_BOOT_STACK_FAILURE_EXECUTION_AND_UPLOAD_SKIPPED",
+  "actual_PR_checkout": "UNKNOWN_PENDING_CURRENT_SAFE_PACKET",
+  "status": "PR CI/Cov active but E2E boot and Auth Coverage failed; Auth IT step failure; Security/OpenAPI success with builtimagesSKIP"
+}

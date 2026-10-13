@@ -1,0 +1,17 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "files": {
+    "REPORT.md": {
+      "bytes": 1165,
+      "sha256": "3a69ed93d154d760526cfbb1f7c3bc79bc3656e7899b5076210329c7fd7c5df0"
+    },
+    "REVIEW.safe.json": {
+      "bytes": 5049,
+      "sha256": "259bc10f9f29d5fcdf6b910c9b80f1655743fd15574cda37e841ffdaa3c72859"
+    },
+    "independent-controls.safe.json": {
+      "bytes": 1703,
+      "sha256": "57bfefb5b28e300d49515b9fafe4227836d5de1fa31e98d036f4fa9d3ac91ff1"
+    }
+  }
+}

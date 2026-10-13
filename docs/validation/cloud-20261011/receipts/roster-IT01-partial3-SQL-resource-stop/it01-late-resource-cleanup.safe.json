@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-13T06:39:19.531239+00:00",
+  "late_admitted_count": 1,
+  "late_admitted_roles": [
+    "mongo"
+  ],
+  "late_admitted_ids": [
+    "53e0094cf0fd046a39b1f7352bda20f3da6cb937bc4dd1dcc8b389e510454d5f"
+  ],
+  "existing_guard_fresh_admission": true,
+  "creation_lower_bound_basis": "Actual original supervisor safe pointer mtime before child dispatch; newresources later in same exclusive lease",
+  "container_settled": true,
+  "observer_failure": null,
+  "foreign_baseline_preserved": true,
+  "qualification": "Only reviewed metadata/admission on retained baseline/ledger under livegrant, exact admittedIDs cleanup/anonymousvolumes; no newbaseline/env/data/prune/retry/capchange",
+  "workspace_free_now": 8206065664
+}

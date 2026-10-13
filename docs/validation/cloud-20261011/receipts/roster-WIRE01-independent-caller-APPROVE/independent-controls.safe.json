@@ -1,0 +1,77 @@
+{
+  "controls": [
+    {
+      "control": "mutant-native1-401",
+      "admitted": true,
+      "expected": true
+    },
+    {
+      "control": "native0-not-red",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "infra503-not-causal",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "wrong-type",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "wrong-method",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "errors",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "skips",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "stale",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "original-class-not-red",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "fresh-original-green",
+      "admitted": true,
+      "expected": true
+    },
+    {
+      "control": "green-native1",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "mutant-class-not-green",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "control": "parent-exception-finally-bytes-and-mode",
+      "admitted": true,
+      "expected": true
+    },
+    {
+      "control": "inherited-b78-term-int-queue-before-popen",
+      "admitted": true,
+      "expected": true
+    }
+  ],
+  "control_count": 14,
+  "qualification": "Actual selected public child XML/parser, parent finally and b78 handler-loop AST; synthetic public files only in owned temporary directory removed; no real signals/native/helper module imports/private XML reads",
+  "native": "NOT_RUN"
+}

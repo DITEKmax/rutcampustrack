@@ -7604,6 +7604,750 @@
       "status": "retained-specific-evidence-not-product-spec",
       "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
       "qualification": "Perreceipt producer/state/limits authoritative; checking/proofs not wholematrixPASS. Supplemental extraction archive map states producer-byte qualification."
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/REPORT.md",
+      "sha256": "b838970d70b08859b67d7628d91f50567d3357b29ddb652987cacb94f67e5135",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/manifest.safe.json",
+      "sha256": "220a58f3f42809a2ef8de877a823016208b03248b07005643499283787c2177a",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/review.py",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/review.py",
+      "sha256": "b3314084dd32cc87ebbe116dba95f0b1876e75ad39c53f3827ac4bdc9064bd8d",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/review.safe.json",
+      "sha256": "4b7281bd2603e209071658611066a03c538db2ef42aa9edfc0f0139f633f0bfc",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/safe-source-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-cap-independent-review/safe-source-review.zip",
+      "sha256": "6427ba44d0e65b254cd096ce6794ce230e2edbca19246f65c663cefb44ea00f3",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.md",
+      "sha256": "ba99d147a2b09ae892cd3701c1008059d8547a674391308d1adad15055d04f5f",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/REPORT.safe.json",
+      "sha256": "8d9bdcc55d2e45360e7c86d768a41d3f3c258a416f384054b1fbc4a7680a7e7a",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-five-family-evidence-boundaries/manifest.safe.json",
+      "sha256": "c7a2358e10d06a56c8a01476b4a5d085534df0433063677e58e28c27c33569c6",
+      "status": "retained-independent-evidence-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/task-state-before-20261013T045453Z.zip",
+      "path": "docs/validation/cloud-20261011/receipts/task-state-before-20261013T045453Z.zip",
+      "sha256": "3597bb31f75ba45dc095aacaf36905c796dfaf14e9a5310e12c1e6712c57a43b",
+      "status": "historical-task-state-archive-not-current-authority",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/REPORT.md",
+      "sha256": "4a06f25314a9e1a2b30bb8ac13fb9cd0ee9d309e39715a536f25c1ffa83b29b6",
+      "status": "retained-independent-source-review-not-runtime-pass",
+      "revision": "895d404f23beb47c93ca210be6f9161cd09945ec"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/manifest.safe.json",
+      "sha256": "ffec12f46ca44dec96626f8180f5ae25c023cae7ae9e704312976d5b6b7550d8",
+      "status": "retained-independent-source-review-not-runtime-pass",
+      "revision": "895d404f23beb47c93ca210be6f9161cd09945ec"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/review.py",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/review.py",
+      "sha256": "7229a1eb218bf4745b4c5c1a9473251a5d0e61f3371c0b7200e3c4885b65894b",
+      "status": "retained-independent-source-review-not-runtime-pass",
+      "revision": "895d404f23beb47c93ca210be6f9161cd09945ec"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/review.safe.json",
+      "sha256": "e0824a1b18fe7ea6cd5db39aff3a6244c12bc447f0cb6ab5bbfd7df21a701cb2",
+      "status": "retained-independent-source-review-not-runtime-pass",
+      "revision": "895d404f23beb47c93ca210be6f9161cd09945ec"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/safe-source-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-independent-caller-review/safe-source-review.zip",
+      "sha256": "399f377faeaa19a7f84c03454c05cde1e254f0a0df6b53b5727860e711881231",
+      "status": "retained-independent-source-review-not-runtime-pass",
+      "revision": "895d404f23beb47c93ca210be6f9161cd09945ec"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/PLAN.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/PLAN.md",
+      "sha256": "dd72b966d2938a4b19386a47a79cce276067552fdfc9913a9212b515164ef3b3",
+      "status": "read-only-existing-test-execution-plan-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/PLAN.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/PLAN.safe.json",
+      "sha256": "5c5f5b3c93eb3beb4de1f9c2579851c40f91953997f976238c9533934e0493d8",
+      "status": "read-only-existing-test-execution-plan-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/manifest.safe.json",
+      "sha256": "5f91b5ee61e04c0f3939f175ea0813e275605a85849f6fed475a10db124bb5e8",
+      "status": "read-only-existing-test-execution-plan-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-actual-PASS/format01-accepted.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-actual-PASS/format01-accepted.safe.json",
+      "sha256": "68292cba3993eb368586a3ca911a7abdbd5c9fc69cb26fc30b32c80eb9f7d8f4",
+      "status": "actual-canonical-scoped-formatter-PASS-not-product-runtime",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-actual-PASS/format01-mechanical-evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-actual-PASS/format01-mechanical-evidence.safe.zip",
+      "sha256": "c4b07a7806355ed2faf635a1174c67be4846e3fd1301bba5faf0c49faf14d853",
+      "status": "actual-canonical-scoped-formatter-PASS-not-product-runtime",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-format12-actual-PASS/format01-seal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-format12-actual-PASS/format01-seal.safe.json",
+      "sha256": "acdcbd2c5ccb3d11be39274af659b6a6972d23a97d330fe649957c0bd86c4eb2",
+      "status": "actual-canonical-scoped-formatter-PASS-not-product-runtime",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-GREEN01-root-narrow-caller-review/green-plan.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-GREEN01-root-narrow-caller-review/green-plan.safe.json",
+      "sha256": "9a5deb1b716ecc08efddce71e5d6b952773e505d9bc0463047fc134172a1e87b",
+      "status": "independent-narrow-source-review-NOT_RUNTIME",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-GREEN01-root-narrow-caller-review/green-source-ready.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-GREEN01-root-narrow-caller-review/green-source-ready.safe.json",
+      "sha256": "51af2183227bb376f74489cb036d6c27213cce0af5298014025403fa6630a8fb",
+      "status": "independent-narrow-source-review-NOT_RUNTIME",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-GREEN01-root-narrow-caller-review/review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-GREEN01-root-narrow-caller-review/review.safe.json",
+      "sha256": "8460bdc1963df78f92b3e00d99a7bdf50f57d636be5e8bdeb9471b88c761314a",
+      "status": "independent-narrow-source-review-NOT_RUNTIME",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/manifest.safe.json",
+      "sha256": "32de8b2a6b72f1a60a0c730a14013e51545b7acb58e915d0c122e54499b16745",
+      "status": "independent-source-review-future-runtime-binding-UNBOUND",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/review.safe.json",
+      "sha256": "2a3934431690816c9a88d1d1188079ade94aa38a11c2fdfc8c00b52134c86bbc",
+      "status": "independent-source-review-future-runtime-binding-UNBOUND",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/safe-source.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-collector-independent-source-review/safe-source.zip",
+      "sha256": "fbc4fd91fae0ea6a698456a478aa97f6d592b2949303ffe7c5af5980bc5dbf98",
+      "status": "independent-source-review-future-runtime-binding-UNBOUND",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-priority-r1-source-ready/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-priority-r1-source-ready/READY.safe.json",
+      "sha256": "34d666812d7bf0db0b4c0c8f3d6d4a62ebb7a564fc982bb6572f5daff93ac2a5",
+      "status": "corrected-reported-hints-source-ready-NOT_RUN-independent-recheck-pending",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-core-priority-r1-source-ready/source.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-core-priority-r1-source-ready/source.safe.zip",
+      "sha256": "39cc4ad1a524a0f019200288db9809022f41260ceab6c55b8361f4ccf5f476b6",
+      "status": "corrected-reported-hints-source-ready-NOT_RUN-independent-recheck-pending",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-accepted.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-accepted.safe.json",
+      "sha256": "46ac467149a0d708b39109d5a41429e6159dbbbc093c55295745521ddfcd4457",
+      "status": "actual-finite-compile-unit-real-wire-PASS-not-live-client-or-SQL",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-seal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-seal.safe.json",
+      "sha256": "ad9d0a13c2fb8ca7ad879506da2b32c303dc9aae34c7cd28c2bfe97109bc4e9d",
+      "status": "actual-finite-compile-unit-real-wire-PASS-not-live-client-or-SQL",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-unit-wire-evidence.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-unit-wire-evidence.safe.zip",
+      "sha256": "9f75f4ded9bd4b2ccd64cb3893f0636d11a303b0e726e0804d05ebf1d6bb1530",
+      "status": "actual-finite-compile-unit-real-wire-PASS-not-live-client-or-SQL",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/READY.safe.json",
+      "sha256": "aef0dcf0e6926925f431ccba7c263d77aad81d7e8eebe4d999815328dc025370",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/REVIEW.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/REVIEW.md",
+      "sha256": "7823fcdc988cceec6c4290c78716de838bb37029f29a96ac7aadf84fdb483827",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/execution-plan.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/execution-plan.safe.json",
+      "sha256": "060c4c812b2220272112775203c5fea18e6033aabece4a3be92bf8b11f8bd7eb",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/manifest.safe.json",
+      "sha256": "0dffb44ce67684a2ad6e78299741120221f811334ea2da4cfaf322dbdf29f18a",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/narrow-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/narrow-controls.safe.json",
+      "sha256": "fd5290a381c5274bacdb932caff74c99c2f3e0a5b21eefbd435613576d5b3fc5",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/parser-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/parser-controls.safe.json",
+      "sha256": "baef2ac1f68092834ee135ad306205dc83d68b7bf20fceb52bbaa145bf05cb47",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/parser-seal.patch",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-r1-source-ready/parser-seal.patch",
+      "sha256": "abb5745007b98af141cb861a363869e5ddf0b2310cd83238cce0d5174e9094de",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/REPORT.md",
+      "sha256": "07964241ad1d340243f28cc9dfb3eb40f445ab667b1fb12592fd1731c4f0c2f6",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/manifest.safe.json",
+      "sha256": "8a20fcf079a81ed3f5704fae7e83d6534d2a0d58f7db19690cd7bfe2eac4c8db",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/recheck.py",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/recheck.py",
+      "sha256": "6620d247ac0eea8d26fafc3318e43dd91ed46e2a7b1abd14eef4d3d2bde92b89",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/recheck.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/recheck.safe.json",
+      "sha256": "221a6d9234db054d4c1587a0797d3a19ab8f6db7033f432d089b9782fdb3e8a7",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/safe-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-parser-seal-independent-recheck/safe-recheck.zip",
+      "sha256": "99e4e6a7f9c851eda15ea4567a4ef41c426863141e80286c4d0c7fa9ceb7c64f",
+      "status": "independent-source-recheck-actual-native-NOT_RUN",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/REPORT.safe.json",
+      "sha256": "e1ebe3451a8c70af6933edf257f72198d7c0214ebabaebedabb8a9125733c1d8",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/actual01.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/actual01.safe.zip",
+      "sha256": "5b4dbfb6cb1a5947c6100ca0fcc36dbf6ec856b05cebe00f57f042895b33b5b7",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/child-exit.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/child-exit.safe.json",
+      "sha256": "0849db4a0b7391d48c2cb70ee4cc4b56672a052b36510fc8199e65323b9b4f4e",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/manifest.safe.json",
+      "sha256": "fa6f36ca76c8c27fb860e41e44237c9f9f8034d9c0baa688fc9301a90eefbfdf",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/process.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/process.safe.json",
+      "sha256": "6d43b598d93ad283f561b1c37857901f8b5dd131c77cc9d0748a8c7bcfd06f40",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/supervisor.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/supervisor.safe.json",
+      "sha256": "d982ae39fa7ba06bc1ce0a6e70c63fa59979465d579718aa6d13961de14a99a4",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/terminal.safe.json",
+      "sha256": "28754f3b0d419d6803bffb06157fbabb2c9a53e2bf482381e7558e39045817cc",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/validator-results.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/validator-results.safe.json",
+      "sha256": "8573cba2bb9ebf1c138214604729d49dd92be668068f7527564e16ad2e333a7c",
+      "status": "actual15method-real-crypto-unit-PASS-not-live-consumer-acceptance",
+      "revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.md",
+      "sha256": "7fe3d23af0a421c0e02f3e6bcb3b1240b260d9f32238ccaad21f1f66516ba9e4",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/REPORT.safe.json",
+      "sha256": "4bc2b95f67002d1f2c0941098f0abf39d9a33b16f8fbe3224abaceafa8fda9f9",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-existing-reconstruction-outage-not-covered/manifest.safe.json",
+      "sha256": "38570640b0b3f283779fb4822614a763bbf8d59c8a2f17f13f3b85206949446b",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/REPORT.md",
+      "sha256": "b75003274e9679b6aa361b9d172a706ba4789f9b0cf33385dc483e5e282ccea8",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/manifest.safe.json",
+      "sha256": "14ed258ce53299ae87f324c647a3345d5956e6403276513ffa205bfc6f6b5d85",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/recheck.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/recheck.safe.json",
+      "sha256": "b74160f07892e4ce682ee3d22785611caf3629c4747e9760d555a0b9e67e9f4b",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/safe-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/safe-recheck.zip",
+      "sha256": "c300c40ef6bc6b0d9650af7d1e5d93f073078b490172a912b8421469656c50a2",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/selected-source-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-priority-independent-recheck/selected-source-controls.safe.json",
+      "sha256": "402059a70e3ac1d8ca3308d0ae5bbfa753e70c21fb31fccb7688844d901de5cd",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-node01-helper-binding-FAIL/REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node01-helper-binding-FAIL/REPORT.safe.json",
+      "sha256": "0425ac565b57dd55899c1a44a752894687f6c0164a3d66d4db0ac4538ea4ae91",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-node01-helper-binding-FAIL/actual.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node01-helper-binding-FAIL/actual.safe.zip",
+      "sha256": "f48afd2a44416d9a67dce708b6c0e4103ab986cfbc866a9abe2eda06a366b5aa",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/reported-hints-node01-helper-binding-FAIL/manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node01-helper-binding-FAIL/manifest.safe.json",
+      "sha256": "38c19f8194f347950edb56e60245aaf153c5b7b07ae2bee9cf51498531107b19",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-IT01-source-ready/it-ownership-source-plan.md",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-source-ready/it-ownership-source-plan.md",
+      "sha256": "0fe10a9fa299560f94638a0b3fc85e22c45cb7012a3fb070d3b73a22b43c71f2",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:docs/validation/cloud-20261011/receipts/roster-IT01-source-ready/it-source-ready.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-source-ready/it-source-ready.safe.json",
+      "sha256": "0950e6b6f3b2a0d2e2f98fdea92e876a2cb804eb56bff7abcef69c89f5f6acba",
+      "status": "retained-qualified-evidence-see-outcome-not-product-specification",
+      "revision": "9176c680f4f810816792b4e21f6e60f387f38740"
+    },
+    {
+      "id": "receipt:Root-hints-semantic-scoped-hooks:hooks.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-hints-semantic-scoped-hooks/hooks.safe.json",
+      "sha256": "6e40bbfdc0b5ea9e3676c5db70a5ebf73c3b5a81b246e41161554fa6dc3177bf",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:Root-hints-mechanical-scoped-hooks:hooks.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Root-hints-mechanical-scoped-hooks/hooks.safe.json",
+      "sha256": "8e3d971cddfab4bfc9e310bb6ed4438d53e10b223406c54e8117489ecee4e747",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:P06-cleanup-independent-recheck-APPROVE:REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-cleanup-independent-recheck-APPROVE/REPORT.safe.json",
+      "sha256": "857c9ab287e213f267b49381c91da25f9cb13f7981fa9f8584269b740d9226dc",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:P06-cleanup-independent-recheck-APPROVE:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-cleanup-independent-recheck-APPROVE/manifest.safe.json",
+      "sha256": "efd71b17821af35185d5455032b667378eb89d3f7eb537b91462cabd5b8920dc",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:P06-cleanup-independent-recheck-APPROVE:review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-cleanup-independent-recheck-APPROVE/review.safe.zip",
+      "sha256": "b5016de5543a20e6f4ddfc0b0a2fc8c9caac3a4cf744b15fa54d9fc69e5144eb",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-node02-nine-phase-PASS:REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node02-nine-phase-PASS/REPORT.safe.json",
+      "sha256": "537f7c79c2ea9a8b3a20abeff226d9f2c7b7834ab29a3740b91cee6244d57cd5",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-node02-nine-phase-PASS:actual.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node02-nine-phase-PASS/actual.safe.zip",
+      "sha256": "53e67bd8fcff0967d46faa2c217d9d21bf0e4623b8fb4e61c115af295c456548",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-node02-nine-phase-PASS:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node02-nine-phase-PASS/manifest.safe.json",
+      "sha256": "b79e286d9108813f4fe58df21d8a0dd1a6179cb6c54c3e9ddd35be4ba80c7b05",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-node02-nine-phase-PASS:mechanical-equivalence.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node02-nine-phase-PASS/mechanical-equivalence.safe.json",
+      "sha256": "5c49f4ee77f9eea072b3a71960f9e99cf896b49b8968fab224af6daed47c8a83",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-node02-nine-phase-PASS:root-mechanical-review.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-node02-nine-phase-PASS/root-mechanical-review.safe.json",
+      "sha256": "83d278acf86a4cb0283cf6cbab8718ac2c39b2d1ca1a5c85ad46820e9e404f50",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-final-integration-ready:READY.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-final-integration-ready/READY.safe.json",
+      "sha256": "13896a827e5fa744ff65222cee6c75fc5b36bde2745ac617fa02a229a0da7b8a",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:reported-hints-final-integration-ready:integration.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/reported-hints-final-integration-ready/integration.safe.zip",
+      "sha256": "18a2a1bd9952999c6944e0c3208a93431e2b90a855347b3f4327b5a6c70f1d8d",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:IT01-two-public-images-actual:it01-two-public-images-actual.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/IT01-two-public-images-actual/it01-two-public-images-actual.safe.zip",
+      "sha256": "01bcc432ee6e51f3c5b61b96da964fe4c6e7c73ffdceab14e6d5bb7dc04fe78b",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:IT01-two-public-images-actual:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/IT01-two-public-images-actual/manifest.json",
+      "sha256": "3806565d21a742cbaa08092cb1d5f938754b8118006d39502d505756f59ee3cc",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:roster-IT01-source-observer-seal-r1:it-source-ready.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-source-observer-seal-r1/it-source-ready.safe.json",
+      "sha256": "b0227f1e55c6a1d032867c6081431464781304958122d5eaeca3a28f36a43a6d",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:roster-IT01-source-observer-seal-r1:it01-source-review-ready.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-source-observer-seal-r1/it01-source-review-ready.safe.zip",
+      "sha256": "263b938ff8e32f2ffae8214ae7746d82fc550cbbad64c864107f7ba4cbc0cc86",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:roster-IT01-independent-effects-review-P2:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-independent-effects-review-P2/manifest.json",
+      "sha256": "b1d3764c6786b60ad94a3fcd5348b360bc57042b2fc4c00640b8fc96f8df45f5",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:roster-IT01-independent-effects-review-P2:safe-source-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-independent-effects-review-P2/safe-source-review.zip",
+      "sha256": "5323f181b756aaf3f8b6766b5b89a815d0af2d498cd9b5588fb9c9513d351a7c",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:roster-IT01-ledger-independent-recheck:manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-ledger-independent-recheck/manifest.json",
+      "sha256": "b8b5cf460e3a22f91a33eeb6cc1723d7cacea3a4e9ca4cf19ba20c4eb00dcf66",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "receipt:roster-IT01-ledger-independent-recheck:safe-source-recheck.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-ledger-independent-recheck/safe-source-recheck.zip",
+      "sha256": "8191412584b01b3fc999cc1ed82cffc16252294f6b49daad607951b47d447d40",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Receipt producer/source revision governs; retention revision is not an assertion of runtime checks on this head."
+    },
+    {
+      "id": "retained:receipts/roster-WIRE01-independent-caller-APPROVE/independent-controls.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-independent-caller-APPROVE/independent-controls.safe.json",
+      "sha256": "57bfefb5b28e300d49515b9fafe4227836d5de1fa31e98d036f4fa9d3ac91ff1",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Source review or checkpoint history; no current-head runtime PASS inferred."
+    },
+    {
+      "id": "retained:receipts/roster-WIRE01-independent-caller-APPROVE/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-independent-caller-APPROVE/manifest.json",
+      "sha256": "36b3209be7c975df578aaeef41f874a612d672bf3f33d0018793cee8f3393df7",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Source review or checkpoint history; no current-head runtime PASS inferred."
+    },
+    {
+      "id": "retained:receipts/roster-WIRE01-independent-caller-APPROVE/safe-source-review.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-independent-caller-APPROVE/safe-source-review.zip",
+      "sha256": "c7f9ba99d8e5c3122fea4c5e578915a18a280d42675e39037c04025319cee90c",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Source review or checkpoint history; no current-head runtime PASS inferred."
+    },
+    {
+      "id": "retained:receipts/roster-WIRE01-independent-caller-APPROVE/REVIEW.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-independent-caller-APPROVE/REVIEW.safe.json",
+      "sha256": "259bc10f9f29d5fcdf6b910c9b80f1655743fd15574cda37e841ffdaa3c72859",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Source review or checkpoint history; no current-head runtime PASS inferred."
+    },
+    {
+      "id": "retained:receipts/task-state-before-20261013T063232Z.zip",
+      "path": "docs/validation/cloud-20261011/receipts/task-state-before-20261013T063232Z.zip",
+      "sha256": "15e587ba0d281d4d2a7708c159da648949256009083db0ce7f0ec413b852ff7d",
+      "status": "retained-validation-evidence-not-product-specification",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Source review or checkpoint history; no current-head runtime PASS inferred."
+    },
+    {
+      "id": "receipt:IT01:it01-late-resource-cleanup.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-partial3-SQL-resource-stop/it01-late-resource-cleanup.safe.json",
+      "sha256": "46c11d099cf8954a4bc440ab086d7cdddc2f96f1d6d2b6dae6401e08114356f5",
+      "status": "actual-partial-runtime-evidence-not-overall-PASS",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+      "qualification": "Three Academic SQL methods PASS; Attendance absent/wholeIT resource-interrupted; original7birthsabsent/lateownedMongo cleanup, no parentfamily closure."
+    },
+    {
+      "id": "receipt:IT01:it01-partial-xml.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-partial3-SQL-resource-stop/it01-partial-xml.safe.json",
+      "sha256": "330ddd071ca41c7c63bdea1fbef29616d079b4c6aa1c551936e7052c272841d6",
+      "status": "actual-partial-runtime-evidence-not-overall-PASS",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+      "qualification": "Three Academic SQL methods PASS; Attendance absent/wholeIT resource-interrupted; original7birthsabsent/lateownedMongo cleanup, no parentfamily closure."
+    },
+    {
+      "id": "receipt:IT01:it01-resource-interrupted-closed.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-partial3-SQL-resource-stop/it01-resource-interrupted-closed.safe.json",
+      "sha256": "71a35980cf6cacd67426aeecee4b455e9fcdd15271b78563cce65e09df9a8212",
+      "status": "actual-partial-runtime-evidence-not-overall-PASS",
+      "revision": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+      "qualification": "Three Academic SQL methods PASS; Attendance absent/wholeIT resource-interrupted; original7birthsabsent/lateownedMongo cleanup, no parentfamily closure."
+    },
+    {
+      "id": "receipt:roster-IT01-partial3-SQL-resource-stop:it01-partial-sql-resource-cleanup.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/roster-IT01-partial3-SQL-resource-stop/it01-partial-sql-resource-cleanup.safe.zip",
+      "sha256": "c01c362fb906bcf9cd09c39ad7b4a90e04f5ab930459df578e6800d0485ba725",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:roster-WIRE01-actual-causal-RED-restored-GREEN:terminal.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-actual-causal-RED-restored-GREEN/terminal.safe.json",
+      "sha256": "955c031b4683c93bafe4318a32df88cc23498fb1de538100cfac7eeccd7c780a",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:roster-WIRE01-actual-causal-RED-restored-GREEN:mutant.closed-xml.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-actual-causal-RED-restored-GREEN/mutant.closed-xml.safe.json",
+      "sha256": "c58c3a1e64e8e0fb49188d482a42981b4b909f3bb24858562ab483383554ad24",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:roster-WIRE01-actual-causal-RED-restored-GREEN:root-independently-observed.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-actual-causal-RED-restored-GREEN/root-independently-observed.safe.json",
+      "sha256": "0bb8235fd74e27dcdcb38aac7ea487d5b87635928f269c984dcddc606c37be8f",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:roster-WIRE01-actual-causal-RED-restored-GREEN:restored.closed-xml.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-actual-causal-RED-restored-GREEN/restored.closed-xml.safe.json",
+      "sha256": "51b32a80e1306226b5d962eaaaab6650e6c2b66bb43c7f72150db60aca1121b9",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:roster-WIRE01-actual-causal-RED-restored-GREEN:child-exit.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/roster-WIRE01-actual-causal-RED-restored-GREEN/child-exit.safe.json",
+      "sha256": "a0ea71e5812d804be6011b1ada61921aaed40b7194ef53133663c7c4da5b23d9",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:P06-format-compile-independent-source-APPROVE:review.safe.zip",
+      "path": "docs/validation/cloud-20261011/receipts/P06-format-compile-independent-source-APPROVE/review.safe.zip",
+      "sha256": "895daead704f7d82731b5a17cc17f4314341b9dad248c016e68b1da933d4c58d",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:P06-format-compile-independent-source-APPROVE:REPORT.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-format-compile-independent-source-APPROVE/REPORT.safe.json",
+      "sha256": "e10881bd6bf3e96a4388d32386b87acaa1ed4a0ac0435721874e187afdf0611d",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
+    },
+    {
+      "id": "receipt:P06-format-compile-independent-source-APPROVE:manifest.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/P06-format-compile-independent-source-APPROVE/manifest.safe.json",
+      "sha256": "67c18902c69cdc15cc30f94a897b5fc48b4aa0caba76ac367d5357d7bed9d53c",
+      "status": "retained-actual-or-independent-review-evidence",
+      "revision": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+      "qualification": "Original receipt producer governs. Sourceapproval or partial/sensitivity finitePASS does not mean currenthead/client/parentfamilyPASS."
     }
   ],
   "research_receipt": {

@@ -1,0 +1,20 @@
+{
+  "stage": "restored",
+  "native_exit": 0,
+  "class": "ru.rutcampustrack.attendance.grpc.HeadmanJournalSemesterClientTransportTest",
+  "method": "originalSignedActorReachesNewMethodAndAdmissionFailuresKeepTheirHttpMeaning",
+  "counts": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fresh_after_stage": true,
+  "xml_sha256": "3834c6d3f895ddca6625036e0def227b41c6b130035582054db54c54ea34ac6c",
+  "compiled_class_sha256": "9b3b25c202c62c36560e0416dc325311004f77eb9ef2f074131aa43be3a93f58",
+  "source_sha256": "de5280c787caa48245c2c882d303744006d4cf3735769154285de186aba1f741",
+  "failure_type": null,
+  "observed_http_status": null,
+  "qualification": "Mutant compiled wire401/sourcejoin to old TLS rule; exact TLS description Source-qualified. Restore fresh same positive GREEN.",
+  "raw_failure_or_token_printed": false
+}

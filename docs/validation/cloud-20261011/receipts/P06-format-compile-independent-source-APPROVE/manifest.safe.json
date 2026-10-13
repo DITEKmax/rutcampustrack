@@ -1,0 +1,15 @@
+{
+  "schema": "RCT_SAFE_SOURCE_REVIEW_MANIFEST_V1",
+  "verdict": "APPROVE_FORMAT_SOURCE_COMPILE_TEMPLATE_UNBOUND",
+  "author_manifest_members_verified": true,
+  "files": {
+    "REPORT.safe.json": {
+      "sha256": "e10881bd6bf3e96a4388d32386b87acaa1ed4a0ac0435721874e187afdf0611d",
+      "bytes": 5196
+    },
+    "REVIEW.md": {
+      "sha256": "f2e234d28c80011845103054ef973d43696fbcab3ae53db483ce3433effb39b5",
+      "bytes": 1686
+    }
+  }
+}

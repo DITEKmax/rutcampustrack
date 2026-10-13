@@ -1,0 +1,70 @@
+{
+  "grant02_sha256": "3292b9a16cfcd06fc2f99002fc2a16cf1e1c0ced1564f0e947099bea6bd63661",
+  "native_exit": -15,
+  "terminal_reason": "WORKSPACE_LIMIT",
+  "qualification": "Partial freshselectedXML only; wholeIT01 interrupted, no overallPASS. No rawXML/keys/log printed.",
+  "selected": [
+    {
+      "class": "ru.rutcampustrack.academic.integration.HeadmanJournalSemesterStateIT",
+      "exists": true,
+      "fresh": true,
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        {
+          "name": "journalCapabilitiesRemainDistinctFromStatsAndCurrentAuthorityGuardsArchivedState()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ],
+      "xml_sha256": "4c1d918359d6480d1995c0b42f7a44ae5e02de150208c9a2609175b7e67d213b"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.integration.HeadmanStatsScopeIT",
+      "exists": true,
+      "fresh": true,
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        {
+          "name": "selectedArchivedReadCountsCurrentGrantsAndRejectsForeignOrRevokedActor()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ],
+      "xml_sha256": "2d92d406870cce4343f961c35c20af9f58ceb26470149398c3827c3d648c1c68"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+      "exists": true,
+      "fresh": true,
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        {
+          "name": "getSemesterState_reportsTransitionsReplayAndWriteBlock()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ],
+      "xml_sha256": "5aa00035d392c1e2e01a9446ba875760f8a42b49a80f8f0c839578be7883f5ab"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "exists": false
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "exists": false
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "status": "NODE02_NINE_PHASES_ACCEPTED_PASS",
+  "toolSession": 62006,
+  "toolChunk": "6c9a98",
+  "nativeExit": 0,
+  "phaseCount": 9,
+  "allPhasesAccepted": true,
+  "oldPriorityCausalRED": {
+    "count": 5,
+    "failed": 4,
+    "nativeExit": 1,
+    "accepted": true
+  },
+  "newPriorityGREEN": {
+    "count": 5,
+    "failed": 0,
+    "nativeExit": 0
+  },
+  "legacyMissingHintsCausalRED": {
+    "count": 4,
+    "failed": 2,
+    "nativeExit": 1,
+    "accepted": true
+  },
+  "newHintsGREEN": {
+    "count": 23,
+    "failed": 0,
+    "nativeExit": 0
+  },
+  "worker": "actualpublicbrowserfree3failedtestsretained/closedrows/hintsUNKNOWN0/markerAbsent",
+  "privacy": "unchangedactualproducer/contextclose/final/interrupt/missingguardPASS",
+  "formatter": "OWN2write0+check0",
+  "scopedTypes": "TypeScript5.9.3errors0",
+  "mechanicalBridge": {
+    "artifact-privacy.ts": {
+      "beforeSHA256": "570d66e3a82543fa98960cb9d6a622597857066952d631e6cf9058a90b8e0232",
+      "afterSHA256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+      "bytes": 3822,
+      "physicalMode": "0o600",
+      "nlink": 1,
+      "inverseExactByteEqual": true,
+      "equivalenceQualification": "one newline between if condition and continue; same conditional loop body, no ASI ambiguity",
+      "notClaimingRawASTOrEmitByteEquality": true
+    },
+    "safe-reporter.ts": {
+      "beforeSHA256": "40f8881ecaa963135edf3b7c4b6eec860a903d7861a1c9fdf372aff0b82ad686",
+      "afterSHA256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+      "bytes": 13224,
+      "physicalMode": "0o600",
+      "nlink": 1,
+      "inverseExactByteEqual": true,
+      "equivalenceQualification": "two linewrap changes plus removal of exactlyone trailing comma in RegExp.exec(message,) call; no extra argument/elision, same soleargument/operator/literal/directive/comment",
+      "notClaimingRawASTOrEmitByteEquality": true
+    }
+  },
+  "allKnownBirths": [
+    {
+      "pid": 485582,
+      "start_ticks": 12427900,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485585,
+      "start_ticks": 12427979,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485593,
+      "start_ticks": 12428120,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485601,
+      "start_ticks": 12428250,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485609,
+      "start_ticks": 12428364,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485617,
+      "start_ticks": 12428475,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485640,
+      "start_ticks": 12428498,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485653,
+      "start_ticks": 12428599,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485666,
+      "start_ticks": 12428685,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485679,
+      "start_ticks": 12428801,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485686,
+      "start_ticks": 12428805,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485699,
+      "start_ticks": 12428931,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485712,
+      "start_ticks": 12429022,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485725,
+      "start_ticks": 12429131,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485746,
+      "start_ticks": 12432216,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485759,
+      "start_ticks": 12432303,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485772,
+      "start_ticks": 12432403,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485783,
+      "start_ticks": 12432487,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 485794,
+      "start_ticks": 12432549,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    }
+  ],
+  "allBirthsAbsent": true,
+  "allOwnedReaped": true,
+  "temporaryArtifactsRemoved": true,
+  "immutableSourcePinsUnchanged": true,
+  "mutableOnlyActualOwn2Formatter": true,
+  "observedPeaks": {
+    "owned_rss_bytes": 369102848,
+    "run_allocated_bytes": 1736704,
+    "shared_memory_bytes": 5907922944
+  },
+  "resourceQualification": "managedV8heap plus sampled softRSS/disk monitoring, not hardallocation limit",
+  "actualCIcause": "UNKNOWN",
+  "nativeClientAcceptance": false,
+  "old78037FAILPreserved": true,
+  "lease": "RELEASED",
+  "next": "Exact tiny mechanical diff recheck/finalsemantic+mechanical2commits/integration; no more native replay"
+}

@@ -1,0 +1,8 @@
+{
+  "report_manifest": "d5c6a77f7859d831b0130aa054e8b7d069ca0b1425cf4cbca2b00c1b464b9b8f",
+  "finding": "SO-DISCOVERY-GATE-001",
+  "correct_onEnd_line": 23,
+  "report_line25": "reference typo; immutable original report preserved",
+  "concurrent_author_message": "Actual Node01 reportedly checks list JSONpass and exact260367; finding does not invalidate a correctly reconciled native result",
+  "actual_receipts_independently_reviewed_here": false
+}

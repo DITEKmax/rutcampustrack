@@ -1,0 +1,36 @@
+{
+  "utc": "2026-10-13T03:33:36.382733+00:00",
+  "guard": {
+    "direct_pid": 458003,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 458003,
+        "start_ticks": 11619579
+      },
+      {
+        "pid": 458013,
+        "start_ticks": 11619581
+      },
+      {
+        "pid": 458020,
+        "start_ticks": 11619587
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "resources_after": {
+    "utc": "2026-10-13T03:33:36.382750+00:00",
+    "/workspace_available": 5487390720,
+    "/tmp_available": 7500517376,
+    "shared_memory": 10171924480,
+    "shared_limit": 17179869184
+  }
+}

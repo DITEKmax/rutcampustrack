@@ -1,0 +1,21 @@
+{
+  "native_receipt": "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/actual-node01/REPORT.safe.json",
+  "native_code": 18048,
+  "public_compiler_definition": {
+    "path": "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js",
+    "line": 11408,
+    "key": "_0_is_possibly_undefined_18048"
+  },
+  "source_symbol": {
+    "path": "/workspace/rct-worktrees/client-session-offline/tests/e2e/d002-step-specs/closed-step-observer.ts",
+    "declaration_line": 145,
+    "guard_lines": [
+      146,
+      148
+    ],
+    "later_closure_use_line": 169,
+    "symbol": "errorHandler",
+    "type_source": "Object.getOwnPropertyDescriptor returns PropertyDescriptor | undefined; existence guard is outside nested state factory callback."
+  },
+  "qualification": "Source-opened nullable symbol and public diagnostic definition, compatible with actualcode18048. Native exactdiagnostic location notcaptured; do not describe Sourceaddress as retainedcompilerline."
+}

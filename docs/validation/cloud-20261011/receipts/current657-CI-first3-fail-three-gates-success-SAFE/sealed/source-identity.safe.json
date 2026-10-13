@@ -1,0 +1,43 @@
+{
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "public_sources": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 16485,
+      "sha256": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+      "Root_equals_producer": true
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "bytes": 899,
+      "sha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "Root_equals_producer": true
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "bytes": 36133,
+      "sha256": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+      "Root_equals_producer": true
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "bytes": 2137,
+      "sha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "Root_equals_producer": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "bytes": 40058,
+      "sha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+      "Root_equals_producer": true
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "bytes": 112166,
+      "sha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0",
+      "Root_equals_producer": true
+    }
+  ],
+  "previous138_seal_immutable": true,
+  "actual_runtime_503": "NOT_YET_CAPTURED"
+}

@@ -1,0 +1,35 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "scope": "WIRE-RED-CHILD-FRESH-OWNERSHIP_ONLY",
+  "driver_sha256": "3880070bcd013c2ac60a7a9aa602d5ef913207750877ccf186fa411d81661615",
+  "child_sha256": "26ed3d33e305d2f8720e8bd8f922600e0452a21227fda5cc933057bd5fa02624",
+  "plan_sha256": "b88b12ea116b67a9a91567004e5c719e459970f5178f6dc9d53e0c82605196f4",
+  "test_sha256": "cfc9aa7dba0cc711d6c38b1cc40a9d6c28889204a6675e09d1a8ace2bab89268",
+  "original_driver_child_seals_preserved": true,
+  "other_previous_source_hashes_unchanged": true,
+  "five_parent_functions_byte_exact": true,
+  "selected_actual_ast_controls": {
+    "old_direct_without_grant_admitted": true,
+    "new_direct_missing_witness_denied": true,
+    "fresh_owned_parent_allowed": true,
+    "stale_grant_denied": true,
+    "foreign_parent_denied": true,
+    "reused_parent_birth_denied": true,
+    "foreign_namespace_denied": true,
+    "wrong_source_pin_denied": true,
+    "unapproved_grant_denied": true,
+    "wrong_parent_argv_denied": true,
+    "extra_parent_argv_denied": true,
+    "wrong_child_ppid_denied": true
+  },
+  "native_helper_or_product_runtime_executed": false,
+  "private_grant_credentials_logs_XML_read": false,
+  "gate_order": "Parent private envelope written before dispatch. Child fresh bounded600/no-follow grant+source closure, exact live direct PPID/birth/cmdline and clock margin recheck finish before private log allocation and Gradle. No STARTED wait/spin.",
+  "limits": [
+    "This is accidental/direct/stale invocation containment, not cryptographic or adversarial same-UID isolation.",
+    "Source path resolution plus O_NOFOLLOW protects normal fixed private input admission; no hard hostile ancestor-race isolation claim.",
+    "Source approval is not native grant or actual capacity/RED evidence.",
+    "Existing test source APPROVE remains conditional on actual compilation and exact selected native causal outcome; native1/outer0 alone never proves causal RED.",
+    "Private authority envelope/logs must remain excluded from SAFE publication; actual exact owned reaping/source preservation and causal JUnit provenance required after runtime."
+  ]
+}

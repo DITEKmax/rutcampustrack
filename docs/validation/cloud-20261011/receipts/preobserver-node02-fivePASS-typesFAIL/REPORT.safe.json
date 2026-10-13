@@ -1,0 +1,125 @@
+{
+  "toolSession": 52241,
+  "supervisor": {
+    "pid": 454678,
+    "birth": 11206001
+  },
+  "nativeExit": 1,
+  "completedPhases": 6,
+  "acceptedPhases": [
+    "serialization",
+    "worker",
+    "privacy",
+    "format-write",
+    "format-check"
+  ],
+  "types": {
+    "phase": "SCOPED_TYPES_ONLY",
+    "typescript_version": "5.9.3",
+    "error_count": 3,
+    "diagnostic_codes": [
+      2345,
+      2538
+    ],
+    "root_file_count": 5,
+    "pass": false
+  },
+  "workerClosedRowsRetained": true,
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 454709,
+      "start_ticks": 11206209,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454716,
+      "start_ticks": 11206241,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454729,
+      "start_ticks": 11206375,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454742,
+      "start_ticks": 11206471,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454755,
+      "start_ticks": 11206591,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454762,
+      "start_ticks": 11206596,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454784,
+      "start_ticks": 11206722,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454797,
+      "start_ticks": 11206810,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454810,
+      "start_ticks": 11206898,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454831,
+      "start_ticks": 11209999,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454844,
+      "start_ticks": 11210092,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454879,
+      "start_ticks": 11210304,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454681,
+      "start_ticks": 11206080,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454868,
+      "start_ticks": 11210262,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454857,
+      "start_ticks": 11210195,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 454678,
+      "start_ticks": 11206001,
+      "exactBirthAbsent": true
+    }
+  ],
+  "knownBirthCount": 16,
+  "ownTempArtifactsRemoved": true,
+  "lease": "RELEASED",
+  "scope": "Publicbrowserfree checking only",
+  "currentCIcause": "UNKNOWN",
+  "sourceTypeHypothesis": "Mutable unknown message variable loses string narrowing at the conditional assignment merge; strict codes2345/2538 fit knownFailureMessages indexing and regexp exec. Not a runtime/privacy/assertion defect, location diagnostics not yet collected. No retry/currentSource repair under oldgrant.",
+  "formattedSourceHashes": {
+    "artifact-privacy.ts": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+    "safe-reporter.ts": "2670f5f7b36ca28b0450dbe32ae8692c5dee18e1c7765ea0b93158eb382fa1a3"
+  },
+  "beforeSemanticSourceHashes": {
+    "artifact-privacy.ts": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db",
+    "safe-reporter.ts": "570aa4660422fb51ffdeb6dc95964f467fc88250c1002963907da0236053bc7c"
+  },
+  "observedAt": "2026-10-13T02:26:50.238227+00:00"
+}

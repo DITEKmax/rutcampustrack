@@ -1,0 +1,16 @@
+{
+  "source": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "native_exit": 0,
+  "hooks_pass": 6,
+  "hooks_fail": 0,
+  "all_owned_processes_reaped": true,
+  "supervisor": {
+    "pid": 480064,
+    "birth": 11935521,
+    "deadline_seconds": 300,
+    "staged_docs_count": 404
+  },
+  "staged_docs_count": 404,
+  "JSON_NDJSON_diffcheck": "PASS",
+  "qualification": "Ordinarypartialdocscheckpoint only; producer481CI remainsFAIL andCovSecOpenAPISUCCESS. CodeSHAfalsepositives andexactsupplementals archivedwithoutdetectorweakening; rawprivatelognotpublished."
+}

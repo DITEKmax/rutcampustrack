@@ -1,0 +1,28 @@
+{
+  "state": "SOURCE_ONLY_PARAMETER_READY_NEXT04_UNBOUND",
+  "files": [
+    {
+      "path": "PARAMETERS.safe.json",
+      "sha256": "fb82df5aef2a138b4fa17b32a135712e69c5dd29b03b912353e4cf351018cf97",
+      "bytes": 4572
+    },
+    {
+      "path": "README.md",
+      "sha256": "f430224ca490db3bc2589a0d2970d3193638ce718d8088999e300b8018e68e54",
+      "bytes": 1657
+    },
+    {
+      "path": "browser-grant-next04.template.safe.json",
+      "sha256": "c152c9bbda5c5dcd28b56b2714d037e6a3f684c86c4627a8df051e4e2eb48883",
+      "bytes": 2534
+    },
+    {
+      "path": "stand-ready-bind-next04.template.safe.json",
+      "sha256": "96422790dcbaffb7ef7158140575a7e5f8a2e17b4a33ab38c1a564a644e9fcd2",
+      "bytes": 1197
+    }
+  ],
+  "current_ready_sha256": "954d2fbb5faea5272f3a5e9924a563e6d66bc786a849b7318a807651d3c6e4b9",
+  "no_source_delta": true,
+  "native": "NOT_RUN"
+}

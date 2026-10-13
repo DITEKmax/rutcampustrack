@@ -1,0 +1,55 @@
+{
+  "files": [
+    {
+      "path": "before/artifact-privacy.ts",
+      "bytes": 2929,
+      "sha256": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db"
+    },
+    {
+      "path": "before/safe-reporter.ts",
+      "bytes": 8603,
+      "sha256": "7db6e044a9b462d608aca467729f37d60ff5c3a1e8a11b5851015aeb0b217ebe"
+    },
+    {
+      "path": "source/artifact-privacy.ts",
+      "bytes": 2929,
+      "sha256": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db"
+    },
+    {
+      "path": "source/safe-reporter.ts",
+      "bytes": 8877,
+      "sha256": "570aa4660422fb51ffdeb6dc95964f467fc88250c1002963907da0236053bc7c"
+    },
+    {
+      "path": "serialization-controls.cjs",
+      "bytes": 5416,
+      "sha256": "b25478ff71b47dca5ab59dca7e53a292ef2e81c7e4789845d1f93a82a3541ca0"
+    },
+    {
+      "path": "worker-control.cjs",
+      "bytes": 4261,
+      "sha256": "9c0e106d8dda14b4d49499cff939c61e901350640485a8ab9cd44719fd084ce9"
+    },
+    {
+      "path": "worker-control.config.ts",
+      "bytes": 621,
+      "sha256": "fa4f479b9e96e619dd4a1b3414dd3322328d286a26d98d4058a93d0b8c341633"
+    },
+    {
+      "path": "artifact-privacy.ts.diff.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "safe-reporter.ts.diff.patch",
+      "bytes": 1064,
+      "sha256": "73f0f4c716ce2ce9fc0180299c41c2b4fc514b3c60a291561c11da3256794843"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 3078,
+      "sha256": "270bc16d8461aea71a5d7701eb48b569bec47aa9d8c9ac48070d171e7512cf36"
+    }
+  ],
+  "native": "NOT_RUN"
+}

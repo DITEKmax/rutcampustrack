@@ -1,0 +1,14 @@
+{
+  "pass": true,
+  "settled": true,
+  "completedPhases": 2,
+  "peaks": {
+    "owned_rss_bytes": 173412352,
+    "run_allocated_bytes": 36864,
+    "shared_memory_bytes": 5250539520
+  },
+  "ownedTempArtifactsRemoved": true,
+  "nativeClientAcceptance": false,
+  "actualCIcause": "UNKNOWN",
+  "sampledSoftMonitoring": true
+}

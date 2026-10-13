@@ -1,0 +1,36 @@
+{
+  "kind": "INDEPENDENT_SESSION_OFFLINE_TWOCASE_SOURCE_REVIEW",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "runtime_config_wrapper_caller": "APPROVE_SOURCE_ONLY",
+  "aggregate_packet": "CHANGES_REQUESTED",
+  "finding": "SO-DISCOVERY-GATE-001",
+  "severity": "P2",
+  "input_manifest_sha256": "6cdf6a4c97df57042018b6b953191ab7fbd99fd86440fc9b514e0c73296861fc",
+  "input_zip_sha256": "c2823262fc30b63c1db7c91bf58d265b6cb5e8f25cfef171ef23a6b3b349cc13",
+  "config_sha256": "5ded76799d09801b507ab3e83029d0d78fccb3693247c92007cbe015b4aa4039",
+  "wrapper_sha256": "971715457edc6353715cbeb3bdaabf819b51f87698ee6bc9b806a3ecf88d0714",
+  "caller_sha256": "16e6dcfc082d72b616e873f573b6f63c9b1ffb28ffa04b0dd05360345fa84ab2",
+  "checks": {
+    "all15_sealed_members_and_two_TS_copies_exact": true,
+    "eleven_parameter_inverse_entire_e543_bytes": true,
+    "D002_original260_367_protected_assertions_SWallow_preserved": true,
+    "Datebeforeoriginaloperations_supported_timers_real": true,
+    "bothlevels_Chrome390x844_private700_captureoff_1worker0retry": true,
+    "Root19_and7dependency_pins": true,
+    "readiness16births_freshclock_cap360_cleanup60_preserved": true
+  },
+  "helper_counterexample": {
+    "selected_cases": 1,
+    "safe_JSON_pass": false,
+    "onEnd_without_runnerError": "passed",
+    "qualification": "Source-predicate RAM transcription; no actual Node/list execution"
+  },
+  "native_Node_formatter_types_list_API_browser": "NOT_RUN",
+  "limitations": [
+    "Root must require list.safe.json pass:true in addition to native0; reporter itself currently fails open",
+    "D002 finite homework/cache/reconnect/logout scope only; schedule/expiry/attachments/fullauth UNKNOWN",
+    "No r1 observer or3case acceptance reused",
+    "No new native/source/privatecredential reads or source fixes"
+  ]
+}

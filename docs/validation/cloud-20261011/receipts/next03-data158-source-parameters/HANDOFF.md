@@ -1,0 +1,9 @@
+SOURCE/PARAMETER READY next03; runtime NOT_RUN. UTC 2026-10-13T00:59:04.981864+00:00
+
+Original158 metadata and old5 volumes are exact; fresh eighteen metadata gates passed. Workspace 9446313984 B, tmp 7501271040 B, shared 4956540928 B. PreDocker minimum9380818650, postDocker beforehosts5368709120; floor4GiB/sharedstop15GiB/reserve1GiB/max1800s/cleanup60s unchanged. Fresh sample required at launch.
+
+Minimum changes: restart-boundary fixed external158 path/SHA/cardinality/messages; Docker next03 privategrant filename; Academic fixed old89d6 helper directory, new158 ancestor source directory, next03 grant filename, original Academic source lineage kept plus exact new executing self-seal checked before helper import. Mongo and other6 service callers byteexact; anchors byteexact. Whole AST inverse proves only declared input/self-gate deltas; eighteen selected syntax/RAM groups passed (not runtime). Original157/data/key/1797/JAR/index/specs/source/seals unchanged.
+
+Root issues only fresh private600 grant after targeted declared-input/self-pin review. Source manifest42efc4c82158aac7a27e7973889b89517bd45b11e8da32f0e2b9af851dd57551. Template is false-grant only; do not launch now. Same approved Docker6 then actualpostfloor, existingMongo server/readiness no bootstrap, Academic migrations/checksums thenAuth+other5 promptly. Readiness/live16/API/TLS/edge/directspoof and client grants fresh; browsergroups sequential on retainedcohort. Cleanup exact births then Docker down no-v, preserve5volumes and MongoDB/key.
+
+Source projection OLD19=current657=working19 exact; selected services/api/proto/frontends/build paths unchanged184→657. Academic producer96/other7producer908 remain distinct from657; do not claim657 builtpayload or whole matrixPASS. Two actual roster503 cases unresolved; unique protected GetSemesterState static mismatch is candidate, actualclosed witness waitsCI. Do not borrowSchedule identity or weakenTLS/auth.

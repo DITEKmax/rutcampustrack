@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "verdict": "CHANGES_REQUESTED",
+  "source_sha256": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+  "scope": "INDEPENDENT_READ_ONLY_SINGLE_ROSTER_WITNESS_SOURCE",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "3a1c0fdaacee65e50aa415e6b6b9f0265f507bd14dd29b84a392bdc0554e7785",
+      "bytes": 4589,
+      "mode": "600"
+    },
+    {
+      "path": "review.safe.json",
+      "sha256": "e7e7b964ceaa32963ec1cb6c6dab196399f00e71208fbfef9b671a8651deed0f",
+      "bytes": 4660,
+      "mode": "600"
+    },
+    {
+      "path": "selected-source-controls.py",
+      "sha256": "daffae0a7b2a767c5657502b0a31bf0aa4a3a95cabdad8653e5b657d3d149a9d",
+      "bytes": 4182,
+      "mode": "600"
+    },
+    {
+      "path": "selected-source-controls.safe.json",
+      "sha256": "91fedb8987a258ac59c1e701f73a55665e03f6dbafab6fab486f9a0b0c2448a4",
+      "bytes": 3594,
+      "mode": "600"
+    }
+  ],
+  "file_count": 4,
+  "source_only": true,
+  "no_causal_native_claim": true
+}

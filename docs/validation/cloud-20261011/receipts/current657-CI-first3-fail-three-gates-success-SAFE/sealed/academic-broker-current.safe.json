@@ -1,0 +1,33 @@
+{
+  "proof": [
+    {
+      "carrier": "safe-integration-outcomes-academic-service-1-integrationTest.json",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "cases": [
+        {
+          "xmlOrdinal": 9,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+          "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+          "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+        }
+      ],
+      "qualification": "JUnit method status/source identity only; protocol phase lease PTTL, elapsed and cleanup not serialized by this SAFE schema; no duplicate native run."
+    }
+  ],
+  "PRE_POST": "No sensitivity mutation in this collector; no causal post-mutation promotion."
+}

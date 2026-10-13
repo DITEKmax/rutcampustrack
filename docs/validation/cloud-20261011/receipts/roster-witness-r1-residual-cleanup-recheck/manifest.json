@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "scope": "READ_ONLY_R1_WITNESS_THREE_P2_NARROW_RECHECK",
+  "verdict": "CHANGES_REQUESTED",
+  "file_count": 4,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "ac3761fe7a0e7e251e5800892b736d4fc8b235878a539d79c7872614729476aa",
+      "bytes": 4121,
+      "mode": "600"
+    },
+    {
+      "path": "review.safe.json",
+      "sha256": "aa8c66652821e58c3f59659730301d48cd8d0dbadca6fef1adc6c1f29907f511",
+      "bytes": 3346,
+      "mode": "600"
+    },
+    {
+      "path": "selected-cleanup-boundary.py",
+      "sha256": "96ce8f07b1b0fc75e6addcdd7c5f9a3a0adef0a0171f7aa009877dc4c9da4fde",
+      "bytes": 2995,
+      "mode": "600"
+    },
+    {
+      "path": "selected-cleanup-boundary.safe.json",
+      "sha256": "47d7907449fdaba28adf935bc8bf58f080c5f39146a2e17a1c7beb612abe8abe",
+      "bytes": 1210,
+      "mode": "600"
+    }
+  ],
+  "no_native_cause_or_acceptance_promotion": true
+}

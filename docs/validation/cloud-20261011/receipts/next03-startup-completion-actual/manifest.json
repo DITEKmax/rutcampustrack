@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-13T02:02:22.633900+00:00",
+  "cohort": "restart-20261013-next03",
+  "scope": "Remaining immutable SOURCE19/source42ef/review204d/actualnative terminal proof, no new runtime/action",
+  "files": [
+    {
+      "path": "current19-source.safe.json",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_fresh_preflight_20261013/current19-source.safe.json",
+      "sha256": "2808998996ebb1fdd94701204502bd5a446cd1b4077f7fb6309498da777fed86",
+      "bytes": 4038
+    },
+    {
+      "path": "source42ef-manifest.json",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/manifest.json",
+      "sha256": "42efc4c82158aac7a27e7973889b89517bd45b11e8da32f0e2b9af851dd57551",
+      "bytes": 2165
+    },
+    {
+      "path": "independent204d-manifest.json",
+      "original": "/workspace/scratch/rct-validation/next03_bindings_review/manifest.json",
+      "sha256": "204d37d1465c3751009477b4f89f8ccb3ff99c019229f94743bb452d85d9ca93",
+      "bytes": 407
+    },
+    {
+      "path": "critical13-manifest.json",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/critical-seal/manifest.json",
+      "sha256": "f683fc177f3648e530ac5e689e8301796d243aa86ae645218cd3046a890d4311",
+      "bytes": 3629
+    },
+    {
+      "path": "monitor-after-critical.safe.json",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/monitor-after-critical.safe.json",
+      "sha256": "99d86bdbb0ae0bd4f396bb8c6989daa652b633bd61e36f2cda517006be03b050",
+      "bytes": 911
+    },
+    {
+      "path": "docker-up-terminal.safe.json",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next03/docker-up-terminal.safe.json",
+      "sha256": "eb9be500dbe45ec12717adbc305d070c2c47d724d487319421c45b2c6dc8dc5d",
+      "bytes": 776
+    },
+    {
+      "path": "mongo-readiness-terminal.safe.json",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next03/mongo-readiness-terminal.safe.json",
+      "sha256": "86d848f342226ab04c487f6a33d46baf02b72e2ff1a171e52341d126adbf105c",
+      "bytes": 534
+    }
+  ],
+  "private_inputs_excluded": true,
+  "bound4bytes_unchanged": true
+}

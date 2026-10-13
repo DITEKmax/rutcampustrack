@@ -1,0 +1,11 @@
+{
+  "status": "PASS_SELECTED_NATIVE_PROTOCOL",
+  "rs0_primary": true,
+  "root_auth": true,
+  "accepted_app_roles_exact": true,
+  "both_app_auth": true,
+  "own_database_read": true,
+  "foreign_app_database_denied": true,
+  "credentials_or_data_values_published": false,
+  "current_client_acceptance": "SEPARATE"
+}

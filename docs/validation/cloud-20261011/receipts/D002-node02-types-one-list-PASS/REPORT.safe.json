@@ -1,0 +1,79 @@
+{
+  "schema": "RCT_D002_CALLBACK_CONST_NODE02_ACTUAL",
+  "state": "PASS_SCOPED_TYPES_ONE367_LIST_PUBLIC_HOOK_IDENTITY",
+  "utc": "2026-10-13T03:23:26.174114+00:00",
+  "tool_session": 38820,
+  "tool_native_exit": 0,
+  "supervisor": {
+    "pid": 457019,
+    "birth_ticks": 11550924,
+    "source": "D002_STEPS_NODE_ONLY",
+    "stop_utc": "2026-10-13T03:28:18.445730+00:00"
+  },
+  "all_known_births": [
+    {
+      "pid": 457019,
+      "start_ticks": 11550924
+    },
+    {
+      "pid": 457022,
+      "start_ticks": 11550952
+    },
+    {
+      "pid": 457029,
+      "start_ticks": 11551236
+    }
+  ],
+  "all_known_births_absent_or_replaced": true,
+  "no_signals": true,
+  "source_revision_inputs": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "author_frozen_base": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "types": {
+    "phase": "SCOPED_TYPES_ONLY",
+    "typescript_version": "5.9.3",
+    "error_count": 0,
+    "diagnostic_codes": [],
+    "root_file_count": 3,
+    "pass": true
+  },
+  "discovery": {
+    "phase": "SOURCE_DISCOVERY_ONLY",
+    "case_count": 1,
+    "unexpected_case_count": 0,
+    "rows": [
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 367,
+        "project": "chromium"
+      }
+    ],
+    "pass": true,
+    "stepHooksInstalled": true
+  },
+  "terminal": {
+    "state": "PASS_SOURCE_CHECKS",
+    "settled": true,
+    "completed_phase_count": 2,
+    "pass": true,
+    "browser_api_network_started": false,
+    "private_tmp_transform_removed": true,
+    "source_intact": true,
+    "peaks": {
+      "owned_rss_bytes": 352808960,
+      "run_allocated_bytes": 499712,
+      "shared_memory_bytes": 5436805120
+    }
+  },
+  "previous_actual_node01": {
+    "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/actual-node01/REPORT.safe.json",
+    "sha256": "0f11a6cf3a174019cab7946cea3f7b35f8b416f37e6a9ffb5a2ac101221deff5",
+    "retained": "Causal11privacyRAMRED/GREEN and predecessor3formatPASS; TS18048FAIL/listNOTRUN unchanged. Not rerun."
+  },
+  "qualifications": [
+    "Narrow const alias references same guarded canonicalonError; independent74ce/f9c8 plusRoot481 exact2Source compatibility retained.",
+    "Both new TS/module-cache callback identities exercised by actual --list; fixture/browser/API/seed/services NOT_RUN.",
+    "Original367 timeoutstage/cause stillUNKNOWN. Public step observer only permits future closedstage capture after freshlivecohort/Rootgrant.",
+    "RunnerErrors>0/missing-invalid-capped step artifact forbidsfuturediagnosticPASS evenifCLI0.",
+    "Sampled RSS/TMP/sharedUID controls do not prove hard OS isolation."
+  ]
+}

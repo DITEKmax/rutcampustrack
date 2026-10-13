@@ -1,0 +1,17 @@
+{
+  "scope": "SO_DISCOVERY_GATE001_TWO_LINES_AND_THREE_CONTROLS",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "finding": "CLOSED_SOURCE",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1861,
+      "sha256": "de33973e8aa4fa54638325cd9e87acdbae194c0bb6233e36f9b871441f7a0e07"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 1649,
+      "sha256": "e4b3b44b51d8a9985938754ff298ffdf9d13243ab896e5641f5552c72da71942"
+    }
+  ]
+}

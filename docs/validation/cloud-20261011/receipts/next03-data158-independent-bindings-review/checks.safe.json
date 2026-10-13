@@ -1,0 +1,33 @@
+{
+  "kind": "INDEPENDENT_NEXT03_DECLARED_INPUT_AND_SELF_BINDINGS_SOURCE_REVIEW",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "input_manifest_sha256": "942f6af6b64d61d245f91ce42ff379cb121f6032dec6a0b6e4992fe77ea6d0a2",
+  "input_source_manifest_sha256": "42efc4c82158aac7a27e7973889b89517bd45b11e8da32f0e2b9af851dd57551",
+  "input_zip_sha256": "89586eb1b870fcd47ba8e1d83d6d3647c673d1b422aacbc220f0923fc7173251",
+  "changed_source_files": [
+    "restart-boundary.py",
+    "docker-up-restart.py",
+    "run-academic-restart.py"
+  ],
+  "checks": {
+    "sealed17members_and7source_external_members_exact": true,
+    "exact_three_original_diffs_and_inverse_bytes": true,
+    "Mongo_other6_callers_and_anchors_byteexact": true,
+    "academic_new_self_seal_before_helper_and_old89d6_lineage_preserved": true,
+    "new158_SHA_unique_cardinality_and_template_bound": true,
+    "false_template_and_no_private_grant": true,
+    "old19_current657_working19_exact": true,
+    "recorded18_metadata_gates_pass_only": true,
+    "previous_cleanup16absent_and5volumes_preserved_recorded": true
+  },
+  "new_native_or_target_import_API_private_reads": "NONE",
+  "runtime_NEXT03": "NOT_RUN",
+  "qualifications": [
+    "Fresh normal-context actor/ownership/resource/private600 grant checks required before effect",
+    "No repeated 1797/fullJAR rehash performed; retained producers Academic96/other7old908 distinct from657",
+    "Recorded prior JVM forced-stop codes preserved; not graceful PASS",
+    "No browser/client/product503cause closure"
+  ]
+}

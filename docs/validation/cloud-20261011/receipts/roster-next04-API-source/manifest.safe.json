@@ -1,0 +1,41 @@
+{
+  "sourceOnly": true,
+  "native": "NOT_RUN",
+  "files": [
+    {
+      "path": "PLAN.safe.json",
+      "bytes": 7172,
+      "sha256": "fcb1b9d41c73475f63a56b7b09b77eac4ac0d5e1a6b919e7a18c3f86f1ce0c71"
+    },
+    {
+      "path": "NATIVE-PLAN.safe.json",
+      "bytes": 4926,
+      "sha256": "f7b3dbdea8e992e16948e5fe92bb1f8f25db99afb0d4916be41057c21d87062a"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 3421,
+      "sha256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526"
+    },
+    {
+      "path": "run-api-witness.py",
+      "bytes": 17463,
+      "sha256": "d0b965cc06ee42f5af1ae7a89ba8991fa5afae8f7c8f949e146d494d34b0f239"
+    },
+    {
+      "path": "caller.delta.patch",
+      "bytes": 14079,
+      "sha256": "931f2e2c7e82c9055119ad01ec0766d896f17822e16fa17e8d81b6577b0ca53a"
+    },
+    {
+      "path": "SOURCE-PROOF.safe.json",
+      "bytes": 1109,
+      "sha256": "5087ddc4ecefbe15cfede0f06c7edbdba7eaa8bc6a82e02ece2373d53f9d771d"
+    },
+    {
+      "path": "grant.template.safe.json",
+      "bytes": 1960,
+      "sha256": "d22760fb905a6ed5111adbb9b2ac85a457a3dafabdcc3f33a1ccd5681af3dd74"
+    }
+  ]
+}

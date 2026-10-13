@@ -1,0 +1,37 @@
+{
+  "utc": "2026-10-13T01:46:08.460565+00:00",
+  "disposition": "READY_FRESH18_METADATA_ONLY",
+  "preflight_path": "/workspace/scratch/rct-validation/current_host_restart_next03_fresh_preflight_20261013/preflight/preflight.safe.json",
+  "preflight_sha256": "aa0729acb8a8cd3d4f5e1ca9274cf7cf7f07f20eb0bdc36db6a244d9f437123c",
+  "independent_review": {
+    "path": "/workspace/scratch/rct-validation/next03_bindings_review/manifest.json",
+    "sha256": "204d37d1465c3751009477b4f89f8ccb3ff99c019229f94743bb452d85d9ca93",
+    "verdict": "APPROVE_SOURCE_ONLY"
+  },
+  "next03_source_manifest": {
+    "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/manifest.json",
+    "sha256": "42efc4c82158aac7a27e7973889b89517bd45b11e8da32f0e2b9af851dd57551",
+    "all_members_sha_exact": true
+  },
+  "blockers": [],
+  "resources": {
+    "workspace_free": 9435963392,
+    "tmp_free": 7501303808,
+    "shared": 4953399296,
+    "maximum": 17179869184
+  },
+  "source_revision": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "cohort": "restart-20261013-next03",
+  "runtime_permission": "NONE_WAIT_ROOT_FRESH600_GRANT",
+  "no_private_content_read_or_creation": true,
+  "unchanged_resource_thresholds": {
+    "preDocker": 9380818650,
+    "postDocker_before_hosts": 5368709120,
+    "workspace_floor": 4294967296,
+    "tmp_withGrowth": 5368709120,
+    "shared_stop": 16106127360,
+    "reserve": 1073741824,
+    "max_seconds": 1800,
+    "cleanup_early_seconds": 60
+  }
+}

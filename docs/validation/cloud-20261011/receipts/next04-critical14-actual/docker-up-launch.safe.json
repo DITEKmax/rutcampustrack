@@ -1,0 +1,37 @@
+{
+  "utc": "2026-10-13T03:33:22.835812+00:00",
+  "wrapper_identity": {
+    "pid": 458000,
+    "state": "R",
+    "ppid": 525,
+    "pgrp": 458000,
+    "session": 458000,
+    "start_ticks": 11619559
+  },
+  "argv": [
+    "docker",
+    "compose",
+    "--project-name",
+    "rct-client-host-config-20261012",
+    "--env-file",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/docker.env",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_v5/data-renderer-edge.compose.yml",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/edge-overlay.compose.yml",
+    "up",
+    "-d",
+    "--no-build",
+    "--pull",
+    "never"
+  ],
+  "resources_before": {
+    "utc": "2026-10-13T03:33:22.835812+00:00",
+    "/workspace_available": 9427931136,
+    "/tmp_available": 7500517376,
+    "shared_memory": 5092966400,
+    "shared_limit": 17179869184
+  },
+  "four_seals_verified": true,
+  "stdio": "DEVNULL, no private values or Health.Log"
+}

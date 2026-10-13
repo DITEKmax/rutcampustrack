@@ -1,0 +1,43 @@
+{
+  "utc": "2026-10-13T02:17:43.421974+00:00",
+  "scope": "ACTUAL_NEXT03_CLEANUP_AND_NEW_STOPPED_METADATA_ONLY",
+  "files": [
+    {
+      "path": "cleanup-outcome.safe.json",
+      "sha256": "09d2dbb02e0701f0c8c0e6ada10cc376137208a163b9ef26e780d256ee5be4af",
+      "bytes": 2823
+    },
+    {
+      "path": "stopped-native-data-fence-next03.safe.json",
+      "sha256": "3ad319c3f5d9412d48981b5aee0c83b99b7bc3a86b383e93d16b00fa93536756",
+      "bytes": 55856
+    },
+    {
+      "path": "foreground-stop-attempts.safe.json",
+      "sha256": "7c02e81ad7127d573d7f2673af96f3b6b7262defb96228d6b884bc6d8ebb4430",
+      "bytes": 924
+    },
+    {
+      "path": "foreground-stop-terminal.safe.json",
+      "sha256": "06742d4f3d5c1b99ac41fd92e5acea68047eab4290fe5adf8c4fce203ae55245",
+      "bytes": 1443
+    },
+    {
+      "path": "docker-cleanup-before.safe.json",
+      "sha256": "095a04b553f549f8f62acceabe431ce93b2e041a67e5a3199c0efecebbad180c",
+      "bytes": 824
+    },
+    {
+      "path": "docker-cleanup-terminal.safe.json",
+      "sha256": "a2760c2b606f016be4a04deccd3fc0e98a5e4807ee78409b802e91af26625872",
+      "bytes": 669
+    },
+    {
+      "path": "monitor-browser-terminal.safe.json",
+      "sha256": "805068ec07d7946b4a801c1e90f7aa2e7f4b85daab84708b5b070d603352e565",
+      "bytes": 986
+    }
+  ],
+  "private_inputs_excluded": true,
+  "runtime_released": true
+}

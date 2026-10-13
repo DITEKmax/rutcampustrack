@@ -1,0 +1,14 @@
+{
+  "state": "ACTUAL_PUSH0_GIT_READBACK_PR_MATCH",
+  "head": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "branch": "codex/server-validation-20261011",
+  "PR": 2,
+  "draft": true,
+  "base": "main",
+  "merged": false,
+  "push_session": 78667,
+  "prior_minimal_env_push_session": 63881,
+  "prior_exit": 128,
+  "new_exit": 0,
+  "qualification": "Normal inherited environment transport read0 and ordinarypush0. No raw diagnostics retained; old failure cause UNKNOWN. Current gates pending; not acceptance/DONE."
+}

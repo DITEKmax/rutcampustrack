@@ -1,0 +1,161 @@
+{
+  "utc": "2026-10-13T04:23:32.366780+00:00",
+  "accepted_causal_red": true,
+  "source_base": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "actual_rpc": "rutcampustrack.academic.AcademicGrpcService/GetSemesterState",
+  "actual_closed_status": "UNAUTHENTICATED",
+  "exact_trust_condition": "PLAINTEXT_REJECTED_REQUIRES_AUTHENTICATED_TLS_BEFORE_HANDLER",
+  "positive_controls": "Signed permission and historical roster/date/semester assertions passed before final call; semester repository zero interactions asserted at line126",
+  "test_final_call_line": 129,
+  "xml": {
+    "source_base": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+    "test_sha256": "cfc9aa7dba0cc711d6c38b1cc40a9d6c28889204a6675e09d1a8ace2bab89268",
+    "tests": "1",
+    "failures": "1",
+    "errors": "0",
+    "skipped": "0",
+    "test_method": "signedJournalActorReachesRosterButScheduleSemesterStateRejectsBeforeRepository()",
+    "failure_type": "io.grpc.StatusRuntimeException",
+    "expected_closed_status_match": true,
+    "test_frame_line": 129,
+    "xml_sha256": "51420e4343427b1d918b471335ba44f54934b1c3c316e809435e937fcb69e38e",
+    "native_product_verdict": "PENDING_SOURCE_LOCATION_BINDING"
+  },
+  "terminal": {
+    "direct_pid": 479201,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 479201,
+        "start_ticks": 11904993
+      },
+      {
+        "pid": 479202,
+        "start_ticks": 11904997
+      },
+      {
+        "pid": 479234,
+        "start_ticks": 11905105
+      },
+      {
+        "pid": 479301,
+        "start_ticks": 11907035
+      },
+      {
+        "pid": 479305,
+        "start_ticks": 11907055
+      },
+      {
+        "pid": 479624,
+        "start_ticks": 11909473
+      },
+      {
+        "pid": 479627,
+        "start_ticks": 11909486
+      },
+      {
+        "pid": 479727,
+        "start_ticks": 11911393
+      },
+      {
+        "pid": 479766,
+        "start_ticks": 11911617
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false,
+    "utc": "2026-10-13T04:22:08.767701+00:00",
+    "peaks": {
+      "memory": 7285661696,
+      "min_workspace_free": 8828162048,
+      "owned_rss": 1744080896,
+      "log_bytes": 11896
+    },
+    "expected_native_exit": 1,
+    "causal_red_accepted": false,
+    "qualification": "Native status alone cannot prove causal test failure"
+  },
+  "all10_exact_births_absent": true,
+  "identities": [
+    {
+      "pid": 479201,
+      "start_ticks": 11904993,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479202,
+      "start_ticks": 11904997,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479234,
+      "start_ticks": 11905105,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479301,
+      "start_ticks": 11907035,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479305,
+      "start_ticks": 11907055,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479624,
+      "start_ticks": 11909473,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479627,
+      "start_ticks": 11909486,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479727,
+      "start_ticks": 11911393,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479766,
+      "start_ticks": 11911617,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    },
+    {
+      "pid": 479177,
+      "start_ticks": 11904976,
+      "exact_birth_absent": true,
+      "observed_state": "ABSENT_OR_REUSED"
+    }
+  ],
+  "private_tmp_removed": true,
+  "parent_envelope_removed": true,
+  "source_hashes": {
+    "proto/academic.proto": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java": "b6985bac8c367551d0197ee13a3d15ebd65b86a1ade347021d994c39663b388c",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java": "ddb426fb03a17d56e31d95f1b1735c706a1288de7446f9f2ca4f4a3a6277f79f",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java": "6b378aab02d922c1da000ef9283b132d39fdee1409b03ae9f3a797c258c4322b",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java": "af23f982235b66e9d07add499b0788a1c2389340c876688f80f8257117ec50dc",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java": "8c0bf5625683daeed46f107d8b7bfd929b44eba8d5d2cc56656c01dd357c0752",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java": "f66bc69acc044aba1fee986fe091490f4afe8ee89078f4ec13251557180048b9",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java": "0ef2077deef945c2666076f614accefeeea7868917aa9e88df35668fa59611e0",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HeadmanJournalSemesterTransportTest.java": "cfc9aa7dba0cc711d6c38b1cc40a9d6c28889204a6675e09d1a8ace2bab89268"
+  },
+  "qualification": "Actual isolated wire regression cause proved on481; deployed real-witness method remainedUNKNOWN, same Source-qualified chain identifies compatible defect. No real roster200 or clientPASS."
+}

@@ -1,0 +1,150 @@
+{
+  "utc": "2026-10-13T03:19:29.553098+00:00",
+  "source_revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "previous": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "rows": [
+    {
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "old19_sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+      "current48124_sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+      "working_sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "old19_sha256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+      "current48124_sha256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+      "working_sha256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "old19_sha256": "a682b63534c6dfdba54843df8a412f08a020b76734de1fa6546805076d82b8d0",
+      "current48124_sha256": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "working_sha256": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "changed_from_old19": true
+    },
+    {
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "old19_sha256": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e",
+      "current48124_sha256": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "working_sha256": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "changed_from_old19": true
+    },
+    {
+      "path": "tests/e2e/fixtures/pwa-auth.ts",
+      "old19_sha256": "61f6ceb0fe7f7c3ca547048f16ab6c5768a6a43a6e4fab7ef9b5e6529c744207",
+      "current48124_sha256": "61f6ceb0fe7f7c3ca547048f16ab6c5768a6a43a6e4fab7ef9b5e6529c744207",
+      "working_sha256": "61f6ceb0fe7f7c3ca547048f16ab6c5768a6a43a6e4fab7ef9b5e6529c744207",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/fixtures/teaching-clock.ts",
+      "old19_sha256": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+      "current48124_sha256": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+      "working_sha256": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/fixtures/assistant-permissions.ts",
+      "old19_sha256": "35bdcc3d19aec86ad4355dbd79a357b307246b4e29804d56b6aca4df929189e0",
+      "current48124_sha256": "35bdcc3d19aec86ad4355dbd79a357b307246b4e29804d56b6aca4df929189e0",
+      "working_sha256": "35bdcc3d19aec86ad4355dbd79a357b307246b4e29804d56b6aca4df929189e0",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "old19_sha256": "fdf4def40cd28b9ffc0a3da661ce0042b46f5bf4eb9f6446cf3391a5e3b314a6",
+      "current48124_sha256": "fdf4def40cd28b9ffc0a3da661ce0042b46f5bf4eb9f6446cf3391a5e3b314a6",
+      "working_sha256": "fdf4def40cd28b9ffc0a3da661ce0042b46f5bf4eb9f6446cf3391a5e3b314a6",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/fixtures/telegram.ts",
+      "old19_sha256": "0fb4d57014e3d047f423dcedaf34cf72643034fed2969eadfed3fb7db80e6039",
+      "current48124_sha256": "0fb4d57014e3d047f423dcedaf34cf72643034fed2969eadfed3fb7db80e6039",
+      "working_sha256": "0fb4d57014e3d047f423dcedaf34cf72643034fed2969eadfed3fb7db80e6039",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/playwright.real-mobile.config.ts",
+      "old19_sha256": "66541d545b8387e89d18d9e2eaa3e6e27ec0f762b800af93ba21a0139c23cd3c",
+      "current48124_sha256": "66541d545b8387e89d18d9e2eaa3e6e27ec0f762b800af93ba21a0139c23cd3c",
+      "working_sha256": "66541d545b8387e89d18d9e2eaa3e6e27ec0f762b800af93ba21a0139c23cd3c",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/playwright.config.ts",
+      "old19_sha256": "a4625d4a5c8f5ff8deac9381d26e3feaadb77e750eea7ab7208fbc419222b8e0",
+      "current48124_sha256": "a4625d4a5c8f5ff8deac9381d26e3feaadb77e750eea7ab7208fbc419222b8e0",
+      "working_sha256": "a4625d4a5c8f5ff8deac9381d26e3feaadb77e750eea7ab7208fbc419222b8e0",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/package.json",
+      "old19_sha256": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+      "current48124_sha256": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+      "working_sha256": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/package-lock.json",
+      "old19_sha256": "d1b110e5339f0fd13219892a0d2de315e2037fc98602772007243a6c2a1a3e48",
+      "current48124_sha256": "d1b110e5339f0fd13219892a0d2de315e2037fc98602772007243a6c2a1a3e48",
+      "working_sha256": "d1b110e5339f0fd13219892a0d2de315e2037fc98602772007243a6c2a1a3e48",
+      "changed_from_old19": false
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts",
+      "old19_sha256": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae",
+      "current48124_sha256": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae",
+      "working_sha256": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae",
+      "changed_from_old19": false
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "old19_sha256": "1a4f3b7add5d4e0de42a54b1ddc7b0300443134f89eda8cb1696a41c502ae3df",
+      "current48124_sha256": "1a4f3b7add5d4e0de42a54b1ddc7b0300443134f89eda8cb1696a41c502ae3df",
+      "working_sha256": "1a4f3b7add5d4e0de42a54b1ddc7b0300443134f89eda8cb1696a41c502ae3df",
+      "changed_from_old19": false
+    },
+    {
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "old19_sha256": "616ec51f7f27a0c8431b1f622f70538455f4d8af9e37b6b008117a9e817eb933",
+      "current48124_sha256": "616ec51f7f27a0c8431b1f622f70538455f4d8af9e37b6b008117a9e817eb933",
+      "working_sha256": "616ec51f7f27a0c8431b1f622f70538455f4d8af9e37b6b008117a9e817eb933",
+      "changed_from_old19": false
+    },
+    {
+      "path": "tests/e2e/tsconfig.json",
+      "old19_sha256": "0577bd9290da4c2570f24a69ce7cc005709d5ef364d80b87357977677718cdaa",
+      "current48124_sha256": "0577bd9290da4c2570f24a69ce7cc005709d5ef364d80b87357977677718cdaa",
+      "working_sha256": "0577bd9290da4c2570f24a69ce7cc005709d5ef364d80b87357977677718cdaa",
+      "changed_from_old19": false
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/use-homework.ts",
+      "old19_sha256": "4d602311b88cd65bab765ad82c7076fb24d8855fb3f791c192613e4e5b9aa678",
+      "current48124_sha256": "4d602311b88cd65bab765ad82c7076fb24d8855fb3f791c192613e4e5b9aa678",
+      "working_sha256": "4d602311b88cd65bab765ad82c7076fb24d8855fb3f791c192613e4e5b9aa678",
+      "changed_from_old19": false
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "old19_sha256": "3d5a253daa8e3b27461625e7ef6657b3a0e8e14619e62f54208eca18cea7098e",
+      "current48124_sha256": "3d5a253daa8e3b27461625e7ef6657b3a0e8e14619e62f54208eca18cea7098e",
+      "working_sha256": "3d5a253daa8e3b27461625e7ef6657b3a0e8e14619e62f54208eca18cea7098e",
+      "changed_from_old19": false
+    }
+  ],
+  "old19_equal_count": 17,
+  "old19_changed_count": 2,
+  "changed_exact": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "server_runtime_artifact_input_selected_paths_diff": [],
+  "runtime_producers": "Academic96+other7old908 retained; NOT481-built artifacts",
+  "mandatory_client_binding_change": "Root/browser19 source hashes MUST update only these two approved checking inputs; old657 clientbind invalid",
+  "no_private_file_reads": true
+}

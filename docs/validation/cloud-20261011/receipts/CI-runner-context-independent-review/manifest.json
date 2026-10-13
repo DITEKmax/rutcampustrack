@@ -1,0 +1,16 @@
+{
+  "scope": "EXACT_THREE_RUNNER_CONTEXT_MOVES_AND_GITHUB_ENV",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1425,
+      "sha256": "36005752b4831fbce2bb6ca623dccba4f150a47df81ba629b78666c972206892"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2169,
+      "sha256": "bc378d4110c77ab7e962fa6dc6386bcbff6e7c8b12c6c14070cca442dd7e6b8d"
+    }
+  ]
+}

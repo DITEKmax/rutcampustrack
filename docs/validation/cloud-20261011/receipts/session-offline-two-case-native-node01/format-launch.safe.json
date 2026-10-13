@@ -1,0 +1,14 @@
+{
+  "phase": "format",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+    "--check",
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.session-offline.config.ts",
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/session-offline-specs/mobile-session-offline.spec.ts"
+  ],
+  "ready_sha256": "d0a0349bddf9295e6ab634ae9003cb9cf48a998eafdf0be8b19ae9a6fefd2020",
+  "deadline_seconds": 180,
+  "absolute_stop_at": "2026-10-13T01:42:20.148636+00:00"
+}

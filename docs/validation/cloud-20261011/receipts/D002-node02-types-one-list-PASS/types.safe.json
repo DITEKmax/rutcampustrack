@@ -1,0 +1,8 @@
+{
+  "phase": "SCOPED_TYPES_ONLY",
+  "typescript_version": "5.9.3",
+  "error_count": 0,
+  "diagnostic_codes": [],
+  "root_file_count": 3,
+  "pass": true
+}

@@ -1,0 +1,32 @@
+{
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "github": [
+    {
+      "sha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+      "tree": "5fbddb4610de71b91c0130da98eb78752e8c9956",
+      "parents": [
+        "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "6576bd1f0d0181f90ebb40f6293de1a05f60625e"
+      ]
+    },
+    {
+      "sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "tree": "5fbddb4610de71b91c0130da98eb78752e8c9956",
+      "parents": [
+        "356d2ccdd5c43d61d9ec328a445be90e17382717"
+      ]
+    },
+    {
+      "number": 2,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "base_ref": "main"
+    }
+  ],
+  "qualification": "All collected Java SAFE tasks attest exact merge checkout. Non-SAFE jobs including browser do not independently attest checkout under current no-log scope.",
+  "historical96_CAP": "UNKNOWN",
+  "old138_annotation": "UNAVAILABLE; separate native actionlint source defect proof retained by Root."
+}

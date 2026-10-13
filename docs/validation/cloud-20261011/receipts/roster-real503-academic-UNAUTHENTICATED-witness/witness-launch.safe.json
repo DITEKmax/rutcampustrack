@@ -1,0 +1,11 @@
+{
+  "phase": "witness",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/witness-detail-lookup.cjs",
+    "/tmp/rct-roster-witness-api-next04-attempt01/witness.safe.json"
+  ],
+  "deadlineSeconds": 60,
+  "expectedNativeExit": 0
+}

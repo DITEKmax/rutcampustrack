@@ -1,0 +1,163 @@
+{
+  "utc": "2026-10-13T03:39:50.140940+00:00",
+  "state": "ALL8_DISPATCHED",
+  "docker_tool": 65234,
+  "mongo_readiness_tool": 49783,
+  "cohort": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04",
+  "records": [
+    {
+      "service": "mongo",
+      "tool_session": 43694,
+      "wrapper": {
+        "pid": 461115,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11639963
+      },
+      "child": {
+        "pid": 461118,
+        "state": "S",
+        "ppid": 461115,
+        "pgrp": 461118,
+        "session": 461118,
+        "start_ticks": 11640097
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/mongo-server-process.safe.json"
+    },
+    {
+      "service": "academic",
+      "tool_session": 48052,
+      "wrapper": {
+        "pid": 461665,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11643896
+      },
+      "child": {
+        "pid": 461668,
+        "state": "S",
+        "ppid": 461665,
+        "pgrp": 461668,
+        "session": 461668,
+        "start_ticks": 11644002
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/academic-process.safe.json"
+    },
+    {
+      "service": "auth",
+      "tool_session": 51813,
+      "wrapper": {
+        "pid": 462746,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11650945
+      },
+      "child": {
+        "pid": 462749,
+        "state": "S",
+        "ppid": 462746,
+        "pgrp": 462749,
+        "session": 462749,
+        "start_ticks": 11650959
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/auth-process.safe.json"
+    },
+    {
+      "service": "schedule",
+      "tool_session": 86173,
+      "wrapper": {
+        "pid": 463318,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11654372
+      },
+      "child": {
+        "pid": 463360,
+        "state": "S",
+        "ppid": 463318,
+        "pgrp": 463360,
+        "session": 463360,
+        "start_ticks": 11654401
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/schedule-process.safe.json"
+    },
+    {
+      "service": "attendance",
+      "tool_session": 39876,
+      "wrapper": {
+        "pid": 463421,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11654871
+      },
+      "child": {
+        "pid": 463429,
+        "state": "S",
+        "ppid": 463421,
+        "pgrp": 463429,
+        "session": 463429,
+        "start_ticks": 11654950
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/attendance-process.safe.json"
+    },
+    {
+      "service": "bff",
+      "tool_session": 83644,
+      "wrapper": {
+        "pid": 463308,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11654359
+      },
+      "child": {
+        "pid": 463341,
+        "state": "S",
+        "ppid": 463308,
+        "pgrp": 463341,
+        "session": 463341,
+        "start_ticks": 11654386
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/bff-process.safe.json"
+    },
+    {
+      "service": "gateway",
+      "tool_session": 28218,
+      "wrapper": {
+        "pid": 463304,
+        "state": "R",
+        "ppid": 525,
+        "start_ticks": 11654355
+      },
+      "child": {
+        "pid": 463324,
+        "state": "S",
+        "ppid": 463304,
+        "pgrp": 463324,
+        "session": 463324,
+        "start_ticks": 11654377
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/gateway-process.safe.json"
+    },
+    {
+      "service": "notification",
+      "tool_session": 19257,
+      "wrapper": {
+        "pid": 463262,
+        "state": "S",
+        "ppid": 525,
+        "start_ticks": 11654342
+      },
+      "child": {
+        "pid": 463313,
+        "state": "S",
+        "ppid": 463262,
+        "pgrp": 463313,
+        "session": 463313,
+        "start_ticks": 11654366
+      },
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/notification-process.safe.json"
+    }
+  ],
+  "cleanup_dispatch_utc": "2026-10-13T04:00:27Z",
+  "hardstop_utc": "2026-10-13T04:02:27Z"
+}

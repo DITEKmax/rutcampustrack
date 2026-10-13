@@ -1,0 +1,101 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_657_COHORT_BIND_V1",
+  "state": "ROOT_ADOPTED_ACTUAL_COHERENT8",
+  "cohort": "restart-20261013-next03",
+  "ready_sha256": "a70464a263ecab3e9b2d5fed33f2edb0d90f38889cb80fc766bcc75f8c304b76",
+  "execution_checkout_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "current_academic_source_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "current_academic_payload_source_verified": true,
+  "critical_TLS_Admin_FULL_edge_directspoof": true,
+  "host_cleanup_dispatch_at": "2026-10-13T02:15:15+00:00",
+  "receipts": {
+    "artifact_source": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/artifact-source.safe.json",
+      "sha256": "e820ed2b3faef29b852a7735c15a94ce00bca8007134a6414b5c5b4559cda495"
+    },
+    "runtime_mapping": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/runtime-mapping.safe.json",
+      "sha256": "f64dcdd1634b44c0888d55a5fbd1e941053f53fe1d3b92d2d3c7c30e45d7e3d4"
+    },
+    "critical_readiness": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/stand-readiness.safe.json",
+      "sha256": "5f333a39348bed4345cd4e5e57c2d8ede0018f44f5fa5680a14c50a1f7f96053"
+    },
+    "host_live8": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/host-live8.safe.json",
+      "sha256": "1d59e8010a998b00915038388da47d79c96e23023907686047c5b2a7323e3e55"
+    }
+  },
+  "live8": [
+    {
+      "service": "mongo",
+      "wrapper_pid": 433176,
+      "wrapper_birth_ticks": 10991896,
+      "child_pid": 433217,
+      "child_birth_ticks": 10991994
+    },
+    {
+      "service": "academic",
+      "wrapper_pid": 434164,
+      "wrapper_birth_ticks": 10998222,
+      "child_pid": 434167,
+      "child_birth_ticks": 10998344
+    },
+    {
+      "service": "auth",
+      "wrapper_pid": 436384,
+      "wrapper_birth_ticks": 11014063,
+      "child_pid": 436387,
+      "child_birth_ticks": 11014078
+    },
+    {
+      "service": "schedule",
+      "wrapper_pid": 436779,
+      "wrapper_birth_ticks": 11016530,
+      "child_pid": 436786,
+      "child_birth_ticks": 11016562
+    },
+    {
+      "service": "attendance",
+      "wrapper_pid": 436736,
+      "wrapper_birth_ticks": 11016471,
+      "child_pid": 436742,
+      "child_birth_ticks": 11016483
+    },
+    {
+      "service": "bff",
+      "wrapper_pid": 436876,
+      "wrapper_birth_ticks": 11016655,
+      "child_pid": 436894,
+      "child_birth_ticks": 11016794
+    },
+    {
+      "service": "gateway",
+      "wrapper_pid": 436783,
+      "wrapper_birth_ticks": 11016544,
+      "child_pid": 436809,
+      "child_birth_ticks": 11016615
+    },
+    {
+      "service": "notification",
+      "wrapper_pid": 436739,
+      "wrapper_birth_ticks": 11016476,
+      "child_pid": 436750,
+      "child_birth_ticks": 11016493
+    }
+  ],
+  "required_live_services": [
+    "mongo",
+    "academic",
+    "auth",
+    "schedule",
+    "attendance",
+    "bff",
+    "gateway",
+    "notification"
+  ],
+  "required_unique_wrapper_child_births": 16,
+  "required_direct_child_PPIDs": true,
+  "qualification": "Actual criticalfour/live16 adopted; AuthBoot403/BFF404 are qualified, not blanketUP. Academic96/old7 provenance retained, Root657 nineteen sourcepins exact; fixedteachingDate vsrealbackendsecurity/timers. No clientPASS inferred.",
+  "utc": "2026-10-13T02:00:32.241597+00:00"
+}

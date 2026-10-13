@@ -1,0 +1,56 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "scope": "API-CALLER-DIGEST-SHADOW_ONLY",
+  "runtime": "NOT_RUN",
+  "caller_sha256": "6b0bacd1ef831d897da567e2fe46b429e67275d7cbe829b56c3bd253933c9a19",
+  "author_manifest_sha256": "4f407e9b3ae816f89aa0a4c724a837b0490006f1080a71fc22c0c446f898fcdc",
+  "author_zip_sha256": "19d435f83d3608be3a677e7b46cfef1748fb2d2570daa7fe0971abe297425f71",
+  "zip_members": 11,
+  "zip_crc_errors": 0,
+  "inverse_whole_source_byte_exact": true,
+  "only_template_delta": [
+    "caller_source_sha256",
+    "adapter_sha256"
+  ],
+  "selected_actual_ast_controls": [
+    {
+      "immutable_nonempty": true,
+      "mutable_nonempty": false,
+      "old": "TypeError",
+      "new": "HASH_CALL_PASS",
+      "PASS": true
+    },
+    {
+      "immutable_nonempty": false,
+      "mutable_nonempty": true,
+      "old": "TypeError",
+      "new": "HASH_CALL_PASS",
+      "PASS": true
+    },
+    {
+      "immutable_nonempty": true,
+      "mutable_nonempty": true,
+      "old": "TypeError",
+      "new": "HASH_CALL_PASS",
+      "PASS": true
+    },
+    {
+      "immutable_nonempty": false,
+      "mutable_nonempty": false,
+      "old": "HASH_CALL_PASS",
+      "new": "HASH_CALL_PASS",
+      "PASS": true
+    }
+  ],
+  "original_seals_unchanged": true,
+  "previous_full_finite_review_manifest": "2ca3d5fce74a129bc30c3d95457a1dce4cc861dcbe7d1cd7be3e21466e4d4cf1",
+  "all_previous_remaining_delta_qualifications_preserved": true,
+  "grant_requirement": "Root must bind exact new caller6b0 plus READY3117/nativeplanf7b3/current481/fresh4facts/live16/resources/deadline before dispatch. This source approval is not API/native permission.",
+  "acceptance": "Native0 alone insufficient: CLASSIFIED, one GET, closed source-derived witness, no domain writes, both distinct owned actor logouts204+refresh-cookie removal+dispose confirmation required; no client PASS/cause inferred from source.",
+  "limitations": [
+    "Helper/R2 full review and native26 unchanged; not replayed.",
+    "Managed heap and sampled RSS/cache/post-buffer limits are not hard allocation isolation.",
+    "Chronological actor recovery is qualified and requires isolated retained data/no concurrent domainwriter.",
+    "Historical/root actual503 cause remains UNKNOWN."
+  ]
+}

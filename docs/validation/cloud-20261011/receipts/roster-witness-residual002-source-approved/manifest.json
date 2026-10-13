@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scope": "ONLY_RESIDUAL002_COOKIE_BEFORE_FETCH_REJECT",
+  "verdict": "APPROVE_SOURCE",
+  "file_count": 4,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "e2650c70462f10b0247fe777ab2b1bcb61978b050c4ba71900d96068a90455d4",
+      "bytes": 2961,
+      "mode": "600"
+    },
+    {
+      "path": "review.safe.json",
+      "sha256": "ced7fa01020f5314dee3a728f32e1ea267ad41f34fd2e27406e37a20d0b948ea",
+      "bytes": 2069,
+      "mode": "600"
+    },
+    {
+      "path": "source-delta.safe.json",
+      "sha256": "9073afc4cf0fcb19d7daa22c970fd1575c533b279539e3cb4d505025a0f9e391",
+      "bytes": 612,
+      "mode": "600"
+    },
+    {
+      "path": "verify-source-delta.py",
+      "sha256": "e56cf83502229b1794d09dd934c159f46804c9e4da324cbf0d47972364964935",
+      "bytes": 2497,
+      "mode": "600"
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "actual503cause": "UNKNOWN",
+  "no_matrix_promotion": true
+}

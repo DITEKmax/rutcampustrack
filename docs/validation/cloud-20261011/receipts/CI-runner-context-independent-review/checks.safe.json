@@ -1,0 +1,26 @@
+{
+  "kind": "INDEPENDENT_CI_RUNNER_CONTEXT_SOURCE_RECHECK",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "finding": "DF-CI-JOB-ENV-RUNNER-001",
+  "status": "CLOSED_SOURCE_WITH_RECORDED_VALIDATOR_RED_GREEN",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "input_manifest_sha256": "7888001a53d7b2299100d7f61cd39bf2c7607d99a541087ca319870a0912ab8f",
+  "input_zip_sha256": "e5052d98efa6c959ab60a074f9fe60344ceef055175c8d402b27ff97c79c4fb5",
+  "before_sha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+  "after_sha256": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+  "checks": {
+    "all_sealed_manifest_members_pinned": true,
+    "three_exact_path_values_job_to_step_env": true,
+    "step_env_available_inside_Prepare_and_GITHUB_ENV_before_later_consumers": true,
+    "exact_original_Prepare_run_after_removing_export_block": true,
+    "entire_remaining_workflow_parsed_tree_equal": true,
+    "private077_public022_modes_preserved": true,
+    "recorded_actionlint_before1_three_errors_after0": true,
+    "recorded_cleanup_reaped_and_six_births_absent": true
+  },
+  "reviewer_native_or_API": "NONE",
+  "actual_GitHub_validation_annotation": "UNAVAILABLE",
+  "actual_next_FIRST3_CI": "NOT_RUN",
+  "qualification": "Official actionlint source reproduction validates scope fix; no claim about unavailable GitHub platform error text or full client PASS"
+}

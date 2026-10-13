@@ -1,0 +1,45 @@
+{
+  "status": "INTEGRATION_READY_SOURCE_CHECKS_FINITE_PASS",
+  "base": "b2b3b0f30c27b2e128dbd03677a21ceb57ed5593",
+  "semanticCommit": "8ea3e0f693523e68bff9c36a32467b7f1cf56362",
+  "mechanicalCommit": "0dc311c6fe89c71592a47b539eabce1a59d9d047",
+  "ownClean": true,
+  "files": [
+    {
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "bytes": 2979,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "bytes": 9061,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "sourceVerdictsProvidedByRoot": [
+    "a5e8/f83c originaldiagnostic",
+    "e70e/8917 fixedserializeframe",
+    "9e4d/a9f5 checkedconstnarrowing"
+  ],
+  "actual": [
+    "Node01 original24causalred+green PASS; controlledworkerFAIL preserved",
+    "Node02 actualserializeError18 + worker3transportPASS closedrowsretained + unchangedproducer/interruption/missingguardPASS + formatPASS; types3FAIL preserved",
+    "Node03 readonly old2670 type81/82/85 codes2345/2538 cause+18correctedconstPASS; styleFAIL preserved",
+    "Node04 onlyreporter formatwrite0/both2check0/scopedTS5.9.3 error0, exact4birthsabsent/TMPclean/allownedreaped"
+  ],
+  "retriesCause": "Serialization prefix Sourcecause; checked const narrowing typecause; two printWidth100 wraps stylecause. No identicalrerun/fullcontrols replay.",
+  "mechanicalQualification": "Exact semantic→mechanical diff retained: formatting known clauses/comments/map entries and trailing commas only. No genericAST normalization/directemitbyteequality claim. Actual finalType0/parser and relevant controls plus scoped source reviews; Node04 two-line wrap has no token/operator/literal change.",
+  "installedOwnGitHooksExecutableCount": 0,
+  "hookBypass": false,
+  "rootScopedHooksRequired": true,
+  "push": false,
+  "rootProductApiAngularContractsLocksWorkflowChanged": false,
+  "clientAcceptance": false,
+  "current657CIcause": "UNKNOWN",
+  "lease": "RELEASED",
+  "followup": "Rootcherry-pick2commits/scopedrequiredhooks/normalpush/currentCI. Witness publiccontrols separatefreshgrant; realAPI/browser notauthorized."
+}

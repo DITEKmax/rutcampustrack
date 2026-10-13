@@ -1,0 +1,11 @@
+# SO-DISCOVERY-GATE-001 — narrow source recheck
+
+Goal: discovery reporter itself returns failed when its unchanged exact2/lines260367/projectChromium predicate is false. Sole mutation: own scratch discovery-reporter.cjs, two localized lines (save discoveryPass; onEnd checks it). No two TS/product/source assertions/caps/timers changes. RequestedSol6.1/high; actualUNKNOWN.
+
+Before and after exact source snapshots and source.patch are in this directory; inverse whole bytes exact. Original source-ready archive, actual-node01 format/types/exact2 PASS and all4 birth cleanup receipts preserved. Updated parent READY only changes helper input hash and records pending narrow controls; do not describe actual01 as executing this later helper.
+
+Three controls: ZERO_CASES, ONE_CASE (260 only), WRONG_LINE (260+368). They call only the public reporter lifecycle with tiny synthetic source-location objects, read only its closed result JSON, and check onEnd status failed. No Playwright module/config/fixtures/API/credentials/browser load. Before mode must native1 /three failed controls /all discoveryPassfalse /knownBeforeCounterexampletrue; after mode native0 /three rejected /failedControls0 /passtrue. This is reporter-boundary sensitivity, not product acceptance. Existing actual01 exact2 result is the positive witness; no formatter/type/full discovery replay.
+
+Reviewer: open discovery-reporter.before.cjs, discovery-reporter.after.cjs/source.patch, controls.cjs, SOURCE-READY.safe.json and retained actual01 REPORT. Recheck only this predicate→status connection, three relevant counterexamples, closed outputs and preservation. Original broad Source review remains applicable.
+
+Prepared run-node-controls02.py uses retained r1 status/observe callbacks/b78 guard. It consumes separate Root-private node-control-grant02.private.json; provided template authorized:false, no timing values, no native authority. Exact two argv, fixed mode/order/namespace, Root19/own6/7deps/clock/Node/source pins/caps, fresh time/resource guards and pidfd/birth lifecycle/cleanup retained. Proposed120active+60cleanup, each30, 512managedheap/1GiBsampledRSS/32MiBownTMP, 4GiBfloors/shared15GiBstop/reserve1GiB. Runtime NOT_RUN pending fresh Root grant after narrow review. No source-write/commit/Root/stand changes authorized by future runtime grant.

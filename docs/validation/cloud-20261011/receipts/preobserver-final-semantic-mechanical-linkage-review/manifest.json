@@ -1,0 +1,16 @@
+{
+  "scope": "FINAL_TWOFILE_MECHANICAL_AND_PRIOR_SOURCE_LINKAGE",
+  "verdict": "APPROVE_MECHANICAL_SOURCE_LINKAGE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1644,
+      "sha256": "904f43d70f5c6806a0c1295075393a706844ee12d2dd79645b519d708163137c"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2547,
+      "sha256": "731fbc21f4957aeb4d1d69984b7b474ef13e752312844d47617770b4c06e6aa3"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "RCT_SAFE_FINITE_SEAL_V1",
+  "files": {
+    "REPORT.safe.json": "32e604711865882beb338fb0a0e3d2e1173a1ba94d639da60944cbd61d0e8311",
+    "d002-steps.safe.json": "9f603001ee5d50e3cb436eaaece45ba9243ca0b7e046e15a202163eb43ba6c44",
+    "launch.safe.json": "7788bcb537c1d28a8f86aa72fb65464cfaeb0400ad598106531785ab74fd2d96",
+    "process.safe.json": "b5afa7719171cab83abc277eba947721d11f2a73638a9bfbf0cab571da65bcd7",
+    "safe-results.json": "804cfbd871e0d886a4305f2d388f16a7e9f5ed52a2bb8fc02ce2065e6ee31c6a",
+    "terminal.safe.json": "b2e6c4f846f76c91f944032055bfe362f5a38de2a19d02e11170902f03ee0eea"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "utc": "2026-10-13T03:57:39.039506+00:00",
+  "identities": [
+    {
+      "service": "mongo",
+      "kind": "wrapper_pid",
+      "pid": 461115,
+      "birth_ticks": 11639963,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "mongo",
+      "kind": "child_pid",
+      "pid": 461118,
+      "birth_ticks": 11640097,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "academic",
+      "kind": "wrapper_pid",
+      "pid": 461665,
+      "birth_ticks": 11643896,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "academic",
+      "kind": "child_pid",
+      "pid": 461668,
+      "birth_ticks": 11644002,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "auth",
+      "kind": "wrapper_pid",
+      "pid": 462746,
+      "birth_ticks": 11650945,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "auth",
+      "kind": "child_pid",
+      "pid": 462749,
+      "birth_ticks": 11650959,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "schedule",
+      "kind": "wrapper_pid",
+      "pid": 463318,
+      "birth_ticks": 11654372,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "schedule",
+      "kind": "child_pid",
+      "pid": 463360,
+      "birth_ticks": 11654401,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "attendance",
+      "kind": "wrapper_pid",
+      "pid": 463421,
+      "birth_ticks": 11654871,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "attendance",
+      "kind": "child_pid",
+      "pid": 463429,
+      "birth_ticks": 11654950,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "bff",
+      "kind": "wrapper_pid",
+      "pid": 463308,
+      "birth_ticks": 11654359,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "bff",
+      "kind": "child_pid",
+      "pid": 463341,
+      "birth_ticks": 11654386,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "gateway",
+      "kind": "wrapper_pid",
+      "pid": 463304,
+      "birth_ticks": 11654355,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "gateway",
+      "kind": "child_pid",
+      "pid": 463324,
+      "birth_ticks": 11654377,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "notification",
+      "kind": "wrapper_pid",
+      "pid": 463262,
+      "birth_ticks": 11654342,
+      "exact_identity_absent": true
+    },
+    {
+      "service": "notification",
+      "kind": "child_pid",
+      "pid": 463313,
+      "birth_ticks": 11654366,
+      "exact_identity_absent": true
+    }
+  ],
+  "all16_absent": true
+}

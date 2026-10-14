@@ -316,12 +316,112 @@ jobs:
         run: bash scripts/validate-grafana-dashboards.sh
 
   # Current PWA/TMA Vue auth against the isolated backend stack.
+  recovery-files:
+    name: Synthetic database and file recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RCT_FILES_RECOVERY_DIR: ${{ runner.temp }}/rct-files-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+      RCT_FILES_RECOVERY_PROJECT: rct-recovery-files-${{ github.run_id }}-${{ github.run_attempt }}
+      RCT_RECOVERY_PG_IMAGE: postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+      RCT_RECOVERY_MONGO_IMAGE: mongo@sha256:1f995ad6fdb93244a1addab1b58f934a0bc2f5643c38e02f5e9d7f0c7d227a7b
+    steps:
+      - uses: actions/checkout@v4
+        timeout-minutes: 1
+      - uses: actions/setup-python@v5
+        timeout-minutes: 1
+        with:
+          python-version: '3.12'
+      - name: Fetch the explicit recovery images
+        timeout-minutes: 3
+        run: |
+          docker pull "$RCT_RECOVERY_PG_IMAGE"
+          docker pull "$RCT_RECOVERY_MONGO_IMAGE"
+      - name: Exercise the existing files-mode recovery drill
+        timeout-minutes: 8
+        run: |
+          umask 077
+          python3 scripts/test-recovery.py --work-dir "$RCT_FILES_RECOVERY_DIR" \
+            --project-base "$RCT_FILES_RECOVERY_PROJECT" \
+            --pg-image "$RCT_RECOVERY_PG_IMAGE" --mongo-image "$RCT_RECOVERY_MONGO_IMAGE"
+      - name: Record closed resource diagnostics after failure
+        timeout-minutes: 1
+        if: failure()
+        run: |
+          python3 - <<'PY_RECOVERY_RESOURCE'
+          import json, os, subprocess
+          services = {'postgres-academic', 'postgres-schedule', 'mongo-attendance'}
+          try:
+              for suffix in ('-src', '-dst'):
+                  project = os.environ['RCT_FILES_RECOVERY_PROJECT'] + suffix
+                  ids = subprocess.check_output(['docker', 'ps', '-aq', '--filter',
+                                                 'label=com.docker.compose.project=' + project], stderr=subprocess.PIPE, timeout=5).decode().split()
+                  if len(ids) > 3:
+                      raise SystemExit('Unexpected disposable recovery resource count')
+                  for cid in ids:
+                      info = json.loads(subprocess.check_output(['docker', 'inspect', cid], stderr=subprocess.PIPE, timeout=5))[0]
+                      labels, state = info['Config']['Labels'], info['State']
+                      service = labels.get('com.docker.compose.service')
+                      if (labels.get('com.docker.compose.project') != project
+                              or labels.get('io.rutcampustrack.recovery') != 'disposable' or service not in services):
+                          raise SystemExit('Disposable recovery resource ownership mismatch')
+                      print(json.dumps({'service': service, 'target': suffix == '-dst',
+                                        'running': bool(state['Running']), 'oomKilled': bool(state['OOMKilled']),
+                                        'exitCode': int(state['ExitCode']),
+                                        'memoryLimit': int(info['HostConfig']['Memory'])}))
+          except (subprocess.SubprocessError, OSError, ValueError, KeyError, TypeError):
+              print('Closed recovery resource diagnostic unavailable; original failure retained')
+          PY_RECOVERY_RESOURCE
+      - name: Upload the existing closed recovery receipt
+        timeout-minutes: 1
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: files-recovery-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_FILES_RECOVERY_DIR }}/PASS.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Stop only the marked disposable recovery projects
+        if: always()
+        timeout-minutes: 3
+        run: |
+          if [ -f "$RCT_FILES_RECOVERY_DIR/owned-projects.json" ]; then
+            python3 scripts/test-recovery.py --work-dir "$RCT_FILES_RECOVERY_DIR" \
+              --project-base "$RCT_FILES_RECOVERY_PROJECT" --cleanup
+          fi
+
   e2e-auth:
     name: Playwright E2E auth flow
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Record the actual PR checkout revision
+        env:
+          RCT_CHECKOUT_PRODUCER: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_CHECKOUT'
+          import json, os, re, subprocess
+          from pathlib import Path
+
+          checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], timeout=10).decode().strip()
+          tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], timeout=10).decode().strip()
+          producer = os.environ['RCT_CHECKOUT_PRODUCER']
+          if not all(re.fullmatch('[0-9a-f]{40}', value) for value in (checkout, tree, producer)):
+              raise SystemExit('Invalid checkout revision metadata')
+          path = Path(os.environ['RUNNER_TEMP']) / 'rct-checkout.safe.json'
+          with path.open('x') as stream:
+              json.dump({'checkout_sha': checkout, 'tree_sha': tree, 'producer_head_sha': producer}, stream)
+              stream.write('\n')
+          PY_CHECKOUT
+      - name: Upload the closed checkout revision
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkout-safe-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rct-checkout.safe.json
+          if-no-files-found: error
+          retention-days: 7
 
       - uses: actions/setup-node@v4
         with:
@@ -612,6 +712,68 @@ jobs:
         with:
           name: lesson-lifecycle-safe-${{ github.run_attempt }}
           path: ${{ env.RCT_LESSON_LIFECYCLE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify real Vue helper homework edit and retained completion
+        id: homework-lifecycle
+        timeout-minutes: 3
+        if: ${{ !cancelled() && steps.remaining5.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_HOMEWORK_LIFECYCLE_RUN: ${{ runner.temp }}/rct-homework-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-homework-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_HOMEWORK_LIFECYCLE_RUN=%s\n' "$RCT_HOMEWORK_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_HOMEWORK_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_HOMEWORK_LIFECYCLE_RUN/artifacts"
+          npx playwright test --config playwright.homework-lifecycle.config.ts --project=chromium
+
+      - name: Upload closed homework lifecycle outcome
+        if: always() && steps.homework-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: homework-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_HOMEWORK_LIFECYCLE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify real Vue map viewing and download after API replacement
+        id: map-lifecycle
+        timeout-minutes: 4
+        if: ${{ !cancelled() && steps.remaining5.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_MAP_LIFECYCLE_RUN: ${{ runner.temp }}/rct-map-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-map-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_MAP_LIFECYCLE_RUN=%s\n' "$RCT_MAP_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_MAP_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_MAP_LIFECYCLE_RUN/artifacts"
+          npx playwright test --config playwright.map-lifecycle.config.ts --project=chromium
+
+      - name: Upload closed map lifecycle outcome
+        if: always() && steps.map-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_MAP_LIFECYCLE_RUN }}/artifacts/safe-results.json
           if-no-files-found: warn
           retention-days: 7
 

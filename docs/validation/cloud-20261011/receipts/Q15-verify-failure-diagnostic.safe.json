@@ -149,5 +149,298 @@
       "supervision_error_type": null,
       "phase_success": true
     }
+  },
+  "external_files_reuse": {
+    "Goal": "Q15/P20 external filesystem backup→freshrestore reuse only; B51 finite externalassets verdict NOT_PROVED, not DEFECT/GAP and not wholeQ15/P20.",
+    "Context": {
+      "root_head": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "contract_sha256": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+      "model": "requested/selected Sol6.1 high; actual UNKNOWN",
+      "scope": "ExistingB50/51,Q15 remainder,P20; RootTASK/CURRENT/decisions/questions/resources reread. Source-ledger recovery entries, attempts exactrecovery matches and existing recovery receipts only. No new P18/P19/provider audit."
+    },
+    "existing_evidence": [
+      {
+        "receipt": "docs/validation/cloud-20261011/receipts/native-recovery-startup-resource-failure.safe.json",
+        "revision": "82fce657471980b710d50b50a80187ac6c5215d3",
+        "native_session": 65900,
+        "result": "FAIL_INFRA_STARTUP/exit1; exactly one attempt, failed before synthetic seeding/backup/target. MongoOOMKilled=true observed; exact inner causeUNKNOWN. No bundle or target/PASS. Owned empty runtime cleanup completed, originalforeignresources/artifacts retained.",
+        "proved_files": "NONE; retained env/ownership-marker metadata are not backed-up application files."
+      },
+      {
+        "receipt": "docs/validation/cloud-20261011/receipts/current-fb4a-application-recovery.safe.json",
+        "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+        "CI": 38510200083,
+        "result": "REUSE finite real quiescedPG/Mongo→freshrestore→sameapps/keys→historical attachment+pending transfer replay PASS, four API phases and279s stepSUCCESS.",
+        "qualification": "Explicit --no-files/database-only, files inventory empty and files.tar empty. Historical68B PNG stored in Mongo Binary; API attachment bytePASS is not external filesystem recovery. Actual PR checkout not joined by browser schema."
+      },
+      {
+        "receipt": "docs/validation/cloud-20261011/receipts/current-3e89-application-recovery.safe.json",
+        "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+        "CI": 38513146910,
+        "result": "Seed/pending/admit PASS, verification stageFAIL before attachment. CauseUNKNOWN retained; no claimflaky or invalidation of prior finitefb4 run. New838d pending owned by Rootobserver."
+      },
+      {
+        "receipt": "docs/validation/cloud-20261011/receipts/test-evidence-map/groups/group-28.json",
+        "result": "Existing test-recovery.py actual-runtime harness explicitly NOT_RUN at mapping; source/test-presence and validator mocks/dry-run not PASS. No saved successful filesystem run/producer/inventory/checksum receipt found in bounded ledger/attempts/receipt search."
+      }
+    ],
+    "file_boundary": {
+      "bytes_inventory": "SOURCE_ONLY: recovery.py#file_inventory records sorted relative path, directory flag, regular-file size/SHA256; backup inventories before+after, files.tar+allpayload SHA manifest; verify_bundle checks manifest and exact tar membership; restore compares complete Mongo/files inventory. No actual files-mode receipt joined.",
+      "modes": "NOT_PROVED: inventory has no mode/uid/gid fields; restore creates directories/files under077 and does not restore archived member modes. test-recovery.py seeds nested UTF8 attachment bytes, 256-byte binary and empty directory under077, but does not assert/report source-target mode equality. Do not promote filemode preservation from tar metadata or umask presence.",
+      "no_follow": "SOURCE_ONLY checks reject symlink source/root/bundle files and tar links/devices/absolute/dotdot/duplicate members. These are path prechecks, not atomic O_NOFOLLOW or hostile concurrent-race proof. No real negative-run receipt joined; quiesced owned fixture cannot imply blanket no-follow guarantee.",
+      "isolation": "SOURCE_ONLY: source/destination projects distinct, source stopped before target startup; targetdisposable labels+project checked, DBfreshness and absent destination files directory required; backup prohibited inside source files directory. Native failure never reached those restore phases.",
+      "consumer": "NOT_PROVED externalassets API consumer. test-recovery.py would prove CLI synthetic files only. test-application-recovery.py verifies database/application history+Mongo attachment; it does not restore or serve a filesystem-backed asset."
+    },
+    "source_identity": {
+      "current_sha256": {
+        "scripts/recovery.py": "1d5dc8d93a8f2aaf4ecf1c65aaae94776e57c582986c2178786df417fb926296",
+        "scripts/test-recovery.py": "e8ce6ea778699354701a5786b6b619975719f4bcda6a23f63400caed86b54b23",
+        "scripts/test-application-recovery.py": "8466796677406a7d6dfa653fb2b81f912d680bc8cc6583ea8f64dc74e07dd156",
+        "docker-compose.test-restore.yml": "be94ca9b2120e6bc6b084ea933a45d253d5da984037aed89a321c5e725ac5eec"
+      },
+      "bridge": "git diff82fce..838d empty for recovery.py/test-recovery.py/docker-compose.test-restore.yml; current hashes equal failed-native receipt source pins. git difffb4a..838d empty for recovery.py/test-application-recovery.py. Source identity preserves qualification, does not turn unsuccessful/no-files execution into file PASS."
+    },
+    "next_small_operation": {
+      "result": "Obtain one real files-mode backup→freshrestore of nonempty owned synthetic file tree with retained before/after bytes/path inventory+payloadmanifest, observed modes and distinct source/destination roots, while source quiesced and targetfresh. Preserve known failed attempt and all existingbackups; no unchanged retry on same VM/floors/OOM bounds.",
+      "available_existing_template": "python3 scripts/test-recovery.py --work-dir <NEW-OWNED-ABSENT-DIR> --project-base rct-recovery-<UNIQUE> --pg-image <CACHED-PINNED-PG> --mongo-image <CACHED-PINNED-MONGO>",
+      "qualification": "Existing command seeds files, makes real PG/Mongo/files bundle, stops source, restores fresh destination, compares bytes/inventory and rejects overwrite/corrupt/project/nonempty attempts. Use only after fresh Root resource/ownership checks on a suitable resource; not executed here. Its PASS alone is CLI file-byte proof, not mode or APIconsumer proof. To claim actual externalasset recovery, bind one genuine current filesystem-backed asset consumer to restoredroot and read same asset through accepted API; current Mongo PNG is not such a witness. Do not invent filesystem/API storage binding."
+    },
+    "Verification": "Only local readonly text/JSON/ledger/attempts/source reads, Gitidentity and SHA checks; no recovery CLI/test/Node/Java/Docker/browser/network/download/agent or Rootmutation. Sole mutation adds this q15 key; originalQ07 field values preserved. B013/B014FROZEN; no bypass/production/secretfiles/realbackups reads. Current3e89 cause and838d CI remain with Root."
+  },
+  "files_ci_configuration_correction": {
+    "root_writer": true,
+    "source_base": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+    "old_failure": "512MiBMongoOOMbeforeseed, noPASS",
+    "new_condition": "dedicatedordinaryCI;1GiBMongo+2x256MiBPG/max3active;unchanged8mindrill/allCLIguards;newjob20min+boundedsteps19minsum incl3mincleanup",
+    "review_findings": "twoP2corrected: stderrPIPE/caughtfiniteoutput +cleanupreserve; targetedrecheckpending",
+    "local_control_source": "import ast,json,subprocess,sys,textwrap\nfrom pathlib import Path\nroot=Path('/workspace/rutcampustrack')\nsource=(root/'.github/workflows/ci.yml').read_text().split(\"python3 - <<'PY_RECOVERY_RESOURCE'\",1)[1].split('          PY_RECOVERY_RESOURCE',1)[0]\ntree=ast.parse(textwrap.dedent(source));tree.body=[n for n in tree.body if not isinstance(n,(ast.Import,ast.ImportFrom))]\nfixed=ast.unparse(tree)\n# Controlled old behavior: Docker stderr inherited and the transport exception uncaught.\nbroken=ast.parse(fixed)\nfor node in ast.walk(broken):\n    if isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr=='check_output':\n        node.keywords=[k for k in node.keywords if k.arg!='stderr']\nfor i,node in enumerate(broken.body):\n    if isinstance(node,ast.Try):broken.body[i:i+1]=node.body;break\nbroken=ast.unparse(ast.fix_missing_locations(broken))\nmarker='SYNTHETIC_RECOVERY_DIAGNOSTIC_PRIVATE_MARKER'\nshim=\"\"\"import subprocess as original, sys, types, json, os\nos.environ['RCT_FILES_RECOVERY_PROJECT']='rct-recovery-files-control'\ndef failure(*args,**kwargs):\n    return original.check_output([sys.executable,'-c',\"import sys; sys.stderr.write('SYNTHETIC_RECOVERY_DIAGNOSTIC_PRIVATE_MARKER'); sys.exit(1)\"],**kwargs)\nsubprocess=types.SimpleNamespace(check_output=failure,PIPE=original.PIPE,SubprocessError=original.SubprocessError)\n\"\"\"\nold=subprocess.run([sys.executable,'-c',shim+broken],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=5)\nnew=subprocess.run([sys.executable,'-c',shim+fixed],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=5)\nassert old.returncode==1 and marker.encode() in old.stderr\nassert new.returncode==0 and marker.encode() not in new.stdout+new.stderr\nassert new.stdout==b'Closed recovery resource diagnostic unavailable; original failure retained\\n' and not new.stderr\n# Positive synthetic inspect retains only finite service/state/limit fields; other source metadata cannot leak.\npositive=\"\"\"import subprocess as original,types,json,os\nos.environ['RCT_FILES_RECOVERY_PROJECT']='rct-recovery-files-control'\ndef inspect(argv,**kwargs):\n    assert kwargs['stderr']==original.PIPE and kwargs['timeout']==5\n    if argv[1]=='ps':return b'synthetic-cid'\n    return json.dumps([{'Config':{'Labels':{'com.docker.compose.project':'rct-recovery-files-control'+('-src' if not getattr(inspect,'once',False) else '-dst'),'com.docker.compose.service':'mongo-attendance','io.rutcampustrack.recovery':'disposable'},'Env':['SYNTHETIC_RECOVERY_DIAGNOSTIC_PRIVATE_MARKER']},'State':{'Running':False,'OOMKilled':True,'ExitCode':1},'HostConfig':{'Memory':1073741824}}]).encode()\n# No labels for a second target are needed for this fixed source-only emission check.\nsubprocess=types.SimpleNamespace(check_output=inspect,PIPE=original.PIPE,SubprocessError=original.SubprocessError)\n\"\"\"\nvalue=subprocess.run([sys.executable,'-c',positive+fixed],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=5)\nassert marker.encode() not in value.stdout+value.stderr\nfirst=json.loads(value.stdout.splitlines()[0]);assert set(first)=={'service','target','running','oomKilled','exitCode','memoryLimit'} and first['oomKilled'] is True\nprint(json.dumps({'result':'PASS','controlled_old_behavior':'RED_MARKER_IN_INHERITED_STDERR','restored_current':'GREEN_CLOSED_OUTPUT','original_job_failure':'unchanged failing drill step, no continue-on-error','positive_fields_only':True,'native_docker_network':False}))\n",
+    "local_control_result": "PASS actualSourceAST/controlledoldinheritsstderrREDmarker→currentclosedoutputGREEN;positiveemissiononlyfinitefields; no Docker/network; all childrenreaped",
+    "actual_runtime": "NOT_RUN",
+    "review": "APPROVE_SOURCE bothP2targetedclosed: receipts/Q15-files-ci-independent-review.safe.md"
+  },
+  "academic_confirm_configuration_correction": {
+    "defect": "DF-ACADEMIC-INTERNAL-CONFIRM-CONFIG-001",
+    "severity": "P2",
+    "before": "realarchive503 on838d; absentenv→blankproperty→503beforeHTTP",
+    "after": "NOT_RUN",
+    "scoped_yaml_comparison": [
+      {
+        "path": "docker-compose.e2e.yml",
+        "only_change": "existing INTERNAL_ISSUER_SECRET reference added toAcademic",
+        "before_absent": true,
+        "other_environment_equal": true
+      },
+      {
+        "path": "docker-compose.prod.yml",
+        "only_change": "existing INTERNAL_ISSUER_SECRET reference added toAcademic",
+        "before_absent": true,
+        "other_environment_equal": true
+      }
+    ],
+    "review": "APPROVE_SOURCE receipts/Q04-academic-confirm-config-independent-review.safe.md",
+    "rollback": "removeonlytwoaddedreferences; no runtime/prod/dbmigrationperformed",
+    "secret_values_read_or_output": false
+  },
+  "q09_q12_combined_checks": {
+    "results": [
+      {
+        "phase": "format-apply",
+        "direct_pid": 650876,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650876,
+            "start_ticks": 21073498
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-idempotency",
+        "direct_pid": 650887,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650887,
+            "start_ticks": 21073583
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-check",
+        "direct_pid": 650898,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650898,
+            "start_ticks": 21073648
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "direct_pid": 650910,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650910,
+            "start_ticks": 21073713
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tmp_removed": true,
+    "sources": {
+      "tests/e2e/playwright.homework-lifecycle.config.ts": "8077cc379abb4c9a09350a3a8322f4402d49ecd7112d703369600399e8061935",
+      "tests/e2e/playwright.map-lifecycle.config.ts": "27a0064ab661ec51e18b22f17dd23ea1dccd867a0b730f0b96835f81b312aa88",
+      "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "2d450812a2ac03af937a603f69df8cbd483e898bbeba29e5e732aee59f65f363",
+      "tests/e2e/specs/mobile-map-lifecycle.spec.ts": "74b5ee09020304da9ed1fd2a9ddfb0fbb55f56fe3701ce6029450549c8671fec",
+      "tests/e2e/playwright.config.ts": "94090b5e65dffd12eadf0219c1670cffeefabc43b3d5608798dc7a6de0cbaa96",
+      "tests/e2e/tsconfig.real-mobile.json": "3acaee5f43eea43c58aa3ef2ec4de8d37c33ed9d7bca902bc88abdcdd4aad689"
+    }
+  },
+  "current_workflow_static_checks": {
+    "yaml": "PASS",
+    "triggers_unchanged": true,
+    "parsed_inline_python": [
+      "PY_RECOVERY_RESOURCE",
+      "PY_CHECKOUT",
+      "PY_ASSIGNMENT",
+      "PY_RECOVERY"
+    ],
+    "new_job20_step_sum18_cleanup3": true,
+    "test_mongo_limit": "1g",
+    "checkout_local_control": "exactactualcode returns3SHAonly/private600;secondexclusivewriteFAILpreservesoriginal;tmpgone; not actualCIcheckoutproof"
+  },
+  "final_q06_q09_q12_formatter_typecheck": {
+    "results": [
+      {
+        "phase": "format-check",
+        "direct_pid": 652021,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 652021,
+            "start_ticks": 21138405
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "direct_pid": 652032,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 652032,
+            "start_ticks": 21138510
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tmp_removed": true,
+    "sources": {
+      "tests/e2e/playwright.homework-lifecycle.config.ts": "8077cc379abb4c9a09350a3a8322f4402d49ecd7112d703369600399e8061935",
+      "tests/e2e/playwright.map-lifecycle.config.ts": "27a0064ab661ec51e18b22f17dd23ea1dccd867a0b730f0b96835f81b312aa88",
+      "tests/e2e/playwright.config.ts": "94090b5e65dffd12eadf0219c1670cffeefabc43b3d5608798dc7a6de0cbaa96",
+      "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "2d450812a2ac03af937a603f69df8cbd483e898bbeba29e5e732aee59f65f363",
+      "tests/e2e/specs/mobile-map-lifecycle.spec.ts": "74b5ee09020304da9ed1fd2a9ddfb0fbb55f56fe3701ce6029450549c8671fec",
+      "tests/e2e/fixtures/artifact-privacy.ts": "ecaa860f4603ccaedfdbdd3697d499f7cc2ecba6d06f9c97c77ea84923f7e0c7",
+      "tests/e2e/fixtures/safe-reporter.ts": "8966d9516a358c6eaf2ba6e6dda599c3ba338a875ac020adb4017fda77596731",
+      "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "a310a0d4cf019af855b0fcccc0e6b93376bf4537c520c9398773098e4f20b894",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "165d0c7beabb246e708f4b967e002b570aab77b3d765143e19d048cffe81b774"
+    }
+  },
+  "coherent_package_normal_hooks": {
+    "all6": "PASS",
+    "bypassed": false,
+    "terminal": {
+      "direct_pid": 652128,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 652128,
+          "start_ticks": 21151230
+        },
+        {
+          "pid": 652140,
+          "start_ticks": 21151234
+        },
+        {
+          "pid": 652147,
+          "start_ticks": 21151261
+        },
+        {
+          "pid": 652168,
+          "start_ticks": 21151272
+        },
+        {
+          "pid": 652196,
+          "start_ticks": 21151352
+        },
+        {
+          "pid": 652293,
+          "start_ticks": 21151427
+        },
+        {
+          "pid": 652295,
+          "start_ticks": 21151427
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    }
   }
 }

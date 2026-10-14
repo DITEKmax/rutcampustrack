@@ -16,6 +16,10 @@
     "playwright.lesson-lifecycle.config.ts",
     "specs/mobile-lesson-lifecycle.spec.ts",
     "playwright.artifact-control.config.ts",
-    "artifact-controls/privacy.control.spec.ts"
+    "artifact-controls/privacy.control.spec.ts",
+    "playwright.homework-lifecycle.config.ts",
+    "specs/mobile-homework-lifecycle.spec.ts",
+    "playwright.map-lifecycle.config.ts",
+    "specs/mobile-map-lifecycle.spec.ts"
   ]
 }

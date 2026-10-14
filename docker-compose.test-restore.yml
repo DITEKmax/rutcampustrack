@@ -46,7 +46,9 @@ services:
     tmpfs:
       - /data/db
       - /data/configdb
-    mem_limit: 512m
+    # Bootstrap includes WiredTiger files on tmpfs and the health-check shell.
+    # The previous 512 MiB disposable MongoDB was OOM-killed before seeding.
+    mem_limit: 1g
     healthcheck:
       test: ['CMD', 'mongosh', '--quiet', '--eval', 'quit(db.adminCommand({ping:1}).ok ? 0 : 1)']
       interval: 2s

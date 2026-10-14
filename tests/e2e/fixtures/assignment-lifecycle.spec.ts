@@ -5,6 +5,7 @@ import { type APIRequestContext, expect } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit, type SyntheticUser } from './mobile-dataset';
 import { readTeachingInstant } from './teaching-clock';
+import { datasetHttpFailure } from './safe-reporter';
 import { TEST_USERS } from './users';
 
 // CI owns the exact Schedule stop/start/readiness between these API-only phases.
@@ -454,7 +455,10 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
     true,
   );
   const headman = await admit(request, checkpoint.headman, 'HEADMAN');
-  expect((await close(request, headman, checkpoint)).status()).toBe(204);
+  const closed = await close(request, headman, checkpoint);
+  if (closed.status() !== 204)
+    throw datasetHttpFailure('DELETE', checkpoint.closeUrl, closed.status());
+  expect(closed.status()).toBe(204);
   const unassigned = await futureLesson(headman, checkpoint);
   expect(unassigned.assignmentId == null && unassigned.assignedTeacherId == null).toBe(true);
   await retainedHistory(headman, checkpoint);

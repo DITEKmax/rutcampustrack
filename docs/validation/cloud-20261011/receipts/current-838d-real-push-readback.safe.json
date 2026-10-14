@@ -1,0 +1,30 @@
+{
+  "producer": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_remote_PR_head_equal": true,
+  "transport_git_readback": "838d671760633bcc3aed0524ea05cd63e7a76f3e\trefs/heads/codex/server-validation-20261011\n3908fad9624f97aec8891fc79338ceb6b0616bf3\trefs/heads/main\n",
+  "pr": {
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+    "head": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "advertised_merge": "e34852bc0866a6a3f59e2d709ea5688318aad945",
+    "actual_checkout": "UNKNOWN_PENDING_NORMAL_CI"
+  },
+  "push": {
+    "supervisor": 646801,
+    "session": 51292,
+    "native_exit": 0,
+    "reaped": true
+  },
+  "scope": {
+    "paths": 30,
+    "checking_sources": 10,
+    "new_product_changes": 0,
+    "normal_hooks": "6PASS",
+    "independent_reviews": "APPROVE_SOURCE including Q07twoP2targetedclosed"
+  },
+  "acceptance": "IN_PROGRESS; newjourneys NOT_RUN, prior3e89 failures retained"
+}

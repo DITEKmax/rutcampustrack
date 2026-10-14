@@ -1,0 +1,288 @@
+{
+  "Goal": "One actual Vue homework nonauthor edit/completion-preservation/liverights journey; no wholeQ09 claim",
+  "Context": {
+    "head": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+    "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "model": "requested/selected Sol6.1 high; actual UNKNOWN",
+    "sourcepins": {
+      "docs/validation/cloud-20261011/TASK-CONTRACT.md": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+      ".agent/orchestration-v2/RULES.md": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "tests/e2e/fixtures/mobile-dataset.ts": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0",
+      "tests/e2e/fixtures/pwa-auth.ts": "d274bb494923253dd9d770d62caac6ac2072f428809c8a3990e33fd05d4f5d15",
+      "tests/e2e/fixtures/cloud-accepted-support.ts": "e149a131837211c8addd48187a0b7bc4834f32319d7efed82101c441d1aa170c",
+      "tests/e2e/fixtures/artifact-privacy.ts": "12c5c0cb6b8a49c815c763812177a76aa4d186e1873f6fa0ef341066a1dbaa67",
+      "tests/e2e/fixtures/safe-reporter.ts": "af0dc4e7f35e77998477aa1640414ef45c7aabd39eec7e6974ebe932c298ee45",
+      "frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue": "151185b049140a2de6b346d0ba679d9b55f023ab6814d0bcc18cfc8174ac094d",
+      "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "709ba464401fa6cc7a787f6e74ebf75561fc34641b91ab96b92b17e2b3b4740d",
+      "frontends/mobile-core/src/features/homework/HomeworkCompletion.vue": "dfd80288ff0bb0288fc0c48a9e1ddda406cef13ee71fd7c87db8d938444e3bbf",
+      "frontends/mobile-core/src/features/homework/headman-homework-client.ts": "7d1c0413bc87b85bf096f45842256ad514c93187e49fc3a0536beec048c76ebb",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditPersistence.java": "acae3286be5bd09d44b3760b57993664a45b3b3fe5fcc11ff38302eedbaa5981",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkManagementAuthorization.java": "80faa84f09f87fe2e8d8a4590c6467e85666c98ebbeea868d9adc39371657bff",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditHistory.java": "992939a0f72e4713dc74b0bfd51917a69d5be8c5df05e520a7ea030d6888373b",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkLifecycle.java": "6bef22962a68dcc00a31c4e48e0a32cf4485b78a0c05dffd34ee3da2b0a2ba6f",
+      "docs/product/job-stories.yaml": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+      "docs/product/decisions/2026-10-02-unbound-homework-archive.md": "0626c28e093a3a2cfe20f82dd695dd8800a5013785f1bc26d4e08de866f4dc00"
+    },
+    "test_sha256": "2d450812a2ac03af937a603f69df8cbd483e898bbeba29e5e732aee59f65f363"
+  },
+  "Scope": {
+    "writer": "/workspace/rct-worktrees/q07-lesson-cancel-20261014",
+    "branch": "codex/q09-homework-client-20261014",
+    "created": [
+      "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+    ],
+    "commit": "b492cf2a6b935fd7ad26dc36a32380da6d9764aa",
+    "worktree_clean": true,
+    "line_count": 201
+  },
+  "Required": "Own STUDENT realcompletion \u2192 MANAGE_HOMEWORK-only helper edits headmanDATEhomework throughVue \u2192 immutablepublisher/binding +exacthistoryactor \u2192 staleeditor revoked403/noeffect \u2192 studentreload completedAt retained/noeditor",
+  "Constraints": "Source-only; unchanged09Moscowclock/privacy protections. DATEtomorrow beforecutoff. Rootsolecommonconfigintegration/review required. No cutofftransition/Schedulemove/archive/race/unsafeURL claim. Reuse existingFIRST3 completion finite proof and Q07 archive independently.",
+  "Patterns": "MobileDataset/Actor/loginPwa/logoutPwa/singleCapability/openAssistant/http/registerPrivateSuite/assistantPermissionCodes reused",
+  "Acceptance": {
+    "status": "SOURCE_READY_ROOT_REVIEW_AND_INTEGRATION_REQUIRED",
+    "runtime": "NOT_RUN",
+    "integration": "Root must add private explicit selector, default discovery exclusion and strictTSinclude; no config authored here",
+    "sensitivity": "NOT_RUN; actualbackend acceptance pending Root private lane, no runtime sensitivity or wholeQ09 claim"
+  },
+  "Verification": {
+    "commands": [
+      {
+        "phase": "format-apply",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "/workspace/rct-worktrees/q07-lesson-cancel-20261014/tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/q09/format-apply.private.log"
+      },
+      {
+        "phase": "format-idempotency",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "/workspace/rct-worktrees/q07-lesson-cancel-20261014/tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/q09/format-idempotency.private.log"
+      },
+      {
+        "phase": "format-check",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "/workspace/rct-worktrees/q07-lesson-cancel-20261014/tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/q09/format-check.private.log"
+      },
+      {
+        "phase": "targeted-tsc",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+          "--noEmit",
+          "--project",
+          "/tmp/q09-homework-check-1x62pnmt/tsconfig.json"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/q09/targeted-tsc.private.log"
+      },
+      {
+        "phase": "normal-hooks",
+        "argv": [
+          "uv",
+          "--offline",
+          "tool",
+          "run",
+          "--from",
+          "pre-commit==4.6.2",
+          "pre-commit",
+          "run",
+          "--files",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/q09/normal-hooks.private.log"
+      },
+      {
+        "phase": "commit",
+        "argv": [
+          "git",
+          "commit",
+          "-m",
+          "test: preserve completion through nonauthor homework edits"
+        ],
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/q09/commit.private.log"
+      }
+    ],
+    "errors": [
+      "Read-only canonical JSON parse first reported UTF-8 BOM; corrected utf-8-sig and reread exactacceptedtext. No Source effect."
+    ],
+    "active_native": null,
+    "session": {
+      "id": 7214,
+      "state": "closed",
+      "exit": 0
+    },
+    "checks": [
+      {
+        "phase": "format-apply",
+        "direct_pid": 647467,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 647467,
+            "start_ticks": 20962097
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-idempotency",
+        "direct_pid": 647478,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 647478,
+            "start_ticks": 20962179
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-check",
+        "direct_pid": 647512,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 647512,
+            "start_ticks": 20962229
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "direct_pid": 647523,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 647523,
+            "start_ticks": 20962288
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "normal-hooks",
+        "direct_pid": 647650,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 647650,
+            "start_ticks": 20965314
+          },
+          {
+            "pid": 647662,
+            "start_ticks": 20965318
+          },
+          {
+            "pid": 647690,
+            "start_ticks": 20965349
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "commit",
+        "direct_pid": 647794,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 647794,
+            "start_ticks": 20965465
+          },
+          {
+            "pid": 647836,
+            "start_ticks": 20965469
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 647836,
+            "start_ticks": 20965469,
+            "native_exit": 0
+          }
+        ],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tmp_removed": true,
+    "link_removed": true,
+    "finish_tmp_removed": true,
+    "terminal_free_bytes": 5652471808,
+    "normal_hooks": "four applicable PASS; YAML and JSON no applicable files; ordinarygitcommit0/no bypass",
+    "substantive_assertions": [
+      "Actual STUDENT sliderPUT200 beforehelperedit; actualcompletedAt captured",
+      "FreshSTUDENT helperonlyMANAGE_HOMEWORK nonauthor edits throughVuePUT200; publisher/binding/requestKey/date retained, revision+1",
+      "History exactlyone EDITED withbefore/after/helperactor and actualVuehistorydisplay",
+      "OrdinarySTUDENT PUT403 +revokedhelper retainededitor PUT403 leave exactdata/history unchanged",
+      "Studentrelogin/reload onecompletedcard withupdatedtitle; APIupdateddescription and samecompletedAt; noSTUDENTeditor"
+    ]
+  },
+  "DoNot": "No shared/product/UI/config/sourceexistingtest/generated/locks edits; no main/push/merge/Ready/deploy/production/Angular/newweb/realcredentials/agents/network/browser/server/Java/DB/Docker/install; B013/B014FROZEN"
+}

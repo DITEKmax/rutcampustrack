@@ -13393,6 +13393,267 @@
       "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
       "kind": "approved-current-checking-source",
       "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1708",
+      "path": "tests/e2e/playwright.homework-lifecycle.config.ts",
+      "sha256": "8077cc379abb4c9a09350a3a8322f4402d49ecd7112d703369600399e8061935",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1709",
+      "path": "tests/e2e/playwright.map-lifecycle.config.ts",
+      "sha256": "27a0064ab661ec51e18b22f17dd23ea1dccd867a0b730f0b96835f81b312aa88",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1710",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "2d450812a2ac03af937a603f69df8cbd483e898bbeba29e5e732aee59f65f363",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1711",
+      "path": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+      "sha256": "74b5ee09020304da9ed1fd2a9ddfb0fbb55f56fe3701ce6029450549c8671fec",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1712",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-academic-confirm-config-independent-review.safe.md",
+      "sha256": "1d33008022ee95fe64ee9e492d222f85807728e1f6989bd8e1be71fd2956384b",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1713",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-current-resume-diagnostic-author.safe.json",
+      "sha256": "ef030434c132b39172bd1aa894f9a933ff474d0e6276e0a1f106fc9134c9f93f",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1714",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-current-resume-privacy-independent-review.safe.md",
+      "sha256": "a6fdbf7907972a3f1aba15f1c7dfede8e0483c1362f3227492e59bc756853689",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1715",
+      "path": "docs/validation/cloud-20261011/receipts/Q09-helper-homework-client-author.safe.json",
+      "sha256": "477ada9ccfa40da068c581c7c0b947f75fc9e67f9066c92536bcb7abd2ce6c9c",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1716",
+      "path": "docs/validation/cloud-20261011/receipts/Q09-helper-homework-client-independent-review.safe.md",
+      "sha256": "bdcaff0f9de36f81bff4bd1636149d8f6e7b06ec43d01669a58c956ad27f9b5c",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1717",
+      "path": "docs/validation/cloud-20261011/receipts/Q12-map-client-author.safe.json",
+      "sha256": "f4a7aa36f99085fc65c7345345f0fc4d289d4be3b90a6ec1e51bad7c5e82ed3f",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1718",
+      "path": "docs/validation/cloud-20261011/receipts/Q12-map-client-independent-review.safe.md",
+      "sha256": "4a4b8b5a352b77e60956b58c25d115b8b12d72e5a4aab40caba955baa613fb11",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1719",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-files-ci-independent-review.safe.md",
+      "sha256": "4d2ac880413ecc972979b3b0ff0b0b801ebe4922b7553c9c8784ce49c80e0741",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1720",
+      "path": "docs/validation/cloud-20261011/receipts/current-838d-real-push-readback.safe.json",
+      "sha256": "91ea8cdfbcd4406538de27a31409e7afe54210e3f2b4d75e181d89baf57f01ff",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1721",
+      "path": "docs/validation/cloud-20261011/receipts/current-838d-gates-metadata.safe.json",
+      "sha256": "e8483dca488136b9768f17741c4e664e368c4583a67c0f7c14c09200b2934353",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1722",
+      "path": "docs/validation/cloud-20261011/receipts/current-838d-admin-lifecycle.safe.json",
+      "sha256": "bd7f433bf0512a41ee61196416b653700a994b40b06caeee284ad55c41c8a85c",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1723",
+      "path": "docs/validation/cloud-20261011/receipts/current-838d-geo.safe.json",
+      "sha256": "3378105a75726e76f8cc112e16b39aa084f183d93e8da47c90b7dc797bb5cc00",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1724",
+      "path": "docs/validation/cloud-20261011/receipts/current-838d-lesson.safe.json",
+      "sha256": "b0de7bcb6235b7119cdf3139190349d66142eac05384b2574ba1425712de0e6d",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1725",
+      "path": "docs/validation/cloud-20261011/receipts/current-838d-assignment.safe.json",
+      "sha256": "a834760e10f37ddc9494fa7d1c055090933e20900f99c996b0eb1bb9d8944a4f",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1726",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "5a9b6d5730ddb8ce2252e488c0311ead63811d60c233c14e4b3f64d21cd163b2",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1727",
+      "path": "docker-compose.e2e.yml",
+      "sha256": "8bba7f200d8ebfc7dc288cdcb289c2c3b5994dae79c53277ba7ea98a8af67460",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1728",
+      "path": "docker-compose.prod.yml",
+      "sha256": "45bc47ea0a2a9db96f136020b90bd5354cb098637f0c9cf815456d945b4496fa",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1729",
+      "path": "docker-compose.test-restore.yml",
+      "sha256": "47ab3e5b5dd2a896b3822460823c7bd70063e261b7e08660a23155167742fbf3",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1730",
+      "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "165d0c7beabb246e708f4b967e002b570aab77b3d765143e19d048cffe81b774",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1731",
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "ecaa860f4603ccaedfdbdd3697d499f7cc2ecba6d06f9c97c77ea84923f7e0c7",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1732",
+      "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+      "sha256": "a310a0d4cf019af855b0fcccc0e6b93376bf4537c520c9398773098e4f20b894",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1733",
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "8966d9516a358c6eaf2ba6e6dda599c3ba338a875ac020adb4017fda77596731",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1734",
+      "path": "tests/e2e/playwright.config.ts",
+      "sha256": "94090b5e65dffd12eadf0219c1670cffeefabc43b3d5608798dc7a6de0cbaa96",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1735",
+      "path": "tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "3acaee5f43eea43c58aa3ef2ec4de8d37c33ed9d7bca902bc88abdcdd4aad689",
+      "status": "actual closed evidence or independently approved Source; actual after config/newflows NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "approved-current-source",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/producerrevisionsinside receipts, no wholefamily promotion"
+    },
+    {
+      "id": "CURRENT-838D-NEXT-1736",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-verify-failure-diagnostic.safe.json",
+      "sha256": "2d3cc1f55d1b2858ab88a1113510713acf921c8d0eb9c213ceb8494d280565d4",
+      "status": "independentreviews/sourcecontrols/normalhooksPASS; newfilesjob/configafter NOT_RUN",
+      "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+      "kind": "coherent-checking-and-config-receipt",
+      "revision_qualification": "prospectiveintegrationbase; exactauthor/review/runtimeproducers inside"
     }
   ],
   "research_receipt": {

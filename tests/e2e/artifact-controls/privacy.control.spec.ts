@@ -44,6 +44,23 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     ).toEqual([diagnostic]);
     expect(failure.message.includes('/api/')).toBe(false);
     expect(failure.message.includes('123')).toBe(false);
+    const closedAssignment = datasetHttpFailure(
+      'DELETE',
+      '/api/academic/assignments/456?validUntilExclusive=2026-10-14',
+      status,
+    );
+    const closedDiagnostic = {
+      stage: 'DATASET_HTTP',
+      cause: 'DATASET_ASSIGNMENT_CLOSE_HTTP',
+      httpStatus: status,
+    };
+    expect(classifySafeFailure(closedAssignment)).toEqual(closedDiagnostic);
+    expect(
+      safeFailureDiagnostics([
+        { type: safeFailureAnnotation, description: `DATASET_ASSIGNMENT_CLOSE_HTTP:${status}` },
+      ]),
+    ).toEqual([closedDiagnostic]);
+    expect(/456|2026-10-14|\/api\//.test(closedAssignment.message)).toBe(false);
   }
   for (const [method, path, status] of [
     ['GET', '/api/academic/users/123/archive', 403],
@@ -53,6 +70,16 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     ['POST', '/api/academic/users/123/archive', 302],
     ['POST', '/api/academic/users/123/archive', 999],
     ['POST', '/api/academic/users/123/archive', marker],
+    ['POST', '/api/academic/assignments/456?validUntilExclusive=2026-10-14', 503],
+    ['DELETE', '/api/academic/assignments/456', 503],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-13-14', 503],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-10-32', 503],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-10-14&extra=1', 503],
+    ['DELETE', `/api/academic/assignments/456?validUntilExclusive=${marker}`, 503],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-10-14', 204],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-10-14', 302],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-10-14', 999],
+    ['DELETE', '/api/academic/assignments/456?validUntilExclusive=2026-10-14', marker],
   ]) {
     const failure = datasetHttpFailure(method, path, status);
     expect(classifySafeFailure(failure)).toEqual({
@@ -108,10 +135,10 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   const spec = resolve(__dirname, '../specs/mobile-real-server.spec.ts');
   const fallback = { file: spec, line: 61, column: 1 };
   const frame = (line = 91, column = 1) => `    at (${spec}:${line}:${column})`;
-  const sanitize = (error: Record<string, unknown>) => {
+  const sanitize = (error: Record<string, unknown>, file = spec, line = 61) => {
     const reported = {
-      file: spec,
-      line: 61,
+      file,
+      line,
       status: 'failed',
       errors: [error],
       annotations: [],
@@ -141,6 +168,42 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   const bare: Record<string, unknown> = { stack: `Error\n    at ${spec}:91:1` };
   sanitize(bare);
   expect(bare.location).toEqual({ file: spec, line: 91, column: 1 });
+
+  const assignmentSpec = resolve(__dirname, '../fixtures/assignment-lifecycle.spec.ts');
+  const assignmentLines = readFileSync(assignmentSpec, 'utf8').trimEnd().split('\n');
+  const assignmentAssertion = assignmentLines.indexOf('  expect(closed.status()).toBe(204);') + 1;
+  const assignmentStart =
+    assignmentLines.findIndex((line) => line.startsWith("test('assignment lifecycle API phase'")) +
+    1;
+  expect(assignmentAssertion > 0 && assignmentAssertion < assignmentStart).toBe(true);
+  const assignmentFallback = { file: assignmentSpec, line: assignmentStart, column: 1 };
+  const assignmentError: Record<string, unknown> = {
+    message: marker,
+    stack: `Error: ${marker}\n    at resume (${assignmentSpec}:${assignmentAssertion}:3)`,
+  };
+  sanitize(assignmentError, assignmentSpec, assignmentStart);
+  expect(assignmentError.location).toEqual({
+    file: assignmentSpec,
+    line: assignmentAssertion,
+    column: 3,
+  });
+  for (const stack of [
+    `Error\n    at (${spec}:${assignmentAssertion}:3)`,
+    `Error\n    at (/private/${marker}.ts:${assignmentAssertion}:3)`,
+    `Error\n    at (${assignmentSpec}:${assignmentLines.length + 1}:1)`,
+    `Error\n    at (${assignmentSpec}:${assignmentAssertion}:999999)`,
+    `Error: ${marker}\nprivate stack ${marker}`,
+  ]) {
+    const refused: Record<string, unknown> = { stack };
+    sanitize(refused, assignmentSpec, assignmentStart);
+    expect(refused.location).toEqual(assignmentFallback);
+  }
+  const unrelatedSpec = resolve(__dirname, '../specs/mobile-map-lifecycle.spec.ts');
+  const unrelated: Record<string, unknown> = {
+    stack: `Error: ${marker}\n    at (${assignmentSpec}:${assignmentAssertion}:3)`,
+  };
+  sanitize(unrelated, unrelatedSpec, 1);
+  expect(unrelated.location).toEqual({ file: unrelatedSpec, line: 1, column: 1 });
 
   for (const stack of [
     `Error\n    at (/private/${marker}.ts:91:1)`,

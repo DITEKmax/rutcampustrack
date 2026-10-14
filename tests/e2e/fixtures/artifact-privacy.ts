@@ -83,12 +83,16 @@ function recordSafeFailure(info: TestInfo, error: unknown): void {
   });
 }
 
-const publicSpec = resolve(__dirname, '../specs/mobile-real-server.spec.ts');
+const publicSpecs = [
+  resolve(__dirname, '../specs/mobile-real-server.spec.ts'),
+  resolve(__dirname, 'assignment-lifecycle.spec.ts'),
+];
 
 /** An untrusted reported frame, never proof of a cause, operation or successful assertion. */
 function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'line'>) {
   const fallback = { file: info.file, line: info.line, column: 1 };
-  if (info.file !== publicSpec || typeof error !== 'object' || error === null) return fallback;
+  if (!publicSpecs.includes(info.file) || typeof error !== 'object' || error === null)
+    return fallback;
   let stack: unknown;
   try {
     stack = Object.getOwnPropertyDescriptor(error, 'stack')?.value;
@@ -100,7 +104,7 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
   if (lines.length > 64) return fallback;
   let sourceLines: string[];
   try {
-    sourceLines = readFileSync(publicSpec, 'utf8').split('\n');
+    sourceLines = readFileSync(info.file, 'utf8').split('\n');
     if (sourceLines[sourceLines.length - 1] === '') sourceLines.pop();
   } catch {
     return fallback;
@@ -114,12 +118,12 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
         line,
       ) ?? /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})$/.exec(line);
     if (!frame) return fallback;
-    if (frame[1] !== publicSpec) continue;
+    if (frame[1] !== info.file) continue;
     const sourceLine = Number(frame[2]);
     const column = Number(frame[3]);
     if (sourceLine > sourceLines.length || column > sourceLines[sourceLine - 1].length + 1)
       return fallback;
-    return { file: publicSpec, line: sourceLine, column };
+    return { file: info.file, line: sourceLine, column };
   }
   return fallback;
 }

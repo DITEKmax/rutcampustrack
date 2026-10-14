@@ -25,6 +25,10 @@ const datasetHttpOperations = {
     method: 'POST',
     path: /^\/api\/academic\/users\/[1-9][0-9]{0,18}\/archive$/,
   },
+  DATASET_ASSIGNMENT_CLOSE_HTTP: {
+    method: 'DELETE',
+    path: /^\/api\/academic\/assignments\/[1-9][0-9]{0,18}\?validUntilExclusive=[1-9][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$/,
+  },
   DATASET_HEADMAN_SET_HTTP: {
     method: 'PUT',
     path: /^\/api\/academic\/groups\/[1-9][0-9]{0,18}\/headman$/,

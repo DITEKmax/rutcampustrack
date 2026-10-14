@@ -1,0 +1,825 @@
+{
+  "artifact_id": 11866400090,
+  "producer": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+  "run_id": 38499807565,
+  "event": "pull_request",
+  "actual_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+  "archive_sha256": "544dea4492f5aed0dc6eda5e59347680b4e1e1d88209a62963bcabf339ddb051",
+  "archive_bytes": 3417,
+  "member_names": [
+    "artifacts/safe-results.json",
+    "supervision/observations-student.safe.json",
+    "supervision/observations-helper.safe.json",
+    "supervision/observations-headman.safe.json"
+  ],
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 14,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3249,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 61,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3917,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 160,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2419,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "STUDENT",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HEADMAN",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "observations": {
+    "STUDENT": {
+      "schema": "RCT_FOCUS3_CLOSED_V1",
+      "caseCode": "STUDENT",
+      "events": [
+        {
+          "caseCode": "STUDENT",
+          "phase": "BEGIN",
+          "facts": {
+            "diagnosticState": "OBSERVING"
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LOGIN",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "uiTokenCaptured": true
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "STUDENT",
+            "activeRoleExpected": true,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HELPER_PERMISSIONS",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "markPermission": false
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HOMEWORK_DEFAULT",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "itemsIsArray": true,
+            "itemCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "targetTitleEqual": true,
+            "semesterEqual": true,
+            "rangeContainsTarget": true,
+            "serverDateEqual": true
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "COMPLETION_WRITE",
+          "facts": {
+            "httpStatus": "200"
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "STUDENT",
+            "activeRoleExpected": true,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HELPER_PERMISSIONS",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "markPermission": false
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HOMEWORK_DEFAULT",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "itemsIsArray": true,
+            "itemCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "targetTitleEqual": true,
+            "semesterEqual": true,
+            "rangeContainsTarget": true,
+            "serverDateEqual": true
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "DOM",
+          "facts": {
+            "journalCount": 0,
+            "rowCount": 0,
+            "targetRowCount": 0,
+            "targetButtonCount": 0,
+            "clearButtonCount": 0,
+            "homeworkCount": 2,
+            "homeworkCompleteCount": 1,
+            "homeworkIncompleteCount": 0,
+            "alertCount": 0,
+            "loginVisible": false,
+            "navigationVisible": true,
+            "rolePickerVisible": false,
+            "targetRowVisible": false,
+            "targetButtonVisible": false,
+            "targetButtonEnabled": false,
+            "clearButtonVisible": false,
+            "clearButtonEnabled": false,
+            "homeworkVisible": true,
+            "homeworkCompleteVisible": true,
+            "homeworkIncompleteVisible": false,
+            "domStatus": "ABSENT_ROW",
+            "targetNameEqual": false,
+            "journalBusy": false
+          }
+        },
+        {
+          "caseCode": "STUDENT",
+          "phase": "END",
+          "facts": {
+            "testStatus": "passed",
+            "diagnosticCompleted": true,
+            "droppedEventCount": 0
+          }
+        }
+      ],
+      "droppedEventCount": 0
+    },
+    "HELPER": {
+      "schema": "RCT_FOCUS3_CLOSED_V1",
+      "caseCode": "HELPER",
+      "events": [
+        {
+          "caseCode": "HELPER",
+          "phase": "BEGIN",
+          "facts": {
+            "diagnosticState": "OBSERVING"
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LOGIN",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "uiTokenCaptured": true
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "STUDENT",
+            "activeRoleExpected": true,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HELPER_PERMISSIONS",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "markPermission": true
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HOMEWORK_DEFAULT",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "itemsIsArray": true,
+            "itemCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "targetTitleEqual": true,
+            "semesterEqual": true,
+            "rangeContainsTarget": true,
+            "serverDateEqual": true
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_LIST",
+          "facts": {
+            "httpStatus": "200",
+            "selectedDateEqual": true,
+            "groupPathEqual": true,
+            "bodyParsed": true,
+            "itemsIsArray": true,
+            "lessonCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED",
+            "transferPending": false
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_ROSTER",
+          "facts": {
+            "httpStatus": "200",
+            "lessonPathEqual": true,
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "entriesIsArray": true,
+            "entryCount": 3,
+            "targetCount": 1,
+            "targetPresent": true,
+            "studentPresent": true,
+            "assistantPresent": true,
+            "targetNameEqual": true,
+            "reportEditableKnown": true,
+            "reportEditable": true,
+            "rowEditableKnown": true,
+            "rowEditable": true,
+            "normalizedRowEditable": true,
+            "blockedReasonPresent": false,
+            "reportedEditBlock": "NONE",
+            "targetStatus": "EMPTY",
+            "lessonIdEqual": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "semesterEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED"
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "MARK_WRITE",
+          "facts": {
+            "httpStatus": "200"
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_ROSTER",
+          "facts": {
+            "httpStatus": "200",
+            "lessonPathEqual": true,
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "entriesIsArray": true,
+            "entryCount": 3,
+            "targetCount": 1,
+            "targetPresent": true,
+            "studentPresent": true,
+            "assistantPresent": true,
+            "targetNameEqual": true,
+            "reportEditableKnown": true,
+            "reportEditable": true,
+            "rowEditableKnown": true,
+            "rowEditable": true,
+            "normalizedRowEditable": true,
+            "blockedReasonPresent": false,
+            "reportedEditBlock": "NONE",
+            "targetStatus": "PRESENT",
+            "lessonIdEqual": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "semesterEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED"
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "STUDENT",
+            "activeRoleExpected": true,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HELPER_PERMISSIONS",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "markPermission": false
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HOMEWORK_DEFAULT",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "itemsIsArray": true,
+            "itemCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "targetTitleEqual": true,
+            "semesterEqual": true,
+            "rangeContainsTarget": true,
+            "serverDateEqual": true
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "DOM",
+          "facts": {
+            "journalCount": 0,
+            "rowCount": 0,
+            "targetRowCount": 0,
+            "targetButtonCount": 0,
+            "clearButtonCount": 0,
+            "homeworkCount": 0,
+            "homeworkCompleteCount": 0,
+            "homeworkIncompleteCount": 0,
+            "alertCount": 0,
+            "loginVisible": false,
+            "navigationVisible": true,
+            "rolePickerVisible": false,
+            "targetRowVisible": false,
+            "targetButtonVisible": false,
+            "targetButtonEnabled": false,
+            "clearButtonVisible": false,
+            "clearButtonEnabled": false,
+            "homeworkVisible": false,
+            "homeworkCompleteVisible": false,
+            "homeworkIncompleteVisible": false,
+            "domStatus": "ABSENT_ROW",
+            "targetNameEqual": false,
+            "journalBusy": false
+          }
+        },
+        {
+          "caseCode": "HELPER",
+          "phase": "END",
+          "facts": {
+            "testStatus": "passed",
+            "diagnosticCompleted": true,
+            "droppedEventCount": 0
+          }
+        }
+      ],
+      "droppedEventCount": 0
+    },
+    "HEADMAN": {
+      "schema": "RCT_FOCUS3_CLOSED_V1",
+      "caseCode": "HEADMAN",
+      "events": [
+        {
+          "caseCode": "HEADMAN",
+          "phase": "BEGIN",
+          "facts": {
+            "diagnosticState": "OBSERVING"
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LOGIN",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "uiTokenCaptured": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "STUDENT",
+            "activeRoleExpected": false,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HELPER_PERMISSIONS",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "markPermission": false
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "HOMEWORK_DEFAULT",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "itemsIsArray": true,
+            "itemCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "targetTitleEqual": true,
+            "semesterEqual": true,
+            "rangeContainsTarget": true,
+            "serverDateEqual": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "STUDENT",
+            "activeRoleExpected": false,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "ROLE_CHANGE",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "uiTokenCaptured": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "HEADMAN",
+            "activeRoleExpected": true,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_LIST",
+          "facts": {
+            "httpStatus": "200",
+            "selectedDateEqual": true,
+            "groupPathEqual": true,
+            "bodyParsed": true,
+            "itemsIsArray": true,
+            "lessonCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED",
+            "transferPending": false
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_LIST",
+          "facts": {
+            "httpStatus": "200",
+            "selectedDateEqual": true,
+            "groupPathEqual": true,
+            "bodyParsed": true,
+            "itemsIsArray": true,
+            "lessonCount": 1,
+            "targetCount": 1,
+            "targetPresent": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED",
+            "transferPending": false
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_ROSTER",
+          "facts": {
+            "httpStatus": "200",
+            "lessonPathEqual": true,
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "entriesIsArray": true,
+            "entryCount": 3,
+            "targetCount": 1,
+            "targetPresent": true,
+            "studentPresent": true,
+            "assistantPresent": true,
+            "targetNameEqual": true,
+            "reportEditableKnown": true,
+            "reportEditable": true,
+            "rowEditableKnown": true,
+            "rowEditable": true,
+            "normalizedRowEditable": true,
+            "blockedReasonPresent": false,
+            "reportedEditBlock": "NONE",
+            "targetStatus": "EMPTY",
+            "lessonIdEqual": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "semesterEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED"
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "MARK_WRITE",
+          "facts": {
+            "httpStatus": "200"
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_ROSTER",
+          "facts": {
+            "httpStatus": "200",
+            "lessonPathEqual": true,
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "entriesIsArray": true,
+            "entryCount": 3,
+            "targetCount": 1,
+            "targetPresent": true,
+            "studentPresent": true,
+            "assistantPresent": true,
+            "targetNameEqual": true,
+            "reportEditableKnown": true,
+            "reportEditable": true,
+            "rowEditableKnown": true,
+            "rowEditable": true,
+            "normalizedRowEditable": true,
+            "blockedReasonPresent": false,
+            "reportedEditBlock": "NONE",
+            "targetStatus": "PRESENT",
+            "lessonIdEqual": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "semesterEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED"
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LESSON_ROSTER",
+          "facts": {
+            "httpStatus": "200",
+            "lessonPathEqual": true,
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "entriesIsArray": true,
+            "entryCount": 3,
+            "targetCount": 1,
+            "targetPresent": true,
+            "studentPresent": true,
+            "assistantPresent": true,
+            "targetNameEqual": true,
+            "reportEditableKnown": true,
+            "reportEditable": true,
+            "rowEditableKnown": true,
+            "rowEditable": true,
+            "normalizedRowEditable": true,
+            "blockedReasonPresent": false,
+            "reportedEditBlock": "NONE",
+            "targetStatus": "PRESENT",
+            "lessonIdEqual": true,
+            "groupEqual": true,
+            "subjectEqual": true,
+            "semesterEqual": true,
+            "dateEqual": true,
+            "lessonStatus": "PLANNED"
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": true,
+            "actorMatchesTeacher": false,
+            "activeRole": "HEADMAN",
+            "activeRoleExpected": true,
+            "requiredRoleSelectable": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LOGOUT",
+          "facts": {
+            "httpStatus": "204"
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "LOGIN",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "uiTokenCaptured": true
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "UI_RESPONSE",
+          "endpoint": "SESSION",
+          "facts": {
+            "httpStatus": "200",
+            "bodyParsed": true,
+            "bodyShapeKnown": true,
+            "actorMatchesTarget": false,
+            "actorMatchesTeacher": true,
+            "activeRole": "TEACHER",
+            "activeRoleExpected": false,
+            "requiredRoleSelectable": false
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "DOM",
+          "facts": {
+            "journalCount": 0,
+            "rowCount": 0,
+            "targetRowCount": 0,
+            "targetButtonCount": 0,
+            "clearButtonCount": 0,
+            "homeworkCount": 1,
+            "homeworkCompleteCount": 0,
+            "homeworkIncompleteCount": 0,
+            "alertCount": 0,
+            "loginVisible": false,
+            "navigationVisible": true,
+            "rolePickerVisible": false,
+            "targetRowVisible": false,
+            "targetButtonVisible": false,
+            "targetButtonEnabled": false,
+            "clearButtonVisible": false,
+            "clearButtonEnabled": false,
+            "homeworkVisible": true,
+            "homeworkCompleteVisible": false,
+            "homeworkIncompleteVisible": false,
+            "domStatus": "ABSENT_ROW",
+            "targetNameEqual": false,
+            "journalBusy": false
+          }
+        },
+        {
+          "caseCode": "HEADMAN",
+          "phase": "END",
+          "facts": {
+            "testStatus": "passed",
+            "diagnosticCompleted": true,
+            "droppedEventCount": 0
+          }
+        }
+      ],
+      "droppedEventCount": 0
+    }
+  },
+  "missing_members": [],
+  "source_assertions": "UNCHANGED_ACCEPTED_FIRST3",
+  "raw_logs_XML_HTML_error_context_read": false,
+  "buffer_limit": "POST_BUFFER_CLASSIFIER_NOT_HARD_RSS_BOUND",
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "root_reader_terminal": {
+    "direct_pid": 619231,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 619231,
+        "start_ticks": 19881646
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "private_input_gone": true,
+  "spec_sha256": "1baa244f10df755235b288d2f570569231aff7a946f6dd55beae3f708e1d28e6",
+  "actual_pr_checkout_join": "PENDING_SEPARATE_SAFE_PRODUCER_JOIN",
+  "separate_actual_safe_producer_checkout_join": "docs/validation/cloud-20261011/receipts/current-f8b-Auth-checkout.safe.json",
+  "actual_checkout_merge_sha": "5b17c81248229d9b142a2b3580ce5de6657c6bb6"
+}

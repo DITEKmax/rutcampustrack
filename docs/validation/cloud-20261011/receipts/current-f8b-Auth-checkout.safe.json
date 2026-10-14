@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-14T02:38:46.144714+00:00",
+  "producer_head": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+  "actual_safe_producer": {
+    "checkoutSha": "5b17c81248229d9b142a2b3580ce5de6657c6bb6",
+    "prHeadSha": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+    "service": "auth-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38499807565",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "git_api_commit": {
+    "sha": "5b17c81248229d9b142a2b3580ce5de6657c6bb6",
+    "tree": "94bfb5d4b08c7a72bfaf6a64032a2f8dcbb8aaea",
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "f8b09391978b2a4e0fc201fac957fa5b3486d3b1"
+    ]
+  },
+  "head_tree": "94bfb5d4b08c7a72bfaf6a64032a2f8dcbb8aaea",
+  "actual_checkout_parent_tree_join": "PASS",
+  "Auth_counts": {
+    "PASSED": 172,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "case_identity_limit": "aggregate cannot invent names; P09 existing exact SOURCE_METHOD retained",
+  "artifact_id": 11866065671,
+  "archive_sha256": "d0be19deb9bc009d94de565b6706deb209459e15a4a225aacc27de8f11beb00b",
+  "root_reader_terminal": {
+    "direct_pid": 620386,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 620386,
+        "start_ticks": 19929984
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "private_input_gone": true,
+  "rawlogs_XML_read": false
+}

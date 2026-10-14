@@ -12662,7 +12662,7 @@
     {
       "id": "EVIDENCE-Q15-CURRENT-APPLICATION-RECOVERY-INDEPENDENT-REVIEW",
       "path": "docs/validation/cloud-20261011/receipts/Q15-current-application-recovery-independent-review.safe.md",
-      "sha256": "91daf4c6417b1612a7e5c82a435270a70c9e403e26aea31aa4ffd6688446bb76",
+      "sha256": "86720ee07d3f77a11d9380aad86d73061ea7c42bf5b7ad454a7b3832d310b18e",
       "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
       "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
       "kind": "validation-evidence-not-product-spec"
@@ -12713,6 +12713,86 @@
       "sha256": "f583da60e82784421fb1105dd5885af5b79d1642d18670873b47db698d903c23",
       "status": "6hooksPASS-0FAIL-reaped-2wholeReviewAddressedAPPROVE_SOURCE_LOCAL",
       "revision": "fbcb788fd19ebf6444f9af8217916d11cdbc9e85",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-F8B-FIRST3",
+      "path": "docs/validation/cloud-20261011/receipts/current-f8b-FIRST3.safe.json",
+      "sha256": "6cdd78da96c6b3c1c09fcae9818b3260114bf83de405f72f7be9fa25c6cf12e1",
+      "status": "actual3PASS-Rootclosedread0-reaped",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-F8B-NEXT5",
+      "path": "docs/validation/cloud-20261011/receipts/current-f8b-next5.safe.json",
+      "sha256": "a6676ef49691adb545fad445d494d9aab3bdb81a283ffa9bfc5fafe6722aa7c3",
+      "status": "actual5PASS-Rootclosedread0-reaped",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "Q03-FINITE-AUTH-REUSE",
+      "path": "docs/validation/cloud-20261011/receipts/Q03-existing-finite-auth-proof-reuse.safe.json",
+      "sha256": "345729ae3a45fc35293d9562d681707e93b944b2f83f67ffebab885f32b85868",
+      "status": "10boundedobservations-currentSourcepins-historicalnamedPASS",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-F8B-APPLICATION-RECOVERY",
+      "path": "docs/validation/cloud-20261011/receipts/current-f8b-application-recovery.safe.json",
+      "sha256": "f31d8a77cdfa112080c836a5db3b80446ca6842d3e67fb45ea78f98d41009744",
+      "status": "actualSEED-FAIL91206ms-beforebackup-causeUNKNOWN",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-F8B-GATES-METADATA",
+      "path": "docs/validation/cloud-20261011/receipts/current-f8b-gates-metadata.safe.json",
+      "sha256": "432d07b2aa477bac2f2013f2946883f47de47612d0896bc2fa6200bb883e7c9b",
+      "status": "CIsoleRecoveryFAIL-CoverageSecurityOpenAPISUCCESS-allcleanupSUCCESS",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-F8B-AUTH-CHECKOUT",
+      "path": "docs/validation/cloud-20261011/source-ledger.json",
+      "sha256": "1159e219b30cb9d20b88aef192776f08d23420da4aa635b4bf4f73412256b631",
+      "status": "Auth172PASS-actualcheckout5b17-Gitparents-baseline-head-treeequal",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-F8B-REAL-PUSH",
+      "path": "docs/validation/cloud-20261011/receipts/current-f8b-real-push-readback.safe.json",
+      "sha256": "c72a490b455903e14a30f617d01295e7b059a546ec33157dbc01f04f87e0d26e",
+      "status": "actualpushreadback localremotePRheadf8b equal-mainunchanged",
+      "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "Q04-ADMIN-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-admin-journey-independent-review.safe.md",
+      "sha256": "f6e0da226c7759f307c878449e781cbfdee10cae676631cf0a6fd76cb1b56749",
+      "status": "whole-R1-configselectionAPPROVE_SOURCE_LOCAL",
+      "revision": "f27583dba73b05d8f20dce2752f75eb50423e2d6",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "Q04-Q15-COHERENT-LOCAL-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-Q15-current-localchecks.safe.json",
+      "sha256": "2c43d5652024f0d2caeafa950ef333a2d1f76ccda7b8aa8bd8ab784eaae16304",
+      "status": "5sourcepins-formatTSCdiscoveryPASS-runtimeNOT_RUN",
+      "revision": "f27583dba73b05d8f20dce2752f75eb50423e2d6",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-Q04-Q15-NORMAL-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/current-Q04-Q15-normal-checks.safe.json",
+      "sha256": "72131b9022d01d1302c5af2ea6baaaab9c203da9874fd7e9fb08a6e14f3860ee",
+      "status": "6normalhooksPASS-0FAIL-reaped-5approvedSourcepins",
+      "revision": "f27583dba73b05d8f20dce2752f75eb50423e2d6",
       "kind": "validation-evidence-not-product-spec"
     }
   ],

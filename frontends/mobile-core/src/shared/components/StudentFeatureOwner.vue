@@ -1198,6 +1198,7 @@ function ensureRequestOptions(): void {
 
 watch([offline, scope], () => {
   if (route.value.root === 'today') ensureRequestOptions();
+  if (!offline.value && route.value.id === 'more/requests') ensureRequestsRoute(route.value);
 });
 
 function bindTheme(controller: MobileThemeController | null): void {
@@ -1951,6 +1952,17 @@ function checkin(lesson: TodayLesson): void {
       }
       acquiringLessonId.value = null;
       return today.mutation.mutateAsync({ ...attempt, scope: requestScope });
+    })
+    .then((ack) => {
+      if (
+        disposed ||
+        ownerIdentity.value !== requestIdentity ||
+        scope.value?.activeRole !== 'STUDENT' ||
+        ack.request?.origin !== 'AUTO_GEO_FAILURE'
+      )
+        return;
+      requests.controller.invalidateOpenBucket();
+      if (route.value.id === 'more/requests') ensureRequestsRoute(route.value);
     })
     .catch((error: unknown) => {
       if (disposed || ownerIdentity.value !== requestIdentity) return;

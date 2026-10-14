@@ -1,12 +1,15 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
 import java.nio.charset.StandardCharsets;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.attendance.contract.api.HeadmanRequestApi;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetIncreaseRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDetailResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
@@ -21,10 +24,32 @@ public class HeadmanRequestController implements HeadmanRequestApi {
 
     private final HeadmanRequestService service;
     private final RequestContext requestContext;
+    private final StudentRequestService studentRequests;
 
-    public HeadmanRequestController(HeadmanRequestService service, RequestContext requestContext) {
+    public HeadmanRequestController(
+            HeadmanRequestService service,
+            RequestContext requestContext,
+            StudentRequestService studentRequests) {
         this.service = service;
         this.requestContext = requestContext;
+        this.studentRequests = studentRequests;
+    }
+
+    @Override
+    @RequireRole(UserRole.STUDENT)
+    public ResponseEntity<HeadmanLateCheckinBudgetResponse> budget(long studentId) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(studentRequests.headmanBudget(identity(), studentId));
+    }
+
+    @Override
+    @RequireRole(UserRole.STUDENT)
+    public ResponseEntity<HeadmanLateCheckinBudgetResponse> increaseBudget(
+            long studentId, HeadmanLateCheckinBudgetIncreaseRequest body) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(studentRequests.increaseHeadmanBudget(identity(), studentId, body));
     }
 
     @Override

@@ -14057,6 +14057,206 @@
       "sha256": "38c94ceaa91ff5102ea5788572d7c4637f1c9167602651e95488ebac72f98d37",
       "revision_base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
       "status": "authorchecksPASSorqualified17GREEN; Root6mergedchecksPASS45.55s; ordinaryfinalhooks/pushpending; actualcorrectedbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "4b7ec98683fddd758e40881a5dee76f86e12a002b8b3c7d95d92419c15f569ae",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "sha256": "a413de3423bf9553a482874ff2c2bd8a6d0f74619e62b93dc96f523dcd7e9802",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+      "path": "frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+      "sha256": "984e2d2eef2f31732953498a344b4f0ec6dae9bdbdd62e5ee547fad8c13a8d18",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss",
+      "path": "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss",
+      "sha256": "6e519b01e0ef2a393db1e3fb2aefb395f085231408224bb530f759c6168124d3",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts",
+      "path": "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts",
+      "sha256": "a5e918d99cbd7ceb27277efd4cae7cfff6460d92d1dd80700f87518408888c06",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/features/requests/requests-controller.ts",
+      "path": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+      "sha256": "e6654628639c7a93a1b8336a347054b4ddd7d6ebee70146939cbd7c5ec090e98",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+      "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+      "sha256": "a0e2031de24e956674b1f80537a74dcebf3a46506b6560cc208be6faae4232d6",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+      "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+      "sha256": "7a71cce32b1e8c87bf6e88899d91957661129fab5a38052516a0c10f77eb99fc",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java",
+      "sha256": "ae2d4f30b947046d161d1d95fe73ee1e7d305cb85fd0b3b951023308f03a63fb",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java",
+      "sha256": "b99a143404095a7e720a696258faee4b3e585635621b39d3ce691182221a8c51",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java",
+      "sha256": "36173384546d49d5dddc753f4316e1e485fff149b917a88e2c8ae9046306a591",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java",
+      "sha256": "ea7c8b1404dac58a1047c91d183be346e368af3dcb628b58ae39d5033a9a4e0d",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "sha256": "a60b268968b930bfd3468daf517cb948642299d104caa12ff8b3e802f9b385c3",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+      "sha256": "2b5508c6404a9653af906d4becb0b7ce59305d3c0e11747b64c4b21403cdcebc",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sha256": "b18499341397de11faf586013ec33332933ef26012022ad35fbb399b986cf30a",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "sha256": "124d94a13aa5e71a469a0e93d220ca1c4a6a357fd1ec90405be5452df46a506c",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java",
+      "sha256": "85ad9e471d0607b97bf69aa30e854fe92dc736cdc2d98638eeb9d96ec89ccf6c",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+      "sha256": "28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "7897d1898c006abdef742610fe9590f0c2be0e21e098ecc051b1122b842634ef",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/fixtures/application-recovery.spec.ts",
+      "path": "tests/e2e/fixtures/application-recovery.spec.ts",
+      "sha256": "525cfc1f05ffa5b0f6fd0669a2f50c2694f01b7897990e2f62f3368f9ea7923d",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+      "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+      "sha256": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/fixtures/safe-reporter.ts",
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "d60ad8164bfaa5c17aee8807cf4535f0f78b450189de21d8d68807fe913cd280",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "sha256": "8a739d1ad217c0148efa27b935e97bcfd0ab884b784f57bfa15e9271fc3d952f",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-4065-NEXT-tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f",
+      "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
     }
   ],
   "research_receipt": {

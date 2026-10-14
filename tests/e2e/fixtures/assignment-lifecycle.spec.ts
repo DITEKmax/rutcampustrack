@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { type APIRequestContext, expect } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit, type SyntheticUser } from './mobile-dataset';
@@ -454,7 +455,16 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
   expect(pending.closeUrl === checkpoint.closeUrl && pending.closeKey === checkpoint.closeKey).toBe(
     true,
   );
+  const restartReadyUntil = assignmentRestartDeadline(
+    process.env.RCT_ASSIGNMENT_RESTART_READY_UNTIL_MS,
+  );
   const headman = await admit(request, checkpoint.headman, 'HEADMAN');
+  const admin = await admit(request, TEST_USERS.admin, 'ADMIN');
+  await assignmentRestartReady(request, admin, checkpoint.semesterId, restartReadyUntil);
+  requireValue(
+    Date.now() < restartReadyUntil,
+    'Assignment same-channel readiness deadline expired before resume',
+  );
   const closed = await close(request, headman, checkpoint);
   if (closed.status() !== 204)
     throw datasetHttpFailure('DELETE', checkpoint.closeUrl, closed.status());
@@ -593,6 +603,93 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
     replacementOperationId: replaced.operationId,
     targetAssignmentId: replaced.targetAssignmentId,
   });
+}
+
+// CI sets this absolute UTC epoch-millisecond deadline before starting the
+// original Schedule container. HTTP health and this same-channel RPC witness
+// share the existing 120-second restart budget; no new readiness window starts.
+function assignmentRestartDeadline(value: string | undefined): number {
+  requireValue(
+    typeof value === 'string' && /^[1-9][0-9]{0,15}$/.test(value),
+    'Assignment restart deadline must be absolute integer UTC milliseconds',
+  );
+  const deadline = Number(value);
+  const now = Date.now();
+  requireValue(
+    Number.isSafeInteger(deadline) && deadline > now && deadline <= now + 120000,
+    'Assignment restart deadline must retain the original bounded restart window',
+  );
+  return deadline;
+}
+
+function assignmentPreviewMatches(value: unknown, semesterId: number): boolean {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  const preview = value as Record<string, unknown>;
+  if (
+    preview.semesterId !== semesterId ||
+    typeof preview.semesterName !== 'string' ||
+    preview.semesterName.length === 0 ||
+    typeof preview.priorState !== 'string' ||
+    !['ACTIVE', 'INACTIVE', 'ARCHIVED'].includes(preview.priorState) ||
+    !Number.isSafeInteger(preview.stateVersion) ||
+    Number(preview.stateVersion) < 0 ||
+    typeof preview.previewDigest !== 'string' ||
+    !/^[a-f0-9]{64}$/i.test(preview.previewDigest) ||
+    typeof preview.counts !== 'object' ||
+    preview.counts === null ||
+    Array.isArray(preview.counts)
+  )
+    return false;
+  const counts = preview.counts as Record<string, unknown>;
+  return [
+    'scheduleTemplates',
+    'oneOffLessons',
+    'lessons',
+    'assignments',
+    'homeworks',
+    'attendanceMarks',
+    'studentRequests',
+  ].every((key) => Number.isSafeInteger(counts[key]) && Number(counts[key]) >= 0);
+}
+
+async function assignmentRestartReady(
+  request: APIRequestContext,
+  admin: Actor,
+  semesterId: number,
+  readyUntil: number,
+): Promise<void> {
+  const path = `/api/academic/semesters/${semesterId}/delete-preview`;
+  while (true) {
+    const remaining = readyUntil - Date.now();
+    requireValue(remaining > 0, 'Assignment same-channel readiness deadline expired');
+    const response = await request.get(path, {
+      headers: admin.headers(),
+      timeout: Math.min(remaining, 3000),
+    });
+    try {
+      requireValue(Date.now() < readyUntil, 'Assignment same-channel readiness deadline expired');
+      if (response.status() === 200) {
+        let preview: unknown;
+        try {
+          preview = await response.json();
+        } catch {
+          throw new Error('Assignment readiness preview must be valid JSON');
+        }
+        requireValue(Date.now() < readyUntil, 'Assignment same-channel readiness deadline expired');
+        requireValue(
+          assignmentPreviewMatches(preview, semesterId),
+          'Assignment readiness preview must match the checkpoint semester and DTO',
+        );
+        return;
+      }
+      if (response.status() !== 503) throw datasetHttpFailure('GET', path, response.status());
+    } finally {
+      await response.dispose();
+    }
+    const remainingAfterRead = readyUntil - Date.now();
+    requireValue(remainingAfterRead > 0, 'Assignment same-channel readiness deadline expired');
+    await delay(Math.min(500, remainingAfterRead));
+  }
 }
 
 test('assignment lifecycle API phase', async ({ playwright }, info) => {

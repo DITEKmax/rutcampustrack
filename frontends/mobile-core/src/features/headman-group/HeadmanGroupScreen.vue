@@ -12,6 +12,8 @@ import {
   type HeadmanGroupMember,
   type HeadmanPermissionOption,
   type HeadmanRosterFormat,
+  type HeadmanLateCheckinBudget,
+  type HeadmanBudgetIncrease,
 } from './headman-group-client';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import type { ReportDownloadFormat, ReportDownloadPort } from '../../shared/report-download-client';
@@ -70,6 +72,14 @@ interface PermissionIntent {
 const intent = ref<PermissionIntent | null>(null);
 const confirmationFlow = new PermissionConfirmationFlow();
 const confirmation = ref<PermissionConfirmationState | null>(null);
+const budget = ref<HeadmanLateCheckinBudget | null>(null);
+const budgetLoading = ref(false),
+  budgetBusy = ref(false);
+const budgetError = ref<string | null>(null),
+  budgetNotice = ref<string | null>(null);
+const budgetIncrease = ref('');
+const budgetIntent = ref<(HeadmanBudgetIncrease & { studentId: number }) | null>(null);
+let budgetRevision = 0;
 const baselineAssistantId = ref<number | null>(null);
 let loadRevision = 0,
   ownerRevision = 0,
@@ -231,6 +241,131 @@ const writable = computed(
     member.value?.status === 'ACTIVE' &&
     !isMemberHeadman(member.value),
 );
+const budgetWritable = computed(
+  () =>
+    !props.offline &&
+    !props.readOnly &&
+    !denied.value &&
+    isHeadman.value &&
+    props.actorHeadman &&
+    props.actorUserId !== null &&
+    props.api !== null &&
+    !loading.value &&
+    !busy.value &&
+    !intent.value &&
+    member.value?.status === 'ACTIVE' &&
+    member.value.groupId === props.groupId &&
+    !budgetLoading.value &&
+    !budgetBusy.value &&
+    budget.value !== null,
+);
+const increaseValue = computed(() =>
+  /^[1-9]\d*$/.test(budgetIncrease.value) && Number(budgetIncrease.value) <= 2147483647
+    ? Number(budgetIncrease.value)
+    : null,
+);
+
+async function loadBudget(): Promise<void> {
+  const revision = ++budgetRevision,
+    owner = ownerRevision;
+  const api = props.api,
+    target = member.value?.id;
+  budget.value = null;
+  if (
+    !api ||
+    !target ||
+    view.value !== 'detail' ||
+    !isHeadman.value ||
+    !props.actorHeadman ||
+    props.offline ||
+    props.readOnly ||
+    denied.value ||
+    member.value?.status !== 'ACTIVE'
+  ) {
+    budgetLoading.value = false;
+    return;
+  }
+  budgetLoading.value = true;
+  budgetError.value = null;
+  try {
+    const next = await api.getLateCheckinBudget(target);
+    if (owner !== ownerRevision || revision !== budgetRevision || disposed || props.offline) return;
+    budget.value = next;
+  } catch (cause) {
+    if (
+      owner !== ownerRevision ||
+      revision !== budgetRevision ||
+      disposed ||
+      cause instanceof StaleSessionGenerationError
+    )
+      return;
+    if (cause instanceof HeadmanGroupApiError && [401, 403].includes(cause.response.status)) {
+      denied.value = true;
+      budgetIntent.value = null;
+    }
+    budgetError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить лимит.';
+    emit('error', cause);
+  } finally {
+    if (owner === ownerRevision && revision === budgetRevision) budgetLoading.value = false;
+  }
+}
+
+async function increaseBudget(): Promise<void> {
+  if (!budgetWritable.value || !member.value || !props.api || !budget.value) return;
+  if (!budgetIntent.value) {
+    if (increaseValue.value === null) return;
+    budgetIntent.value = {
+      studentId: member.value.id,
+      semesterId: budget.value.semesterId,
+      increase: increaseValue.value,
+      requestKey: crypto.randomUUID(),
+    };
+  }
+  const pending = budgetIntent.value,
+    api = props.api,
+    owner = ownerRevision;
+  const revision = budgetRevision;
+  budgetBusy.value = true;
+  budgetError.value = null;
+  budgetNotice.value = null;
+  try {
+    await api.increaseLateCheckinBudget(pending.studentId, {
+      semesterId: pending.semesterId,
+      increase: pending.increase,
+      requestKey: pending.requestKey,
+    });
+    if (owner !== ownerRevision || revision !== budgetRevision || disposed) return;
+    // An exact replay returns the original snapshot; only a fresh read is the current counter.
+    await loadBudget();
+    if (owner !== ownerRevision || disposed || !budget.value) return;
+    budgetIntent.value = null;
+    budgetIncrease.value = '';
+    budgetNotice.value = 'Лимит увеличен. Остаток подтверждён сервером.';
+  } catch (cause) {
+    if (
+      owner !== ownerRevision ||
+      revision !== budgetRevision ||
+      disposed ||
+      cause instanceof StaleSessionGenerationError
+    )
+      return;
+    if (
+      cause instanceof HeadmanGroupApiError &&
+      cause.response.status >= 400 &&
+      cause.response.status < 500
+    ) {
+      budgetIntent.value = null;
+      if ([401, 403].includes(cause.response.status)) {
+        denied.value = true;
+        budget.value = null;
+      }
+      budgetError.value = cause.message;
+    } else budgetError.value = 'Ответ не подтверждён. Повтори увеличение с тем же запросом.';
+    emit('error', cause);
+  } finally {
+    if (owner === ownerRevision && !disposed) budgetBusy.value = false;
+  }
+}
 function isMemberHeadman(item: HeadmanGroupMember | null): boolean {
   if (!item) return false;
   if (item.roles !== null && item.roles !== undefined)
@@ -258,6 +393,7 @@ function openMember(item: HeadmanGroupMember): void {
   notice.value = null;
 }
 function openPermissions(): void {
+  if (budgetBusy.value || budgetIntent.value) return;
   if (!member.value || isMemberHeadman(member.value)) return;
   baselineAssistantId.value = helper.value?.id ?? null;
   baseline.value = [...(helper.value?.permissions ?? [])];
@@ -280,6 +416,11 @@ function goBack(): void {
   } else emit('back');
 }
 function back(): boolean {
+  if (budgetBusy.value || budgetIntent.value) {
+    budgetError.value =
+      'Результат увеличения ещё не подтверждён. Повтори запрос или проверь лимит.';
+    return true;
+  }
   if (rosterOpen.value) {
     sheet.value?.close();
     rosterOpen.value = false;
@@ -491,9 +632,36 @@ async function commit(): Promise<void> {
   }
 }
 watch(
+  () =>
+    [
+      view.value,
+      memberId.value,
+      props.api,
+      props.groupId,
+      props.actorUserId,
+      props.actorHeadman,
+      props.assistantPermissions,
+      props.offline,
+      props.readOnly,
+    ] as const,
+  () => {
+    budgetRevision++;
+    budget.value = null;
+    budgetLoading.value = false;
+    budgetError.value = null;
+    budgetNotice.value = null;
+    if (!props.actorHeadman || !isHeadman.value || props.readOnly) budgetIntent.value = null;
+    if (!props.offline) void loadBudget();
+  },
+  { flush: 'sync' },
+);
+watch(
   () => [props.api, props.groupId, props.actorUserId] as const,
   () => {
     ownerRevision++;
+    budgetIntent.value = null;
+    budgetBusy.value = false;
+    budgetIncrease.value = '';
     loadRevision++;
     hasSnapshot.value = false;
     members.value = [];
@@ -655,6 +823,64 @@ defineExpose({ back });
         <h2>{{ member.fullName }}</h2><p>{{ roleLabel(member) }}</p>
       </section>
       <template v-if="view === 'detail'">
+        <section
+          v-if="isHeadman && actorHeadman"
+          class="headman-group__summary"
+          aria-labelledby="headman-budget-title"
+        >
+          <h2 id="headman-budget-title">
+            Ручные запросы на отметку
+          </h2>
+          <p
+            v-if="budgetLoading"
+            role="status"
+          >
+            Загружаем лимит…
+          </p>
+          <p
+            v-if="budget"
+            role="status"
+          >
+            Осталось попыток: {{ budget.remaining }} из {{ budget.limit }}. Использовано:
+            {{ budget.used }}.
+          </p>
+          <StudentWarningBlock
+            v-if="budgetError"
+            severity="error"
+            title="Лимит не подтверждён"
+            :message="budgetError"
+            action-label="Обновить лимит"
+            :action-disabled="offline || budgetLoading || budgetBusy"
+            @action="loadBudget"
+          />
+          <p
+            v-if="budgetNotice"
+            role="status"
+          >
+            {{ budgetNotice }}
+          </p>
+          <label class="headman-group__field">Добавить попытки<input
+            v-model="budgetIncrease"
+            inputmode="numeric"
+            pattern="[1-9][0-9]*"
+            type="text"
+            :disabled="!budgetWritable || Boolean(budgetIntent)"
+            aria-describedby="budget-increase-hint"
+          ></label>
+          <p id="budget-increase-hint">
+            Добавь положительное целое число. Использованные попытки сохранятся.
+          </p>
+          <button
+            type="button"
+            class="headman-group__primary"
+            :disabled="!budgetWritable || (!budgetIntent && increaseValue === null)"
+            @click="increaseBudget"
+          >
+            {{
+              budgetBusy ? 'Сохраняем…' : budgetIntent ? 'Повторить увеличение' : 'Увеличить лимит'
+            }}
+          </button>
+        </section>
         <section class="headman-group__summary">
           <h2>Права помощника</h2><p>
             {{

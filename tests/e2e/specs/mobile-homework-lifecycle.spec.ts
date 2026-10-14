@@ -1,12 +1,22 @@
 import { randomUUID } from 'node:crypto';
-import { Actor, test, expect } from '../fixtures/mobile-dataset';
+import type { Locator, Page } from '@playwright/test';
+import {
+  Actor,
+  MobileDataset,
+  admit,
+  selectPwaRole,
+  test,
+  expect,
+} from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
+import { datasetHttpFailure } from '../fixtures/safe-reporter';
 import {
   http,
   openAssistant,
   singleCapability,
   registerPrivateSuite,
+  oneOff,
 } from '../fixtures/cloud-accepted-support';
 
 registerPrivateSuite();
@@ -201,3 +211,650 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   });
   expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(history);
 });
+
+// These mutations must not reuse the original worker-scoped lesson/homework.
+const isolated = test.extend<{ scenario: MobileDataset }>({
+  scenario: async ({ dataset, teachingInstant }, use) => {
+    const own = new MobileDataset(dataset.request, dataset.admin, teachingInstant);
+    await own.initialize();
+    await use(own);
+  },
+});
+
+function shifted(date: string, days: number): string {
+  return new Date(Date.parse(`${date}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+}
+
+function homeworkCard(page: Page, title: string): Locator {
+  return page.locator('.homework-card').filter({ has: page.getByText(title, { exact: true }) });
+}
+
+async function completeCard(page: Page, card: Locator, id: number): Promise<void> {
+  const slider = card.getByRole('slider');
+  await slider.focus();
+  for (let index = 0; index < 4; index++) await slider.press('ArrowRight');
+  const saved = http(page, `/api/v1/student/homework/${id}/completion`, 'PUT');
+  await slider.press('Enter');
+  expect((await saved).status()).toBe(200);
+  await expect(card).toHaveAttribute('data-pending', 'false');
+  await expect(card).toHaveAttribute('data-completion', 'completed');
+  await expect(card.getByRole('slider')).toBeFocused();
+}
+
+async function publishHomework(
+  dataset: MobileDataset,
+  date: string,
+  number: number | null,
+  title: string,
+  description = 'Синтетическое задание',
+  link: string | null = null,
+) {
+  const input = {
+    groupId: dataset.group.id,
+    subjectId: dataset.subject.id,
+    semesterId: dataset.semester.id,
+    lessonType: 'LECTURE',
+    lessonDate: date,
+    lessonNumber: number,
+    bindingMode: number === null ? 'DATE' : 'LESSON',
+    requestKey: randomUUID(),
+    title,
+    description,
+    link,
+  };
+  let result = await dataset.headmanActor.call(
+    'POST',
+    '/api/academic/homeworks',
+    input,
+    [200, 201, 202],
+  );
+  await expect
+    .poll(
+      async () => {
+        if (result.state !== 'PENDING' && Number.isSafeInteger(result.id)) return true;
+        result = await dataset.headmanActor.call(
+          'POST',
+          '/api/academic/homeworks',
+          input,
+          [200, 201, 202],
+        );
+        return result.state !== 'PENDING' && Number.isSafeInteger(result.id);
+      },
+      { timeout: 60000, message: 'Own homework publication completes with the same request key' },
+    )
+    .toBe(true);
+  return result;
+}
+
+// JS-HEADMAN-16/17/21/28/29, B36/37/38. Helper next/placement are genuine
+// API seams; Assistant Vue supplies publication/content edit. The separate
+// HEADMAN carrier reads a different publisher's archived item and history.
+// This does not claim that the Assistant carrier has the HEADMAN wizard.
+isolated(
+  'MANAGE_HOMEWORK next lesson and completed binding survive transfer then open as read-only non-author archive @real-mobile',
+  async ({ page, scenario: dataset }) => {
+    test.setTimeout(120000);
+    const firstDate = shifted(dataset.today, 21);
+    const editedDate = shifted(firstDate, 1);
+    const targetDate = shifted(firstDate, 2);
+    expect(targetDate <= dataset.semester.dateTo).toBe(true);
+    const first = await oneOff(dataset, firstDate, 2);
+    const second = await oneOff(dataset, editedDate, 3);
+    const { user } = await singleCapability(dataset, 'MANAGE_HOMEWORK');
+    const helper = await admit(dataset.request, user, 'STUDENT');
+    expect(
+      assistantPermissionCodes(await helper.call('GET', '/api/academic/assistants/me/permissions')),
+    ).toEqual(['MANAGE_HOMEWORK']);
+    const query = new URLSearchParams({
+      groupId: String(dataset.group.id),
+      semesterId: String(dataset.semester.id),
+      subjectId: String(dataset.subject.id),
+      lessonType: 'LECTURE',
+      fromDate: dataset.tomorrow,
+    });
+    const next = await helper.call('GET', `/api/schedule/lessons/next?${query}`);
+    expect(
+      next.lessonId === first.physicalLessonId &&
+        next.date === firstDate &&
+        next.lessonNumber === 2,
+    ).toBe(true);
+    const foreign = await dataset.request.get(
+      `/api/schedule/lessons/next?${new URLSearchParams({
+        ...Object.fromEntries(query),
+        groupId: String(dataset.otherGroup.id),
+      })}`,
+      { headers: helper.headers() },
+    );
+    expect(foreign.status()).toBe(403);
+
+    await loginPwa(page, user);
+    await openAssistant(page, 'Домашние задания');
+    await page.getByLabel('Дата', { exact: true }).fill(firstDate);
+    await page.getByRole('button', { name: /^Пара 2 ·/ }).click();
+    await page.getByRole('button', { name: 'Добавить', exact: true }).click();
+    const title = `${dataset.marker}-bound`;
+    await page.getByLabel('Название', { exact: true }).fill(title);
+    await page.getByLabel('Описание', { exact: true }).fill('Привязанное задание помощника');
+    const posted = http(page, '/api/academic/homeworks', 'POST');
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    const firstPost = await posted;
+    expect([200, 201, 202].includes(firstPost.status())).toBe(true);
+    // A 202 is a receipt, not publication success. Retry the same actual UI intent.
+    if (firstPost.status() === 202) {
+      await expect
+        .poll(
+          async () => {
+            const repeat = http(page, '/api/academic/homeworks', 'POST');
+            await page.getByRole('button', { name: 'Повторить запрос', exact: true }).click();
+            const response = await repeat;
+            expect([200, 201, 202].includes(response.status())).toBe(true);
+            return response.status() !== 202;
+          },
+          {
+            timeout: 60000,
+            message: 'Assistant publication leaves pending through its original intent',
+          },
+        )
+        .toBe(true);
+    }
+    await expect(
+      page.locator('.assistant-homework__item').getByText(title, { exact: true }),
+    ).toBeVisible();
+    const list = await helper.call(
+      'GET',
+      `/api/academic/homeworks?groupId=${dataset.group.id}&semesterId=${dataset.semester.id}&size=100`,
+    );
+    const matching = (list._embedded?.homeworkResponseList ?? list.content).filter(
+      (item: { title: string }) => item.title === title,
+    );
+    expect(matching.length === 1).toBe(true);
+    const original = matching[0];
+    const path = `/api/academic/homeworks/${original.id}`;
+    const historyPath = `${path}/history?size=100`;
+    expect(
+      original.publishedBy === user.id &&
+        original.bindingMode === 'LESSON' &&
+        original.lessonDate === firstDate &&
+        original.lessonNumber === 2 &&
+        original.archived === false,
+    ).toBe(true);
+    const historyBefore = await helper.call('GET', historyPath);
+    const edited = await helper.call('PUT', path, {
+      title,
+      description: original.description,
+      link: original.link,
+      expectedRevision: original.revision,
+      requestKey: randomUUID(),
+      bindingMode: 'LESSON',
+      lessonDate: editedDate,
+      lessonNumber: 3,
+    });
+    expect(
+      edited.id === original.id &&
+        edited.bindingId === original.bindingId &&
+        edited.publishedBy === user.id &&
+        edited.requestKey === original.requestKey &&
+        edited.lessonDate === editedDate &&
+        edited.lessonNumber === 3 &&
+        edited.revision === original.revision + 1,
+    ).toBe(true);
+    const historyEdited = await helper.call('GET', historyPath);
+    expect(
+      historyEdited.content.length === historyBefore.content.length + 1 &&
+        JSON.stringify(historyEdited.content.slice(0, -1)) ===
+          JSON.stringify(historyBefore.content),
+    ).toBe(true);
+    const edit = historyEdited.content.at(-1);
+    expect(
+      edit.action === 'EDITED' &&
+        edit.actorId === user.id &&
+        edit.before.lessonDate === firstDate &&
+        edit.after.lessonDate === editedDate,
+    ).toBe(true);
+    const control = await publishHomework(
+      dataset,
+      editedDate,
+      null,
+      `${dataset.marker}-date-control`,
+    );
+    await logoutPwa(page);
+
+    const admitted = await loginPwa(page, dataset.student);
+    const student = new Actor(dataset.request, admitted.accessToken, admitted.session);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    // The real completion-today union brings this future publication into the
+    // current browser feed without inventing a student calendar/deep-link API.
+    await student.call('PUT', `/api/v1/student/homework/${original.id}/completion`, {
+      completed: true,
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    const completedCard = homeworkCard(page, title);
+    await expect(completedCard).toHaveAttribute('data-completion', 'completed');
+    const feedPath = `/api/v1/student/homework?from=${firstDate}&to=${targetDate}`;
+    const completedFeed = await student.call('GET', feedPath);
+    const completed = completedFeed.items.find(
+      (item: { id: string }) => item.id === String(original.id),
+    );
+    expect(completed?.completed === true && typeof completed.completedAt === 'string').toBe(true);
+    const schedule = await dataset.headmanActor.call(
+      'GET',
+      `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${editedDate}&dateTo=${editedDate}&size=100`,
+    );
+    const physical = (schedule._embedded?.lessonResponseList ?? schedule.content).find(
+      (item: { id: number }) => item.id === second.physicalLessonId,
+    );
+    expect(Number.isSafeInteger(physical?.occurrenceRevision)).toBe(true);
+    const transfer = await dataset.headmanActor.call(
+      'POST',
+      `/api/schedule/lessons/${physical.id}/transfer`,
+      {
+        targetDate,
+        targetLessonNumber: 4,
+        targetRoom: 'Синтетическая новая аудитория',
+        expectedRevision: String(physical.occurrenceRevision),
+        requestKey: randomUUID(),
+      },
+      [200, 202],
+    );
+    await expect
+      .poll(
+        async () =>
+          (
+            await dataset.headmanActor.call(
+              'GET',
+              `/api/schedule/lesson-transfers/${transfer.operationId}`,
+            )
+          ).state,
+        { timeout: 60000, message: 'Real transfer participants durably complete' },
+      )
+      .toBe('COMPLETED');
+    const moved = await helper.call('GET', path);
+    expect(
+      moved.id === original.id &&
+        moved.bindingId === original.bindingId &&
+        moved.requestKey === original.requestKey &&
+        moved.publishedBy === user.id &&
+        moved.lessonDate === targetDate &&
+        moved.lessonNumber === 4 &&
+        moved.archived === false,
+    ).toBe(true);
+    expect(
+      JSON.stringify(await helper.call('GET', `/api/academic/homeworks/${control.id}`)) ===
+        JSON.stringify(control),
+    ).toBe(true);
+    const movedHistory = await helper.call('GET', historyPath);
+    expect(
+      JSON.stringify(movedHistory.content.slice(0, historyEdited.content.length)) ===
+        JSON.stringify(historyEdited.content) &&
+        movedHistory.content.length === historyEdited.content.length + 1 &&
+        movedHistory.content.at(-1).action === 'LESSON_TRANSFERRED',
+    ).toBe(true);
+    const movedFeed = await student.call('GET', feedPath);
+    const retained = movedFeed.items.filter(
+      (item: { id: string }) => item.id === String(original.id),
+    );
+    expect(
+      retained.length === 1 &&
+        retained[0].completed === true &&
+        retained[0].completedAt === completed.completedAt &&
+        retained[0].lessonDate === targetDate,
+    ).toBe(true);
+    await page.reload();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(completedCard).toHaveCount(1);
+    await expect(completedCard).toHaveAttribute('data-completion', 'completed');
+
+    const terminal = await dataset.headmanActor.call(
+      'GET',
+      `/api/schedule/lesson-transfers/${transfer.operationId}`,
+    );
+    await dataset.headmanActor.call(
+      'PATCH',
+      `/api/schedule/lessons/${terminal.targetLessonId}/cancel`,
+      { reason: 'Синтетический архив привязанного задания' },
+    );
+    await expect
+      .poll(
+        async () => {
+          const response = await dataset.request.get(`${path}?archived=true`, {
+            headers: helper.headers(),
+          });
+          try {
+            if (response.status() === 404) return false;
+            if (response.status() !== 200) throw datasetHttpFailure('GET', path, response.status());
+            let body: { id?: unknown; archived?: unknown } | null;
+            try {
+              body = await response.json();
+            } catch {
+              throw new Error('Archived homework readback must be valid JSON');
+            }
+            if (body === null || body.id !== original.id || body.archived !== true)
+              throw new Error('Archived homework readback must match the archived publication');
+            return true;
+          } finally {
+            await response.dispose();
+          }
+        },
+        {
+          timeout: 60000,
+          message: 'Cancelled binding becomes archived',
+        },
+      )
+      .toBe(true);
+    const archived = await helper.call('GET', `${path}?archived=true`);
+    const archivedHistory = await helper.call('GET', historyPath);
+    expect(
+      archived.id === moved.id &&
+        archived.bindingId === moved.bindingId &&
+        archived.publishedBy === user.id &&
+        JSON.stringify(archivedHistory) === JSON.stringify(movedHistory),
+    ).toBe(true);
+    const deniedArchived = await dataset.request.put(path, {
+      headers: helper.headers(),
+      data: {
+        title: `${title}-archive-denied`,
+        description: archived.description,
+        link: archived.link,
+        expectedRevision: archived.revision,
+        requestKey: randomUUID(),
+      },
+    });
+    expect(deniedArchived.status()).toBe(409);
+    expect(
+      JSON.stringify(await helper.call('GET', `${path}?archived=true`)) ===
+        JSON.stringify(archived),
+    ).toBe(true);
+    const archivedFeed = await student.call('GET', feedPath);
+    expect(archivedFeed.items.some((item: { id: string }) => item.id === String(original.id))).toBe(
+      false,
+    );
+    const deniedCompletion = await dataset.request.put(
+      `/api/v1/student/homework/${original.id}/completion`,
+      { headers: student.headers(), data: { completed: false } },
+    );
+    expect(deniedCompletion.status()).toBe(404);
+    await page.reload();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(homeworkCard(page, dataset.homework.title)).toBeVisible();
+    await expect(completedCard).toHaveCount(0);
+    // Terminal completion storage is separately proved by the existing real-PG
+    // HomeworkEditLifecycleIT.dateTerminalEventWinsBeforeAcademicFinalizationWithoutSuccessfulEditOrCompletionLoss.
+    // Keep the exact post-transfer timestamp/identity/history assertions above;
+    // ordinary students have no archived completion-read API to replace them.
+    await logoutPwa(page);
+
+    await loginPwa(page, dataset.headman);
+    await selectPwaRole(page, 'Староста');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
+    // Existing seven-day calendar, three weeks forward; no clock/semester mutation.
+    const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
+    const weeksForward = Math.floor((23 + weekdayOffset) / 7);
+    for (let index = 0; index < weeksForward; index++)
+      await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
+    const dayText = new Intl.DateTimeFormat('ru-RU', {
+      timeZone: 'Europe/Moscow',
+      day: 'numeric',
+      month: 'long',
+      weekday: 'long',
+    }).format(new Date(`${targetDate}T12:00:00Z`));
+    const dayLabel = dayText.charAt(0).toUpperCase() + dayText.slice(1);
+    await page.getByRole('button', { name: dayLabel, exact: true }).click();
+    await page.locator('.headman-homework__item').filter({ hasText: title }).click();
+    await expect(page.getByText('Архив · только просмотр', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Изменить задание', exact: true })).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole('button', { name: /Восстановить|Вернуть из архива/ })).toHaveCount(
+      0,
+    );
+    const readHistory = http(page, `/api/academic/homeworks/${original.id}/history`, 'GET');
+    await page.getByRole('button', { name: 'История изменений', exact: true }).click();
+    expect((await readHistory).status()).toBe(200);
+    await expect(
+      page.getByRole('region', { name: 'История изменений', exact: true }),
+    ).toContainText('Пара перенесена');
+    expect(
+      JSON.stringify(await dataset.headmanActor.call('GET', historyPath)) ===
+        JSON.stringify(archivedHistory),
+    ).toBe(true);
+  },
+);
+
+// JS-STUDENT-21/22 and completion rollback. The existing feed owns previous
+// seven-day navigation/return; this case makes no day/week/month-mode claim.
+// All positive content/completion reads use the backend. Only one failed PUT
+// and an external material document are controlled at the dependency boundary.
+isolated(
+  'STUDENT multi-item feed keeps focus and rolls back a failed completion with safe external materials @real-mobile',
+  async ({ page, context, scenario: dataset }) => {
+    test.setTimeout(120000);
+    await oneOff(dataset, dataset.today, 3);
+    await oneOff(dataset, dataset.today, 5);
+    // Publish in reverse lesson order so insertion order cannot satisfy the oracle.
+    const later = await publishHomework(dataset, dataset.today, 5, `${dataset.marker}-later`);
+    const mainUrl = 'https://materials.example.test/homework/main';
+    const inlineUrl = 'http://materials.example.test/homework/inline';
+    const description = `Материал ${inlineUrl} и javascript:window.__rctHomeworkUnsafe=1 <script>window.__rctHomeworkUnsafe=1</script>`;
+    const earlier = await publishHomework(
+      dataset,
+      dataset.today,
+      3,
+      `${dataset.marker}-earlier`,
+      description,
+      mainUrl,
+    );
+    const unsafe = await publishHomework(
+      dataset,
+      dataset.today,
+      null,
+      `${dataset.marker}-unsafe`,
+      description,
+      'javascript:window.__rctHomeworkUnsafe=1',
+    );
+    const admitted = await loginPwa(page, dataset.student);
+    const student = new Actor(dataset.request, admitted.accessToken, admitted.session);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    const earlierCard = homeworkCard(page, earlier.title);
+    const laterCard = homeworkCard(page, later.title);
+    const unsafeCard = homeworkCard(page, unsafe.title);
+    const dayTitles = [earlier.title, later.title, unsafe.title];
+    await expect(earlierCard).toBeVisible();
+    await expect(laterCard).toBeVisible();
+    await expect(unsafeCard).toBeVisible();
+    const initialOrder = (await page.locator('.homework-card__title').allTextContents()).filter(
+      (title) => dayTitles.includes(title),
+    );
+    expect(
+      initialOrder.length === 3 &&
+        initialOrder.indexOf(earlier.title) < initialOrder.indexOf(later.title) &&
+        initialOrder.indexOf(later.title) < initialOrder.indexOf(unsafe.title),
+    ).toBe(true);
+
+    // HTTP(S) material is a synthetic document at an exact intercepted target;
+    // no external provider availability participates in acceptance.
+    await context.route(mainUrl, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: '<!doctype html><title>Синтетический материал</title>',
+      }),
+    );
+    const material = earlierCard.getByRole('button', {
+      name: `Материалы к заданию: ${dataset.subject.name}`,
+      exact: true,
+    });
+    await expect(material).toBeVisible();
+    const materialDomainVisible = (await material.innerText()).includes(new URL(mainUrl).hostname);
+    const [external] = await Promise.all([context.waitForEvent('page'), material.click()]);
+    await external.waitForLoadState('domcontentloaded');
+    expect(
+      external.url() === mainUrl && (await external.evaluate(() => window.opener === null)),
+    ).toBe(true);
+    await external.close();
+    await earlierCard.getByRole('button', { name: 'Раскрыть описание', exact: true }).click();
+    await expect(earlierCard.locator('.homework-card__description')).toHaveText(description);
+    // Observe the actual rendered material controls, including an absent inline
+    // control, without replacing the real homework response or inventing a route.
+    const inlineControl = earlierCard
+      .locator('.homework-card__description')
+      .locator('a, button')
+      .filter({ hasText: inlineUrl });
+    let inlineMaterialOpened = false;
+    if ((await inlineControl.count()) === 1) {
+      await context.route(inlineUrl, (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'text/html',
+          body: '<!doctype html><title>Синтетический встроенный материал</title>',
+        }),
+      );
+      const [inlineExternal] = await Promise.all([
+        context.waitForEvent('page'),
+        inlineControl.click(),
+      ]);
+      await inlineExternal.waitForLoadState('domcontentloaded');
+      inlineMaterialOpened =
+        inlineExternal.url() === inlineUrl &&
+        (await inlineExternal.evaluate(() => window.opener === null));
+      await inlineExternal.close();
+    }
+    await unsafeCard.getByRole('button', { name: 'Раскрыть описание', exact: true }).click();
+    await expect(unsafeCard.locator('.homework-card__description')).toHaveText(description);
+    await expect(unsafeCard).toHaveAttribute('data-material', 'unsafe');
+    await expect(unsafeCard.getByRole('button', { name: /^Материалы к заданию:/ })).toHaveCount(0);
+    await expect(unsafeCard.locator('a, script, img')).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => !Object.prototype.hasOwnProperty.call(window, '__rctHomeworkUnsafe'),
+      ),
+    ).toBe(true);
+
+    // Observe an optimistic change while the definite failed dependency is held.
+    // The route never forwards this PUT; all durable checks use the actual API.
+    const failedPath = `/api/v1/student/homework/${later.id}/completion`;
+    let releaseFailure!: () => void;
+    const heldFailure = new Promise<void>((resolve) => {
+      releaseFailure = resolve;
+    });
+    const routePattern = `**${failedPath}`;
+    await page.route(routePattern, async (route) => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      await heldFailure;
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/problem+json',
+        body: JSON.stringify({ title: 'Synthetic completion dependency unavailable', status: 503 }),
+      });
+    });
+    const before = await student.call(
+      'GET',
+      `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`,
+    );
+    const beforeLater = before.items.find((item: { id: string }) => item.id === String(later.id));
+    expect(beforeLater?.completed === false && beforeLater.completedAt === null).toBe(true);
+    let optimisticCompleted = false;
+    try {
+      const slider = laterCard.getByRole('slider');
+      await slider.focus();
+      for (let index = 0; index < 4; index++) await slider.press('ArrowRight');
+      await slider.press('Enter');
+      await expect(laterCard).toHaveAttribute('data-pending', 'true');
+      optimisticCompleted = (await laterCard.getAttribute('data-completion')) === 'completed';
+      const failedResponse = http(page, failedPath, 'PUT');
+      releaseFailure();
+      expect((await failedResponse).status()).toBe(503);
+      await expect(laterCard).toHaveAttribute('data-pending', 'false');
+      await expect(laterCard).toHaveAttribute('data-completion', 'open');
+      await expect(laterCard.getByText('Отметка не сохранена', { exact: true })).toBeVisible();
+      await expect(laterCard.getByText('Выполнено', { exact: true })).toHaveCount(0);
+      const after = await student.call(
+        'GET',
+        `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`,
+      );
+      const afterLater = after.items.find((item: { id: string }) => item.id === String(later.id));
+      expect(afterLater?.completed === false && afterLater.completedAt === null).toBe(true);
+    } finally {
+      releaseFailure();
+      await page.unroute(routePattern);
+    }
+
+    // Positive retry reaches the real backend, settles the old error and keeps
+    // focus on the original card after its completion-driven keyed move.
+    const retry = http(page, failedPath, 'PUT');
+    await laterCard.getByRole('button', { name: 'Повторить', exact: true }).click();
+    expect((await retry).status()).toBe(200);
+    await expect(laterCard).toHaveAttribute('data-pending', 'false');
+    await expect(laterCard).toHaveAttribute('data-completion', 'completed');
+    await expect(laterCard.getByRole('slider')).toBeFocused();
+    await expect(laterCard.getByText('Отметка не сохранена', { exact: true })).toHaveCount(0);
+    await completeCard(page, earlierCard, earlier.id);
+    const durable = await student.call(
+      'GET',
+      `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`,
+    );
+    expect(
+      [earlier.id, later.id].every(
+        (id) =>
+          durable.items.filter(
+            (item: { id: string; completed: boolean; completedAt: string | null }) =>
+              item.id === String(id) && item.completed && typeof item.completedAt === 'string',
+          ).length === 1,
+      ),
+    ).toBe(true);
+    // JS-STUDENT-21 orders the three items of this one day. The independent
+    // tomorrow item is excluded: no global cross-day ordering rule is inferred.
+    const completedOrder = (await page.locator('.homework-card__title').allTextContents()).filter(
+      (title) => dayTitles.includes(title),
+    );
+    const completedAtBottom =
+      completedOrder.length === 3 &&
+      completedOrder.indexOf(unsafe.title) < completedOrder.indexOf(earlier.title) &&
+      completedOrder.indexOf(earlier.title) < completedOrder.indexOf(later.title);
+
+    // Current carrier's previous page is a real bounded seven-day backend read.
+    const previousRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/student/homework' &&
+        response.request().method() === 'GET' &&
+        (url.searchParams.get('to') ?? dataset.today) < dataset.today
+      );
+    });
+    await page.getByRole('button', { name: 'Посмотреть предыдущие', exact: true }).click();
+    const previousResponse = await previousRead;
+    expect(previousResponse.status()).toBe(200);
+    const previous = await previousResponse.json();
+    expect(
+      previous.to < dataset.today &&
+        previous.from >= dataset.semester.dateFrom &&
+        Date.parse(`${previous.to}T12:00:00Z`) - Date.parse(`${previous.from}T12:00:00Z`) <=
+          6 * 86400000,
+    ).toBe(true);
+    const returnRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/student/homework' &&
+        response.request().method() === 'GET' &&
+        !url.searchParams.has('from') &&
+        !url.searchParams.has('to')
+      );
+    });
+    await page
+      .getByRole('button', { name: 'Вернуться к сегодняшним заданиям', exact: true })
+      .click();
+    expect((await returnRead).status()).toBe(200);
+    await expect(earlierCard).toHaveAttribute('data-completion', 'completed');
+    await expect(laterCard).toHaveAttribute('data-completion', 'completed');
+    await page.reload();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(laterCard).toHaveAttribute('data-completion', 'completed');
+    // Accepted relative-order oracle; a real failure is required before any UI
+    // defect classification or correction. Do not mirror the grouping function.
+    expect.soft(materialDomainVisible).toBe(true);
+    expect.soft(inlineMaterialOpened).toBe(true);
+    expect.soft(optimisticCompleted).toBe(true);
+    expect(completedAtBottom).toBe(true);
+  },
+);

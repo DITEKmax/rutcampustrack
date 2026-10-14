@@ -95,6 +95,8 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     ['GET', '/api/academic/admin-access/me', 'DATASET_ADMIN_ACCESS_READ_HTTP'],
     ['GET', '/api/academic/semesters?page=4&size=200&sort=id,asc', 'DATASET_SEMESTERS_READ_HTTP'],
     ['GET', '/api/academic/semesters/123', 'DATASET_SEMESTER_READ_HTTP'],
+    ['GET', '/api/academic/semesters/123/delete-preview', 'DATASET_SEMESTER_DELETE_PREVIEW_HTTP'],
+    ['GET', `/api/report-download/${'A'.repeat(43)}`, 'DATASET_REPORT_DOWNLOAD_HTTP'],
     ['POST', '/api/academic/semesters/123/archive', 'DATASET_SEMESTER_ARCHIVE_HTTP'],
     ['POST', '/api/academic/semesters/123/restore', 'DATASET_SEMESTER_RESTORE_HTTP'],
     ['GET', '/api/academic/semesters/123/archive/status', 'DATASET_SEMESTER_ARCHIVE_STATUS_HTTP'],

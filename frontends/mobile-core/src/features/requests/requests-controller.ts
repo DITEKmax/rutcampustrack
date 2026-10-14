@@ -466,6 +466,18 @@ export class RequestsController {
     return bucket === 'open' ? this.view.open : this.view.archive
   }
 
+  invalidateOpenBucket(): void {
+    if (this.disposed) return
+    this.contextChanged()
+    // A read started before the check-in ACK cannot make the old page fresh again.
+    this.bucketGenerations.open += 1
+    const state = this.view.open
+    state.page = -1
+    state.loading = false
+    state.loadingMore = false
+    state.stale = state.requests.length > 0
+  }
+
   async loadTargetDetail(id: string, expectedKind: RequestKind): Promise<RequestDetail> {
     this.contextChanged()
     const scope = this.options.scope()

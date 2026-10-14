@@ -4,6 +4,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -18,6 +21,7 @@ import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 
 /** Atomic in-place mutation; the append-only SQL receipt is also the exact trigger authority. */
 @Service
@@ -36,6 +40,56 @@ public class LessonRoomWriter {
         this.clock = clock;
         this.events = events;
         this.archive = archive;
+    }
+
+    public record RoomChange(String previousRoom) {}
+
+    /** Provenance only for the physical snapshots already selected by the read caller. */
+    @Transactional(readOnly = true)
+    public Map<Long, RoomChange> roomChangesForLessons(List<Lesson> lessons) {
+        Map<Long, Lesson> snapshots = new HashMap<>();
+        for (Lesson lesson : lessons) {
+            if (lesson.getId() != null
+                    && lesson.getOccurrenceId() != null
+                    && lesson.getOccurrenceId() > 0
+                    && lesson.getRevision() != null
+                    && lesson.getRevision() > 0
+                    && ((lesson.getScheduleItemId() != null)
+                            != (lesson.getOneOffLessonId() != null))) {
+                snapshots.put(lesson.getId(), lesson);
+            }
+        }
+        if (snapshots.isEmpty()) return Map.of();
+        // No-op receipts do not erase the last real change. Revision ordering is
+        // causal even when several receipts share the same transaction timestamp.
+        String placeholders = String.join(",", Collections.nCopies(snapshots.size(), "?"));
+        var receipts =
+                jdbc.queryForList(
+                        """
+                        SELECT DISTINCT ON (lesson_id) lesson_id, occurrence_id,
+                            after_lesson_revision, before_room, after_room
+                          FROM lesson_room_change_ledger
+                         WHERE lesson_id IN (
+                        """
+                                + placeholders
+                                + """
+                        ) AND before_room IS DISTINCT FROM after_room
+                         ORDER BY lesson_id, after_lesson_revision DESC
+                        """,
+                        snapshots.keySet().toArray());
+        Map<Long, RoomChange> result = new HashMap<>();
+        for (var receipt : receipts) {
+            long id = number(receipt, "lesson_id");
+            Lesson snapshot = snapshots.get(id);
+            if (snapshot != null
+                    && number(receipt, "occurrence_id") == snapshot.getOccurrenceId()
+                    && number(receipt, "after_lesson_revision") <= snapshot.getRevision()
+                    && Objects.equals(receipt.get("after_room"), snapshot.getRoomSnapshot())) {
+                result.put(id, new RoomChange((String) receipt.get("before_room")));
+            }
+        }
+        // Missing/legacy or concurrently mismatching provenance remains UNKNOWN.
+        return Map.copyOf(result);
     }
 
     @Transactional

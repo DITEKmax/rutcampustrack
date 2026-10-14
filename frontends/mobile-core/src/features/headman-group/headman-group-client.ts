@@ -66,6 +66,20 @@ export interface HeadmanGroupApiOptions {
   fetcher?: typeof fetch
 }
 
+export interface HeadmanLateCheckinBudget {
+  readonly studentId: number
+  readonly semesterId: number
+  readonly limit: number
+  readonly used: number
+  readonly remaining: number
+}
+
+export interface HeadmanBudgetIncrease {
+  readonly semesterId: number
+  readonly increase: number
+  readonly requestKey: string
+}
+
 export class HeadmanGroupApiError extends Error {
   constructor(
     readonly response: Response,
@@ -81,6 +95,38 @@ export class HeadmanGroupApi {
 
   constructor(private readonly options: HeadmanGroupApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+  }
+
+  async getLateCheckinBudget(studentId: number): Promise<HeadmanLateCheckinBudget> {
+    assertPositiveInteger(studentId, 'studentId')
+    const value = await this.request<unknown>(
+      `/api/attendance/requests/students/${studentId}/late-checkin-budget`,
+      { cache: 'no-store' },
+    )
+    return normalizeBudget(value, studentId)
+  }
+
+  async increaseLateCheckinBudget(
+    studentId: number,
+    command: HeadmanBudgetIncrease,
+  ): Promise<HeadmanLateCheckinBudget> {
+    assertPositiveInteger(studentId, 'studentId')
+    assertPositiveInteger(command.semesterId, 'semesterId')
+    if (
+      !Number.isInteger(command.increase) ||
+      command.increase <= 0 ||
+      command.increase > 2147483647
+    )
+      throw new RangeError('increase must be a positive int32')
+    if (!/^[\x21-\x7e]{16,128}$/.test(command.requestKey))
+      throw new TypeError('requestKey must be 16..128 printable ASCII characters')
+    const value = await this.request<unknown>(
+      `/api/attendance/requests/students/${studentId}/late-checkin-budget`,
+      { method: 'POST', body: JSON.stringify(command), cache: 'no-store' },
+    )
+    const budget = normalizeBudget(value, studentId)
+    if (budget.semesterId !== command.semesterId) throw new Error('Семестр лимита не совпадает')
+    return budget
   }
 
   listMembers(groupId: number): Promise<readonly HeadmanGroupMember[]> {
@@ -375,6 +421,29 @@ function normalizeMember(value: Record<string, unknown>): HeadmanGroupMember {
           groupId: positiveNumber(grant.groupId),
         }))
       : null,
+  }
+}
+
+function normalizeBudget(value: unknown, studentId: number): HeadmanLateCheckinBudget {
+  if (
+    !isRecord(value) ||
+    value.studentId !== studentId ||
+    !Number.isSafeInteger(value.semesterId) ||
+    Number(value.semesterId) <= 0 ||
+    !['limit', 'used', 'remaining'].every(
+      (key) =>
+        Number.isInteger(value[key]) && Number(value[key]) >= 0 && Number(value[key]) <= 2147483647,
+    ) ||
+    Number(value.limit) <= 0 ||
+    value.remaining !== Math.max(0, Number(value.limit) - Number(value.used))
+  )
+    throw new Error('Сервер вернул некорректный лимит попыток')
+  return {
+    studentId,
+    semesterId: Number(value.semesterId),
+    limit: Number(value.limit),
+    used: Number(value.used),
+    remaining: Number(value.remaining),
   }
 }
 

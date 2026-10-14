@@ -11,7 +11,7 @@ import {
 } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
-import type { MobileBottomNavItems } from '../navigation'
+import type { MobileBottomNavItems, MobileNavigationStack } from '../navigation'
 import type { StudentApi } from '../../api/student-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type {
@@ -180,10 +180,16 @@ vi.mock('../../features/statistics/StatisticsScreen.vue', () => ({
 vi.mock('../../features/requests/RequestsScreen.vue', () => ({
   default: {
     name: 'OwnerTestRequestsScreen',
+    props: ['requests'],
     emits: ['newRequest', 'cancel'],
-    setup(_props: unknown, { emit }: SetupContext) {
+    setup(props: { requests: readonly { summary: { id: string } }[] }, { emit }: SetupContext) {
       return () =>
         h('div', [
+          h(
+            'output',
+            { class: 'test-request-ids' },
+            props.requests.map((request) => request.summary.id).join(','),
+          ),
           h(
             'button',
             {
@@ -369,7 +375,17 @@ vi.mock('./MobileShell.vue', async () => {
                 },
                 slots,
               )
-            : h('div', slots.default?.())
+            : h('div', [
+                h(
+                  'button',
+                  {
+                    class: 'test-owner-today',
+                    onClick: () => (attrs.navigation as MobileNavigationStack).goRoot('today'),
+                  },
+                  'Сегодня',
+                ),
+                slots.default?.(),
+              ])
       },
     },
   }
@@ -730,6 +746,106 @@ function mountOwnerTest(
 }
 
 describe('StudentFeatureOwner offline read models', () => {
+  it.each([
+    { oldPageLoading: false, auto: true, offlineReentry: false },
+    { oldPageLoading: true, auto: true, offlineReentry: false },
+    { oldPageLoading: false, auto: false, offlineReentry: false },
+    { oldPageLoading: false, auto: true, offlineReentry: true },
+  ])(
+    'refreshes OPEN only after AUTO: old loading=$oldPageLoading, auto=$auto, offline=$offlineReentry',
+    async ({ oldPageLoading, auto, offlineReentry }) => {
+      const pending = requestSummary('PENDING')
+      let created = false
+      let finishOldPage: ((page: StudentRequestPage) => void) | undefined
+      const listRequests = vi.fn(() =>
+        created
+          ? Promise.resolve(requestPage([pending]))
+          : oldPageLoading
+            ? new Promise<StudentRequestPage>((resolve) => {
+                finishOldPage = resolve
+              })
+            : Promise.resolve(emptyRequestPage()),
+      )
+      const props = reactive({ offline: false })
+      const root = mountOwnerTest(
+        {
+          listRequests,
+          getRequest: async () => requestDetail(pending),
+          getRequestOptions: async () => requestOptions(),
+        } as unknown as StudentApi,
+        props,
+      )
+      ownerQueryData.today!.value = {
+        date: '2026-10-04',
+        timeZone: 'Europe/Moscow',
+        serverNow: '2026-10-04T08:00:00Z',
+        _links: {},
+        lessons: [
+          {
+            schedule: {
+              id: 'lesson-1',
+              date: '2026-10-04',
+              lessonNumber: 1,
+              startsAt: '10:40:00',
+              endsAt: '12:10:00',
+              status: 'ACTIVE',
+              subject: { id: 'subject-1', name: 'Программирование', type: 'LECTURE' },
+              room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' },
+            },
+            attendance: null,
+            request: null,
+            checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
+          },
+        ],
+      }
+      checkinSubmit.mockImplementation(async () => {
+        created = auto
+        if (!auto) return ack
+        return {
+          ...ack,
+          outcome: 'PENDING_CONFIRMATION',
+          attendance: null,
+          request: {
+            id: pending.id,
+            origin: 'AUTO_GEO_FAILURE',
+            status: 'PENDING',
+            resolutionReason: null,
+          },
+        } satisfies StudentCheckinAck
+      })
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-enter-more')
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-enter-requests')
+      await settleOwnerTestRender()
+      expect(listRequests).toHaveBeenCalledExactlyOnceWith('OPEN', 0)
+      expect(ownerTestOutput(root, 'test-request-ids')).toBe('')
+      clickOwnerTestButton(root, 'test-owner-today')
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-checkin')
+      await vi.waitFor(() => expect(checkinSubmit).toHaveBeenCalledOnce())
+      await settleOwnerTestRender()
+      finishOldPage?.(emptyRequestPage())
+      await settleOwnerTestRender()
+      expect(listRequests).toHaveBeenCalledOnce()
+      props.offline = offlineReentry
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-enter-more')
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-enter-requests')
+      if (offlineReentry) {
+        await settleOwnerTestRender()
+        expect(listRequests).toHaveBeenCalledOnce()
+        props.offline = false
+      }
+      await vi.waitFor(() =>
+        expect(ownerTestOutput(root, 'test-request-ids')).toBe(auto ? pending.id : ''),
+      )
+      expect(listRequests).toHaveBeenCalledTimes(auto ? 2 : 1)
+      expect(listRequests).toHaveBeenLastCalledWith('OPEN', 0)
+    },
+  )
+
   it('blocks another click during location acquisition and keeps its failure local', async () => {
     let rejectLocation!: (error: Error) => void
     const acquire = vi.fn(

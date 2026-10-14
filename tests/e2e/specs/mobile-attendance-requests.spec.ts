@@ -213,4 +213,49 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     .getByRole('article')
     .filter({ has: page.locator(`[id="request-title-${requestId}"]`) });
   await expect(approvedCard.getByText('Одобрена', { exact: true })).toBeVisible();
+
+  // Accepted AT-11: a headman adds attempts without resetting the exhausted student's usage.
+  await logoutPwa(page);
+  const budgetHeadman = await loginPwa(page, dataset.headman);
+  if (budgetHeadman.session.activeRole !== 'HEADMAN') await selectPwaRole(page, 'Староста');
+  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+  await page.getByRole('button', { name: 'Группа', exact: true }).click();
+  await page.locator(`[data-member-id="${dataset.student.id}"]`).click();
+  await expect(
+    page.getByText('Осталось попыток: 0 из 5. Использовано: 5.', { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel('Добавить попытки', { exact: true }).fill('2');
+  const budgetPath = `/api/attendance/requests/students/${dataset.student.id}/late-checkin-budget`;
+  const increased = page.waitForResponse(
+    (reply) => new URL(reply.url()).pathname === budgetPath && reply.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Увеличить лимит', exact: true }).click();
+  expect((await increased).status()).toBe(200);
+  await expect(
+    page.getByText('Осталось попыток: 2 из 7. Использовано: 5.', { exact: true }),
+  ).toBeVisible();
+  expect((await options()).budget).toMatchObject({ limit: 7, used: 5, remaining: 2 });
+  const foreignBudget = await dataset.request.get(budgetPath, { headers: foreign.headers() });
+  expect(foreignBudget.status()).toBe(403);
+  const manual = open.content.find((row: { origin: string }) => row.origin === 'MANUAL');
+  expect(Boolean(manual)).toBe(true);
+  const retryLessonId = manual.lessons[0].id;
+  await student.call('POST', `/api/v1/student/requests/${manual.id}/cancel`);
+  expect((await options()).budget).toMatchObject({ limit: 7, used: 5, remaining: 2 });
+  await logoutPwa(page);
+  await loginPwa(page, dataset.student);
+  await openStudentRequests();
+  await page.getByRole('button', { name: 'Подать', exact: true }).click();
+  await page.getByRole('button', { name: 'Забыл отметиться', exact: true }).click();
+  await page.locator(`input[type="checkbox"][value="${retryLessonId}"]`).check();
+  await page.getByRole('button', { name: 'Продолжить', exact: true }).click();
+  await expect(page.getByText('2 из 7', { exact: true })).toBeVisible();
+  const resubmitted = page.waitForResponse(
+    (reply) =>
+      new URL(reply.url()).pathname === '/api/v1/student/requests/late-checkin' &&
+      reply.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Отправить запрос', exact: true }).click();
+  expect((await resubmitted).status()).toBe(200);
+  expect((await options()).budget).toMatchObject({ limit: 7, used: 6, remaining: 1 });
 });

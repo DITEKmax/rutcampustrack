@@ -13,6 +13,7 @@ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.homework.HomeworkBindingService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+import ru.rutcampustrack.schedule.lesson.LessonRoomWriter;
 import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
@@ -33,6 +34,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
 
     @Autowired
     private ru.rutcampustrack.schedule.homework.HomeworkPlacementService homeworkPlacementService;
+
+    @Autowired private LessonRoomWriter lessonRoomWriter;
 
     private final LessonRepository lessonRepository;
     private final ScheduleItemRepository scheduleItemRepository;
@@ -229,6 +232,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         List<Long> lessonIds = lessons.stream().map(Lesson::getId).toList();
         Map<Long, LessonTransferWriter.TransferState> transferStates = transferStates(lessonIds);
         Map<Long, Long> occurrenceRevisions = occurrenceRevisions(lessonIds);
+        Map<Long, LessonRoomWriter.RoomChange> roomChanges = roomChanges(lessons);
         List<LessonResponse> responses =
                 lessons.stream()
                         .map(
@@ -237,7 +241,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                                 l,
                                                 itemById.get(l.getScheduleItemId()),
                                                 transferStates.get(l.getId()),
-                                                occurrenceRevisions.get(l.getId())))
+                                                occurrenceRevisions.get(l.getId()),
+                                                roomChanges.get(l.getId())))
                         .toList();
 
         OffsetDateTime updatedAt =
@@ -530,14 +535,20 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private LessonResponse buildResponse(
             Lesson lesson, ScheduleItem item, LessonTransferWriter.TransferState transferState) {
         Long occurrenceRevision = occurrenceRevisions(List.of(lesson.getId())).get(lesson.getId());
-        return buildResponse(lesson, item, transferState, occurrenceRevision);
+        return buildResponse(
+                lesson,
+                item,
+                transferState,
+                occurrenceRevision,
+                roomChanges(List.of(lesson)).get(lesson.getId()));
     }
 
     private LessonResponse buildResponse(
             Lesson lesson,
             ScheduleItem item,
             LessonTransferWriter.TransferState transferState,
-            Long occurrenceRevision) {
+            Long occurrenceRevision,
+            LessonRoomWriter.RoomChange roomChange) {
         Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
         Long subjectId =
                 lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
@@ -566,7 +577,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                         .setIsGeoBlocked(lesson.isGeoBlocked())
                         .setRoom(room != null ? room : "")
                         .setIsBlockedByHeadman(lesson.isBlockedByHeadman())
-                        .setRoomChangeState("unknown")
+                        .setRoomChangeState(roomChange == null ? "unknown" : "changed")
                         .setOccurrenceId(
                                 lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
                         .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
@@ -582,6 +593,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         if (lesson.getAssignmentId() != null) response.setAssignmentId(lesson.getAssignmentId());
         if (lesson.getAssignedTeacherId() != null)
             response.setAssignedTeacherId(lesson.getAssignedTeacherId());
+        if (roomChange != null && roomChange.previousRoom() != null)
+            response.setPreviousRoom(roomChange.previousRoom());
         if (transferState != null) {
             response.setTransferOperationId(transferState.operationId())
                     .setTransferState(transferState.state());
@@ -593,6 +606,12 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         return lessonTransferWriter == null
                 ? Map.of()
                 : lessonTransferWriter.pendingStatesForLessons(lessonIds);
+    }
+
+    private Map<Long, LessonRoomWriter.RoomChange> roomChanges(List<Lesson> lessons) {
+        return lessonRoomWriter == null
+                ? Map.of()
+                : lessonRoomWriter.roomChangesForLessons(lessons);
     }
 
     private Map<Long, Long> occurrenceRevisions(List<Long> lessonIds) {

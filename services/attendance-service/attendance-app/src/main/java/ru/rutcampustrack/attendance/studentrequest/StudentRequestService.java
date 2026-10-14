@@ -40,8 +40,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import ru.rutcampustrack.attendance.audit.LessonActionDocument;
+import ru.rutcampustrack.attendance.audit.LessonActionService;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetIncreaseRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetResponse;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
@@ -1291,6 +1295,241 @@ public class StudentRequestService {
                         attendance == null ? null : attendance.getSource())
                 .status();
     }
+
+    public HeadmanLateCheckinBudgetResponse headmanBudget(Identity identity, long studentId) {
+        BudgetScope scope = budgetScope(identity, studentId);
+        return budgetSnapshot(
+                studentId,
+                scope.semesterId(),
+                budgetRepository
+                        .findByStudentIdAndSemesterId(studentId, scope.semesterId())
+                        .orElse(null));
+    }
+
+    /** A permanent audit row is also the exact actor/key receipt; no second receipt can drift. */
+    public HeadmanLateCheckinBudgetResponse increaseHeadmanBudget(
+            Identity identity, long studentId, HeadmanLateCheckinBudgetIncreaseRequest command) {
+        if (command == null
+                || command.semesterId() == null
+                || command.semesterId() <= 0
+                || command.increase() == null
+                || command.increase() <= 0) {
+            throw new BadRequestException("Нужны текущий семестр и положительное число попыток");
+        }
+        validateKey(command.requestKey());
+        return executeDecisionWithRetry(
+                () -> {
+                    BudgetScope scope = budgetScope(identity, studentId);
+                    requireBudgetSemester(scope, command);
+                    return transactionTemplate.execute(
+                            status -> {
+                                Instant now = retentionClock.instant();
+                                pairWriteCoordinator.lockSemesterForWrite(scope.semesterId(), now);
+                                HeadmanLateCheckinBudgetResponse replay =
+                                        budgetReplay(scope, studentId, command);
+                                if (replay != null) return replay;
+                                StudentLateCheckinBudgetDocument current =
+                                        budgetRepository
+                                                .findByStudentIdAndSemesterId(
+                                                        studentId, scope.semesterId())
+                                                .orElse(null);
+                                HeadmanLateCheckinBudgetResponse before =
+                                        budgetSnapshot(studentId, scope.semesterId(), current);
+                                long increased = (long) before.limit() + command.increase();
+                                if (increased > Integer.MAX_VALUE) {
+                                    throw new ConflictException(
+                                            "Лимит попыток не помещается в допустимый диапазон");
+                                }
+                                var after =
+                                        new HeadmanLateCheckinBudgetResponse(
+                                                studentId,
+                                                scope.semesterId(),
+                                                (int) increased,
+                                                before.used(),
+                                                Math.max(0, (int) increased - before.used()));
+                                mongoTemplate.findAndModify(
+                                        Query.query(
+                                                Criteria.where("student_id")
+                                                        .is(studentId)
+                                                        .and("semester_id")
+                                                        .is(scope.semesterId())),
+                                        new Update()
+                                                .set("limit", after.limit())
+                                                .set("updated_at", now)
+                                                .setOnInsert("student_id", studentId)
+                                                .setOnInsert("semester_id", scope.semesterId())
+                                                .setOnInsert("used", 0),
+                                        FindAndModifyOptions.options().upsert(true).returnNew(true),
+                                        StudentLateCheckinBudgetDocument.class);
+                                Map<String, Object> payload =
+                                        LessonActionService.payload(
+                                                scope.groupId(),
+                                                scope.semesterId(),
+                                                null,
+                                                "MANUAL_LATE_LIMIT_INCREASED",
+                                                LessonActionService.person(
+                                                        scope.actorId(), "HEADMAN", null),
+                                                LessonActionService.person(
+                                                        studentId, "STUDENT", null),
+                                                budgetValues(before),
+                                                budgetValues(after),
+                                                null,
+                                                null,
+                                                null,
+                                                null);
+                                payload.put(
+                                        "budget_increase",
+                                        Map.of(
+                                                "increase",
+                                                command.increase(),
+                                                "request_key_hash",
+                                                sha256(command.requestKey())));
+                                // Required for this operation: an absent/failed audit must roll
+                                // back the budget.
+                                Objects.requireNonNull(actions, "Budget audit is required")
+                                        .append(
+                                                budgetAuditId(
+                                                        scope.actorId(), command.requestKey()),
+                                                now,
+                                                "attendance-service",
+                                                payload);
+                                return after;
+                            });
+                },
+                () -> {
+                    BudgetScope scope = budgetScope(identity, studentId);
+                    requireBudgetSemester(scope, command);
+                    return budgetReplay(scope, studentId, command);
+                });
+    }
+
+    private BudgetScope budgetScope(Identity identity, long studentId) {
+        if (studentId <= 0) throw new BadRequestException("Нужен идентификатор студента");
+        long actor = requireAuthenticatedScope(identity);
+        if (!identity.headman())
+            throw new AccessDeniedException("Лимит меняет только текущий староста");
+        // This signed uncached RPC checks the current durable HEADMAN grant and active roster.
+        // The general request authority also admits helpers, so it is deliberately not reused.
+        var roster = academicGrpcClient.getHeadmanGroupComposition(identity.groupId());
+        if (roster == null
+                || roster.getGroupId() != identity.groupId()
+                || roster.getMembersList().stream()
+                        .noneMatch(member -> member.getUserId() == studentId)) {
+            throw new AccessDeniedException("Студент недоступен в текущей группе");
+        }
+        final ru.rutcampustrack.academic.grpc.SemesterResponse active;
+        try {
+            active = academicGrpcClient.getActiveSemester();
+        } catch (ResourceNotFoundException unavailable) {
+            throw new ConflictException("Текущий семестр недоступен");
+        }
+        if (active == null || active.getId() <= 0)
+            throw new ConflictException("Текущий семестр недоступен");
+        var state =
+                academicGrpcClient.getHeadmanJournalSemesterState(
+                        identity.groupId(), active.getId());
+        if (state == null
+                || state.getId() != active.getId()
+                || !state.getActive()
+                || state.getArchived()
+                || state.getWriteBlocked()
+                || state.getReleasePending()
+                || state.getTransition() != ru.rutcampustrack.academic.grpc.SemesterTransition.NONE
+                || !state.getDeletionPhase().isEmpty()) {
+            throw new ConflictException("Лимит можно менять только в текущем доступном семестре");
+        }
+        return new BudgetScope(actor, identity.groupId(), active.getId());
+    }
+
+    private static void requireBudgetSemester(
+            BudgetScope scope, HeadmanLateCheckinBudgetIncreaseRequest command) {
+        if (scope.semesterId() != command.semesterId()) {
+            throw new ConflictException("Текущий семестр изменился; обнови данные");
+        }
+    }
+
+    private static HeadmanLateCheckinBudgetResponse budgetSnapshot(
+            long studentId, long semesterId, StudentLateCheckinBudgetDocument budget) {
+        int limit = effectiveBudgetLimit(budget);
+        int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
+        if (limit <= 0 || used < 0) throw new ConflictException("Состояние лимита некорректно");
+        return new HeadmanLateCheckinBudgetResponse(
+                studentId, semesterId, limit, used, Math.max(0, limit - used));
+    }
+
+    private static Map<String, Object> budgetValues(HeadmanLateCheckinBudgetResponse value) {
+        return Map.of("limit", value.limit(), "used", value.used(), "remaining", value.remaining());
+    }
+
+    private static String budgetAuditId(long actor, String key) {
+        return "manual-late-budget-" + sha256(actor + "\n" + key);
+    }
+
+    @SuppressWarnings("unchecked")
+    private HeadmanLateCheckinBudgetResponse budgetReplay(
+            BudgetScope scope, long studentId, HeadmanLateCheckinBudgetIncreaseRequest command) {
+        LessonActionDocument receipt =
+                mongoTemplate.findById(
+                        budgetAuditId(scope.actorId(), command.requestKey()),
+                        LessonActionDocument.class);
+        if (receipt == null) return null;
+        Map<String, Object> payload = receipt.getPayload();
+        if (receipt.getOccurredAt() == null
+                || !"attendance-service".equals(receipt.getSource())
+                || receipt.getLessonId() != null
+                || !Objects.equals(receipt.getGroupId(), scope.groupId())
+                || !Objects.equals(receipt.getSemesterId(), scope.semesterId())
+                || payload == null
+                || !"MANUAL_LATE_LIMIT_INCREASED".equals(payload.get("action"))
+                || !Objects.equals(payload.get("group_id"), scope.groupId())
+                || !Objects.equals(payload.get("semester_id"), scope.semesterId())
+                || payload.get("lesson_id") != null
+                || !Objects.equals(
+                        payload.get("actor"),
+                        LessonActionService.person(scope.actorId(), "HEADMAN", null))
+                || !Objects.equals(
+                        payload.get("student"),
+                        LessonActionService.person(studentId, "STUDENT", null))
+                || !Objects.equals(
+                        payload.get("budget_increase"),
+                        Map.of(
+                                "increase",
+                                command.increase(),
+                                "request_key_hash",
+                                sha256(command.requestKey())))
+                || !(payload.get("before") instanceof Map<?, ?> before)
+                || !(payload.get("after") instanceof Map<?, ?> after)
+                || !(before.get("limit") instanceof Integer oldLimit)
+                || !(before.get("used") instanceof Integer used)
+                || !(after.get("limit") instanceof Integer limit)
+                || oldLimit <= 0
+                || used < 0
+                || limit <= 0
+                || (long) oldLimit + command.increase() != limit
+                || !budgetValues(
+                                new HeadmanLateCheckinBudgetResponse(
+                                        studentId,
+                                        scope.semesterId(),
+                                        oldLimit,
+                                        used,
+                                        Math.max(0, oldLimit - used)))
+                        .equals(before)
+                || !budgetValues(
+                                new HeadmanLateCheckinBudgetResponse(
+                                        studentId,
+                                        scope.semesterId(),
+                                        limit,
+                                        used,
+                                        Math.max(0, limit - used)))
+                        .equals(after)) {
+            throw new ConflictException(
+                    "requestKey уже использован с другим запросом или квитанция недоступна");
+        }
+        return new HeadmanLateCheckinBudgetResponse(
+                studentId, scope.semesterId(), limit, used, Math.max(0, limit - used));
+    }
+
+    private record BudgetScope(long actorId, long groupId, long semesterId) {}
 
     private void consumeBudget(long studentId, long semesterId, Instant now) {
         Criteria identity =

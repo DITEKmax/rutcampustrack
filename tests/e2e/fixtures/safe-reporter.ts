@@ -22,6 +22,14 @@ const datasetHttpOperations = {
     method: 'GET',
     path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}$/,
   },
+  DATASET_SEMESTER_DELETE_PREVIEW_HTTP: {
+    method: 'GET',
+    path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/delete-preview$/,
+  },
+  DATASET_REPORT_DOWNLOAD_HTTP: {
+    method: 'GET',
+    path: /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/,
+  },
   DATASET_SEMESTER_ARCHIVE_HTTP: {
     method: 'POST',
     path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/archive$/,

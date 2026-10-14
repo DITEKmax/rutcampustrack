@@ -26,6 +26,12 @@ interface Seed {
   sourceLessonId: number;
 }
 
+interface RevocationWitness {
+  userId: number;
+  revoked: { accessToken: string; refreshToken: string; sessionId: string };
+  control: { accessToken: string; sessionId: string };
+}
+
 function requireValue(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
@@ -53,6 +59,81 @@ function save(run: string, name: string, value: unknown) {
 
 function saveToken(run: string, name: string, actor: Actor) {
   writeFileSync(join(run, name), actor.token, { flag: 'wx', mode: 0o600 });
+}
+
+// These are owned synthetic proofs, decoded only in RAM after real server admission.
+// Decoding is not signature verification; the unchanged Gateway verifies the live control.
+function proofClaims(token: string) {
+  requireValue(typeof token === 'string' && token.length <= 16384, 'Invalid recovery proof');
+  const parts = token.split('.');
+  requireValue(parts.length === 3 && /^[A-Za-z0-9_-]+$/.test(parts[1]!), 'Invalid recovery proof');
+  let claims: Record<string, unknown>;
+  try {
+    claims = JSON.parse(Buffer.from(parts[1]!, 'base64url').toString('utf8'));
+  } catch {
+    throw new Error('Invalid recovery proof claims');
+  }
+  requireValue(
+    claims !== null &&
+      typeof claims === 'object' &&
+      typeof claims.iss === 'string' &&
+      claims.iss.length > 0 &&
+      typeof claims.sub === 'string' &&
+      typeof claims.sid === 'string' &&
+      typeof claims.iat === 'number' &&
+      Number.isSafeInteger(claims.iat) &&
+      typeof claims.exp === 'number' &&
+      Number.isSafeInteger(claims.exp) &&
+      claims.iat < claims.exp,
+    'Invalid recovery proof envelope',
+  );
+  return claims;
+}
+
+function requireUnexpiredWitness(witness: RevocationWitness) {
+  const access = proofClaims(witness.revoked.accessToken);
+  const refresh = proofClaims(witness.revoked.refreshToken);
+  const control = proofClaims(witness.control.accessToken);
+  requireValue(
+    witness.revoked.sessionId !== witness.control.sessionId &&
+      access.sid === witness.revoked.sessionId &&
+      refresh.sid === witness.revoked.sessionId &&
+      control.sid === witness.control.sessionId &&
+      [access, refresh, control].every(
+        (proof) =>
+          proof.iss === control.iss &&
+          proof.sub === String(witness.userId) &&
+          Number(proof.exp) * 1000 > Date.now(),
+      ) &&
+      Math.abs(Number(access.iat) - Number(control.iat)) <= 60,
+    'Recovery revocation proofs must share an issuer and remain unexpired',
+  );
+}
+
+async function verifyRevocation(request: APIRequestContext, witness: RevocationWitness) {
+  requireUnexpiredWitness(witness);
+  const controlHeaders = { Authorization: `Bearer ${witness.control.accessToken}` };
+  const controlBefore = await request.get('/api/auth/session', { headers: controlHeaders });
+  requireValue(controlBefore.status() === 200, 'Retained recovery control was not admitted');
+  const current = await controlBefore.json();
+  requireValue(
+    current.sessionId === witness.control.sessionId && current.userId === String(witness.userId),
+    'Retained recovery control identity changed',
+  );
+  const deniedAccess = await request.get('/api/auth/session', {
+    headers: { Authorization: `Bearer ${witness.revoked.accessToken}` },
+  });
+  requireValue(deniedAccess.status() === 401, 'Revoked recovery access was admitted');
+  const deniedRefresh = await request.post('/api/auth/refresh', {
+    headers: {
+      Cookie: `rct_refresh=${witness.revoked.refreshToken}`,
+      Origin: new URL(controlBefore.url()).origin,
+    },
+  });
+  requireValue(deniedRefresh.status() === 401, 'Revoked recovery refresh was admitted');
+  const controlAfter = await request.get('/api/auth/session', { headers: controlHeaders });
+  requireValue(controlAfter.status() === 200, 'Retained recovery control stopped being admitted');
+  requireUnexpiredWitness(witness);
 }
 
 function digest(bytes: Buffer) {
@@ -323,6 +404,28 @@ async function seed(request: APIRequestContext, run: string) {
     attachmentSha256: digest(png),
     sourceLessonId,
   });
+  // Issue near backup, after the slow educational/history setup. Only the selected
+  // session is revoked; the second session proves restart did not merely expire
+  // all old proofs or replace the signing identity. Security clocks stay real.
+  const revoked = await admit(request, dataset.student, 'STUDENT');
+  const cookie = (await request.storageState()).cookies.find(
+    (value) => value.name === 'rct_refresh',
+  );
+  requireValue(cookie?.value, 'Recovery revocation requires its own refresh proof');
+  const control = await admit(request, dataset.student, 'STUDENT');
+  const witness: RevocationWitness = {
+    userId: dataset.student.id,
+    revoked: {
+      accessToken: revoked.token,
+      refreshToken: cookie.value,
+      sessionId: revoked.session.sessionId,
+    },
+    control: { accessToken: control.token, sessionId: control.session.sessionId },
+  };
+  requireUnexpiredWitness(witness);
+  await control.call('DELETE', `/api/auth/sessions/${witness.revoked.sessionId}`, undefined, [204]);
+  await verifyRevocation(request, witness);
+  save(run, 'auth-revocation.private.json', witness);
 }
 
 test('application recovery API phase', async ({ playwright }, info) => {
@@ -349,7 +452,12 @@ test('application recovery API phase', async ({ playwright }, info) => {
     'Recovery artifacts must stay in the phase directory',
   );
   const phaseOutputs: Record<string, string[]> = {
-    seed: ['seed.json', 'request.json', 'lifecycle-input.private.json'],
+    seed: [
+      'seed.json',
+      'request.json',
+      'lifecycle-input.private.json',
+      'auth-revocation.private.json',
+    ],
     pending: ['pending.json', 'history-before.json'],
     admit: ['actor-token.private', 'history-token.private'],
     attachment: [],
@@ -410,6 +518,10 @@ test('application recovery API phase', async ({ playwright }, info) => {
       return;
     }
     if (phase === 'admit') {
+      // CI has restarted the same Auth container/signing volume on restored data.
+      // Check the exact pre-backup proofs before creating any fresh sessions.
+      privateFile(join(run, 'auth-revocation.private.json'), 65536);
+      await verifyRevocation(request, load<RevocationWitness>(run, 'auth-revocation.private.json'));
       const headman = await admit(request, checkpoint.headman, 'HEADMAN');
       const student = await admit(request, checkpoint.student, 'STUDENT');
       saveToken(run, 'actor-token.private', headman);

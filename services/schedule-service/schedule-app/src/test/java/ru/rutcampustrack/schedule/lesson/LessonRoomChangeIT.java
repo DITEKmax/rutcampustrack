@@ -2,6 +2,8 @@ package ru.rutcampustrack.schedule.lesson;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,11 +11,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
+import io.grpc.stub.StreamObserver;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.dao.DataAccessException;
@@ -31,6 +35,11 @@ import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
 import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
+import ru.rutcampustrack.schedule.grpc.LessonByIdRequest;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
+import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.replacement.AssignmentReplacementService;
@@ -50,6 +59,7 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
     @Autowired AssignmentReplacementService assignments;
     @Autowired LessonRepository lessons;
     @Autowired PlatformTransactionManager manager;
+    @Autowired ScheduleGrpcServiceImpl grpc;
     private LocalDate date;
     private static final long GROUP = 10,
             SUBJECT = 20,
@@ -478,6 +488,95 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
         assertThat(reload(lesson).path("room").isNull()).isTrue();
         assertThat(without(row("lessons", lesson), "room_snapshot", "revision"))
                 .isEqualTo(without(before, "room_snapshot", "revision"));
+    }
+
+    @Test
+    void committedRoomProvenanceReachesSingleAndBatchGrpcWithoutInventingHistory()
+            throws Exception {
+        long lesson = recurring(date, "planned");
+        long neighbour = recurring(date.plusDays(7), "planned");
+        long occurrence = scalar("SELECT occurrence_id FROM lessons WHERE id=?", lesson);
+        LessonResponse initial = grpcLesson(lesson);
+        assertThat(initial.getRoom()).isEqualTo("A-204");
+        assertThat(initial.hasPreviousRoom()).isFalse();
+        assertThat(initial.getRoomChangeState()).isEqualTo("unknown");
+
+        UUID key = UUID.randomUUID();
+        JsonNode receipt = change(lesson, key, "B-205", "1", 200);
+        assertThat(receipt.path("state").asText()).isEqualTo("COMPLETED");
+        assertRoomProjection(lesson, occurrence, "B-205", "A-204");
+        assertThat(change(lesson, UUID.randomUUID(), "B-205", "2", 200).path("revision").asText())
+                .isEqualTo("2");
+        assertThat(change(lesson, key, "B-205", "1", 200)).isEqualTo(receipt);
+        assertRoomProjection(lesson, occurrence, "B-205", "A-204");
+
+        change(lesson, UUID.randomUUID(), null, "2", 200);
+        assertRoomProjection(lesson, occurrence, "", "B-205");
+        assertThat(change(lesson, UUID.randomUUID(), null, "3", 200).path("revision").asText())
+                .isEqualTo("3");
+        assertRoomProjection(lesson, occurrence, "", "B-205");
+        change(lesson, UUID.randomUUID(), "C-306", "3", 200);
+        assertRoomProjection(lesson, occurrence, "C-306", null);
+        assertThat(change(lesson, key, "B-205", "1", 200)).isEqualTo(receipt);
+        assertRoomProjection(lesson, occurrence, "C-306", null);
+
+        LessonResponse untouched = grpcLesson(neighbour);
+        assertThat(untouched.getRoom()).isEqualTo("A-204");
+        assertThat(untouched.hasPreviousRoom()).isFalse();
+        assertThat(untouched.getRoomChangeState()).isEqualTo("unknown");
+        var batch = grpcGroup().getLessonsList();
+        assertThat(batch).hasSize(2);
+        LessonResponse batchNeighbour =
+                batch.stream()
+                        .filter(value -> value.getId() == neighbour)
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(batchNeighbour.getRoom()).isEqualTo("A-204");
+        assertThat(batchNeighbour.hasPreviousRoom()).isFalse();
+        assertThat(batchNeighbour.getRoomChangeState()).isEqualTo("unknown");
+    }
+
+    private LessonResponse grpcLesson(long lesson) {
+        @SuppressWarnings("unchecked")
+        StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
+        grpc.getLessonById(LessonByIdRequest.newBuilder().setLessonId(lesson).build(), observer);
+        ArgumentCaptor<LessonResponse> response = ArgumentCaptor.forClass(LessonResponse.class);
+        verify(observer).onNext(response.capture());
+        verify(observer).onCompleted();
+        return response.getValue();
+    }
+
+    private LessonsResponse grpcGroup() {
+        @SuppressWarnings("unchecked")
+        StreamObserver<LessonsResponse> observer = mock(StreamObserver.class);
+        grpc.getLessonsByGroup(
+                LessonsByGroupRequest.newBuilder()
+                        .setGroupId(GROUP)
+                        .setSemesterId(SEMESTER)
+                        .setDateFrom(date.toString())
+                        .setDateTo(date.plusDays(7).toString())
+                        .build(),
+                observer);
+        ArgumentCaptor<LessonsResponse> batch = ArgumentCaptor.forClass(LessonsResponse.class);
+        verify(observer).onNext(batch.capture());
+        verify(observer).onCompleted();
+        return batch.getValue();
+    }
+
+    private void assertRoomProjection(long lesson, long occurrence, String room, String previous) {
+        var matching =
+                grpcGroup().getLessonsList().stream()
+                        .filter(value -> value.getId() == lesson)
+                        .toList();
+        assertThat(matching).hasSize(1);
+        for (LessonResponse response : List.of(grpcLesson(lesson), matching.getFirst())) {
+            assertThat(response.getId()).isEqualTo(lesson);
+            assertThat(response.getOccurrenceId()).isEqualTo(occurrence);
+            assertThat(response.getRoom()).isEqualTo(room);
+            assertThat(response.hasPreviousRoom()).isEqualTo(previous != null);
+            if (previous != null) assertThat(response.getPreviousRoom()).isEqualTo(previous);
+            assertThat(response.getRoomChangeState()).isEqualTo("changed");
+        }
     }
 
     private long recurring(LocalDate on, String state) {

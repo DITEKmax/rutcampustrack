@@ -74,10 +74,13 @@ import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.attendance.audit.LessonActionDocument;
+import ru.rutcampustrack.attendance.audit.LessonActionService;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.config.MongoConvertersConfig;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetIncreaseRequest;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecision;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
@@ -373,6 +376,7 @@ class StudentRequestDomainIT {
     @jakarta.annotation.Resource TransactionTemplate transactionTemplate;
     @jakarta.annotation.Resource BarrierPairWriteCoordinator pairWriteCoordinator;
     @jakarta.annotation.Resource MongoOutboxStorage outboxStorage;
+    @jakarta.annotation.Resource LessonActionService lessonActions;
 
     @jakarta.annotation.Resource
     FaultInjectingTransactionTemplate faultInjectingTransactionTemplate;
@@ -1194,6 +1198,281 @@ class StudentRequestDomainIT {
                                 "other-nonblank-accepted-key"));
         assertThat(accepted.reason()).isEqualTo(ExcuseType.OTHER);
         assertThat(accepted.comment()).isEqualTo("custom reason");
+    }
+
+    @Test
+    void headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt() {
+        admitBudgetHeadman();
+        assertThat(service.headmanBudget(HEADMAN, STUDENT_ID).remaining()).isEqualTo(5);
+        assertThat(budgetRepository.findAll()).isEmpty();
+        seedBudget(5, 5);
+        var command =
+                new HeadmanLateCheckinBudgetIncreaseRequest(SEMESTER_ID, 2, "headman-budget-0001");
+        var committed = service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command);
+        assertThat(committed.limit()).as("headman budget increased limit").isEqualTo(7);
+        assertThat(service.headmanBudget(HEADMAN, STUDENT_ID).limit())
+                .as("headman budget persisted limit")
+                .isEqualTo(7);
+        assertThat(committed.used()).isEqualTo(5);
+        assertThat(committed.remaining()).isEqualTo(2);
+        assertThat(service.options(STUDENT, List.of(snapshot(74L))).budget().remaining())
+                .isEqualTo(2);
+        service.submitLateCheckin(
+                STUDENT, new LateCheckinSubmission(74L, "after-budget-increase-01"));
+        assertThat(service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                .isEqualTo(committed);
+        assertThat(service.headmanBudget(HEADMAN, STUDENT_ID).used()).isEqualTo(6);
+        assertThat(budgetAudits()).as("one permanent budget increase audit").hasSize(1);
+        var audit = budgetAudits().getFirst();
+        assertThat(audit.getLessonId()).isNull();
+        assertThat(audit.getOccurredAt()).isEqualTo(START);
+        assertThat(audit.getPayload())
+                .containsEntry("group_id", GROUP_ID)
+                .containsEntry("semester_id", SEMESTER_ID)
+                .containsEntry(
+                        "actor", LessonActionService.person(HEADMAN.userId(), "HEADMAN", null))
+                .containsEntry("student", LessonActionService.person(STUDENT_ID, "STUDENT", null))
+                .containsEntry("before", Map.of("limit", 5, "used", 5, "remaining", 0))
+                .containsEntry("after", Map.of("limit", 7, "used", 5, "remaining", 2));
+        assertThat(actualOutboxEvents("dashboard.invalidated")).isNotEmpty();
+        assertThatThrownBy(
+                        () ->
+                                service.increaseHeadmanBudget(
+                                        HEADMAN,
+                                        STUDENT_ID,
+                                        new HeadmanLateCheckinBudgetIncreaseRequest(
+                                                SEMESTER_ID, 3, command.requestKey())))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID + 1, command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        assertThat(budgetAudits()).hasSize(1);
+    }
+
+    @Test
+    void concurrentBudgetIncreasesAndConsumptionPreserveEveryChargeAndAudit() throws Exception {
+        admitBudgetHeadman();
+        seedBudget(5, 4);
+        var first =
+                new HeadmanLateCheckinBudgetIncreaseRequest(SEMESTER_ID, 2, "concurrent-budget-01");
+        var second =
+                new HeadmanLateCheckinBudgetIncreaseRequest(SEMESTER_ID, 3, "concurrent-budget-02");
+        CountDownLatch start = new CountDownLatch(1);
+        try (var pool = Executors.newFixedThreadPool(4)) {
+            List<Future<?>> tasks =
+                    List.of(
+                            pool.submit(
+                                    () -> {
+                                        start.await();
+                                        return service.increaseHeadmanBudget(
+                                                HEADMAN, STUDENT_ID, first);
+                                    }),
+                            pool.submit(
+                                    () -> {
+                                        start.await();
+                                        return service.increaseHeadmanBudget(
+                                                HEADMAN, STUDENT_ID, first);
+                                    }),
+                            pool.submit(
+                                    () -> {
+                                        start.await();
+                                        return service.increaseHeadmanBudget(
+                                                HEADMAN, STUDENT_ID, second);
+                                    }),
+                            pool.submit(
+                                    () -> {
+                                        start.await();
+                                        return service.submitLateCheckin(
+                                                STUDENT,
+                                                new LateCheckinSubmission(
+                                                        74L, "concurrent-budget-charge"));
+                                    }));
+            start.countDown();
+            for (Future<?> task : tasks) task.get(45, TimeUnit.SECONDS);
+        }
+        var current = service.headmanBudget(HEADMAN, STUDENT_ID);
+        assertThat(current.limit()).isEqualTo(10);
+        assertThat(current.used()).isEqualTo(5);
+        assertThat(current.remaining()).isEqualTo(5);
+        assertThat(budgetAudits()).hasSize(2);
+    }
+
+    @Test
+    void budgetAuditFailureRollsBackAndLostCommitAckRecoversExactlyOnce() {
+        admitBudgetHeadman();
+        seedBudget(5, 5);
+        clearOutbox();
+        service.setActions(
+                new LessonActionService(mongoTemplate, clock, outboxStorage, new ObjectMapper()) {
+                    @Override
+                    public void append(
+                            String id, Instant at, String source, Map<String, Object> payload) {
+                        super.append(id, at, source, payload);
+                        throw new IllegalStateException(
+                                "synthetic audit acknowledgement failure inside transaction");
+                    }
+                });
+        var command =
+                new HeadmanLateCheckinBudgetIncreaseRequest(
+                        SEMESTER_ID, 2, "audit-rollback-budget-01");
+        try {
+            assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                    .isInstanceOf(IllegalStateException.class);
+        } finally {
+            service.setActions(lessonActions);
+        }
+        assertThat(service.headmanBudget(HEADMAN, STUDENT_ID).limit()).isEqualTo(5);
+        assertThat(budgetAudits()).isEmpty();
+        assertThat(outboxStorage.findPending(10)).isEmpty();
+        faultInjectingTransactionTemplate.resetTransactionExecutionCount();
+        faultInjectingTransactionTemplate.failNextCommitAck();
+        assertThat(service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command).limit())
+                .isEqualTo(7);
+        assertThat(faultInjectingTransactionTemplate.transactionExecutionCount()).isEqualTo(1);
+        assertThat(budgetAudits()).hasSize(1);
+        assertThat(actualOutboxEvents("dashboard.invalidated")).hasSize(1);
+    }
+
+    @Test
+    void budgetRequiresFreshHeadmanMembershipCurrentSemesterAndAnExactUntamperedReceipt() {
+        admitBudgetHeadman();
+        var command =
+                new HeadmanLateCheckinBudgetIncreaseRequest(
+                        SEMESTER_ID, 2, "budget-fresh-rights-01");
+        service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
+                .thenReturn(true);
+        assertThatThrownBy(
+                        () ->
+                                service.increaseHeadmanBudget(
+                                        new Identity(778L, UserRole.STUDENT, GROUP_ID, false),
+                                        STUDENT_ID,
+                                        command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        for (var role : List.of(UserRole.ADMIN, UserRole.TEACHER)) {
+            assertThatThrownBy(
+                            () ->
+                                    service.headmanBudget(
+                                            new Identity(778L, role, GROUP_ID, true), STUDENT_ID))
+                    .isInstanceOf(
+                            ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        }
+        assertThatThrownBy(() -> service.headmanBudget(HEADMAN, STUDENT_ID + 99))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        assertThatThrownBy(
+                        () ->
+                                service.increaseHeadmanBudget(
+                                        HEADMAN,
+                                        STUDENT_ID,
+                                        new HeadmanLateCheckinBudgetIncreaseRequest(
+                                                SEMESTER_ID + 1, 2, command.requestKey())))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        when(academicGrpcClient.getHeadmanGroupComposition(GROUP_ID))
+                .thenThrow(
+                        new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                                "revoked"));
+        assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        admitBudgetHeadman();
+        when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setActive(true)
+                                .setArchived(true)
+                                .build());
+        assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        admitBudgetHeadman();
+        var audit = budgetAudits().getFirst();
+        audit.getPayload().put("after", Map.of("limit", 9, "used", 0, "remaining", 9));
+        mongoTemplate.save(audit);
+        assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        assertThat(service.headmanBudget(HEADMAN, STUDENT_ID).limit()).isEqualTo(7);
+        assertThat(budgetAudits()).hasSize(1);
+    }
+
+    @Test
+    void budgetOverflowAndSemesterFenceDenyWithoutMutation() {
+        admitBudgetHeadman();
+        seedBudget(Integer.MAX_VALUE, 5);
+        var command =
+                new HeadmanLateCheckinBudgetIncreaseRequest(SEMESTER_ID, 1, "budget-overflow-0001");
+        assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        mongoTemplate.save(
+                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
+                        .id(Long.toString(SEMESTER_ID))
+                        .semesterId(SEMESTER_ID)
+                        .barrierState("ARCHIVE_PREPARING")
+                        .stateVersion(1L)
+                        .updatedAt(START)
+                        .build());
+        assertThatThrownBy(() -> service.increaseHeadmanBudget(HEADMAN, STUDENT_ID, command))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class)
+                .hasMessageContaining("архив");
+        assertThat(service.headmanBudget(HEADMAN, STUDENT_ID).limit()).isEqualTo(Integer.MAX_VALUE);
+        assertThat(budgetAudits()).isEmpty();
+    }
+
+    private void admitBudgetHeadman() {
+        doAnswer(
+                        invocation -> {
+                            assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .as("Academic reads stay outside Mongo locks")
+                                    .isFalse();
+                            return ru.rutcampustrack.academic.grpc.HeadmanGroupCompositionResponse
+                                    .newBuilder()
+                                    .setGroupId(GROUP_ID)
+                                    .addMembers(
+                                            ru.rutcampustrack.academic.grpc.GroupCompositionMember
+                                                    .newBuilder()
+                                                    .setUserId(STUDENT_ID))
+                                    .addMembers(
+                                            ru.rutcampustrack.academic.grpc.GroupCompositionMember
+                                                    .newBuilder()
+                                                    .setUserId(STUDENT_ID + 1))
+                                    .build();
+                        })
+                .when(academicGrpcClient)
+                .getHeadmanGroupComposition(GROUP_ID);
+        when(academicGrpcClient.getActiveSemester())
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .build());
+        doThrow(
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException(
+                                "Schedule-only RPC unavailable to Attendance"))
+                .when(academicGrpcClient)
+                .getSemesterState(anyLong());
+        when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setActive(true)
+                                .build());
+    }
+
+    private void seedBudget(int limit, int used) {
+        budgetRepository.save(
+                StudentLateCheckinBudgetDocument.builder()
+                        .studentId(STUDENT_ID)
+                        .semesterId(SEMESTER_ID)
+                        .limit(limit)
+                        .used(used)
+                        .updatedAt(START)
+                        .build());
+    }
+
+    private List<LessonActionDocument> budgetAudits() {
+        return mongoTemplate.find(
+                Query.query(Criteria.where("payload.action").is("MANUAL_LATE_LIMIT_INCREASED")),
+                LessonActionDocument.class);
     }
 
     @Test

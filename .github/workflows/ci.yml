@@ -245,6 +245,127 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Verify changed data regressions reject their counterexamples
+        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service'
+        timeout-minutes: 8
+        env:
+          RCT_CI_SERVICE: ${{ matrix.service.name }}
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_DOMAIN_RED'
+          import hashlib, json, os, pathlib, re, shutil, subprocess, tempfile
+          import xml.etree.ElementTree as ET
+
+          service = os.environ['RCT_CI_SERVICE']
+          assert service in {'schedule-service', 'attendance-service'}
+          app = pathlib.Path('services') / service / (service.removesuffix('-service') + '-app')
+          private = pathlib.Path(tempfile.mkdtemp(prefix='changed-domain-red-', dir=os.environ['RUNNER_TEMP']))
+          results = app / 'build/test-results/integrationTest'
+          reports = app / 'build/reports/integrationTest'
+          current = {}
+          proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
+                   'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                   'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
+          try:
+              if service == 'schedule-service':
+                  package = 'ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT'
+                  method = 'committedRoomProvenanceReachesSingleAndBatchGrpcWithoutInventingHistory'
+                  test_source = app / 'src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java'
+                  previous = '4065cda44239af33cd9716273dc8e61d569b5261'
+                  paths = {
+                      app / 'src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java':
+                          '8150bf229736d323aac5e1a33c76b4727400996a05e6900416497436497920b6',
+                      app / 'src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java':
+                          'cdca65ab8862a74efc1b68ef677532cf99963257826f4690e965fd06fb16e06e',
+                  }
+                  with (private / 'fetch.private.log').open('wb') as log:
+                      subprocess.run(['git', 'fetch', '--quiet', '--no-tags', '--depth=1', 'origin', previous],
+                                     stdout=log, stderr=subprocess.STDOUT, timeout=60, check=True)
+                  replacements = {}
+                  for path, expected in paths.items():
+                      old = subprocess.check_output(['git', 'show', previous + ':' + path.as_posix()], timeout=30)
+                      assert 0 < len(old) <= 1048576 and hashlib.sha256(old).hexdigest() == expected
+                      replacements[path] = old
+                  proof['counterexample'] = 'PREVIOUS_ROOM_PROJECTION'
+                  proof['previousRevision'] = previous
+              else:
+                  package = 'ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT'
+                  method = 'headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt'
+                  test_source = app / 'src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java'
+                  path = app / 'src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java'
+                  original = b'long increased = (long) before.limit() + command.increase();'
+                  source = path.read_bytes()
+                  assert source.count(original) == 1
+                  replacements = {path: source.replace(original, b'long increased = (long) before.limit();')}
+                  proof['counterexample'] = 'OMITTED_BUDGET_INCREMENT'
+              for path in replacements:
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  current[path] = path.read_bytes()
+              proof['testMethod'] = package + '.' + method
+              proof['testSourceSha256'] = hashlib.sha256(test_source.read_bytes()).hexdigest()
+              proof['restoredSourceSha256'] = {str(p): hashlib.sha256(v).hexdigest() for p, v in current.items()}
+              proof['counterexampleSourceSha256'] = {str(p): hashlib.sha256(v).hexdigest() for p, v in replacements.items()}
+              for source, name in [(results, 'previous-results'), (reports, 'previous-reports')]:
+                  if source.exists():
+                      shutil.move(source, private / name)
+              for path, content in replacements.items():
+                  path.write_bytes(content)
+              proof['phase'] = 'RED_RUN'
+              with (private / 'red.private.log').open('wb') as log:
+                  run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
+                                        '--no-daemon', '--tests', package + '.' + method],
+                                       stdout=log, stderr=subprocess.STDOUT, timeout=360)
+              proof['nativeExit'] = run.returncode
+              assert run.returncode != 0
+              proof['phase'] = 'XML_RULE'
+              result = results / ('TEST-' + package + '.xml')
+              assert result.is_file() and result.stat().st_size <= 33554432
+              data = result.read_bytes()
+              assert b'<!DOCTYPE' not in data.upper() and b'<!ENTITY' not in data.upper()
+              cases = ET.fromstring(data).findall('testcase')
+              assert len(cases) == 1 and cases[0].get('name') == method + '()'
+              case = cases[0]
+              assert not case.findall('error') and not case.findall('skipped') and len(case.findall('failure')) == 1
+              failure = case.find('failure')
+              assert failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+              message = failure.get('message', '')
+              if service == 'schedule-service':
+                  assert re.search(r'expected:\s*true\s+but was:\s*false(?:\s|$)', message)
+                  lines = test_source.read_text().splitlines()
+                  target = 'assertThat(response.hasPreviousRoom()).isEqualTo(previous != null);'
+                  assert sum(target in line for line in lines) == 1
+                  line_number = next(i for i, line in enumerate(lines, 1) if target in line)
+                  assert 'assertRoomProjection(LessonRoomChangeIT.java:' + str(line_number) + ')' in (failure.text or '')
+                  proof.update(expectedPreviousRoomPresent=True, observedPreviousRoomPresent=False)
+              else:
+                  assert '[headman budget increased limit]' in message
+                  assert re.search(r'expected:\s*7\s+but was:\s*5(?:\s|$)', message)
+                  proof.update(expectedLimit=7, observedLimit=5)
+              proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
+                           restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+          finally:
+              for path, content in current.items():
+                  path.write_bytes(content)
+                  assert path.read_bytes() == content
+              for source, name in [(results, 'red-results'), (reports, 'red-reports')]:
+                  if source.exists():
+                      shutil.move(source, private / name)
+              output = pathlib.Path('build/ci-test-outcomes') / service
+              output.mkdir(parents=True, exist_ok=True)
+              (output / 'changed-domain-regression-safe.json').write_text(json.dumps(proof, indent=2) + '\n')
+              shutil.rmtree(private)
+          PY_DOMAIN_RED
+
+      - name: Upload safe changed-domain regression proof
+        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service')
+        uses: actions/upload-artifact@v4
+        with:
+          name: changed-domain-regression-safe-${{ matrix.service.name }}-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/${{ matrix.service.name }}/changed-domain-regression-safe.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Integration tests ${{ matrix.service.name }}
         id: java-tests
         # Auth failed before tests while resolving compileProtoPath dependencies.
@@ -471,7 +592,7 @@ jobs:
   e2e-auth:
     name: Playwright E2E auth flow
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Record the actual PR checkout revision
@@ -799,7 +920,7 @@ jobs:
 
       - name: Verify real Vue helper homework edit and retained completion
         id: homework-lifecycle
-        timeout-minutes: 3
+        timeout-minutes: 7
         if: ${{ !cancelled() && steps.remaining5.outcome == 'success' }}
         working-directory: tests/e2e
         env:
@@ -965,10 +1086,15 @@ jobs:
                   raise RuntimeError('Schedule ownership mismatch')
               return info
 
-          def api(phase):
+          def api(phase, restart_ready_until_ms=None):
+              env = {**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase}
+              if phase == 'resume':
+                  if not isinstance(restart_ready_until_ms, int):
+                      raise RuntimeError('Assignment restart deadline is missing')
+                  env['RCT_ASSIGNMENT_RESTART_READY_UNTIL_MS'] = str(restart_ready_until_ms)
               call(['npx', 'playwright', 'test', '--config', 'playwright.assignment-lifecycle.config.ts',
                     '--project=chromium'], cwd=root / 'tests/e2e',
-                   env={**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase},
+                   env=env,
                    seconds=330 if phase == 'prepare' else 150)
 
           def close_failure_diagnostic(since):
@@ -1057,6 +1183,7 @@ jobs:
           resume_since = None
 
           def restart():
+              ready_until_ms = int((time.time() + 120) * 1000)
               call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
                     '--wait', '--wait-timeout', '120', 'schedule-service'], seconds=150)
               current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
@@ -1065,6 +1192,7 @@ jobs:
                       or not info['State']['Running']
                       or info['State'].get('Health', {}).get('Status') != 'healthy'):
                   raise RuntimeError('Original Schedule did not recover')
+              return ready_until_ms
 
           try:
               api('prepare')
@@ -1075,11 +1203,11 @@ jobs:
                   raise RuntimeError('Owned Schedule did not stop')
               api('pending')
               stage = 'restart'
-              restart()
+              restart_ready_until_ms = restart()
               restart_needed = False
               stage = 'resume'
               resume_since = datetime.datetime.now(datetime.timezone.utc).isoformat()
-              api('resume')
+              api('resume', restart_ready_until_ms)
               print('PASS real assignment closure retry, retained history and next-day replacement')
           except Exception as error:
               if stage == 'resume' and resume_since:

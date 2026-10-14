@@ -1,0 +1,1217 @@
+{
+  "utc": "2026-10-14T10:54:43.764781+00:00",
+  "baseline_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "parent": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+  "local_head": "4065cda44239af33cd9716273dc8e61d569b5261",
+  "real_remote_readback": "4065cda44239af33cd9716273dc8e61d569b5261",
+  "authenticated_PR2_head": "4065cda44239af33cd9716273dc8e61d569b5261",
+  "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "base": "main",
+  "main_unchanged": true,
+  "advertised_merge": "f98305086724ec89abd4d1bf5c9131967832eca1",
+  "actual_checkout": {
+    "artifact": 11887063812,
+    "digest": "sha256:bb0dcb0368936836e316db9dea67db6fb4a4f7e6e6f79bd51d813bab3d7abad0",
+    "bytes": 293,
+    "checkout_sha": "f98305086724ec89abd4d1bf5c9131967832eca1",
+    "tree_sha": "25c906abb1bc4fd917118e30009f866bf432b17c",
+    "producer_head_sha": "4065cda44239af33cd9716273dc8e61d569b5261",
+    "official_git_parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "4065cda44239af33cd9716273dc8e61d569b5261"
+    ],
+    "official_tree_and_committed_local_tree_match": true,
+    "bounded_reader": {
+      "direct_pid": 697125,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 697125,
+          "start_ticks": 22928745
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "raw_logs_or_private_body_read": false
+  },
+  "publication": {
+    "direct_pid": 696125,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 696125,
+        "start_ticks": 22897552
+      },
+      {
+        "pid": 696126,
+        "start_ticks": 22897552
+      },
+      {
+        "pid": 696127,
+        "start_ticks": 22897553
+      },
+      {
+        "pid": 696148,
+        "start_ticks": 22897567
+      },
+      {
+        "pid": 696160,
+        "start_ticks": 22897571
+      },
+      {
+        "pid": 696188,
+        "start_ticks": 22897610
+      },
+      {
+        "pid": 696194,
+        "start_ticks": 22897682
+      },
+      {
+        "pid": 696196,
+        "start_ticks": 22897742
+      },
+      {
+        "pid": 696217,
+        "start_ticks": 22897748
+      },
+      {
+        "pid": 696241,
+        "start_ticks": 22897783
+      },
+      {
+        "pid": 696242,
+        "start_ticks": 22897783
+      },
+      {
+        "pid": 696269,
+        "start_ticks": 22897797
+      },
+      {
+        "pid": 696270,
+        "start_ticks": 22897797
+      },
+      {
+        "pid": 696271,
+        "start_ticks": 22897797
+      },
+      {
+        "pid": 696272,
+        "start_ticks": 22897797
+      },
+      {
+        "pid": 696273,
+        "start_ticks": 22897797
+      },
+      {
+        "pid": 696310,
+        "start_ticks": 22897821
+      },
+      {
+        "pid": 696311,
+        "start_ticks": 22897821
+      },
+      {
+        "pid": 696312,
+        "start_ticks": 22897821
+      },
+      {
+        "pid": 696343,
+        "start_ticks": 22897841
+      },
+      {
+        "pid": 696368,
+        "start_ticks": 22897860
+      },
+      {
+        "pid": 696410,
+        "start_ticks": 22897871
+      },
+      {
+        "pid": 696411,
+        "start_ticks": 22897874
+      },
+      {
+        "pid": 696412,
+        "start_ticks": 22897874
+      },
+      {
+        "pid": 696416,
+        "start_ticks": 22897910
+      },
+      {
+        "pid": 696414,
+        "start_ticks": 22897910
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 696410,
+        "start_ticks": 22897871,
+        "native_exit": 0
+      }
+    ],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "hooks_closed_predicates": {
+    "Gitleaks secret detection": true,
+    "check yaml": true,
+    "check json": true,
+    "check for added large files": true,
+    "fix end of files": true,
+    "trim trailing whitespace": true
+  },
+  "inventory": {
+    "Created": [
+      "docs/validation/cloud-20261011/receipts/current-4058-checking-corrections.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-4058-client-acceptance.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-4058-real-push-readback.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-4058-vue-coverage-failure.safe.json"
+    ],
+    "Modified": [
+      ".github/workflows/ci.yml",
+      "docs/validation/cloud-20261011/CURRENT.md",
+      "docs/validation/cloud-20261011/attempts.ndjson",
+      "docs/validation/cloud-20261011/boundary-scenarios.csv",
+      "docs/validation/cloud-20261011/decisions.md",
+      "docs/validation/cloud-20261011/defects.md",
+      "docs/validation/cloud-20261011/receipts/Q08-existing-geo-source-preparation.safe.json",
+      "docs/validation/cloud-20261011/resources.md",
+      "docs/validation/cloud-20261011/scenarios.csv",
+      "docs/validation/cloud-20261011/source-ledger.json",
+      "docs/validation/cloud-20261011/verified-cases.csv",
+      "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "tests/e2e/fixtures/artifact-privacy.ts",
+      "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts"
+    ],
+    "Deleted": []
+  },
+  "source_pins": {
+    "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts": "7fc76af97c7cf2e80ac235a42d46fc55d936b0ba790f3d1fcc9b1cd88b91d7e9",
+    "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts": "5e9b29382e03229e90e77b90e8bbec77767acbd4728c84758f7a813dc113430e",
+    "tests/e2e/fixtures/artifact-privacy.ts": "0eb2c3fec3cc171a30ea78baabb5b3485b1ee8973ce56a655cd81cce5da6653a",
+    ".github/workflows/ci.yml": "38c94ceaa91ff5102ea5788572d7c4637f1c9167602651e95488ebac72f98d37"
+  },
+  "scope": "fourexistingcheckinginputs+necessarytaskacceptance/source/evidence docs; notDONE/currentnewCIpending",
+  "qualification": "Sourcebytestestedmerged45.55s; normalhooks+normalcommit+realpush; no finalD009exception used;4058oldCIreceipt remainsoldproducer;foreign25untrackedexcludedpreserved",
+  "current_runs_terminal": {
+    "updated_at": "2026-10-14T11:29:30.762420+00:00",
+    "head": "4065cda44239af33cd9716273dc8e61d569b5261",
+    "CI": {
+      "run": 38552691508,
+      "result": "FAILURE",
+      "sole_failed_job": 115814211328,
+      "other_success_jobs": 18,
+      "e2e_seconds": 1611,
+      "boot_seconds": 954
+    },
+    "Coverage": {
+      "run": 38552691788,
+      "result": "SUCCESS"
+    },
+    "Security": {
+      "run": 38552691597,
+      "result": "SUCCESS"
+    },
+    "OpenAPI": {
+      "run": 38552691565,
+      "result": "SUCCESS"
+    },
+    "lesson_cases": {
+      "artifact": 11889746396,
+      "producer": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "run": 38552691508,
+      "digest": "sha256:3aba515e20783abd58046c33e1c698dfbd976bb0c0ff7cef08d85b6487c3cb1d",
+      "bytes": 512,
+      "results": {
+        "status": "failed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "mobile-attendance-requests.spec.ts",
+            "line": 8,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 53644,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "mobile-attendance-requests.spec.ts",
+                "line": 181
+              }
+            ]
+          },
+          {
+            "file": "mobile-lesson-lifecycle.spec.ts",
+            "line": 20,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 60870,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          },
+          {
+            "file": "mobile-schedule-lifecycle.spec.ts",
+            "line": 109,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 52311,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          },
+          {
+            "file": "mobile-schedule-lifecycle.spec.ts",
+            "line": 413,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 58257,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 559
+              }
+            ]
+          }
+        ]
+      },
+      "diagnostic_schema": [
+        {
+          "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "LESSON_LIFECYCLE",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        }
+      ],
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_read": false,
+      "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+    },
+    "pending_reads": [
+      "registry11888707893",
+      "assignment11888798088",
+      "closed_assignment_diagnostic_job115814211328"
+    ],
+    "qualification": "Finite builder109/lesson20 actual PASS; requests8 frame181 and ETag413 frame559 actual FAIL, causes UNKNOWN. Registry/assignment step FAIL; recovery/semester SKIP.",
+    "assignment_closed_diagnostic": {
+      "diagnostic": "ASSIGNMENT_CLOSE",
+      "resumeWindow": true,
+      "state": "MATCHES",
+      "singleOperation": true,
+      "warnings": [
+        {
+          "operationKind": "CLOSE_UNASSIGN",
+          "phase": "RESUME_CLOSE",
+          "failureClass": "CONNECT",
+          "grpcStatus": "UNAVAILABLE",
+          "applicationSite": "NONE"
+        }
+      ]
+    },
+    "log_read_qualification": "Official decoded job115814211328 read once RAM-only, postresponse32MiB/200kline bound; exact closed schema only. Cause of connection failure pending source diagnosis.",
+    "registry_cases": {
+      "artifact": 11888707893,
+      "producer": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "run": 38552691508,
+      "digest": "sha256:5df6482733f22f36b039842a776da5aedff3ff0c2c37bfccf951e412d3134c20",
+      "bytes": 477,
+      "results": {
+        "status": "failed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 19,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 3255,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              },
+              {
+                "stage": "UNKNOWN",
+                "cause": "REPORTED_CLASS_ERROR",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "cloud-accepted-registry-export.spec.ts",
+                "line": 82
+              }
+            ]
+          },
+          {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 19,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 3683,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          }
+        ]
+      },
+      "diagnostic_schema": [
+        {
+          "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        }
+      ],
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_read": false,
+      "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+    },
+    "assignment_cases": {
+      "artifact": 11888798088,
+      "producer": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "run": 38552691508,
+      "digest": "sha256:5394a95f44727483bb9c6da15e0772ac09297b4bdbee7c383cef5e28a3e803c8",
+      "bytes": 1214,
+      "phases": {
+        "pending": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 598,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 289,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "prepare": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 598,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 56277,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "resume": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 598,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 231,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "DATASET_HTTP",
+                  "cause": "DATASET_ASSIGNMENT_CLOSE_HTTP",
+                  "httpStatus": 503
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "assignment-lifecycle.spec.ts",
+                  "line": 460
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "lifecycle_closed_diagnostics": {},
+      "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+      "missing_phases": [],
+      "diagnostic_schema": {
+        "pending": [
+          {
+            "caseCode": "ASSIGNMENT_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "prepare": [
+          {
+            "caseCode": "ASSIGNMENT_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "resume": [
+          {
+            "caseCode": "ASSIGNMENT_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ]
+      },
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+      "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_ALL_THREE_PHASES_AND_SUCCESSFUL_OWNED_SCHEDULE_RESTART_STEP"
+    },
+    "source_findings": [
+      {
+        "id": "DF-PWA-AUTO-REQUEST-FRESHNESS-001",
+        "severity": "P2",
+        "cause": "Populated OPEN bucket page0 is retained through AUTO check-in; success invalidates Today only, returningRequests reloads only page<0. Correct card locator.",
+        "actual": "requests8 FAILframe181; uniqueactualcause notyetconfirmed",
+        "assigned": "q07_client_review productwriter independent WT; reviewer q07finite"
+      },
+      {
+        "id": "DF-SCHEDULE-ROOM-PROJECTION-001",
+        "severity": "P2",
+        "cause": "ScheduleGrpcServiceImpl sets roomChangeState unknown unconditionally and never previousRoom despite committed LessonRoomWriter ledger. BFFdirectmapping loses accepted change highlight/provenance.",
+        "actual": "ETag413 FAILconjunction559; uniquefailingmember notobserved",
+        "assigned": "q06_api_resume_writer bounded3Java implementation from4065; preserve0edb"
+      }
+    ]
+  },
+  "next_reviewed_integrations": {
+    "at": "2026-10-14T11:37:42.860409+00:00",
+    "state": "ROOT_INDEX_AND_WORKTREE_INTEGRATED_UNCOMMITTED_NO_RUNTIME_CLAIM",
+    "packages": [
+      {
+        "package": "T012",
+        "author": "a5f2f6ff9703b3c62f0d67bd02b8943505e3143b",
+        "base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+        "files": [
+          "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+          "frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+          "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss",
+          "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts",
+          "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java",
+          "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java",
+          "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java",
+          "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java",
+          "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+          "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+          "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+          "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+        ],
+        "pins": {
+          "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue": "a413de3423bf9553a482874ff2c2bd8a6d0f74619e62b93dc96f523dcd7e9802",
+          "frontends/mobile-core/src/features/headman-group/headman-group-client.ts": "984e2d2eef2f31732953498a344b4f0ec6dae9bdbdd62e5ee547fad8c13a8d18",
+          "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss": "6e519b01e0ef2a393db1e3fb2aefb395f085231408224bb530f759c6168124d3",
+          "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts": "a5e918d99cbd7ceb27277efd4cae7cfff6460d92d1dd80700f87518408888c06",
+          "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java": "ae2d4f30b947046d161d1d95fe73ee1e7d305cb85fd0b3b951023308f03a63fb",
+          "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java": "b99a143404095a7e720a696258faee4b3e585635621b39d3ce691182221a8c51",
+          "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java": "36173384546d49d5dddc753f4316e1e485fff149b917a88e2c8ae9046306a591",
+          "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java": "ea7c8b1404dac58a1047c91d183be346e368af3dcb628b58ae39d5033a9a4e0d",
+          "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java": "a60b268968b930bfd3468daf517cb948642299d104caa12ff8b3e802f9b385c3",
+          "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java": "2b5508c6404a9653af906d4becb0b7ce59305d3c0e11747b64c4b21403cdcebc",
+          "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java": "b18499341397de11faf586013ec33332933ef26012022ad35fbb399b986cf30a",
+          "tests/e2e/specs/mobile-attendance-requests.spec.ts": "8a739d1ad217c0148efa27b935e97bcfd0ab884b784f57bfa15e9271fc3d952f"
+        },
+        "source_equal_author": true
+      },
+      {
+        "package": "Q03",
+        "author": "0edb038dad1c7aa30b797d437b4ccd9a20643806",
+        "base": "4065cda44239af33cd9716273dc8e61d569b5261",
+        "files": [
+          "tests/e2e/fixtures/application-recovery.spec.ts"
+        ],
+        "pins": {
+          "tests/e2e/fixtures/application-recovery.spec.ts": "525cfc1f05ffa5b0f6fd0669a2f50c2694f01b7897990e2f62f3368f9ea7923d"
+        },
+        "source_equal_author": true
+      },
+      {
+        "package": "AUTO_freshness",
+        "author": "d10970540620ba1a98863e6e7acdaf4208070a05",
+        "base": "4065cda44239af33cd9716273dc8e61d569b5261",
+        "files": [
+          "frontends/mobile-core/src/features/requests/requests-controller.ts",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+        ],
+        "pins": {
+          "frontends/mobile-core/src/features/requests/requests-controller.ts": "e6654628639c7a93a1b8336a347054b4ddd7d6ebee70146939cbd7c5ec090e98",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "a0e2031de24e956674b1f80537a74dcebf3a46506b6560cc208be6faae4232d6",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "7a71cce32b1e8c87bf6e88899d91957661129fab5a38052516a0c10f77eb99fc"
+        },
+        "source_equal_author": true
+      },
+      {
+        "package": "room_projection",
+        "author": "01c6d400b4deef0541e834224ed74ce15a50863f",
+        "base": "4065cda44239af33cd9716273dc8e61d569b5261",
+        "files": [
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java",
+          "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java"
+        ],
+        "pins": {
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java": "124d94a13aa5e71a469a0e93d220ca1c4a6a357fd1ec90405be5452df46a506c",
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java": "85ad9e471d0607b97bf69aa30e854fe92dc736cdc2d98638eeb9d96ec89ccf6c",
+          "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java": "28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b"
+        },
+        "source_equal_author": true
+      },
+      {
+        "package": "assignment_readiness",
+        "author": "4e817b51e81f7853acfb27da8e496f96cb46518a",
+        "base": "4065cda44239af33cd9716273dc8e61d569b5261",
+        "files": [
+          "tests/e2e/fixtures/assignment-lifecycle.spec.ts"
+        ],
+        "pins": {
+          "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751"
+        },
+        "source_equal_author": true
+      },
+      {
+        "package": "Q09_additional_cases",
+        "author": "bef343202c0da6295a5e82fb769232d64e5659ad",
+        "base": "4065cda44239af33cd9716273dc8e61d569b5261",
+        "files": [
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "pins": {
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f"
+        },
+        "source_equal_author": true
+      }
+    ],
+    "pending_packages": {
+      "AUTO_freshness": {
+        "author": "d10970540620ba1a98863e6e7acdaf4208070a05",
+        "files": 3,
+        "local": "same4065test3AUTORED/1PRESENTPASS then unchangedtest28GREEN; formatter/types/lint/hooksPASS,reaped",
+        "independent_review": "APPROVE_SOURCE q07_client_review nofindings exact3pins; generation/owner/offline/PRESENT examined",
+        "browser": "NOT_RUN",
+        "integration": "ROOT_INDEX_WIP_EXACT_AUTHOR"
+      },
+      "assignment_readiness": {
+        "author": "b3f32756fbd25af97d5af4e6899def5058d59fde",
+        "files": 1,
+        "local": "formatter/strictE2ETSC/actualhelperRAMcontrols/hooksPASS14.11s,reaped",
+        "root_workflow": "same120sdeadline2hunks prepared",
+        "independent_review": "QUEUED",
+        "actual_channel": "NOT_RUN",
+        "deadline_correction": {
+          "author": "4e817b51e81f7853acfb27da8e496f96cb46518a",
+          "sha256": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751",
+          "checks": "format/strictTSC/actualresume-guardlate-disposeRAMcontrols/hooksPASS9.87s,reaped",
+          "review": "TARGETED_QUEUED",
+          "actual": "NOT_RUN"
+        },
+        "targeted_review": {
+          "state": "APPROVE_TARGETED_R1_CORRECTION",
+          "previous_review": "checking_package_source_review; whole review retained as historical finding",
+          "closed_finding": "R1",
+          "correction_commit": "4e817b51e81f7853acfb27da8e496f96cb46518a",
+          "fixture_sha256": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751",
+          "control_sha256": "438e826de252f266ba04e176899b21bb2cdae8626b85fae7c61b68d6ffd2f9c1",
+          "scope": "Only fixture four-line guard and corresponding actual-AST late-dispose control; earlier four Root checking sources remain at previously reviewed semantic scope; later workflow regression step excluded",
+          "reviewed": [
+            "Commit delta is exactly4addedlines in assignment fixture: fixed-message requireValue(Date.now()<restartReadyUntil) immediately after awaited assignmentRestartReady and immediately before unchanged close",
+            "Post-await guard observes completion of helper finally/async response.dispose; expiration rejects before first resume DELETE; absolute original budget unchanged",
+            "Control source extracts actual helper and actual resume await+guard from TypeScriptAST, asserts adjacent placement immediately before close, retains old fixture oracles",
+            "Synthetic valid200 with disposal advancing modeled clock exactly to deadline allows old boundary one command; actual corrected boundary rejects with zero commands, one read/disposal and zero waits",
+            "No command retry, production change, DTO/assertion weakening, new status relaxation, deadline extension or raw output introduced"
+          ],
+          "validation": {
+            "independent_source_reads": true,
+            "independent_checks_executed": false,
+            "author_receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#assignmentReadiness.reviewDeadlineCorrection",
+            "author_reported": "formatter/strictTSC/hooks/actual-helper-and-resume-AST controls PASS9.868s; all owned processes reaped",
+            "actual_http_grpc": "NOT_RUN",
+            "root_merged_checks": "PENDING"
+          },
+          "effects": {
+            "source_changes": false,
+            "shared_doc_changes": false,
+            "new_metadata_get": false,
+            "raw_ci_logs": false,
+            "artifact_download": false,
+            "new_runtime": false,
+            "pending_tool_calls": 0,
+            "pending_native_sessions": 0
+          }
+        }
+      },
+      "Q09_additional_cases": {
+        "author": "5765bc3e481ac69bca240a5780ec85b44bde9518",
+        "review": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "Q09-R1",
+            "severity": "P2",
+            "line": 517,
+            "cause": "expect.poll callback Actor.call throws on expected pre-event archived404; actualPW1.59.1 doesnotretrygenerator exceptions"
+          },
+          {
+            "id": "Q09-R2",
+            "severity": "P2",
+            "line": 545,
+            "cause": "ARCHIVED publication excludedbyacceptedACTIVE-only studentfeed; preservecompletion/historyviaexistingproof not inventedfeedreturn"
+          }
+        ],
+        "author_correction": "QUEUED",
+        "actual_new_cases": "NOT_RUN",
+        "correction": {
+          "author": "295912dd9c3bdf324abcf4779dc1d7b2fb1be7f7",
+          "source_sha256": "12580b82e8872adc70cb7fccd526a30cb792ea8ca425504988e6b3d2435aae0e",
+          "checks": "Prettier/strictTSC/hooksPASS8.94s,reaped; priorTSCnullguardFAIL retained, minimalguardfix",
+          "scope": "onlyHWspec R1/R2; originalcasebody+secondcasebyteequal; assignment28482unchanged",
+          "actual_new_cases": "NOT_RUN",
+          "targeted_review": "QUEUED"
+        },
+        "targeted_review": {
+          "state": "R1_R2_CLOSED_NEW_FALSE_GREEN_P2",
+          "source": "295912dd",
+          "finding": "line579 zero-cardcount can pass while skeleton; wait knownunchanged current card visible beforeabsence",
+          "scope": "singlepositivefeedreadiness gate only; originalandsecondcase unchanged"
+        },
+        "settled_feed_correction": {
+          "author": "bef343202c0da6295a5e82fb769232d64e5659ad",
+          "sha256": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f",
+          "scope": "ONEpositiveunchangedcurrentcard visible beforeabsenceoracle",
+          "checks": "format/strictTSC/hooksPASS9.92s reaped, originalcase+wholeBbyteequal; assignmentunchanged",
+          "review": "TARGETED_QUEUED",
+          "actual": "NOT_RUN"
+        },
+        "final_independent_review": "APPROVE_SOURCE q07_client_review bef343 exactHW10dfdac8; R1/R2 and settledfeedgate closed, no blockers; originalcase+wholeBbyteequal; actualnewbrowserNOT_RUN"
+      },
+      "room_projection": {
+        "author": "01c6d400b4deef0541e834224ed74ce15a50863f",
+        "files": 3,
+        "checks": "scopedSpotlessApply/Check+SchedulecompileJava/compileTestJava/hooksPASS100.277s native37969/reaped; earlier81981 ENVlocalIPCfailNOTRED retained",
+        "source_pins": {
+          "grpc": "124d94a13aa5e71a469a0e93d220ca1c4a6a357fd1ec90405be5452df46a506c",
+          "writer": "85ad9e471d0607b97bf69aa30e854fe92dc736cdc2d98638eeb9d96ec89ccf6c",
+          "test": "28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b"
+        },
+        "realDB_and_PWA": "NOT_RUN",
+        "independent_review": {
+          "verdict": "APPROVE_SOURCE, no blocking findings. Exact clean01c6d400b4deef0541e834224ed74ce15a50863f from4065; only3 assigned Java files/+176/-4. Actual new DB/PWA/old-sourceRED NOT_RUN. Requested/selectedSol6.1high actualUNKNOWN.",
+          "basis": "Current governing TASK/CURRENT/decisions/questions/resources and previous own Q07 evidence read; JS-HEADMAN-22 current canonical515 room-change highlight/in-place operation; existing protoLessonResponse room_change_state/optional previous_room (no receipt =>UNKNOWN, not inferredUNCHANGED). Independently opened current RoomWriter, all changed gRPCbuilder paths, V29 receipt/append-only/deferred-completion guards, existing Lesson.resolveRoom and MobileBFFStudentQueryService481–496.",
+          "dataAndReadConsistency": "Read-only RoomWriter batch accepts only selected physical snapshots with positive occurrence/revision and exactly one canonical origin. One parameterized SQL query for those IDs chooses latest NONNOOP ledger per physicalID ordered by causal after_lesson_revision; transaction timestamps need not order receipts. V29 committed immutable ledger rows are exact same-TX before/after physical/occurrence authority with deferred completion; uncommitted effects cannot appear. Reader requires same selected physicalID/occurrence, receipt revision<=captured physicalrevision and nullable after_room==capturedroom. Concurrent newer/mismatching provenance produces UNKNOWN conservatively instead of mixing another physical/room; it does not claim a globally repeatable snapshot or fall back to a stale older receipt. Existing physicalNULL room remains authoritative through resolveRoom, not template fallback. Map contains nonnull RoomChange even when previousRoom null, so known null→C is CHANGED without fabricated previous text.",
+          "scopeAndCarriers": "Group read computes roomChanges once before mapping, no per-row room query/N+1; single/active read reuse same builder with list1. Query constrained to already scoped physical IDs; no widening role/query/group scope. Missing/legacy/no-ledger/no-op-only/invalid-origin entries stayUNKNOWN. Latest no-op cannot erase prior real change; replay of old receipt cannot overwrite projected latest state. Full single/group/protobuf fields already exist; BFF normalizes changed/unknown to enum and preserves optionalprevious, readyToday consumer can receive correctedprojection. CompactGetLessonsByIds has no room fields; separate HomeworkResolve display-unused carrier intentionally unchanged. No API/proto/schema/security/write changes.",
+          "preservation": "Independently compared original change method through EOF to4065: byte-identical; all old LessonRoomChangeIT test method bodies byte-identical, only one new method+capture helpers/imports/autowiredactualgrpc. Existing mutation transactions/fence/history/identity/CAS/noop/replay guards stay intact.",
+          "testQuality": "committedRoomProvenanceReachesSingleAndBatchGrpcWithoutInventingHistory performs actual signed MockMvc roomPATCH through production SQL writer then autowiredactualgrpc with real repositories/ledger. Mock StreamObserver only captures result/onCompleted, not responses/data. Asserts originalroomUNKNOWN; A→B bothsingle+group currentroomB+previousA+CHANGED/samephysical+occurrence; noopB/exactoldreplay retainA; B→null previousB/CHANGED; noopnull retainsB; null→C CHANGED/previousabsent; oldB replay leavescurrentC; untouchedneighbourUNKNOWN in both carriers and exactly2 groupentries. Meaningful specification of observable producer output; actual socket/TLS/BFF/PWA remain outside this local test. Explicit malformedlegacy/concurrentmismatch paths were reviewed Source-only, no fabricated runtime claim.",
+          "redProposal": "Adequate narrowly scoped ordinary Schedule CI sensitivity proposal: retain CURRENT new test byteexactSHA28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b, swap ONLYtwo product Java files to hash-pinned4065, run exactnewmethod. Current test first validates realHTTP completedB/currentroom+physical/occurrence, then oldSource necessarily lacks previouspresence: AssertionFailedError expectedtrue/actualfalse at assertRoomProjection576 called507. Require exactsingle testcase, no skip/error/setup/compile substitute and this specific frame/oracle; private rawlog/XML, finallyrestorebothcurrentbytes/hashcmp and evacuate onlyownREDresults before original fullintegration collector/gate; exactsamecasePASS in restored fullGREEN. Actual workflow addition not presented here and not claimed reviewed/executed; no new runner/framework needed.",
+          "checks": "Independently joined all3 receipt pins to current bytes+immutable01c6 blobs. Author final mechanical followup formatter/formatcheck/compileSchedule+compileTestJava/ordinaryhooks/normalcommitPASS100.277s, allownedreaped/TMPgone. Initial formatter failure preserved in author receipt; not overwritten as all-attemptPASS. Reviewer used only reads/diffs/hashes, no native/runtime/network checks. ActualnewDB/PWA/RED remainNOT_RUN.",
+          "sourcePins": {
+            "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java": "124d94a13aa5e71a469a0e93d220ca1c4a6a357fd1ec90405be5452df46a506c",
+            "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java": "85ad9e471d0607b97bf69aa30e854fe92dc736cdc2d98638eeb9d96ec89ccf6c",
+            "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java": "28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b"
+          },
+          "effects": "Existing own outcome new key only; no Sourcefix/shared docs/runtime/DB/browser/CI/network/credentials/subagents. B013B014 frozen/Q012 pending; no wholeQ07 or room-etag userflow PASS until actual results."
+        },
+        "sensitivity": "existingordinaryScheduleCI runner exact4065twoJava oldimplementation +unchangednewtest onecase, restore→normalfullGREEN gate planned"
+      }
+    },
+    "checking_review": {
+      "state": "CHANGES_REQUESTED_ONE_P2",
+      "reviewer": "fb4a_ci_observer independent read-only; did not author reviewed code",
+      "requested_selected": "gpt-6.1-sol high",
+      "actual": "UNKNOWN",
+      "fixture_commit": "b3f32756fbd25af97d5af4e6899def5058d59fde",
+      "fixture_parent": "5765bc3e481ac69bca240a5780ec85b44bde9518",
+      "source_sha256": {
+        ".github/workflows/ci.yml": "43caad47862044b8770de63c6088edaf82397d1298b6c25af1619d4ff0bbaa24",
+        "tests/e2e/fixtures/safe-reporter.ts": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4",
+        "tests/e2e/specs/cloud-accepted-registry-export.spec.ts": "d60ad8164bfaa5c17aee8807cf4535f0f78b450189de21d8d68807fe913cd280",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "bad008878ad0f0050c90422ba6714ef927ddf7d776df83a96194afdb40107f3f",
+        "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "28482e0c244e5bfcd4fcb553a56278995b511d796eae15851f46f986aa5d13a2"
+      },
+      "reviewed": [
+        "Exact fixture93line addition preserves original pending503/close/replay/history/rights assertions by static diff and author actual-function AST control source",
+        "Workflow deadline set before Composeup and same absolute value sent only resume; same container/image/health identity guards and cleanup retained",
+        "Preview read-only through same retained AcademicSchedule client TLS/directed identity; onlyGET503 retries; all other statuses/transport/invalidDTO/late200 rejected",
+        "DTO semester identity, enum/stateVersion/digest/seven nonnegative safe count integers checked in RAM; no JSON/rawresponse output",
+        "Two exact closed method/path regex routes;43ASCIIurl-safe ticket matched only in RAM; only fixedenum+closedstatus emitted; path/status/method malformed returnsUNKNOWN",
+        "Registry status-only failure before existing200/content assertions, no failedbodydownload/ticketoutput; caps/sanitizer/guards unchanged"
+      ],
+      "findings": [
+        {
+          "id": "R1",
+          "priority": "P2",
+          "file": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+          "line": 679,
+          "related_lines": [
+            463,
+            674,
+            683
+          ],
+          "issue": "Successful200 path returns via finally await response.dispose(); no deadline check after disposal/before DELETE",
+          "counterexample": "valid200+JSON accepted1ms before readyUntil; asynchronous dispose finishes after readyUntil; helper resolves success and resume immediately issues close despite exhausted original restart budget",
+          "minimal_fix": "Check Date.now()<restartReadyUntil after awaited readiness helper and immediately before close, or restructure helper to recheck after disposal before successful return; add late-dispose case to existing RAM helper model"
+        }
+      ],
+      "validation": {
+        "review_checks_run": false,
+        "author_controls_source_read": true,
+        "author_reported_checks": "formatter/strictTSC/actual-function AST RAM controls/hooks PASS; independently not executed",
+        "root_merged_checks": "PENDING",
+        "actual_channel": "NOT_RUN"
+      },
+      "effects": {
+        "source_changes": false,
+        "shared_doc_changes": false,
+        "new_metadata_get": false,
+        "raw_ci_logs": false,
+        "artifact_download": false,
+        "new_runtime": false,
+        "pending_tool_calls": 0
+      }
+    },
+    "finite_CI_sensitivity": {
+      "source": "existing .github/workflows/ci.yml java-integration-test runner onefinite2service step; no newrunner/framework",
+      "schedule": "old4065twoJava/currentnewtest missingpreviousroompresence assertionRED thenrestore→ordinaryfullScheduleITGREEN",
+      "attendance": "singleomittedbudgetincrement compilabledatafault expectedlimit7/actual5 labelledassertionRED thenrestore→ordinaryfullAttendanceITGREEN",
+      "verification": "exactXMLonecase/oneassertfailure/noerrors/skips; closedproof/sourcepins only; rawprivateXML/logsfinallyownedcleanup",
+      "state": "SOURCE_PREPARED_REVIEW_AND_CHECKS_PENDING_NOT_EXECUTED",
+      "independent_review": {
+        "verdict": "APPROVE_SOURCE, no blocking findings in frozen new finite executor+one closed artifact upload. FullworkflowSHAbee6613b56ba8386c5ac6a6269ab097b39bb3d8de836ed32211c03d4f85c9067; reviewedBlockSHA0d596dd6d2f8b74c6adf28af31b20aa6c35e9da9416f79e75faa7c9d24c01164. No actual execution yet; requested/selectedSol6.1high actualUNKNOWN.",
+        "scope": "Only new Verify changed data regressions reject their counterexamples step and Upload safe changed-domain regression proof on existing java-integration-test matrix, Schedule/Attendance only. Separately reviewed readiness hunks excluded. Current governing state unchanged; prior01c6 room whole-review/a5 T012 review and both authors exact data-sensitivity proposals opened; actual Rootnewtargets reopened.",
+        "semanticRed": "Schedule admits exactly2 immutable4065 product files by knownSHA, leaves current new realSQL HTTP→autowiredgRPC test unchanged; oldSource lacks previouspresence after genuine B change. Exact selected method XML must contain one non-skipped/error-free testcase and one AssertionFailedError/AssertionError, expectedtrue/actualfalse, plus unique currentSource hasPreviousRoom assertion stackline (currently576). Attendance admits exactlyone occurrence of compilable increment statement and omits only+command.increase; unchanged first assertion label headman budget increased limit must observe7/5. Original normalcommit path stores5/5 without an earlier delta guard; replay-validation would occur later and therefore does not substitute. Both reject successful exit, missingXML, compile/setup failures, otherassertions, skips/errors or wrongvalues. Synthetic/localcompile failures are not claimed sensitivity.",
+        "freshness": "Frozen correction moves PREEXISTING service integrationTest XML+HTML dirs to owned private storage BEFORE any mutant run. Specific new XML therefore cannot be stale on compilation/setup failure. RED native nonzero must correspond to fresh exact method+specific failure. TestSource/current/restored/counterexample hashes and producer/checkout metadata captured, sourcepath cleanliness required before mutation. Hashes identify tested producer and require later officialcheckout join; no SHA-equivalence inference.",
+        "restoreAndPrivacy": "Current original product bytes retained in memory; Python finally restores EVERY admitted path and compares bytes before returning, then moves newly generated RED XML/reports out of ordinary collector/upload paths; only owned mkdtemp0700 underRUNNER_TEMP with umask077 is deleted. Fetch/Gradle stdout+stderr go only private files; XML<=32MiB/DTD+ENTITY rejected and never published. Closed proof contains constantservice/method/phase/state, hashes/SHA/counts/finiteexpected+observed values, no bodies/IDs/room/requestkeys/credentials/rawfailuretext. Admission/oracle failure emits UNEXPECTED state and keeps failing step; missingproof upload is error. Forced job cancellation/runner loss is not a guaranteed finally/cleanup receipt; such interruptedrun cannot be accepted as completed sensitivity.",
+        "gatesAndRuntimeLimit": "Original full integrationTest command/id, failure-report collector, safe collector and matrix gates unchanged and follow exact restoration; no continue-on-error/skip to mask failed RED admission. Safe proof explicitly says restoredGreen REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE; it does NOT assert GREEN automatically. Root must join each exact same method PASSED/no error/failure/skip in normal restored currentSource outcomes before recording RED→GREEN. A green aggregate alone is insufficient. Existing8min outer step /60s fetch /360s Gradle timeout are finiteCI failure bounds, not a measured cleanup/deadline guarantee; cancellation/timeout/restore-error stays nonacceptance, no extra runtime promised.",
+        "verification": "Readonly source/diff/hash/proposal join only; original new test sources/product pins match independently approved packages; no reviewer execution. Root actionlint/PythonAST/privatecontrols pending one coherent mechanicalcheck. Actual ScheduleRED/AttendanceRED/restoredfullGREEN stillNOT_RUN. No new framework or repeated product campaign required.",
+        "effects": "Existing own outcome new key only; no Sourcefix/native/network/shared docs/credentials/DB/browser/CI/subagents. B013B014 authmutations frozen and untouched; only acceptedroomprojection and N arithmetic data counterexamples."
+      }
+    },
+    "checking_budgets": {
+      "e2e_job_minutes": 45,
+      "prior_e2e_job_minutes": 30,
+      "reason": "Existingone120s case extendedtoTHREEown120s cases;7min covers6min per-case bounds+startup withoutchanginganycase timeout orassertion.",
+      "homework_step_minutes": 7,
+      "prior_homework_step_minutes": 3
+    },
+    "merged_check_attempt01": {
+      "results": [
+        {
+          "phase": "Root-own-prettier-apply",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            ".github/workflows/ci.yml",
+            "tests/e2e/fixtures/safe-reporter.ts",
+            "tests/e2e/artifact-controls/privacy.control.spec.ts",
+            "tests/e2e/specs/cloud-accepted-registry-export.spec.ts"
+          ],
+          "direct_pid": 716787,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716787,
+              "start_ticks": 23304341
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "embedded-Python-AST",
+          "argv": [
+            "python3",
+            "-c",
+            "from pathlib import Path;import ast,textwrap;s=Path('.github/workflows/ci.yml').read_text().splitlines();markers=['PY_DOMAIN_RED','PY_ASSIGNMENT'];\nfor marker in markers:\n a=[i for i,v in enumerate(s) if (\"python3 - <<'\"+marker+\"'\") in v];b=[i for i,v in enumerate(s) if v.strip()==marker];assert len(a)==len(b)==1 and b[0]>a[0];ast.parse(textwrap.dedent('\\n'.join(s[a[0]+1:b[0]])));\nprint('PASS two embedded Python blocks parsed; no execution')"
+          ],
+          "direct_pid": 716812,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716812,
+              "start_ticks": 23304484
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "actionlint",
+          "argv": [
+            "/workspace/rct-cloud-setup/golang-toolchain/go/bin/go",
+            "run",
+            "github.com/rhysd/actionlint/cmd/actionlint@v1.7.11",
+            "-shellcheck=",
+            "-pyflakes=",
+            ".github/workflows/ci.yml"
+          ],
+          "direct_pid": 716813,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716813,
+              "start_ticks": 23304519
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "Root-privacy-format",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--check",
+            ".github/workflows/ci.yml",
+            "tests/e2e/fixtures/safe-reporter.ts",
+            "tests/e2e/artifact-controls/privacy.control.spec.ts",
+            "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+            "tests/e2e/fixtures/application-recovery.spec.ts",
+            "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+            "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+            "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+          ],
+          "direct_pid": 716834,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716834,
+              "start_ticks": 23304789
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "merged-real-mobile-TSC",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+            "--noEmit",
+            "--project",
+            "/tmp/root-4065-next-checking-sbty2o6n/merged-e2e.json"
+          ],
+          "direct_pid": 716845,
+          "native_exit": 2,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716845,
+              "start_ticks": 23304972
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": false
+        }
+      ],
+      "source_unchanged": true,
+      "tmp_removed": true,
+      "existing_dependency_directory_preserved": true,
+      "total_wall_seconds": 7.729,
+      "limits": "sampledprocessresources; no hardOSisolationclaim",
+      "qualification": "First4phasesPASS; TSC TS2688 @playwright/test,node resolution because ownselectedconfig in /tmp; same25Sourceunchanged exceptdeclared4Rootformat, TMPgone/PWactualdirectorypreserved. Checkingconfig ENVfailure, notproductdefect. Resumeonly4unpassedphases withownconfiginsideE2Edir; no earlierPASSrepeat."
+    },
+    "merged_check_followup": {
+      "results": [
+        {
+          "phase": "merged-real-mobile-TSC",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+            "--noEmit",
+            "--project",
+            "/workspace/rutcampustrack/tests/e2e/.rct-merged-pixvloyb.json"
+          ],
+          "direct_pid": 716904,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716904,
+              "start_ticks": 23313103
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "merged-private-controls",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "tests/e2e/check-artifact-privacy.mjs"
+          ],
+          "direct_pid": 716911,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 716911,
+              "start_ticks": 23313626
+            },
+            {
+              "pid": 716918,
+              "start_ticks": 23313633
+            },
+            {
+              "pid": 716931,
+              "start_ticks": 23313862
+            },
+            {
+              "pid": 716944,
+              "start_ticks": 23314157
+            },
+            {
+              "pid": 716957,
+              "start_ticks": 23314248
+            },
+            {
+              "pid": 717008,
+              "start_ticks": 23317331
+            },
+            {
+              "pid": 717021,
+              "start_ticks": 23317418
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "git-diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check"
+          ],
+          "direct_pid": 717034,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 717034,
+              "start_ticks": 23317516
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "Angular-baseline-unchanged",
+          "argv": [
+            "git",
+            "diff",
+            "--exit-code",
+            "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "--",
+            "frontends/web-panel"
+          ],
+          "direct_pid": 717055,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 717055,
+              "start_ticks": 23317579
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      ],
+      "source_unchanged": true,
+      "tmp_removed": true,
+      "existing_dependency_directory_preserved": true,
+      "total_wall_seconds": 45.084,
+      "limits": "sampledprocessresources; no hardOSisolationclaim"
+    },
+    "final_25_source_pins": {
+      ".github/workflows/ci.yml": "4b7ec98683fddd758e40881a5dee76f86e12a002b8b3c7d95d92419c15f569ae",
+      "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue": "a413de3423bf9553a482874ff2c2bd8a6d0f74619e62b93dc96f523dcd7e9802",
+      "frontends/mobile-core/src/features/headman-group/headman-group-client.ts": "984e2d2eef2f31732953498a344b4f0ec6dae9bdbdd62e5ee547fad8c13a8d18",
+      "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss": "6e519b01e0ef2a393db1e3fb2aefb395f085231408224bb530f759c6168124d3",
+      "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts": "a5e918d99cbd7ceb27277efd4cae7cfff6460d92d1dd80700f87518408888c06",
+      "frontends/mobile-core/src/features/requests/requests-controller.ts": "e6654628639c7a93a1b8336a347054b4ddd7d6ebee70146939cbd7c5ec090e98",
+      "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "a0e2031de24e956674b1f80537a74dcebf3a46506b6560cc208be6faae4232d6",
+      "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "7a71cce32b1e8c87bf6e88899d91957661129fab5a38052516a0c10f77eb99fc",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java": "ae2d4f30b947046d161d1d95fe73ee1e7d305cb85fd0b3b951023308f03a63fb",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java": "b99a143404095a7e720a696258faee4b3e585635621b39d3ce691182221a8c51",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java": "36173384546d49d5dddc753f4316e1e485fff149b917a88e2c8ae9046306a591",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java": "ea7c8b1404dac58a1047c91d183be346e368af3dcb628b58ae39d5033a9a4e0d",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java": "a60b268968b930bfd3468daf517cb948642299d104caa12ff8b3e802f9b385c3",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java": "2b5508c6404a9653af906d4becb0b7ce59305d3c0e11747b64c4b21403cdcebc",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java": "b18499341397de11faf586013ec33332933ef26012022ad35fbb399b986cf30a",
+      "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java": "124d94a13aa5e71a469a0e93d220ca1c4a6a357fd1ec90405be5452df46a506c",
+      "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java": "85ad9e471d0607b97bf69aa30e854fe92dc736cdc2d98638eeb9d96ec89ccf6c",
+      "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java": "28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "7897d1898c006abdef742610fe9590f0c2be0e21e098ecc051b1122b842634ef",
+      "tests/e2e/fixtures/application-recovery.spec.ts": "525cfc1f05ffa5b0f6fd0669a2f50c2694f01b7897990e2f62f3368f9ea7923d",
+      "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751",
+      "tests/e2e/fixtures/safe-reporter.ts": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4",
+      "tests/e2e/specs/cloud-accepted-registry-export.spec.ts": "d60ad8164bfaa5c17aee8807cf4535f0f78b450189de21d8d68807fe913cd280",
+      "tests/e2e/specs/mobile-attendance-requests.spec.ts": "8a739d1ad217c0148efa27b935e97bcfd0ab884b784f57bfa15e9271fc3d952f",
+      "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f"
+    },
+    "merged_check_conclusion": "PASS sufficient8phases acrossattempt01first4+followup4, no earlierPASS repeated. Source25 unchanged afterdeclaredRoot4format; author21 unchanged. Bothnative1241/50463 settled/reaped/TMP+selectedconfiggone/PWactualdirectorypreserved. This is localchecking only, no actualnewDB/browser/CIreceipt.",
+    "N_data_counterexample_Source_proposal": {
+      "state": "SOURCE_VALIDATED_PROPOSAL_ONLY_NOT_RUN",
+      "revision": "a5f2f6ff9703b3c62f0d67bd02b8943505e3143b",
+      "service_path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "service_sha256": "a60b268968b930bfd3468daf517cb948642299d104caa12ff8b3e802f9b385c3",
+      "method": "increaseHeadmanBudget",
+      "line": 1338,
+      "original_exact": "long increased = (long) before.limit() + command.increase();",
+      "fault_exact": "long increased = (long) before.limit();",
+      "test_path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "test_sha256": "b18499341397de11faf586013ec33332933ef26012022ad35fbb399b986cf30a",
+      "test_method": "headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt",
+      "assert_line": 1212,
+      "first_failure_label": "headman budget increased limit",
+      "expected_assertion_type": "org.opentest4j.AssertionFailedError (AssertJ/JUnit comparison; actual XML must verify)",
+      "expected_value": 7,
+      "actual_value": 5,
+      "failure_fragment": "[headman budget increased limit] expected: 7 but was: 5 (whitespace-normalized equivalent allowed)",
+      "why_no_earlier_data_guard": "BeforeEach391 drops own taskDB. admitBudgetHeadman +initialGET5/emptybudget unchanged. seedBudget(5,5), command+2. First TX budgetReplay1328 finds no receipt; fault makes after5/5/0 and sets persistedlimit5. LessonActionService.append108–130 requires activeTX and inserts audit/outbox without validating budget delta. DTO is plainrecord. executeDecisionWithRetry3432 returns successful nonnull TX result without replay validation; test1212 is immediately next operation. budgetReplay oldLimit+increase check1508 is reached only on later replay/recovery, after targetassert under ordinary successful commit.",
+      "closed_CI_oracle": "Target exactclass ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT/exactmethod. Selected testcase/suite tests1 failures1 errors0 skipped0; solefailure must have exactlabel +expected7/actual5 andexpected assertion type. Infrastructure/setup/receipt-conflict/otherassert failure doesnotqualify. Restore exact original SourceSHA before ordinary fullintegrationTest; samecase must bepresent andPASS0failure/error/skip. GenuineMongo real runner only; no authfault/newframework.",
+      "runtime_qualification": "NormalMongo commit Source path supports specificassertionfailure. UnknownCommitResult could enter recovery andhitreceiptvalidation; that would failclosed oracle and mustnotbeclaimed data-sensitivityPASS. No actual compilation/mutation/Mongo/testXML read/run here.",
+      "effects": "Ownoutcome onefield only; bothWTs preservedclean."
+    },
+    "T013_next_accepted_homework_plan": {
+      "state": "SOURCE_ONLY_NO_PRODUCT_EDITS",
+      "branch": "codex/q09-homework-periods-20261014",
+      "base": "d10970540620ba1a98863e6e7acdaf4208070a05",
+      "writer": "q06_replacement_cause",
+      "actualCompatibleApi": "existingStudentApi.getHomework(from,to)→BFFinclusiveanyrangewithinsemester; DTOdate/lessonNumber/completed/serverNow/bounds sufficient",
+      "product_paths": 5,
+      "existing_test_paths": 4,
+      "gates": "designskill/currentcomponents; MoscowserverNow; periodfiltercompletedTodayunion/dedupe; focus/offline/currentowner, noAPI/schema/Angular/newweb",
+      "implementation": "WAIT_NEXT_ROOT_PUBLISHED_SHA; no native/runtime"
+    }
+  }
+}

@@ -9,6 +9,7 @@ import {
   registryHtmlBoundary,
 } from '../fixtures/cloud-accepted-support';
 import { loginPwa } from '../fixtures/pwa-auth';
+import { datasetHttpFailure } from '../fixtures/safe-reporter';
 
 registerPrivateSuite();
 
@@ -77,6 +78,8 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     expect(issued.status()).toBe(200);
     const ticket: { downloadPath: string; suggestedFilename: string } = await issued.json();
     const file = await bytes;
+    if (file.status() !== 200)
+      throw datasetHttpFailure('GET', new URL(file.url()).pathname, file.status());
     expect(file.status()).toBe(200);
     expect(file.headers()['content-type'].split(';')[0]).toBe('text/html');
     const content = (await file.body()).toString('utf8');

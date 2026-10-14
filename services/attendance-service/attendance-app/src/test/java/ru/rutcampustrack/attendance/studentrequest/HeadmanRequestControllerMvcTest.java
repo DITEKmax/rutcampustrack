@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,6 +46,7 @@ class HeadmanRequestControllerMvcTest {
     @Autowired private MockMvc mockMvc;
 
     @MockitoBean private HeadmanRequestService service;
+    @MockitoBean private StudentRequestService studentRequests;
 
     @MockitoBean private RequestContext requestContext;
 
@@ -54,6 +56,39 @@ class HeadmanRequestControllerMvcTest {
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         when(requestContext.getGroupId()).thenReturn(7L);
         when(requestContext.isHeadman()).thenReturn(true);
+    }
+
+    @Test
+    void budgetUsesStrictIntegerInputAndNoStore() throws Exception {
+        var snapshot =
+                new ru.rutcampustrack.attendance.contract.dto.headman
+                        .HeadmanLateCheckinBudgetResponse(100L, 30L, 7, 5, 2);
+        when(studentRequests.headmanBudget(any(), eq(100L))).thenReturn(snapshot);
+        when(studentRequests.increaseHeadmanBudget(any(), eq(100L), any())).thenReturn(snapshot);
+        String path = "/attendance/requests/students/100/late-checkin-budget";
+        mockMvc.perform(get(path))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                .andExpect(jsonPath("$.remaining").value(2));
+        mockMvc.perform(
+                        post(path)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"semesterId\":30,\"increase\":2,\"requestKey\":\"budget-command-0001\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.used").value(5))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"));
+        for (String value :
+                java.util.List.of("0", "-1", "1.5", "1.0", "2147483648", "null", "\"2\"")) {
+            mockMvc.perform(
+                            post(path)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(
+                                            "{\"semesterId\":30,\"increase\":"
+                                                    + value
+                                                    + ",\"requestKey\":\"budget-command-0001\"}"))
+                    .andExpect(status().isBadRequest());
+        }
     }
 
     @Test

@@ -279,6 +279,20 @@
   background: var(--rct-color-surface-raised);
   font: inherit;
 }
+.headman-group__field input {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  margin-block-start: var(--rct-space-2);
+  padding-inline: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-primary);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
 .headman-group__dialog-actions {
   display: flex;
   flex-wrap: wrap;

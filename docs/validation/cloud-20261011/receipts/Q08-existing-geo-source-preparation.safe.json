@@ -363,5 +363,48 @@
       }
     ],
     "verification": "Only bounded reads/searches/SHA and gitshow exact4058; no product/config/shared-doc mutation, native/backend/browser/DB/network/SDK/agents/B013/B014 work. Existing outcome appended only."
+  },
+  "T012_whole_Source_review": {
+    "verdict": "CHANGES_REQUIRED: two concrete findings; actual Mongo/browser/sensitivity NOT_RUN. Requested/selected Sol6.1/high actualUNKNOWN.",
+    "scope": "Independent whole review of exactly12 assigned WIP paths relative40580c6b6b5dbda40d01fde48eb5d455cded9d61, branchcodex/q08-headman-budget-increase-20261014, existing author WT. Read current RootTASK/CURRENT/decisions/questions/resources, RULES/AGENTS/workflow and prior own outcome; no Root4065 unrelated diff review.",
+    "acceptedBasis": "Closed source policy source-conflicts.md; revised/closed AT-11 backend-delta.yaml4757+; accepted R-2 backend-conflicts.md93–112 and student107:233–245/headman116:297; RootT012 freezes HEADMAN own-group/current active semester/positive int32 add/no used reset/permanent same-TX audit+outbox/exact replay. Legacy3-attempt/reset wording is superseded, no helper grant inferred.",
+    "findings": [
+      {
+        "id": "T012-R1",
+        "severity": "P1",
+        "file": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "line": 1428,
+        "cause": "budgetScope calls AcademicGrpcClient.getSemesterState(activeId). Current globally registered AssignmentCloseServiceIdentityInterceptor maps that EXACT RPC only to SCHEDULE_SERVICE (lines19–39); ServiceIdentityServerInterceptor requires directed Schedule→Academic identity and TLS. Attendance generic stub call51–69 supplies neither that identity nor the actor-scoped alternative. The failed RPC becomes AcademicServiceUnavailableException→HTTP503. Both new GET and POST enter this path, so real current headman cannot read or increase any budget.",
+        "minimalCorrection": "Keep Schedule directed policy unchanged; after the strict HEADMAN composition admission use the EXISTING signed getHeadmanJournalSemesterState(groupId,activeId) uncached authority read (current durable HEADMAN already qualifies its VIEW_STATS/MARK_ATTENDANCE admission), preserving active/archive/transition/delete checks and Mongo fence. Update the domain stub to that real caller boundary. No new proto/grant/service secret is required.",
+        "testLimit": "DomainIT.admitBudgetHeadman1418–1452 mocks the forbidden generic call as successful, MVC mocks StudentRequestService; neither can prove RPC admission. Existing new real PWA path will exercise this boundary, but has NOT_RUN. This is a Source-blocking finding, not an observed current CI failure cause."
+      },
+      {
+        "id": "T012-R2",
+        "severity": "P2",
+        "file": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+        "line": 817,
+        "cause": "The new budget section hides isMemberHeadman(member), and budgetWritable244–250 inherits helper-permission writable232–242 which also excludes that row. Current composition includes the current headman as an active own-group student, backend budgetScope permits this target, and R-2/T012 contain no exclusion of that student. Selecting the headman row therefore offers no budget read/increase, even when that student has exhausted manual requests.",
+        "minimalCorrection": "Use a budget-specific writable predicate with current HEADMAN/online/active-own-row/session/pending guards but without the assistant-permission self-row exclusion; display the budget section for this active student too. Preserve the existing self-headman prohibition for helper permission editing. A focused existing component test selecting the headman row is enough for this distinct UI predicate; no new browser crossproduct."
+      }
+    ],
+    "otherwiseReviewed": "Strict int32 JSON N and key validation/no-store; signed fresh Academic HEADMAN composition and active target membership before both initial command and replay; cached active candidate independently checked uncached; local semester PREPARE/delete tombstone fence before writes; one Mongo TX updates only limit/timestamp (used only0 on first insert), inserts permanent deterministic actor/key LessonAction and outbox. Audit primary key plus transaction retry resolves concurrent same-key once; exact target/group/semester/N/before/after receipt validation rejects changed payload/corrupt receipt. Distinct increments/consumption conflict on shared fence/budget doc and retry. Unknown commit recovery re-admits actor/semester then reads exact receipt. Positive overflow guard, no schema/proto/new collection/TTL. No password or roster identity fields added to new five-field response/audit. Client preserves same command under 401 refresh and uncertain outcome, reads current counter separately from historic replay, uses owner/revision stale-response guards; row scoped/busy/error/offline behavior inspected.",
+    "testQuality": "Five new real-Mongo DomainIT methods specify persisted5/5+2→7/5/2, post-consumption exact replay, audit identity/snapshot/count, same/distinct-key+consume concurrency, same-TX audit/outbox rollback, lost-commit ACK exactly once, helper/foreign/revoked denial, stale/archive/fence/overflow/tampered receipt refusal. External Academic/Schedule remain mocked: local Mongo assertions are meaningful but not real cross-service authority proof. MVC tests strict0/-1/fraction1.0/string/overflow inputs and no-store; two client tests validate same-body refresh and foreign counter rejection. Existing Q08 PWA append checks real selected-student UI add2→student remaining2→manual resubmit used6, retains earlier AUTO/no-charge/approval assertions. R2 self row untested.",
+    "verification": "Only bounded Source/diff/hash/closed receipt reads here. Author current receipt reports Node canonical format/Vue+E2E types/lint/existing4tests/hooksPASS; Java scoped format-apply/check+compilePASS90.466s, settled/owned processes reaped/TMPremoved. Independently reopened postformatter critical Java symbols and tests; exact current pins below. No actual new Mongo tests/MVC/browser/sensitivity result claimed.",
+    "sensitivityRemaining": "Existing author plan is adequate but not executed: use the ordinary old4058 HTTP route expected200/actual404 as functional GAP RED, or ONE compilable increment/audit-effect omission with specific persisted-limit/audit-count assertion RED, restore and original targeted GREEN. A missing Java symbol/compile failure is not a sensitivity witness; no new runner or wider campaign needed. B013/B014 stay frozen.",
+    "sourcePins": {
+      "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue": "43ca1f5a1b2cfed5ada73488fce5e61c4e3717633260c40453c527fbb83b24f9",
+      "frontends/mobile-core/src/features/headman-group/headman-group-client.ts": "984e2d2eef2f31732953498a344b4f0ec6dae9bdbdd62e5ee547fad8c13a8d18",
+      "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss": "6e519b01e0ef2a393db1e3fb2aefb395f085231408224bb530f759c6168124d3",
+      "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts": "447af3ade131e605559902d37db63bbd667a3245c6339ced8e4fa3482e85a83f",
+      "tests/e2e/specs/mobile-attendance-requests.spec.ts": "8a739d1ad217c0148efa27b935e97bcfd0ab884b784f57bfa15e9271fc3d952f",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java": "ae2d4f30b947046d161d1d95fe73ee1e7d305cb85fd0b3b951023308f03a63fb",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java": "b99a143404095a7e720a696258faee4b3e585635621b39d3ce691182221a8c51",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java": "36173384546d49d5dddc753f4316e1e485fff149b917a88e2c8ae9046306a591",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java": "ea7c8b1404dac58a1047c91d183be346e368af3dcb628b58ae39d5033a9a4e0d",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java": "e5f4ba5347a1c86dae5b30c845a2939a059d910bc9ac3919c7631df2c1c1e313",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java": "2b5508c6404a9653af906d4becb0b7ce59305d3c0e11747b64c4b21403cdcebc",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java": "1ed936859ae677fbfbe9da6b0be138f18242da11b52a643e67d9edfd8c70c0c1"
+    },
+    "effects": "Only this existing own outcome key appended; no Source fixes/runtime/native checks/network/browser/DB/Docker/CI/shared docs/credentials/subagents."
   }
 }

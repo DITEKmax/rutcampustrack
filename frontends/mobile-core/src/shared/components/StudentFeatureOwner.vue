@@ -376,7 +376,8 @@ watch(
       const wasHomeworkTarget = previous.id === homeworkNotificationRoute.id;
       const requestId = notificationTargetState.value?.requestId;
       notificationTargetState.value = null;
-      if (wasHomeworkTarget && homework.range.value !== null) homework.returnToToday();
+      if (wasHomeworkTarget && requestId !== undefined && homework.range.value !== null)
+        homework.returnToToday();
       if (requestId !== undefined) emit('clearNotificationTarget', requestId);
     }
   },
@@ -564,7 +565,7 @@ const homeworkScreenData = computed(() => {
   const targetState = activeHomeworkNotification.value;
   if (!targetState) {
     return {
-      homework: displayHomework.value,
+      homework: homework.presentHomework(displayHomework.value ?? null),
       loading: homeworkLoading.value,
       error: homeworkError.value,
       unavailableMessage: null as string | null,
@@ -607,7 +608,7 @@ const homeworkScreenData = computed(() => {
       };
     }
     return {
-      homework: { ...feed, items: [item] },
+      homework: homework.presentHomework({ ...feed, items: [item] }),
       loading: false,
       error: null,
       unavailableMessage: null,
@@ -890,6 +891,19 @@ function returnHomeworkToToday(): void {
     return;
   }
   homework.returnToToday();
+}
+
+function navigateHomeworkPeriod(action: () => void): void {
+  if (disposed || offline.value || props.api === null || scope.value?.activeRole !== 'STUDENT')
+    return;
+  if (route.value.id === homeworkNotificationRoute.id) {
+    const requestId = notificationTargetState.value?.requestId;
+    // Detach before navigation: its watcher must not reset the new user's range intent.
+    notificationTargetState.value = null;
+    if (requestId !== undefined) emit('clearNotificationTarget', requestId);
+    navigation.goRoot('homework');
+  }
+  action();
 }
 
 function backFromRequestNotificationTarget(): void {
@@ -2169,6 +2183,11 @@ defineExpose({ openNotificationAction });
     :owner-key="ownerIdentity"
     :historical="homework.isHistorical.value"
     :can-load-previous="homework.canLoadPrevious.value"
+    :period-mode="homework.periodMode.value"
+    :selected-date="homework.selectedDate.value"
+    :period-range="homework.periodRange.value"
+    :semester-range="homework.periodSemester.value"
+    :today-date="homework.todayDate.value"
     :is-item-pending="homework.isPending"
     :item-error="homework.itemError"
     @complete="complete"
@@ -2177,6 +2196,9 @@ defineExpose({ openNotificationAction });
     @open-material="openMaterialFromItem"
     @previous="homework.loadPrevious"
     @return-today="returnHomeworkToToday"
+    @select-period="navigateHomeworkPeriod(() => homework.selectPeriod($event))"
+    @select-date="navigateHomeworkPeriod(() => homework.selectDate($event))"
+    @step-period="navigateHomeworkPeriod(() => homework.stepPeriod($event))"
     @navigate="navigate"
     @back="navigation.back()"
   />

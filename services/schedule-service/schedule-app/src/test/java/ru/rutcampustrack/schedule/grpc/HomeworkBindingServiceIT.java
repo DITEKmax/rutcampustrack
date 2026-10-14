@@ -3,10 +3,13 @@ package ru.rutcampustrack.schedule.grpc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.protobuf.ByteString;
 import io.grpc.Context;
+import io.grpc.stub.StreamObserver;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,6 +55,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     @Autowired private JdbcTemplate jdbcTemplate;
 
     @Autowired private HomeworkBindingService homeworkBindingService;
+    @Autowired private ScheduleGrpcServiceImpl grpc;
 
     @Autowired
     private ru.rutcampustrack.schedule.replacement.AssignmentReplacementService assignmentLifecycle;
@@ -795,6 +800,123 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                 .setExpectedParticipantDigest("a".repeat(64))
                                                 .build()))
                 .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+    }
+
+    @Test
+    void lessonPlacementReceiptRetainsPhysicalTypeAcrossReadMoveReplayAndDateEdit() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        dateFixtureSemesters.add(semester);
+        Fixture source = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        Fixture target = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester))
+                .thenReturn(
+                        SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        Context.current()
+                .withValue(HomeworkBindingActorContext.CLAIMS, headman())
+                .run(
+                        () -> {
+                            String key = UUID.randomUUID().toString();
+                            var pending =
+                                    homeworkBindingService.reserve(
+                                            ReserveHomeworkBindingRequest.newBuilder()
+                                                    .setOccurrenceId(source.occurrenceId())
+                                                    .setExpectedRevision(1)
+                                                    .setRequestKey(key)
+                                                    .setPayloadHash(
+                                                            ByteString.copyFrom(new byte[32]))
+                                                    .build());
+                            var active =
+                                    homeworkBindingService.confirm(
+                                            ConfirmHomeworkBindingRequest.newBuilder()
+                                                    .setBindingId(pending.getBindingId())
+                                                    .setHomeworkId(
+                                                            FIXTURE_SEQUENCE.incrementAndGet())
+                                                    .setRequestKey(key)
+                                                    .build());
+                            var before = getBindingViaGrpc(active.getBindingId());
+                            String targetDate =
+                                    jdbcTemplate.queryForObject(
+                                            "SELECT date::TEXT FROM lessons WHERE id=?",
+                                            String.class,
+                                            target.lessonId());
+                            var identity = editIdentity(active, semester);
+                            var move =
+                                    MoveHomeworkBindingRequest.newBuilder()
+                                            .setIdentity(identity)
+                                            .setBindingMode("LESSON")
+                                            .setDate(targetDate)
+                                            .setLessonNumber(1)
+                                            .setTargetOccurrenceId(target.occurrenceId())
+                                            .setExpectedLessonRevision(1)
+                                            .setExpectedBindingRevision(active.getRevision())
+                                            .build();
+                            var accepted = moveBindingViaGrpc(move);
+                            assertThat(
+                                            accepted.getAcceptedBinding()
+                                                    .getCurrentLesson()
+                                                    .getLessonType())
+                                    .as("accepted placement retains physical lesson type")
+                                    .isEqualTo("lecture");
+                            assertThat(before.getCurrentLesson().getLessonType())
+                                    .as("source binding read carries physical lesson type")
+                                    .isEqualTo("lecture");
+                            assertThat(
+                                            jdbcTemplate.queryForObject(
+                                                    "SELECT accepted_binding->>'lessonType' FROM homework_placement_operations WHERE operation_id=?",
+                                                    String.class,
+                                                    UUID.fromString(identity.getOperationId())))
+                                    .isEqualTo("lecture");
+                            var current = getBindingViaGrpc(active.getBindingId());
+                            assertThat(current.getCurrentLesson().getLessonId())
+                                    .isEqualTo(target.lessonId());
+                            assertThat(current.getCurrentLesson().getLessonType())
+                                    .isEqualTo("lecture");
+                            assertThat(moveBindingViaGrpc(move)).isEqualTo(accepted);
+                            assertThat(placement.continuation(identity)).isEqualTo(accepted);
+                            placement.acknowledge(identity);
+                            var dateReceipt =
+                                    moveBindingViaGrpc(
+                                            dateMove(
+                                                    current,
+                                                    editIdentity(current, semester),
+                                                    LocalDate.parse(targetDate)
+                                                            .plusDays(1)
+                                                            .toString()));
+                            assertThat(dateReceipt.getAcceptedBinding().hasCurrentLesson())
+                                    .isFalse();
+                            assertThat(getBindingViaGrpc(active.getBindingId()).hasCurrentLesson())
+                                    .isFalse();
+                            placement.acknowledge(dateReceipt.getIdentity());
+                            assertThat(
+                                            placement
+                                                    .continuation(identity)
+                                                    .getAcceptedBinding()
+                                                    .getCurrentLesson()
+                                                    .getLessonType())
+                                    .isEqualTo("lecture");
+                        });
+    }
+
+    private HomeworkBindingResponse getBindingViaGrpc(long bindingId) {
+        @SuppressWarnings("unchecked")
+        StreamObserver<HomeworkBindingResponse> observer = mock(StreamObserver.class);
+        grpc.getHomeworkBinding(
+                HomeworkBindingLookupRequest.newBuilder().setBindingId(bindingId).build(),
+                observer);
+        var response = ArgumentCaptor.forClass(HomeworkBindingResponse.class);
+        verify(observer).onNext(response.capture());
+        verify(observer).onCompleted();
+        return response.getValue();
+    }
+
+    private HomeworkEditReceipt moveBindingViaGrpc(MoveHomeworkBindingRequest request) {
+        @SuppressWarnings("unchecked")
+        StreamObserver<HomeworkEditReceipt> observer = mock(StreamObserver.class);
+        grpc.moveHomeworkBinding(request, observer);
+        var response = ArgumentCaptor.forClass(HomeworkEditReceipt.class);
+        verify(observer).onNext(response.capture());
+        verify(observer).onCompleted();
+        return response.getValue();
     }
 
     @Test

@@ -14257,6 +14257,150 @@
       "revision_base": "4065cda44239af33cd9716273dc8e61d569b5261",
       "status": "independentSourceReviewAPPROVE; scopedauthorchecksPASS; Root8sufficientmergedchecksPASS acrossqualifiedENVcorrection; newactualDB/browser/CI NOT_RUN",
       "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-docs/openapi/attendance.json",
+      "path": "docs/openapi/attendance.json",
+      "sha256": "32afe24193ecc31c5457019d41a2e48f9b3998f8d129e8e4233fa9c48cdf2853",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "15080b45c286d007f4a96d9b992a43b34df0268d",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/domain/homework.test.ts",
+      "path": "frontends/mobile-core/src/domain/homework.test.ts",
+      "sha256": "31c7b7597a8598e3b0477c356b90bce4d9b7f7de55745448c6abd3b9561082da",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/domain/homework.ts",
+      "path": "frontends/mobile-core/src/domain/homework.ts",
+      "sha256": "8988219b653baa91eb06503774d62eaba4bca0850fa2c322ba7d44dce1250e30",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+      "path": "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+      "sha256": "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+      "path": "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+      "sha256": "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/features/homework/homework-screen.pcss",
+      "path": "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+      "sha256": "079ce198c22f106095ddb1a4fc66c5e4f2efe16b439204e2585eeac6a5f0c261",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/features/homework/use-homework.test.ts",
+      "path": "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+      "sha256": "dba480fb8f21d895f398fe94b6ba478f7b68f3b58bbd23a3beb6e3dd64eb9624",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/features/homework/use-homework.ts",
+      "path": "frontends/mobile-core/src/features/homework/use-homework.ts",
+      "sha256": "fb561da54d657feb964ea9918b352369482cdaafd81c3eed286b2a3e7d5e029d",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+      "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+      "sha256": "b4fa0a977a51b023e6df207f65bc095dc05e8103a803eac42595092601995b28",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+      "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+      "sha256": "fbc63b4229d813c02e60e3d82556e63cfb0f359e4f60d263c0d27ea88abe538f",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+      "sha256": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "752615738c43d6f1a930aa8d0996893dbb548c05",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sha256": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "752615738c43d6f1a930aa8d0996893dbb548c05",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-tests/e2e/fixtures/application-recovery.spec.ts",
+      "path": "tests/e2e/fixtures/application-recovery.spec.ts",
+      "sha256": "013248258583b91d993b7f145837c75aaf950a652febbc042dde3192baa845c4",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "bbc9ff0528a22b70011203b07ca7fec5af1c52f5",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-tests/e2e/fixtures/pwa-auth.ts",
+      "path": "tests/e2e/fixtures/pwa-auth.ts",
+      "sha256": "a339f9ecb9dec9b3f39de7b06affbb0f861686102bb885b3961aaeae48cf8c85",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "sha256": "666cd33d4cee069e0bd138b6c08a1c5dca80ac4423d81529f590c165644adbf3",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-C3FF-NEXT-tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "4c94d180710f28721563b2723b33d739f19b4ef06ee030196d82fcafd4424a29",
+      "revision_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
     }
   ],
   "research_receipt": {

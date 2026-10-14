@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import type { MobileBottomNavItems, MobileNavigationStack } from '../navigation'
 import type { StudentApi } from '../../api/student-client'
+import type { NotificationTargetIntent } from '../../features/notifications/notifications-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type {
   StudentCheckinAck,
@@ -103,16 +104,60 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
 
 vi.mock('../../features/homework/HomeworkScreen.vue', () => ({
   default: {
-    props: ['homework', 'offline', 'readOnly'],
-    emits: ['navigate'],
+    props: ['homework', 'offline', 'readOnly', 'periodMode', 'selectedDate'],
+    emits: ['navigate', 'selectPeriod', 'selectDate', 'stepPeriod', 'returnToday', 'complete'],
     setup(
-      props: { homework: StudentHomework | null; offline: boolean; readOnly: boolean },
+      props: {
+        homework: StudentHomework | null
+        offline: boolean
+        readOnly: boolean
+        periodMode: string
+        selectedDate: string | null
+      },
       { emit }: SetupContext,
     ) {
       return () =>
         h('section', [
           h('output', { class: 'test-homework-data' }, JSON.stringify(props.homework ?? null)),
           h('output', { class: 'test-homework-offline' }, String(props.offline)),
+          h(
+            'button',
+            {
+              class: 'test-homework-complete',
+              onClick: () => emit('complete', props.homework?.items[0], true),
+            },
+            'Выполнить',
+          ),
+          h(
+            'output',
+            { class: 'test-homework-period' },
+            `${props.periodMode}:${props.selectedDate ?? ''}`,
+          ),
+          h(
+            'button',
+            { class: 'test-homework-month', onClick: () => emit('selectPeriod', 'month') },
+            'Месяц',
+          ),
+          h(
+            'button',
+            { class: 'test-homework-next', onClick: () => emit('stepPeriod', 1) },
+            'Следующий период',
+          ),
+          h(
+            'button',
+            { class: 'test-homework-day', onClick: () => emit('selectPeriod', 'day') },
+            'День',
+          ),
+          h(
+            'button',
+            { class: 'test-homework-select-day', onClick: () => emit('selectDate', '2026-09-20') },
+            '20 сентября',
+          ),
+          h(
+            'button',
+            { class: 'test-homework-current', onClick: () => emit('returnToday') },
+            'К текущим заданиям',
+          ),
           h(
             'button',
             { class: 'test-return-today', onClick: () => emit('navigate', 'today') },
@@ -445,12 +490,21 @@ vi.mock('../../features/homework/use-homework', async () => {
               refetch: ownerQueryData.homeworkRefetch,
             },
             range: ref(null),
+            periodMode: ref('day'),
+            selectedDate: ref(null),
+            periodRange: ref(null),
+            periodSemester: ref(null),
+            todayDate: ref(null),
+            selectPeriod: vi.fn(),
+            selectDate: vi.fn(),
+            stepPeriod: vi.fn(),
             submitCompletion: vi.fn(),
             retryCompletion: vi.fn(() => null),
             isHistorical: ref(false),
             canLoadPrevious: ref(false),
             isPending: vi.fn(() => false),
             itemError: vi.fn(() => null),
+            presentHomework: (feed: StudentHomework | null) => feed,
             returnToToday: vi.fn(),
           },
   }
@@ -746,6 +800,213 @@ function mountOwnerTest(
 }
 
 describe('StudentFeatureOwner offline read models', () => {
+  it.each([false, true])(
+    'presents pending completion and rollback in the real owner view (notification=%s)',
+    async (notification) => {
+      ownerQueryData.realReads = true
+      const item = {
+        id: 'notice',
+        title: 'Задание',
+        description: '',
+        link: null,
+        lessonDate: '2026-09-07',
+        lessonNumber: 1,
+        bindingMode: 'LESSON' as const,
+        archived: false,
+        subject: { id: 'subject', name: 'Предмет' },
+        completed: false,
+        completedAt: null,
+      }
+      const feed = (from = '2026-09-07', to = '2026-12-31'): StudentHomework => ({
+        semester: { id: 'semester-1', name: 'Осень', dateFrom: '2026-09-01', dateTo: '2026-12-31' },
+        from,
+        to,
+        serverNow: '2026-09-07T08:00:00Z',
+        items: [item],
+      })
+      let reject!: (error: Error) => void
+      const response = new Promise((_, no) => {
+        reject = no
+      })
+      const onOwnerError = vi.fn()
+      const props = reactive<{
+        ownerKey: string
+        onOwnerError: typeof onOwnerError
+        notificationTargetIntent: NotificationTargetIntent | null
+      }>({ ownerKey: 'owner-A', onOwnerError, notificationTargetIntent: null })
+      const root = mountOwnerTest(
+        {
+          getToday: async () => ({ lessons: [] }),
+          getHomework: async (from?: string, to?: string) => feed(from, to),
+          getRequestOptions: async () => requestOptions(),
+          setHomeworkCompletion: () => response,
+        } as unknown as StudentApi,
+        props,
+      )
+      clickOwnerTestButton(root, 'test-enter-homework')
+      await vi.waitFor(() =>
+        expect(
+          JSON.parse(ownerTestOutput(root, 'test-homework-data') ?? 'null')?.items[0]?.completed,
+        ).toBe(false),
+      )
+      if (notification) {
+        props.notificationTargetIntent = {
+          requestId: 7,
+          generation: scope.resetGeneration,
+          ownerKey: 'owner-A',
+          target: { kind: 'homework', homeworkId: item.id, lessonDate: item.lessonDate },
+        }
+        await vi.waitFor(() => {
+          const data = JSON.parse(ownerTestOutput(root, 'test-homework-data') ?? 'null')
+          expect(data?.to).toBe(item.lessonDate)
+          expect(data?.items[0]?.completed).toBe(false)
+        })
+      }
+      clickOwnerTestButton(root, 'test-homework-complete')
+      await vi.waitFor(() =>
+        expect(
+          JSON.parse(ownerTestOutput(root, 'test-homework-data') ?? 'null')?.items[0],
+        ).toMatchObject({
+          completed: true,
+          completedAt: null,
+        }),
+      )
+      expect(item.completed).toBe(false)
+      const cache = ownerTestQueryClients
+        .at(-1)!
+        .getQueriesData<StudentHomework>({ queryKey: ['student', 'homework'] })
+      expect(
+        cache.every(([, data]) => !data || data.items.every((entry) => !entry.completed)),
+      ).toBe(true)
+      reject(new Error('503'))
+      await vi.waitFor(() =>
+        expect(
+          JSON.parse(ownerTestOutput(root, 'test-homework-data') ?? 'null')?.items[0]?.completed,
+        ).toBe(false),
+      )
+      expect(onOwnerError).toHaveBeenCalledOnce()
+    },
+  )
+
+  it.each([
+    { pendingTarget: false, step: false },
+    { pendingTarget: true, step: false },
+    { pendingTarget: false, step: true },
+  ])(
+    'leaves homework notification ownership before period navigation: $pendingTarget/$step',
+    async ({ pendingTarget, step }) => {
+      ownerQueryData.realReads = true
+      const notice = {
+        id: 'notice',
+        title: 'Уведомление',
+        description: '',
+        link: null,
+        lessonDate: '2026-09-20',
+        lessonNumber: 1,
+        bindingMode: 'LESSON' as const,
+        archived: false,
+        subject: { id: 'subject', name: 'Предмет' },
+        completed: false,
+        completedAt: null,
+      }
+      const other = { ...notice, id: 'other', lessonDate: '2026-09-21' }
+      const feed = (from = '2026-09-07', to = '2026-12-31'): StudentHomework => ({
+        semester: { id: 'semester-1', name: 'Осень', dateFrom: '2026-09-01', dateTo: '2026-12-31' },
+        from,
+        to,
+        serverNow: '2026-09-07T08:00:00Z',
+        items: [notice, other].filter((item) => item.lessonDate >= from && item.lessonDate <= to),
+      })
+      const pending: ((value: StudentHomework) => void)[] = []
+      const getHomework = vi.fn((from?: string, to?: string) =>
+        pendingTarget && from === notice.lessonDate && to === from
+          ? new Promise<StudentHomework>((resolve) => {
+              pending.push(resolve)
+            })
+          : Promise.resolve(feed(from, to)),
+      )
+      const cleared = vi.fn()
+      const props = reactive<{
+        ownerKey: string
+        notificationTargetIntent: NotificationTargetIntent | null
+        onClearNotificationTarget: (id: number) => void
+      }>({
+        ownerKey: 'owner-A',
+        notificationTargetIntent: null,
+        onClearNotificationTarget: cleared,
+      })
+      const root = mountOwnerTest(
+        {
+          getToday: async () => ({ lessons: [] }),
+          getHomework,
+          getRequestOptions: async () => requestOptions(),
+        } as unknown as StudentApi,
+        props,
+      )
+      await vi.waitFor(() => expect(getHomework).toHaveBeenCalled())
+      clickOwnerTestButton(root, 'test-enter-homework')
+      await vi.waitFor(() =>
+        expect(ownerTestOutput(root, 'test-homework-period')).toBe('day:2026-09-07'),
+      )
+      props.notificationTargetIntent = {
+        requestId: 7,
+        generation: scope.resetGeneration,
+        ownerKey: 'owner-A',
+        target: { kind: 'homework', homeworkId: notice.id, lessonDate: notice.lessonDate },
+      }
+      await vi.waitFor(() =>
+        expect(getHomework).toHaveBeenCalledWith(notice.lessonDate, notice.lessonDate),
+      )
+      if (!pendingTarget)
+        await vi.waitFor(() => {
+          expect(ownerTestOutput(root, 'test-homework-data')).toContain('notice')
+          expect(ownerTestOutput(root, 'test-homework-data')).not.toContain('other')
+        })
+      clickOwnerTestButton(root, step ? 'test-homework-next' : 'test-homework-month')
+      await vi.waitFor(() => expect(ownerTestOutput(root, 'test-homework-data')).toContain('other'))
+      expect(cleared).toHaveBeenCalledExactlyOnceWith(7)
+      expect(ownerTestOutput(root, 'test-homework-period')).toBe(
+        step ? 'day:2026-09-21' : 'month:2026-09-07',
+      )
+      for (const resolve of pending) resolve(feed(notice.lessonDate, notice.lessonDate))
+      await settleOwnerTestRender()
+      expect(ownerTestOutput(root, 'test-homework-data')).toContain('other')
+    },
+  )
+  it('connects real homework period selection and one-action Today return to the same scoped query owner', async () => {
+    ownerQueryData.realReads = true
+    const getHomework = vi.fn(async (from?: string, to?: string) => ({
+      semester: { id: 'semester-1', name: 'Осень', dateFrom: '2026-09-01', dateTo: '2026-12-31' },
+      from: from ?? '2026-09-07',
+      to: to ?? '2026-12-31',
+      serverNow: '2026-09-06T21:30:00Z',
+      items: [],
+    }))
+    const root = mountOwnerTest({
+      getToday: async () => ({ lessons: [], serverNow: '2026-09-06T21:30:00Z' }),
+      getHomework,
+      getRequestOptions: async () => requestOptions(),
+    } as unknown as StudentApi)
+    await vi.waitFor(() => expect(getHomework).toHaveBeenCalledOnce())
+    clickOwnerTestButton(root, 'test-enter-homework')
+    await vi.waitFor(() =>
+      expect(ownerTestOutput(root, 'test-homework-period')).toBe('day:2026-09-07'),
+    )
+    clickOwnerTestButton(root, 'test-homework-month')
+    await vi.waitFor(() => expect(getHomework).toHaveBeenLastCalledWith('2026-09-01', '2026-09-30'))
+    await vi.waitFor(() =>
+      expect(ownerTestOutput(root, 'test-homework-period')).toBe('month:2026-09-07'),
+    )
+    const reads = getHomework.mock.calls.length
+    clickOwnerTestButton(root, 'test-homework-select-day')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-period')).toBe('month:2026-09-20')
+    expect(getHomework).toHaveBeenCalledTimes(reads)
+    clickOwnerTestButton(root, 'test-homework-current')
+    await vi.waitFor(() =>
+      expect(ownerTestOutput(root, 'test-homework-period')).toBe('day:2026-09-07'),
+    )
+  })
   it.each([
     { oldPageLoading: false, auto: true, offlineReentry: false },
     { oldPageLoading: true, auto: true, offlineReentry: false },

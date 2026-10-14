@@ -7,6 +7,66 @@ export interface HomeworkDateRange {
   to: string
 }
 
+export type HomeworkPeriodMode = 'day' | 'week' | 'month'
+
+export function clampHomeworkDate(date: string, semester: HomeworkDateRange): string {
+  return date < semester.from ? semester.from : date > semester.to ? semester.to : date
+}
+
+export function homeworkPeriodRange(
+  mode: HomeworkPeriodMode,
+  date: string,
+  semester: HomeworkDateRange,
+): HomeworkDateRange | null {
+  if (!isHomeworkDate(date) || !normalizeHomeworkRange(semester)) return null
+  const selected = clampHomeworkDate(date, semester)
+  let from = selected,
+    to = selected
+  if (mode === 'week') {
+    const weekday = (new Date(`${selected}T12:00:00Z`).getUTCDay() + 6) % 7
+    from = addHomeworkDays(selected, -weekday)
+    to = addHomeworkDays(from, 6)
+  } else if (mode === 'month') {
+    from = selected.slice(0, 7) + '-01'
+    const end = new Date(`${from}T12:00:00Z`)
+    end.setUTCMonth(end.getUTCMonth() + 1, 0)
+    to = end.toISOString().slice(0, 10)
+  }
+  return { from: clampHomeworkDate(from, semester), to: clampHomeworkDate(to, semester) }
+}
+
+export function shiftHomeworkPeriod(mode: HomeworkPeriodMode, date: string, step: number): string {
+  if (mode !== 'month') return addHomeworkDays(date, step * (mode === 'week' ? 7 : 1))
+  const value = new Date(`${date.slice(0, 7)}-01T12:00:00Z`)
+  value.setUTCMonth(value.getUTCMonth() + step)
+  const end = new Date(value)
+  end.setUTCMonth(end.getUTCMonth() + 1, 0)
+  value.setUTCDate(Math.min(Number(date.slice(8)), end.getUTCDate()))
+  return value.toISOString().slice(0, 10)
+}
+
+/** Selected-period views are lesson-date projections, never completion-date unions. */
+export function groupHomeworkPeriod(
+  feed: StudentHomework,
+  range: HomeworkDateRange,
+): HomeworkGroup[] {
+  const items = dedupeHomeworkItems(feed.items)
+    .filter((item) => item.lessonDate >= range.from && item.lessonDate <= range.to)
+    .sort(itemOrder)
+  const groups: HomeworkGroup[] = []
+  for (let date = range.from; date <= range.to; date = addHomeworkDays(date, 1)) {
+    groups.push({
+      key: `lesson-date:${date}`,
+      kind: 'lesson-date',
+      date,
+      monthLabel: formatHomeworkMonth(date),
+      label: formatHomeworkDate(date, feed.serverNow),
+      items: items.filter((item) => item.lessonDate === date),
+    })
+  }
+  return groups
+}
+
 export type HomeworkGroupKind = 'completed-today' | 'lesson-date'
 
 export interface HomeworkGroup {

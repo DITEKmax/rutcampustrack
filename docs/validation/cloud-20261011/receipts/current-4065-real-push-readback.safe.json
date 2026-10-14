@@ -1212,6 +1212,3620 @@
       "existing_test_paths": 4,
       "gates": "designskill/currentcomponents; MoscowserverNow; periodfiltercompletedTodayunion/dedupe; focus/offline/currentowner, noAPI/schema/Angular/newweb",
       "implementation": "WAIT_NEXT_ROOT_PUBLISHED_SHA; no native/runtime"
+    },
+    "publication": {
+      "at": "2026-10-14T12:10:18.860952+00:00",
+      "head": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "parent": "4065cda44239af33cd9716273dc8e61d569b5261",
+      "normal_commit_real_push": {
+        "results": [
+          {
+            "phase": "stage",
+            "direct_pid": 717186,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 717186,
+                "start_ticks": 23334359
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "normal-commit",
+            "direct_pid": 717208,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 717208,
+                "start_ticks": 23334410
+              },
+              {
+                "pid": 717250,
+                "start_ticks": 23334423
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 717250,
+                "start_ticks": 23334423,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "real-push",
+            "direct_pid": 717251,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 717251,
+                "start_ticks": 23334463
+              },
+              {
+                "pid": 717252,
+                "start_ticks": 23334464
+              },
+              {
+                "pid": 717253,
+                "start_ticks": 23334465
+              },
+              {
+                "pid": 717255,
+                "start_ticks": 23334505
+              },
+              {
+                "pid": 717257,
+                "start_ticks": 23334506
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "elapsed": 4.052,
+        "source_unchanged": true
+      },
+      "remote_git_readback": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "main_unchanged": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "draft": true,
+      "unmerged": true,
+      "advertised_merge": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+      "actual_checkout": "UNKNOWN_UNTIL_CURRENT_ARTIFACT",
+      "hooks": {
+        "state": "EXPLICIT_NORMAL_SIX_CHECKS_PASS",
+        "passed": 6,
+        "skipped": 0,
+        "failed": 0,
+        "scope": "38samepublishedpaths Source25exacthead; normalUVcaller withcorrect3.12cachedPythonselector",
+        "terminal": {
+          "results": [
+            {
+              "phase": "ordinary-six-hooks",
+              "argv": [
+                "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+                "--offline",
+                "tool",
+                "run",
+                "--from",
+                "pre-commit==4.6.2",
+                "pre-commit",
+                "run",
+                "--files",
+                ".github/workflows/ci.yml",
+                "docs/validation/cloud-20261011/CURRENT.md",
+                "docs/validation/cloud-20261011/attempts.ndjson",
+                "docs/validation/cloud-20261011/decisions.md",
+                "docs/validation/cloud-20261011/defects.md",
+                "docs/validation/cloud-20261011/receipts/Q03-existing-finite-auth-proof-reuse.safe.json",
+                "docs/validation/cloud-20261011/receipts/Q07-current-builder-client-Source-review.safe.json",
+                "docs/validation/cloud-20261011/receipts/Q08-current-client-Source-review.safe.json",
+                "docs/validation/cloud-20261011/receipts/Q08-existing-geo-source-preparation.safe.json",
+                "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+                "docs/validation/cloud-20261011/resources.md",
+                "docs/validation/cloud-20261011/scenarios.csv",
+                "docs/validation/cloud-20261011/source-ledger.json",
+                "docs/validation/cloud-20261011/verified-cases.csv",
+                "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+                "frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+                "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss",
+                "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts",
+                "frontends/mobile-core/src/features/requests/requests-controller.ts",
+                "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+                "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+                "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java",
+                "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java",
+                "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java",
+                "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java",
+                "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+                "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+                "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+                "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+                "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java",
+                "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+                "tests/e2e/artifact-controls/privacy.control.spec.ts",
+                "tests/e2e/fixtures/application-recovery.spec.ts",
+                "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+                "tests/e2e/fixtures/safe-reporter.ts",
+                "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+                "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+                "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+              ],
+              "direct_pid": 717798,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 717798,
+                  "start_ticks": 23384367
+                },
+                {
+                  "pid": 717808,
+                  "start_ticks": 23384374
+                },
+                {
+                  "pid": 717836,
+                  "start_ticks": 23384425
+                },
+                {
+                  "pid": 717872,
+                  "start_ticks": 23384531
+                },
+                {
+                  "pid": 717873,
+                  "start_ticks": 23384549
+                },
+                {
+                  "pid": 717925,
+                  "start_ticks": 23384572
+                },
+                {
+                  "pid": 717970,
+                  "start_ticks": 23384606
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          ],
+          "source_unchanged": true,
+          "tmp_removed": true,
+          "existing_dependency_directory_preserved": true,
+          "total_wall_seconds": 3.157,
+          "limits": "sampledprocessresources; no hardOSisolationclaim"
+        },
+        "prior_failures": "twoofflineUV dependencyresolution stopsBEFOREhooks under3.13selection retained; no Sourcechange/no bypass"
+      },
+      "inventory": [
+        {
+          "change": "M",
+          "path": ".github/workflows/ci.yml"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/CURRENT.md"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/attempts.ndjson"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/decisions.md"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/defects.md"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/receipts/Q03-existing-finite-auth-proof-reuse.safe.json"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/receipts/Q07-current-builder-client-Source-review.safe.json"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/receipts/Q08-current-client-Source-review.safe.json"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/receipts/Q08-existing-geo-source-preparation.safe.json"
+        },
+        {
+          "change": "A",
+          "path": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/resources.md"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/scenarios.csv"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/source-ledger.json"
+        },
+        {
+          "change": "M",
+          "path": "docs/validation/cloud-20261011/verified-cases.csv"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/features/headman-group/headman-group-client.ts"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.ts"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts"
+        },
+        {
+          "change": "M",
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+        },
+        {
+          "change": "M",
+          "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java"
+        },
+        {
+          "change": "A",
+          "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java"
+        },
+        {
+          "change": "A",
+          "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java"
+        },
+        {
+          "change": "M",
+          "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java"
+        },
+        {
+          "change": "M",
+          "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java"
+        },
+        {
+          "change": "M",
+          "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java"
+        },
+        {
+          "change": "M",
+          "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java"
+        },
+        {
+          "change": "M",
+          "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java"
+        },
+        {
+          "change": "M",
+          "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java"
+        },
+        {
+          "change": "M",
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/artifact-controls/privacy.control.spec.ts"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/fixtures/application-recovery.spec.ts"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/fixtures/safe-reporter.ts"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+        },
+        {
+          "change": "M",
+          "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        }
+      ],
+      "Source25pins_unchanged": true,
+      "CI": "NEW_CURRENT_RECEIPTS_PENDING_NOT_OLD4065GREEN",
+      "PR2_readback_head": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd"
+    },
+    "checkout_actual": {
+      "artifact": 11893240168,
+      "run": 38561296332,
+      "digest": "sha256:cd807640dbff1952df335e9796b00d5874a682c239e2c02ed38ba10aec86d14e",
+      "bytes": 291,
+      "checkout": {
+        "checkout_sha": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+        "tree_sha": "c78b110b7d563c670928b3c570a4ee8c90f7d5c9",
+        "producer_head_sha": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd"
+      },
+      "merge_parent_and_tree_join": "PENDING_OFFICIAL_GIT_METADATA",
+      "private_logs_or_bodies_read": false
+    },
+    "attendance-it_actual": {
+      "artifact_id": 11892191900,
+      "name": "safe-integration-outcomes-attendance-service-1",
+      "archive_bytes": 12643,
+      "archive_sha256": "527369b513e4459c5bbe7ade801156ee157e5191a36230a8a06416769dbd1d03",
+      "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "results": [
+        {
+          "metadata": {
+            "checkoutSha": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+            "prHeadSha": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+            "service": "attendance-service",
+            "task": "integrationTest",
+            "job": "java-integration-test",
+            "runId": "38561296332",
+            "runAttempt": "1",
+            "event": "pull_request",
+            "testStepOutcome": "failure"
+          },
+          "collection": "RESULTS",
+          "counts": {
+            "PASSED": 224,
+            "FAILED": 1,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "xml_case_summary_consistent": true,
+          "declared_consistent": true,
+          "target": null,
+          "failed_or_error_cases": [
+            {
+              "xmlOrdinal": 25,
+              "suiteOrdinal": 1,
+              "ordinal": 1,
+              "classname": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+              "method": null,
+              "status": "FAILED",
+              "identity": "ORDINAL_ONLY",
+              "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+              "sourceSha256": "23e181aca2b3fcdd5d1758ed420126b92ef529f3e6f7b4b98f1d7513d8dfb35e"
+            }
+          ],
+          "source_acceptance": "NOT_PROMOTED",
+          "historical96_CAP_cause": "UNKNOWN"
+        }
+      ],
+      "raw_XML_logs_read": false
+    },
+    "attendance-coverage_actual": {
+      "artifact_id": 11893146116,
+      "name": "safe-coverage-outcomes-attendance-service-1",
+      "archive_bytes": 28271,
+      "archive_sha256": "9ea5f3cf32462a71bdb71c560079a9690e9470a9136da53149aa6e65ae437e11",
+      "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "results": [
+        {
+          "metadata": {
+            "checkoutSha": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+            "prHeadSha": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+            "service": "attendance-service",
+            "task": "integrationTest",
+            "job": "java-coverage",
+            "runId": "38561296445",
+            "runAttempt": "1",
+            "testStepScope": "unit+integration+report",
+            "event": "pull_request",
+            "testStepOutcome": "failure"
+          },
+          "collection": "RESULTS",
+          "counts": {
+            "PASSED": 224,
+            "FAILED": 1,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "xml_case_summary_consistent": true,
+          "declared_consistent": true,
+          "target": null,
+          "failed_or_error_cases": [
+            {
+              "xmlOrdinal": 25,
+              "suiteOrdinal": 1,
+              "ordinal": 1,
+              "classname": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+              "method": null,
+              "status": "FAILED",
+              "identity": "ORDINAL_ONLY",
+              "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+              "sourceSha256": "23e181aca2b3fcdd5d1758ed420126b92ef529f3e6f7b4b98f1d7513d8dfb35e"
+            }
+          ],
+          "source_acceptance": "NOT_PROMOTED",
+          "historical96_CAP_cause": "UNKNOWN"
+        },
+        {
+          "metadata": {
+            "checkoutSha": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+            "prHeadSha": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+            "service": "attendance-service",
+            "task": "test",
+            "job": "java-coverage",
+            "runId": "38561296445",
+            "runAttempt": "1",
+            "testStepScope": "unit+integration+report",
+            "event": "pull_request",
+            "testStepOutcome": "failure"
+          },
+          "collection": "RESULTS",
+          "counts": {
+            "PASSED": 318,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "xml_case_summary_consistent": true,
+          "declared_consistent": true,
+          "target": null,
+          "failed_or_error_cases": [],
+          "source_acceptance": "NOT_PROMOTED",
+          "historical96_CAP_cause": "UNKNOWN"
+        }
+      ],
+      "raw_XML_logs_read": false
+    },
+    "current_c3ff_status": {
+      "CI": {
+        "id": 38561296332,
+        "status": "completed",
+        "conclusion": "failure",
+        "failures": [
+          "attendance snapshot only",
+          "E2E"
+        ]
+      },
+      "Coverage": {
+        "id": 38561296445,
+        "status": "completed",
+        "conclusion": "failure",
+        "failures": [
+          "attendance snapshot only"
+        ]
+      },
+      "Security": {
+        "id": 38561296137,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "OpenAPI": {
+        "id": 38561296058,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "browser": "threeassignmentphasesPASS/registry2modesPASS; recoveryseedPASS/pending60003msTIMEOUT; admit+attachmentNOTRUN/semesterSKIP; realcleanupsuccess"
+    },
+    "T013_author_ready": {
+      "state": "COMMITTED_AUTHOR_CHECKS_PASS_REVIEW_AND_BROWSER_PENDING",
+      "commit": "e532be8142372d356d5fbbca3128453127b790a6",
+      "implementation_base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "implementation_branch": "codex/q09-homework-periods-c3ff-20261014",
+      "worktree": "/workspace/rct-worktrees/q07-lesson-cancel-20261014",
+      "source_inventory": {
+        "Created": [],
+        "Modified": [
+          "frontends/mobile-core/src/domain/homework.test.ts",
+          "frontends/mobile-core/src/domain/homework.ts",
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+          "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+          "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+          "frontends/mobile-core/src/features/homework/use-homework.ts",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+        ],
+        "Deleted": []
+      },
+      "stable_source_pins": {
+        "frontends/mobile-core/src/domain/homework.test.ts": "31c7b7597a8598e3b0477c356b90bce4d9b7f7de55745448c6abd3b9561082da",
+        "frontends/mobile-core/src/domain/homework.ts": "8988219b653baa91eb06503774d62eaba4bca0850fa2c322ba7d44dce1250e30",
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "80c21a01e63d66725f33f76f12a202da02b38822dda300c312ead76e3a714477",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "7630b0d7e92229163f7914f8e4b28f57068a2204cc74619560fc876a559625df",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss": "ef02c1e366a0f42b61e8ad8177f528fa011347da7db153ac075bb7bba6863973",
+        "frontends/mobile-core/src/features/homework/use-homework.test.ts": "1528b2e5af812a145120c3e467de6bf868ee17836456ff3223455de0834116a0",
+        "frontends/mobile-core/src/features/homework/use-homework.ts": "026e852d0af91168771d6826051ee30d1378e2db7d46e1b64e5a0528f3cb050d",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "56caae483f72496e64fa1bec3560c1128f449eba1bdb10df73c0bb6bef4ef3a3",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "4e1502b1dbcda71ac4e9f2e838202ca1a8fb0510a61a4b8c288268e5b0b45306"
+      },
+      "lease": "RELEASED/ALL_CHILDREN_REAPED/TMP_AND_OWN_LINK_REMOVED",
+      "check_wall_seconds": 47.285,
+      "check_through_commit_wall_upper_seconds": 77.522,
+      "last_peaks": {
+        "min_workspace_free": 4861022208,
+        "owned_rss": 689844224,
+        "shared_memory": 6187286528,
+        "log_bytes": 3846
+      },
+      "at": "2026-10-14T12:29:26.420760+00:00",
+      "actual_checks": "52 affected tests GREEN; exact old-screen meaningful ordering RED then byte restore GREEN; selected types/lint/format/ordinary hooks PASS; browser NOT_RUN",
+      "next": "Independent whole nine-path review; sole author next existing homework E2E explicit period selection, original rule assertions preserved",
+      "remaining": "Actual day/week/month browser and separate accepted material/domain/inline/optimistic-completion gaps remain mandatory, not optional",
+      "E2E_ownership": "q06_replacement_cause sole writer tests/e2e/specs/mobile-homework-lifecycle.spec.ts from bef343; explicit period selection adaptation only, all original rule assertions retained"
+    },
+    "checkout_git_join": {
+      "sha": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+      "tree": "c78b110b7d563c670928b3c570a4ee8c90f7d5c9",
+      "parents": [
+        "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd"
+      ],
+      "official_git_metadata": true,
+      "local_producer_tree_equal": true
+    },
+    "generated_attendance_snapshot_recovery": {
+      "artifact_id": 11892191895,
+      "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "run": 38561296332,
+      "archive_sha256": "67f8547a25c7977807cad65f6f068b315e32278b532a0f3124277c9c02920f10",
+      "exact_xml_sha256": "3caa82012cfaf0e09149cd227e7e98273e1b9ab33cd122303d641e67871aab89",
+      "old_snapshot_sha256": "328f19a60af362ecf6bd626bb8197da76860b78971cd964f8cb78145ddc0c447",
+      "generated_sha256": "32afe24193ecc31c5457019d41a2e48f9b3998f8d129e8e4233fa9c48cdf2853",
+      "generated_bytes": 218823,
+      "old_bytes_roundtrip": true,
+      "unchanged_ordered_remainder": true,
+      "delta": {
+        "path": "/attendance/requests/students/{studentId}/late-checkin-budget",
+        "methods": [
+          "get",
+          "post"
+        ],
+        "schemas": [
+          "HeadmanLateCheckinBudgetIncreaseRequest",
+          "HeadmanLateCheckinBudgetResponse"
+        ]
+      },
+      "raw_XML_or_logs_published": false,
+      "runtime_conformance_after_import": "REQUIRES_ORDINARY_CI"
+    },
+    "T013_independent_review": {
+      "state": "CHANGES_REQUESTED",
+      "revision": "e532be8142372d356d5fbbca3128453127b790a6",
+      "reviewer": "q07_client_review",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md",
+      "findings": [
+        {
+          "id": "T013-R1",
+          "severity": "P2",
+          "rule": "Period/date navigation must clear available notification target before querying changed range; current target equality keeps perpetual loading/masks error"
+        },
+        {
+          "id": "T013-R2",
+          "severity": "P2",
+          "rule": "Month null/loading/failed range cannot announce empty days; preserve calendar unknown/loading/error states and label"
+        },
+        {
+          "id": "T013-R3",
+          "severity": "P2",
+          "rule": "Calendar day targets below accepted44px at360/320 widths; bounded existing-token sizing needed"
+        }
+      ],
+      "next": "Same author coherent three-finding correction; targeted independent recheck; no browser PASS yet"
+    },
+    "c3ff_browser_closed_results": {
+      "lesson": {
+        "artifact": 11892709621,
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "digest": "sha256:e4216cc7ec0a60260d8496d92667bb472ba60b1a3c1aad21d989808c3acb6ec5",
+        "bytes": 502,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-attendance-requests.spec.ts",
+              "line": 8,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 67900,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "mobile-attendance-requests.spec.ts",
+                  "line": 245
+                }
+              ]
+            },
+            {
+              "file": "mobile-lesson-lifecycle.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 50526,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-schedule-lifecycle.spec.ts",
+              "line": 109,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 52140,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-schedule-lifecycle.spec.ts",
+              "line": 413,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 59163,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "LESSON_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "homework": {
+        "artifact": 11892874494,
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "digest": "sha256:6a8ce9780638207dfbbf6855617427ce38b3ee2fc49c6ede85406a7062c4e95a",
+        "bytes": 572,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 26,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 4398,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 293,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 3654,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "DATASET_HTTP",
+                  "cause": "DATASET_HOMEWORK_UPDATE_HTTP",
+                  "httpStatus": 409
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_FRAME_DATASET_CALL",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "mobile-homework-lifecycle.spec.ts",
+                  "line": 382
+                }
+              ]
+            },
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 629,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 3572,
+              "errorCount": 4,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "mobile-homework-lifecycle.spec.ts",
+                  "line": 855
+                },
+                {
+                  "file": "mobile-homework-lifecycle.spec.ts",
+                  "line": 856
+                },
+                {
+                  "file": "mobile-homework-lifecycle.spec.ts",
+                  "line": 857
+                },
+                {
+                  "file": "mobile-homework-lifecycle.spec.ts",
+                  "line": 858
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "HOMEWORK_NON_AUTHOR_COMPLETION_REVOKE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HOMEWORK_TRANSFER_ARCHIVE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HOMEWORK_MATERIAL_OPTIMISTIC_ORDER",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "helper": {
+        "artifact": 11892529977,
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "digest": "sha256:4d2cb045b083ba3c79f92199b0a0c8901bd10ce295fe0f4a56b032d24a6227ba",
+        "bytes": 503,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "cloud-accepted-helper-capabilities.spec.ts",
+              "line": 21,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2341,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-helper-capabilities.spec.ts",
+              "line": 124,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 586,
+              "errorCount": 2,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "cloud-accepted-helper-capabilities.spec.ts",
+                  "line": 130
+                },
+                {
+                  "file": "cloud-accepted-helper-capabilities.spec.ts",
+                  "line": 130
+                }
+              ]
+            },
+            {
+              "file": "cloud-accepted-helper-capabilities.spec.ts",
+              "line": 179,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3109,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "HELPER_STATS_BOUNDARY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HELPER_CANCEL_REVOKE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HELPER_EXCUSE_REVOKE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "registry": {
+        "artifact": 11892834905,
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "digest": "sha256:67eeeab09d90ad8104631be6220440df8c1bbe58b37296d577ea6a762476b047",
+        "bytes": 387,
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 63540,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3543,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "assignment": {
+        "artifact": 11893765489,
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "digest": "sha256:7521ab146021f021ff85d5f3c7e4884917ee250486964d1d1d93e23722731c88",
+        "bytes": 1104,
+        "phases": {
+          "prepare": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "assignment-lifecycle.spec.ts",
+                "line": 695,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 53590,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "pending": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "assignment-lifecycle.spec.ts",
+                "line": 695,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 257,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "resume": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "assignment-lifecycle.spec.ts",
+                "line": 695,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 10727,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          }
+        },
+        "lifecycle_closed_diagnostics": {},
+        "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+        "missing_phases": [],
+        "diagnostic_schema": {
+          "prepare": [
+            {
+              "caseCode": "ASSIGNMENT_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "pending": [
+            {
+              "caseCode": "ASSIGNMENT_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "resume": [
+            {
+              "caseCode": "ASSIGNMENT_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+        "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_ALL_THREE_PHASES_AND_SUCCESSFUL_OWNED_SCHEDULE_RESTART_STEP"
+      },
+      "recovery": {
+        "artifact": 11893611040,
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "digest": "sha256:885080b60c2e6e9fdfb09dfa0fb81cb200d9f1c79891505cc0b241b67a905a94",
+        "bytes": 789,
+        "phases": {
+          "pending": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 431,
+                "project": "chromium",
+                "status": "timedOut",
+                "expectedStatus": "passed",
+                "durationMs": 60003,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "application-recovery.spec.ts",
+                    "line": 431
+                  }
+                ]
+              }
+            ]
+          },
+          "seed": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 431,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 34738,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          }
+        },
+        "lifecycle_closed_diagnostics": {},
+        "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+        "missing_phases": [
+          "admit",
+          "attachment"
+        ],
+        "diagnostic_schema": {
+          "pending": [
+            {
+              "caseCode": "APPLICATION_RECOVERY_PHASE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "seed": [
+            {
+              "caseCode": "APPLICATION_RECOVERY_PHASE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+        "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES"
+      }
+    },
+    "c3ff_browser_finite_conclusions": {
+      "room_ETag_Today": "PASS case mobile-schedule-lifecycle413 real current room/physical/ETag/browser; no fullfamily claim",
+      "builder": "PASS case109 unchangedacceptedscenarios",
+      "lesson": "PASS case20 actualcancelrestore/history",
+      "AUTO_and_N": "Wholecase8 FAIL245 logoutPwa. Sequential assertedprefix proves AUTOcreate/approve/PRESENT/reopen then N Vue+POST200/readbacklimit7used5remaining2/foreign403/cancelnocharge; use of newly availableattempt still NOT_RUN. Do not inventlogoutcause.",
+      "homework": "Originalnon-author/completion/revoke26 PASS4398ms; A293 fails PUT409 frame382(causeUNKNOWN); B629 reachesfouractualfailedbooleanasserts855-858: materialhostname/inlineHTTP/optimisticcompletion/completedbottom. Product gaps in accepted scope; source join/current reproduction now established.",
+      "helper": "VIEW_STATS21/MANAGE_EXCUSES179 PASS; CANCEL124 loginPwa130FAIL beforeactualoperation/causeUNKNOWN; homework79 intentionally excludedbyconfig since separatecurrentrealcasecoversit",
+      "checkout_join": "Separate current exact checkout633568146aeacf2aae4cf8b3e8c9e212d393bcd4/officialtree/parents/localproducer tree verified"
+    },
+    "c3ff_data_sensitivity_and_exact_green": {
+      "verdict": "PASS finite genuine real-Mongo N data proofs (five namedcases) and real-PG HTTP→actualgRPC room projection; BOTH exact data sensitivity RED→same-test restoredGREEN joins satisfied. Not wholeQ08/Q07/story/browser/currentall-gatesPASS.",
+      "identity": {
+        "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "run": 38561296332,
+        "runAttempt": 1,
+        "actualCheckout": "633568146aeacf2aae4cf8b3e8c9e212d393bcd4",
+        "actualTree": "c78b110b7d563c670928b3c570a4ee8c90f7d5c9",
+        "officialJoin": "RootCURRENT c3ff actualcheckout/tree officialparents3908+c3ff/localcommittree equal; independently matched ALL artifact body producer/checkout/run binding."
+      },
+      "artifacts": [
+        {
+          "artifact": 11892306412,
+          "name": "changed-domain-regression-safe-attendance-service-1",
+          "archiveBytes": 810,
+          "archiveSha256": "877e62ec51ff9bd89171ee8cefa918c10f2877886fe10c1a38be4445c1dafd21",
+          "body": "changed-domain-regression-safe-attendance-service-1.json",
+          "closed_schema": "PASS"
+        },
+        {
+          "artifact": 11893041452,
+          "name": "changed-domain-regression-safe-schedule-service-1",
+          "archiveBytes": 972,
+          "archiveSha256": "f72906cede63d363adc4ea86323a699c4cfa9822d4b6188c17dd1fbad4fb815d",
+          "body": "changed-domain-regression-safe-schedule-service-1.json",
+          "closed_schema": "PASS"
+        },
+        {
+          "artifact": 11892562084,
+          "name": "safe-integration-outcomes-schedule-service-1",
+          "archiveBytes": 10978,
+          "archiveSha256": "63e129915fb05552fb1ea4f046aeebe3b09bc82b1003f8579ba94ee9a870d9dd",
+          "body": "safe-integration-outcomes-schedule-service-1.json",
+          "closed_schema": "PASS"
+        },
+        {
+          "artifact": 11892191900,
+          "name": "safe-integration-outcomes-attendance-service-1",
+          "archiveBytes": 12643,
+          "archiveSha256": "527369b513e4459c5bbe7ade801156ee157e5191a36230a8a06416769dbd1d03",
+          "body": "../attendance-it/safe-integration-outcomes-attendance-service-1-integrationTest.json",
+          "qualification": "Previously downloaded by Root; independently strict-decoded/count-validated here, no duplicate network."
+        }
+      ],
+      "N_green": {
+        "class": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+        "testSourceSha256": "b18499341397de11faf586013ec33332933ef26012022ad35fbb399b986cf30a",
+        "cases": [
+          {
+            "method": "headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "ordinal": "41/1/18"
+          },
+          {
+            "method": "concurrentBudgetIncreasesAndConsumptionPreserveEveryChargeAndAudit",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "ordinal": "41/1/42"
+          },
+          {
+            "method": "budgetAuditFailureRollsBackAndLostCommitAckRecoversExactlyOnce",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "ordinal": "41/1/11"
+          },
+          {
+            "method": "budgetRequiresFreshHeadmanMembershipCurrentSemesterAndAnExactUntamperedReceipt",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "ordinal": "41/1/19"
+          },
+          {
+            "method": "budgetOverflowAndSemesterFenceDenyWithoutMutation",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "ordinal": "41/1/32"
+          }
+        ],
+        "meaning": "Persisted5/5+2→7/5/2, no used reset, options/consumption/replay; same/distinct-key+consume concurrency; audit/outbox rollback and lostcommitACK once; current-headman/helper/foreign/semester/replay/tamper refusals at mockedAcademic seam; overflow/Mongo semester-fence no mutation. ActualMongo/dataTX, not actual crossservice rights or PWA proof."
+      },
+      "N_sensitivity": {
+        "artifact": 11892306412,
+        "state": "EXPECTED_RULE_FAILURE",
+        "phase": "XML_RULE",
+        "nativeExit": 1,
+        "counts": {
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "counterexample": "OMITTED_BUDGET_INCREMENT",
+        "expected": 7,
+        "observed": 5,
+        "mutantSourceSha256": {
+          "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java": "f1d25515888658121921e6823f5189fa088ab84eb09a3c6ab5c1e08ec6b7b8fe"
+        },
+        "sameTestGreenOrdinal": "41/1/18",
+        "qualification": "Exact publishedexecutor demands unique current labeled assertion[headman budget increased limit], not compile/setup/otherfailure. Same unchanged TestSHA+currentsource restored then namedGREEN, despite independent snapshotFAIL."
+      },
+      "room_green": {
+        "class": "ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT",
+        "method": "committedRoomProvenanceReachesSingleAndBatchGrpcWithoutInventingHistory",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "ordinal": "28/1/1",
+        "testSourceSha256": "28db6dd809247a1f2977c76ae8abb58191ec6270db3e2d867ecae2a46bdb103b",
+        "meaning": "Actual signedMockMvc PATCH/realSQL ledger followed by autowired actual single/groupgRPC: A→B oldA/CHANGED, noop/replay, B→null oldB, nullnoop, null→C CHANGED/oldabsent, oldreplay leavesC, untouchedneighborUNKNOWN. Observer captures only; no wire/BFF/PWA runtime claim."
+      },
+      "room_sensitivity": {
+        "artifact": 11893041452,
+        "state": "EXPECTED_RULE_FAILURE",
+        "phase": "XML_RULE",
+        "nativeExit": 1,
+        "counts": {
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "counterexample": "PREVIOUS_ROOM_PROJECTION",
+        "previousRevision": "4065cda44239af33cd9716273dc8e61d569b5261",
+        "expectedPreviousRoomPresent": true,
+        "observedPreviousRoomPresent": false,
+        "oldSourceSha256": {
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java": "8150bf229736d323aac5e1a33c76b4727400996a05e6900416497436497920b6",
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java": "cdca65ab8862a74efc1b68ef677532cf99963257826f4690e965fd06fb16e06e"
+        },
+        "sameTestGreenOrdinal": "28/1/1",
+        "qualification": "Publishedexecutor checks exact first hasPreviousRoom assertion stack at currentline576 expectedtrue/actualfalse, after actualB/currentroom+physical/occurrence assertions. TestSHA exactly equal RED/ordinaryGREEN/c3ff immutableSource."
+      },
+      "restoredCurrentSourceSha256": {
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java": "a60b268968b930bfd3468daf517cb948642299d104caa12ff8b3e802f9b385c3",
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java": "124d94a13aa5e71a469a0e93d220ca1c4a6a357fd1ec90405be5452df46a506c",
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java": "85ad9e471d0607b97bf69aa30e854fe92dc736cdc2d98638eeb9d96ec89ccf6c"
+      },
+      "producerExecutorJoin": "Publishedc3ff newfiniteexecutor+upload block SHA0d596dd6d2f8b74c6adf28af31b20aa6c35e9da9416f79e75faa7c9d24c01164 EXACT independently approved block. It removes staleXML beforeRED, requires exactone assertion, writes closedproof only AFTER finally restoring+bytecmp all changedSource, evacuatesRED XML/reports and removesprivateTMP before succeeding. Ordinary java-tests defaultsuccess dependency actually ran afterwards: Schedule metadataSUCCESS with209PASSED/zero others; Attendance metadataFAILURE with224PASSED/soleOpenApiSnapshotIT failure (identityORDINAL_ONLY), zeroerror/skip/notexecuted. Thus no aggregate failure substituted for data cases, no restoredGREEN inferred merely from RED artifact.",
+      "verificationAndLimits": "Exactly3 supplied official archives read once in RAM, <=32MiB bounds, exactsingle closedJSON member/name/size/digest/run/repo/head enforced; duplicate JSON keys/nonfinite rejected via existingstrictdecoder; exact closed RED schemas and source/mutant hashes checked; Schedule fullcase/XML/summary consistency and RootexistingAttendance same checked. Saved only0600 closed bodies/readback; no archives/rawXML/logs/privateURLs persisted. Consumed referenceinput deleted; existingb78 single45s reader nativeexit0/settled/allreaped1.56s; minfree4860264448B/RSS19931136B/shared5471404032B/log117B undergrantedlimits. This is evidence reading only: no DB/tests/native product runs/replays/network exceptexact3artifacts.",
+      "acceptanceUse": "Root can record finite N persistence/atomicity/replay/concurrency/fence/overflow/sensitivity and producer roomprojection/sensitivity PASS at c3ff. Current browser consumer/realAuthority and independent OpenAPI snapshot correction remain Root separate scopes. No new replay needed for these unchanged named proofs; sourcecompatibility required for laterrevision.",
+      "effects": "Only existing own outcome +Rootprivate data-joins closed bodies/readback written; no repository/shared docs/product/config/test edits or children. SelectedSol6.1highactualUNKNOWN; B013B014 frozen, no authmutations/provider/production."
+    },
+    "c3ff_budget_logout_Source_plan": {
+      "correction": {
+        "revision": "4b2c84f955df483ac2c5c0b7ba929ddaefd85919",
+        "terminalReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/budget-logout-01-terminal.safe.json",
+        "worktreeCleanAfterCommit": true,
+        "hookQualification": "Explicit ordinary pre-commit lane ran: Gitleaks/large-files/EOF/trailing-whitespace Passed; YAML/JSON skipped as not applicable to sole TS file. Commit itself emitted no separate hook output. No six-Passed claim.",
+        "status": "BUDGET_LOGOUT_PASS_COMMITTED",
+        "base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "branch": "codex/q08-budget-logout-navigation-20261014",
+        "preservedRef": "codex/q09-homework-client-paths-20261014=bef343202c0da6295a5e82fb769232d64e5659ad",
+        "writerScope": [
+          "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+        ],
+        "change": "Known completed-N success notice before two ordinary Back actions, positive group-list then main-navigation gates, immediately before unchanged logout/student N retry. All original statements and 240000ms timeout retained.",
+        "resourcePreflight": {
+          "workspaceFreeBytes": 4859822080,
+          "sharedMemoryBytes": 5468622848,
+          "sharedMemoryLimitBytes": 17179869184
+        },
+        "verification": "Fresh authorized b78 Node-only180wall/90phase/cleanup30/floor4GiB/growth128MiB/RSS1GiB/shared15+1/log1MiB; cached canonical formatter/TSC/diff/original-statements equality, explicit UV_PYTHON3.12 ordinary hooks and one-file normal commit.",
+        "actualInternalError": "UNKNOWN",
+        "actualCorrectedBrowserDbNetwork": "NOT_RUN",
+        "results": [
+          {
+            "phase": "format-write",
+            "direct_pid": 722640,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722640,
+                "start_ticks": 23552193
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "format-check",
+            "direct_pid": 722676,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722676,
+                "start_ticks": 23552315
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "types",
+            "direct_pid": 722712,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722712,
+                "start_ticks": 23552416
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "diff",
+            "direct_pid": 722761,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722761,
+                "start_ticks": 23552868
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "stage",
+            "direct_pid": 722809,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722809,
+                "start_ticks": 23552918
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "hooks",
+            "direct_pid": 722861,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722861,
+                "start_ticks": 23552986
+              },
+              {
+                "pid": 722871,
+                "start_ticks": 23553001
+              },
+              {
+                "pid": 722899,
+                "start_ticks": 23553101
+              },
+              {
+                "pid": 722954,
+                "start_ticks": 23553175
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "commit",
+            "direct_pid": 723047,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 723047,
+                "start_ticks": 23553241
+              },
+              {
+                "pid": 723089,
+                "start_ticks": 23553246
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 723089,
+                "start_ticks": 23553246,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "free": 4859707392,
+          "rss": 368648192,
+          "shared": 5839106048,
+          "logs": 761
+        },
+        "sourceSha256": "666cd33d4cee069e0bd138b6c08a1c5dca80ac4423d81529f590c165644adbf3",
+        "originalFileExceptNavigationInsertionByteEquality": true,
+        "protectedPins": {
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f",
+          "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751"
+        },
+        "elapsedWallSeconds": 11.516,
+        "tmpRemoved": true,
+        "ownLinkRemoved": true
+      },
+      "status": "SOURCE_PRECONDITION_MISMATCH_IDENTIFIED_ACTUAL_CAUSE_UNKNOWN",
+      "sourceRevision": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "actualReceipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.c3ff_browser_closed_results.lesson",
+      "actual": "Artifact11892709621/run38561296332 exact spec8 FAIL67900ms/errorCount1/callerframe245/closedcauseUNKNOWN; no class or internal logout operation proven. Sequential assertions through prior budget/cancel readback passed; no new run.",
+      "sourceTrace": [
+        "Spec221-223 opens More->Group->member detail; between this and logout245 only budget UI and separate student/foreign API calls occur, no browser Back/navigation.",
+        "pwa-auth.ts53-55 logoutPwa first clicks Profile bottom-navigation button.",
+        "HeadmanScheduleScreen704-706 pushes nested headman-more/group with surface detail; shellRoute395-416 preserves it, no group overview remap. MobileShell60/slot dock gating + shell-contract isRootLikeRoute require root/overview (and keyboard hidden), so that route has no dock/Profile button.",
+        "HeadmanGroupScreen409-448 Back first changes local detail->list without emitting parent Back. A second Back from list emits Back; HeadmanScheduleScreen1941 navigation.back and group beforeBack guard allow pop to headman-more root, restoring dock. One Back alone is insufficient.",
+        "Budget success343 notice follows intent clear341 and fresh GET; observing that notice gives a legitimate post-settlement navigation gate, since back418-422 intentionally blocks pending budget operations."
+      ],
+      "proposalOnly": "Only existing mobile-attendance-requests.spec.ts before logout245: await known budget-success notice, click existing Back, assert .headman-group data-group-view=list, click existing Back, assert Main navigation visible, then unchanged logoutPwa/student reentry/post-increase attempt and all budget/data/auth assertions. No global fixture/product/helper/timeout change.",
+      "mutation": "NONE; no branch/worktree change. Existing sparse WT/ref bef343 clean and preserved; HW ownership remains T013.",
+      "possibleNextScope": "If Root accepts correction plan, new clean branch fromc3ff in same sparse WT preserving bef343 ref, writer ONLY requests spec; minimal cached Prettier/strict E2E TSC/diff/original-oracle preservation/hooks/normalcommit under fresh Root light lease. Actual corrected browser remains ordinary CI, not local rerun."
+    },
+    "generated_snapshot_author_commit": {
+      "commit": "15080b45c286d007f4a96d9b992a43b34df0268d",
+      "inventory": [
+        "docs/openapi/attendance.json"
+      ],
+      "checks": "Parser/diff/sixordinaryhooks/normalcommitPASS3.925s; allreaped; exactgeneratedbytes unchanged",
+      "independent_review": "q07_client_review APPROVE_SOURCE currentJava/API/T012/orderedunchangedremainder; actualconformanceafterimport pendingordinaryCI"
+    },
+    "helper_login_diagnostic_plan": {
+      "reviewer": "q07_client_review",
+      "cause": "UNKNOWN",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md",
+      "minimal": "Existing pwa-auth non200 login/session status-only exact known markers beforeunchangedasserts/JSON, no credentials/body/retry/newclassifier",
+      "next": "Same q09 author finishes bounded linkedcheckingpackage2paths then oneindependentreview"
+    },
+    "recovery_pending_Source_diagnosis": {
+      "verdict": "Observed cause UNKNOWN: exact60s TEST-body timeout in pending, not an observed native330s/outer12min timeout and not actual restore/revocation durability failure. One concrete fixture-budget incompatibility and narrow hypothesis below; no product-defect verdict.",
+      "actual": "Artifact11893611040/run38561296332/producerc3ff56facb5d76d6aad337ea6e03b47e251ad7bd/digest885080b60c2e6e9fdfb09dfa0fb81cb200d9f1c79891505cc0b241b67a905a94; application-recovery.spec.ts431 seedPASSED34738ms; pendingtimedOut60003ms/error1/onlydeclaration431/diagnosticUNKNOWN0; admit+attachment absent and semesterSKIP. Rootclosedreceipt matches artifact. Actualcheckout633568146... alreadyjoined independently. No supplied test stack or HTTP response identifies the interrupted await.",
+      "phaseTrace": "Existing CI1234+/1472–1477 runs seed, deliberately stops/checks ownedRabbit, then pending BEFORE backup, appstop, DBrestore or Authrestart. Pending fixture493–517 does exactly headmanadmit→studentadmit→historyGET/nonempty-pointer capture→transferPOST202/statePENDING/savecheckpoint. No poll/sleep/retry loop in pending itself; scripts/test-application-recovery.py capture/verify is NOT reached on this failure. Only base privateArtifacts auto-fixture plus requested playwright fixture; no page, MobileDataset worker seed or browser in phaseentry. APIRequestContext479–483 has10s perrequest deadline and finally548–549 dispose; fixture434 overrides all nonseed cases60s, unchanged outerPythonapi timeout330s.",
+      "sourceCompatibility": "Current fixtureSHA525cfc1f05ffa5b0f6fd0669a2f50c2694f01b7897990e2f62f3368f9ea7923d. Exact pending branch byte-identical9f09 actualpendingPASS367ms; mobile-dataset admit helper e84c6a6bccbef38e126ad25853e8920374361d411b6efc9ad25b50d381bd9171, recoveryconfig5b910f7f71fafdb9f04cfcdba5899217e6e1e1d0ec8f8aa2ddaad33384d6ab9c and Python verifier846679... byte-identical9f09→c3ff. New0edb witness executes onlyseed+lateradmit; currentseedPASS establishes its new prebackup selectedrevoke access401/refresh401/livecontrol200 precondition, but no actual postrestart claim.",
+      "narrowHypothesisAndCertainBudgetDefect": "mobile-dataset.ts55–60 accepts one ordinary login429 with ASCIIpositive Retry-After<=60 and awaits REAL setTimeout(seconds*1000) before retry. Pending invokes this twice afterRabbitstop. A valid60s response cannot complete even ONE such admission plus remaining work inside the immutable60s phase budget; this exact Source budget incompatibility is certain. Current60003ms timeout is consistent with that wait and is the only explicit long timer in these body calls; HTTP429/header/retry branch execution is NOT observed, origin is UNKNOWN, and cumulative slow HTTP/context/disposal remain possible. Do not attribute it to an IP limit, Rabbit, newwitness, or fix product from elapsedtime alone; B014guard not inspected/probed.",
+      "priorRestartBoundary": "Previousassignment resumedPASS10727ms (wholepriorstep timing separate), then recoveryseed realHTTP/grpc/HW/lifecycle/newsession setupPASS34.738s. The assignment same-channel restartbarrier is scoped to that earlier operation. It neither establishes a pending Auth429 nor explains this later Rabbit-down phase; pending has no Schedule-stop/restart barrier. Existing sourceHTTP10s errors alone would normally surface as request failures, while overalltimedOut60 means the test budget exhausted; no unique await inferred.",
+      "oneMinimalCheckingProposal": "Keep60s pending limit and all originalhistory/PENDING202/immutablecapture/restore assertions. Prepare the required pending HEADMAN bearer while dependencies are UP at endseed and reuse it plus the already-issued unexpired STUDENT livecontrol bearer from auth-revocation.private.json in pending through ordinary authenticated Gateway requests, instead of minting two redundant logins only AFTER deliberateRabbitstop. Persist only bounded existing-privatecheckpoint fields/mode0600, keep current live admission/grants on each realAPI request and fail if proofexpired; postrestore admit still checks exactprebackuprevoked/control BEFORE any freshlogin. This removes the concrete valid60s-login-retry/phase60 incompatibility without raisingtimeouts, changingauthlimits/IPs, weakeningoutages/assertions, newstand or diagnosticsframework. It is a proposed narrow fixture correction requiring author+review, not proof that this fixes the observed unknownawait; if the unchangedpending transfer/history still timesout afterward the specific awaitedoperation/status remains the missing evidence. No auth guard workaround/limit probe is authorized.",
+      "effects": "Only existing own outcome key appended. BoundedSource/closedJSON/diff/hash reading, no native/network/CI/test/runtime/rerun/product/shared docs edits/credentials/children. SelectedSol6.1highactualUNKNOWN; B013B014 frozen."
+    },
+    "HW_placement_type_Source_ready": {
+      "superseded_by": "HW_placement_type_author_ready",
+      "status": "Historic Source-ready event retained in attempts; final checked immutableauthor75261573 kept once."
+    },
+    "T013_review_batch_correction": {
+      "state": "CORRECTION_COMMITTED_CHECKS_PASS_TARGETED_RECHECK_PENDING",
+      "base": "e532be8142372d356d5fbbca3128453127b790a6",
+      "findings": "R1 synchronousowner exits/clears notification before newperiod intent; route watcher skips duplicate reset only when target already explicitlydetached. R2 independent stablelabel+calendar ready/loading/error/unknown requiring successfulcoverage; nofalseempty/selection beforeconfirmeddata. R3 existing44pxtoken onbothaxes plus332pxgrid minimum insideboundedkeyboardfocusablehorizontal scrollregion, no root/documentoverflow.",
+      "modified": [
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+      ],
+      "created": [],
+      "deleted": [],
+      "tests": "ExistingOwnerclass3new available/pendingnotification→month andnextday tests actualcontroller+lateACKcannotreclaim; existingSSRclass4unknown states+successfulempty positive; no re-run unchangeddomain/useHomework classes needed. R3geometrySource44token+boundedscroll andlateractualbrowser.",
+      "e2e_transfer": "ExplicitRootsolewriter2026-10-14 frombef343; verifiedactual tests/e2e/specs/mobile-homework-lifecycle.spec.ts. Future/tomorrow/transferdatecontrols chosen explicitly throughactualmonth/day beforeoriginalassertions; postarchive choose positivecontrol daythenexactremoveditemday topreventfalsezero. OneexistingTodaycase nowcoversDay/Month/Week/exclusive/semesterrangeedge/Todayreturn usingrealcontrols; oldpreviousresponse/span assertions retained. Alloriginalmaterial/domain/inline/optimistic/order/history/read-onlyassertions preserved. No timeout/statuschanges.",
+      "check_01_partial": {
+        "state": "PARTIAL_OR_FAIL",
+        "peaks": {
+          "min_workspace_free": 4859772928,
+          "owned_rss": 707768320,
+          "shared_memory": 6184697856,
+          "log_bytes": 1154
+        },
+        "elapsed_wall_seconds": 33.789,
+        "tmp_removed": true,
+        "own_link_removed": true,
+        "qualification": "Canonicalformat/check andVueTSC PASS. E2ETSC launcher ENVstop: canonicalPWcache containsPW butnotTypeScriptcompiler; usealreadyavailablefrontendTypeScriptcompiler/@types withsameownedPWlink. No Sourceerror/changedtestlogic. ContinueONLYE2Etypes/affected2classes/lint withinoriginal180wall; no formatter/typesPASSrepeat. Allreaped/TMP+bothlinksgone.",
+        "results": [
+          {
+            "phase": "vue-write",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "ts-write",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "vue-check",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "ts-check",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "vue-types",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "e2e-types",
+            "native_exit": 1,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": false
+          }
+        ]
+      },
+      "check_02_partial": {
+        "state": "PARTIAL_OR_FAIL",
+        "peaks": {
+          "min_workspace_free": 4859752448,
+          "owned_rss": 472870912,
+          "shared_memory": 5926473728,
+          "log_bytes": 2647
+        },
+        "elapsed_wall_seconds": 14.766,
+        "tmp_removed": true,
+        "own_link_removed": true,
+        "qualification": "E2ETSC PASS; affectedclasses41PASS/1FAIL pendingtarget newcase. Testclickedmockperiod whileinitialGETonlystarted, beforemetadata/controlswouldbevisible inactualSFC. AvailabletargetcasesPASS. Add genuineinitialHWday ready observation beforeopeningpendingtarget, keepassertions unchanged; no productweaken/fix. Ownsourcepause→freshsamecaps180 continuation accepted; no repeatedunchangedVue/E2Etype orformatter.",
+        "results": [
+          {
+            "phase": "e2e-types",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "affected-green",
+            "native_exit": 1,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": false
+          }
+        ]
+      },
+      "t013fix-check": {
+        "state": "PASS",
+        "peaks": {
+          "min_workspace_free": 4859654144,
+          "owned_rss": 712347648,
+          "shared_memory": 6209724416,
+          "log_bytes": 1468
+        },
+        "elapsed_wall_seconds": 37.19,
+        "tmp_removed": true,
+        "own_link_removed": true,
+        "results": [
+          {
+            "phase": "test-write",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "test-check",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "vue-types",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "affected-green",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "lint",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          }
+        ]
+      },
+      "t013fix-commit": {
+        "state": "PASS",
+        "peaks": {
+          "min_workspace_free": 4859510784,
+          "owned_rss": 93048832,
+          "shared_memory": 5549514752,
+          "log_bytes": 645
+        },
+        "elapsed_wall_seconds": 4.73,
+        "tmp_removed": true,
+        "own_link_removed": true,
+        "results": [
+          {
+            "phase": "stage",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "hooks",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "commit",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          }
+        ]
+      },
+      "commit": "2612da6de107a7410b929b5ceac28018b7cbc37e",
+      "stable_source_pins": {
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "f0c701dd85df43b94f57022873fa6c37ca4ba964b052f8d134e3703b34b3663b",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "45f8826f3bc04f87906d47b7a594a17568a5ac741c15932399d9bb8965862e45",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss": "af95eb1efadeeaaa3055feee761ce02dd998eadda561cc4687ed61094ea03209",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "c0d324eab81bc17ad42d4998544ca32a9435d4313afae069c56ddf8b945c4e9b",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "146707fc625ba5b8580924e8cf4219c084e6b8ba7f0220031ef2f851381d82a6",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "f5f8c1542863cd8c45b6fd9f450ba5b91d7cae8f8ca995c1d1022a8bd5e2085f"
+      },
+      "checks": {
+        "canonical_formatter": "PASS2Vue+2existingTStests+PCSS+E2ETS",
+        "Vue_types": "PASS selectedcanonicaldeclarations, currentone-linepreconditionincluded",
+        "E2E_types": "PASS selectednewSource unchangedsincecheck02 aftercachedcompilerpathENVfix",
+        "affected_cases": "2existingclasses42PASS, includes3notification+5monthstates regressions",
+        "lint": "PASS4TS/Vue",
+        "hooks_commit": "PASS ordinary6pathprecommit+normalcommit withUV_PYTHON3.12",
+        "browser_geometry_or_period_E2E": "NOT_RUN"
+      },
+      "source_inventory": {
+        "Created": [],
+        "Modified": [
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+          "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "Deleted": []
+      },
+      "worktree_clean": true,
+      "lease": "RELEASED/ALL_REAPED/TMP_AND_BOTH_OWN_NODE_MODULE_LINKS_REMOVED",
+      "fresh_continuation_check_seconds": 37.193,
+      "peaks": {
+        "min_workspace_free": 4859654144,
+        "owned_rss": 712347648,
+        "shared_memory": 6209724416,
+        "log_bytes": 1468
+      },
+      "original_e2e_assertions": "gitdiffunified0 deletions only5commentlines+oldPreviousbuttonaction; no originalexpect expression removed orchanged. Allpreviousrange/status/history/read-only/material/domain/inline/optimistic/order assertions retained.",
+      "freshness_limitations": "SFCSSRchecksdistinguish loading/error/unknown/subset vsobservedempty; real360/320geometry+period/focusbrowserNOT_RUN. Correctedpendingtargettestrequiresvisibleinitialdayperiodcontext beforeopeningpendingtarget, matchingactualaccessiblecontrols; available/nextday assertions unchanged.",
+      "R4_correction": {
+        "state": "COMMITTED_CHECKS_PASS_TARGETED_RECHECK_PENDING",
+        "base": "2612da6de107a7410b929b5ceac28018b7cbc37e",
+        "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+        "delta": "6 added lines Day tab selection after Week200/exclusivity, before unchanged previous-read oracle",
+        "source_sha256": "f6bbd6ebafcb1d024dadb9c8bb04be47f0cdd23618c9f310344694f46a9a9a69",
+        "scope": "ONE_SPEC_ONLY; no product/source suite rerun; original assertions unchanged",
+        "lease": "RELEASED/ALL_REAPED/TMP_AND_OWN_LINKS_REMOVED",
+        "activeToolSession": null,
+        "commit": "77466b06b95a841acd0dd5c18ca4ee7732a9cc87",
+        "checks": {
+          "Prettier": "PASS one file",
+          "E2E_TSC": "PASS selected spec",
+          "original_oracles": "PASS exact addition removed roundtrips HEAD2612 byte-for-byte; 6 added/0 removed",
+          "hooks_normal_commit": "PASS",
+          "browser": "NOT_RUN"
+        },
+        "first_check_to_commit_wall_upper_seconds": 20.723,
+        "peaks": {
+          "min_workspace_free": 4855255040,
+          "owned_rss": 341770240,
+          "shared_memory": 6105096192,
+          "log_bytes": 620
+        },
+        "worktree_clean": true
+      },
+      "original_author_evidence": "Original author outcome retained in assigned /workspace/scratch/rct-validation agent directory; essential Source/check/result/inventory/cleanup retained here."
+    },
+    "HW_placement_sensitivity_choice": {
+      "known_defective_revision": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "actual_counterexample": "CurrentunchangedAcase293 acceptedfuturebindingmove PUT409frame382; strictlessonTypeguard rejects realproducer omission",
+      "verification": "Use equivalentknownactualdefective revision vs correctedordinaryCI acceptedmove200+sameidentity/history assertions. This is selectivemeaningfulsensitivity; no additionalCIexecutor needed. Preservepre-PUTcase source byteidentity in T013legitimateperiodadaptation (studentnavigation onlylater).",
+      "qualification": "Actualunique409runtimeguardreason UNKNOWN; Sourceomissioncertain andmatchescurrentfailure. ActualGREEN/prefixacceptedmove stillNOT_RUN; keepunchangedpre-PUTidentity+typedproducerIT ordinaryGREEN join."
+    },
+    "HW_placement_type_author_ready": {
+      "status": "AUTHOR_COMMITTED_FORMAT_COMPILE_HOOKS_PASS_REAL_PRODUCER_CLIENT_PENDING_CI",
+      "updated_at": "2026-10-14T12:48:56.555524+00:00",
+      "base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "branch": "codex/q09-homework-placement-type-20261014",
+      "scope": [
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+      ],
+      "implementation": "Newmove capturesactualtargetlesson_type fromlockedphysicaltarget into existing immutableaccepted_binding JSONB Placement.lessonType; response/replay/continuation emitsstoredvalue. Currentbindingread/olderreceiptmissingvalue enrich ONLYexactstoredphysicalID+occurrence/group/subject/semester fromimmutablelessons snapshot; missinglegacyphysical/type remainsunknown. No receiptJSONrewrite/mutableSubject/currentreplacementdefault. No generation/revision APIexpansion; strictAcademicconsumer/type/history/200oracle unchanged.",
+      "test_first": {
+        "source_sha256": "2940e6d0c7bb927795613151f7b4da6583b3156e3578707e04ea638c988d999f",
+        "git_blob": "8fa3b415f776f57154c18526119a58f63daf49f9",
+        "old_producer_sha256": "d5f37b33770c7ec5594d8d2483900ca7acc55e4de0a67cc5487bbc913ad8e8ee",
+        "actual_RED": "NOT_RUN/noPGlease; freezesSourcebeforefix, no compile/setupfailureclaim"
+      },
+      "regression": {
+        "method": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT.lessonPlacementReceiptRetainsPhysicalTypeAcrossReadMoveReplayAndDateEdit",
+        "named_assertion": "accepted placement retains physical lesson type",
+        "expected": "lecture",
+        "old_actual": "empty string by actual oldPlacement.response producer, anyotherwisevalidrealLESSONmove",
+        "behavior": "RealPG canonicalsource+target +actual grpc handler GetHomeworkBinding/MoveHomeworkBinding underexistingvalidatedclaimscontext; no mockedrepositories/producerresponse, not networkinterceptor/runtimeproof. Capture sourcewiremetadata; firstassertacceptedtargetlecture, sourcegetlecture, durablereceiptJSONlessonTypelecture, currentgettargetid/type, exactmove/replay/continuationequality, ACK thenDATEedit(no currentLesson), oldLESSONreceipt stilllecture. RegistersownDATEsemesterforcleanup/ACKsfinaledit. Allprevious tests preserved.",
+        "ci_red": "Replace ONLYproducerwith exactoldc3ff d5f37b... andleaveexactcurrentIT; selectedintegrationTest methodmustfailnamedlecture/empty assertion, onefailure/noerror/noskip; restoreexactcurrentSource+hash then ordinaryfullScheduleintegrationTest GREEN includescase. No newrunner/framework/stand."
+      },
+      "source_pins": {
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d"
+      },
+      "mechanical_checks": {
+        "state": "PASS",
+        "updated_at": "2026-10-14T12:48:02.060496+00:00",
+        "phase": "normal-commit",
+        "active_native": null,
+        "peaks": {
+          "min_workspace_free": 4858191872,
+          "owned_rss": 974733312,
+          "shared_memory": 6470615040,
+          "log_bytes": 6580
+        },
+        "elapsed_wall_seconds": 109.477,
+        "commands": [
+          [
+            "format-apply",
+            [
+              "/bin/bash",
+              "./gradlew",
+              "--offline",
+              "--no-daemon",
+              "--no-parallel",
+              "--max-workers=1",
+              "--console=plain",
+              "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+              "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+              "-I",
+              "/tmp/rct-q09-placement-java-ql_0tee6/selected.gradle",
+              "formatJava"
+            ]
+          ],
+          [
+            "format-check",
+            [
+              "/bin/bash",
+              "./gradlew",
+              "--offline",
+              "--no-daemon",
+              "--no-parallel",
+              "--max-workers=1",
+              "--console=plain",
+              "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+              "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+              "-I",
+              "/tmp/rct-q09-placement-java-ql_0tee6/selected.gradle",
+              "formatJavaCheck"
+            ]
+          ],
+          [
+            "compile-schedule",
+            [
+              "/bin/bash",
+              "./gradlew",
+              "--offline",
+              "--no-daemon",
+              "--no-parallel",
+              "--max-workers=1",
+              "--console=plain",
+              "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+              "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+              ":services:schedule-service:schedule-app:compileJava",
+              ":services:schedule-service:schedule-app:compileTestJava"
+            ]
+          ],
+          [
+            "stage",
+            [
+              "git",
+              "add",
+              "--",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+              "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+            ]
+          ],
+          [
+            "ordinary-hooks",
+            [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+              "--offline",
+              "tool",
+              "run",
+              "--from",
+              "pre-commit==4.6.2",
+              "pre-commit",
+              "run",
+              "--files",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+              "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+            ]
+          ],
+          [
+            "normal-commit",
+            [
+              "git",
+              "commit",
+              "-m",
+              "fix(schedule): retain physical lesson type in homework placement receipts"
+            ]
+          ]
+        ],
+        "source_sha256": {
+          "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+          "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d"
+        },
+        "tmp_removed": true,
+        "limits": "wall300/phase120/cleanup30/floor4GiB/RSS2GiB/growth512MiB/shared15+1/log1MiB",
+        "results": [
+          {
+            "phase": "format-apply",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "format-check",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "compile-schedule",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "stage",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "ordinary-hooks",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          },
+          {
+            "phase": "normal-commit",
+            "native_exit": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "phase_success": true
+          }
+        ]
+      },
+      "author_commit": "752615738c43d6f1a930aa8d0996893dbb548c05",
+      "clean": true,
+      "tool_session": {
+        "id": 91343,
+        "exit": 0,
+        "reaped": true
+      },
+      "cleanup": "Allownedreaped/ownTMP+selectorremoved; no DB/container/browser/runtime/privatecredentialinputs created. No cachelinks used.",
+      "original_tests_and_fixture": "All existing IT testmethod/helperbody sections byte-identical outside newcase/2specific RPC observers. Entire HW E2Espec byte-identical exactc3ff inauthorWT. StrictAcademicconsumer untouched.",
+      "sensitivity_choice": "Root actual c3ff unchangedA293 PUT409 frame382 + immutableSource omittedlessonType guard chain → nextcorrectedordinaryCI acceptedmove200/sameidentity/historyprefix + realproducerITtypedmetadataGREEN. Prior oldc3ffproducer replacementrecipe remainsfallback ONLYif Sourceequivalence/actualafter insufficient, no newCIexecutor/workflow/mutationcampaign. Actual localRED/realPG/client NOT_RUN.",
+      "original_author_evidence": "Original author outcome retained in assigned /workspace/scratch/rct-validation agent directory; essential Source/check/result/inventory/cleanup retained here."
+    },
+    "T013_review_batch_recheck": {
+      "revision": "2612da6de107a7410b929b5ceac28018b7cbc37e",
+      "R1": "CLOSED",
+      "R2": "CLOSED",
+      "R3": "CLOSED",
+      "product": "APPROVE_SOURCE",
+      "E2E_finding": {
+        "id": "T013-E2E-R4",
+        "severity": "P2",
+        "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts:945",
+        "rule": "PreviousWeek neednotexist atsemesterearliestweek; keepWeekreal200 then switchDay atToday beforepastPrevious; preserveallpast/span/Today/completionassertions"
+      },
+      "A409_counterexample_compatibility": "Pre-first-PUT prefix unchanged; legitimateperiodnavigation after.",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+    },
+    "recovery_pending_actors_author_ready": {
+      "status": "SOURCE_CHECKED_COMMITTED",
+      "updated_at": "2026-10-14T12:50:44.880012+00:00",
+      "selected": "Sol6.1/high",
+      "actual": "UNKNOWN",
+      "base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "branch": "codex/q03-recovery-pending-actors-20261014",
+      "worktree": "/workspace/rct-worktrees/q03-recovery-actors-20261014",
+      "scope": [
+        "tests/e2e/fixtures/application-recovery.spec.ts"
+      ],
+      "observed": "Current CI seed PASS34738ms, pending timeout60003ms; interrupted await/cause UNKNOWN; no observed429; admit/attachment NOT_RUN. Source admit retry can consume60s inside pending60s.",
+      "plan": [
+        "Keep existing HEADMAN Actor from seed; persist its bounded bearer/sessionId as additive pendingHeadman seed.json field, after live Gateway/session/role/id/unexpired check while Rabbit is UP.",
+        "Reuse existing STUDENT revocation witness control in pending; require existing witness unexpired and validate exact Gateway/session/role/id before Actor reconstruction.",
+        "Remove only redundant pending fresh logins; preserve strict60s timeout and all history/PENDING202/capture/restore/revoked-before-freshlogin assertions/output allowlist."
+      ],
+      "compatibility": "Existing seed.json0600 permits additive field; semester consumer bounds64KiB and reads historyUrl only; Python checker receives pending/history/request and token files, does not consume seed schema. No new private output/file/framework.",
+      "checks": [
+        {
+          "phase": "format-write",
+          "direct_pid": 725862,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 725862,
+              "start_ticks": 23599813
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "format-check",
+          "direct_pid": 725873,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 725873,
+              "start_ticks": 23600054
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "strict-tsc",
+          "direct_pid": 725884,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 725884,
+              "start_ticks": 23600279
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "diff",
+          "direct_pid": 725899,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 725899,
+              "start_ticks": 23600840
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "stage",
+          "direct_pid": 725920,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 725920,
+              "start_ticks": 23600864
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "ordinary-hooks",
+          "direct_pid": 725941,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 725941,
+              "start_ticks": 23600892
+            },
+            {
+              "pid": 725951,
+              "start_ticks": 23600898
+            },
+            {
+              "pid": 725979,
+              "start_ticks": 23600920
+            },
+            {
+              "pid": 726031,
+              "start_ticks": 23600994
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "commit",
+          "direct_pid": 726075,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 726075,
+              "start_ticks": 23601060
+            },
+            {
+              "pid": 726117,
+              "start_ticks": 23601067
+            }
+          ],
+          "adopted_waitpid_receipts": [
+            {
+              "pid": 726117,
+              "start_ticks": 23601067,
+              "native_exit": 0
+            }
+          ],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      ],
+      "actual_runtime": "NOT_RUN",
+      "native_active": null,
+      "children": [],
+      "commands": [
+        {
+          "phase": "format-write",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            "/workspace/rct-worktrees/q03-recovery-actors-20261014/tests/e2e/fixtures/application-recovery.spec.ts"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/format-write.private.log",
+          "deadline_seconds": 90
+        },
+        {
+          "phase": "format-check",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--check",
+            "/workspace/rct-worktrees/q03-recovery-actors-20261014/tests/e2e/fixtures/application-recovery.spec.ts"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/format-check.private.log",
+          "deadline_seconds": 90
+        },
+        {
+          "phase": "strict-tsc",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+            "--noEmit",
+            "--project",
+            "/tmp/q03-recovery-check-nj7ckj4s/tsconfig.json"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/strict-tsc.private.log",
+          "deadline_seconds": 90
+        },
+        {
+          "phase": "diff",
+          "argv": [
+            "git",
+            "diff",
+            "--check"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/diff.private.log",
+          "deadline_seconds": 90
+        },
+        {
+          "phase": "stage",
+          "argv": [
+            "git",
+            "add",
+            "--",
+            "tests/e2e/fixtures/application-recovery.spec.ts"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/stage.private.log",
+          "deadline_seconds": 90
+        },
+        {
+          "phase": "ordinary-hooks",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+            "--offline",
+            "tool",
+            "run",
+            "--from",
+            "pre-commit==4.6.2",
+            "pre-commit",
+            "run",
+            "--files",
+            "tests/e2e/fixtures/application-recovery.spec.ts"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/ordinary-hooks.private.log",
+          "deadline_seconds": 90
+        },
+        {
+          "phase": "commit",
+          "argv": [
+            "git",
+            "commit",
+            "-m",
+            "test: retain admitted actors for recovery pending phase"
+          ],
+          "private_log": "/workspace/scratch/rct-validation/q03_recovery_fixture_writer/commit.private.log",
+          "deadline_seconds": 90
+        }
+      ],
+      "tmp_removed": true,
+      "own_link_removed": true,
+      "root_node_modules_preserved": true,
+      "source_sha256": "013248258583b91d993b7f145837c75aaf950a652febbc042dde3192baa845c4",
+      "elapsed_wall_seconds": 12.84,
+      "peaks": {
+        "minWorkspaceFree": 4855349248,
+        "ownedRss": 352268288,
+        "sharedMemory": 5842952192,
+        "logBytes": 773
+      },
+      "commit": "bbc9ff0528a22b70011203b07ca7fec5af1c52f5",
+      "inventory": {
+        "modified": [
+          "tests/e2e/fixtures/application-recovery.spec.ts"
+        ],
+        "created": [],
+        "deleted": []
+      },
+      "review": "PENDING independent q07_finite_acceptance",
+      "remaining": [
+        "Root integration after independent review",
+        "Ordinary current CI actual seed/pending/backup/restore/admit/attachment and exact revoked/control witness after restore; NOT_RUN locally"
+      ],
+      "original_author_evidence": "Original author outcome retained in assigned /workspace/scratch/rct-validation agent directory; essential Source/check/result/inventory/cleanup retained here."
+    },
+    "homework_card_follow_on_plan": {
+      "state": "READONLY_MINIMAL_PROPOSAL_AFTER_COHERENT2612_NO_NEW_SOURCE",
+      "base": "77466b06b95a841acd0dd5c18ca4ee7732a9cc87",
+      "actual_basis": "Rootclosedc3ffB629 actual3572ms/error4/original855–858 materialDomainVisible=false/inlineMaterialOpened=false/optimisticCompleted=false/completedAtBottom=false. T013periodselectedday correction handlesorder; remaining3gapsmandatory, no Ownerquestion.",
+      "minimal_modified_product": [
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+        "frontends/mobile-core/src/features/homework/use-homework.ts",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+      ],
+      "existing_modified_tests": [
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+        "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts"
+      ],
+      "new_files_or_libraries_or_API": [],
+      "material_domain": "KeepcurrentMaterialsbutton/subjectaccessiblelabel/exactoriginalURL andsameopenMaterialadapter. Render parsedhostname asvisibletext using existingvalidateHomeworkLink admission+URL parsing; existingcaption/linktokens, no sensitiveURLuserdata output/newbutton. UnsafeprimaryURLstillplaininertwarning.",
+      "inline": "REUSE existingpure homeworkTextSegments exported features/homework/headman-homework-state.ts137–160 (onlytypeimports; existingtests156+preservealltext/rejectcredentials/javascript/script). No newparser/framework/headmanSourceedit. Renderescapedsegments withordinaryHTTP(S) anchors,relnoopener+noreferrer,targetblank,and@click.prevent through EXISTINGopenMaterial event/owner adapter; preserveexactwholetext (originalE2EtoHaveText), unsafechunks remainescapedplainText. PWA App.vue1970–1980 alreadyrevalidatesHTTP(S) andwindow.opennoopener,noreferrer; TMAadapterexisting. No v-html/HTMLparsing/identitychanges.",
+      "optimistic_completion": "Use existing useHomework itemStates.pending/desired +savedretrycommandscope as presentationoverlay. Addscoped projection of authoritative feed atdisplayboundary; whilepending setvisiblecompleted=desired withpendinglabel, keepactualcompletedAt unchanged (no fake receipt/time). DoNOT optimisticallysetVueQuery/persistedofflinecache; existingquerydata stays authoritative untilvalidatedACK. On definitefailureorcontradictoryACK clearpending/desired andretainerror→displayrollsbackrawcurrentfeed, exactretryintent retained. Success validatesACK thenexistingqueryupdate/invalidation commitsactualcompletedAt, clearsprovisionalstate. Projectionchecksfullowner identity/sameitem andoffline/readOnly; scopechangebeforewatchflushcannotprojectoldstudentintent. Normal andnotificationitemviews bothuseprojection, snapshots/fresh-readgates keepusingrawquerydata. Distinctitem/concurrentnetworkupdatesnotlost because no wholefeedrollback snapshot.",
+      "focus": "Preserve existing keyed same-day group/item IDs, pendingdisabled controls andACKfocusrestore ownership/no-steal rules; optimisticdata isnotACK andcannot satisfycompletedAt receiptcheck. Meaningfultests cover rollback/error andconfirmedfocus; actualsameexistingBfocus assertions laterCI, no newclock/browsercrossproduct.",
+      "meaningful_controls": "ExistingSSRmainhostname+subject/exactURL, inlineHTTPanchor rel/target/escapedwholetext/unsafeHTMLinert/no unsafehref; deferredrealuseHomework mutation exposesprovisionalvisiblecompleted while rawquerydata remainsunchanged, definite503 rollback+visibleerror/exactretry, malformedACK/refreshedowner/readonly/offline andconcurrentdifferentitem noforeignprojection. ExistingOwnerclass ensuresactualscreengetsprojection fornormal andnotificationroutes andrawread cache unchanged. SameE2EBoracles remainUNMODIFIED.",
+      "next": "Rootcanassignsameauthorcoherent7fileimplementation after targetedR1R2R3review coordination; no newOwnerquestion. CurrentWT2612CLEAN, no native/source effects forproposal."
+    },
+    "HW_placement_type_independent_review": {
+      "verdict": "APPROVE_SOURCE, no blocking findings. Exactclean752615738c43d6f1a930aa8d0996893dbb548c05 FROMc3ff; only HomeworkPlacementService.java+existingHomeworkBindingServiceIT (+173/-19). ActualnewPG/client NOT_RUN. SelectedSol6.1highactualUNKNOWN.",
+      "basis": "Read current TASK/CURRENT/decisions/questions/resources and RootHW_placement_type_author_ready; independently opened both changedfiles/full changedmethods, existingV24 acceptedplacement JSON/ack/tuple guards and V28 physicalsnapshot immutability, actual SchedulegRPC get/move delegates and Academic HomeworkPlacementIdentity/prepare/finalize strict type consumers. Accepted homework edit/placement/type identity and same-publication history apply; no new policy/API granted.",
+      "producerRule": "New LESSONmove obtains target.lesson_type from the same selected current physical row already protected by existing sorted origin/occurrence/lesson locks, expectedbinding+physical revision, group/subject/semester/date/slot/status/pendingtransfer checks. Stores it in new Placement.lessonType within existing accepted_binding JSONB BEFORE sameTX binding update. Real stored string follows canonical immutablephysical type; no Subject/default/assignment guess, no later binding lookup for a newreceipt. Transaction/lockorder/CAS/publication identity/revision/history/ack gates unchanged.",
+      "currentLegacyAndReplay": "Currentbinding response uses exact storedphysicalID+occurrence/group/subject/semester to read ONLY immutable lesson_type. Older accepted JSON lacks nullable addedfield and uses the SAME exact immutablephysical lookup; no replacement/current-generation/Subject fallback, wrongscope or unavailablephysical leaves unknown. Type is a property of the immutablephysical ID: V28 also protects date/slot/type; lookup does not rewrite receipt fields or JSON. New receipt carries its accepted type permanently and replay/continuation reads stored metadata even after binding moves elsewhere/DATE. Physicaloldgeneration retained; missing/unknown legacy type is not guessed, and unchanged strict Academic consumer still rejects incompatible typed input. Missingfield compatibility uses nullable recordfield; sharedJackson FAIL_ON_UNKNOWN_PROPERTIES=false supports additive metadata.",
+      "consumerIntegrity": "Academic prepare still validates binding/publication/scope/date/slot/revision before accept; finalize259–262 still compares prepared SubjectType with actual accepted currentLesson type, and all identity/history/atomic checks remain untouched. Fix supplies the authoritative omittedfield for both currentread and durable acceptedmove rather than weakening consumer to permit null. DATE retains no currentLesson/type; currentknownLESSON cannot be silently replaced with mutableSubject metadata.",
+      "testQuality": "New actualPG case lessonPlacementReceiptRetainsPhysicalTypeAcrossReadMoveReplayAndDateEdit uses real reserve+confirm/binding target fixtures and autowiredactual ScheduleGrpcServiceImpl.getHomeworkBinding/moveHomeworkBinding. Context models already-validated signedclaims; Academic peer mocked and StreamObserver only captures actual producerresult/onCompleted (not wire/interceptor/Auth proof). First labeled assertion expects lecture in acceptedtarget; current source binding read likewise; durable JSONlessonType literal checked; samebinding nowtargetphysical/type, exactmove+continuation equality, ACK→DATE(no currentLesson onreceipt/currentget), then oldLESSONcontinuation stilllecture. Thus detects omittedfield and mutablecurrentbinding replay substitution; sourcecurrentread exercises shared immutable enrichment helper. Existingtest/helper bodies retained, one newcase+2capturehelpers; ownDATEsemesterregistered for existingcleanup. Explicit legacy absent/corrupttuple runtime not added/claimed; branch Source-reviewed and common current-binding enrichment tested.",
+      "sensitivityChoice": "Root planned genuine prior actualc3ff A293 PUT409/frame382 + immutableproducer omission/unchanged strictguard chain → corrected otherwise-required ordinaryCI200 for same accepted lesson-placement operation, samepublication/binding/content/history and pre-PUT Source-byte identity, plus newrealproducerPG test typedmetadataGREEN is sufficient for this concrete omittedfield risk IF those exact afterreceipts join. Current actual409 has no unique closed serverreason, so do not relabel it as conclusively that guard at runtime; Source independently proves the invalid missingtype contract. No current afterPASS/localRED claimed. Retain oldc3ffproducer-only/currentnewtest labeledlecture-versusempty realPG recipe only as fallback if equivalence/actualafter is insufficient; missingmethod/compilefailure not valid RED. No newCIexecutor/campaign needed now.",
+      "verification": "Independently matched both currentfiles to immutable7526 and authorfinalpins. Closedauthorreceipt scopedSpotlessApply/Check+SchedulecompileJava/compileTestJava+ordinary6hooks/normalcommitPASS109.477s, allownedreaped/TMPremoved. No reviewer native/tests/network/DB/browser or productwrites. RuntimePG/client and actual accepted200/samehistory remain nextordinaryCI.",
+      "sourcePins": {
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d"
+      },
+      "effects": "Only existing own outcome new key written; no common/Source fixes/privatecredentials/API/proto/schema/historyscripts edits or agents. B013B014 frozen/Q012 pending; no wholeQ09 PASS."
+    },
+    "N_navigation_and_status_author_ready": {
+      "pwaStatusDiagnostic": {
+        "normalPrivacyCarrier": "Root authorized existing unchanged check-artifact-privacy.mjs normal carrier (no --unprotected), which sets complete required control env and runs its three browser-free groups. The failed direct selection is retained as invalid/incomplete checking attempt with initial cause UNKNOWN; no product inference. Format apply/check and strict TSC already PASS on unchanged a339 source, reused without repetition; only normal privacy/diff/hooks/commit remain.",
+        "selectedPrivacyControlFailure": "pwa-status-02 formatter check and strict TSC PASS; direct selected existing browser-free control invocation failed before any case: 0 results/1 runner error, closed cause UNKNOWN. Native stderr/stdout log only fixed 'real-mobile failed; 0 results; 1 runner errors'. No new privacy Source defect inferred. No hooks/commit ran; all children reaped/TMP/link removed. Source/dependency/module path inspection only afterward; no unchanged repeat launched.",
+        "firstCallerGuardStop": "pwa-status-01 canonical formatter succeeded, then exact insertion-string preservation guard rejected the formatter's legitimate line wrap of session guard. No type/privacy/hooks/commit ran. Own TMP/link removed/all children reaped. Adapt only the proof's expected formatted inserted line sequence, preserving exact original helper equality; no Source/threshold weakening.",
+        "status": "PWA_STATUS_NORMAL_PASS_COMMITTED",
+        "base": "4b2c84f955df483ac2c5c0b7ba929ddaefd85919",
+        "writerScope": [
+          "tests/e2e/fixtures/pwa-auth.ts"
+        ],
+        "change": "Exactly two non200 guards before original login/session200 assertions and JSON, using existing exact Synthetic actor login/session: HTTP numeric-status grammar. No body/header/URL/actor/token/credential output, retry, waiter or product-auth change.",
+        "privacyControlSelection": "Existing successful sensitive metadata/worker output control plus canonical reporter guard; browser-free/no page fixture, unchanged existing config/reporter, fixed public synthetic marker and bounded private TMP.",
+        "actualHelperFailureCause": "UNKNOWN",
+        "actualBrowserDbNetwork": "NOT_RUN",
+        "results": [
+          {
+            "phase": "privacy",
+            "direct_pid": 726532,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 726532,
+                "start_ticks": 23611349
+              },
+              {
+                "pid": 726539,
+                "start_ticks": 23611359
+              },
+              {
+                "pid": 726552,
+                "start_ticks": 23611630
+              },
+              {
+                "pid": 726663,
+                "start_ticks": 23611994
+              },
+              {
+                "pid": 726683,
+                "start_ticks": 23612125
+              },
+              {
+                "pid": 727084,
+                "start_ticks": 23615290
+              },
+              {
+                "pid": 727097,
+                "start_ticks": 23615480
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "diff",
+            "direct_pid": 727134,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 727134,
+                "start_ticks": 23615705
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "stage",
+            "direct_pid": 727179,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 727179,
+                "start_ticks": 23615757
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "hooks",
+            "direct_pid": 727224,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 727224,
+                "start_ticks": 23615789
+              },
+              {
+                "pid": 727234,
+                "start_ticks": 23615794
+              },
+              {
+                "pid": 727262,
+                "start_ticks": 23615816
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "commit",
+            "direct_pid": 727386,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 727386,
+                "start_ticks": 23615967
+              },
+              {
+                "pid": 727428,
+                "start_ticks": 23615971
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 727428,
+                "start_ticks": 23615971,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "free": 4854894592,
+          "rss": 557895680,
+          "shared": 6104576000,
+          "logs": 1523
+        },
+        "privacyControlReadback": {
+          "state": "PRIVACY_BOUNDARIES_PASSED",
+          "normalChildStatus": 0,
+          "markerAbsent": true,
+          "producerBoundary": {
+            "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+            "markerAbsent": true,
+            "failureRetained": true,
+            "attachmentNotYetCreated": true,
+            "interrupted": false
+          },
+          "originalMetadataLeakReproduced": true,
+          "expectedFailureRetained": true,
+          "successRetained": true,
+          "guardControl": {
+            "canonicalReporterAccepted": true,
+            "sameBasenameAlternateRejected": true,
+            "extraReporterRejected": true,
+            "traceRejected": true,
+            "videoRejected": true,
+            "screenshotRejected": true,
+            "missingSnapshotGuardRejected": true,
+            "wrongSnapshotGuardRejected": true
+          },
+          "interruptedChildStatus": 0,
+          "interruptedChildSignal": null,
+          "interruptionBoundary": {
+            "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+            "markerAbsent": true,
+            "failureRetained": true,
+            "attachmentNotYetCreated": true,
+            "interrupted": true
+          },
+          "interruptionPassed": true,
+          "missingGuardRejectedBeforeOperation": true,
+          "browser": "NOT_STARTED"
+        },
+        "sourceSha256": "a339f9ecb9dec9b3f39de7b06affbb0f861686102bb885b3961aaeae48cf8c85",
+        "originalHelperExceptTwoGuardsByteEquality": true,
+        "protectedPins": {
+          "tests/e2e/specs/mobile-attendance-requests.spec.ts": "666cd33d4cee069e0bd138b6c08a1c5dca80ac4423d81529f590c165644adbf3",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f",
+          "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751"
+        },
+        "elapsedWallSeconds": 46.768,
+        "tmpRemoved": true,
+        "ownLinkRemoved": true,
+        "revision": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+        "terminalReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/pwa-status-03-normal-terminal.safe.json",
+        "privacyReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/pwa-status-03-normal-privacy.safe.json",
+        "worktreeClean": true,
+        "ordinaryHooks": "4 applicable Passed; YAML and JSON 2 N/A Skipped. Explicit normal offline UV3.12 pre-commit carrier; normal commit succeeded.",
+        "cumulativeBase": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "cumulativePaths": [
+          "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+          "tests/e2e/fixtures/pwa-auth.ts"
+        ],
+        "cumulativeDiff": {
+          "files": 2,
+          "insertions": 10,
+          "deletions": 0
+        },
+        "validation": "Canonical formatter and strict E2E TSC previously PASS on same a339 source; normal existing privacy carrier PASS, browser NOT_STARTED; diff and explicit ordinary hooks PASS. No browser/backend/DB/network. Actual corrected E2E NOT_RUN; actual observed runtime failure cause remains UNKNOWN.",
+        "reviewHandoff": "Two-file coherent head ready for Root single independent linked checking review; author did not initiate review."
+      },
+      "correction": {
+        "revision": "4b2c84f955df483ac2c5c0b7ba929ddaefd85919",
+        "terminalReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/budget-logout-01-terminal.safe.json",
+        "worktreeCleanAfterCommit": true,
+        "hookQualification": "Explicit ordinary pre-commit lane ran: Gitleaks/large-files/EOF/trailing-whitespace Passed; YAML/JSON skipped as not applicable to sole TS file. Commit itself emitted no separate hook output. No six-Passed claim.",
+        "status": "BUDGET_LOGOUT_PASS_COMMITTED",
+        "base": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "branch": "codex/q08-budget-logout-navigation-20261014",
+        "preservedRef": "codex/q09-homework-client-paths-20261014=bef343202c0da6295a5e82fb769232d64e5659ad",
+        "writerScope": [
+          "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+        ],
+        "change": "Known completed-N success notice before two ordinary Back actions, positive group-list then main-navigation gates, immediately before unchanged logout/student N retry. All original statements and 240000ms timeout retained.",
+        "resourcePreflight": {
+          "workspaceFreeBytes": 4859822080,
+          "sharedMemoryBytes": 5468622848,
+          "sharedMemoryLimitBytes": 17179869184
+        },
+        "verification": "Fresh authorized b78 Node-only180wall/90phase/cleanup30/floor4GiB/growth128MiB/RSS1GiB/shared15+1/log1MiB; cached canonical formatter/TSC/diff/original-statements equality, explicit UV_PYTHON3.12 ordinary hooks and one-file normal commit.",
+        "actualInternalError": "UNKNOWN",
+        "actualCorrectedBrowserDbNetwork": "NOT_RUN",
+        "results": [
+          {
+            "phase": "format-write",
+            "direct_pid": 722640,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722640,
+                "start_ticks": 23552193
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "format-check",
+            "direct_pid": 722676,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722676,
+                "start_ticks": 23552315
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "types",
+            "direct_pid": 722712,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722712,
+                "start_ticks": 23552416
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "diff",
+            "direct_pid": 722761,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722761,
+                "start_ticks": 23552868
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "stage",
+            "direct_pid": 722809,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722809,
+                "start_ticks": 23552918
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "hooks",
+            "direct_pid": 722861,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 722861,
+                "start_ticks": 23552986
+              },
+              {
+                "pid": 722871,
+                "start_ticks": 23553001
+              },
+              {
+                "pid": 722899,
+                "start_ticks": 23553101
+              },
+              {
+                "pid": 722954,
+                "start_ticks": 23553175
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "commit",
+            "direct_pid": 723047,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 723047,
+                "start_ticks": 23553241
+              },
+              {
+                "pid": 723089,
+                "start_ticks": 23553246
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 723089,
+                "start_ticks": 23553246,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "free": 4859707392,
+          "rss": 368648192,
+          "shared": 5839106048,
+          "logs": 761
+        },
+        "sourceSha256": "666cd33d4cee069e0bd138b6c08a1c5dca80ac4423d81529f590c165644adbf3",
+        "originalFileExceptNavigationInsertionByteEquality": true,
+        "protectedPins": {
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "10dfdac88ee9d812245f6b75ab19193170c5390b653a9553127dc71900cd7e6f",
+          "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751"
+        },
+        "elapsedWallSeconds": 11.516,
+        "tmpRemoved": true,
+        "ownLinkRemoved": true
+      },
+      "status": "SOURCE_PRECONDITION_MISMATCH_IDENTIFIED_ACTUAL_CAUSE_UNKNOWN",
+      "sourceRevision": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "actualReceipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.c3ff_browser_closed_results.lesson",
+      "actual": "Artifact11892709621/run38561296332 exact spec8 FAIL67900ms/errorCount1/callerframe245/closedcauseUNKNOWN; no class or internal logout operation proven. Sequential assertions through prior budget/cancel readback passed; no new run.",
+      "sourceTrace": [
+        "Spec221-223 opens More->Group->member detail; between this and logout245 only budget UI and separate student/foreign API calls occur, no browser Back/navigation.",
+        "pwa-auth.ts53-55 logoutPwa first clicks Profile bottom-navigation button.",
+        "HeadmanScheduleScreen704-706 pushes nested headman-more/group with surface detail; shellRoute395-416 preserves it, no group overview remap. MobileShell60/slot dock gating + shell-contract isRootLikeRoute require root/overview (and keyboard hidden), so that route has no dock/Profile button.",
+        "HeadmanGroupScreen409-448 Back first changes local detail->list without emitting parent Back. A second Back from list emits Back; HeadmanScheduleScreen1941 navigation.back and group beforeBack guard allow pop to headman-more root, restoring dock. One Back alone is insufficient.",
+        "Budget success343 notice follows intent clear341 and fresh GET; observing that notice gives a legitimate post-settlement navigation gate, since back418-422 intentionally blocks pending budget operations."
+      ],
+      "proposalOnly": "Only existing mobile-attendance-requests.spec.ts before logout245: await known budget-success notice, click existing Back, assert .headman-group data-group-view=list, click existing Back, assert Main navigation visible, then unchanged logoutPwa/student reentry/post-increase attempt and all budget/data/auth assertions. No global fixture/product/helper/timeout change.",
+      "mutation": "NONE; no branch/worktree change. Existing sparse WT/ref bef343 clean and preserved; HW ownership remains T013.",
+      "possibleNextScope": "If Root accepts correction plan, new clean branch fromc3ff in same sparse WT preserving bef343 ref, writer ONLY requests spec; minimal cached Prettier/strict E2E TSC/diff/original-oracle preservation/hooks/normalcommit under fresh Root light lease. Actual corrected browser remains ordinary CI, not local rerun."
+    },
+    "HW_placement_type_integrated": {
+      "author": "752615738c43d6f1a930aa8d0996893dbb548c05",
+      "paths": [
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+      ],
+      "source_pins": {
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d"
+      },
+      "review": "q07_finite_acceptance APPROVE_SOURCE",
+      "actual_runtime": "NOT_RUN",
+      "known_before": "CurrentA293409; uniqueruntimeguardUNKNOWN; confirmedSourceproducer metadataomission; pre-PUTtestprefixunchanged"
+    },
+    "recovery_pending_actors_independent_review": {
+      "verdict": "APPROVE_SOURCE, no blocking findings. Exactcleanbbc9ff0528a22b70011203b07ca7fec5af1c52f5 FROMc3ff; only application-recovery.spec.ts/+66/-11; SHA013248258583b91d993b7f145837c75aaf950a652febbc042dde3192baa845c4 matches immutablecommit/current/Rootreceipt. Actual correctedpending/Authrestart NOT_RUN; selectedSol6.1highactualUNKNOWN.",
+      "scopeAndContext": "Read currentgoverningstate with previous2Java task and Rootrecovery_pending_actors_author_ready; independent whole onefixture diff, existing Actor/admit/privateguards and semester consumer. Existing c3ffpendingTIMEOUT cause remainsUNKNOWN; this corrects only the certain60sphase-versus-valid60s loginretry budget incompatibility, no claimed uniquecause or new product/authpolicy.",
+      "actualAuthorityAndLifetime": "Seed retains SAME dataset.headmanActor bearer+SID (initialized through real HEADMAN admission) and SAME new selective-revocation witness.control bearer+SID for STUDENT. No replacement login/control identity is manufactured. New retainActor decodes onlyownedtokenmetadata to require matching sub/SID/unexpiredordinaryDate.now; actual trustedHTTPSGatewayGET /api/auth/session must200 and return exactuser/SID/activeRole HEADMAN orSTUDENT, followed by anotherexpirycheck. ReturnActor uses the SAME bearer and actualsessionresponse. Pending rereads privatewitness, checks its user matches seed.student and all oldproofs remainunexpired, then performs liveActor Gatewayhistory+transfer requests. Current server admission/grants remain authoritative on every call, no mock/bearerbootstrap/refresh bypass. HeadmanTTL900s includes seed300/pending60 failclosed; no clock/securityTTL extension or expiry fallback.",
+      "flowPreservation": "Only two fresh pendinglogins removed AFTER deliberate Rabbitstop; actors prepared/validated beforeoutage and revalidated within pending60s via sessionGET. Original historynonempty pointer/actualtransfer202/statePENDING/checkpoint write unchanged; no newpoll/retry/status allowance. Seed.json save moved toend after successfulproofpreparation. Postrestoreadmit still verifies EXACTprebackuprevokedaccess401/refresh401 and SAME retainedcontrol200 BEFORE existing freshheadman/student admissions; old verifyRevocation helpers and restorableproof semantics unchanged. Actual postrestart result still requires successfulrestore+allfourphase receipts.",
+      "privacyAndCompatibility": "Existing seed.json only gains pendingHeadman{bearer,SID}, stayswx0600 in owned0700 run outsideartifacts; now explicit regular/nonlink/600/<=64KiB checks afterwrite/beforeload (samebound existingsemesterconsumer307–325). Witness likewise600/64KiB, roles/IDs compared only in boolean fixed-message guards, no rawbody/token/cookie output. Actor.call passes actual bearer+request and reports only datasetHttpFailure(method/staticroute/status) on nonexpectedHTTP, not responsebody. Direct sessionstatus failures fixedstrings; unexpectedAPI/JSON errors go through unchanged privateArtifact sanitizer/SafeReporter. Contextdispose existingfinally unchanged. Existing semesterconsumer reads historyUrl only, no exactkey schema; additivefield compatible. Python capture/verify consume pending/history/request/tokenfiles, not seed shape. No new private output/file/schema/commonworkflow. Private jobtemporary lifetime/ephemeraldisposal same prior qualification; not immediate secure-erasure proof.",
+      "checksAndLimits": "Rootclosedauthorreceipt formatterwrite/check+strictTSC/diff/ordinaryhooks/normalcommitPASS12.84s, allownedreaped/TMP+linkgone/RootPWactualdirpreserved. No newcontrol/test/framework requested or claimed; original4 proofhelpers/sourceguards previouslyreviewed, newsimpleadmissionhelper Source-only until ordinaryCI. Reviewer no native/network/DB/browser/Sourcefix; all modifiedstatements opened independently.",
+      "acceptanceUse": "Integrate exact approved fixture; reuse next otherwise-required ordinary P20 restore lane, with strictpending60s/history/PENDING202/capture/backup/restore/postrestartidentity assertions. Preserve actual priorfailure and unknowncause; do not raise timeout or claim runtimePASS from this Source review.",
+      "effects": "Only existing own outcome key appended; no repository/shared docs/config/product/auth/credentials/agents. B013B014 frozen/no IP-limit or guardchecking; Q012 pending unchanged."
+    },
+    "N_navigation_and_status_independent_review": {
+      "verdict": "APPROVE_SOURCE",
+      "revision": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+      "reviewer": "q07_client_review",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md",
+      "qualification": "10addedlines2files; originalruleassertions preserved; actualNretry/helperdiagnostic afterNOT_RUN"
+    },
+    "T013_R4_recheck": {
+      "verdict": "CLOSED/APPROVE_SOURCE",
+      "revision": "77466b06b95a841acd0dd5c18ca4ee7732a9cc87",
+      "Day_remembered_date": "Today (onlyMonth/Week changed earlier)",
+      "original_oracles": "Allretained; pre-PUTidentity unchanged",
+      "reviewer": "q07_client_review"
+    },
+    "current_c3ff_next_integrated_packages": [
+      {
+        "author": "77466b06b95a841acd0dd5c18ca4ee7732a9cc87",
+        "label": "T013 periods/order and effects",
+        "source_pins": {
+          "frontends/mobile-core/src/domain/homework.test.ts": "31c7b7597a8598e3b0477c356b90bce4d9b7f7de55745448c6abd3b9561082da",
+          "frontends/mobile-core/src/domain/homework.ts": "8988219b653baa91eb06503774d62eaba4bca0850fa2c322ba7d44dce1250e30",
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "f0c701dd85df43b94f57022873fa6c37ca4ba964b052f8d134e3703b34b3663b",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "45f8826f3bc04f87906d47b7a594a17568a5ac741c15932399d9bb8965862e45",
+          "frontends/mobile-core/src/features/homework/homework-screen.pcss": "af95eb1efadeeaaa3055feee761ce02dd998eadda561cc4687ed61094ea03209",
+          "frontends/mobile-core/src/features/homework/use-homework.test.ts": "1528b2e5af812a145120c3e467de6bf868ee17836456ff3223455de0834116a0",
+          "frontends/mobile-core/src/features/homework/use-homework.ts": "026e852d0af91168771d6826051ee30d1378e2db7d46e1b64e5a0528f3cb050d",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "c0d324eab81bc17ad42d4998544ca32a9435d4313afae069c56ddf8b945c4e9b",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "146707fc625ba5b8580924e8cf4219c084e6b8ba7f0220031ef2f851381d82a6",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "f6bbd6ebafcb1d024dadb9c8bb04be47f0cdd23618c9f310344694f46a9a9a69"
+        },
+        "Source_review": "APPROVE",
+        "actual_after": "NOT_RUN"
+      },
+      {
+        "author": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+        "label": "N navigation and status diagnostics",
+        "source_pins": [
+          {
+            "sha256": "a339f9ecb9dec9b3f39de7b06affbb0f861686102bb885b3961aaeae48cf8c85",
+            "path": "tests/e2e/fixtures/pwa-auth.ts"
+          },
+          {
+            "sha256": "666cd33d4cee069e0bd138b6c08a1c5dca80ac4423d81529f590c165644adbf3",
+            "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+          }
+        ],
+        "Source_review": "APPROVE",
+        "actual_after": "NOT_RUN"
+      },
+      {
+        "author": "bbc9ff0528a22b70011203b07ca7fec5af1c52f5",
+        "label": "Recovery pending actors",
+        "source_pins": {
+          "tests/e2e/fixtures/application-recovery.spec.ts": "013248258583b91d993b7f145837c75aaf950a652febbc042dde3192baa845c4"
+        },
+        "Source_review": "APPROVE",
+        "actual_after": "NOT_RUN"
+      }
+    ],
+    "homework_inline_oracle_resolution": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:589–591; summary1080",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "fragment": "Одна основная ссылка; прочие ссылки внутри текста кликабельны при выводе",
+      "independent_corroboration": "q07_client_review: wireframe114101/134/261/273/314 sameLinkifiedText appliesstudent104; existingHeadman rendering independentof primary",
+      "disposition": "SafeinlineHTTP remainsclickableevenif primaryunsafe. No acceptedcross-fielddisable rule. Originalblanketall-anchorzero innewBtest is invalidoracle.",
+      "minimal_correction": "Assert exactinline href array=[inlineUrl], retaindescription equality/unsafe-main noaction/script-imgzero/marker-notexecuted; no fouracceptedcardoracles removed",
+      "review": "Source resolution independentlychecked; finalonehunkimplementation stillreviewrequired"
+    },
+    "homework_card_author_ready": {
+      "state": "COMMITTED_CHECKS_PASS_NOVEL_DELTA_REVIEW_PENDING",
+      "base": "77466b06b95a841acd0dd5c18ca4ee7732a9cc87",
+      "inventory": {
+        "Created": [],
+        "Modified": [
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+          "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+          "frontends/mobile-core/src/features/homework/use-homework.ts",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+          "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        ],
+        "Deleted": []
+      },
+      "source_pins": {
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "febd6a771ae9896094f78e76bfe851c98143f82b72126887624d26fd935a65f6",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss": "079ce198c22f106095ddb1a4fc66c5e4f2efe16b439204e2585eeac6a5f0c261",
+        "frontends/mobile-core/src/features/homework/use-homework.ts": "fb561da54d657feb964ea9918b352369482cdaafd81c3eed286b2a3e7d5e029d",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "5d14327715962fe7c759c0a04d19b939861b7718df718fdefa43d86f23e8ecfe",
+        "frontends/mobile-core/src/features/homework/use-homework.test.ts": "dba480fb8f21d895f398fe94b6ba478f7b68f3b58bbd23a3beb6e3dd64eb9624",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "fbc63b4229d813c02e60e3d82556e63cfb0f359e4f60d263c0d27ea88abe538f",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "b4fa0a977a51b023e6df207f65bc095dc05e8103a803eac42595092601995b28",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "b94852c46a99e8b6f15ed492c328daa40c2f64864683a523a4c917b7d23701b1"
+      },
+      "design_skill_read": {
+        "path": "/workspace/rct-cloud-skills-20261011/project/rutcampustrack-design/SKILL.md",
+        "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5",
+        "sources": "104 student homework/current mobile inheritance/registry/brandbook/tokens/BRAND_DIRECTION/A11Y relevant sections; existingtokens/components"
+      },
+      "unsafe_main_oracle_disposition": {
+        "state": "CONCRETE_ACCEPTED_SOURCE_ORACLE_CONFLICT_SENT_ROOT_NO_E2E_EDIT",
+        "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md589-591/1080",
+        "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "fragment": "одна основная ... Прочие ссылки размещаются внутри текста задания и кликабельны при выводе",
+        "existing_pattern": "HeadmanHomeworkScreen1111 safeinline independentprimaryLink",
+        "implication": "unsafeMainneveractive; safeinlineindependentlyHTTP(S)allowed; E2Ea/script/imgcount0 conflictswhenvalidinlinepresent; Root narroworaclecorrectionreviewneeded, notdisableacceptedlinkbehavior"
+      },
+      "frontend_checks_pass": {
+        "state": "PASS",
+        "results": [
+          {
+            "phase": "test-write",
+            "direct_pid": 729048,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 729048,
+                "start_ticks": 23661939
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "test-check",
+            "direct_pid": 729083,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 729083,
+                "start_ticks": 23662291
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "vue-types",
+            "direct_pid": 729134,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 729134,
+                "start_ticks": 23662542
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "affected-green",
+            "direct_pid": 729165,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 729165,
+                "start_ticks": 23664213
+              },
+              {
+                "pid": 729173,
+                "start_ticks": 23664247
+              },
+              {
+                "pid": 729183,
+                "start_ticks": 23664269
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 729173,
+                "start_ticks": 23664247,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "lint",
+            "direct_pid": 729217,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 729217,
+                "start_ticks": 23665105
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "min_workspace_free": 4854980608,
+          "owned_rss": 692056064,
+          "shared_memory": 6236618752,
+          "log_bytes": 1305
+        },
+        "elapsed_wall_seconds": 38.255,
+        "source_pins": {
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "febd6a771ae9896094f78e76bfe851c98143f82b72126887624d26fd935a65f6",
+          "frontends/mobile-core/src/features/homework/homework-screen.pcss": "079ce198c22f106095ddb1a4fc66c5e4f2efe16b439204e2585eeac6a5f0c261",
+          "frontends/mobile-core/src/features/homework/use-homework.ts": "fb561da54d657feb964ea9918b352369482cdaafd81c3eed286b2a3e7d5e029d",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "5d14327715962fe7c759c0a04d19b939861b7718df718fdefa43d86f23e8ecfe",
+          "frontends/mobile-core/src/features/homework/use-homework.test.ts": "dba480fb8f21d895f398fe94b6ba478f7b68f3b58bbd23a3beb6e3dd64eb9624",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "fbc63b4229d813c02e60e3d82556e63cfb0f359e4f60d263c0d27ea88abe538f",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "b4fa0a977a51b023e6df207f65bc095dc05e8103a803eac42595092601995b28"
+        },
+        "caller_pid": 728997,
+        "tmp_removed": true,
+        "own_link_removed": true
+      },
+      "e2e_delta_authority": "Root explicit2026-10-14 closedcanonicalJSHEADMAN16/1080 verified87af + q07clientindependentSourceagreement; replaceonly blanket noanchors with exactsafeinlineanchors[inlineUrl], retains unsafeMain/scriptimg/executionguards",
+      "commit": "dbfc4fc587b7723beae258cb2f26ff01abf7ef3c",
+      "stable_source_pins": {
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "febd6a771ae9896094f78e76bfe851c98143f82b72126887624d26fd935a65f6",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss": "079ce198c22f106095ddb1a4fc66c5e4f2efe16b439204e2585eeac6a5f0c261",
+        "frontends/mobile-core/src/features/homework/use-homework.ts": "fb561da54d657feb964ea9918b352369482cdaafd81c3eed286b2a3e7d5e029d",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "5d14327715962fe7c759c0a04d19b939861b7718df718fdefa43d86f23e8ecfe",
+        "frontends/mobile-core/src/features/homework/use-homework.test.ts": "dba480fb8f21d895f398fe94b6ba478f7b68f3b58bbd23a3beb6e3dd64eb9624",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "fbc63b4229d813c02e60e3d82556e63cfb0f359e4f60d263c0d27ea88abe538f",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts": "b4fa0a977a51b023e6df207f65bc095dc05e8103a803eac42595092601995b28",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "4c94d180710f28721563b2723b33d739f19b4ef06ee030196d82fcafd4424a29"
+      },
+      "lease": "RELEASED/ALL_REAPED/TMP_AND_BOTH_OWN_LINKS_REMOVED",
+      "checks": {
+        "canonical_formatter": "PASS2Vue+5plain; changedtestthenE2Eonlycheckedafterlateredits",
+        "Vue_TSC": "PASS selectedcanonicaldeclarations+changed6TS/Vuepaths",
+        "affected_classes": "3existingclasses;2unchangedclassesPASS check02 andonlycorrectedOwnerclassPASScheck03;62totalcases",
+        "E2E_TSC": "PASS selectedchangedonefile",
+        "lint": "PASS6frontendTS/Vue",
+        "hooks_normal_commit": "PASS8declaredpaths",
+        "browser_backend": "NOT_RUN"
+      },
+      "worktree_clean": true,
+      "author_commit": "dbfc4fc587b7723beae258cb2f26ff01abf7ef3c",
+      "author_evidence": "/workspace/scratch/rct-validation/q06_replacement_cause/outcome.safe.json#T013_homework_period_source_plan.card_follow_on",
+      "actual_checks": "62affectedtests/format/VueTSC+E2ETSC/lint/ordinaryhooks/normalcommitPASS; initialTSoptionalstring+notificationreadinesspartials retained; allreaped/TMP+links removed",
+      "scope": "Exactly4existingproduct+3existingtests+oneauthorizedE2Eoraclehunk; noAPI/deps",
+      "actual_browser": "NOT_RUN"
+    },
+    "homework_card_independent_review": {
+      "state": "CHANGES_REQUESTED",
+      "revision": "dbfc4fc587b7723beae258cb2f26ff01abf7ef3c",
+      "reviewer": "q07_client_review",
+      "findings": [
+        {
+          "id": "CARD-R1",
+          "severity": "P2",
+          "path": "HomeworkScreen.vue:701–707",
+          "rule": "Inline link accessible name mustinclude subject; rawURL alone violates canonicalJSSTUDENT22:789–790. Addsubject-aware Russianlabel and focusedexistingSSRassert."
+        }
+      ],
+      "remaining_delta": "APPROVE_SOURCE parser/escaping/adapter/scope/rawcache/ACK/rollback/retry/concurrency/offline+oneauthorizedE2Eoraclehunk; all4originalactualflags retained",
+      "recheck": "Onlylocalaccessiblelabel/test correction; no fullrepeat",
+      "actual_browser": "NOT_RUN"
+    },
+    "homework_card_label_correction": {
+      "state": "COMMITTED_CHECKS_PASS_CARD_R1_TARGETED_RECHECK_PENDING",
+      "base": "dbfc4fc587b7723beae258cb2f26ff01abf7ef3c",
+      "inventory": [
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts"
+      ],
+      "source_pins": {
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9"
+      },
+      "scope": "CARD-R1 only subjectaware inlinearia-label + existingSSRassert; allotherreviewedSource/E2E unchanged",
+      "native_declaration": "freshNode180wall/90phase/30cleanup/4GiBfloor/128MiBgrowth/1GiBRSS/shared15+1/log1MiB;1Vue+1TSformatcheck/selectedtypes/focusclass/lint2/hooks2+normalcommit; noOwner/model/browser/backend",
+      "activeToolSession": null,
+      "t013label-check": {
+        "state": "PASS",
+        "results": [
+          {
+            "phase": "vue-write",
+            "direct_pid": 730142,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730142,
+                "start_ticks": 23704441
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "ts-write",
+            "direct_pid": 730185,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730185,
+                "start_ticks": 23704924
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "vue-check",
+            "direct_pid": 730220,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730220,
+                "start_ticks": 23705020
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "ts-check",
+            "direct_pid": 730255,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730255,
+                "start_ticks": 23705399
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "vue-types",
+            "direct_pid": 730290,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730290,
+                "start_ticks": 23705486
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "affected-green",
+            "direct_pid": 730321,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730321,
+                "start_ticks": 23706070
+              },
+              {
+                "pid": 730329,
+                "start_ticks": 23706104
+              },
+              {
+                "pid": 730340,
+                "start_ticks": 23706127
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 730329,
+                "start_ticks": 23706104,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "lint",
+            "direct_pid": 730373,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730373,
+                "start_ticks": 23706354
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "min_workspace_free": 4854751232,
+          "owned_rss": 418942976,
+          "shared_memory": 5936173056,
+          "log_bytes": 814
+        },
+        "elapsed_wall_seconds": 24.065,
+        "source_pins": {
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9"
+        },
+        "caller_pid": 730091,
+        "tmp_removed": true,
+        "own_link_removed": true
+      },
+      "t013label-commit": {
+        "state": "PASS",
+        "results": [
+          {
+            "phase": "stage",
+            "direct_pid": 730508,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730508,
+                "start_ticks": 23707400
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "hooks",
+            "direct_pid": 730553,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730553,
+                "start_ticks": 23707446
+              },
+              {
+                "pid": 730563,
+                "start_ticks": 23707451
+              },
+              {
+                "pid": 730591,
+                "start_ticks": 23707484
+              },
+              {
+                "pid": 730622,
+                "start_ticks": 23707583
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "commit",
+            "direct_pid": 730714,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 730714,
+                "start_ticks": 23707667
+              },
+              {
+                "pid": 730756,
+                "start_ticks": 23707674
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 730756,
+                "start_ticks": 23707674,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "min_workspace_free": 4854677504,
+          "owned_rss": 92315648,
+          "shared_memory": 5592113152,
+          "log_bytes": 617
+        },
+        "elapsed_wall_seconds": 3.449,
+        "source_pins": {
+          "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+          "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9"
+        },
+        "caller_pid": 730457,
+        "tmp_removed": true,
+        "own_link_removed": true
+      },
+      "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "stable_source_pins": {
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts": "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9"
+      },
+      "checks": "PASS1Vue+1TS canonicalformat/check,selectedVueTSC,existingfocusclass,lint2,hooks2,normalcommit; noOwner/model/E2Echanges/browser",
+      "test_counts": [
+        "Test Files  1 passed (1)",
+        "Tests  12 passed (12)"
+      ],
+      "first_check_to_commit_wall_upper_seconds": 33.187,
+      "lease": "RELEASED/ALL_REAPED/TMP_AND_BOTH_OWN_LINKS_REMOVED",
+      "worktree_clean": true,
+      "peaks": {
+        "min_workspace_free": 4854677504,
+        "owned_rss": 418942976,
+        "shared_memory": 5936173056,
+        "log_bytes": 814
+      }
+    },
+    "homework_card_final_independent_recheck": {
+      "state": "CLOSED/APPROVE_SOURCE",
+      "revision": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+      "reviewer": "q07_client_review",
+      "label_and_test_pins": [
+        "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+        "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9"
+      ],
+      "retained_approvals": "Novelcard parser/optimism/oracle+T013periodR1–R4; actualbrowserafterNOT_RUN"
+    },
+    "final_next_source_inventory": {
+      "state": "ALL16_REVIEWED_AUTHOR_BYTES_INTEGRATED_ROOT_CHECKS_NEXT",
+      "baseline": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+      "Created": [],
+      "Modified": [
+        "docs/openapi/attendance.json",
+        "frontends/mobile-core/src/domain/homework.test.ts",
+        "frontends/mobile-core/src/domain/homework.ts",
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+        "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+        "frontends/mobile-core/src/features/homework/use-homework.ts",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+        "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+        "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+        "tests/e2e/fixtures/application-recovery.spec.ts",
+        "tests/e2e/fixtures/pwa-auth.ts",
+        "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+      ],
+      "Deleted": [],
+      "pins": [
+        {
+          "sha256": "32afe24193ecc31c5457019d41a2e48f9b3998f8d129e8e4233fa9c48cdf2853",
+          "path": "docs/openapi/attendance.json"
+        },
+        {
+          "sha256": "31c7b7597a8598e3b0477c356b90bce4d9b7f7de55745448c6abd3b9561082da",
+          "path": "frontends/mobile-core/src/domain/homework.test.ts"
+        },
+        {
+          "sha256": "8988219b653baa91eb06503774d62eaba4bca0850fa2c322ba7d44dce1250e30",
+          "path": "frontends/mobile-core/src/domain/homework.ts"
+        },
+        {
+          "sha256": "582972df5d63846c04d17080fca79e6057bcf91961151e6b4e0b21b03fbaafb9",
+          "path": "frontends/mobile-core/src/features/homework/HomeworkScreen.vue"
+        },
+        {
+          "sha256": "2bd01b7140425daefab8c25e505618eb3b6b42cacf6f97eb7a5a0e7ea872f2a9",
+          "path": "frontends/mobile-core/src/features/homework/homework-focus.test.ts"
+        },
+        {
+          "sha256": "079ce198c22f106095ddb1a4fc66c5e4f2efe16b439204e2585eeac6a5f0c261",
+          "path": "frontends/mobile-core/src/features/homework/homework-screen.pcss"
+        },
+        {
+          "sha256": "dba480fb8f21d895f398fe94b6ba478f7b68f3b58bbd23a3beb6e3dd64eb9624",
+          "path": "frontends/mobile-core/src/features/homework/use-homework.test.ts"
+        },
+        {
+          "sha256": "fb561da54d657feb964ea9918b352369482cdaafd81c3eed286b2a3e7d5e029d",
+          "path": "frontends/mobile-core/src/features/homework/use-homework.ts"
+        },
+        {
+          "sha256": "b4fa0a977a51b023e6df207f65bc095dc05e8103a803eac42595092601995b28",
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts"
+        },
+        {
+          "sha256": "fbc63b4229d813c02e60e3d82556e63cfb0f359e4f60d263c0d27ea88abe538f",
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+        },
+        {
+          "sha256": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+          "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java"
+        },
+        {
+          "sha256": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d",
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+        },
+        {
+          "sha256": "013248258583b91d993b7f145837c75aaf950a652febbc042dde3192baa845c4",
+          "path": "tests/e2e/fixtures/application-recovery.spec.ts"
+        },
+        {
+          "sha256": "a339f9ecb9dec9b3f39de7b06affbb0f861686102bb885b3961aaeae48cf8c85",
+          "path": "tests/e2e/fixtures/pwa-auth.ts"
+        },
+        {
+          "sha256": "666cd33d4cee069e0bd138b6c08a1c5dca80ac4423d81529f590c165644adbf3",
+          "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+        },
+        {
+          "sha256": "4c94d180710f28721563b2723b33d739f19b4ef06ee030196d82fcafd4424a29",
+          "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        }
+      ],
+      "authors": [
+        {
+          "commit": "15080b45c286d007f4a96d9b992a43b34df0268d",
+          "path": "docs/openapi/attendance.json"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/domain/homework.test.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/domain/homework.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/features/homework/HomeworkScreen.vue"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/features/homework/homework-focus.test.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/features/homework/homework-screen.pcss"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/features/homework/use-homework.test.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/features/homework/use-homework.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+        },
+        {
+          "commit": "752615738c43d6f1a930aa8d0996893dbb548c05",
+          "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java"
+        },
+        {
+          "commit": "752615738c43d6f1a930aa8d0996893dbb548c05",
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+        },
+        {
+          "commit": "bbc9ff0528a22b70011203b07ca7fec5af1c52f5",
+          "path": "tests/e2e/fixtures/application-recovery.spec.ts"
+        },
+        {
+          "commit": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+          "path": "tests/e2e/fixtures/pwa-auth.ts"
+        },
+        {
+          "commit": "e9b59a3432a8a73ccb1716b706e59aedf462d830",
+          "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts"
+        },
+        {
+          "commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
+          "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+        }
+      ],
+      "actual_current_checks": "Authorchecks/reviewsPASS; actualafterordinaryCI NOT_RUN; c3ffbeforeFAIL andfinitePASS retained separately"
+    },
+    "final_next_Root_merged_checks": {
+      "state": "PASS",
+      "source_count": 16,
+      "phases": [
+        {
+          "phase": "ordinary-six-hooks",
+          "exit": 0,
+          "all_reaped": true
+        },
+        {
+          "phase": "git-diff-check",
+          "exit": 0,
+          "all_reaped": true
+        },
+        {
+          "phase": "Angular-baseline-unchanged",
+          "exit": 0,
+          "all_reaped": true
+        }
+      ],
+      "source_unchanged": true,
+      "tmp_removed": true,
+      "PW_actual_directory_preserved": true,
+      "hooks": "Gitleaks/JSON/largefiles/EOF/trailingWhitespace PASS; YAML correctlyN/A(noYAMLchanged)",
+      "elapsed_wall_seconds": 4.164,
+      "qualification": "Sampledresources/ownprocesslifecycle bounds; no hardOSisolation claim. Author significantchecks/reviews retained, no unnecessary fullsuite repeats.",
+      "actual_after": "NOT_RUN until next ordinaryCI"
+    },
+    "publication_partial_Gitleaks": {
+      "state": "STOPPED_BEFORE_COMMIT_AND_PUSH",
+      "native_session": 32303,
+      "stage": "PASS",
+      "sixhooks": "GitleaksFAIL; allotherapplicablePASS; nofilesmodifiedbyhooks",
+      "findings": "Four generic-api-key false positives on exact author source digest/public repository commit identities, independently matched to currenttrackedfile or gitcommit object; no credential values",
+      "correction": [
+        {
+          "path": "$.next_reviewed_integrations.publication.PR2_readback_head",
+          "change": "Neutral name for verified public commit identity"
+        },
+        {
+          "path": "$.next_reviewed_integrations.current_c3ff_next_integrated_packages[1].source_pins",
+          "change": "Equivalent identity-first source records, exact public values retained",
+          "records": 2
+        },
+        {
+          "path": "$.next_reviewed_integrations.final_next_source_inventory.pins",
+          "change": "Equivalent identity-first source records, exact public values retained",
+          "records": 16
+        },
+        {
+          "path": "$.next_reviewed_integrations.final_next_source_inventory.authors",
+          "change": "Equivalent identity-first source records, exact public values retained",
+          "records": 16
+        }
+      ],
+      "source16_unchanged": true,
+      "no_rule_weakening_or_allowlist": true,
+      "next": "Restage sameexplicit25paths; freshsame normalpublicationcaller; repeatgateoncorrectedmetadata"
     }
   }
 }

@@ -34,10 +34,13 @@ export async function loginPwa(
   );
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
   const login = await loginResponse;
+  if (login.status() !== 200) throw new Error(`Synthetic actor login: HTTP ${login.status()}`);
   expect(login.status()).toBe(200);
   const { accessToken } = (await login.json()) as { accessToken: string };
   expect(typeof accessToken).toBe('string');
   const current = await sessionResponse;
+  if (current.status() !== 200)
+    throw new Error(`Synthetic actor session: HTTP ${current.status()}`);
   expect(current.status()).toBe(200);
   const body = (await current.json()) as CurrentSessionResponse;
   const session: CurrentSession = { ...body, activeRole: body.activeRole ?? null };

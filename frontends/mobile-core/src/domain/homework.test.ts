@@ -3,6 +3,9 @@ import type { StudentHomework, StudentHomeworkItem } from '../api/types'
 import {
   formatHomeworkDate,
   groupHomework,
+  groupHomeworkPeriod,
+  homeworkPeriodRange,
+  shiftHomeworkPeriod,
   isCompletedToday,
   moscowDate,
   previousHomeworkRange,
@@ -37,6 +40,44 @@ function feed(items: StudentHomeworkItem[]): StudentHomework {
 }
 
 describe('homework feed domain', () => {
+  it('bounds real calendar periods by the semester and crosses leap months without a device clock', () => {
+    const semester = { from: '2024-02-27', to: '2024-03-30' }
+    expect(homeworkPeriodRange('week', '2024-02-29', semester)).toEqual({
+      from: '2024-02-27',
+      to: '2024-03-03',
+    })
+    expect(homeworkPeriodRange('month', '2024-03-12', semester)).toEqual({
+      from: '2024-03-01',
+      to: '2024-03-30',
+    })
+    expect(homeworkPeriodRange('day', '2024-04-01', semester)).toEqual({
+      from: '2024-03-30',
+      to: '2024-03-30',
+    })
+    expect(shiftHomeworkPeriod('month', '2024-03-31', -1)).toBe('2024-02-29')
+    expect(shiftHomeworkPeriod('week', '2024-02-29', 1)).toBe('2024-03-07')
+    expect(homeworkPeriodRange('month', '2024-02-30', semester)).toBeNull()
+  })
+
+  it('orders a selected lesson day unfinished first and keeps empty dates without completed-today union duplicates', () => {
+    const completed = item({
+      id: 'done',
+      lessonDate: '2026-09-07',
+      lessonNumber: 1,
+      completed: true,
+      completedAt: '2026-09-07T08:00:00Z',
+    })
+    const early = item({ id: 'early', lessonDate: '2026-09-07', lessonNumber: 2 })
+    const late = item({ id: 'late', lessonDate: '2026-09-07', lessonNumber: 8 })
+    const outside = item({ ...completed, id: 'outside', lessonDate: '2026-08-25' })
+    const groups = groupHomeworkPeriod(feed([completed, late, outside, early, early]), {
+      from: '2026-09-07',
+      to: '2026-09-08',
+    })
+    expect(groups.map((group) => group.date)).toEqual(['2026-09-07', '2026-09-08'])
+    expect(groups[0]!.items.map((entry) => entry.id)).toEqual(['early', 'late', 'done'])
+    expect(groups[1]!.items).toEqual([])
+  })
   it('groups a completed past lesson by its Moscow completion date and removes duplicates', () => {
     const completed = item({
       id: 'completed',

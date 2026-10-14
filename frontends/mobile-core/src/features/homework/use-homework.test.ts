@@ -103,6 +103,190 @@ function mountHomework(
 }
 
 describe('useHomework scope and completion boundaries', () => {
+  it.each(['failed', 'invalid ACK'] as const)(
+    'projects pending completion without persisting it, then rolls back %s and retries the exact intent',
+    async (outcome) => {
+      let resolve!: (value: StudentHomeworkCompletion) => void
+      let reject!: (error: Error) => void
+      const response = new Promise<StudentHomeworkCompletion>((yes, no) => {
+        resolve = yes
+        reject = no
+      })
+      const setCompletion = vi
+        .fn()
+        .mockReturnValueOnce(response)
+        .mockRejectedValue(new Error('503'))
+      const state = mountHomework(
+        {
+          getHomework: vi.fn(async () => fallbackFeed),
+          setHomeworkCompletion: setCompletion,
+        } as unknown as StudentApi,
+        ref(scopeA),
+      )
+      await vi.waitFor(() => expect(state.query.data.value).toEqual(fallbackFeed))
+      const raw = state.query.data.value!
+      const result = state.submitCompletion('same-id', true)
+      const failure = expect(result).rejects.toThrow()
+      expect(state.presentHomework(raw)?.items[0]).toMatchObject({
+        completed: true,
+        completedAt: null,
+      })
+      expect(raw.items[0]).toMatchObject({ completed: false, completedAt: null })
+      expect(state.query.data.value).toBe(raw)
+      if (outcome === 'failed') reject(new Error('503'))
+      else resolve({ id: 'same-id', completed: true, completedAt: null })
+      await failure
+      expect(state.presentHomework(raw)).toBe(raw)
+      expect(state.itemError('same-id')).not.toBeNull()
+      await expect(state.retryCompletion('same-id')).rejects.toThrow('503')
+      expect(setCompletion.mock.calls).toEqual([
+        ['same-id', { completed: true }],
+        ['same-id', { completed: true }],
+      ])
+    },
+  )
+
+  it('hides pending presentation immediately on offline, read-only or same-tick owner change', async () => {
+    const offline = ref(false)
+    const readOnly = ref(false)
+    const scope = ref<StudentHomeworkQueryScope | null>({ ...scopeA })
+    let resolve!: (value: StudentHomeworkCompletion) => void
+    const response = new Promise<StudentHomeworkCompletion>((yes) => {
+      resolve = yes
+    })
+    const state = mountHomework(
+      {
+        getHomework: vi.fn(async () => fallbackFeed),
+        setHomeworkCompletion: vi.fn(() => response),
+      } as unknown as StudentApi,
+      scope,
+      { offline, readOnly },
+    )
+    await vi.waitFor(() => expect(state.query.data.value).toEqual(fallbackFeed))
+    const raw = state.query.data.value!
+    const result = state.submitCompletion('same-id', true)
+    const failure = expect(result).rejects.toBeInstanceOf(HomeworkStaleResponseError)
+    expect(state.presentHomework(raw)?.items[0]?.completed).toBe(true)
+    offline.value = true
+    expect(state.presentHomework(raw)).toBe(raw)
+    offline.value = false
+    readOnly.value = true
+    expect(state.presentHomework(raw)).toBe(raw)
+    readOnly.value = false
+    scope.value = { ...scopeB }
+    expect(state.presentHomework(raw)).toBe(raw)
+    resolve({ id: 'same-id', completed: true, completedAt: '2026-09-07T09:30:00Z' })
+    await failure
+    expect(raw.items[0]?.completed).toBe(false)
+  })
+
+  it('commits only the validated receipt while preserving another pending item on concurrent rollback', async () => {
+    const original = {
+      ...fallbackFeed,
+      items: [fallbackFeed.items[0]!, { ...fallbackFeed.items[0]!, id: 'other' }],
+    }
+    let authoritative = original
+    const pending = new Map<
+      string,
+      { resolve: (value: StudentHomeworkCompletion) => void; reject: (error: Error) => void }
+    >()
+    const state = mountHomework(
+      {
+        getHomework: vi.fn(async () => authoritative),
+        setHomeworkCompletion: vi.fn(
+          (id: string) =>
+            new Promise<StudentHomeworkCompletion>((resolve, reject) => {
+              pending.set(id, { resolve, reject })
+            }),
+        ),
+      } as unknown as StudentApi,
+      ref(scopeA),
+    )
+    await vi.waitFor(() => expect(state.query.data.value).toEqual(original))
+    const first = state.submitCompletion('same-id', true)
+    const failed = expect(first).rejects.toThrow('503')
+    const second = state.submitCompletion('other', true)
+    await vi.waitFor(() => expect(pending.size).toBe(2))
+    expect(
+      state.presentHomework(state.query.data.value!)?.items.map((item) => item.completed),
+    ).toEqual([true, true])
+    pending.get('same-id')!.reject(new Error('503'))
+    await failed
+    expect(
+      state.presentHomework(state.query.data.value!)?.items.map((item) => item.completed),
+    ).toEqual([false, true])
+    expect(state.query.data.value?.items.every((item) => !item.completed)).toBe(true)
+    const receipt = { id: 'other', completed: true, completedAt: '2026-09-07T09:30:00Z' }
+    authoritative = {
+      ...original,
+      items: [original.items[0]!, { ...original.items[1]!, ...receipt }],
+    }
+    pending.get('other')!.resolve(receipt)
+    await expect(second).resolves.toEqual(receipt)
+    expect(state.query.data.value?.items[1]).toMatchObject(receipt)
+    expect(state.presentHomework(state.query.data.value!)).toBe(state.query.data.value)
+  })
+
+  it('owns remembered day/week/month ranges from server Moscow Today and reads one month for all its day selections', async () => {
+    const getHomework = vi.fn(async (from?: string, to?: string) => ({
+      ...feed,
+      from: from ?? '2026-09-07',
+      to: to ?? '2026-12-31',
+    }))
+    const scope = ref<StudentHomeworkQueryScope | null>({ ...scopeA })
+    const state = mountHomework({ getHomework } as unknown as StudentApi, scope)
+    await vi.waitFor(() => expect(state.selectedDate.value).toBe('2026-09-07'))
+    expect(state.periodMode.value).toBe('day')
+    expect(state.periodRange.value).toEqual({ from: '2026-09-07', to: '2026-09-07' })
+    state.selectPeriod('week')
+    await vi.waitFor(() => expect(getHomework).toHaveBeenLastCalledWith('2026-09-07', '2026-09-13'))
+    state.stepPeriod(1)
+    await vi.waitFor(() => expect(getHomework).toHaveBeenLastCalledWith('2026-09-14', '2026-09-20'))
+    state.selectPeriod('month')
+    await vi.waitFor(() => expect(getHomework).toHaveBeenLastCalledWith('2026-09-01', '2026-09-30'))
+    const reads = getHomework.mock.calls.length
+    state.selectDate('2026-09-25')
+    await nextTick()
+    expect(getHomework).toHaveBeenCalledTimes(reads)
+    state.selectPeriod('day')
+    expect(state.selectedDate.value).toBe('2026-09-07')
+    state.stepPeriod(1)
+    expect(state.selectedDate.value).toBe('2026-09-08')
+    state.selectPeriod('week')
+    expect(state.selectedDate.value).toBe('2026-09-14')
+    state.selectPeriod('month')
+    expect(state.selectedDate.value).toBe('2026-09-25')
+    state.returnToToday()
+    expect(state.periodMode.value).toBe('day')
+    expect(state.selectedDate.value).toBe('2026-09-07')
+    expect(state.range.value).toBeNull()
+    state.selectPeriod('month', '2026-10-10')
+    scope.value = { ...scopeB }
+    await vi.waitFor(() => expect(state.periodMode.value).toBe('day'))
+    await vi.waitFor(() => expect(state.selectedDate.value).toBe('2026-09-07'))
+  })
+
+  it('uses cached Today offline and refuses network period changes or invalid dates', async () => {
+    const offline = ref(false)
+    const getHomework = vi.fn(async () => feed)
+    const state = mountHomework({ getHomework } as unknown as StudentApi, ref({ ...scopeA }), {
+      offline,
+      fallback: feed,
+    })
+    await vi.waitFor(() => expect(state.query.data.value).toBeDefined())
+    const reads = getHomework.mock.calls.length
+    state.selectPeriod('month', '2026-02-30')
+    expect(state.range.value).toBeNull()
+    offline.value = true
+    await nextTick()
+    state.selectPeriod('month')
+    state.selectDate('2026-10-01')
+    state.stepPeriod(1)
+    await nextTick()
+    expect(state.periodMode.value).toBe('day')
+    expect(state.selectedDate.value).toBe('2026-09-07')
+    expect(getHomework).toHaveBeenCalledTimes(reads)
+  })
   it('keeps an empty options object online and isolates every scope dimension in the key', () => {
     expect(homeworkQueryKey(scopeA, null)).toEqual([
       'student',

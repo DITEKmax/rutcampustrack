@@ -19,11 +19,17 @@ const png = Buffer.from(
 interface Seed {
   headman: SyntheticUser;
   student: SyntheticUser;
+  pendingHeadman: RetainedActorProof;
   historyLessonId: number;
   historyUrl: string;
   attachmentPath: string;
   attachmentSha256: string;
   sourceLessonId: number;
+}
+
+interface RetainedActorProof {
+  accessToken: string;
+  sessionId: string;
 }
 
 interface RevocationWitness {
@@ -108,6 +114,35 @@ function requireUnexpiredWitness(witness: RevocationWitness) {
       Math.abs(Number(access.iat) - Number(control.iat)) <= 60,
     'Recovery revocation proofs must share an issuer and remain unexpired',
   );
+}
+
+async function retainActor(
+  request: APIRequestContext,
+  proof: RetainedActorProof,
+  userId: number,
+  role: 'HEADMAN' | 'STUDENT',
+) {
+  const claims = proofClaims(proof.accessToken);
+  requireValue(
+    claims.sub === String(userId) &&
+      claims.sid === proof.sessionId &&
+      Number(claims.exp) * 1000 > Date.now(),
+    'Recovery actor proof must match its unexpired session',
+  );
+  // Decoded claims only check the checkpoint; the Gateway admits the retained proof.
+  const response = await request.get('/api/auth/session', {
+    headers: { Authorization: `Bearer ${proof.accessToken}` },
+  });
+  requireValue(response.status() === 200, 'Retained recovery actor was not admitted');
+  const session = await response.json();
+  requireValue(
+    session.userId === String(userId) &&
+      session.sessionId === proof.sessionId &&
+      session.activeRole === role &&
+      Number(claims.exp) * 1000 > Date.now(),
+    'Retained recovery actor identity or active role changed',
+  );
+  return new Actor(request, proof.accessToken, session);
 }
 
 async function verifyRevocation(request: APIRequestContext, witness: RevocationWitness) {
@@ -395,15 +430,6 @@ async function seed(request: APIRequestContext, run: string) {
     targetLessonNumber: 3,
     targetRoom: 'Синтетическая новая аудитория',
   });
-  save(run, 'seed.json', {
-    headman: dataset.headman,
-    student: dataset.student,
-    historyLessonId,
-    historyUrl: `/api/v1/student/attendance?semesterId=${dataset.semester.id}`,
-    attachmentPath,
-    attachmentSha256: digest(png),
-    sourceLessonId,
-  });
   // Issue near backup, after the slow educational/history setup. Only the selected
   // session is revoked; the second session proves restart did not merely expire
   // all old proofs or replace the signing identity. Security clocks stay real.
@@ -426,6 +452,25 @@ async function seed(request: APIRequestContext, run: string) {
   await control.call('DELETE', `/api/auth/sessions/${witness.revoked.sessionId}`, undefined, [204]);
   await verifyRevocation(request, witness);
   save(run, 'auth-revocation.private.json', witness);
+  // Prepare the pending actors while Rabbit is up. Pending keeps its 60s budget
+  // for the genuine outage operation, without repeating login's allowed retry wait.
+  const pendingHeadman: RetainedActorProof = {
+    accessToken: headman.token,
+    sessionId: headman.session.sessionId,
+  };
+  await retainActor(request, pendingHeadman, dataset.headman.id, 'HEADMAN');
+  await retainActor(request, witness.control, dataset.student.id, 'STUDENT');
+  save(run, 'seed.json', {
+    headman: dataset.headman,
+    student: dataset.student,
+    pendingHeadman,
+    historyLessonId,
+    historyUrl: `/api/v1/student/attendance?semesterId=${dataset.semester.id}`,
+    attachmentPath,
+    attachmentSha256: digest(png),
+    sourceLessonId,
+  });
+  privateFile(join(run, 'seed.json'), 65536);
 }
 
 test('application recovery API phase', async ({ playwright }, info) => {
@@ -486,12 +531,22 @@ test('application recovery API phase', async ({ playwright }, info) => {
       await seed(request, run);
       return;
     }
+    privateFile(join(run, 'seed.json'), 65536);
     const checkpoint = load<Seed>(run, 'seed.json');
     if (phase === 'pending') {
       // CI has stopped and checked the owned Rabbit process before this invocation.
       // The subsequent immutable capture proves all participant receipts absent, not just this API status.
-      const headman = await admit(request, checkpoint.headman, 'HEADMAN');
-      const student = await admit(request, checkpoint.student, 'STUDENT');
+      const headman = await retainActor(
+        request,
+        checkpoint.pendingHeadman,
+        checkpoint.headman.id,
+        'HEADMAN',
+      );
+      privateFile(join(run, 'auth-revocation.private.json'), 65536);
+      const witness = load<RevocationWitness>(run, 'auth-revocation.private.json');
+      requireUnexpiredWitness(witness);
+      requireValue(witness.userId === checkpoint.student.id, 'Recovery student identity changed');
+      const student = await retainActor(request, witness.control, checkpoint.student.id, 'STUDENT');
       const history = await student.call('GET', checkpoint.historyUrl);
       const subjectIndex = history.subjects.findIndex(
         (subject: { typeCards: { history: unknown[] }[] }) =>

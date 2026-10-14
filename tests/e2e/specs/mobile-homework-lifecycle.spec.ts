@@ -46,6 +46,7 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   const admittedStudent = await loginPwa(page, dataset.student);
   const student = new Actor(dataset.request, admittedStudent.accessToken, admittedStudent.session);
   await page.getByRole('button', { name: 'Задания', exact: true }).click();
+  await selectHomeworkDate(page, dataset, dataset.tomorrow);
   const completion = page.getByRole('slider', {
     name: `Выполнить: ${dataset.marker}`,
     exact: true,
@@ -180,6 +181,7 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
     reopenedStudent.session,
   );
   await page.getByRole('button', { name: 'Задания', exact: true }).click();
+  await selectHomeworkDate(page, dataset, dataset.tomorrow);
   const card = page
     .locator('.homework-card')
     .filter({ has: page.getByText(title, { exact: true }) });
@@ -193,6 +195,7 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   await expect(page.getByRole('button', { name: 'Изменить', exact: true })).toHaveCount(0);
   await page.reload();
   await page.getByRole('button', { name: 'Задания', exact: true }).click();
+  await selectHomeworkDate(page, dataset, dataset.tomorrow);
   await expect(completedSlider).toBeVisible();
   const reloadedFeed = await readStudent.call('GET', feedPath);
   const reloadedItems = reloadedFeed.items.filter(
@@ -223,6 +226,74 @@ const isolated = test.extend<{ scenario: MobileDataset }>({
 
 function shifted(date: string, days: number): string {
   return new Date(Date.parse(`${date}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+}
+
+async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: string): Promise<void> {
+  expect(date >= dataset.semester.dateFrom && date <= dataset.semester.dateTo).toBe(true);
+  const monthTab = page.getByRole('tab', { name: 'Месяц', exact: true });
+  const readMonth = async (action: () => Promise<unknown>): Promise<void> => {
+    const read = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      const from = url.searchParams.get('from'),
+        to = url.searchParams.get('to');
+      if (
+        url.pathname !== '/api/v1/student/homework' ||
+        response.request().method() !== 'GET' ||
+        !from ||
+        !to
+      )
+        return false;
+      const first = from.slice(0, 7) + '-01';
+      const next = new Date(`${first}T12:00:00Z`);
+      next.setUTCMonth(next.getUTCMonth() + 1);
+      const last = shifted(next.toISOString().slice(0, 10), -1);
+      return (
+        from === (first < dataset.semester.dateFrom ? dataset.semester.dateFrom : first) &&
+        to === (last > dataset.semester.dateTo ? dataset.semester.dateTo : last)
+      );
+    });
+    await action();
+    const response = await read;
+    expect(response.status()).toBe(200);
+    const feed = await response.json();
+    const selected = await page
+      .locator('.homework-calendar button[aria-pressed="true"]')
+      .getAttribute('data-homework-date');
+    expect(
+      typeof selected === 'string' &&
+        feed.from <= selected &&
+        selected <= feed.to &&
+        feed.from >= dataset.semester.dateFrom &&
+        feed.to <= dataset.semester.dateTo &&
+        feed.semester.id === String(dataset.semester.id),
+    ).toBe(true);
+    await expect(page.locator('.homework-skeleton')).toHaveCount(0);
+  };
+  if ((await monthTab.getAttribute('aria-selected')) !== 'true')
+    await readMonth(() => monthTab.click());
+  await expect(monthTab).toHaveAttribute('aria-selected', 'true');
+  const selected = await page
+    .locator('.homework-calendar button[aria-pressed="true"]')
+    .getAttribute('data-homework-date');
+  expect(typeof selected === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(selected)).toBe(true);
+  const monthIndex = (value: string): number =>
+    Number(value.slice(0, 4)) * 12 + Number(value.slice(5, 7));
+  const steps = monthIndex(date) - monthIndex(selected!);
+  for (let index = 0; index < Math.abs(steps); index++) {
+    await readMonth(() =>
+      page
+        .getByRole('button', {
+          name: steps < 0 ? 'Предыдущий период' : 'Следующий период',
+          exact: true,
+        })
+        .click(),
+    );
+  }
+  const target = page.locator(`.homework-calendar button[data-homework-date="${date}"]`);
+  await expect(target).toBeEnabled();
+  await target.click();
+  await expect(target).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.homework-group')).toHaveCount(1);
 }
 
 function homeworkCard(page: Page, title: string): Locator {
@@ -422,13 +493,13 @@ isolated(
     const admitted = await loginPwa(page, dataset.student);
     const student = new Actor(dataset.request, admitted.accessToken, admitted.session);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
-    // The real completion-today union brings this future publication into the
-    // current browser feed without inventing a student calendar/deep-link API.
+    // Preserve the original real completion; view its actual lesson day explicitly.
     await student.call('PUT', `/api/v1/student/homework/${original.id}/completion`, {
       completed: true,
     });
     await page.reload();
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectHomeworkDate(page, dataset, editedDate);
     const completedCard = homeworkCard(page, title);
     await expect(completedCard).toHaveAttribute('data-completion', 'completed');
     const feedPath = `/api/v1/student/homework?from=${firstDate}&to=${targetDate}`;
@@ -502,6 +573,7 @@ isolated(
     ).toBe(true);
     await page.reload();
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectHomeworkDate(page, dataset, targetDate);
     await expect(completedCard).toHaveCount(1);
     await expect(completedCard).toHaveAttribute('data-completion', 'completed');
 
@@ -576,7 +648,9 @@ isolated(
     expect(deniedCompletion.status()).toBe(404);
     await page.reload();
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectHomeworkDate(page, dataset, dataset.tomorrow);
     await expect(homeworkCard(page, dataset.homework.title)).toBeVisible();
+    await selectHomeworkDate(page, dataset, targetDate);
     await expect(completedCard).toHaveCount(0);
     // Terminal completion storage is separately proved by the existing real-PG
     // HomeworkEditLifecycleIT.dateTerminalEventWinsBeforeAcademicFinalizationWithoutSuccessfulEditOrCompletionLoss.
@@ -622,8 +696,7 @@ isolated(
   },
 );
 
-// JS-STUDENT-21/22 and completion rollback. The existing feed owns previous
-// seven-day navigation/return; this case makes no day/week/month-mode claim.
+// JS-STUDENT-20/21/22: real accepted periods, within-day order/focus and completion rollback.
 // All positive content/completion reads use the backend. Only one failed PUT
 // and an external material document are controlled at the dependency boundary.
 isolated(
@@ -656,6 +729,11 @@ isolated(
     const admitted = await loginPwa(page, dataset.student);
     const student = new Actor(dataset.request, admitted.accessToken, admitted.session);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(page.getByRole('tab', { selected: true })).toHaveCount(1);
     const earlierCard = homeworkCard(page, earlier.title);
     const laterCard = homeworkCard(page, later.title);
     const unsafeCard = homeworkCard(page, unsafe.title);
@@ -724,7 +802,13 @@ isolated(
     await expect(unsafeCard.locator('.homework-card__description')).toHaveText(description);
     await expect(unsafeCard).toHaveAttribute('data-material', 'unsafe');
     await expect(unsafeCard.getByRole('button', { name: /^Материалы к заданию:/ })).toHaveCount(0);
-    await expect(unsafeCard.locator('a, script, img')).toHaveCount(0);
+    await expect(unsafeCard.locator('a')).toHaveCount(1);
+    expect(
+      await unsafeCard
+        .locator('a')
+        .evaluateAll((links) => links.map((link) => link.getAttribute('href'))),
+    ).toEqual([inlineUrl]);
+    await expect(unsafeCard.locator('script, img')).toHaveCount(0);
     expect(
       await page.evaluate(
         () => !Object.prototype.hasOwnProperty.call(window, '__rctHomeworkUnsafe'),
@@ -813,7 +897,55 @@ isolated(
       completedOrder.indexOf(unsafe.title) < completedOrder.indexOf(earlier.title) &&
       completedOrder.indexOf(earlier.title) < completedOrder.indexOf(later.title);
 
-    // Current carrier's previous page is a real bounded seven-day backend read.
+    // One real period path: month day panel, both semester edges, week and Today.
+    await selectHomeworkDate(page, dataset, dataset.tomorrow);
+    await expect(homeworkCard(page, dataset.homework.title)).toBeVisible();
+    await expect(earlierCard).toHaveCount(0);
+    await selectHomeworkDate(page, dataset, dataset.semester.dateFrom);
+    await expect(
+      page.getByRole('button', { name: 'Предыдущий период', exact: true }),
+    ).toBeDisabled();
+    await selectHomeworkDate(page, dataset, dataset.semester.dateTo);
+    await expect(
+      page.getByRole('button', { name: 'Следующий период', exact: true }),
+    ).toBeDisabled();
+    await selectHomeworkDate(page, dataset, dataset.today);
+    await expect(
+      page.locator(`.homework-calendar button[data-homework-date="${dataset.today}"]`),
+    ).toHaveAttribute('aria-current', 'date');
+    await expect(earlierCard).toHaveAttribute('data-completion', 'completed');
+    await expect(page.getByRole('tab', { selected: true })).toHaveCount(1);
+    const weekRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/student/homework' &&
+        response.request().method() === 'GET' &&
+        Boolean(url.searchParams.get('from') && url.searchParams.get('to'))
+      );
+    });
+    await page.getByRole('tab', { name: 'Неделя', exact: true }).click();
+    const weekResponse = await weekRead;
+    expect(weekResponse.status()).toBe(200);
+    const week = await weekResponse.json();
+    expect(
+      week.from <= dataset.today &&
+        week.to >= dataset.today &&
+        week.from >= dataset.semester.dateFrom &&
+        week.to <= dataset.semester.dateTo &&
+        Date.parse(`${week.to}T12:00:00Z`) - Date.parse(`${week.from}T12:00:00Z`) <= 6 * 86400000,
+    ).toBe(true);
+    await expect(page.getByRole('tab', { name: 'Неделя', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(page.getByRole('tab', { selected: true })).toHaveCount(1);
+    // Preserve the original bounded previous-page response and membership oracle.
+    // Yesterday exists even when Today belongs to the first clipped semester week.
+    await page.getByRole('tab', { name: 'День', exact: true }).click();
+    await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     const previousRead = page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
@@ -822,7 +954,7 @@ isolated(
         (url.searchParams.get('to') ?? dataset.today) < dataset.today
       );
     });
-    await page.getByRole('button', { name: 'Посмотреть предыдущие', exact: true }).click();
+    await page.getByRole('button', { name: 'Предыдущий период', exact: true }).click();
     const previousResponse = await previousRead;
     expect(previousResponse.status()).toBe(200);
     const previous = await previousResponse.json();
@@ -845,6 +977,10 @@ isolated(
       .getByRole('button', { name: 'Вернуться к сегодняшним заданиям', exact: true })
       .click();
     expect((await returnRead).status()).toBe(200);
+    await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     await expect(earlierCard).toHaveAttribute('data-completion', 'completed');
     await expect(laterCard).toHaveAttribute('data-completion', 'completed');
     await page.reload();

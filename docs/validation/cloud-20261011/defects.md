@@ -292,3 +292,15 @@ Existing privacy negative control assumed public line989 was outside mobile-real
 
 - DF-PWA-AUTO-REQUEST-FRESHNESS-001 P2 OPEN: already-loaded OPEN requests remain cached after successful AUTO check-in; Today invalidation does not invalidate requests. Source interleaving matches real requests8 frame181, but unique actual cause still unproved. Current-owner invalidation/refresh correction and meaningful red-before/green-after assigned; browser original assertions retained.
 - DF-SCHEDULE-ROOM-PROJECTION-001 P2 OPEN: real room mutation ledger persists before/after, but Schedule gRPC always UNKNOWN and missing previousRoom; BFF exposes that directly, preventing accepted room-change highlight. ETag413 frame559 is a conjunction, exact failed member not observed. Preserve UNKNOWN for absent/untrusted provenance; bounded projection correction/test assigned, no schema/proto/API change.
+
+## Current c3ff bounded product outcomes — 2026-10-14
+
+- DF-PWA-AUTO-REQUEST-FRESHNESS-001: FIXED_VERIFIED finite actual AUTO sequence before later independent logout frame245; same28 affected controls GREEN after meaningfuloldimplementationRED, wholeSourceAPPROVE. No wholecombinedNcasePASS; newmanualattempt remainsNOT_RUN.
+- DF-SCHEDULE-ROOM-PROJECTION-001: FIXED_VERIFIED realPG/actualgRPC, oldprojection meaningfulRED→exactrestoredsame-testGREEN, realVue warmETag/Today case413PASS59163ms.
+- GAP-HEADMAN-BUDGET-INCREASE-001: IMPLEMENTED/realMongo5namedcases+meaningfulsensitivityPASS; realVue raises2 tolimit7used5remaining2 and foreign403. Final useofnewattempt blockedbycheckingnavigation: Profiledockabsentinsidegroupdetail; twoBackcorrection4b2c pendingreview/CI.
+- DF-HOMEWORK-PLACEMENT-TYPE-001 P2 OPEN: currentrealacceptedhelperfuturebindingedit PUT409 (uniqueruntimeguardUNKNOWN). Schedule Placement.response omitsimmutablephysical lessonType; strictAcademicfinalization compares absent/null againstpreparedlecture and409s. Existingconsumerfixtures settype andmaskproduceromission. Sameproducerauthor fixesexactreceiptmetadata, retainsstrictconsumer/history/replay; no expectationweakening.
+- DF-PWA-HOMEWORK-PERIOD-001 acceptedGAP: day/week/month/defaultToday andoneactionreturn absentpublishedc3ff. T013e532Sourceimplemented, independentR1notificationloading/R2falseemptycalendar/R3minimumtarget findings correcting; actualcorrectedbrowserNOT_RUN.
+- DF-PWA-HOMEWORK-CARD-001 P2 OPEN: currentrealB629 reaches four failedoriginalbooleans855–858: visiblematerialhostname, safeinlineHTTPmaterial open, immediateoptimisticcompletion, completedbottom. T013addressesorder; sameauthor nextminimalmaterial/optimisticpacket, retainalloracles.
+- CHECK-Q03-RECOVERY-PENDING-01: currentseedPASS34738ms; pendingtimedOut60003ms atdeclaration431, causeUNKNOWN. Admit/attachmentNOTRUN/semesterSKIP; no newdurablerevoke-afterrestorePASS. Existing9f09realrestore proofretained.
+
+Evidence once: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations; exactcurrentheadc3ff/actualcheckout6335681 joined.

@@ -247,6 +247,7 @@ public class HomeworkPlacementService {
             throw new IllegalArgumentException("placement date cannot be in the past");
         Long targetOccurrence = null, targetLesson = null;
         Integer targetNumber = null;
+        String targetLessonType = null;
         if ("LESSON".equals(request.getBindingMode())) {
             List<Map<String, Object>> targets =
                     jdbc.queryForList(
@@ -274,6 +275,7 @@ public class HomeworkPlacementService {
             targetOccurrence = request.getTargetOccurrenceId();
             targetLesson = number(target, "id");
             targetNumber = request.getLessonNumber();
+            targetLessonType = (String) target.get("lesson_type");
         } else if (!"DATE".equals(request.getBindingMode())
                 || request.getLessonNumber() != 0
                 || request.getTargetOccurrenceId() != 0)
@@ -293,7 +295,8 @@ public class HomeworkPlacementService {
                         targetDate.toString(),
                         targetNumber,
                         revision,
-                        "ACTIVE");
+                        "ACTIVE",
+                        targetLessonType);
         jdbc.update(
                 """
                 INSERT INTO homework_placement_operations
@@ -508,7 +511,7 @@ public class HomeworkPlacementService {
         if (row.get("accepted_binding") != null) {
             try {
                 result.setAcceptedBinding(
-                        readPlacement(row.get("accepted_binding").toString()).response());
+                        response(readPlacement(row.get("accepted_binding").toString())));
             } catch (JsonProcessingException invalid) {
                 throw new IllegalStateException("invalid durable placement receipt", invalid);
             }
@@ -517,7 +520,8 @@ public class HomeworkPlacementService {
     }
 
     private HomeworkBindingResponse response(Map<String, Object> row) {
-        return new Placement(
+        return response(
+                new Placement(
                         number(row, "binding_id"),
                         nullableNumber(row, "occurrence_id"),
                         nullableNumber(row, "current_lesson_id"),
@@ -531,8 +535,34 @@ public class HomeworkPlacementService {
                                 ? null
                                 : ((Number) row.get("placement_lesson_number")).intValue(),
                         number(row, "revision"),
-                        row.get("state").toString())
-                .response();
+                        row.get("state").toString(),
+                        null));
+    }
+
+    private HomeworkBindingResponse response(Placement placement) {
+        String type = placement.lessonType();
+        if (type == null
+                && "LESSON".equals(placement.mode())
+                && placement.lessonId() != null
+                && placement.occurrenceId() != null) {
+            // Old receipts did not carry this field. Only their exact immutable
+            // physical snapshot can supply it; never use a later binding or subject.
+            var types =
+                    jdbc.queryForList(
+                            """
+                            SELECT lesson_type FROM lessons
+                             WHERE id=? AND occurrence_id=? AND group_id=?
+                               AND subject_id=? AND semester_id=?
+                            """,
+                            String.class,
+                            placement.lessonId(),
+                            placement.occurrenceId(),
+                            placement.groupId(),
+                            placement.subjectId(),
+                            placement.semesterId());
+            if (types.size() == 1) type = types.getFirst();
+        }
+        return placement.response(type);
     }
 
     private void lockKey(long actor, UUID key) {
@@ -691,8 +721,9 @@ public class HomeworkPlacementService {
             String date,
             Integer lessonNumber,
             long revision,
-            String state) {
-        HomeworkBindingResponse response() {
+            String state,
+            String lessonType) {
+        HomeworkBindingResponse response(String knownType) {
             HomeworkBindingResponse.Builder result =
                     HomeworkBindingResponse.newBuilder()
                             .setBindingId(bindingId)
@@ -707,18 +738,19 @@ public class HomeworkPlacementService {
                                     HomeworkBindingState.valueOf(
                                             "HOMEWORK_BINDING_STATE_" + state));
             if (homeworkId != null) result.setHomeworkId(homeworkId);
-            if (occurrenceId != null)
-                result.setOccurrenceId(occurrenceId)
-                        .setCurrentLesson(
-                                LessonInfo.newBuilder()
-                                        .setLessonId(lessonId)
-                                        .setOccurrenceId(occurrenceId)
-                                        .setGroupId(groupId)
-                                        .setSubjectId(subjectId)
-                                        .setSemesterId(semesterId)
-                                        .setDate(date)
-                                        .setLessonNumber(lessonNumber)
-                                        .build());
+            if (occurrenceId != null) {
+                var lesson =
+                        LessonInfo.newBuilder()
+                                .setLessonId(lessonId)
+                                .setOccurrenceId(occurrenceId)
+                                .setGroupId(groupId)
+                                .setSubjectId(subjectId)
+                                .setSemesterId(semesterId)
+                                .setDate(date)
+                                .setLessonNumber(lessonNumber);
+                if (knownType != null) lesson.setLessonType(knownType);
+                result.setOccurrenceId(occurrenceId).setCurrentLesson(lesson);
+            }
             return result.build();
         }
     }

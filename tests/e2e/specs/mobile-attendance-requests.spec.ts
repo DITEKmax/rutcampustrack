@@ -242,6 +242,13 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   const retryLessonId = manual.lessons[0].id;
   await student.call('POST', `/api/v1/student/requests/${manual.id}/cancel`);
   expect((await options()).budget).toMatchObject({ limit: 7, used: 5, remaining: 2 });
+  await expect(
+    page.getByText('Лимит увеличен. Остаток подтверждён сервером.', { exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(page.locator('.headman-group')).toHaveAttribute('data-group-view', 'list');
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
   await logoutPwa(page);
   await loginPwa(page, dataset.student);
   await openStudentRequests();

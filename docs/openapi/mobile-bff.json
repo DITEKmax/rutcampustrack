@@ -379,6 +379,40 @@
         } ]
       }
     },
+    "/api/v1/student/map/buildings/{buildingId}/floors/{floorId}/opens" : {
+      "post" : {
+        "tags" : [ "student-map-compatibility-controller" ],
+        "operationId" : "recordFloorOpen",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
     "/api/v1/student/lessons/{lessonId}/checkin" : {
       "post" : {
         "tags" : [ "Student mobile" ],
@@ -508,6 +542,254 @@
         } ]
       }
     },
+    "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens" : {
+      "post" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Record one explicit floor-open intent",
+        "operationId" : "recordFloorOpen_1",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Open intent accepted or already counted"
+          },
+          "400" : {
+            "description" : "Invalid idempotency key"
+          },
+          "401" : {
+            "description" : "Invalid or expired session"
+          },
+          "403" : {
+            "description" : "Floor is outside the current role scope"
+          },
+          "404" : {
+            "description" : "Building or floor not found"
+          },
+          "409" : {
+            "description" : "Intent is already bound to another floor"
+          },
+          "503" : {
+            "description" : "Map usage is unavailable"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/stats" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Teacher server-side attendance statistics",
+        "operationId" : "stats",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "scope",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "lessonType",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "filter",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherStats"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/stats/export" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Download a server-generated teacher statistics summary",
+        "operationId" : "exportStats",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "scope",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "lessonType",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "filter",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "format",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/stats/export/formats" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Server-supported teacher statistics export formats",
+        "operationId" : "statsExportFormats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherExportFormats"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/teacher/semester" : {
       "get" : {
         "tags" : [ "teacher-api-controller" ],
@@ -520,6 +802,43 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/TeacherSemester"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/search" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Search current authorised teacher groups and students",
+        "operationId" : "search",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherSearch"
                 }
               }
             }
@@ -591,6 +910,23 @@
           "in" : "query",
           "required" : true,
           "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {
@@ -609,6 +945,14 @@
             "type" : "string",
             "default" : "100"
           }
+        }, {
+          "name" : "pastOnly",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
         } ],
         "responses" : {
           "200" : {
@@ -617,6 +961,119 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/TeacherJournal"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/journal/export" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Download a server-generated complete teacher journal",
+        "operationId" : "exportJournal",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "lessonType",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "format",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pastOnly",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "lessonId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/journal/export/formats" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Server-supported teacher journal export formats",
+        "operationId" : "journalExportFormats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherExportFormats"
                 }
               }
             }
@@ -722,6 +1179,36 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/TeacherDay"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/catalog" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Current teacher groups and scheduled subject catalog",
+        "operationId" : "catalog",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherCatalog"
                 }
               }
             }
@@ -984,6 +1471,103 @@
           },
           "403" : {
             "description" : "Subject or semester is outside signed scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/statistics/ranking" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Student attendance ranking for the current group",
+        "operationId" : "getStatisticsRanking",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Authorized cohort ranking page",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentStatisticsRanking"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid semester or page bounds",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Semester or student scope is unavailable",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2046,6 +2630,30 @@
         },
         "description" : "RFC 9457 Problem Details with a stable machine code"
       },
+      "DecisionSelection" : {
+        "type" : "object",
+        "properties" : {
+          "requestKey" : {
+            "type" : "string"
+          },
+          "expectedRevision" : {
+            "type" : "string"
+          },
+          "includedLessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestLesson"
+            }
+          },
+          "excludedLessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestLesson"
+            }
+          }
+        },
+        "nullable" : true
+      },
       "StudentRequestAttachment" : {
         "required" : [ "contentType", "expiredAt", "expiresAt", "id", "name", "sha256", "sizeBytes", "state", "uploadedAt" ],
         "type" : "object",
@@ -2125,6 +2733,9 @@
             "items" : {
               "$ref" : "#/components/schemas/StudentRequestAttachment"
             }
+          },
+          "decisionSelection" : {
+            "$ref" : "#/components/schemas/DecisionSelection"
           }
         }
       },
@@ -2171,6 +2782,14 @@
             "nullable" : true
           },
           "endsAt" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "occurrenceId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "occurrenceRevision" : {
             "type" : "string",
             "nullable" : true
           }
@@ -2402,6 +3021,166 @@
           }
         }
       },
+      "TeacherStats" : {
+        "type" : "object",
+        "properties" : {
+          "scope" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "string"
+          },
+          "periodFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "periodTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonsCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "students" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsStudent"
+            }
+          },
+          "groups" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsGroup"
+            }
+          },
+          "subjectOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsSubjectOption"
+            }
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TeacherStatsGroup" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "lessonsCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "present" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "excused" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "absent" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          }
+        }
+      },
+      "TeacherStatsMetric" : {
+        "type" : "object",
+        "properties" : {
+          "numerator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "denominator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "percent" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "TeacherStatsStudent" : {
+        "type" : "object",
+        "properties" : {
+          "studentId" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "present" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "excused" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "absent" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          }
+        }
+      },
+      "TeacherStatsSubjectOption" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "string"
+          },
+          "subjectId" : {
+            "type" : "string"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "TeacherExportFormat" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "extension" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TeacherExportFormats" : {
+        "type" : "object",
+        "properties" : {
+          "formats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherExportFormat"
+            }
+          }
+        }
+      },
       "TeacherSemester" : {
         "type" : "object",
         "properties" : {
@@ -2418,6 +3197,54 @@
           "dateTo" : {
             "type" : "string",
             "format" : "date"
+          }
+        }
+      },
+      "TeacherCatalogGroup" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TeacherSearch" : {
+        "type" : "object",
+        "properties" : {
+          "groups" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherCatalogGroup"
+            }
+          },
+          "students" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherSearchStudent"
+            }
+          },
+          "truncated" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TeacherSearchStudent" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
           }
         }
       },
@@ -2476,6 +3303,9 @@
           },
           "cancelled" : {
             "type" : "boolean"
+          },
+          "cancellationReason" : {
+            "type" : "string"
           }
         }
       },
@@ -2679,6 +3509,9 @@
           "decisionBy" : {
             "type" : "string"
           },
+          "decisionByName" : {
+            "type" : "string"
+          },
           "decisionAt" : {
             "type" : "string",
             "format" : "date-time"
@@ -2744,6 +3577,33 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/TeacherDayLesson"
+            }
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TeacherCatalog" : {
+        "type" : "object",
+        "properties" : {
+          "groups" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherCatalogGroup"
+            }
+          },
+          "subjectOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsSubjectOption"
+            }
+          },
+          "taughtSubjectOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsSubjectOption"
             }
           },
           "serverNow" : {
@@ -3128,6 +3988,61 @@
             "items" : {
               "$ref" : "#/components/schemas/StudentAttendanceTypeCard"
             }
+          }
+        }
+      },
+      "StudentStatisticsRanking" : {
+        "required" : [ "available", "ownPosition", "page", "rows", "size", "total" ],
+        "type" : "object",
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "ownPosition" : {
+            "type" : "integer",
+            "format" : "int32",
+            "nullable" : true
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentStatisticsRankingRow"
+            }
+          }
+        }
+      },
+      "StudentStatisticsRankingRow" : {
+        "required" : [ "id", "isSelf", "name", "percentage", "position" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "position" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "percentage" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "isSelf" : {
+            "type" : "boolean"
           }
         }
       },
@@ -3618,15 +4533,13 @@
           },
           "lessonNumber" : {
             "type" : "integer",
+            "description" : "Номер пары для LESSON; null для DATE",
             "format" : "int32",
             "nullable" : true
           },
           "bindingMode" : {
             "type" : "string",
             "enum" : [ "LESSON", "DATE" ]
-          },
-          "archived" : {
-            "type" : "boolean"
           },
           "completed" : {
             "type" : "boolean"
@@ -3635,6 +4548,9 @@
             "type" : "string",
             "format" : "date-time",
             "nullable" : true
+          },
+          "archived" : {
+            "type" : "boolean"
           }
         }
       },

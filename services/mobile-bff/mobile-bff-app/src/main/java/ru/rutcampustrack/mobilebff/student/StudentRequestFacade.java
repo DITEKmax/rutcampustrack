@@ -8,13 +8,17 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.rutcampustrack.attendance.grpc.StudentExcuseReason;
 import ru.rutcampustrack.attendance.grpc.StudentRequestAttachmentDownload;
 import ru.rutcampustrack.attendance.grpc.StudentRequestAttachmentState;
 import ru.rutcampustrack.attendance.grpc.StudentRequestDetail;
+import ru.rutcampustrack.attendance.grpc.StudentRequestKind;
 import ru.rutcampustrack.attendance.grpc.StudentRequestLesson;
 import ru.rutcampustrack.attendance.grpc.StudentRequestLessonOption;
+import ru.rutcampustrack.attendance.grpc.StudentRequestOrigin;
 import ru.rutcampustrack.attendance.grpc.StudentRequestPage;
 import ru.rutcampustrack.attendance.grpc.StudentRequestPendingRef;
+import ru.rutcampustrack.attendance.grpc.StudentRequestStatus;
 import ru.rutcampustrack.attendance.grpc.SubmitStudentExcuseCommand;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
@@ -216,10 +220,7 @@ public class StudentRequestFacade {
     private static Detail detail(StudentRequestDetail detail) {
         return new Detail(
                 summary(detail.getSummary()),
-                detail.hasReason()
-                        ? ExcuseReason.valueOf(
-                                strip(detail.getReason().name(), "STUDENT_EXCUSE_REASON_"))
-                        : null,
+                detail.hasReason() ? reason(detail.getReason()) : null,
                 detail.hasComment() ? detail.getComment() : null,
                 detail.hasDecision()
                         ? new StudentRequestApiModels.Decision(
@@ -249,10 +250,9 @@ public class StudentRequestFacade {
             ru.rutcampustrack.attendance.grpc.StudentRequestSummary summary) {
         return new Summary(
                 summary.getId(),
-                Kind.valueOf(strip(summary.getKind().name(), "STUDENT_REQUEST_KIND_")),
-                Status.valueOf(strip(summary.getStatus().name(), "STUDENT_REQUEST_STATUS_")),
-                StudentRequestApiModels.Origin.valueOf(
-                        strip(summary.getOrigin().name(), "STUDENT_REQUEST_ORIGIN_")),
+                kind(summary.getKind()),
+                status(summary.getStatus()),
+                origin(summary.getOrigin()),
                 summary.getLessonsList().stream().map(StudentRequestFacade::lesson).toList(),
                 parseInstant(summary.getCreatedAt()),
                 parseInstant(summary.getUpdatedAt()));
@@ -277,19 +277,13 @@ public class StudentRequestFacade {
 
     private static Attachment attachment(
             ru.rutcampustrack.attendance.grpc.StudentRequestAttachment attachment) {
-        AttachmentState state =
-                attachment.getState()
-                                == StudentRequestAttachmentState
-                                        .STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED
-                        ? AttachmentState.EXPIRED
-                        : AttachmentState.ACTIVE;
         return new Attachment(
                 attachment.getId(),
                 attachment.getName(),
                 attachment.getContentType(),
                 attachment.getSizeBytes(),
                 attachment.getSha256(),
-                state,
+                attachmentState(attachment.getState()),
                 parseInstant(attachment.getUploadedAt()),
                 parseInstant(attachment.getExpiresAt()),
                 parseInstant(attachment.hasExpiredAt() ? attachment.getExpiredAt() : null));
@@ -302,10 +296,7 @@ public class StudentRequestFacade {
                         .map(
                                 item ->
                                         new ReasonOption(
-                                                ExcuseReason.valueOf(
-                                                        strip(
-                                                                item.getCode().name(),
-                                                                "STUDENT_EXCUSE_REASON_")),
+                                                reason(item.getCode()),
                                                 item.getLabel(),
                                                 item.getCommentRequired()))
                         .toList();
@@ -342,15 +333,61 @@ public class StudentRequestFacade {
     }
 
     private static PendingRef pendingRef(StudentRequestPendingRef ref) {
-        return new PendingRef(
-                ref.getId(),
-                Kind.valueOf(strip(ref.getKind().name(), "STUDENT_REQUEST_KIND_")),
-                StudentRequestApiModels.Origin.valueOf(
-                        strip(ref.getOrigin().name(), "STUDENT_REQUEST_ORIGIN_")));
+        return new PendingRef(ref.getId(), kind(ref.getKind()), origin(ref.getOrigin()));
     }
 
-    private static String strip(String value, String prefix) {
-        return value.startsWith(prefix) ? value.substring(prefix.length()) : value;
+    private static Kind kind(StudentRequestKind value) {
+        return switch (value) {
+            case STUDENT_REQUEST_KIND_EXCUSE -> Kind.EXCUSE;
+            case STUDENT_REQUEST_KIND_LATE_CHECKIN -> Kind.LATE_CHECKIN;
+            default -> throw unknownUpstreamEnum();
+        };
+    }
+
+    private static Status status(StudentRequestStatus value) {
+        return switch (value) {
+            case STUDENT_REQUEST_STATUS_PENDING -> Status.PENDING;
+            case STUDENT_REQUEST_STATUS_APPROVED -> Status.APPROVED;
+            case STUDENT_REQUEST_STATUS_REJECTED -> Status.REJECTED;
+            case STUDENT_REQUEST_STATUS_CANCELLED -> Status.CANCELLED;
+            default -> throw unknownUpstreamEnum();
+        };
+    }
+
+    private static StudentRequestApiModels.Origin origin(StudentRequestOrigin value) {
+        return switch (value) {
+            case STUDENT_REQUEST_ORIGIN_MANUAL -> StudentRequestApiModels.Origin.MANUAL;
+            case STUDENT_REQUEST_ORIGIN_AUTO_GEO_FAILURE ->
+                    StudentRequestApiModels.Origin.AUTO_GEO_FAILURE;
+            default -> throw unknownUpstreamEnum();
+        };
+    }
+
+    private static ExcuseReason reason(StudentExcuseReason value) {
+        return switch (value) {
+            case STUDENT_EXCUSE_REASON_ILLNESS -> ExcuseReason.ILLNESS;
+            case STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION -> ExcuseReason.MEDICAL_EXAMINATION;
+            case STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION ->
+                    ExcuseReason.COMPETITION_PARTICIPATION;
+            case STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES -> ExcuseReason.FAMILY_CIRCUMSTANCES;
+            case STUDENT_EXCUSE_REASON_OTHER -> ExcuseReason.OTHER;
+            default -> throw unknownUpstreamEnum();
+        };
+    }
+
+    private static AttachmentState attachmentState(StudentRequestAttachmentState value) {
+        return switch (value) {
+            case STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE -> AttachmentState.ACTIVE;
+            case STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED -> AttachmentState.EXPIRED;
+            default -> throw unknownUpstreamEnum();
+        };
+    }
+
+    private static MobileBffException unknownUpstreamEnum() {
+        return new MobileBffException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                StudentApiModels.ProblemCode.DEPENDENCY_UNAVAILABLE,
+                "Сервис вернул неизвестное значение перечисления");
     }
 
     private static Instant parseInstant(String value) {

@@ -1648,7 +1648,10 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       ).toBe(true);
       await tma.getByRole('button', { name: 'Задания', exact: true }).click();
       await expect(tma.getByText(marker, { exact: true })).toBeVisible();
-      const completion = tma.getByRole('slider', { name: new RegExp(marker) });
+      const completion = tma
+        .getByRole('article')
+        .filter({ has: tma.getByText(marker, { exact: true }) })
+        .getByRole('slider');
       await expect(completion).toBeEnabled();
       let commands = 0;
       const countCommand = (item: Request) => {

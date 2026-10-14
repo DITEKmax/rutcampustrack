@@ -334,8 +334,9 @@ export const test = base.extend<
       process.env.RCT_E2E_ADMIN_LIFECYCLE !== 'true'
     ) {
       if (!teachingInstant) throw new Error('Remaining five teaching instant is required');
-      // Align educational dates only; real browser timers and backend security clocks keep running.
-      await page.clock.setFixedTime(teachingInstant);
+      // Start on the educational date while allowing Vue event timestamps to advance.
+      // A frozen Date.now suppresses target handlers after ancestor capture listeners.
+      await page.clock.install({ time: teachingInstant });
     }
     await use(page);
   },

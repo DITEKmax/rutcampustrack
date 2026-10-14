@@ -816,6 +816,9 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     @Test
     void closureRetainsFutureCancelledAndHomeworkAndAdoptionUsesExactNullProvenance() {
         LocalDate cutoff = LocalDate.now(java.time.ZoneId.of("Europe/Moscow")).plusDays(2);
+        // Keep the transfer before adoption and within the accepted Monday–Saturday window.
+        if (cutoff.plusDays(1).getDayOfWeek() == java.time.DayOfWeek.SUNDAY)
+            cutoff = cutoff.plusDays(1);
         long item = insertSourceTemplate();
         var planned = seedOccurrence(item, cutoff.plusDays(1), "planned");
         var cancelled = seedOccurrence(item, cutoff.plusDays(2), "planned");

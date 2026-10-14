@@ -59,6 +59,42 @@ function digest(bytes: Buffer) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+// Only this closed projection may leave the private checkpoint; never serialize API rows/errors.
+function lifecycleProjection(
+  clockMatchesExpected: boolean,
+  httpStatus: unknown,
+  rows: unknown,
+  targetId: number,
+  expectedDate: string,
+  expectedInstant: string,
+) {
+  const allowedHttp = [200, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504];
+  const apiReadHttp =
+    typeof httpStatus === 'number' && allowedHttp.includes(httpStatus) ? httpStatus : 0;
+  const target =
+    apiReadHttp === 200 && Array.isArray(rows)
+      ? rows.find((row) => row && typeof row === 'object' && row.id === targetId)
+      : undefined;
+  const status = target?.status;
+  const targetStatus = ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED'].includes(status)
+    ? status
+    : 'UNKNOWN';
+  const end = target?.endTime;
+  const validEnd =
+    typeof end === 'string' &&
+    /^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\.[0-9]{1,3})?)?$/.test(end);
+  const endMillis =
+    validEnd && target.date === expectedDate ? Date.parse(`${expectedDate}T${end}+03:00`) : NaN;
+  return {
+    clockMatchesExpected: clockMatchesExpected === true,
+    apiReadHttp,
+    targetPresent: target !== undefined,
+    targetStatus,
+    current: target?.current === true,
+    endPlus5IsDue: Number.isFinite(endMillis) && endMillis + 300000 <= Date.parse(expectedInstant),
+  };
+}
+
 function shift(date: string, days: number) {
   return new Date(Date.parse(`${date}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
 }
@@ -138,9 +174,17 @@ async function seed(request: APIRequestContext, run: string) {
   await download(request, headman, attachmentPath, digest(png));
 
   // The existing 60s lifecycle job closes the genuine marked lesson. Security clocks stay real.
+  const expectedInstant = `${dataset.today}T09:00:00.000Z`;
+  const expectedClock = Buffer.from(`${expectedInstant}\n`);
   const temporaryClock = join(clockDirectory, `recovery-${randomUUID()}`);
-  writeFileSync(temporaryClock, `${dataset.today}T09:00:00.000Z\n`, { flag: 'wx', mode: 0o644 });
+  writeFileSync(temporaryClock, expectedClock, { flag: 'wx', mode: 0o644 });
   renameSync(temporaryClock, clockFile);
+  save(run, 'lifecycle-input.private.json', {
+    lessonId: historyLessonId,
+    semesterId: Number(dataset.semester.id),
+    expectedInstant,
+    clockSha256: digest(expectedClock),
+  });
   const lessonRows = async (date: string) => {
     const response = await headman.call(
       'GET',
@@ -148,15 +192,62 @@ async function seed(request: APIRequestContext, run: string) {
     );
     return Object.values(response._embedded ?? {}).flat() as Record<string, any>[];
   };
-  await expect
-    .poll(
-      async () =>
-        (await lessonRows(dataset.today)).some(
-          (lesson) => Number(lesson.id) === historyLessonId && lesson.status === 'CLOSED',
+  try {
+    await expect
+      .poll(
+        async () =>
+          (await lessonRows(dataset.today)).some(
+            (lesson) => Number(lesson.id) === historyLessonId && lesson.status === 'CLOSED',
+          ),
+        { timeout: 90000, message: 'Recovery historical lesson closes through the lifecycle job' },
+      )
+      .toBe(true);
+  } catch (error) {
+    // One bounded diagnostic read after failure; the original assertion remains authoritative.
+    let httpStatus = 0;
+    let rows: unknown = [];
+    let clockMatchesExpected = false;
+    try {
+      const response = await request.get(
+        `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${dataset.today}&dateTo=${dataset.today}&size=200`,
+        { headers: headman.headers(), timeout: 1000 },
+      );
+      httpStatus = response.status();
+      if (httpStatus === 200) {
+        const body = await response.json();
+        rows = Object.values(body._embedded ?? {}).flat();
+      }
+    } catch {
+      // No raw network error or server body enters the diagnostic.
+    }
+    try {
+      const stat = lstatSync(clockFile);
+      clockMatchesExpected =
+        stat.isFile() &&
+        !stat.isSymbolicLink() &&
+        stat.size <= 128 &&
+        digest(readFileSync(clockFile)) === digest(expectedClock);
+    } catch {
+      // An unreadable or replaced clock is a closed mismatch.
+    }
+    try {
+      save(
+        join(run, 'artifacts', 'seed'),
+        'lifecycle.safe.json',
+        lifecycleProjection(
+          clockMatchesExpected,
+          httpStatus,
+          rows,
+          historyLessonId,
+          dataset.today,
+          expectedInstant,
         ),
-      { timeout: 90000, message: 'Recovery historical lesson closes through the lifecycle job' },
-    )
-    .toBe(true);
+      );
+    } catch {
+      // Artifact failure must not replace the original check failure.
+    }
+    throw error;
+  }
 
   // Keep this binding separate from MobileDataset's already published DATE-mode homework.
   const sourceDate = studyDay(shift(dataset.tomorrow, 1));
@@ -256,7 +347,7 @@ test('application recovery API phase', async ({ playwright }, info) => {
     'Recovery artifacts must stay in the phase directory',
   );
   const phaseOutputs: Record<string, string[]> = {
-    seed: ['seed.json', 'request.json'],
+    seed: ['seed.json', 'request.json', 'lifecycle-input.private.json'],
     pending: ['pending.json', 'history-before.json'],
     admit: ['actor-token.private', 'history-token.private'],
     attachment: [],

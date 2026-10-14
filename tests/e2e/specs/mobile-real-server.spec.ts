@@ -446,4 +446,377 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await context.setOffline(false);
     }
   });
+
+  // Q04 / JS-ADMIN-01,04,07: one real account, group authority and retained history.
+  test('ADMIN creates a multirole headman and restores the archived account without old authority', async ({
+    page,
+    dataset,
+  }) => {
+    const administrator = await dataset.user('ADMIN');
+    const assistantPath = `/api/academic/assistants?groupId=${dataset.group.id}`;
+    const existing = await dataset.headmanActor.call('GET', assistantPath);
+    const active = existing._embedded?.assistantResponseList ?? existing.content ?? [];
+    expect(
+      active.length <= 1 &&
+        active.every(
+          (grant: { studentId: number }) => Number(grant.studentId) === dataset.assistant.id,
+        ),
+    ).toBe(true);
+    // The worker's earlier revocation case leaves no active grant; a fresh lane has one.
+    if (active.length === 0) {
+      await dataset.headmanActor.call(
+        'POST',
+        '/api/academic/assistants',
+        {
+          groupId: dataset.group.id,
+          studentId: dataset.assistant.id,
+          permissions: ['MARK_ATTENDANCE'],
+        },
+        [201],
+      );
+    }
+    const confirmed = await dataset.headmanActor.call('GET', assistantPath);
+    const currentHelpers = confirmed._embedded?.assistantResponseList ?? confirmed.content ?? [];
+    expect(currentHelpers.length).toBe(1);
+    expect(Number(currentHelpers[0].studentId)).toBe(dataset.assistant.id);
+    expect(currentHelpers[0].permissions).toContain('MARK_ATTENDANCE');
+    const helper = await admit(dataset.request, dataset.assistant, 'STUDENT');
+    const teacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
+    const yesterday = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+      .toISOString()
+      .slice(0, 10);
+    // A past covered date survives the archive's exclusive membership end today.
+    expect(yesterday >= dataset.semester.dateFrom).toBe(true);
+    await loginPwa(page, administrator);
+    await selectPwaRole(page, 'Администратор');
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    const users = page.locator('.admin-users-screen');
+    await users.getByRole('button', { name: 'Создать пользователя', exact: true }).click();
+    const lastName = `${dataset.student.displayName.split(' ')[0]}Новый`;
+    const telegramId = dataset.student.telegramId + 20_000_000_000;
+    await users.getByLabel('Фамилия', { exact: true }).fill(lastName);
+    await users.getByLabel('Имя', { exact: true }).fill('Проверка');
+    await users.getByLabel('Отчество', { exact: true }).fill('Синтетическая');
+    const picker = users.locator('[data-picker="group"]');
+    await picker.locator('summary').click();
+    await picker
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await picker.getByRole('button', { name: dataset.group.name, exact: true }).click();
+    await users.getByLabel('Telegram ID', { exact: true }).fill(String(telegramId));
+    const [createdResponse] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/academic/users' &&
+          response.request().method() === 'POST',
+      ),
+      users.getByRole('button', { name: 'Создать пользователя', exact: true }).click(),
+    ]);
+    expect(createdResponse.status()).toBe(201);
+    const created = await createdResponse.json();
+    expect(typeof created.login).toBe('string');
+    expect(typeof created.initialPassword).toBe('string');
+    const userPath = `/api/academic/users/${created.id}`;
+    const original = await dataset.admin.call('GET', userPath);
+    expect(
+      original.lastName === lastName &&
+        original.firstName === 'Проверка' &&
+        original.middleName === 'Синтетическая' &&
+        Number(original.groupId) === dataset.group.id &&
+        Number(original.telegramId) === telegramId,
+    ).toBe(true);
+    await users.getByRole('button', { name: 'Готово', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(created.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${created.id}"]`).click();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users.getByRole('button', { name: 'Добавить роль', exact: true }).click();
+    await users.getByRole('button', { name: 'Преподаватель', exact: true }).click();
+    const employeeNumber = `E2E-${dataset.group.id}-${created.id}`;
+    await users.getByLabel('Табельный номер', { exact: true }).fill(employeeNumber);
+    const [roleSaved] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/roles/TEACHER` &&
+          response.request().method() === 'PUT',
+      ),
+      users.getByRole('button', { name: 'Назначить роль', exact: true }).click(),
+    ]);
+    expect(roleSaved.status()).toBe(200);
+    const multirole = await dataset.admin.call('GET', userPath);
+    expect(
+      ['id', 'login', 'lastName', 'firstName', 'middleName', 'groupId', 'telegramId'].every(
+        (field) => multirole[field] === original[field],
+      ),
+    ).toBe(true);
+    expect(multirole.employeeNumber === employeeNumber).toBe(true);
+    expect(
+      multirole.roles
+        .filter((grant: { status: string }) => grant.status === 'ACTIVE')
+        .map((grant: { role: string }) => grant.role)
+        .sort(),
+    ).toEqual(['STUDENT', 'TEACHER']);
+
+    const historical = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: yesterday,
+        lessonNumber: 1,
+        classroom: 'Синтетическая история',
+      },
+      [201, 200],
+      { 'Idempotency-Key': dataset.marker.slice(-36) },
+    );
+    const reportPath = `/api/attendance/reports/lesson/${historical.physicalLessonId}`;
+    const markPath = `/api/attendance/lessons/${historical.physicalLessonId}/students/${created.id}`;
+    const initial = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(initial !== undefined).toBe(true);
+    // The same helper bearer succeeds before replacement and is refused afterwards.
+    await helper.call('PUT', markPath, {
+      status: 'PRESENT',
+      expectedStatus: String(initial.status ?? 'EMPTY').toUpperCase(),
+      expectedRevision: initial.markRevision ?? 'EMPTY',
+    });
+    const before = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(before !== undefined).toBe(true);
+    expect(String(before.status).toUpperCase()).toBe('PRESENT');
+    expect(typeof before.markRevision).toBe('string');
+
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Группы', exact: true }).click();
+    const groups = page.locator('.admin-groups-screen');
+    await groups
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+    const group = groups.locator(`[data-group-id="${dataset.group.id}"]`);
+    await group.locator('.admin-groups-item__trigger').click();
+    await group.getByRole('button', { name: 'Изменить старосту', exact: true }).click();
+    const replacement = groups.locator('.admin-groups-headman');
+    const [headmanPreview] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname ===
+            `/api/academic/groups/${dataset.group.id}/headman/preview` &&
+          response.request().method() === 'GET',
+      ),
+      replacement.getByLabel('Выбери старосту', { exact: true }).selectOption(String(created.id)),
+    ]);
+    expect(headmanPreview.status()).toBe(200);
+    const replacementImpact = await headmanPreview.json();
+    expect(Number(replacementImpact.currentHeadmanId)).toBe(dataset.headman.id);
+    expect(Number(replacementImpact.candidateId)).toBe(Number(created.id));
+    expect(replacementImpact.assistantsToRevoke).toBe(1);
+    await expect(replacement.getByRole('status')).toContainText('Помощников к отзыву: 1.');
+    const [replaced] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `/api/academic/groups/${dataset.group.id}/headman` &&
+          response.request().method() === 'PUT',
+      ),
+      replacement.getByRole('button', { name: 'Подтвердить назначение', exact: true }).click(),
+    ]);
+    expect(replaced.status()).toBe(200);
+    const replacedBody = await replaced.json();
+    expect(Number(replacedBody.headmanId)).toBe(Number(created.id));
+    expect(replacedBody.assistantsRevoked).toBe(1);
+    const rosterPath = `/api/academic/groups/${dataset.group.id}/headman/roster`;
+    const assignedRoster = await dataset.admin.call('GET', rosterPath);
+    expect(Number(assignedRoster.currentHeadmanId)).toBe(Number(created.id));
+    expect(assignedRoster.activeAssistantCount).toBe(0);
+    const oldHeadman = await dataset.admin.call('GET', `/api/academic/users/${dataset.headman.id}`);
+    expect(
+      oldHeadman.roles.some(
+        (grant: { role: string; status: string }) =>
+          grant.role === 'HEADMAN' && grant.status === 'ACTIVE',
+      ),
+    ).toBe(false);
+    for (const actor of [helper, dataset.headmanActor]) {
+      const denied = await dataset.request.put(markPath, {
+        headers: actor.headers(),
+        data: {
+          status: 'ABSENT',
+          expectedStatus: 'PRESENT',
+          expectedRevision: before.markRevision,
+        },
+      });
+      if (actor === helper) expect(denied.status()).toBe(403);
+      else expect([401, 403]).toContain(denied.status());
+    }
+    const afterReplacement = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(
+      afterReplacement.status === before.status &&
+        afterReplacement.markRevision === before.markRevision,
+    ).toBe(true);
+    await page.reload();
+    await page.getByRole('button', { name: 'Группы', exact: true }).click();
+    await groups
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+    await group.locator('.admin-groups-item__trigger').click();
+    await expect(group.getByText(created.fullName, { exact: true })).toBeVisible();
+
+    const currentHeadman = await admit(
+      dataset.request,
+      {
+        login: created.login,
+        password: created.initialPassword,
+        role: 'STUDENT',
+        expectedLandingPath: '/app/',
+      },
+      'HEADMAN',
+    );
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(created.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${created.id}"]`).click();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    const [archivePreview] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/archive-preview` &&
+          response.request().method() === 'GET',
+      ),
+      users.getByRole('button', { name: 'Архивировать аккаунт', exact: true }).click(),
+    ]);
+    expect(archivePreview.status()).toBe(200);
+    const archiveImpact = await archivePreview.json();
+    expect(Number(archiveImpact.userId)).toBe(Number(created.id));
+    expect(archiveImpact.attendanceMarksCount).toBe(1);
+    expect(archiveImpact.activeHeadmanGroupCount).toBe(1);
+    expect(archiveImpact.requiresPassword).toBe(true);
+    await expect(users.locator('.admin-users-data')).toContainText('Отметки посещаемости');
+    await users.getByLabel('Твой текущий пароль', { exact: true }).fill(administrator.password);
+    await users.getByRole('checkbox', { name: 'Подтверждаю', exact: true }).check();
+    const [archived] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/archive` &&
+          response.request().method() === 'POST',
+      ),
+      users.getByRole('button', { name: 'Архивировать аккаунт', exact: true }).click(),
+    ]);
+    expect(archived.status()).toBe(204);
+    await expect(
+      users.getByText('Аккаунт архивирован. История сохранена.', { exact: true }),
+    ).toBeVisible();
+    const archivedAccount = await dataset.admin.call('GET', userPath);
+    expect(archivedAccount.status).toBe('ARCHIVED');
+    expect(
+      archivedAccount.roles.some((grant: { status: string }) => grant.status === 'ACTIVE'),
+    ).toBe(false);
+    const archiveDenial = await dataset.request.put(markPath, {
+      headers: currentHeadman.headers(),
+      data: { status: 'ABSENT', expectedStatus: 'PRESENT', expectedRevision: before.markRevision },
+    });
+    expect([401, 403]).toContain(archiveDenial.status());
+    const afterArchive = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(
+      afterArchive.status === before.status && afterArchive.markRevision === before.markRevision,
+    ).toBe(true);
+    await page.reload();
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(created.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${created.id}"]`).click();
+    await expect(users.getByText('Аккаунт в архиве', { exact: true })).toBeVisible();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users.getByRole('button', { name: 'Восстановить аккаунт', exact: true }).click();
+    await expect(users.getByText(/Аккаунт восстановится без активных прав/)).toBeVisible();
+    await users.getByRole('checkbox', { name: 'Подтверждаю', exact: true }).check();
+    const [restored] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/restore` &&
+          response.request().method() === 'POST',
+      ),
+      users.getByRole('button', { name: 'Восстановить аккаунт', exact: true }).click(),
+    ]);
+    expect(restored.status()).toBe(204);
+    await expect(
+      users.getByText('Аккаунт восстановлен без активных прав. Назначь нужные роли заново.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    const restoredAccount = await dataset.admin.call('GET', userPath);
+    expect(restoredAccount.status).toBe('ACTIVE');
+    expect(restoredAccount.groupId).toBeNull();
+    expect(restoredAccount.headman).toBe(false);
+    expect(
+      ['id', 'login', 'lastName', 'firstName', 'middleName', 'telegramId', 'employeeNumber'].every(
+        (field) => restoredAccount[field] === multirole[field],
+      ),
+    ).toBe(true);
+    expect(
+      restoredAccount.roles.some(
+        (grant: { status: string; selectable: boolean }) =>
+          grant.status === 'ACTIVE' || grant.selectable,
+      ),
+    ).toBe(false);
+    const restoreDenial = await dataset.request.put(markPath, {
+      headers: currentHeadman.headers(),
+      data: { status: 'ABSENT', expectedStatus: 'PRESENT', expectedRevision: before.markRevision },
+    });
+    expect([401, 403]).toContain(restoreDenial.status());
+    const afterRestore = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(
+      afterRestore.userId === before.userId &&
+        afterRestore.status === before.status &&
+        afterRestore.source === before.source &&
+        afterRestore.markRevision === before.markRevision,
+    ).toBe(true);
+    const vacant = await dataset.admin.call('GET', rosterPath);
+    expect(vacant.currentHeadmanId).toBeNull();
+    expect(vacant.activeAssistantCount).toBe(0);
+    expect(vacant.candidates.length).toBe(assignedRoster.candidates.length - 1);
+    expect(
+      vacant.candidates.some(
+        (candidate: { id: number }) => Number(candidate.id) === Number(created.id),
+      ),
+    ).toBe(false);
+    const draftRegistry = await dataset.admin.call(
+      'GET',
+      `/api/academic/groups/registry?status=DRAFT&search=${encodeURIComponent(dataset.group.name)}&size=100`,
+    );
+    const draft = draftRegistry.items.find(
+      (entry: { id: number }) => entry.id === dataset.group.id,
+    );
+    expect(draft !== undefined).toBe(true);
+    expect(draft.headmanFio).toBeNull();
+    expect(draft.studentCount).toBe(vacant.candidates.length);
+    expect(typeof draft.draftReason === 'string' && draft.draftReason.trim().length > 0).toBe(true);
+    await page.getByRole('button', { name: 'Группы', exact: true }).click();
+    await groups.getByRole('tab', { name: /^Черновики/ }).click();
+    await groups
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+    await expect(group.getByText('Староста не назначен', { exact: true })).toBeVisible();
+    await group.locator('.admin-groups-item__trigger').click();
+    await expect(group).toContainText(draft.draftReason);
+    await expect(
+      group.locator('dl > div').filter({ hasText: 'Студентов' }).locator('dd'),
+    ).toHaveText(String(draft.studentCount));
+  });
 });

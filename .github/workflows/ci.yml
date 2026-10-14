@@ -497,10 +497,39 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Run real Vue administrator account lifecycle
+        id: admin-lifecycle
+        if: success() && steps.remaining5.outcome == 'success'
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_E2E_ADMIN_LIFECYCLE: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-admin-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_ADMIN_LIFECYCLE_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium
+
+      - name: Upload closed administrator lifecycle outcome
+        if: always() && steps.admin-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_ADMIN_LIFECYCLE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Restore a real application checkpoint into fresh disposable databases
         id: application-recovery
         timeout-minutes: 12
-        if: success() && steps.remaining5.outcome == 'success'
+        if: ${{ !cancelled() && steps.remaining5.outcome == 'success' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -514,8 +543,9 @@ jobs:
           umask 077
           printf 'RCT_APP_RECOVERY_RUN=%s\nRCT_APP_RECOVERY_PROJECT=%s\n' "$RCT_APP_RECOVERY_RUN" "$RCT_APP_RECOVERY_PROJECT" >> "$GITHUB_ENV"
           python3 - <<'PY_RECOVERY'
-          import importlib.util, json, os, subprocess
+          import datetime, importlib.util, json, os, re, stat, subprocess
           from pathlib import Path
+          from zoneinfo import ZoneInfo
 
           root = Path.cwd()
           work = Path(os.environ['RCT_APP_RECOVERY_RUN'])
@@ -549,6 +579,75 @@ jobs:
               if value['Config']['Labels'].get('com.docker.compose.project') != 'rct-e2e':
                   raise RuntimeError('Source container ownership mismatch')
               return value
+
+          def lifecycle_diagnostic():
+              # Only the failed seed's own target is queried; no log/body/identifier is published.
+              path = work / 'lifecycle-input.private.json'
+              info = path.lstat()
+              if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or info.st_size > 4096:
+                  raise RuntimeError('Invalid private lifecycle input')
+              fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+              with os.fdopen(fd) as stream:
+                  identity = os.fstat(stream.fileno())
+                  if (identity.st_dev, identity.st_ino) != (info.st_dev, info.st_ino):
+                      raise RuntimeError('Lifecycle input changed')
+                  value = json.load(stream)
+              if set(value) != {'lessonId', 'semesterId', 'expectedInstant', 'clockSha256'}:
+                  raise RuntimeError('Invalid lifecycle input keys')
+              for key in ('lessonId', 'semesterId'):
+                  if type(value[key]) is not int or not 0 < value[key] < 2**63:
+                      raise RuntimeError('Invalid lifecycle target')
+              if not isinstance(value['expectedInstant'], str) or not re.fullmatch(
+                      r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z', value['expectedInstant']):
+                  raise RuntimeError('Invalid lifecycle clock')
+              if not isinstance(value['clockSha256'], str) or not re.fullmatch('[0-9a-f]{64}', value['clockSha256']):
+                  raise RuntimeError('Invalid lifecycle digest')
+              expected = datetime.datetime.fromisoformat(value['expectedInstant'].replace('Z', '+00:00'))
+              wall = expected.astimezone(ZoneInfo('Europe/Moscow')).strftime('%Y-%m-%d %H:%M:%S.%f')
+              lesson, semester = value['lessonId'], value['semesterId']
+              for service in ('postgres-schedule', 'schedule-service'):
+                  if inspect(ids[service])['Id'] != sources[service]['Id']:
+                      raise RuntimeError('Lifecycle source identity changed')
+              sql = f"""BEGIN READ ONLY; SET LOCAL statement_timeout = '5s';
+              SELECT json_build_object(
+                'targetPresent', EXISTS (SELECT 1 FROM lessons WHERE id = {lesson}),
+                'targetSemesterMatches', EXISTS (SELECT 1 FROM lessons WHERE id = {lesson} AND semester_id = {semester}),
+                'targetStatus', COALESCE((SELECT CASE WHEN status::text IN ('planned','active','closed','cancelled','transferred') THEN status::text ELSE 'OTHER' END FROM lessons WHERE id = {lesson}), 'MISSING'),
+                'endPlus5IsDue', COALESCE((SELECT date + end_time + INTERVAL '5 minutes' <= TIMESTAMP '{wall}' FROM lessons WHERE id = {lesson}), false),
+                'unfinishedTransfer', EXISTS (SELECT 1 FROM lesson_transfer_operations t JOIN lessons l ON t.occurrence_id = l.occurrence_id WHERE l.id = {lesson} AND t.state <> 'COMPLETED'),
+                'barrierState', COALESCE((SELECT CASE WHEN participant_state IN ('PENDING','READY','PREPARED_RESTORE','RELEASED','DELETE_PREPARING','DELETE_SEALED','DELETED') THEN participant_state ELSE 'OTHER' END FROM schedule_semester_archive_barriers WHERE semester_id = {semester}), 'NONE'),
+                'shedlockPresent', EXISTS (SELECT 1 FROM shedlock WHERE name = 'lesson-status-transition'),
+                'shedlockCurrentlyHeld', EXISTS (SELECT 1 FROM shedlock WHERE name = 'lesson-status-transition' AND lock_until > now()),
+                'shedlockRecentlyAcquired', EXISTS (SELECT 1 FROM shedlock WHERE name = 'lesson-status-transition' AND locked_at >= now() - INTERVAL '3 minutes'));
+              ROLLBACK;"""
+              raw = call(['docker', 'exec', ids['postgres-schedule'], 'psql', '-X', '-qAt',
+                          '-U', 'rct_user', '-d', 'schedule_db', '-v', 'ON_ERROR_STOP=1', '-c', sql], seconds=8)
+              if len(raw) > 4096:
+                  raise RuntimeError('Lifecycle projection budget exceeded')
+              facts = json.loads(raw)
+              bools = {'targetPresent', 'targetSemesterMatches', 'endPlus5IsDue', 'unfinishedTransfer',
+                       'shedlockPresent', 'shedlockCurrentlyHeld', 'shedlockRecentlyAcquired'}
+              if set(facts) != bools | {'targetStatus', 'barrierState'} or any(type(facts[key]) is not bool for key in bools):
+                  raise RuntimeError('Invalid lifecycle projection')
+              if facts['targetStatus'] not in {'planned','active','closed','cancelled','transferred','OTHER','MISSING'} or facts['barrierState'] not in {'PENDING','READY','PREPARED_RESTORE','RELEASED','DELETE_PREPARING','DELETE_SEALED','DELETED','OTHER','NONE'}:
+                  raise RuntimeError('Invalid lifecycle projection enum')
+              # The finite source names below are untrusted reported hints, never raw error text.
+              logs = subprocess.run(['docker', 'logs', '--tail', '160', '--since', '180s', ids['schedule-service']],
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=8)
+              readable = logs.returncode == 0 and len(logs.stdout) <= 1048576
+              body = logs.stdout if readable else b''
+              classes = ('PSQLException', 'DataIntegrityViolationException', 'IllegalStateException',
+                         'StatusRuntimeException', 'TransactionSystemException', 'NullPointerException')
+              states = ('23502', '23503', '23505', '23514', '40P01', '40001', '55P03')
+              facts.update(logsObserved=readable,
+                           reportedClasses=[name for name in classes if re.search(rb'(?<![A-Za-z0-9_$])' + name.encode() + rb'(?![A-Za-z0-9_$])', body)],
+                           reportedSqlStates=[code for code in states if re.search(rb'SQLState: ?' + code.encode() + rb'(?![0-9A-Z])', body)],
+                           reportedLifecycleFailure=b'LessonStatusTransitionJob.runTransitions' in body,
+                           reportedAuthorityFrame=b'ScheduleSemesterArchiveWriteFence.readAuthority' in body)
+              output = work / 'artifacts' / 'seed' / 'lifecycle-server.safe.json'
+              fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+              with os.fdopen(fd, 'w') as stream:
+                  json.dump(facts, stream)
 
           try:
               config = json.loads(call([*compose, 'config', '--format', 'json']))
@@ -643,6 +742,11 @@ jobs:
               api('attachment')
               print('PASS real application recovery: fresh inventory, historical attachment and exact transfer replay')
           except Exception as error:
+              if stage == 'source' and (work / 'lifecycle-input.private.json').exists():
+                  try:
+                      lifecycle_diagnostic()
+                  except Exception:
+                      print('Lifecycle diagnostic unavailable; original failure retained')
               print('FAIL application recovery stage=' + stage + ' class=' + type(error).__name__)
               raise SystemExit(1)
           PY_RECOVERY
@@ -652,7 +756,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: application-recovery-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/*/safe-results.json
+          path: |
+            ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/*/safe-results.json
+            ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/seed/lifecycle.safe.json
+            ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/seed/lifecycle-server.safe.json
           if-no-files-found: warn
           retention-days: 7
 

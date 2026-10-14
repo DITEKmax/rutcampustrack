@@ -8,6 +8,10 @@ import { readTeachingInstant } from './fixtures/teaching-clock';
 process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
 
 const remaining5 = process.env.RCT_E2E_REMAINING5 === 'true';
+const adminLifecycle = process.env.RCT_E2E_ADMIN_LIFECYCLE === 'true';
+if (adminLifecycle && !remaining5) {
+  throw new Error('Administrator lifecycle requires the private serial mobile lane');
+}
 const run = process.env.RCT_REMAINING5_RUN;
 let teachingInstant: Date | undefined;
 if (remaining5) {
@@ -44,7 +48,9 @@ export default defineConfig<{}, { teachingInstant: Date | undefined }>({
   ...(remaining5
     ? {
         forbidOnly: true,
-        grep: /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|warm offline reload remains read-only; revoked session reconnect clears the cached user)$/,
+        grep: adminLifecycle
+          ? /ADMIN creates a multirole headman and restores the archived account without old authority$/
+          : /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|warm offline reload remains read-only; revoked session reconnect clears the cached user)$/,
       }
     : {}),
   projects: existing.projects

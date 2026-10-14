@@ -416,6 +416,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         Long g =
                 addRegistryGroup("ОРД-mixed", "Увп", "110", 1, true); // stored tuple wins over name
 
+        assertThat(registryIds(adminId)).containsExactly(b, d, c, a, f, e, g);
         assertThat(registryIds(adminId, "currentCourse,asc")).containsExactly(b, g, c, d, a, e, f);
         assertThat(registryIds(adminId, "currentCourse,desc")).containsExactly(a, c, d, b, g, e, f);
         assertThat(registryIds(adminId, "programType,asc")).containsExactly(a, d, g, c, b, e, f);
@@ -528,13 +529,16 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         List<Long> ids = new ArrayList<>();
         int pages = 1;
         for (int page = 0; page < pages; page++) {
+            var request =
+                    registryRequest(adminId, "ОРД", "DRAFT")
+                            .param("size", "2")
+                            .param("page", Integer.toString(page));
+            if (sort.length > 0) {
+                request.param("sort", sort);
+            }
             JsonNode response =
                     objectMapper.readTree(
-                            mockMvc.perform(
-                                            registryRequest(adminId, "ОРД", "DRAFT")
-                                                    .param("size", "2")
-                                                    .param("page", Integer.toString(page))
-                                                    .param("sort", sort))
+                            mockMvc.perform(request)
                                     .andExpect(status().isOk())
                                     .andReturn()
                                     .getResponse()

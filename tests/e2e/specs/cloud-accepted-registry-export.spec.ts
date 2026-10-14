@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import type { Page } from '@playwright/test';
 import {
   test,
   expect,
@@ -522,8 +523,159 @@ async function registryPdfUser(dataset: MobileDataset, prefix: string, ending: s
   };
 }
 
+function registryPngPages(until: number, archive: Buffer, pageCount: number): Buffer[] {
+  registryRequire(archive.length > 0 && archive.length <= registryByteLimit, 'PNG_ZIP_SIZE');
+  registryRequire(Number.isInteger(pageCount) && pageCount > 0 && pageCount <= 4, 'PNG_PAGES');
+  // The host's existing Python stdlib reads/CRC-checks this bounded ZIP in RAM.
+  // Never extract a path or expose filenames, image bytes or a parser exception.
+  const script = String.raw`import base64, io, json, sys, zipfile
+limit = 20 * 1024 * 1024
+length = int(sys.argv[1])
+assert 0 < length <= limit
+data = sys.stdin.buffer.read(length)
+assert len(data) == length
+with zipfile.ZipFile(io.BytesIO(data)) as archive:
+    entries = archive.infolist()
+    assert 0 < len(entries) <= 4
+    assert [entry.filename for entry in entries] == [f'page-{i:04d}.png' for i in range(1, len(entries) + 1)]
+    assert all(not entry.is_dir() and not entry.flag_bits & 1 and 0 < entry.file_size <= limit for entry in entries)
+    assert sum(entry.file_size for entry in entries) <= limit
+    pages = [archive.read(entry) for entry in entries]
+    assert all(page.startswith(b'\x89PNG\r\n\x1a\n') for page in pages)
+    print(json.dumps([base64.b64encode(page).decode('ascii') for page in pages]))`;
+  try {
+    const remaining = until - Date.now();
+    registryRequire(remaining > 0, 'PNG_DEADLINE');
+    const result = spawnSync('python3', ['-I', '-c', script, String(archive.length)], {
+      input: archive,
+      timeout: Math.min(5000, remaining),
+      killSignal: 'SIGKILL',
+      maxBuffer: registryByteLimit * 2,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    registryRequire(!result.error && result.status === 0 && !result.signal, 'PNG_ZIP_EXIT');
+    const values: unknown = JSON.parse(result.stdout.toString('utf8'));
+    registryRequire(
+      Array.isArray(values) &&
+        values.length === pageCount &&
+        values.every((value) => typeof value === 'string' && /^[A-Za-z0-9+/]+={0,2}$/.test(value)),
+      'PNG_ZIP_PAGES',
+    );
+    return values.map((value: string) => Buffer.from(value, 'base64'));
+  } catch {
+    throw new Error('Registry PNG check: ZIP_INVALID');
+  }
+}
+
+function registryPdfRaster(until: number, content: Buffer, page: number): Buffer {
+  registryRequire(Number.isInteger(page) && page > 0 && page <= 4, 'PNG_REFERENCE_PAGE');
+  const container = registryContainer(until, 'document-renderer-service');
+  // Same owned image/fonts and /usr/bin/pdftoppm as convertToPngPagesZip,
+  // with its RegistryDocumentClient 200dpi mapping. stdin/stdout leave no file.
+  return registryDocker(
+    until,
+    [
+      'exec',
+      '-i',
+      container,
+      '/usr/bin/timeout',
+      '-s',
+      'KILL',
+      '8',
+      '/usr/bin/pdftoppm',
+      '-png',
+      '-r',
+      '200',
+      '-f',
+      String(page),
+      '-l',
+      String(page),
+      '-singlefile',
+      '-',
+    ],
+    content,
+    registryByteLimit,
+  );
+}
+
+async function registryPngTable(page: Page, actual: Buffer, reference: Buffer, top: number) {
+  registryRequire(Number.isFinite(top) && top > 0 && top < 595, 'PNG_TABLE_TOP');
+  for (const image of [actual, reference])
+    registryRequire(
+      image.length >= 24 &&
+        image.length <= registryByteLimit &&
+        image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) &&
+        image.toString('ascii', 12, 16) === 'IHDR' &&
+        image.readUInt32BE(16) >= 2337 &&
+        image.readUInt32BE(16) <= 2341 &&
+        image.readUInt32BE(20) >= 1652 &&
+        image.readUInt32BE(20) <= 1656,
+      'PNG_IMAGE_BOUND',
+    );
+  try {
+    return await page.evaluate(
+      async ({ actual, reference, top }) => {
+        const decode = (value: string) =>
+          createImageBitmap(
+            new Blob([Uint8Array.from(atob(value), (c) => c.charCodeAt(0))], { type: 'image/png' }),
+          );
+        const images: ImageBitmap[] = [];
+        try {
+          images.push(await decode(actual));
+          images.push(await decode(reference));
+          const [image, expected] = images as [ImageBitmap, ImageBitmap];
+          // A4 landscape at 200dpi; allow the converter's ordinary rounding.
+          if (
+            image.width < 2337 ||
+            image.width > 2341 ||
+            image.height < 1652 ||
+            image.height > 1656 ||
+            image.width !== expected.width ||
+            image.height !== expected.height
+          )
+            return false;
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext('2d', { willReadFrequently: true });
+          if (!context) return false;
+          // Separate exports have different Instant.now() context lines. Compare
+          // from the verified PDF header glyphs down: the complete table text,
+          // cell placement, row order and all remaining page pixels are covered.
+          const start = Math.floor((top * 200) / 72);
+          if (start < 0 || start >= image.height) return false;
+          context.drawImage(image, 0, 0);
+          const left = context.getImageData(0, start, image.width, image.height - start).data;
+          context.clearRect(0, 0, image.width, image.height);
+          context.drawImage(expected, 0, 0);
+          const right = context.getImageData(0, start, image.width, image.height - start).data;
+          let ink = 0;
+          for (let i = 0; i < left.length; i += 4) {
+            if (
+              left[i] !== right[i] ||
+              left[i + 1] !== right[i + 1] ||
+              left[i + 2] !== right[i + 2] ||
+              left[i + 3] !== right[i + 3]
+            )
+              return false;
+            if (left[i]! < 128 && left[i + 1]! < 128 && left[i + 2]! < 128 && left[i + 3]! > 128)
+              ink++;
+          }
+          return ink > 1000;
+        } finally {
+          for (const image of images) image.close();
+        }
+      },
+      { actual: actual.toString('base64'), reference: reference.toString('base64'), top },
+    );
+  } catch {
+    throw new Error('Registry PNG check: DECODE_INVALID');
+  }
+}
+
 for (const mode of ['FULL', 'LIMITED'] as const) {
   test(`${mode} native user PDF preserves selected ordered fields and its committed audit @cloud-accepted`, async ({
+    page,
     dataset,
   }, info) => {
     const nativeUntil = Date.now() + info.timeout;
@@ -620,6 +772,78 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
         if (mode === 'LIMITED') expect(extracted.includes(String(user.telegramId))).toBe(false);
       }
       registryAudit(nativeUntil, jobId, owner.id, startedAt);
+
+      // Q11's distinct PNG risk: real dispatch/ZIP, browser image decoding and
+      // ordered page content. Reuse the exact field/privacy/audit proof above;
+      // no OCR or image-text assertion and no new actor, login or dataset.
+      const pngJob = await actor.call(
+        'POST',
+        '/api/auth/export-jobs',
+        {
+          requestId: randomUUID(),
+          report: {
+            kind: 'ADMIN_USERS',
+            adminUsers: {
+              search: prefix,
+              sorts: [{ field: 'login', descending: true }],
+              format: 'png',
+            },
+          },
+        },
+        [202],
+      );
+      registryRequire(
+        typeof pngJob.jobId === 'string' &&
+          /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(pngJob.jobId),
+        'PNG_JOB_ID',
+      );
+      await expect
+        .poll(
+          async () => {
+            const status = await actor.call('GET', `/api/auth/export-jobs/${pngJob.jobId}`);
+            registryRequire(
+              status.jobId === pngJob.jobId &&
+                ['queued', 'preparing', 'ready'].includes(status.state),
+              'PNG_JOB_STATUS',
+            );
+            return status.state;
+          },
+          { timeout: 60000, message: 'Own native PNG export becomes durably ready' },
+        )
+        .toBe('ready');
+      const pngTicket = await actor.call('POST', `/api/auth/export-jobs/${pngJob.jobId}/ticket`);
+      registryRequire(
+        typeof pngTicket.downloadPath === 'string' &&
+          /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(pngTicket.downloadPath) &&
+          typeof pngTicket.suggestedFilename === 'string' &&
+          pngTicket.suggestedFilename.endsWith('.zip'),
+        'PNG_TICKET',
+      );
+      const pngResponse = await dataset.request.get(pngTicket.downloadPath);
+      try {
+        if (pngResponse.status() !== 200)
+          throw datasetHttpFailure('GET', pngTicket.downloadPath, pngResponse.status());
+        expect(pngResponse.headers()['content-type']?.split(';')[0] === 'application/zip').toBe(
+          true,
+        );
+        const pages = registryPngPages(nativeUntil, await pngResponse.body(), pageCount);
+        const pdfPages = [...document.matchAll(/<page\b[^>]*>([\s\S]*?)<\/page>/g)];
+        for (const [index, bytes] of pages.entries()) {
+          const top = Number(
+            /<word\b[^>]*\byMin="([0-9.]+)"[^>]*>ФИО<\/word>/.exec(pdfPages[index]![1]!)?.[1],
+          );
+          expect(
+            await registryPngTable(
+              page,
+              bytes,
+              registryPdfRaster(nativeUntil, content, index + 1),
+              top,
+            ),
+          ).toBe(true);
+        }
+      } finally {
+        await pngResponse.dispose();
+      }
     } finally {
       await response.dispose();
     }

@@ -59452,5 +59452,44 @@
     ],
     "scope": "task-owned synthetic Docker6+8 foreground services; existing platform approval/guard/noreset/no production remain",
     "evidence": "docs/validation/cloud-20261011/decisions.md"
+  },
+  "delivery_native_client_owner_acceptance_20261014": {
+    "source_id": "owner:cloud-validation-Q013-20261014",
+    "canonical_path": "docs/product/decisions/2026-10-14-owner-native-client-acceptance.md",
+    "status": "accepted owner decision D015",
+    "decision_owner": "repository owner",
+    "decision_date": "2026-10-14",
+    "supersedes": [
+      "Cloud-owned native/provider/device execution for Q013 only; logic and other runtime unchanged"
+    ],
+    "scope": "Native Telegram/WebPush/OS installation executed by owner local stand; Cloud code/logic+availableisolatedserver/browser acceptance; OWNER_MANUAL_PENDING notPASS/no production readiness",
+    "sha256": "dfdfee5b4cb4cff8729cdbdf960c6a400e1f0f184f3ccce7da406d9f4d1b64ed",
+    "evidence": "docs/validation/cloud-20261011/decisions.md#D015"
+  },
+  "delivery_headman_replacement_only_20261014": {
+    "source_id": "owner:cloud-validation-Q012-20261014",
+    "canonical_path": "docs/product/decisions/2026-10-14-headman-replacement-only.md",
+    "status": "accepted owner decision D016",
+    "decision_owner": "repository owner",
+    "decision_date": "2026-10-14",
+    "supersedes": [
+      "ambiguous standalone admin isHeadman=false withoutreplacement rule and contradictorycandidatehistoricalwireframe"
+    ],
+    "scope": "publicadminstandaloneheadmanflagremoval denied; acceptedeligible replacement/oldauthorityrevoke preserved; no unrelated automaticcleanup/lifecycle rulechange",
+    "sha256": "951224892e9295c95950f8689e62616bf0272e27390b2109d8a5f8ff6328c04b",
+    "evidence": "docs/validation/cloud-20261011/decisions.md#D016"
+  },
+  "delivery_temporary_pwa_install_icon_20261014": {
+    "source_id": "owner:cloud-validation-Q014-20261014",
+    "canonical_path": "docs/product/decisions/2026-10-14-temporary-pwa-install-icon.md",
+    "status": "accepted owner decision D017",
+    "decision_owner": "repository owner",
+    "decision_date": "2026-10-14",
+    "supersedes": [
+      "currentmissingPWAinstallasset branch of futurelogo placeholder only"
+    ],
+    "scope": "exact existinglanding R source temporaryPWA192/512+apple180 assets/declarations; no newbrand/Angular/Figma; nativeownerD015",
+    "sha256": "48d4bd40d44445a87bfc663e3340ac48f52661d89ff8c871997edd84a41a6b14",
+    "asset_sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
   }
 }

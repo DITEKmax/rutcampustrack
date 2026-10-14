@@ -104,11 +104,22 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
     }
 
     /**
-     * RBAC-02: снятие флага {@code is_headman} через {@code patchUser} инвалидирует rbac-запись.
+     * RBAC-02: замена старосты через {@code patchUser} инвалидирует rbac-запись прежнего старосты.
      * Следующий isHeadman возвращает свежий результат (false) — cache.hasKey до вызова = false.
      */
     @Test
-    void patchUser_headmanRevoke_evictsRbacCache() {
+    void patchUser_headmanReplacement_evictsRbacCache() {
+        Long replacementId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) "
+                                + "VALUES ('rbac_replacement', 'x', 'Rbac', 'Replacement', 'student', 'active', false, ?) RETURNING id",
+                        Long.class,
+                        GROUP_ID);
+        jdbcTemplate.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
+                replacementId,
+                GROUP_ID);
         HeadmanCheckRequest request =
                 HeadmanCheckRequest.newBuilder().setUserId(STUDENT_ID).setGroupId(GROUP_ID).build();
 
@@ -117,19 +128,28 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
         String cacheKey = "rbac::" + STUDENT_ID + ":" + GROUP_ID;
         assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
 
-        // Снять флаг старосты
-        userService.patchUser(
-                STUDENT_ID, new PatchUserRequest(null, null, null, false, null, null, null, null));
+        try {
+            // D016 permits replacement, while standalone removal is rejected.
+            userService.patchUser(
+                    replacementId,
+                    new PatchUserRequest(null, null, null, true, null, null, null, null));
 
-        // Кеш rbac::3:1 должен быть evict'нут программатически
-        assertThat(redisTemplate.hasKey(cacheKey)).isFalse();
-
-        // Следующий вызов возвращает актуальное значение
-        HeadmanCheckResponse fresh = stub.isHeadman(request);
-        assertThat(fresh.getIsHeadman()).isFalse();
-
-        // Восстановить для консистентности seed-data между тестами
-        jdbcTemplate.update("UPDATE users SET is_headman = true WHERE id = " + STUDENT_ID);
+            assertThat(redisTemplate.hasKey(cacheKey)).isFalse();
+            HeadmanCheckResponse fresh = stub.isHeadman(request);
+            assertThat(fresh.getIsHeadman()).isFalse();
+            assertThat(
+                            stub.isHeadman(
+                                            HeadmanCheckRequest.newBuilder()
+                                                    .setUserId(replacementId)
+                                                    .setGroupId(GROUP_ID)
+                                                    .build())
+                                    .getIsHeadman())
+                    .isTrue();
+        } finally {
+            userService.patchUser(
+                    STUDENT_ID,
+                    new PatchUserRequest(null, null, null, true, null, null, null, null));
+        }
     }
 
     /**

@@ -385,6 +385,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     expect(refused.location).toEqual(assignmentFallback);
   }
   for (const filename of [
+    'mobile-lesson-lifecycle.spec.ts',
     'mobile-homework-lifecycle.spec.ts',
     'mobile-map-lifecycle.spec.ts',
     'cloud-accepted-registry-export.spec.ts',

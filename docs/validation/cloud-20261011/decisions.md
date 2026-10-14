@@ -214,3 +214,40 @@ Q05 independent future-semester runtime preparation is Source-blocked: SemesterS
 ## T013 clarification — independent inline material links
 
 2026-10-14T13:00:32.255319+00:00: Existing accepted JS-HEADMAN-16 canonical589–591 (SHA87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981) states one primary link and other links in description clickable; same LinkifiedText is accepted for student104 by wireframe114. A malformed primary link does not cancel separate valid HTTP(S) text links. No new product rule: preserve independent safe-link admission/escaped text/unsafe-main denial. The new B checking oracle that prohibited all anchors on an unsafe-primary card conflicts with this source; replace only that blanket assertion with exact safeinline href set plus retained script/img/unsafeaction/execution prohibitions. Originalfour material/optimistic/order assertions remain. Independent Source resolution q07_client_review; final implementation/hunk review and actualCI still required.
+
+
+## D015 — 2026-10-14T17:27:58.313140+00:00 — Q013 owner-native client acceptance
+
+Owner answer to Q013: «я проверю это сам на локальном тестовом стенде пока просто логику и код проверь что он согласован корректен и должнн работать в различных ситуациях».
+
+D015 applies only to the native/device/provider part named in Q013: opening TMA from Telegram, real Web Push while PWA is closed/backgrounded, and OS installation/icon/standalone behavior. The owner will execute that part on the local test stand. In this Cloud task, verify the implementation, consistent accepted rules, relevant successful/negative/boundary states and available isolated synthetic/browser/server mechanisms for those paths. Do not present mocks, Source reading or synthetic host events as actual Telegram/provider/OS delivery or installation.
+
+The native runs are transferred to owner acceptance; their absence in Cloud no longer blocks completion of this Cloud checking scope after its retained code/logic criteria pass. Keep their status OWNER_MANUAL_PENDING and give the owner a finite checklist tied to the reviewed revision. This is neither native PASS nor a production-readiness receipt. Remaining genuine server/PWA/TMA browser, data/rights/recovery, independent review, meaningful sensitivity and final gates remain required.
+
+Supersedes only the requirement that Cloud itself obtain native capability/receipts for the Q013 branches (existing finite E14-I1/H2). It does not waive the behavior, defer all push/bot/client logic, allow production/private bot access, authorize merge/deploy, change other product rules or freeze independent work.
+
+TASK-CONTRACT previousSHA 62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed; currentSHA 4f45e414322d3d41192c52baf244bfe6e96a2b76b3597ad714f79674eb0f2757. Canonical: docs/product/decisions/2026-10-14-owner-native-client-acceptance.md.
+
+
+## D016 — 2026-10-14T17:34:08.654748+00:00 — Q012 replacement-only
+
+Owner answered Q012: «Разрешить только замену на другого старосту (рекомендация по позднему макету)».
+
+D016: the administrator may replace a group's current headman with another eligible headman through the accepted assignment/transfer operation. A standalone administrative request to remove the current headman flag without appointing a replacement must be rejected by the server; the client cannot be the sole enforcement. Replacement continues to revoke the previous headman/helper authority and preserve required membership/history/atomicity rules.
+
+This resolves the specific Q012 ambiguity concerning an administrative isHeadman=false/no-replacement update. It is not a new permission to retain revoked security authority, change unrelated account archive/restore/group-transfer lifecycle rules, rewrite the 12-grant catalogue, or add a new web frontend. Review concrete adjacent paths against existing accepted rules rather than broadening this decision to all automatic authority cleanup.
+
+Supersedes the old standalone-removal behavior and old tests only for this branch. Existing replacement, foreign-scope, live revocation, transaction/history and terminal-state boundaries remain required. API/proto/schema compatibility remains; use the existing typed conflict convention with no partial mutation. Canonical JS-ADMIN-07 plus this direct owner decision now resolves candidate historical wireframe contradictions.
+
+TASK-CONTRACT previousSHA 4f45e414322d3d41192c52baf244bfe6e96a2b76b3597ad714f79674eb0f2757; currentSHA d9132dda1bada9670a01abc5d77649f73b4d794779a56ae0c3b767bf7b79d988.
+
+
+## D017 — 2026-10-14T17:41:54.427369+00:00 — Q014 temporary existing R install icon
+
+Owner answered Q014: «Использовать существующую R как временную иконку (рекомендую)».
+
+D017 accepts the existing green-blue rounded R RutTrack SVG as a temporary PWA installation icon. Exact chosen source: frontends/landing/dist/favicon.svg, SHA256 85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8. Preserve the existing image; copy it byte-exact into the tracked PWA public assets and derive conventional installation sizes192/512 and Apple touch180. Add the manifest/index references required by the existing accepted PWA installation path. No new visual design, brand rewrite, Figma publication or Angular modification is authorized. This temporary asset does not decide the owner's eventual logo.
+
+Supersedes only the missing accepted installation-asset branch of BRAND_DIRECTION's later-logo placeholder for current PWA. D015 still assigns native/device installation acceptance to the owner; Cloud verifies source, dimensions/declarations, build and applicable logic. Do not claim actual OS installation from asset generation. Keep server/browser/data/rights/gates and other accepted behavior unchanged.
+
+TASK-CONTRACT previousSHA d9132dda1bada9670a01abc5d77649f73b4d794779a56ae0c3b767bf7b79d988; currentSHA aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7.

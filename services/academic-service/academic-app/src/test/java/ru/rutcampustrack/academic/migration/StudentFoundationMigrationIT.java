@@ -97,6 +97,59 @@ class StudentFoundationMigrationIT {
     }
 
     @Test
+    void v31BackfillsOnlyKnownLegacyProgramDurationsWithoutChangingExistingGroupData() {
+        String schema = newSchema();
+        flyway(schema, "30").migrate();
+        String insertGroup =
+                "INSERT INTO "
+                        + table(schema, "groups")
+                        + " (name, is_active, created_at, archived_at)"
+                        + " VALUES (?, ?, TIMESTAMPTZ '2020-09-01 12:00:00+00',"
+                        + " CASE WHEN ? THEN NULL ELSE TIMESTAMPTZ '2025-06-30 12:00:00+00' END)"
+                        + " RETURNING id";
+        Long bachelorId = jdbc.queryForObject(insertGroup, Long.class, "УИТ-311", true, true);
+        Long masterId =
+                jdbc.queryForObject(insertGroup, Long.class, "МАГ-271 (выпуск 2025)", false, false);
+        Long unknownId = jdbc.queryForObject(insertGroup, Long.class, "ЛЕГ-351", true, true);
+        String existingData =
+                "SELECT id, name, is_active, created_at, archived_at FROM "
+                        + table(schema, "groups")
+                        + " WHERE id IN (?, ?, ?) ORDER BY id";
+        List<Map<String, Object>> before =
+                jdbc.queryForList(existingData, bachelorId, masterId, unknownId);
+
+        Flyway upgrade = flyway(schema, "31");
+        assertThat(upgrade.migrate().success).isTrue();
+
+        assertThat(jdbc.queryForList(existingData, bachelorId, masterId, unknownId))
+                .containsExactlyElementsOf(before);
+        String registryMetadata =
+                "SELECT alphabetic_code, numeric_code, current_course, training_duration_years,"
+                        + " duration_status FROM "
+                        + table(schema, "groups")
+                        + " WHERE id = ?";
+        assertThat(jdbc.queryForMap(registryMetadata, bachelorId))
+                .containsEntry("alphabetic_code", "УИТ")
+                .containsEntry("numeric_code", "311")
+                .containsEntry("current_course", 3)
+                .containsEntry("training_duration_years", 4)
+                .containsEntry("duration_status", "KNOWN");
+        assertThat(jdbc.queryForMap(registryMetadata, masterId))
+                .containsEntry("alphabetic_code", "МАГ")
+                .containsEntry("numeric_code", "271")
+                .containsEntry("current_course", 2)
+                .containsEntry("training_duration_years", 2)
+                .containsEntry("duration_status", "KNOWN");
+        assertThat(jdbc.queryForMap(registryMetadata, unknownId))
+                .containsEntry("alphabetic_code", null)
+                .containsEntry("numeric_code", null)
+                .containsEntry("current_course", null)
+                .containsEntry("training_duration_years", null)
+                .containsEntry("duration_status", "LEGACY_UNKNOWN");
+        assertThat(upgrade.migrate().migrationsExecuted).isZero();
+    }
+
+    @Test
     void readyMapAssetsRequireExactMetadataAndRemainImmutable() {
         String schema = newSchema();
         flyway(schema, "26").migrate();

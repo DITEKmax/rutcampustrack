@@ -409,6 +409,17 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void headmanChange_invalidatesGroupCacheAndCurrentRosterReflectsChange() {
+        Long replacementId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) "
+                                + "VALUES ('cache_replacement', 'x', 'Cache', 'Replacement', 'student', 'active', false, ?) RETURNING id",
+                        Long.class,
+                        GROUP_ID);
+        jdbcTemplate.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
+                replacementId,
+                GROUP_ID);
         GroupRequest groupReq = GroupRequest.newBuilder().setGroupId(GROUP_ID).build();
         GroupMembersRequest membersReq =
                 GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
@@ -423,22 +434,29 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         String groupKey = "groups::" + GROUP_ID;
         assertThat(redisTemplate.hasKey(groupKey)).isTrue();
 
-        // Mutation: patchUser with isHeadman=false (student id=3 is currently headman=true)
-        // triggers @CacheEvict(users, key=#id) AND programmatic eviction of groups::1
-        // and group_members::1 (per D-10)
-        userService.patchUser(
-                STUDENT_ID, new PatchUserRequest(null, null, null, false, null, null, null, null));
+        try {
+            // D016: replacement revokes the old flag and evicts the same group cache.
+            userService.patchUser(
+                    replacementId,
+                    new PatchUserRequest(null, null, null, true, null, null, null, null));
 
-        assertThat(redisTemplate.hasKey(groupKey)).isFalse();
+            assertThat(redisTemplate.hasKey(groupKey)).isFalse();
 
-        stub.getGroup(groupReq);
-        assertThat(stub.getGroupMembers(membersReq).getStudentsList())
-                .filteredOn(student -> student.getUserId() == STUDENT_ID)
-                .extracting(student -> student.getIsHeadman())
-                .containsExactly(false);
-        assertThat(redisTemplate.hasKey(groupKey)).isTrue();
-
-        // Restore headman status for seed data consistency across tests
-        jdbcTemplate.update("UPDATE users SET is_headman = true WHERE id = " + STUDENT_ID);
+            stub.getGroup(groupReq);
+            var roster = stub.getGroupMembers(membersReq).getStudentsList();
+            assertThat(roster)
+                    .filteredOn(student -> student.getUserId() == STUDENT_ID)
+                    .extracting(student -> student.getIsHeadman())
+                    .containsExactly(false);
+            assertThat(roster)
+                    .filteredOn(student -> student.getUserId() == replacementId)
+                    .extracting(student -> student.getIsHeadman())
+                    .containsExactly(true);
+            assertThat(redisTemplate.hasKey(groupKey)).isTrue();
+        } finally {
+            userService.patchUser(
+                    STUDENT_ID,
+                    new PatchUserRequest(null, null, null, true, null, null, null, null));
+        }
     }
 }

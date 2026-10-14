@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
@@ -275,7 +277,8 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    void legacyPatchConvergesThroughCanonicalPathAndKeepsOneActiveGrant() {
+    void legacyPatchRejectsStandaloneRemovalButAllowsReplacementAndNonHeadmanFalse()
+            throws Exception {
         Fixture fixture = fixture("legacy");
 
         userService.patchUser(
@@ -296,16 +299,113 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                                 fixture.firstId()))
                 .isTrue();
 
-        userService.patchUser(
+        jdbc.update(
+                "INSERT INTO headman_assistants "
+                        + "(group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
+                        + "VALUES (?, ?, ARRAY['view_stats']::varchar[], ?, true, NOW())",
+                fixture.groupId(),
+                fixture.thirdId(),
+                adminId());
+        jdbc.update(
+                "INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+                        + "VALUES (?, ?, CURRENT_DATE - 1, 'initial-enrollment')",
                 fixture.firstId(),
-                new PatchUserRequest(null, null, null, false, null, null, null, null));
+                fixture.groupId());
+        var before = headmanMutationSnapshot(fixture);
+
+        patchHeadman(fixture.firstId(), "{\"isHeadman\":false,\"lastName\":\"Отказ\"}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", equalTo("isHeadman")));
+        assertThat(headmanMutationSnapshot(fixture)).isEqualTo(before);
+
+        patchHeadman(fixture.secondId(), "{\"isHeadman\":true}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.headman", equalTo(true)));
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT count(*) FROM user_role_grants "
                                         + "WHERE group_id = ? AND role = 'headman' AND status = 'active'",
                                 Long.class,
                                 fixture.groupId()))
-                .isZero();
+                .isEqualTo(1L);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'headman'",
+                                String.class,
+                                fixture.firstId()))
+                .isEqualTo("suspended");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT is_active FROM headman_assistants WHERE group_id = ? AND student_id = ?",
+                                Boolean.class,
+                                fixture.groupId(),
+                                fixture.thirdId()))
+                .isFalse();
+        assertThatThrownBy(
+                        () ->
+                                compositionReadService.read(
+                                        compositionActor(
+                                                fixture.firstId(),
+                                                fixture.groupId(),
+                                                "HEADMAN",
+                                                true),
+                                        fixture.groupId()))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
+
+        // A false flag on an ordinary student must not remove the other current headman.
+        patchHeadman(fixture.firstId(), "{\"isHeadman\":false}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.headman", equalTo(false)));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT user_id FROM user_role_grants WHERE group_id = ? AND role = 'headman' AND status = 'active'",
+                                Long.class,
+                                fixture.groupId()))
+                .isEqualTo(fixture.secondId());
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT * FROM student_group_history WHERE group_id = ? ORDER BY id",
+                                fixture.groupId()))
+                .isEqualTo(before.get("history"));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions patchHeadman(
+            long userId, String body) throws Exception {
+        return mockMvc.perform(
+                patch("/academic/users/{id}", userId)
+                        .header("X-User-Id", adminId())
+                        .header("X-User-Role", "ADMIN")
+                        .with(signedAdmin())
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .contentType(APPLICATION_JSON)
+                        .content(body));
+    }
+
+    private Map<String, Object> headmanMutationSnapshot(Fixture fixture) {
+        return Map.of(
+                "users",
+                        jdbc.queryForList(
+                                "SELECT id, last_name, first_name, group_id, status, is_headman, roles_version, updated_at "
+                                        + "FROM users WHERE id IN (?, ?, ?) ORDER BY id",
+                                fixture.firstId(),
+                                fixture.secondId(),
+                                fixture.thirdId()),
+                "grants",
+                        jdbc.queryForList(
+                                "SELECT * FROM user_role_grants WHERE group_id = ? ORDER BY id",
+                                fixture.groupId()),
+                "assistants",
+                        jdbc.queryForList(
+                                "SELECT * FROM headman_assistants WHERE group_id = ? ORDER BY id",
+                                fixture.groupId()),
+                "history",
+                        jdbc.queryForList(
+                                "SELECT * FROM student_group_history WHERE group_id = ? ORDER BY id",
+                                fixture.groupId()),
+                "outbox",
+                        jdbc.queryForList(
+                                "SELECT id, event_type FROM academic_outbox ORDER BY id"));
     }
 
     @Test

@@ -127,7 +127,7 @@ public class GroupHeadmanAssignmentService {
         return mutate(groupId, studentId, null, false);
     }
 
-    /** Compatibility bridge for the existing ADMIN users PATCH isHeadman=false. */
+    /** The legacy false flag is a no-op for non-headmen; current headmen require replacement. */
     @Transactional
     public HeadmanAssignmentResponse revokeLegacyHeadman(Long studentId) {
         adminAccess.begin("USERS_MANAGE");
@@ -146,9 +146,9 @@ public class GroupHeadmanAssignmentService {
                     null, studentId, candidate.getDisplayName(), false, false, 0);
         }
 
-        // A legacy revoke has one known user. It still takes the group lock
+        // A legacy false-flag request has one known user. It still takes the group lock
         // after that user lock, matching the canonical order.
-        Map<Long, User> locked = lockUsers(List.of(studentId));
+        lockUsers(List.of(studentId));
         Group group = lockActiveGroup(groupId);
         List<Long> currentIds = readCurrentHeadmanIds(group.getId());
         if (currentIds.size() > 1) throw duplicateHeadmanConflict(group.getId());
@@ -168,18 +168,10 @@ public class GroupHeadmanAssignmentService {
                     false,
                     0);
         }
-        User current = locked.get(studentId);
-        current.setHeadman(false);
-        current.setUpdatedAt(OffsetDateTime.now());
-        userRepository.save(current);
-        userRepository.flush();
-        roleGrantWriter.synchronizeDerivedHeadman(studentId, false, group.getId());
-        int revoked = revokeAssistants(group.getId());
-        if (personalNotifications != null)
-            personalNotifications.headman(studentId, group.getId(), true, false);
-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, group.getId()));
-        evictAfterCommit(group.getId(), List.of(studentId));
-        return new HeadmanAssignmentResponse(group.getId(), null, null, true, false, revoked);
+        throw new ConflictException(
+                "isHeadman",
+                false,
+                "Снять действующего старосту можно только заменой на другого студента");
     }
 
     private HeadmanAssignmentResponse mutate(

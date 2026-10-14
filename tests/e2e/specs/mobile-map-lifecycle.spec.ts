@@ -311,7 +311,8 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
       recovered.svg.id === second.svg.id,
   ).toBe(true);
   expect(retriedSvg.status()).toBe(200);
-  expect((await retriedSvg.body()).equals(originalSvg)).toBe(true);
+  expect((await retriedSvg.headerValue('content-type'))?.split(';', 1)[0]).toBe('image/svg+xml');
+  expect(Number(await retriedSvg.headerValue('content-length')) === second.svg.bytes).toBe(true);
   // Settle the separate demand response before the count-bound deletion preview.
   expect((await recordedOpen.finished()) === null).toBe(true);
   await expect(mapScreen.getByText('Карта не загружена', { exact: true })).toHaveCount(0);
@@ -333,6 +334,9 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
       );
     })
     .toBe(true);
+  // Verify the recovered consumer's bytes through its actual blob download.
+  await mapDownload(page, 'SVG', originalSvg);
+  await mapDownload(page, 'PNG', replacementPng);
 
   // Final deletion must preserve another own scheme even when its content hashes match.
   const controlUpload = await dataset.request.post('/api/academic/map/plans', {

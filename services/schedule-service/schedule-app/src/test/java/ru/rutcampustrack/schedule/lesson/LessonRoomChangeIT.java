@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,7 +32,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.grpc.*;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
 import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
@@ -40,9 +43,11 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.replacement.AssignmentReplacementService;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /**
  * Real PostgreSQL/Flyway/HTTP proof of in-place room authorization, replay and retained bindings.
@@ -60,6 +65,7 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
     @Autowired LessonRepository lessons;
     @Autowired PlatformTransactionManager manager;
     @Autowired ScheduleGrpcServiceImpl grpc;
+    @Autowired ScheduleSemesterArchiveWriteFence archive;
     private LocalDate date;
     private static final long GROUP = 10,
             SUBJECT = 20,
@@ -99,6 +105,75 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
                                         .setValidFrom(date.minusDays(40).toString())
                                         .setValidUntilExclusive(date.plusDays(40).toString())
                                         .build()));
+    }
+
+    @Test
+    void roomEligibilityUsesEducationalTimeWhileAuditRetainsRealTime() {
+        long lesson = recurring(date, "planned");
+        Instant start = date.atTime(10, 5).atZone(ZoneId.of("Europe/Moscow")).toInstant();
+        Clock realClock = Clock.fixed(start.plus(Duration.ofDays(2)), ZoneOffset.UTC);
+        List<ScheduleActionRecordedEvent> events = new ArrayList<>();
+        TransactionTemplate transaction = new TransactionTemplate(manager);
+        List<Instant> educationalInstants = Arrays.asList(null, start.minusSeconds(1), start);
+        for (int index = 0; index < educationalInstants.size(); index++) {
+            Instant educationalNow = educationalInstants.get(index);
+            boolean editable = index == 1;
+            String revision = index < 2 ? "1" : "2";
+            var before = row("lessons", lesson);
+            var prepared = archive.prepareBusinessWrite(SEMESTER);
+            try (var context = new AnnotationConfigApplicationContext()) {
+                var beans = context.getBeanFactory();
+                beans.registerSingleton("jdbc", jdbc);
+                beans.registerSingleton("clock", realClock);
+                beans.registerSingleton("archive", archive);
+                if (educationalNow != null) {
+                    beans.registerSingleton(
+                            "educationalTime",
+                            new EducationalTime(Clock.fixed(educationalNow, ZoneOffset.UTC)));
+                }
+                context.addApplicationListener(
+                        event -> {
+                            if (event instanceof ScheduleActionRecordedEvent action)
+                                events.add(action);
+                        });
+                context.register(LessonRoomWriter.class);
+                context.refresh();
+                var writer = context.getBean(LessonRoomWriter.class);
+                var request =
+                        new ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest(
+                                "B-205", revision);
+                if (editable) {
+                    var receipt =
+                            transaction.execute(
+                                    status ->
+                                            writer.change(
+                                                    lesson,
+                                                    ACTOR,
+                                                    UUID.randomUUID(),
+                                                    request,
+                                                    prepared));
+                    assertThat(receipt.room()).isEqualTo("B-205");
+                    assertThat(receipt.revision()).isEqualTo("2");
+                } else {
+                    assertThatThrownBy(
+                                    () ->
+                                            transaction.execute(
+                                                    status ->
+                                                            writer.change(
+                                                                    lesson,
+                                                                    ACTOR,
+                                                                    UUID.randomUUID(),
+                                                                    request,
+                                                                    prepared)))
+                            .isInstanceOf(ConflictException.class);
+                    assertThat(row("lessons", lesson)).isEqualTo(before);
+                }
+            }
+        }
+        assertThat(row("lessons", lesson).get("room_snapshot")).isEqualTo("B-205");
+        assertThat(scalar("SELECT count(*) FROM lesson_room_change_ledger")).isEqualTo(1);
+        assertThat(events).hasSize(1);
+        assertThat(events.getFirst().getOccurredAt().toInstant()).isEqualTo(realClock.instant());
     }
 
     @Test

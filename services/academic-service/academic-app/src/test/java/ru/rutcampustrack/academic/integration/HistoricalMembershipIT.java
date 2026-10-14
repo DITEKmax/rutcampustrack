@@ -150,18 +150,21 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(grantStatus(student.getId(), "headman")).isEqualTo("active");
         assertThat(grantGroupId(student.getId(), "headman")).isEqualTo(source.getId());
 
-        userService.patchUser(
-                student.getId(),
-                new PatchUserRequest(null, null, null, false, null, null, null, null));
-        long revokedRolesVersion = rolesVersion(student.getId());
-        assertThat(revokedRolesVersion).isGreaterThan(assignedRolesVersion);
-        assertThat(grantStatus(student.getId(), "headman")).isEqualTo("suspended");
+        assertThatThrownBy(
+                        () ->
+                                userService.patchUser(
+                                        student.getId(),
+                                        new PatchUserRequest(
+                                                null, null, null, false, null, null, null, null)))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        assertThat(rolesVersion(student.getId())).isEqualTo(assignedRolesVersion);
+        assertThat(grantStatus(student.getId(), "headman")).isEqualTo("active");
 
         userService.patchUser(
                 student.getId(),
                 new PatchUserRequest(null, null, null, true, null, null, null, null));
         long reassignedRolesVersion = rolesVersion(student.getId());
-        assertThat(reassignedRolesVersion).isGreaterThan(revokedRolesVersion);
+        assertThat(reassignedRolesVersion).isEqualTo(assignedRolesVersion);
 
         LocalDate semesterStart = LocalDate.now(MOSCOW).minusDays(7);
         assertThat(

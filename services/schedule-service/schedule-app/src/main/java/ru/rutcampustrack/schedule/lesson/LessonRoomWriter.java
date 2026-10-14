@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -22,22 +24,49 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /** Atomic in-place mutation; the append-only SQL receipt is also the exact trigger authority. */
 @Service
 public class LessonRoomWriter {
     private final JdbcTemplate jdbc;
     private final Clock clock;
+    private final Clock educationalClock;
     private final ApplicationEventPublisher events;
     private final ScheduleSemesterArchiveWriteFence archive;
+
+    @Autowired
+    public LessonRoomWriter(
+            JdbcTemplate jdbc,
+            Clock clock,
+            ApplicationEventPublisher events,
+            ScheduleSemesterArchiveWriteFence archive,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                jdbc,
+                clock,
+                events,
+                archive,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());
+    }
 
     public LessonRoomWriter(
             JdbcTemplate jdbc,
             Clock clock,
             ApplicationEventPublisher events,
             ScheduleSemesterArchiveWriteFence archive) {
+        this(jdbc, clock, events, archive, clock);
+    }
+
+    private LessonRoomWriter(
+            JdbcTemplate jdbc,
+            Clock clock,
+            ApplicationEventPublisher events,
+            ScheduleSemesterArchiveWriteFence archive,
+            Clock educationalClock) {
         this.jdbc = jdbc;
         this.clock = clock;
+        this.educationalClock = educationalClock;
         this.events = events;
         this.archive = archive;
     }
@@ -165,7 +194,9 @@ public class LessonRoomWriter {
                 || !LocalDateTime.of(
                                 ((java.sql.Date) lesson.get("date")).toLocalDate(),
                                 ((java.sql.Time) lesson.get("start_time")).toLocalTime())
-                        .isAfter(LocalDateTime.now(clock.withZone(ZoneId.of("Europe/Moscow")))))
+                        .isAfter(
+                                LocalDateTime.now(
+                                        educationalClock.withZone(ZoneId.of("Europe/Moscow")))))
             throw conflict();
         for (String field :
                 new String[] {

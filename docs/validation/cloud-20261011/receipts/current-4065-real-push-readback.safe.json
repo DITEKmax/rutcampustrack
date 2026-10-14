@@ -13465,6 +13465,2822 @@
       "checks_reused": "journalcanonicalformat+selectedE2ETSC+hooks; Cnotificationcompile/targetformatterclean/Authunchangedcompile; workflowYAML/fullbodyinverse +independentconditionsreview",
       "newactuals": "browser journal/geoblock/future; notification aftereffect-beforeACK/foreignWS; laterNav/semester pendingnextnormalCI",
       "next": "normal4Source+explicitexistingtaskdocs hooks/commit/realpush/designatedbranchreadback/currentgates"
+    },
+    "edb7631_actual_coherent_publication": {
+      "utc": "2026-10-14T17:07:53.275370+00:00",
+      "local": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "remote": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "parent": "c61c2be439922c58cffc728688507daf896d051a",
+      "real_push_readback": true,
+      "elapsed_seconds": 3.789,
+      "four_Source_unchanged": true,
+      "explicit_inventory": [
+        ".github/workflows/ci.yml",
+        "tests/e2e/specs/mobile-real-server.spec.ts",
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+        "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+        "docs/validation/cloud-20261011/CURRENT.md",
+        "docs/validation/cloud-20261011/attempts.ndjson",
+        "docs/validation/cloud-20261011/resources.md",
+        "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/remaining-execution-queue.json"
+      ],
+      "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "authenticated_head_equal": true,
+      "draft": true,
+      "base": "main",
+      "merged": false,
+      "normal6hooks": "PASS; canonicalunit/source/type checks reused underexactbytejoins, no unreviewedcode",
+      "new_gates": {
+        "ci_pr": 38603879429,
+        "coverage_pr": 38603879346,
+        "security_pr": 38603879337,
+        "openapi_pr": 38603879397,
+        "ci_push": 38603869090
+      },
+      "gate_status": "ALLQUEUED/attempt1/headedb7631; previousc61gates historicalonly",
+      "actual_checkout": "NOT_YET_OBSERVED",
+      "new_actual_browser_IT_sensitivity": "PENDING_CURRENT_CI"
+    },
+    "D_PNG_Source_checking_open": {
+      "utc": "2026-10-14T17:07:53.275370+00:00",
+      "author": "c61_d_png_export",
+      "root_integration": "NONE",
+      "state": "SourceWIP independentregistryPNG-specificextension, 6smallpurecontrolattempts; Prettier/TSCpass, syntheticZIPpositive fails5sETIMEDOUT/SIGKILL/nooutput before actualproducer",
+      "cause": "UNKNOWN; exactlengthreadtechnicalhypothesisdidnotresolve, no actualrenderer/browser/productFAIL claim",
+      "next": "stop identicalrepeats, independentboundedstaticdiagnosis of actualhelper+controlharness; no newlauncher/framework/timeoutweakening"
+    },
+    "D_PNG_child_environment_discriminator": {
+      "utc": "2026-10-14T17:11:25.240447+00:00",
+      "scope": "Rootone3bytesyntheticNode64MiB→Python-I-stdio control, noexport/ZIP/app/networkdestination/credentials/Sourcechange",
+      "default_sandbox": {
+        "native_tool_exit": 0,
+        "child_status": 0,
+        "signal": null,
+        "error_code": "EPERM",
+        "closed_stdout_length_result": 3,
+        "stderr_bytes": 0,
+        "elapsed_seconds": 0.931
+      },
+      "same_exact_command_with_standard_tool_network_capability": {
+        "native_tool_exit": 0,
+        "child_status": 0,
+        "signal": null,
+        "error_code": null,
+        "closed_stdout_length_result": 3,
+        "stderr_bytes": 0,
+        "elapsed_seconds": 0.094
+      },
+      "classification": "Measured sandbox capability changes Node native child invocation error; exact blocked syscall UNKNOWN. This is an ENV discriminator, not proof fullZIPcontrol nowpasses or causeofalltimeouts. No autoreviewrejection or denieddestination; standardexplicitcapabilityreview usedsameexactordinaryauthorizedcontrol, notalternatebypass",
+      "next": "sameauthor SAMEoriginalboundedDcontrol withstandardtoolnetworkcapability preserving caps/noactualoutbound; no newhelperrewrite/timeoutincrease or repeatedformat/TSCunlessSourcechanges"
+    },
+    "edb_Q10_C_current_native_FAIL": {
+      "utc": "2026-10-14T17:14:34.458426+00:00",
+      "head": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "PR_run": 38603879429,
+      "PR_job": 115989690629,
+      "PUSH_run": 38603869090,
+      "PUSH_job": 115989654477,
+      "failed_step": "Integration tests notification-service",
+      "official_log_closed_projection": {
+        "bytes": 53775,
+        "new_method": "committedEffectsSurviveConsumerChannelLossBeforeAckAndRedeliverWithoutChangingReadState",
+        "reported_type": "org.opentest4j.AssertionFailedError",
+        "Source_frame": "EventIdempotentIT.java:260 history.awaitCommitted()",
+        "tests": 63,
+        "failed": 1,
+        "skipped": 0,
+        "raw_logs_persisted_or_printed": false,
+        "Root_connector_allocation": "unmeasured/postresponsecap finite"
+      },
+      "classification": "ActualnewtestFAIL at historycommittedawait; causeUNKNOWN, before newreadstate/channel-loss/replay; notproductdeliverylossproof. AuthIT/browserstillrunning, no cancel",
+      "coverage_notification": "step8 Run tests withcoverage FAILED; safeartifact11914633037 size12175 digestcdfc87571bebb3e75f4fadc9c57059a0b634f25d00b1a924f993310d00e541d1; casecauseNOT_READ",
+      "nested_projection": "sameXML ListenerExecutionFailedException only; originalfailure captured by AssertJ isNull at479 dropsdeepcause; exactoriginaltransienttypeUNKNOWN, noactualMongoWriteConflictclaim",
+      "confirmed_independent_fixture_bug": "SameactualRabbit3.2.12 factoryretry proxy invokesentiretestwrapper; wrapper incorrectly advancesdeliverycountbeforeoriginaldelegatecommit and stickyrecords anyintermediateException. Acceptedstatelessretry cannotrecover underthiswitness. Correctingthisprovablefixturebug preserves productionretry/defaultACK and muststillfailifnonecommit; actualspecificnestedcause remainsunknown, nodeepcauseinvented."
+    },
+    "D_PNG_review_ready": {
+      "utc": "2026-10-14T17:14:34.458426+00:00",
+      "author": "c61_d_png_export",
+      "commit": "278fdee262df2cc4e6aba3107afd9420cbc3c8cc",
+      "parent": "c61c2be439922c58cffc728688507daf896d051a",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "46deab17544c12c3924d20d6b0ac38949dcdd60c86200b495a67f259eca24ba9",
+      "checks": "format/TSC PASS; sameSource additionalnormaltoolcapability15pureRAMcontrolsPASS3.133s aftersixENVcheckingfailures; normalhooks4applicablePASS2NA+commitPASS7.465s/allreaped/clean; oldassertions exact",
+      "actualPNG_renderer_browser": "NOT_RUN",
+      "evidence": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#Q11PngFormatSource",
+      "next": "one independentwhole224lineSource review, sameauthorcorrections; nextreadypackage, no cancellationofedbCI",
+      "whole_independent_review": "APPROVE_SOURCE/no blockingfindings; c61_ci_independence_review existingq09-review.safe.md whole224line/reusedoldPDF/grants/privacy/renderer200mapping reviewed; actualnative/browserNOT_RUN"
+    },
+    "E3_legacy_default_sort_review_ready": {
+      "utc": "2026-10-14T17:14:34.458426+00:00",
+      "author": "c61_e_public_enum",
+      "commit": "5fbb9a687ff869d3d5528576c2ecf7a78a45dc20",
+      "parent": "c61c2be439922c58cffc728688507daf896d051a",
+      "scope": "onlyStudentFoundationMigrationIT/GroupRegistryIT +62/-5; actualknown1/7legacy4/2+unknownpreservedidentity andomittedsort2rowpaging",
+      "checks": "targetcanonicalformatPASS/fullJDK AcademiccompileJava+compileTestJavaPASS54s; original270.153spackage/allreaped/heavyreleased; twoENVcallererrors retained; no production/SQLchange",
+      "actualPG_sensitivity": "NOT_RUN",
+      "evidence": "/workspace/scratch/rct-validation/remaining_security_enum_scopes/OUTCOME.md",
+      "next": "oneindependentwhole2file datatestreview; existingnormalPGCI sufficientnewselectedsensitivityneededbydataregressionrule, no repeatedold18cases",
+      "whole_independent_review": "APPROVE_SOURCE/no blockingfindings; independent c61_journal_oracle existingoutcome#E3LegacyDefaultSort5fbbWholeIndependentReview; exactV31parse/oldcolumnspreservation andpageddefault expected order valid; realPG+sensitivityNOT_RUN"
+    },
+    "edb_selected_actual_auth_notification_checkout": {
+      "utc": "2026-10-14T17:19:04.567918+00:00",
+      "selected_closed_results": [
+        {
+          "artifact": 11914227999,
+          "run": 38603879429,
+          "bytes": 184076,
+          "digest": "sha256:e10cdc8b657e0b2ca61179da09b25953cb6bf0e759db6ad8621ae9b36d2eedbb",
+          "selected_xml_sha256": "08d057c2abf31e3205757e9fd3fd2477e053f9b200599dbb17d83bd67f86ff75",
+          "failed_cases": [
+            {
+              "method": "committedEffectsSurviveConsumerChannelLossBeforeAckAndRedeliverWithoutChangingReadState",
+              "type": "org.opentest4j.AssertionFailedError",
+              "source_lines": [
+                260,
+                479
+              ],
+              "nested_allowed_types": [
+                "org.opentest4j.AssertionFailedError",
+                "org.springframework.amqp.rabbit.support.ListenerExecutionFailedException"
+              ],
+              "closed_markers": []
+            }
+          ]
+        },
+        {
+          "artifact": 11914763251,
+          "run": 38603869090,
+          "bytes": 8606,
+          "digest": "sha256:e31c420852982b2d655f4772fa5a1b0c9dc416047b092b2a84db4481a79c92f0",
+          "safe_selected_outcomes": [
+            {
+              "metadata": {
+                "checkoutSha": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+                "prHeadSha": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+                "service": "auth-service",
+                "task": "integrationTest",
+                "job": "java-integration-test",
+                "runId": "38603869090",
+                "runAttempt": "1",
+                "event": "push",
+                "testStepOutcome": "success"
+              },
+              "summary": {
+                "PASSED": 173,
+                "FAILED": 0,
+                "ERROR": 0,
+                "SKIPPED": 0,
+                "NOT_EXECUTED": 0
+              },
+              "selected": [
+                {
+                  "xmlOrdinal": 17,
+                  "suiteOrdinal": 1,
+                  "ordinal": 1,
+                  "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+                  "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+                  "status": "PASSED",
+                  "identity": "SOURCE_METHOD",
+                  "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+                  "sourceSha256": "de0897fd2d69b175e17d23649defc37835ff6d0b5876936e0f5e9f897728cb22"
+                },
+                {
+                  "xmlOrdinal": 17,
+                  "suiteOrdinal": 1,
+                  "ordinal": 2,
+                  "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+                  "method": "realTicketBindingIgnoresClaimedConnectIdentityAndDeniesForeignPrivateSubscription",
+                  "status": "PASSED",
+                  "identity": "SOURCE_METHOD",
+                  "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+                  "sourceSha256": "de0897fd2d69b175e17d23649defc37835ff6d0b5876936e0f5e9f897728cb22"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "artifact": 11914802868,
+          "run": 38603879429,
+          "bytes": 293,
+          "digest": "sha256:e5ca09df50516b5c4fbef5b40aef61b8465e81889500290298d271d3b038cd00",
+          "checkout": {
+            "checkout_sha": "635ab18baf2c61b76d97357b8b0af4f74835f532",
+            "tree_sha": "17abfb5d9b1b1ee7d9479b9a8e4ecc39900633d8",
+            "producer_head_sha": "edb7631da2dc7dd63050b5052f48a7634ceaca23"
+          }
+        },
+        {
+          "artifact": 11914633037,
+          "run": 38603879346,
+          "bytes": 12175,
+          "digest": "sha256:cdfc87571bebb3e75f4fadc9c57059a0b634f25d00b1a924f993310d00e541d1",
+          "safe_selected_outcomes": [
+            {
+              "metadata": {
+                "checkoutSha": "635ab18baf2c61b76d97357b8b0af4f74835f532",
+                "prHeadSha": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+                "service": "notification-service",
+                "task": "integrationTest",
+                "job": "java-coverage",
+                "runId": "38603879346",
+                "runAttempt": "1",
+                "testStepScope": "unit+integration+report",
+                "event": "pull_request",
+                "testStepOutcome": "failure"
+              },
+              "summary": {
+                "PASSED": 62,
+                "FAILED": 1,
+                "ERROR": 0,
+                "SKIPPED": 0,
+                "NOT_EXECUTED": 0
+              },
+              "selected": [
+                {
+                  "xmlOrdinal": 5,
+                  "suiteOrdinal": 1,
+                  "ordinal": 3,
+                  "classname": "ru.rutcampustrack.notification.event.EventIdempotentIT",
+                  "method": "duplicateDeliveryHistoryAndDurableIntentCommitOnceAcrossBothConsumerQueues",
+                  "status": "PASSED",
+                  "identity": "SOURCE_METHOD",
+                  "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+                  "sourceSha256": "a1e0bd67b2096561edd48a7f19a98c6f42889c4e00b69f71b126e5dca5f3417a"
+                },
+                {
+                  "xmlOrdinal": 5,
+                  "suiteOrdinal": 1,
+                  "ordinal": 7,
+                  "classname": "ru.rutcampustrack.notification.event.EventIdempotentIT",
+                  "method": "committedEffectsSurviveConsumerChannelLossBeforeAckAndRedeliverWithoutChangingReadState",
+                  "status": "FAILED",
+                  "identity": "SOURCE_METHOD",
+                  "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+                  "sourceSha256": "a1e0bd67b2096561edd48a7f19a98c6f42889c4e00b69f71b126e5dca5f3417a"
+                }
+              ]
+            },
+            {
+              "metadata": {
+                "checkoutSha": "635ab18baf2c61b76d97357b8b0af4f74835f532",
+                "prHeadSha": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+                "service": "notification-service",
+                "task": "test",
+                "job": "java-coverage",
+                "runId": "38603879346",
+                "runAttempt": "1",
+                "testStepScope": "unit+integration+report",
+                "event": "pull_request",
+                "testStepOutcome": "failure"
+              },
+              "summary": {
+                "PASSED": 127,
+                "FAILED": 0,
+                "ERROR": 0,
+                "SKIPPED": 0,
+                "NOT_EXECUTED": 0
+              },
+              "selected": []
+            }
+          ]
+        }
+      ],
+      "initial_closedreader_attempt": "Failedbeforeselectedresults because allXML testcase names appliedmethod regexincludingexistingparameterizednames; readercorrectedfilteronlyactualfailingtarget, no tests/product rerun; sameofficialarchive/hash",
+      "corrected_collection": "PASS1.51s/privateURLsremoved/rawXML/logsnotpersistedorprinted; SDK/nativepeakallocationunmeasured; exactly4knownartifacts/digests",
+      "meaning": "ActualnewAuthWS ticketA/claimedidentityB/foreignsubscription denial andliveowncontrol PASSED atedb PUSH aftersameexactSourceSHAjoin. CnotificationnewtestFAIL onlyhistoryawaitCommitted; actualnestedListenerExecutionFailedException at EventIT479, before role read/loss/recovery. Coverage127unitPASS+62ITPASS/1newITFAIL, matchesordinaryCI. Need concrete nestedcause Sourceframes, not newtest rerun.",
+      "nested_failed_assertion_projection": {
+        "same_original_artifact": 11914227999,
+        "same_xml_sha256": "08d057c2abf31e3205757e9fd3fd2477e053f9b200599dbb17d83bd67f86ff75",
+        "repository_source_frames": [
+          {
+            "file": "EventIdempotentIT.java",
+            "line": 260
+          },
+          {
+            "file": "EventIdempotentIT.java",
+            "line": 479
+          }
+        ],
+        "nested_java_types": [
+          "org.springframework.amqp.rabbit.support.ListenerExecutionFailedException"
+        ],
+        "fixed_marker_presence": {
+          "argument type mismatch": false,
+          "MessageConversionException": false,
+          "Cannot convert from": false,
+          "No method found": false,
+          "NoSuchMethodException": false,
+          "NoSuchMethodError": false,
+          "UnsupportedOperationException": false,
+          "ChannelAwareMessageListener": false,
+          "null channel": false,
+          "ClassCastException": false
+        },
+        "fullmessage_rawXML_output_or_persistence": false
+      },
+      "official_checkout_join": {
+        "commit": "635ab18baf2c61b76d97357b8b0af4f74835f532",
+        "tree": "17abfb5d9b1b1ee7d9479b9a8e4ecc39900633d8",
+        "parents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "edb7631da2dc7dd63050b5052f48a7634ceaca23"
+        ],
+        "localHEADtreeEqual": true
+      }
+    },
+    "edb_ready_D_E_Root_integration": {
+      "utc": "2026-10-14T17:21:48.001523+00:00",
+      "parent": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "exact3Source": [
+        {
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+          "commit": "278fdee262df2cc4e6aba3107afd9420cbc3c8cc",
+          "sha256": "46deab17544c12c3924d20d6b0ac38949dcdd60c86200b495a67f259eca24ba9"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+          "commit": "5fbb9a687ff869d3d5528576c2ecf7a78a45dc20",
+          "sha256": "c331a002ae0977df7d445df779ea5bc045034af83e51a7b485e69865b3c67d63"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+          "commit": "5fbb9a687ff869d3d5528576c2ecf7a78a45dc20",
+          "sha256": "cf996f33eb3e1de321b2e3f129c39b0ad28e36f516ce045e070e86f45b75eb9c"
+        }
+      ],
+      "newActuals": "NOT_RUN; privateRootWIPonly/currentsignificantCIcontinuesedbunchanged/notcancelled",
+      "next": "newCfixturecause+correctionreview, selectiveacceptedtestqualityproofs; nextcoherentbatchordinaryCI whenrunningcriticaluserresultsavailable"
+    },
+    "E15_R1_applicability_reconciliation": {
+      "utc": "2026-10-14T17:29:00.756959+00:00",
+      "read_only_author": "c61_e_public_enum",
+      "source": "/workspace/scratch/rct-validation/remaining_security_enum_scopes/OUTCOME.md finalE15-R1section",
+      "Root_primary_reopened": "docs/operations/runbooks/backup-restore.md23-55/292-300; scripts/recovery.py491-501",
+      "disposition": "APPLICABILITY_CORRECTION: no externalcurrentuserfilestore; usermapsPG BYTEA/attachmentsMongoBinary. Existingrunbookexplicitlyexcludespermissions/owners/mtime fromgenericfilesacceptance; callerumask/mkdir/open behavior consistent. PriorinferredrequiredexternalfilesystemAPI/mode preservationnotacceptedcriterion. No newtest/productbug/nativerun",
+      "proof_reused": "actual0648genericfiles/pathbytes/refusals drill21s +d106 actualfreshDBattachment download/replay fourphases; keeptheseactualproducerreceipts, no unchangedrepeat",
+      "retained_limits": "JWT/TLS/operator/Redis/brokerstate recovery separate declaredlimitations; genericfiles isnotfullproduction/keyrestoreproof; no realprivatekey or inventedconsumer/mount",
+      "next": "retainotherfiniteoperationscriteria only; no genericfilesystemnewwork"
+    },
+    "Q10_C_retry_fixture_correction_ready": {
+      "utc": "2026-10-14T17:29:00.756959+00:00",
+      "commit": "509db3935a2c5de3b3efe3319afe8c7a2a61e386",
+      "parent": "8ce888c312cb64c1cee0f373c7204aad5e11e305",
+      "only_path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+      "sha256": "d8ab7e34a9a3d24de437a43aeea82f27ee9ca71345723aa74544a2f1feaa0710",
+      "change": "+5/-2 moveoriginaldelegatebefore successfuldeliverycounter andoutsidewitnesscatch; genuinefactoryretry receivesoriginalexceptions; allpostcommit/loss/rolemetadata/ACKexpectations retained",
+      "checks": "canonicalIS CLEAN/exacthash+notificationcompileTestJavaPASS59.30s/allownedreaped/heavyreleased; Authunchanged",
+      "actual_correctedIT": "NOT_RUN; actualedb underlyingdeepcauseUNKNOWN",
+      "next": "oneindependenttargetedretrycorrectionrecheck thenRootexactintegration; existingD/EreadyWIP batch aftercurrentcriticalCIresults",
+      "targeted_review": "APPROVE_SOURCE/no blockingfindings; existingq09reviewnoteQ10C509; exactd8ab twice/wholeCpreviousapprovals retained; deeperedbdelegatecauseUNKNOWN",
+      "Root_exact_integration": "PASS exactSource509db/d8ab inprivateRootWIP; currentedbcriticalCI stillunchanged/notcancelled"
+    },
+    "D015_install_icon_Source_gap": {
+      "utc": "2026-10-14T17:36:56.020094+00:00",
+      "scope": "JS-STUDENT-09 native ownerexecution transferredD015; Cloudimplementation remainsrequired",
+      "current_source": "frontends/pwa-vue/public/manifest.webmanifest lacksicons; indexnoicon/apple-touch-icon; currentproduceronlySW/version/precache noiconinjection",
+      "classification": "SOURCE GAP installicon declaration/asset prerequisite, not measuredOS/installFAIL; concreteacceptedasset identity needs designSource resolution beforechange; no newdesign/Figma/Angularmutation",
+      "next": "sameDauthor applyprovided rutcampustrack-design skill andlocateapprovedbrandicon/reusableasset; minimummanifest/image Source correction ifacceptedassetfound, otherwiseoneconcreteownermissingdesign question; restCloudcontinues"
+    },
+    "D016_narrow_product_implementation_plan": {
+      "utc": "2026-10-14T17:39:56.563901+00:00",
+      "owner_source": "docs/product/decisions/2026-10-14-headman-replacement-only.md",
+      "sole_writer": "c61_e_public_enum same sparseWT from5fbb",
+      "product_path": "GroupHeadmanAssignmentService.revokeLegacyHeadman only",
+      "planned_boundary": "existingpublicPATCH delegatescanonicalservice; keepglobal→sortedusers→grouplocks anddurablecurrentheadmanrecheck; nonheadmanfalse noop; actualcurrentheadmanfalse existingConflictException isHeadman/false beforeanyflag/grant/helper/history/outbox/cachewrite; acceptedassignLegacyHeadman true replacement untouched",
+      "tests_scope": "GroupHeadmanAssignmentIT/RestApiIT/CacheIT/RbacCacheIT/HistoricalMembershipIT only oldmanualfalse expectation adaptedD016; preserveallunrelateddates/transfers/securitycleanup/archive/rolecatalogue",
+      "no_new": "API/proto/DBschema/SQL/UI/config/locks/stack; typedexisting409; Sourceonlyfirst/localPGNOT_RUN",
+      "minimum_oracle": "actualHTTP409+no partialsafe snapshot/profile/grants/history/outbox/helper; eligibletrue replacement200+oldauthoritydeny; nonheadmanfalse200; existingrace boundaries reused; oldactualPG200removal beforecounterexample preserved; newmeaningfulselectedtest sensitivityrequiredlater"
+    },
+    "D016_replacement_only_Source_ready": {
+      "commit": "2a348c73fd9ac7a6746ed02ea94dc6018712b462",
+      "parent": "5fbb9a687ff869d3d5528576c2ecf7a78a45dc20",
+      "scope": "one existing product guard plus five existing tests; 204 insertions/64 deletions",
+      "canonical_format_and_compile": "PASS",
+      "elapsed_seconds": 176.212,
+      "all_reaped": true,
+      "actual_PG_HTTP_sensitivity": "NOT_RUN",
+      "independent_review": {
+        "verdict": "APPROVE_SOURCE",
+        "reviewer": "c61_ci_independence_review",
+        "path": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md",
+        "scope": "whole six files; runtime/sensitivity pending"
+      },
+      "outcome": "/workspace/scratch/rct-validation/remaining_security_enum_scopes/OUTCOME.md",
+      "Root_exact_integration": {
+        "at": "2026-10-14T17:55:06.617781+00:00",
+        "commit": "2a348c73fd9ac7a6746ed02ea94dc6018712b462",
+        "paths": [
+          {
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentService.java",
+            "sha256": "14e92941e746d5c45739332bfcc13cfe6afd2bc5e4c61547dbe0f13109ac9766"
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+            "sha256": "e583797c51c04042d9388135eaacfd1caffc3ba130dcc3e1a61eebb6abb073b0"
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+            "sha256": "4d0c173fbe150f20bd64e3c98720299debd3a3f3692350da8198c6a269aa3164"
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+            "sha256": "01c363be70d8fa4b5b4f880a541dd121eb4fe6a2d3ad94bd009aaa7cef6a2b30"
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+            "sha256": "d1bacf2fc2a95c157b9894492bc9512b0cad77eb1a17bd9160b8e77f82c4d708"
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java",
+            "sha256": "3049306c3cb67b62da3736d30a54f2d500a07a61a9b7d4b48a4a10ce8878b757"
+          }
+        ],
+        "status": "WIP_SOURCE_ONLY_NOT_PUSHED"
+      }
+    },
+    "edb_browser_terminal_steps": {
+      "observed_at": "2026-10-14T17:50:56.511459+00:00",
+      "run_id": 38603879429,
+      "head_sha": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "job_id": 115989690851,
+      "job_conclusion": "failure",
+      "success_steps": [
+        15,
+        16,
+        18,
+        20,
+        22,
+        24,
+        32,
+        38,
+        40,
+        42
+      ],
+      "failure_steps": [
+        26,
+        28,
+        30,
+        34
+      ],
+      "skipped_steps": [
+        36,
+        37,
+        43
+      ],
+      "cleanup_steps_success": [
+        45,
+        46,
+        47
+      ],
+      "artifact_results": "NOT_READ_YET",
+      "interpretation": "FIRST3, application recovery and semester runner steps success; no finite case promotion before closed artifact bodies"
+    },
+    "edb_browser_closed_first_read": {
+      "head_sha": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "ci": 38603879429,
+      "actual_checkout": "635ab18baf2c61b76d97357b8b0af4f74835f532",
+      "cases": {
+        "first3": {
+          "artifact_id": 11916130719,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run_id": 38603879429,
+          "event": "pull_request",
+          "actual_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+          "archive_sha256": "5bf0462834fca840772dc9d41826acf032ce67fdf620b2a9b362281c9a18e8a9",
+          "archive_bytes": 3665,
+          "member_names": [
+            "artifacts/safe-results.json",
+            "supervision/observations-student.safe.json",
+            "supervision/observations-headman.safe.json",
+            "supervision/observations-helper.safe.json"
+          ],
+          "results": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 40,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 4388,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 89,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 14646,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 392,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 2624,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "diagnostic_schema": [
+            {
+              "caseCode": "STUDENT",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HEADMAN",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HELPER",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "observations": {
+            "STUDENT": {
+              "schema": "RCT_FOCUS3_CLOSED_V1",
+              "caseCode": "STUDENT",
+              "events": [
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "BEGIN",
+                  "facts": {
+                    "diagnosticState": "OBSERVING"
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LOGIN",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "uiTokenCaptured": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "STUDENT",
+                    "activeRoleExpected": true,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HELPER_PERMISSIONS",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "markPermission": false
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HOMEWORK_DEFAULT",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "itemsIsArray": true,
+                    "itemCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "targetTitleEqual": true,
+                    "semesterEqual": true,
+                    "rangeContainsTarget": true,
+                    "serverDateEqual": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HOMEWORK_EXPLICIT",
+                  "facts": {
+                    "httpStatus": "200",
+                    "requestedRangeEqual": false,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "itemsIsArray": true,
+                    "itemCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "targetTitleEqual": true,
+                    "semesterEqual": true,
+                    "rangeContainsTarget": true,
+                    "serverDateEqual": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "COMPLETION_WRITE",
+                  "facts": {
+                    "httpStatus": "200"
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "STUDENT",
+                    "activeRoleExpected": true,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HELPER_PERMISSIONS",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "markPermission": false
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HOMEWORK_DEFAULT",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "itemsIsArray": true,
+                    "itemCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "targetTitleEqual": true,
+                    "semesterEqual": true,
+                    "rangeContainsTarget": true,
+                    "serverDateEqual": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HOMEWORK_EXPLICIT",
+                  "facts": {
+                    "httpStatus": "200",
+                    "requestedRangeEqual": false,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "itemsIsArray": true,
+                    "itemCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "targetTitleEqual": true,
+                    "semesterEqual": true,
+                    "rangeContainsTarget": true,
+                    "serverDateEqual": true
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "DOM",
+                  "facts": {
+                    "journalCount": 0,
+                    "rowCount": 0,
+                    "targetRowCount": 0,
+                    "targetButtonCount": 0,
+                    "clearButtonCount": 0,
+                    "homeworkCount": 2,
+                    "homeworkCompleteCount": 1,
+                    "homeworkIncompleteCount": 0,
+                    "alertCount": 0,
+                    "loginVisible": false,
+                    "navigationVisible": true,
+                    "rolePickerVisible": false,
+                    "targetRowVisible": false,
+                    "targetButtonVisible": false,
+                    "targetButtonEnabled": false,
+                    "clearButtonVisible": false,
+                    "clearButtonEnabled": false,
+                    "homeworkVisible": true,
+                    "homeworkCompleteVisible": true,
+                    "homeworkIncompleteVisible": false,
+                    "domStatus": "ABSENT_ROW",
+                    "targetNameEqual": false,
+                    "journalBusy": false
+                  }
+                },
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "END",
+                  "facts": {
+                    "testStatus": "passed",
+                    "diagnosticCompleted": true,
+                    "droppedEventCount": 0
+                  }
+                }
+              ],
+              "droppedEventCount": 0
+            },
+            "HEADMAN": {
+              "schema": "RCT_FOCUS3_CLOSED_V1",
+              "caseCode": "HEADMAN",
+              "events": [
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "BEGIN",
+                  "facts": {
+                    "diagnosticState": "OBSERVING"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LOGIN",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "uiTokenCaptured": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "STUDENT",
+                    "activeRoleExpected": false,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HELPER_PERMISSIONS",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "markPermission": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HOMEWORK_DEFAULT",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "itemsIsArray": true,
+                    "itemCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "targetTitleEqual": true,
+                    "semesterEqual": true,
+                    "rangeContainsTarget": true,
+                    "serverDateEqual": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "STUDENT",
+                    "activeRoleExpected": false,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "ROLE_CHANGE",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "uiTokenCaptured": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "HEADMAN",
+                    "activeRoleExpected": true,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "MARK_WRITE",
+                  "facts": {
+                    "httpStatus": "200"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "PRESENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "MARK_WRITE",
+                  "facts": {
+                    "httpStatus": "200"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "ABSENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "MARK_WRITE",
+                  "facts": {
+                    "httpStatus": "200"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "PRESENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "MARK_WRITE",
+                  "facts": {
+                    "httpStatus": "200"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "PRESENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": false,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 0,
+                    "targetPresent": false,
+                    "groupEqual": false,
+                    "subjectEqual": false,
+                    "dateEqual": false,
+                    "lessonStatus": "UNSUPPORTED",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": false,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": false,
+                    "rowEditableKnown": true,
+                    "rowEditable": false,
+                    "normalizedRowEditable": false,
+                    "blockedReasonPresent": true,
+                    "reportedEditBlock": "NOT_STARTED",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": false,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": false,
+                    "lessonStatus": "PLANNED"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "PRESENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "PRESENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "HEADMAN",
+                    "activeRoleExpected": true,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LOGOUT",
+                  "facts": {
+                    "httpStatus": "204"
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LOGIN",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "uiTokenCaptured": true
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": false,
+                    "actorMatchesTeacher": true,
+                    "activeRole": "TEACHER",
+                    "activeRoleExpected": false,
+                    "requiredRoleSelectable": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "DOM",
+                  "facts": {
+                    "journalCount": 0,
+                    "rowCount": 0,
+                    "targetRowCount": 0,
+                    "targetButtonCount": 0,
+                    "clearButtonCount": 0,
+                    "homeworkCount": 2,
+                    "homeworkCompleteCount": 0,
+                    "homeworkIncompleteCount": 0,
+                    "alertCount": 0,
+                    "loginVisible": false,
+                    "navigationVisible": true,
+                    "rolePickerVisible": false,
+                    "targetRowVisible": false,
+                    "targetButtonVisible": false,
+                    "targetButtonEnabled": false,
+                    "clearButtonVisible": false,
+                    "clearButtonEnabled": false,
+                    "homeworkVisible": true,
+                    "homeworkCompleteVisible": false,
+                    "homeworkIncompleteVisible": false,
+                    "domStatus": "ABSENT_ROW",
+                    "targetNameEqual": false,
+                    "journalBusy": false
+                  }
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "END",
+                  "facts": {
+                    "testStatus": "passed",
+                    "diagnosticCompleted": true,
+                    "droppedEventCount": 9
+                  }
+                }
+              ],
+              "droppedEventCount": 9
+            },
+            "HELPER": {
+              "schema": "RCT_FOCUS3_CLOSED_V1",
+              "caseCode": "HELPER",
+              "events": [
+                {
+                  "caseCode": "HELPER",
+                  "phase": "BEGIN",
+                  "facts": {
+                    "diagnosticState": "OBSERVING"
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LOGIN",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "uiTokenCaptured": true
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "STUDENT",
+                    "activeRoleExpected": true,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HELPER_PERMISSIONS",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "markPermission": true
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HOMEWORK_DEFAULT",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "itemsIsArray": true,
+                    "itemCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "targetTitleEqual": true,
+                    "semesterEqual": true,
+                    "rangeContainsTarget": true,
+                    "serverDateEqual": true
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_LIST",
+                  "facts": {
+                    "httpStatus": "200",
+                    "selectedDateEqual": true,
+                    "groupPathEqual": true,
+                    "bodyParsed": true,
+                    "itemsIsArray": true,
+                    "lessonCount": 1,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE",
+                    "transferPending": false
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "EMPTY",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "MARK_WRITE",
+                  "facts": {
+                    "httpStatus": "200"
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "LESSON_ROSTER",
+                  "facts": {
+                    "httpStatus": "200",
+                    "lessonPathEqual": true,
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "entriesIsArray": true,
+                    "entryCount": 3,
+                    "targetCount": 1,
+                    "targetPresent": true,
+                    "studentPresent": true,
+                    "assistantPresent": true,
+                    "targetNameEqual": true,
+                    "reportEditableKnown": true,
+                    "reportEditable": true,
+                    "rowEditableKnown": true,
+                    "rowEditable": true,
+                    "normalizedRowEditable": true,
+                    "blockedReasonPresent": false,
+                    "reportedEditBlock": "NONE",
+                    "targetStatus": "PRESENT",
+                    "lessonIdEqual": true,
+                    "groupEqual": true,
+                    "subjectEqual": true,
+                    "semesterEqual": true,
+                    "dateEqual": true,
+                    "lessonStatus": "ACTIVE"
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "SESSION",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "bodyShapeKnown": true,
+                    "actorMatchesTarget": true,
+                    "actorMatchesTeacher": false,
+                    "activeRole": "STUDENT",
+                    "activeRoleExpected": true,
+                    "requiredRoleSelectable": true
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "UI_RESPONSE",
+                  "endpoint": "HELPER_PERMISSIONS",
+                  "facts": {
+                    "httpStatus": "200",
+                    "bodyParsed": true,
+                    "markPermission": false
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "DOM",
+                  "facts": {
+                    "journalCount": 0,
+                    "rowCount": 0,
+                    "targetRowCount": 0,
+                    "targetButtonCount": 0,
+                    "clearButtonCount": 0,
+                    "homeworkCount": 0,
+                    "homeworkCompleteCount": 0,
+                    "homeworkIncompleteCount": 0,
+                    "alertCount": 0,
+                    "loginVisible": false,
+                    "navigationVisible": true,
+                    "rolePickerVisible": false,
+                    "targetRowVisible": false,
+                    "targetButtonVisible": false,
+                    "targetButtonEnabled": false,
+                    "clearButtonVisible": false,
+                    "clearButtonEnabled": false,
+                    "homeworkVisible": false,
+                    "homeworkCompleteVisible": false,
+                    "homeworkIncompleteVisible": false,
+                    "domStatus": "ABSENT_ROW",
+                    "targetNameEqual": false,
+                    "journalBusy": false
+                  }
+                },
+                {
+                  "caseCode": "HELPER",
+                  "phase": "END",
+                  "facts": {
+                    "testStatus": "passed",
+                    "diagnosticCompleted": true,
+                    "droppedEventCount": 0
+                  }
+                }
+              ],
+              "droppedEventCount": 0
+            }
+          },
+          "missing_members": [],
+          "source_assertions": "UNCHANGED_ACCEPTED_FIRST3",
+          "raw_logs_XML_HTML_error_context_read": false,
+          "buffer_limit": "POST_BUFFER_CLASSIFIER_NOT_HARD_RSS_BOUND",
+          "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+        },
+        "lesson": {
+          "artifact": 11916031667,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run": 38603879429,
+          "digest": "sha256:85fc3ad7abef98fe535b6ec1c31a6ea0eb5dd0a8c55742d5774df3b316edd63e",
+          "bytes": 564,
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-attendance-requests.spec.ts",
+                "line": 8,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 60558,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-lesson-lifecycle.spec.ts",
+                "line": 20,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 53646,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-lesson-lifecycle.spec.ts",
+                    "line": 20
+                  }
+                ]
+              },
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 370,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 56855,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 785,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 54302,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-schedule-lifecycle.spec.ts",
+                    "line": 899
+                  }
+                ]
+              }
+            ]
+          },
+          "diagnostic_schema": [
+            {
+              "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "LESSON_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+          "raw_logs_HTML_XML_error_context_read": false,
+          "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+        },
+        "homework": {
+          "artifact": 11915788765,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run": 38603879429,
+          "digest": "sha256:a67216429495b032daecf092964c5e729a351aeb242c174875533e6de2e6bad4",
+          "bytes": 502,
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 26,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 17903,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_TIMEOUT_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-homework-lifecycle.spec.ts",
+                    "line": 282
+                  }
+                ]
+              },
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 540,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 21350,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 880,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 4327,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "diagnostic_schema": [
+            {
+              "caseCode": "HOMEWORK_NON_AUTHOR_COMPLETION_REVOKE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HOMEWORK_TRANSFER_ARCHIVE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HOMEWORK_MATERIAL_OPTIMISTIC_ORDER",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+          "raw_logs_HTML_XML_error_context_read": false,
+          "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+        },
+        "map": {
+          "artifact": 11917130828,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run": 38603879429,
+          "digest": "sha256:788f02d19d3f0cc5c0e5ad8053c6bd0ba18af32d04028eb3aa0435f96f77d44b",
+          "bytes": 418,
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-map-lifecycle.spec.ts",
+                "line": 96,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 4036,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-map-lifecycle.spec.ts",
+                    "line": 314
+                  }
+                ]
+              }
+            ]
+          },
+          "diagnostic_schema": [
+            {
+              "caseCode": "MAP_ASSET_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+          "raw_logs_HTML_XML_error_context_read": false,
+          "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+        },
+        "helper": {
+          "artifact": 11915559793,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run": 38603879429,
+          "digest": "sha256:ae5f93c664ec2c6f2587443c1edfc0d53e80e3139f70df31b78aa28c2803ff64",
+          "bytes": 518,
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "cloud-accepted-helper-capabilities.spec.ts",
+                "line": 21,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 505,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "ACTOR_LOGIN",
+                    "cause": "ACTOR_LOGIN_HTTP",
+                    "httpStatus": 429
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "cloud-accepted-helper-capabilities.spec.ts",
+                    "line": 26
+                  }
+                ]
+              },
+              {
+                "file": "cloud-accepted-helper-capabilities.spec.ts",
+                "line": 124,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 2317,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-helper-capabilities.spec.ts",
+                "line": 179,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 2656,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "diagnostic_schema": [
+            {
+              "caseCode": "HELPER_STATS_BOUNDARY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HELPER_CANCEL_REVOKE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HELPER_EXCUSE_REVOKE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+          "raw_logs_HTML_XML_error_context_read": false,
+          "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+        }
+      },
+      "collection_gap": "NONE; map reporter/privacy source pin parameters joined current reviewed published sources; helper and map closed bodies read, all native trees reaped",
+      "finite_observed_results": {
+        "FIRST3": "STUDENT4388ms/HEADMAN14646ms/HELPER2624ms PASS; no 503 events; HEADMAN9observations dropped but assertions completed",
+        "requests": "manual budget/AUTO case PASS60558ms",
+        "builder": "PASS56855ms",
+        "HW": "non-author+inbox FAIL282 TimeoutError; transfer/archive and materials/order PASS",
+        "map": "FAIL314 actual cause not yet known",
+        "helper": "stats actor login429 fixture setup; cancel/excuse PASS"
+      }
+    },
+    "D017_H1_Source_ready": {
+      "commit": "0f19bfe56ffe956b5eaffca7b6beb4203d77d843",
+      "parent": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "paths": 8,
+      "checks": "formatter/E2ETSC/icons/PWA vue-tsc+Vite/dist/hooks PASS",
+      "actual_new_browser": "NOT_RUN",
+      "native": "OWNER_MANUAL_PENDING D015",
+      "independent_review": {
+        "reviewer": "c61_ci_independence_review",
+        "verdict": "APPROVE_SOURCE",
+        "note": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+      },
+      "outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#ClientReadinessD017",
+      "all_reaped": true,
+      "Root_exact_integration": {
+        "status": "REVIEWED_WIP_NOT_PUSHED",
+        "paths": [
+          {
+            "path": "frontends/pwa-vue/index.html",
+            "sha256": "28402cf786e291824bb75e4e91c7300f897bb102739af041386672c554649a36"
+          },
+          {
+            "path": "frontends/pwa-vue/public/apple-touch-icon.png",
+            "sha256": "14fbaba63e8e98d36b514b0c9dc948367928493be5550ef2c10213d42cc320fa"
+          },
+          {
+            "path": "frontends/pwa-vue/public/favicon.svg",
+            "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+          },
+          {
+            "path": "frontends/pwa-vue/public/icon-192.png",
+            "sha256": "0abcc4bf0d8a8e4846400da1735978044ad44e7b922fb4e62f041a84e88bd39c"
+          },
+          {
+            "path": "frontends/pwa-vue/public/icon-512.png",
+            "sha256": "28bf8a67bba67c6b573a52e708387e53c1c359aed8c49327efc2f18ca6b62242"
+          },
+          {
+            "path": "frontends/pwa-vue/public/manifest.webmanifest",
+            "sha256": "68fb36b82a10fbf5eb3ec576be1f6b9164ec8bb1542938b47514eec71cbb32fb"
+          },
+          {
+            "path": "tests/e2e/fixtures/telegram.ts",
+            "sha256": "39283efb54eb0ecdfa3403b51329af78bc05aac23cead9d0f1152c12487483a6"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "sha256": "597f95640b90ace5c3bfabd4fae14e7e170c91c4e4c0fb6713c5da664ded666f"
+          }
+        ]
+      }
+    },
+    "HW_inbox_entry_oracle_ready": {
+      "commit": "a6395d5ce1f35d0d041362392a06546f104d8932",
+      "parent": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "sha256": "df98676a716117a28af0c489f461a6ebff2547abde847c9d327811cd6223c1d5",
+      "diff": "+3/-0; existingToday navigation beforebothnotificationopens, comment; inverse original byteexact",
+      "cause": "test waits for bell from HomeworkScreen that has no bell; genuine entry TodayScreen unchanged",
+      "checks": "formatter/TSC/applicablehooks PASS12.95s/allreaped",
+      "actual_corrected_browser": "NOT_RUN",
+      "independent_review": {
+        "reviewer": "c61_ci_independence_review",
+        "verdict": "APPROVE_SOURCE",
+        "note": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+      },
+      "Root_exact_integration": {
+        "status": "REVIEWED_WIP_NOT_PUSHED",
+        "paths": [
+          {
+            "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+            "sha256": "df98676a716117a28af0c489f461a6ebff2547abde847c9d327811cd6223c1d5"
+          }
+        ]
+      }
+    },
+    "edb_journal_closure_review": {
+      "reviewer": "c61_ci_independence_review",
+      "verdict": "APPROVE_FINITE; row01/02 PASS adoptedserver+readyPWA/sharedcontrolscope",
+      "review": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md#edb journalclosure",
+      "closed_defects": [
+        "DF-PWA-JOURNAL-CHOOSER-001",
+        "DF-PWA-JOURNAL-FUTURE-001",
+        "GAP-PWA-HEADMAN-GEO-BLOCK-001"
+      ],
+      "limits": "NotWEB05/defaultweek/cancelled/wholeclient/B013/nativeTG; HELPER392 own/revoke notexplicitforeignmarkwrite, separatebackendproof reused; HEADobs9drops butassertionscomplete"
+    },
+    "edb_map_helper_fixture_ready": {
+      "commit": "27e1368f778ca1d1f4d8897b45b60ab921ff9898",
+      "parent": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "scope": "two existing specs +10/-3",
+      "map": "same trueGET200/planidentity; MIME/size; actual recoveredSVG/PNG download exactoriginal/replacementbytes; prior314 kind unknown and preserved",
+      "helper": "existing boundedloginPwa RetryAfter option, no quota/security/config change; prioractual429 setup",
+      "checks": "canonicalformat/real-mobileTSC PASS10.994s/allreaped",
+      "actual_after_browser": "NOT_RUN",
+      "review": {
+        "verdict": "APPROVE_SOURCE",
+        "reviewer": "c61_d_png_export",
+        "evidence": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#EReview",
+        "limits": "No known original314failurekind or newactualbrowserPASS"
+      },
+      "outcome": "/workspace/scratch/rct-validation/remaining_security_enum_scopes/OUTCOME.md",
+      "Root_exact_integration": [
+        {
+          "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+          "sha256": "2d03c930efb87c60b393170858da0f2a56b106ce2ac4154cba661919492fe3e1"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+          "sha256": "801a5e0e8cc660c2128c628564b486b838116b4c254a5ec72e657d99923adeac"
+        }
+      ]
+    },
+    "edb_real_semester_and_fresh_recovery": {
+      "source_receipt_sha256": "df911902593af74a0eac58128ac6b1c6fcf7bbdba66756e6e2fe2614d7b8c338",
+      "actual": {
+        "state": "ACTUAL_FINITE_CASE_PASS_SOURCE_JOINED",
+        "observed_at": "2026-10-14T18:03:23.948380+00:00",
+        "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+        "run": 38603879429,
+        "event": "pull_request",
+        "attempt": 1,
+        "job": 115989690851,
+        "overall_job_conclusion": "failure",
+        "actual_checkout": {
+          "commit": "635ab18baf2c61b76d97357b8b0af4f74835f532",
+          "tree": "17abfb5d9b1b1ee7d9479b9a8e4ecc39900633d8",
+          "parents": [
+            "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "edb7631da2dc7dd63050b5052f48a7634ceaca23"
+          ],
+          "localHEADtreeEqual": true
+        },
+        "checkout_provenance": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_selected_actual_auth_notification_checkout.official_checkout_join",
+        "checkout_qualification": "Root existing observed official commit metadata reused; producer tree independently matched locally. Merge commit object not locally present, no direct merge file read claimed.",
+        "source_joins": [
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sha256": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sha256": "0eb2c3fec3cc171a30ea78baabb5b3485b1ee8973ce56a655cd81cce5da6653a",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          },
+          {
+            "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "sha256": "9852da5d56fe30fbe91cf63d1065f49d574ecfc936a7e10453838bc51a61f3fd",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          },
+          {
+            "path": "tests/e2e/fixtures/application-recovery.spec.ts",
+            "sha256": "013248258583b91d993b7f145837c75aaf950a652febbc042dde3192baa845c4",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          },
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha256": "6de4c4a4a80e53cf37e7200dec7d343d8cd84e1c4848c77d5fdbd91e388b3e0e",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          },
+          {
+            "path": "scripts/test-application-recovery.py",
+            "sha256": "8466796677406a7d6dfa653fb2b81f912d680bc8cc6583ea8f64dc74e07dd156",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          },
+          {
+            "path": "scripts/recovery.py",
+            "sha256": "1d5dc8d93a8f2aaf4ecf1c65aaae94776e57c582986c2178786df417fb926296",
+            "producer_equals_current_worktree": true,
+            "checkout_join": "producer tree equals Root observed official checkout tree"
+          }
+        ],
+        "artifacts": [
+          {
+            "kind": "semester",
+            "artifact_id": 11917237859,
+            "path": "/workspace/scratch/rct-validation/ci_edb_closed_read/semester/semester-lifecycle-safe-1.zip",
+            "sha256": "9582aa273c708c44c731dad1283a975e5491221e2d4f92fe6d048dbe6a0353f3",
+            "bytes": 756,
+            "members": [
+              "artifacts/safe-results.json",
+              "lifecycle.safe.json"
+            ],
+            "safe_projection": "/workspace/scratch/rct-validation/ci_edb_closed_read/semester/semester-lifecycle-safe-1.safe.json"
+          },
+          {
+            "kind": "recovery",
+            "artifact_id": 11917067991,
+            "path": "/workspace/scratch/rct-validation/ci_edb_closed_read/recovery/application-recovery-safe-1.zip",
+            "sha256": "4e5cee4412bedd3c384b3531be7d3e157745dc48c7cd56c97b2fab7cd7738a0c",
+            "bytes": 1456,
+            "members": [
+              "admit/safe-results.json",
+              "attachment/safe-results.json",
+              "pending/safe-results.json",
+              "seed/safe-results.json"
+            ],
+            "safe_projection": "/workspace/scratch/rct-validation/ci_edb_closed_read/recovery/application-recovery-safe-1.safe.json"
+          }
+        ],
+        "semester": {
+          "artifact": 11917237859,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run": 38603879429,
+          "digest": "sha256:9582aa273c708c44c731dad1283a975e5491221e2d4f92fe6d048dbe6a0353f3",
+          "bytes": 756,
+          "results": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "semester-lifecycle.spec.ts",
+                "line": 362,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 62687,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "lifecycle_closed_diagnostics": {
+            "schema": "semester-lifecycle.v1",
+            "primary": {
+              "stage": "COMPLETED",
+              "action": "RESTORE",
+              "operationState": "COMPLETED",
+              "academic": "RELEASED",
+              "schedule": "RELEASED",
+              "attendance": "RELEASED",
+              "retryable": false,
+              "transition": "NONE",
+              "active": false,
+              "archived": false,
+              "releasePending": false,
+              "writeBlocked": false,
+              "reasonCode": "NONE"
+            },
+            "cleanup": {
+              "stage": "COMPLETED",
+              "action": "NONE",
+              "operationState": "COMPLETED",
+              "academic": "RELEASED",
+              "schedule": "RELEASED",
+              "attendance": "RELEASED",
+              "retryable": false,
+              "transition": "NONE",
+              "active": true,
+              "archived": false,
+              "releasePending": false,
+              "writeBlocked": false,
+              "reasonCode": "NONE"
+            },
+            "primaryFailure": false,
+            "cleanupOutcome": "COMPLETED",
+            "clockOutcome": "PASSED",
+            "disposeOutcome": "PASSED"
+          },
+          "diagnostic_schema": [
+            {
+              "caseCode": "SEMESTER_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+          "raw_logs_HTML_XML_error_context_read": false,
+          "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+        },
+        "recovery": {
+          "artifact": 11917067991,
+          "producer": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+          "run": 38603879429,
+          "digest": "sha256:4e5cee4412bedd3c384b3531be7d3e157745dc48c7cd56c97b2fab7cd7738a0c",
+          "bytes": 1456,
+          "phases": {
+            "admit": {
+              "status": "passed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "application-recovery.spec.ts",
+                  "line": 476,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 1955,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                }
+              ]
+            },
+            "attachment": {
+              "status": "passed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "application-recovery.spec.ts",
+                  "line": 476,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 121,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                }
+              ]
+            },
+            "pending": {
+              "status": "passed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "application-recovery.spec.ts",
+                  "line": 476,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 277,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                }
+              ]
+            },
+            "seed": {
+              "status": "passed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "application-recovery.spec.ts",
+                  "line": 476,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 36378,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                }
+              ]
+            }
+          },
+          "lifecycle_closed_diagnostics": {},
+          "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+          "missing_phases": [],
+          "diagnostic_schema": {
+            "admit": [
+              {
+                "caseCode": "APPLICATION_RECOVERY_PHASE",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ],
+            "attachment": [
+              {
+                "caseCode": "APPLICATION_RECOVERY_PHASE",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ],
+            "pending": [
+              {
+                "caseCode": "APPLICATION_RECOVERY_PHASE",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ],
+            "seed": [
+              {
+                "caseCode": "APPLICATION_RECOVERY_PHASE",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ]
+          },
+          "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+          "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+          "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES"
+        },
+        "finite_criteria": [
+          {
+            "scope": "Q05 archive/restore participants",
+            "source": "tests/e2e/fixtures/semester-lifecycle.spec.ts:252",
+            "status": "PASS",
+            "proved": "FULL admin ARCHIVE/RESTORE reach COMPLETED with stable operation identity, all3 Academic/Schedule/Attendance receipts READY/RELEASED, settled inactive authority and correct write gate; exact replay retains completed operation/stateVersion."
+          },
+          {
+            "scope": "Q05 archived refusals",
+            "source": "tests/e2e/fixtures/semester-lifecycle.spec.ts:329",
+            "status": "PASS",
+            "proved": "Archived future cancellation, historical attendance PUT and homework PUT return typed409 conflict; canonical schedule, mark, homework contents/placement/revision and archive authority unchanged."
+          },
+          {
+            "scope": "Q05 inactive history boundary",
+            "source": "tests/e2e/fixtures/semester-lifecycle.spec.ts:348",
+            "status": "PASS",
+            "proved": "Archived/restored-but-inactive history returns typed403 OUT_OF_SCOPE. After explicit activation, original nonempty student history including owned PRESENT occurrence equals baseline."
+          },
+          {
+            "scope": "Q05 restore data and permitted write",
+            "source": "tests/e2e/fixtures/semester-lifecycle.spec.ts:362",
+            "status": "PASS",
+            "proved": "Restore stays inactive/unscheduled/unarchived, no replacement activation; attendance/canonical lessons/homework preserved. Explicit activation then homework edit advances revision exactly once without placement/history mutation."
+          },
+          {
+            "scope": "Q05 finalizers",
+            "source": "tests/e2e/fixtures/semester-lifecycle.spec.ts:362",
+            "status": "PASS",
+            "proved": "Closed primaryFailure=false; primary COMPLETED/RESTORE all RELEASED reason NONE. Cleanup COMPLETED original semester active/unarchived/no releasePending; clock/dispose PASSED."
+          },
+          {
+            "scope": "Q15 seed/pending",
+            "source": "tests/e2e/fixtures/application-recovery.spec.ts:246",
+            "status": "PASS",
+            "proved": "Real marked CLOSED historical lesson and PNG bytes/hash; active lesson-bound homework and nonempty history. Broker stopped; retained HEADMAN/STUDENT proofs admitted; actual transfer202 PENDING."
+          },
+          {
+            "scope": "Q03/Q15 restored revocation",
+            "source": "tests/e2e/fixtures/application-recovery.spec.ts:148",
+            "status": "PASS",
+            "proved": "Exact pre-backup unexpired revoked access/refresh proofs both401 before/after restore, distinct same-user control200 before/after. Restored verification precedes fresh login; original signing/container identity retained."
+          },
+          {
+            "scope": "Q15 fresh restore",
+            "source": ".github/workflows/ci.yml:1344",
+            "status": "PASS",
+            "proved": "Actual successful step40 plus four closed PASS phases joins quiesced database-only backup/capture, fresh same-image labeled DB targets, stopped/disconnected originals, restore and same application restart. Attachment phase follows successful exact-replay verifier."
+          },
+          {
+            "scope": "Q15 participant recovery/dedup",
+            "source": "scripts/test-application-recovery.py:374",
+            "status": "PASS",
+            "proved": "Verifier requires COMPLETED immutable operation, unchanged canonical batches/lessons/occurrences/lifecycle/bindings, exact Academic/Attendance APPLIED receipts/hashes, one transfer-history per binding, accepted placement/revision and stable content/past marks; original outbox sent with original envelope."
+          },
+          {
+            "scope": "Q15 exact replay/history/attachment",
+            "source": "scripts/test-application-recovery.py:516",
+            "status": "PASS",
+            "proved": "Exact transfer replay preserves response/canonical schedule/business state/user history. Following attachment phase proves PNG MIME/length/hash preserved after replay."
+          }
+        ],
+        "historical_comparison": {
+          "c5f3": "Actual205505ms ARCHIVE barrier FAIL/SCHEDULE_EFFECT_ACK_PENDING and failed cleanup preserved. Current same terminal assertions complete62687ms and all later refusal/restore/readback/write/finalizer checks pass. This proves current finite behavior; does not identify the old effect cause.",
+          "oracle_correction": "Current inactiveStudentHistory expects typed403 OUT_OF_SCOPE, not500; nonempty history equality asserted after explicit activation."
+        },
+        "limitations": [
+          "No whole Q05/Q15 family PASS: concurrency/deletion/missed-event cache and broader outage/config/provider branches separate.",
+          "Genuine remote CI Playwright APIRequestContext assertions; no new local browser or UI-navigation execution.",
+          "Success artifacts contain no recovery failure diagnostics or semester effect.safe.json; their absence does not identify the historical pending-effect cause.",
+          "Artifact schema does not prove checkout; existing Root observed checkout metadata plus local tree equality supplies join.",
+          "Sampled native resource caps, no hard OS isolation; SDK allocation unmeasured."
+        ],
+        "collector": {
+          "terminals": [
+            {
+              "kind": "semester",
+              "direct_pid": 794702,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 794702,
+                  "start_ticks": 25466246
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            {
+              "kind": "recovery",
+              "direct_pid": 794709,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 794709,
+                  "start_ticks": 25466328
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          ],
+          "seconds": 1.5172047419764567,
+          "all_private_requests_removed": true,
+          "resource_qualification": "Sampled native resources; SDK allocation unmeasured; inherited normal proxy/TLS context"
+        },
+        "collector_history": [
+          {
+            "status": "PRE_EFFECT_ASSERTION_FAILURE",
+            "effects": false,
+            "detail": "Two copied grant assertion typos corrected before children."
+          },
+          {
+            "status": "URLERROR",
+            "all_owned_processes_reaped": true,
+            "detail": "Default sandbox network unavailable. Normal supported tool network capability then succeeded; no policy rejection/bypass."
+          },
+          {
+            "status": "SOURCE_JOIN_PREFLIGHT_FAILURE",
+            "effects": "No new artifact read",
+            "detail": "Merge object not locally present; used existing Root official observed metadata and independently matched producer tree instead."
+          }
+        ],
+        "authorization": "Read-only artifact/source join. No shared docs/product/Git mutation; no Java/browser/DB/Docker/test rerun."
+      },
+      "status": "finitePASS; currentc5 historicalfailurecause stillUNKNOWN; no wholeQ05/Q15promotion"
+    },
+    "edb_B_educational_room_and_diagnostics_ready": {
+      "commit": "37393d3b8b4a52b705f2d6545879d872022a84ec",
+      "parent": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "paths": 4,
+      "scope": "RoomWriter educationaleligibility/real audit; existingPG/DI clockcase; exactlesson privacyallowlist+existingcontrol",
+      "checks": "canonicalJava clean/Schedulemain+testcompile/TSformatTSC/hooks PASS; heavy169.23s/allreaped",
+      "actual_PG_browser_sensitivity": "NOT_RUN",
+      "lesson20_actual_cause": "UNKNOWN; noframe because oldsourceallowlistomittedspec",
+      "room899_classification": "confirmed fixture clock seam mismatch; not realproductiondatebug claim",
+      "CI_workflow": "UNCHANGED; cdca65 is expected OLD4065counterexamplehash, notcurrentSourcepin, retain",
+      "review": {
+        "verdict": "APPROVE_SOURCE",
+        "reviewer": "c61_ci_independence_review",
+        "note": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+      },
+      "outcome": "/workspace/scratch/rct-validation/q06_replacement_cause/outcome.safe.json#edb_lesson_schedule_diagnosis",
+      "Root_exact_integration": [
+        {
+          "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java",
+          "sha256": "159d02b3f52584c77570c65678f9e89098d66b8f095baa56beabfadafb01ce2e"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+          "sha256": "2bb7a878b63cbebb539d60e399d473a3041320535b29df020f05944688167101"
+        },
+        {
+          "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+          "sha256": "261e577dcd79ff5d3e936e5eabf120cefe91298ecd843ca3f1f914a5c13e4da4"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "sha256": "a2a5a0d0467eb7195c27b68beaed40038600ce0adf37c9ff817111a5d6d98d60"
+        }
+      ],
+      "actual_privacy_control": {
+        "result": {
+          "state": "PRIVACY_BOUNDARIES_PASSED",
+          "normalChildStatus": 0,
+          "markerAbsent": true,
+          "originalMetadataLeakReproduced": true,
+          "expectedFailureRetained": true,
+          "successRetained": true,
+          "guardControl": {
+            "canonicalReporterAccepted": true,
+            "sameBasenameAlternateRejected": true,
+            "extraReporterRejected": true,
+            "traceRejected": true,
+            "videoRejected": true,
+            "screenshotRejected": true,
+            "missingSnapshotGuardRejected": true,
+            "wrongSnapshotGuardRejected": true
+          },
+          "interruptedChildStatus": 0,
+          "interruptedChildSignal": null,
+          "interruptionPassed": true,
+          "missingGuardRejectedBeforeOperation": true,
+          "browser": "NOT_STARTED"
+        },
+        "elapsed_seconds": 42.734522732003825,
+        "all_reaped": true,
+        "qualification": "Existingbrowserfreecontrols actualexecution; no browser/DB/nativeprovider; Rootownsrun afteroldBtreeunavailable andownWTprocessesconfirmednone"
+      }
+    },
+    "edb_next_coherent_prepublication_checks": {
+      "parent": "edb7631da2dc7dd63050b5052f48a7634ceaca23",
+      "source_paths": 25,
+      "total_publication_paths": 42,
+      "exact_reviewed_author_commits": [
+        "509db393",
+        "278fdee2",
+        "5fbb9a68",
+        "2a348c73",
+        "0f19bfe5",
+        "a6395d5c",
+        "27e1368f",
+        "37393d3b"
+      ],
+      "checks": [
+        {
+          "command": [
+            "git",
+            "diff",
+            "--check"
+          ],
+          "native_exit": 0,
+          "seconds": 0.27110785100376233
+        },
+        {
+          "command": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+            "--noEmit"
+          ],
+          "native_exit": 0,
+          "seconds": 4.216126140992856
+        },
+        {
+          "command": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+            "--offline",
+            "tool",
+            "run"
+          ],
+          "native_exit": 0,
+          "seconds": 8.061544163996587
+        }
+      ],
+      "elapsed_seconds": 12.841133573994739,
+      "all_reaped": true,
+      "Angular_baseline": "UNCHANGED433trackedbytes+modes",
+      "RootPW": "actualdirectoryinode413591preserved",
+      "original_untracked": "25preserved/notstaged",
+      "pending": "normalcommit/push/readback/currentgates; requirednewPG/browser/sensitivity stillpending"
     }
   }
 }

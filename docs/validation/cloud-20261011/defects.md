@@ -316,3 +316,10 @@ Evidence once: receipts/current-4065-real-push-readback.safe.json#next_reviewed_
 - DF-PWA-JOURNAL-FUTURE-001 P3 OPEN: future noneditable row renders three disabled choices where accepted flow requires future state without choices; actual unchanged SFC RED.
 - GAP-PWA-HEADMAN-GEO-BLOCK-001 P2 OPEN: ready main screen lacks accepted active-lesson geo-block control; existing server POST/DELETE blockage fits geo-denial/manual-allowed contract. Actual unchanged Home SFC missing-action RED.
 Source/evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.Q01_actual_component_RED. Same author assigned coherent fix, designskill/currentcomponents; final real backend/browser still required.
+
+
+## GAP-PWA-INSTALL-ICON-001 — accepted installation prerequisite, Source gap
+
+2026-10-14 / currentedb. Canonical JS-STUDENT-09 + ownerD015 retain correctimplementation while nativeexecution belongsowner. Actual frontends/pwa-vue/public/manifest.webmanifest has no icons; index/producer do not supply nativeicon. No actual OS/browser installfailure claimed. Need designSource acceptedasset/reproducible minimaldeclarations; no inventedbrand/Angularmutation. Status SOURCE_GAP_OPEN, severity provisionalP2, actualacceptance pending. Existing current4065#D015_install_icon_Source_gap.
+
+2026-10-14T18:02:34.619357+00:00: CLOSED bounded actual edb journal: DF-PWA-JOURNAL-CHOOSER-001, DF-PWA-JOURNAL-FUTURE-001, GAP-PWA-HEADMAN-GEO-BLOCK-001. Original meaningful SFC RED→GREEN/714 independent Source review plus exact FIRST3 HEADMAN89/HELPER392 real PWA/backend PASS; separate independent closure review approves JS-HEADMAN-01/02 adopted readyPWA/sharedcontrol scope. Evidence receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review. Other journal/browser/native scopes unchanged.

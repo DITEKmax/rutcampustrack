@@ -5,9 +5,9 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+      "sha256": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
       "status": "authoritative-owner-contract",
-      "revision": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
+      "revision": "edb7631da2dc7dd63050b5052f48a7634ceaca23+ownerD017WIP",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
       "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
       "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
@@ -17,7 +17,10 @@
       "previous_sha256_before_D012": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27",
       "original_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
       "owner_decisions_through": "D014",
-      "previous_sha256_before_D014": "9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91"
+      "previous_sha256_before_D014": "9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91",
+      "previous_sha256_before_D015": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+      "previous_sha256_before_D016": "4f45e414322d3d41192c52baf244bfe6e96a2b76b3597ad714f79674eb0f2757",
+      "previous_sha256_before_D017": "d9132dda1bada9670a01abc5d77649f73b4d794779a56ae0c3b767bf7b79d988"
     },
     {
       "id": "AGENTS.md",
@@ -14644,6 +14647,27 @@
       "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
       "kind": "reviewed-current-product-or-checking-source",
       "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "owner:cloud-validation-Q013-20261014",
+      "path": "docs/product/decisions/2026-10-14-owner-native-client-acceptance.md",
+      "sha256": "dfdfee5b4cb4cff8729cdbdf960c6a400e1f0f184f3ccce7da406d9f4d1b64ed",
+      "status": "accepted-authoritative-owner-decision-D015",
+      "source_identity": "nativeclientownership Q013 direct owneranswer 2026-10-14T17:27:58.313140+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q012-20261014",
+      "path": "docs/product/decisions/2026-10-14-headman-replacement-only.md",
+      "sha256": "951224892e9295c95950f8689e62616bf0272e27390b2109d8a5f8ff6328c04b",
+      "status": "accepted-authoritative-owner-decision-D016",
+      "source_identity": "Q012 direct owneranswer 2026-10-14T17:34:08.654748+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q014-20261014",
+      "path": "docs/product/decisions/2026-10-14-temporary-pwa-install-icon.md",
+      "sha256": "48d4bd40d44445a87bfc663e3340ac48f52661d89ff8c871997edd84a41a6b14",
+      "status": "accepted-authoritative-owner-decision-D017",
+      "chosen_asset_sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
     }
   ],
   "research_receipt": {

@@ -440,6 +440,11 @@ class EventIdempotentIT extends ContainerTestBase {
                                             .onMessage(message, channel);
                                     return;
                                 }
+                                // Factory retry attempts are not new broker deliveries. Let any
+                                // delegate exception propagate unchanged to the existing advice;
+                                // only a successful committed return advances the loss witness.
+                                ((ChannelAwareMessageListener) original)
+                                        .onMessage(message, channel);
                                 try {
                                     int delivery = deliveries.incrementAndGet();
                                     Channel physical =
@@ -456,8 +461,6 @@ class EventIdempotentIT extends ContainerTestBase {
                                                 .isTrue();
                                         assertThat(physical).isNotSameAs(firstChannel.get());
                                     }
-                                    ((ChannelAwareMessageListener) original)
-                                            .onMessage(message, channel);
                                     if (delivery == 1) {
                                         committed.countDown();
                                         assertThat(release.await(45, TimeUnit.SECONDS)).isTrue();

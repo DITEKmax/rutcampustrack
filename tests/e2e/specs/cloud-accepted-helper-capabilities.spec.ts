@@ -21,9 +21,12 @@ registerPrivateSuite();
 test('VIEW_STATS renders own group but grants neither marking, roster export nor credentials @cloud-accepted', async ({
   page,
   dataset,
-}) => {
+}, info) => {
+  // Share the existing registry fixture's real Retry-After handling, within
+  // this case's original budget and with 30 seconds reserved for assertions.
+  const retryUntilMs = Date.now() + Math.max(0, Math.min(info.timeout, 120000) - 30000);
   const { user, grant } = await singleCapability(dataset, 'VIEW_STATS');
-  const { accessToken, session } = await loginPwa(page, user);
+  const { accessToken, session } = await loginPwa(page, user, { retryUntilMs });
   expect(session.activeRole).toBe('STUDENT');
   const permissions = await dataset.request.get('/api/academic/assistants/me/permissions', {
     headers: { Authorization: `Bearer ${accessToken}` },

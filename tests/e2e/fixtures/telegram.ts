@@ -28,42 +28,67 @@ export function syntheticInitData(
 }
 
 /** Synthetic Telegram UI host; auth/session/domain HTTP still reach real services. */
-export async function installTelegramHost(page: Page, initData: string): Promise<void> {
+export async function installTelegramHost(
+  page: Page,
+  initData: string,
+  options: { observeDownloads?: boolean } = {},
+): Promise<void> {
   await page.route('https://telegram.org/js/telegram-web-app.js', (route) =>
     route.fulfill({ body: '', contentType: 'application/javascript' }),
   );
-  await page.addInitScript((initData) => {
-    const state = { backVisible: false, ready: false, callbacks: new Set<() => void>() };
-    Object.assign(window, {
-      __tmaEntryState: state,
-      Telegram: {
-        WebApp: {
-          initData,
-          viewportHeight: 844,
-          viewportStableHeight: 844,
-          safeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
-          ready() {
-            state.ready = true;
-          },
-          expand() {},
-          onEvent() {},
-          offEvent() {},
-          BackButton: {
-            show() {
-              state.backVisible = true;
+  await page.addInitScript(
+    ({ initData, observeDownloads }) => {
+      const state = {
+        backVisible: false,
+        ready: false,
+        callbacks: new Set<() => void>(),
+        downloads: [] as { url: string; file_name: string }[],
+      };
+      Object.assign(window, {
+        __tmaEntryState: state,
+        Telegram: {
+          WebApp: {
+            initData,
+            viewportHeight: 844,
+            viewportStableHeight: 844,
+            safeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
+            ready() {
+              state.ready = true;
             },
-            hide() {
-              state.backVisible = false;
-            },
-            onClick(callback: () => void) {
-              state.callbacks.add(callback);
-            },
-            offClick(callback: () => void) {
-              state.callbacks.delete(callback);
+            expand() {},
+            onEvent() {},
+            offEvent() {},
+            ...(observeDownloads
+              ? {
+                  downloadFile(
+                    params: { url: string; file_name: string },
+                    callback: (accepted: boolean) => void,
+                  ) {
+                    // RAM observation proves only the application handoff. No
+                    // Telegram provider or native file save is simulated here.
+                    state.downloads.push({ url: params.url, file_name: params.file_name });
+                    callback(true);
+                  },
+                }
+              : {}),
+            BackButton: {
+              show() {
+                state.backVisible = true;
+              },
+              hide() {
+                state.backVisible = false;
+              },
+              onClick(callback: () => void) {
+                state.callbacks.add(callback);
+              },
+              offClick(callback: () => void) {
+                state.callbacks.delete(callback);
+              },
             },
           },
         },
-      },
-    });
-  }, initData);
+      });
+    },
+    { initData, observeDownloads: options.observeDownloads === true },
+  );
 }

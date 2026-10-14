@@ -556,8 +556,29 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     dataset,
   }) => {
     const proof = syntheticInitData(dataset.teacher.telegramId);
-    await installTelegramHost(page, proof);
+    await installTelegramHost(page, proof, { observeDownloads: true });
+    const lessonPath = `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`;
+    const launch = Buffer.from(
+      JSON.stringify({
+        v: 2,
+        action: {
+          kind: 'lesson',
+          role: 'TEACHER',
+          lessonId: String(dataset.lesson.physicalLessonId),
+        },
+      }),
+    ).toString('base64url');
+    expect(launch.length <= 384).toBe(true);
+    let activeToken = '';
     for (let attempt = 0; attempt < 2; attempt++) {
+      const target =
+        attempt === 1
+          ? page.waitForResponse(
+              (response) =>
+                new URL(response.url()).pathname === lessonPath &&
+                response.request().method() === 'GET',
+            )
+          : null;
       const admission = page.waitForResponse(
         (response) =>
           new URL(response.url()).pathname === '/api/auth/tma' &&
@@ -568,14 +589,117 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
           new URL(response.url()).pathname === '/api/auth/session' &&
           response.request().method() === 'GET',
       );
-      await page.goto('/mini-app/');
-      expect((await admission).status()).toBe(200);
+      await page.goto(attempt === 1 ? `/mini-app/?tgWebAppStartParam=n2_${launch}` : '/mini-app/');
+      const authenticated = await admission;
+      expect(authenticated.status()).toBe(200);
+      const { accessToken } = await authenticated.json();
+      expect(typeof accessToken === 'string' && accessToken.length > 0).toBe(true);
+      activeToken = accessToken;
       const actual = await current;
       expect(actual.status()).toBe(200);
       const session = await actual.json();
       expect(String(session.userId)).toBe(String(dataset.teacher.id));
       expect(session.activeRole).toBe('TEACHER');
       await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+      expect(
+        await page.evaluate(
+          ({ token, proof }) => {
+            const stored = JSON.stringify([
+              Object.entries(localStorage),
+              Object.entries(sessionStorage),
+            ]);
+            return !stored.includes(token) && !stored.includes(proof);
+          },
+          { token: accessToken, proof },
+        ),
+      ).toBe(true);
+      if (target) {
+        expect((await target).status()).toBe(200);
+        await expect(page.getByRole('heading', { name: 'Пара', exact: true })).toBeVisible();
+      }
+    }
+
+    // D015/H1: the host is synthetic; admission, target authorization and the
+    // selected HTML job/ticket/file are genuine. Observe only the native API
+    // handoff in RAM, never claim that Telegram or the OS saved a file.
+    await page.getByRole('button', { name: 'Скачать посещаемость этой пары', exact: true }).click();
+    const created = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/auth/export-jobs' &&
+        response.request().method() === 'POST',
+    );
+    const issued = page.waitForResponse(
+      (response) =>
+        /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(response.url()).pathname) &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'HTML (.html)', exact: true }).click();
+    const jobResponse = await created;
+    expect(jobResponse.status()).toBe(202);
+    const report = jobResponse.request().postDataJSON().report;
+    expect(
+      report?.kind === 'TEACHER_JOURNAL' &&
+        report.teacherJournal?.lessonId === String(dataset.lesson.physicalLessonId) &&
+        report.teacherJournal.groupId === dataset.group.id &&
+        report.teacherJournal.format === 'html',
+    ).toBe(true);
+    const jobId: unknown = (await jobResponse.json()).jobId;
+    expect(
+      typeof jobId === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(jobId),
+    ).toBe(true);
+    const ticketResponse = await issued;
+    expect(ticketResponse.status()).toBe(200);
+    expect(new URL(ticketResponse.url()).pathname === `/api/auth/export-jobs/${jobId}/ticket`).toBe(
+      true,
+    );
+    const ticket = await ticketResponse.json();
+    expect(
+      typeof ticket.downloadPath === 'string' &&
+        /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(ticket.downloadPath),
+    ).toBe(true);
+    await expect(
+      page.getByRole('status').filter({
+        hasText: 'Telegram принял запрос на скачивание; проверь завершение в Telegram.',
+      }),
+    ).toBeVisible();
+    const downloads = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __tmaEntryState: { downloads: { url: string; file_name: string }[] };
+          }
+        ).__tmaEntryState.downloads,
+    );
+    expect(downloads.length).toBe(1);
+    const download = downloads[0]!;
+    expect(
+      new URL(download.url).protocol === 'https:' &&
+        download.url === new URL(ticket.downloadPath, new URL(page.url()).origin).href,
+    ).toBe(true);
+    expect(
+      download.file_name === ticket.suggestedFilename &&
+        /^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(download.file_name) &&
+        download.file_name.endsWith('.html'),
+    ).toBe(true);
+    const job = await page.request.get(`/api/auth/export-jobs/${jobId}`, {
+      headers: { Authorization: `Bearer ${activeToken}` },
+    });
+    try {
+      expect(job.status()).toBe(200);
+      const currentJob = await job.json();
+      expect(currentJob.jobId === jobId && currentJob.state === 'ready').toBe(true);
+    } finally {
+      await job.dispose();
+    }
+    const file = await page.request.get(download.url);
+    try {
+      if (file.status() !== 200)
+        throw datasetHttpFailure('GET', ticket.downloadPath, file.status());
+      expect(file.headers()['content-type']?.split(';')[0] === 'text/html').toBe(true);
+      const content = await file.text();
+      expect(/<!doctype html/i.test(content) && /<table\b/i.test(content)).toBe(true);
+    } finally {
+      await file.dispose();
     }
     await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
       status: 'SUSPENDED',

@@ -278,6 +278,8 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   const publishedNotificationCard = notificationsDialog
     .locator('.notification-card')
     .filter({ has: page.getByText(original.title, { exact: true }) });
+  // The existing notification entry is in the Today header, not the homework list.
+  await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
   const [openedInbox] = await Promise.all([
     http(page, inboxPath, 'GET'),
     page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
@@ -332,6 +334,7 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   await expect(completedSlider).toBeFocused();
 
   await page.reload();
+  await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
   const [reopenedInbox] = await Promise.all([
     http(page, inboxPath, 'GET'),
     page.getByRole('button', { name: /^Открыть уведомления/ }).click(),

@@ -444,13 +444,13 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     }
 
     // =====================================================================
-    // Test 9 — USER-04: Revoke headman cascades to deactivate all assistants
+    // Test 9 — D016: standalone removal cannot change the headman or assistants
     // =====================================================================
 
     @Test
     @Order(9)
     @Transactional
-    void testHeadmanRevokeCascadesAssistants() throws Exception {
+    void testStandaloneHeadmanRemovalKeepsHeadmanAndAssistants() throws Exception {
         // The seed 'student' user has is_headman = true (from V2 migration)
         Long headmanId = seedStudentId;
 
@@ -478,7 +478,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         seedGroupId);
         assertThat(countBefore).isGreaterThan(0);
 
-        // Revoke headman via PATCH
+        // Standalone removal is refused before the authority cascade.
         String patchBody =
                 """
                 { "isHeadman": false }
@@ -492,15 +492,22 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .with(signedAdmin())
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", equalTo("isHeadman")));
 
-        // Verify all assistants in that group are now deactivated
+        // The rejected operation leaves all assistants and current headman authority unchanged.
         Integer countAfter =
                 jdbcTemplate.queryForObject(
                         "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
                         Integer.class,
                         seedGroupId);
-        assertThat(countAfter).isEqualTo(0);
+        assertThat(countAfter).isEqualTo(countBefore);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT is_headman FROM users WHERE id = ?",
+                                Boolean.class,
+                                headmanId))
+                .isTrue();
     }
 
     // =====================================================================

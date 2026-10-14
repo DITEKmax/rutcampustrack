@@ -86,6 +86,7 @@ function recordSafeFailure(info: TestInfo, error: unknown): void {
 const publicSpecs = [
   resolve(__dirname, '../specs/mobile-real-server.spec.ts'),
   resolve(__dirname, '../specs/mobile-schedule-lifecycle.spec.ts'),
+  resolve(__dirname, '../specs/mobile-lesson-lifecycle.spec.ts'),
   resolve(__dirname, '../specs/mobile-attendance-requests.spec.ts'),
   resolve(__dirname, 'assignment-lifecycle.spec.ts'),
   resolve(__dirname, 'semester-lifecycle.spec.ts'),

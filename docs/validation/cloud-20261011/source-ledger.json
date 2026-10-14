@@ -12898,6 +12898,114 @@
       "status": "format-TSC-discovery-parser-closedcontrols-PASS",
       "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
       "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-current-fd864-real-push-readback.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-fd864-real-push-readback.safe.json",
+      "sha256": "6681e3711822cff7db90611959c32e2169c60efc6cc1beb171af275c521a44bc",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-current-fd864-admin-lifecycle.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-fd864-admin-lifecycle.safe.json",
+      "sha256": "bcfa59238fad7a47c99552eb20217d902d59ad3f129b5edc64d7ec38499fcc7d",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-current-fd864-application-recovery.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-fd864-application-recovery.safe.json",
+      "sha256": "427ef69fb6e0ef7d459c0089633e0b22bede9aa60b45fe9d77a75634c0695b9b",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-current-fd864-gates-metadata.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-fd864-gates-metadata.safe.json",
+      "sha256": "9766be9c22c2f547d7fc3822ff611aeea6736c08df8ea30d0abb2a33573ff6ff",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q04-created-name-correction-author.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-created-name-correction-author.safe.json",
+      "sha256": "0009530759da43cafa98e099e8ea9cf9d2ec5a88c757afe5db7f152147dce6b3",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q04-admin-journey-independent-review.safe.md",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-admin-journey-independent-review.safe.md",
+      "sha256": "194986ffe06e37fc048ceb924aa44b03d82ccd406643da0ba6f4c7ebc84e0671",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q15-current-application-recovery-independent-review.safe.md",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-current-application-recovery-independent-review.safe.md",
+      "sha256": "d71b98941941f29c4ded6b84303a27aa9cc88f963c4eb199e9d8f3ee4f6ada6e",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q05-Q15-api-fixtures-author.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-Q15-api-fixtures-author.safe.json",
+      "sha256": "9b819f8b4783cda7997aa8370376bd57093533533c0a668b101c91637be00680",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q05-semester-api-independent-review.safe.md",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-semester-api-independent-review.safe.md",
+      "sha256": "acd531ed8448b9c2ecf3744ed8a97e1cccae4a536b8c467f2e7c5ec0e8fed77d",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q06-existing-finite-proof-reuse.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-existing-finite-proof-reuse.safe.json",
+      "sha256": "80ea88d9d13c3ce4e8d6c7b1bf21b5bbf6e5111bde1c5fb4a2c9aa218b0178a9",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q06-cross-service-fixture-author.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-cross-service-fixture-author.safe.json",
+      "sha256": "5c07572e522c8f226ec2c69c1c3544842301a8a12eee874727533f09fc22a68e",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FD864-CRITICAL-Q06-assignment-api-independent-review.safe.md",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-assignment-api-independent-review.safe.md",
+      "sha256": "0f4a81daab97ac7943d11fae91c504c7cd991bc079a7433dce49d237b7468717",
+      "status": "safe-current-result-or-author-review; explicit PASS_FAIL_NOT_RUN qualifications inside",
+      "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
     }
   ],
   "research_receipt": {

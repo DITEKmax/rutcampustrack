@@ -518,6 +518,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     expect(typeof created.initialPassword).toBe('string');
     const userPath = `/api/academic/users/${created.id}`;
     const original = await dataset.admin.call('GET', userPath);
+    expect(typeof original.fullName === 'string' && original.fullName.trim().length > 0).toBe(true);
     expect(
       original.lastName === lastName &&
         original.firstName === 'Проверка' &&
@@ -668,7 +669,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       .fill(dataset.group.name);
     await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
     await group.locator('.admin-groups-item__trigger').click();
-    await expect(group.getByText(created.fullName, { exact: true })).toBeVisible();
+    await expect(group.getByText(original.fullName, { exact: true })).toBeVisible();
 
     const currentHeadman = await admit(
       dataset.request,

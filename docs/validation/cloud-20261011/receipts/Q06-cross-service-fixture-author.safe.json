@@ -1,0 +1,153 @@
+{
+  "goal": "One real cross-service terminal closure outage/replay, unassigned adoption and normal next-date teacher replacement, retaining physical history/attendance/homework.",
+  "context": {
+    "base": "fd864eb028f271537d24d7b6c065b553c56d6440",
+    "branch": "codex/q06-assignment-lifecycle-20261014",
+    "model_selected": "gpt-6.1-sol/high",
+    "actual": "UNKNOWN",
+    "finite_proof_reuse": "docs/validation/cloud-20261011/receipts/Q06-existing-finite-proof-reuse.safe.json"
+  },
+  "scope": {
+    "new_file": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+    "source_before_checks_sha256": "cd2b265a44cf949b4e64eba5f3408c0e2c23d504ad082a72644638adab835edf",
+    "shared_changes": []
+  },
+  "required_behavior": "prepare own previous-day/current-day CLOSED marked lessons, real current/future lesson-bound homework and future PLANNED physical snapshot; pending real503 typed closure with exactkey/source identity and unchanged Academic publication; resume identicalclose204/replay204, retainedfutureID/nullauthority, newB adoption→samefuture B, POSTreplaceB→C futuredate→samefuture C/COMMITTED/status/exactreplay; B active full-group past200, oldA/foreign/Cfuture groupjournal404 OUT_OF_SCOPE, unchanged past marks/HW.",
+  "constraints": "Only new fixture; private0700 phase dirs/0600 bounded own checkpoint; initial/generated credentials remain private, no raw data diagnostics; no TS Docker/new runner/shared framework/product/config writes. Root owns stop-start/readiness/config.",
+  "existing_patterns": "MobileDataset/Actor/admit/private artifact guard/SafeReporter, existing application-recovery API phase pattern; Sep23 and Oct06 decisions/current API DTOs; APPLIED/internal durable identity reuse namedPG proof, not claimed by PREPARED outage.",
+  "acceptance": "SOURCE_LOCAL_PASS; all4 cachedNode phases PASS, real backend/browser/CI NOT_RUN. Needs independent whole Source/privacy review and Root integration/phase config/owned Schedule interruption; genuine CLOSED prerequisite remains unproved by current runtime.",
+  "verification": {
+    "updated_utc": "2026-10-14T03:59:10.820334+00:00",
+    "status": "SOURCE_LOCAL_PASS",
+    "plan": "Cached SAME b78 Node scoped Prettier apply/exact idempotency/check and strict selected-file TSC using current e2e compiler options; fresh120s, heap512MiB, RSS512MiB/newtaskcap, shared15GiB/reserve1GiB/floor4GiB/growth256MiB; ownlink/TMPcleanup. Existing privacy guards/control PASS reused unchanged; fresh independent source/privacy review then Root normal actualCI.",
+    "runtime": "NOT_RUN",
+    "source_observations": "Current report/journal status is lowercase present; Schedule status uppercase CLOSED/PLANNED. Public closure error URI/extras confirmed. Future LESSON date after existing dataset tomorrow DATE binding mirrors accepted recovery fixture. Current B remains live; future C group journal404. Public clock temp explicitly chmod0644 under private umask; own temp finally cleanup. Root steering applied: prepare finally restores exact original public clock bytes via own wx/chmod0644/rename; private files remain0600. Current actual clock failure UNKNOWN; fcb60 Source fix approved, no runtime claim.",
+    "issued_utc": "2026-10-14T03:58:15.801925+00:00",
+    "stop_utc": "2026-10-14T04:00:15.801925+00:00",
+    "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "source_before_sha256": "cd2b265a44cf949b4e64eba5f3408c0e2c23d504ad082a72644638adab835edf",
+    "own_RSS_cap": 536870912,
+    "node_heap_MiB": 512,
+    "checks": [
+      {
+        "phase": "FORMAT_APPLY",
+        "seconds": 0.73,
+        "direct_pid": 633633,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633633,
+            "start_ticks": 20408873
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "FORMAT_IDEMPOTENCY",
+        "seconds": 0.47,
+        "direct_pid": 633644,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633644,
+            "start_ticks": 20408946
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "FORMAT_CHECK",
+        "seconds": 0.68,
+        "direct_pid": 633655,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633655,
+            "start_ticks": 20408994
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "STRICT_SELECTED_FILE_TSC",
+        "seconds": 2.25,
+        "direct_pid": 633666,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633666,
+            "start_ticks": 20409063
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tsc_scope": "Selected new fixture + actual imports with exact compilerOptions of existing tests/e2e/tsconfig.json, no config edits.",
+    "native_runs": 4,
+    "native_seconds": 4.13,
+    "failure_class": null,
+    "peaks": {
+      "rss": 319262720,
+      "shared": 5730197504
+    },
+    "births": [
+      {
+        "pid": 633633,
+        "start_ticks": 20408873
+      },
+      {
+        "pid": 633644,
+        "start_ticks": 20408946
+      },
+      {
+        "pid": 633655,
+        "start_ticks": 20408994
+      },
+      {
+        "pid": 633666,
+        "start_ticks": 20409063
+      }
+    ],
+    "known_births_absent": true,
+    "dependency_link_absent": true,
+    "private_tmp_absent": true,
+    "source_sha256_final": "71b7f4724642d9e140c3e9e3f74032c63378dd06f31fc464ba7bed11160130ae",
+    "source_lines_final": 614,
+    "privacy_control": "Existing PASS reused; no guard/reporter/config/control edits. New private checkpoint risk requires independent whole source review.",
+    "active_hooks": [],
+    "hooks_bypassed": false,
+    "independent_review": "PENDING_ROOT_FRESH_WHOLE_REVIEW",
+    "commit": "3367450387919ea268e2cc3bb0b67c805c4f7481",
+    "normal_commit_native_exit": 0,
+    "worktree_clean": true
+  },
+  "do_not": "No API/product/clock-policy edits, no DBpaststatus writes, no known90s failed real retry, no fake503/200; B013/B014 frozen/Q012 excluded/Angular untouched/no production/secrets/subagents/newpacket campaign."
+}

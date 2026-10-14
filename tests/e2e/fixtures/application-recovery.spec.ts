@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, lstatSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, lstatSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 import { type APIRequestContext, expect } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
@@ -178,6 +178,8 @@ async function seed(request: APIRequestContext, run: string) {
   const expectedClock = Buffer.from(`${expectedInstant}\n`);
   const temporaryClock = join(clockDirectory, `recovery-${randomUUID()}`);
   writeFileSync(temporaryClock, expectedClock, { flag: 'wx', mode: 0o644 });
+  // The CI umask stays private; only this owned public educational clock is readable by service UIDs.
+  chmodSync(temporaryClock, 0o644);
   renameSync(temporaryClock, clockFile);
   save(run, 'lifecycle-input.private.json', {
     lessonId: historyLessonId,

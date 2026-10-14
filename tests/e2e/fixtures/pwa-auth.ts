@@ -52,13 +52,16 @@ export async function loginPwa(
 
 export async function logoutPwa(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Профиль', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Профиль', exact: true })).toBeVisible();
-  const response = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === '/api/auth/logout' &&
-      response.request().method() === 'POST',
-  );
-  await page.getByRole('button', { name: 'Выйти', exact: true }).click();
-  expect((await response).status()).toBe(204);
+  const profile = page.getByRole('main', { name: 'Профиль', exact: true });
+  await expect(profile.getByRole('heading', { name: 'Профиль', exact: true })).toBeVisible();
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/auth/logout' &&
+        response.request().method() === 'POST',
+    ),
+    profile.getByRole('button', { name: 'Выйти', exact: true }).click(),
+  ]);
+  expect(response.status()).toBe(204);
   await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
 }

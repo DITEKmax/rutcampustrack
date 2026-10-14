@@ -229,6 +229,41 @@ test('MANAGE_EXCUSES decides a real request and revoked decision preserves the p
   const pendingPath = `/api/attendance/requests/${requests[1]}`;
   const pending = await dataset.headmanActor.call('GET', pendingPath);
   expect(pending.summary.status).toBe('PENDING');
+  // JS-HEADMAN-15: removing one capability must retain the other on this session.
+  for (const permissions of [['MANAGE_EXCUSES', 'VIEW_STATS'], ['VIEW_STATS']]) {
+    await dataset.headmanActor.call(
+      'PATCH',
+      `/api/academic/assistants/${grant.id}/permissions`,
+      { permissions },
+      [200],
+    );
+    const catalog = await dataset.request.get('/api/academic/assistants/me/permissions', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    expect(catalog.status()).toBe(200);
+    expect(assistantPermissionCodes(await catalog.json()).sort()).toEqual([...permissions].sort());
+    const stats = await dataset.request.post('/api/attendance/reports/headman/stats/query', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data: { subjectId: null, lessonTypes: [], page: 0, size: 20, sorts: [], filters: [] },
+    });
+    expect(stats.status()).toBe(200);
+    expect((await stats.json()).context.groupId).toBe(dataset.group.id);
+  }
+  const partiallyDenied = await dataset.request.post(`${pendingPath}/decision`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    data: {
+      decision: 'REJECTED',
+      reason: 'Запрещённое решение после частичного отзыва',
+      expectedRevision: pending.decisionRevision,
+      excludedOccurrenceIds: [],
+      requestKey: randomUUID(),
+    },
+  });
+  expect(partiallyDenied.status()).toBe(403);
+  const afterPartialRevoke = await dataset.headmanActor.call('GET', pendingPath);
+  expect(afterPartialRevoke.summary.status).toBe('PENDING');
+  expect(afterPartialRevoke.summary.decisionBy).toBeNull();
+  expect(afterPartialRevoke.decisionRevision).toBe(pending.decisionRevision);
   await dataset.headmanActor.call('DELETE', `/api/academic/assistants/${grant.id}`, undefined, [
     204,
   ]);

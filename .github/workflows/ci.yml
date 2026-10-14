@@ -1246,7 +1246,9 @@ jobs:
             local result=$?
             trap - EXIT
             cp -- "$original" "$owner"
-            if ! cmp --silent "$original" "$owner" || ! rebuild_pwa; then
+            if cmp --silent "$original" "$owner" && rebuild_pwa; then
+              printf 'restorationSucceeded=true\n' >> "$GITHUB_OUTPUT"
+            else
               if [ "$result" -eq 0 ]; then result=1; fi
             fi
             exit "$result"
@@ -1286,19 +1288,31 @@ jobs:
               raise SystemExit('Navigation control did not produce one private test failure')
           result = report['results'][0]
           spec = Path('tests/e2e/specs/mobile-homework-lifecycle.spec.ts')
-          assertion = '  await expect(completedSlider).toBeFocused();'
           lines = spec.read_text().splitlines()
-          if lines.count(assertion) != 1:
-              raise SystemExit('Expected one notification target focus assertion')
-          if (result['file'] != spec.name or result['status'] != 'failed'
-                  or result['expectedStatus'] != 'passed' or result['errorCount'] != 1
-                  or result['errorLocations'] != [{'file': spec.name, 'line': lines.index(assertion) + 1}]):
-              raise SystemExit('Navigation control failed outside the target focus assertion')
-          print('PASS controlled navigation omission reaches the target focus assertion and fails there')
+          declaration = "test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile', async ({"
+          target_block = [
+              '  await expect(notificationsDialog).toHaveCount(0);',
+              '  await expect(card).toBeVisible();',
+              "  await expect(card).toHaveAttribute('data-completion', 'completed');",
+              '  await expect(completedSlider).toBeFocused();',
+          ]
+          starts = [offset for offset in range(len(lines) - len(target_block) + 1)
+                    if lines[offset:offset + len(target_block)] == target_block]
+          if len(starts) != 1 or lines.count(declaration) != 1:
+              raise SystemExit('Expected one named test and contiguous notification target assertion block')
+          allowed_failures = [[{'file': spec.name, 'line': starts[0] + offset}] for offset in (2, 4)]
+          if (result['file'] != spec.name or result['line'] != lines.index(declaration) + 1
+                  or result['project'] != 'chromium' or result['status'] != 'failed'
+                  or result['expectedStatus'] != 'passed'
+                  or type(result['errorCount']) is not int or result['errorCount'] != 1
+                  or result['errorLocations'] not in allowed_failures):
+              raise SystemExit('Navigation control failed outside the exact target card visibility/focus assertions')
+          print('PASS controlled navigation omission fails at the exact target card visibility or focus assertion')
           PY_HOMEWORK_NAVIGATION_RED
           cp -- "$original" "$owner"
           cmp --silent "$original" "$owner"
           rebuild_pwa
+          printf 'restorationSucceeded=true\n' >> "$GITHUB_OUTPUT"
           trap - EXIT
           (
             cd tests/e2e
@@ -1321,7 +1335,7 @@ jobs:
       - name: Verify interrupted assignment closure and next-day replacement
         id: assignment-lifecycle
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'success' || steps.homework-target-sensitivity.outcome == 'skipped') }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'

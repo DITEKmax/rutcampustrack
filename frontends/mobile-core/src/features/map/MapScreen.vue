@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { MapBuilding, MapFloor, MapManifest, MapPlan } from '../../api/types';
 import { CampusMapClient } from '../../api/map-client';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
@@ -76,6 +76,121 @@ const selectedPlan = computed<MapPlan | null>(() => {
   return currentPlan.value;
 });
 const previewUrl = computed(() => svgUrl.value ?? pngUrl.value);
+const viewport = ref<HTMLElement | null>(null);
+const zoom = ref(1);
+const aspectRatio = ref(1);
+const imageReady = ref(false);
+const viewerReady = computed(() => imageReady.value && !loadingAsset.value && !error.value);
+let viewRevision = 0;
+let drag: { id: number; x: number; y: number; left: number; top: number } | null = null;
+
+function stopDrag(): void {
+  if (drag && viewport.value?.hasPointerCapture(drag.id)) {
+    viewport.value.releasePointerCapture(drag.id);
+  }
+  drag = null;
+}
+
+function resetView(): void {
+  viewRevision += 1;
+  stopDrag();
+  zoom.value = 1;
+  viewport.value?.scrollTo(0, 0);
+}
+
+function zoomBy(delta: number): void {
+  const area = viewport.value;
+  if (!area || !viewerReady.value) return;
+  // Bounded local viewing scale; native scrolling clamps both pan axes.
+  const scale = Math.max(1, Math.min(4, zoom.value + delta));
+  if (scale === zoom.value) return;
+  stopDrag();
+  const centerX = (area.scrollLeft + area.clientWidth / 2) / zoom.value;
+  const centerY = (area.scrollTop + area.clientHeight / 2) / zoom.value;
+  const revision = viewRevision;
+  zoom.value = scale;
+  void nextTick(() => {
+    if (revision !== viewRevision || viewport.value !== area || zoom.value !== scale) return;
+    area.scrollTo(centerX * scale - area.clientWidth / 2, centerY * scale - area.clientHeight / 2);
+  });
+}
+
+function onMapKey(event: KeyboardEvent): void {
+  const area = viewport.value;
+  if (!area || !viewerReady.value || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === '+' || event.key === '=') zoomBy(0.25);
+  else if (event.key === '-' || event.key === '−') zoomBy(-0.25);
+  else if (
+    zoom.value > 1 &&
+    ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)
+  ) {
+    const horizontal = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0;
+    const vertical = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
+    area.scrollBy((horizontal * area.clientWidth) / 8, (vertical * area.clientHeight) / 8);
+  } else return;
+  event.preventDefault();
+}
+
+function onMapWheel(event: WheelEvent): void {
+  if (!viewerReady.value || (!event.ctrlKey && !event.metaKey) || event.deltaY === 0) return;
+  event.preventDefault();
+  zoomBy(event.deltaY < 0 ? 0.25 : -0.25);
+}
+
+function startDrag(event: PointerEvent): void {
+  const area = viewport.value;
+  // Touch uses the browser's scroll/pan gesture, including normal page chaining.
+  if (
+    !area ||
+    !viewerReady.value ||
+    zoom.value === 1 ||
+    event.pointerType !== 'mouse' ||
+    event.button !== 0
+  )
+    return;
+  drag = {
+    id: event.pointerId,
+    x: event.clientX,
+    y: event.clientY,
+    left: area.scrollLeft,
+    top: area.scrollTop,
+  };
+  area.setPointerCapture(event.pointerId);
+  event.preventDefault();
+}
+
+function moveDrag(event: PointerEvent): void {
+  const area = viewport.value;
+  if (!drag || !area || drag.id !== event.pointerId) return;
+  area.scrollTo(drag.left + drag.x - event.clientX, drag.top + drag.y - event.clientY);
+  event.preventDefault();
+}
+
+function previewLoaded(event: Event): void {
+  const image = event.currentTarget;
+  if (
+    !(image instanceof HTMLImageElement) ||
+    image.src !== previewUrl.value ||
+    !image.naturalWidth ||
+    !image.naturalHeight
+  )
+    return;
+  // Asset geometry determines the viewport, with bounded tall/wide proportions.
+  aspectRatio.value = Math.max(0.5, Math.min(2, image.naturalWidth / image.naturalHeight));
+  imageReady.value = true;
+  handleSvgLoaded();
+}
+
+watch(
+  previewUrl,
+  () => {
+    imageReady.value = false;
+    aspectRatio.value = 1;
+    resetView();
+  },
+  { flush: 'sync' },
+);
+watch([loadingAsset, error], resetView, { flush: 'sync' });
 const pngFilename = computed(() => {
   const label = `${selectedBuilding.value?.label ?? selectedBuildingId.value ?? 'campus'}-${selectedFloor.value?.label ?? selectedFloorId.value ?? 'floor'}`;
   return `campus-map-${label.replace(/[^\p{L}\p{N}_-]+/gu, '-').slice(0, 100)}.png`;
@@ -93,6 +208,7 @@ const unavailableFormats = computed(() => {
 
 onMounted(() => void loadManifest());
 onBeforeUnmount(() => {
+  resetView();
   disposed = true;
   lifecycleGeneration += 1;
   assetRequest += 1;
@@ -426,23 +542,75 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 class="map-card__status"
               >Загружаем…</span>
             </div>
-            <component
-              :is="compactPresentation ? 'a' : 'div'"
+            <div
               v-if="previewUrl"
-              class="map-preview"
-              :class="{ 'map-preview--link': compactPresentation }"
-              :href="compactPresentation ? previewUrl : undefined"
-              :target="compactPresentation ? '_blank' : undefined"
-              :rel="compactPresentation ? 'noopener noreferrer' : undefined"
-              :aria-label="compactPresentation ? 'Открыть схему выбранного этажа' : undefined"
+              class="map-viewer"
             >
-              <img
-                :key="previewUrl"
-                :src="previewUrl"
-                alt="Схема выбранного этажа"
-                @load="handleSvgLoaded"
+              <div
+                class="map-zoom-controls"
+                role="group"
+                aria-label="Масштаб схемы"
               >
-            </component>
+                <button
+                  type="button"
+                  class="map-zoom-button"
+                  aria-label="Уменьшить масштаб схемы"
+                  :disabled="!viewerReady || zoom === 1"
+                  @click="zoomBy(-0.25)"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  class="map-zoom-button"
+                  aria-label="Увеличить масштаб схемы"
+                  :disabled="!viewerReady || zoom === 4"
+                  @click="zoomBy(0.25)"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  class="map-zoom-button"
+                  :disabled="!viewerReady || zoom === 1"
+                  @click="resetView"
+                >
+                  Сбросить масштаб
+                </button>
+              </div>
+              <p
+                class="map-zoom-status"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                Масштаб {{ Math.round(zoom * 100) }}%
+              </p>
+              <div
+                ref="viewport"
+                class="map-preview"
+                :class="{ 'map-preview--zoomed': zoom > 1 }"
+                :style="{ '--map-zoom': zoom, '--map-aspect-ratio': aspectRatio }"
+                role="region"
+                aria-label="Схема этажа. Плюс и минус — масштаб, стрелки — перемещение"
+                tabindex="0"
+                @keydown="onMapKey"
+                @wheel="onMapWheel"
+                @pointerdown="startDrag"
+                @pointermove="moveDrag"
+                @pointerup="stopDrag"
+                @pointercancel="stopDrag"
+                @lostpointercapture="stopDrag"
+              >
+                <img
+                  :key="previewUrl"
+                  :src="previewUrl"
+                  alt="Схема выбранного этажа"
+                  :draggable="false"
+                  @load="previewLoaded"
+                >
+              </div>
+            </div>
             <div
               v-else-if="!loadingAsset && !error"
               class="map-empty"
@@ -455,11 +623,11 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
               class="map-actions"
             >
               <a
-                v-if="previewUrl && !compactPresentation"
+                v-if="previewUrl"
                 class="map-open"
                 :href="previewUrl"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >Открыть схему</a>
               <a
                 v-if="pngUrl && selectedPlan.png.state === 'ready'"

@@ -335,3 +335,7 @@ Source/evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewe
 Unknown stored finite Attendance status formerly escaped as generic500; existingtyped409 converter correction now proven via genuineHTTP/Mongo. ActualcurrentCI counterexample expected409/observed500/known200 and same named restoredordinaryPASS includes no-store/no marker/no writes/restore200. This is controlledcorruption/legacy boundary, not normal supportedunknowninput or authorization proof. Evidence current4065#next_reviewed_integrations.62df_E1_public_HTTP_actual_acceptance.
 
 DF-BFF-REQUEST-ENUM-001 now FIXED_LOCAL_REVIEWED: sameTest04c actualknown-source RED→corrected313f19PASS/0skip; independentSource and proofqualityAPPROVE, published62df stilloldproduction until boundedpublication. No remoteGREEN claim.
+
+## GAP-PWA-MAP-ZOOM-PAN-001 — P2 / accepted function missing
+
+JS-STUDENT-24 and accepted mobile map UX require zoom/pan. Shared MapScreen inline preview/CSS have no implementation; Source-confirmed GAP, no browser FAIL claimed. Current exact view/download/retry/delete/history PASS62df retained. Exact pointers: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_map_zoom_pan_accepted_Source_GAP. Assigned c65_client_final_browser existingVue/CSS scope with current design skill/originals, then existingrealmapcase and independentreview. No newweb/Angular/legend/API.

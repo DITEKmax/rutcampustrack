@@ -34,7 +34,7 @@ const replacementPng = Buffer.from(
   'base64',
 );
 const svg = Buffer.from(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"><rect width="1" height="1" fill="white"/></svg>',
+  '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="white"/><path d="M20 20H180V130H20ZM220 170H380V280H220Z" fill="none" stroke="black" stroke-width="4"/></svg>',
 );
 
 function requireValue(condition: unknown, message: string): asserts condition {
@@ -92,7 +92,7 @@ async function mapDownload(page: Page, format: 'PNG' | 'SVG', expected: Buffer) 
 }
 
 // JS-ADMIN-23/25 + JS-STUDENT-24: API publication and a genuine Vue consumer.
-// D004 excludes the legend; zoom/pan and negative SVG/PNG-budget cases remain separate.
+// D004 excludes the legend; negative SVG/PNG-budget cases remain separate.
 test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue and old assets remain readable @real-mobile', async ({
   page,
   dataset,
@@ -180,7 +180,7 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
   }
 
   await loginPwa(page, dataset.student);
-  const viewAndDownload = async (plan: Plan, png: Buffer) => {
+  const viewAndDownload = async (plan: Plan, png: Buffer, exerciseViewer = false) => {
     const response = page.waitForResponse(
       (value) =>
         new URL(value.url()).pathname === assetPath(plan, 'png') &&
@@ -218,10 +218,67 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
         ),
       )
       .toBe(true);
+    const viewer = map.getByRole('region', {
+      name: 'Схема этажа. Плюс и минус — масштаб, стрелки — перемещение',
+      exact: true,
+    });
+    const scaleStatus = map.getByRole('status').filter({ hasText: /^Масштаб \d+%$/ });
+    // A new/replaced asset must not inherit the preceding plan's view or gesture.
+    await expect(scaleStatus).toHaveText('Масштаб 100%');
+    if (exerciseViewer) {
+      const originalSize = await preview.boundingBox();
+      requireValue(
+        originalSize && originalSize.width > 0 && originalSize.height > 0,
+        'Map is visible',
+      );
+      await map.getByRole('button', { name: 'Увеличить масштаб схемы', exact: true }).click();
+      await expect(scaleStatus).toHaveText('Масштаб 125%');
+      await expect
+        .poll(() => preview.evaluate((image) => image.getBoundingClientRect().width))
+        .toBeGreaterThan(originalSize.width * 1.2);
+      await expect.poll(() => viewer.evaluate((area) => area.scrollLeft)).toBeGreaterThan(0);
+      const left = await viewer.evaluate((area) => area.scrollLeft);
+      await viewer.press('ArrowRight');
+      await expect.poll(() => viewer.evaluate((area) => area.scrollLeft)).toBeGreaterThan(left);
+      const top = await viewer.evaluate((area) => area.scrollTop);
+      await viewer.press('ArrowDown');
+      await expect.poll(() => viewer.evaluate((area) => area.scrollTop)).toBeGreaterThan(top);
+
+      await viewer.scrollIntoViewIfNeeded();
+      const bounds = await viewer.boundingBox();
+      requireValue(bounds, 'Map viewport is visible');
+      const beforeDrag = await viewer.evaluate((area) => area.scrollLeft);
+      await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+      await page.mouse.down();
+      try {
+        await page.mouse.move(bounds.x + bounds.width / 2 + 24, bounds.y + bounds.height / 2);
+      } finally {
+        await page.mouse.up();
+      }
+      await expect.poll(() => viewer.evaluate((area) => area.scrollLeft)).toBeLessThan(beforeDrag);
+      await viewer.press('-');
+      await expect(scaleStatus).toHaveText('Масштаб 100%');
+      await viewer.press('+');
+      await expect(scaleStatus).toHaveText('Масштаб 125%');
+      await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+      await page.keyboard.down('Control');
+      try {
+        await page.mouse.wheel(0, -100);
+      } finally {
+        await page.keyboard.up('Control');
+      }
+      await expect(scaleStatus).toHaveText('Масштаб 150%');
+      await map.getByRole('button', { name: 'Сбросить масштаб', exact: true }).click();
+      await expect(scaleStatus).toHaveText('Масштаб 100%');
+      await expect.poll(() => viewer.evaluate((area) => area.scrollLeft + area.scrollTop)).toBe(0);
+      await expect
+        .poll(() => preview.evaluate((image) => image.getBoundingClientRect().width))
+        .toBeCloseTo(originalSize.width, 0);
+    }
     await mapDownload(page, 'SVG', originalSvg);
     await mapDownload(page, 'PNG', png);
   };
-  await viewAndDownload(first, firstPng);
+  await viewAndDownload(first, firstPng, true);
   const replaced = await upload(dataset.admin, replacementPng, `${dataset.marker} новая`);
   expect(replaced.status()).toBe(200);
   const replacement = await replaced.json();

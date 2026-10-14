@@ -1401,7 +1401,65 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
       await context.setOffline(true);
       try {
-        await page.reload();
+        try {
+          await page.reload();
+        } catch (error) {
+          // Two closed, static-frame hints retain the original navigation error below.
+          const descriptor =
+            error !== null && typeof error === 'object'
+              ? Object.getOwnPropertyDescriptor(error, 'message')
+              : undefined;
+          const message =
+            descriptor &&
+            'value' in descriptor &&
+            typeof descriptor.value === 'string' &&
+            descriptor.value.length <= 512
+              ? descriptor.value
+              : '';
+          const category =
+            /ERR_INTERNET_DISCONNECTED|NS_ERROR_OFFLINE|network (?:error|connection)|Could not connect|Connection refused/i.test(
+              message,
+            )
+              ? 'NETWORK'
+              : /ERR_ABORTED|NS_BINDING_ABORTED|navigation (?:was )?(?:aborted|interrupted)/i.test(
+                    message,
+                  )
+                ? 'ABORT'
+                : /ERR_CERT|SSL|TLS|certificate/i.test(message)
+                  ? 'TLS'
+                  : /timeout|timed out/i.test(message)
+                    ? 'TIMEOUT'
+                    : /internal error/i.test(message)
+                      ? 'INTERNAL'
+                      : /(?:page|context|browser|target).*(?:closed|crashed)/i.test(message)
+                        ? 'CLOSED'
+                        : 'OTHER';
+          expect.soft(false, 'D002 offline reload rejected').toBe(true);
+          switch (category) {
+            case 'NETWORK':
+              expect.soft(false, 'D002 reload NETWORK').toBe(true);
+              break;
+            case 'ABORT':
+              expect.soft(false, 'D002 reload ABORT').toBe(true);
+              break;
+            case 'TLS':
+              expect.soft(false, 'D002 reload TLS').toBe(true);
+              break;
+            case 'TIMEOUT':
+              expect.soft(false, 'D002 reload TIMEOUT').toBe(true);
+              break;
+            case 'INTERNAL':
+              expect.soft(false, 'D002 reload INTERNAL').toBe(true);
+              break;
+            case 'CLOSED':
+              expect.soft(false, 'D002 reload CLOSED').toBe(true);
+              break;
+            case 'OTHER':
+              expect.soft(false, 'D002 reload OTHER').toBe(true);
+              break;
+          }
+          throw error;
+        }
         await expect(
           page.locator('.today-list').getByText('Синтетическая аудитория', { exact: true }),
         ).toBeVisible();
@@ -1491,6 +1549,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     await publishOfflineHomework(dataset, marker);
     const multirole = await dataset.user('TEACHER');
     const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
+    let probe: Awaited<ReturnType<Page['evaluateHandle']>> | null = null;
     await dataset.admin.call('PUT', rolePath, {
       status: 'ACTIVE',
       groupId: dataset.group.id,
@@ -1502,6 +1561,58 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
       await expect(page.getByText(marker, { exact: true })).toBeVisible();
       await requireProductionWorker(page);
+      probe = await page
+        .evaluateHandle(() => {
+          const key = '__rctD002BootstrapProbe';
+          if (Object.getOwnPropertyDescriptor(window, key)) return null;
+          const state: {
+            phase:
+              | 'ONLINE'
+              | 'BOOTSTRAP_START'
+              | 'AUTH_CANDIDATE'
+              | 'OWNER_DETACHED'
+              | 'ROLE_COMMITTED'
+              | null;
+            catchClass: 'STALE' | 'AUTH' | 'DEPENDENCY' | 'OTHER' | null;
+            oldOwnerPresent: boolean | null;
+          } = { phase: null, catchClass: null, oldOwnerPresent: null };
+          const callback = (record: unknown) => {
+            if (!record || typeof record !== 'object') return;
+            const fields = Object.getOwnPropertyDescriptors(record);
+            if (Object.keys(fields).sort().join(',') !== 'catchClass,oldOwnerPresent,phase') return;
+            if (!Object.values(fields).every((field) => 'value' in field)) return;
+            const phase = fields.phase.value;
+            const catchClass = fields.catchClass.value;
+            const oldOwnerPresent = fields.oldOwnerPresent.value;
+            if (
+              !(
+                phase === null ||
+                [
+                  'ONLINE',
+                  'BOOTSTRAP_START',
+                  'AUTH_CANDIDATE',
+                  'OWNER_DETACHED',
+                  'ROLE_COMMITTED',
+                ].includes(phase)
+              )
+            )
+              return;
+            if (
+              !(
+                catchClass === null || ['STALE', 'AUTH', 'DEPENDENCY', 'OTHER'].includes(catchClass)
+              )
+            )
+              return;
+            if (typeof oldOwnerPresent !== 'boolean') return;
+            if (phase !== null) state.phase = phase;
+            if (catchClass !== null) state.catchClass = catchClass;
+            state.oldOwnerPresent = oldOwnerPresent;
+          };
+          Object.defineProperty(callback, 'state', { value: state });
+          Object.defineProperty(window, key, { value: callback, configurable: true });
+          return callback;
+        })
+        .catch(() => null);
       await page.getByRole('button', { name: 'Профиль', exact: true }).click();
       await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
       const teacher = page.getByRole('button', { name: /Преподаватель/ });
@@ -1553,7 +1664,100 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await selectPwaRole(page, 'Преподаватель');
       await expect(page.locator('.teacher-feature-owner')).toBeVisible();
       await logoutPwa(page);
+    } catch (error) {
+      const observed = await probe
+        ?.evaluate((callback: unknown) => {
+          if (typeof callback !== 'function') return null;
+          const ownState = Object.getOwnPropertyDescriptor(callback, 'state');
+          if (!ownState || !('value' in ownState)) return null;
+          const state = ownState.value;
+          if (!state || typeof state !== 'object') return null;
+          const keys = Reflect.ownKeys(state);
+          if (
+            keys.length !== 3 ||
+            !keys.every(
+              (key) =>
+                typeof key === 'string' && ['phase', 'catchClass', 'oldOwnerPresent'].includes(key),
+            )
+          )
+            return null;
+          const fields = Object.getOwnPropertyDescriptors(state);
+          if (!Object.values(fields).every((field) => 'value' in field)) return null;
+          const phase = fields.phase?.value;
+          const catchClass = fields.catchClass?.value;
+          const oldOwnerPresent = fields.oldOwnerPresent?.value;
+          if (
+            !(
+              phase === null ||
+              [
+                'ONLINE',
+                'BOOTSTRAP_START',
+                'AUTH_CANDIDATE',
+                'OWNER_DETACHED',
+                'ROLE_COMMITTED',
+              ].includes(phase)
+            )
+          )
+            return null;
+          if (
+            !(catchClass === null || ['STALE', 'AUTH', 'DEPENDENCY', 'OTHER'].includes(catchClass))
+          )
+            return null;
+          if (!(oldOwnerPresent === null || typeof oldOwnerPresent === 'boolean')) return null;
+          return { phase, catchClass, oldOwnerPresent };
+        })
+        .catch(() => null);
+      // Diagnostic only: these fixed frames follow an original failure, never gate a pass.
+      switch (observed?.phase) {
+        case 'ONLINE':
+          expect.soft(false, 'D002 phase ONLINE').toBe(true);
+          break;
+        case 'BOOTSTRAP_START':
+          expect.soft(false, 'D002 phase BOOTSTRAP_START').toBe(true);
+          break;
+        case 'AUTH_CANDIDATE':
+          expect.soft(false, 'D002 phase AUTH_CANDIDATE').toBe(true);
+          break;
+        case 'OWNER_DETACHED':
+          expect.soft(false, 'D002 phase OWNER_DETACHED').toBe(true);
+          break;
+        case 'ROLE_COMMITTED':
+          expect.soft(false, 'D002 phase ROLE_COMMITTED').toBe(true);
+          break;
+        default:
+          expect.soft(false, 'D002 phase unavailable').toBe(true);
+      }
+      switch (observed?.catchClass) {
+        case 'STALE':
+          expect.soft(false, 'D002 catch STALE').toBe(true);
+          break;
+        case 'AUTH':
+          expect.soft(false, 'D002 catch AUTH').toBe(true);
+          break;
+        case 'DEPENDENCY':
+          expect.soft(false, 'D002 catch DEPENDENCY').toBe(true);
+          break;
+        case 'OTHER':
+          expect.soft(false, 'D002 catch OTHER').toBe(true);
+          break;
+      }
+      if (observed?.oldOwnerPresent === true)
+        expect.soft(false, 'D002 old owner present').toBe(true);
+      else if (observed?.oldOwnerPresent === false)
+        expect.soft(false, 'D002 old owner absent').toBe(true);
+      throw error;
     } finally {
+      if (probe) {
+        await probe
+          .evaluate((callback: unknown) => {
+            const key = '__rctD002BootstrapProbe';
+            const own = Object.getOwnPropertyDescriptor(window, key);
+            if (typeof callback === 'function' && own && 'value' in own && own.value === callback)
+              Reflect.deleteProperty(window, key);
+          })
+          .catch(() => {});
+        await probe.dispose().catch(() => {});
+      }
       await context.setOffline(false);
       await dataset.admin.call('PUT', rolePath, { status: 'ACTIVE', groupId: dataset.group.id });
     }
@@ -1753,9 +1957,11 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         await expect(
           tma.getByText('TMA работает только при подключении к интернету', { exact: true }),
         ).toBeVisible();
-        await expect(completion).toBeDisabled();
-        for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
-        await completion.press('Enter');
+        await expect(tma.getByText(marker, { exact: true })).toHaveCount(0);
+        await expect(
+          tma.getByRole('article').filter({ has: tma.getByText(marker, { exact: true }) }),
+        ).toHaveCount(0);
+        await expect(completion).toHaveCount(0);
         expect(commands).toBe(0);
         // The production TMA shell is no-store and has no offline service worker.
         // A network-denied reload proves no hydration, not native Telegram behavior.

@@ -156,6 +156,62 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment() {
+        // Reuse HomeworkStudentCompletionConcurrencyIT's persisted fixture shape.
+        // This is retained personal history, not a new homework-creation flow.
+        long subject =
+                jdbc.queryForObject(
+                        """
+                WITH subject AS (
+                    INSERT INTO subjects(name,type,group_id)
+                    VALUES (?, 'lecture', ?) RETURNING id,type
+                ), lesson_type AS (
+                    INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                    SELECT id,type FROM subject RETURNING subject_id
+                ) SELECT subject_id FROM lesson_type
+                """,
+                        Long.class,
+                        "Archive retained homework " + UUID.randomUUID(),
+                        group);
+        OffsetDateTime completedAt =
+                today.minusDays(1).atTime(19, 23, 41).atOffset(ZoneOffset.ofHours(3));
+        long homework =
+                jdbc.queryForObject(
+                        """
+                INSERT INTO homeworks(group_id,subject_id,semester_id,lesson_date,lesson_number,
+                    title,description,link,published_by,binding_id,actor_id,request_key,payload_hash,
+                    publication_state,created_at,updated_at)
+                VALUES(?,?,?,?,1,?,?,?, ?,?,?,?,decode(repeat('11',32),'hex'),'ACTIVE',?,?)
+                RETURNING id
+                """,
+                        Long.class,
+                        group,
+                        subject,
+                        semester,
+                        today.minusDays(1),
+                        "Сохранённое задание",
+                        "Личная история до архивации аккаунта",
+                        "https://example.invalid/retained-homework",
+                        target,
+                        subject,
+                        target,
+                        UUID.randomUUID(),
+                        completedAt.minusHours(4),
+                        completedAt.minusHours(4));
+        long completion =
+                jdbc.queryForObject(
+                        "INSERT INTO homework_completions(homework_id,student_id,completed_at) VALUES(?,?,?) RETURNING id",
+                        Long.class,
+                        homework,
+                        target,
+                        completedAt);
+        String retainedHomeworkSql =
+                """
+                SELECT to_jsonb(h)::text AS homework, to_jsonb(c)::text AS completion
+                FROM homeworks h JOIN homework_completions c ON c.homework_id=h.id
+                WHERE h.id=? AND c.id=? AND c.student_id=?
+                """;
+        var retainedHomework = jdbc.queryForList(retainedHomeworkSql, homework, completion, target);
+        assertThat(retainedHomework).hasSize(1);
         var before =
                 jdbc.queryForMap(
                         "SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",
@@ -216,6 +272,10 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                                 target))
                 .isEqualTo(1);
         service.archive(target, request);
+        assertThat(
+                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)
+                                .equals(retainedHomework))
+                .isTrue();
         long version =
                 jdbc.queryForObject(
                         "SELECT session_version FROM auth_sessions WHERE sid=?",
@@ -247,6 +307,10 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         RestoreRequest restore = new RestoreRequest(UUID.randomUUID());
         service.restore(target, restore);
         service.restore(target, restore);
+        assertThat(
+                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)
+                                .equals(retainedHomework))
+                .isTrue();
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND status='active'",

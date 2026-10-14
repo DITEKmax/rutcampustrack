@@ -72,6 +72,57 @@ def fixture():
 
 
 class EvidenceGuards(unittest.TestCase):
+    def test_current_v2_request_hash_uses_exact_java_values(self):
+        prefix = "lesson-transfer:v2|2:11|10:2026-10-10|1:2"
+        vectors = [
+            (None, None, None, None, prefix + "|-1:|-1:|-1:|1:1|6:DIRECT|-1:"),
+            ("", None, None, None, prefix + "|-1:|-1:|0:|1:1|6:DIRECT|-1:"),
+            ("A|B:\nC", None, None, None, prefix + "|-1:|-1:|6:A|B:\nC|1:1|6:DIRECT|-1:"),
+            ("Комната🚀", None, None, None, prefix + "|-1:|-1:|9:Комната🚀|1:1|6:DIRECT|-1:"),
+            (
+                "R",
+                "14:00:00.1",
+                "15:30:00",
+                None,
+                prefix + "|12:14:00:00.100|5:15:30|1:R|1:1|6:DIRECT|-1:",
+            ),
+            (
+                None,
+                None,
+                None,
+                "00000000-0000-0000-0000-000000000009",
+                prefix + "|-1:|-1:|-1:|1:1|8:TEMPLATE|36:00000000-0000-0000-0000-000000000009",
+            ),
+        ]
+        for index, (room, start, end, template, encoded) in enumerate(vectors):
+            with self.subTest(vector=index):
+                request = {
+                    "requestKey": "00000000-0000-0000-0000-000000000002",
+                    "expectedRevision": "1",
+                    "targetDate": "2026-10-10",
+                    "targetLessonNumber": 2,
+                    "targetRoom": room,
+                    "targetStartTime": start,
+                    "targetEndTime": end,
+                }
+                op = {
+                    "request_key": request["requestKey"],
+                    "expected_occurrence_revision": 1,
+                    "source_lesson_id": 11,
+                    "target_snapshot": {"date": "2026-10-10", "lesson_number": 2},
+                    "template_operation_id": template,
+                    "request_hash": "\\x" + hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+                }
+                app.validate_request(request, op)
+                altered = {**request, "targetRoom": "changed"}
+                with self.assertRaises(app.r.RecoveryError):
+                    app.validate_request(altered, op)
+                if room is None:
+                    with self.assertRaises(app.r.RecoveryError):
+                        app.validate_request({**request, "targetRoom": ""}, op)
+                with self.assertRaises(app.r.RecoveryError):
+                    app.validate_request(request, {**op, "template_operation_id": "unknown-mode"})
+
     def test_capture_changes_refused_before_any_http(self):
         request = {
             "requestKey": "00000000-0000-0000-0000-000000000002",

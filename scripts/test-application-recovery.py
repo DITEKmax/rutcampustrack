@@ -93,7 +93,35 @@ def validate_request(request, op):
         and request["targetLessonNumber"] == op["target_snapshot"]["lesson_number"],
         "Original HTTP request must match checkpoint transfer identity",
     )
-    # Java's request hash normalizes LocalTime before joining the seven values.
+    # V2 uses Java String.length (UTF-16 code units), explicit nulls and the
+    # persisted template identity. LocalTime.toString is independent of UTC.
+    template = op.get("template_operation_id")
+    if template is not None:
+        r.require(
+            isinstance(template, str)
+            and re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", template)
+            and str(uuid.UUID(template)) == template,
+            "Invalid durable template identity",
+        )
+    values = [
+        str(op["source_lesson_id"]),
+        request["targetDate"],
+        str(request["targetLessonNumber"]),
+        None if request.get("targetStartTime") is None else java_time(request["targetStartTime"]),
+        None if request.get("targetEndTime") is None else java_time(request["targetEndTime"]),
+        request.get("targetRoom"),
+        request["expectedRevision"],
+        "DIRECT" if template is None else "TEMPLATE",
+        template,
+    ]
+    encoded = "lesson-transfer:v2"
+    for value in values:
+        r.require(value is None or isinstance(value, str), "Invalid original request hash value")
+        encoded += "|-1:" if value is None else f"|{len(value.encode('utf-16-be')) // 2}:{value}"
+    current_hash = "\\x" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+    # Existing direct checkpoints retain the seven-field legacy hash. Admission
+    # always compares the complete computed digest with the immutable DB value.
     joined = "\n".join(
         [
             str(op["source_lesson_id"]),
@@ -106,7 +134,8 @@ def validate_request(request, op):
         ]
     )
     r.require(
-        "\\x" + hashlib.sha256(joined.encode()).hexdigest() == op["request_hash"],
+        current_hash == op["request_hash"]
+        or (template is None and "\\x" + hashlib.sha256(joined.encode()).hexdigest() == op["request_hash"]),
         "Original request hash differs from durable request",
     )
 

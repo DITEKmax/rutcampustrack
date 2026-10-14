@@ -1,4 +1,6 @@
-import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
+import { randomUUID } from 'node:crypto';
+import type { Page } from '@playwright/test';
+import { test, expect, admit, selectPwaRole, type MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
 import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
@@ -11,6 +13,29 @@ test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 test.describe.configure({ mode: 'default' });
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
 
+async function selectTomorrowHomework(page: Page, dataset: MobileDataset): Promise<void> {
+  await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  const next = page.getByRole('button', { name: 'Следующий период', exact: true });
+  await expect(next).toBeEnabled();
+  const read = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === '/api/v1/student/homework' &&
+      response.request().method() === 'GET' &&
+      url.searchParams.get('from') === dataset.tomorrow &&
+      url.searchParams.get('to') === dataset.tomorrow
+    );
+  });
+  await next.click();
+  const response = await read;
+  expect(response.status()).toBe(200);
+  const feed = await response.json();
+  expect(feed.from === dataset.tomorrow && feed.to === dataset.tomorrow).toBe(true);
+}
+
 test.describe('Current Vue roles with real synthetic domain @real-mobile', () => {
   test('STUDENT completion persists and another group cannot mutate the homework', async ({
     page,
@@ -18,6 +43,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
   }) => {
     const { accessToken } = await loginPwa(page, dataset.student);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectTomorrowHomework(page, dataset);
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
     const completion = page.getByRole('slider', {
       name: `Выполнить: ${dataset.marker}`,
@@ -38,6 +64,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     ).toBeVisible();
     await page.reload();
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectTomorrowHomework(page, dataset);
     await expect(
       page.getByRole('slider', { name: `Снять отметку: ${dataset.marker}`, exact: true }),
     ).toBeVisible();
@@ -259,11 +286,16 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     page,
     dataset,
   }) => {
+    const emptyRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/v1/student/homework' &&
+        response.request().method() === 'GET',
+    );
     await loginPwa(page, dataset.foreignStudent);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
-    await expect(
-      page.getByText('Новые задания появятся здесь после публикации.', { exact: true }),
-    ).toBeVisible();
+    expect((await emptyRead).status()).toBe(200);
+    await expect(page.getByText('На этот день заданий нет.', { exact: true })).toBeVisible();
+    await expect(page.locator('.homework-card')).toHaveCount(0);
     await logoutPwa(page);
     // The owner loads homework during login and retries failed reads automatically.
     // Keep the real transport unavailable until its manual-retry state is visible.
@@ -293,6 +325,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       page.getByRole('button', { name: 'Повторить', exact: true }).click(),
     ]);
     expect(retried.status()).toBe(200);
+    await selectTomorrowHomework(page, dataset);
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
   });
 
@@ -408,6 +441,31 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     context,
     dataset,
   }) => {
+    // Offline reload opens Today; keep the original tomorrow seed unchanged.
+    const todayHomework = {
+      title: dataset.marker,
+      description: 'Синтетическое задание для сегодняшнего офлайн-снимка',
+      link: null,
+      subjectId: dataset.subject.id,
+      groupId: dataset.group.id,
+      semesterId: dataset.semester.id,
+      lessonDate: dataset.today,
+      lessonNumber: null,
+      bindingMode: 'DATE',
+      lessonType: 'LECTURE',
+      requestKey: randomUUID(),
+    };
+    await expect
+      .poll(async () => {
+        const published = await dataset.headmanActor.call(
+          'POST',
+          '/api/academic/homeworks',
+          todayHomework,
+          [201, 200, 202],
+        );
+        return published.state !== 'PENDING' && published.id != null;
+      })
+      .toBe(true);
     const { session } = await loginPwa(page, dataset.student);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
@@ -864,6 +922,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       ),
     ).toBe(true);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectTomorrowHomework(page, dataset);
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
     const homeworkPath = '/api/v1/student/homework';
     expect(

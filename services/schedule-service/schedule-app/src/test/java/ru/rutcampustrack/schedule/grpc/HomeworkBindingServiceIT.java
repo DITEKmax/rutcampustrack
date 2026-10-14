@@ -807,7 +807,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         long semester = FIXTURE_SEQUENCE.incrementAndGet();
         dateFixtureSemesters.add(semester);
         Fixture source = insertFixture(AUTHORIZED_GROUP_ID, semester);
-        Fixture target = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        Fixture target = insertFixture(AUTHORIZED_GROUP_ID, semester, 2);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(semester))
                 .thenReturn(
                         SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
@@ -845,7 +845,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                             .setIdentity(identity)
                                             .setBindingMode("LESSON")
                                             .setDate(targetDate)
-                                            .setLessonNumber(1)
+                                            .setLessonNumber(2)
                                             .setTargetOccurrenceId(target.occurrenceId())
                                             .setExpectedLessonRevision(1)
                                             .setExpectedBindingRevision(active.getRevision())

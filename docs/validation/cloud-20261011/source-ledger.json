@@ -14401,6 +14401,24 @@
       "author_commit": "ad44ec85b3943c87e7fff4734ef0dffb57cb5e12",
       "status": "ImmutableauthorSource independentlyAPPROVED; exactRootintegration; authorchecksPASS; newactualCI/browserNOT_RUN",
       "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.final_next_source_inventory"
+    },
+    {
+      "id": "CURRENT-30FD-TESTFIX-services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sha256": "935c809cc549627ba1183b9c6bd9797571a82a2d5e1e8b3114ca209ed4189d9f",
+      "revision_base": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+      "author_commit": "69b4caff82049ed39248dcdfe6f953a9e76983ca",
+      "status": "exactauthorRootintegration; relevantchecksPASS/independentAPPROVE; actualnextnormalCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_30fd_testfix_publication"
+    },
+    {
+      "id": "CURRENT-30FD-TESTFIX-tests/e2e/specs/mobile-real-server.spec.ts",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "5fa5c3df15e35283a8e8cefee666fb502dea7c7b22c2c9f4ece204292e655c70",
+      "revision_base": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+      "author_commit": "97b184b78ae412466b2f349fca599017ce098054",
+      "status": "exactauthorRootintegration; relevantchecksPASS/independentAPPROVE; actualnextnormalCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_30fd_testfix_publication"
     }
   ],
   "research_receipt": {

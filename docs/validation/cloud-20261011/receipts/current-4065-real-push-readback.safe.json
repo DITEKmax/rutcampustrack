@@ -4826,6 +4826,1230 @@
       "source16_unchanged": true,
       "no_rule_weakening_or_allowlist": true,
       "next": "Restage sameexplicit25paths; freshsame normalpublicationcaller; repeatgateoncorrectedmetadata"
+    },
+    "final_publication_30fd": {
+      "at": "2026-10-14T13:20:51.301000+00:00",
+      "state": "REAL_COMMIT_PUSH_AND_AUTHENTICATED_PR_READBACK_PASS",
+      "readback": {
+        "local": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+        "remote": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+        "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "parent": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+        "real_push_readback": true
+      },
+      "PR": {
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "head": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+        "base": "main",
+        "base_sha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "draft": true,
+        "state": "open",
+        "merged": false,
+        "merge_commit_sha": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe"
+      },
+      "actual_checkout": "UNKNOWN until currentproducerreceipt; advertisedmerge is not proof",
+      "source16_unchanged": true,
+      "TMP_removed": true,
+      "PW_actual_directory_preserved": true,
+      "elapsed_wall_seconds": 11.28,
+      "normalhooks": "Gitleaks/allapplicablePASS; YAML N/A; exactcorrected25stagedpaths. Original32303metadatafalsepositives retained; no gatewaiver",
+      "current_gates": "30fd newruns UNKNOWN until currentmetadata; c3ff receipts priorrevision only",
+      "inventory": "16Source+9taskdocs; zeroCreatedDeleted; original25untrackedmachineWIP excluded/preserved",
+      "native": {
+        "session": 51126,
+        "phases": [
+          {
+            "phase": "stage",
+            "exit": 0,
+            "all_reaped": true
+          },
+          {
+            "phase": "ordinary-six-hooks",
+            "exit": 0,
+            "all_reaped": true
+          },
+          {
+            "phase": "normal-commit",
+            "exit": 0,
+            "all_reaped": true
+          },
+          {
+            "phase": "real-push",
+            "exit": 0,
+            "all_reaped": true
+          },
+          {
+            "phase": "remote-readback",
+            "exit": 0,
+            "all_reaped": true
+          }
+        ]
+      }
+    },
+    "current_30fd_actual_results": {
+      "utc": "2026-10-14T13:31:23.173426+00:00",
+      "head": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+      "actual_checkout": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe",
+      "tree": "fc7a297302f82269bc397e0cc9f590d5a328dc38",
+      "official_parents": [
+        "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "30fd74122298b056d68221bb31cc22d8fa3d10bf"
+      ],
+      "local_tree_equal": true,
+      "checkout_artifact": {
+        "id": 11897632258,
+        "bytes": 293,
+        "digest": "91739485071fdb72ce02749a0620ec0fe8a16d4b76efe4e8a342a065e45f4af8"
+      },
+      "attendance_coverage": {
+        "artifact_id": 11897357770,
+        "name": "safe-coverage-outcomes-attendance-service-1",
+        "archive_bytes": 28242,
+        "archive_sha256": "41118c8804679f6c5ad9aef66faf103a1b204d5bd266650d88c7bcbdf03d4f4d",
+        "producer": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+        "results": [
+          {
+            "metadata": {
+              "checkoutSha": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe",
+              "prHeadSha": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+              "service": "attendance-service",
+              "task": "integrationTest",
+              "job": "java-coverage",
+              "runId": "38570702722",
+              "runAttempt": "1",
+              "testStepScope": "unit+integration+report",
+              "event": "pull_request",
+              "testStepOutcome": "success"
+            },
+            "collection": "RESULTS",
+            "counts": {
+              "PASSED": 225,
+              "FAILED": 0,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "xml_case_summary_consistent": true,
+            "declared_consistent": true,
+            "target": null,
+            "failed_or_error_cases": [],
+            "source_acceptance": "NOT_PROMOTED",
+            "historical96_CAP_cause": "UNKNOWN"
+          },
+          {
+            "metadata": {
+              "checkoutSha": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe",
+              "prHeadSha": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+              "service": "attendance-service",
+              "task": "test",
+              "job": "java-coverage",
+              "runId": "38570702722",
+              "runAttempt": "1",
+              "testStepScope": "unit+integration+report",
+              "event": "pull_request",
+              "testStepOutcome": "success"
+            },
+            "collection": "RESULTS",
+            "counts": {
+              "PASSED": 318,
+              "FAILED": 0,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "xml_case_summary_consistent": true,
+            "declared_consistent": true,
+            "target": null,
+            "failed_or_error_cases": [],
+            "source_acceptance": "NOT_PROMOTED",
+            "historical96_CAP_cause": "UNKNOWN"
+          }
+        ],
+        "raw_XML_logs_read": false
+      },
+      "attendance_snapshot": {
+        "class": "OpenApiSnapshotIT",
+        "identity": "ORDINAL_ONLY",
+        "status": "PASSED",
+        "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+        "sourceSha256": "23e181aca2b3fcdd5d1758ed420126b92ef529f3e6f7b4b98f1d7513d8dfb35e",
+        "source_matches_current": true
+      },
+      "schedule_coverage": {
+        "artifact_id": 11897657843,
+        "name": "safe-coverage-outcomes-schedule-service-1",
+        "archive_bytes": 16514,
+        "archive_sha256": "97de09b02d61d2125021fb4511d9f5e1119c11b78f2652510b52db208b62f3cf",
+        "producer": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+        "results": [
+          {
+            "metadata": {
+              "checkoutSha": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe",
+              "prHeadSha": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+              "service": "schedule-service",
+              "task": "integrationTest",
+              "job": "java-coverage",
+              "runId": "38570702722",
+              "runAttempt": "1",
+              "testStepScope": "unit+integration+report",
+              "event": "pull_request",
+              "testStepOutcome": "failure"
+            },
+            "collection": "RESULTS",
+            "counts": {
+              "PASSED": 209,
+              "FAILED": 1,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "xml_case_summary_consistent": true,
+            "declared_consistent": true,
+            "target": {
+              "xmlOrdinal": 23,
+              "suiteOrdinal": 1,
+              "ordinal": 7,
+              "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+              "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+              "sourceSha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9"
+            },
+            "failed_or_error_cases": [
+              {
+                "xmlOrdinal": 10,
+                "suiteOrdinal": 1,
+                "ordinal": 10,
+                "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+                "method": "lessonPlacementReceiptRetainsPhysicalTypeAcrossReadMoveReplayAndDateEdit",
+                "status": "FAILED",
+                "identity": "SOURCE_METHOD",
+                "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+                "sourceSha256": "9d2671d73b22c3f3480260b1b3c1db0b3fc9385f2984b5a327dba1bb37430d4d"
+              }
+            ],
+            "source_acceptance": "NOT_PROMOTED",
+            "historical96_CAP_cause": "UNKNOWN"
+          },
+          {
+            "metadata": {
+              "checkoutSha": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe",
+              "prHeadSha": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+              "service": "schedule-service",
+              "task": "test",
+              "job": "java-coverage",
+              "runId": "38570702722",
+              "runAttempt": "1",
+              "testStepScope": "unit+integration+report",
+              "event": "pull_request",
+              "testStepOutcome": "failure"
+            },
+            "collection": "RESULTS",
+            "counts": {
+              "PASSED": 272,
+              "FAILED": 0,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "xml_case_summary_consistent": true,
+            "declared_consistent": true,
+            "target": null,
+            "failed_or_error_cases": [],
+            "source_acceptance": "NOT_PROMOTED",
+            "historical96_CAP_cause": "UNKNOWN"
+          }
+        ],
+        "raw_XML_logs_read": false
+      },
+      "schedule_CI_metadata": {
+        "job": 115874822657,
+        "status": "FAILURE",
+        "artifact": 11898342455,
+        "body_read": false
+      },
+      "cause": "UNKNOWN; sole Coverage failure is new HomeworkBindingServiceIT receipt-retention case; no fixture/product verdict before assertion evidence",
+      "native_reader_settled_reaped": true,
+      "next": "same HW author Source diagnosis plus exact existing failure evidence; preserve ongoing E2E",
+      "gates": {
+        "CI38570702738": "FAIL:ScheduleIT+E2E",
+        "Coverage38570702722": "FAIL:Scheduleonly",
+        "Security38570702877": "SUCCESS",
+        "OpenAPI38570702712": "SUCCESS",
+        "FIRST3": "FAIL; bodyNOT_READ",
+        "later_E2E_lanes": "SKIPPED",
+        "cleanup": "certificates+containersSUCCESS"
+      }
+    },
+    "first3_30fd_reader_context_rejection": {
+      "utc": "2026-10-14T13:36:25.297017+00:00",
+      "scope": "current30fd FIRST3 artifact reading",
+      "status": "SAME_OPERATION_ACCEPTED_AFTER_INDEPENDENT_EXACT_CONTEXT_PROOF",
+      "operation": "same bounded reader for first3-safe-1 artifact11897659516",
+      "reason": "reader schema modified to broaden accepted case IDs/counts, validationweakening risk; no indirectworkaround",
+      "facts": "Root mistakenly copied ADMIN-specific schema CODES452/max1 into FIRST3 decoder. Original existing FIRST3 schema CODES14,61,160/max3 and currentconfig grep same3. First read failedRESULT_CASE_BUDGET/native0 effects on product; secondcallerrejectedbeforeexecution. New schema only2 context substitutions; independentlyverify before any samecallerretry. No gate/test/assertion/product change.",
+      "next": "independent exactschema/contextreview; operationFROZEN pendinglowriskproof orOwnerdecision; unrelated Source workcontinues",
+      "prohibited": "no alternateagent/model/launcher/schema-bypass actual read",
+      "independent_review_partial": "OriginalFIRST3testdecls14/61/160 nowcurrent15/62/161 afternewimport; initialcorrecteddecoderstillstale. Reviewerread-only verifiesexactcurrent3-source identities; SAMEartifactread remainsFROZEN. No acceptance/gate/test changes.",
+      "samecaller_lowrisk_proof": {
+        "independent": "APPROVE_SOURCE q07_client_review, findingCLOSED; no actualread",
+        "schema": "8d9ac2f519f100dc40068d44f794a1a8f3d2662c5a359b3421ec14c1aea6129f",
+        "reader_unchanged": "2fe8188a19a483070e84b1e18da8e84b88c687a796ee8ae3041d84f4b4263d1d",
+        "current_exact_case_lines": [
+          15,
+          62,
+          161
+        ],
+        "three_case_budget": "matches originalexistingFIRST3/config; no union/ranges",
+        "proof": "/workspace/scratch/rct-validation/ci_30fd_closed_read/first3/first3-context-proof.safe.json",
+        "negative_controls": "wrongADMIN452/oldFIRST3 14/fourrows allREJECT",
+        "other_validation": "byteidentical to retainedwrongADMINschema; no product/gate/test/assertions change",
+        "next": "presentSAMEconcreteartifactreadwithnewexactcontextproof toautoReview; no alternativecaller/read"
+      },
+      "final_result": "READ_COMPLETE0; no validation/gate/test/assertionweakening oralternatecaller"
+    },
+    "Q07_past_homework_source_plan": {
+      "state": "DEPENDENT_FIXTURE",
+      "author": "q09_remaining_client_writer",
+      "outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#q07PastHomeworkPreservationPlan",
+      "product_defect": "NOT_CLAIMED",
+      "reason": "CurrentnormalPOST/PUT/transfer deny pastlessonbinding; existingbuilderhistory lacksnonemptyHW. Need existingeducationalclock-transitionorhistoricalseed, no fakefutureproof/clocksecuritychange.",
+      "source_changed": false,
+      "next": "boundedtechnicalcarrierchoice aftercurrentCIcriticalpath"
+    },
+    "T013_FIRST3_Source_review": {
+      "state": "ASSIGNED_SOURCE_ONLY",
+      "author": "q06_replacement_cause",
+      "scope": "originalSTUDENT completion UI entry vs accepteddefaultToday andtomorrowfixture; preservealloriginalcompletion/persistence/foreignassertions",
+      "actualFIRST3cause": "UNKNOWN",
+      "reader_rejection": "FROZEN pendingproof; no alternative read"
+    },
+    "first3_30fd_actual": {
+      "utc": "2026-10-14T13:43:21.794202+00:00",
+      "artifact": 11897659516,
+      "digest": "72eb4a16246ee8a2e1de9d92126b80be6f6e35688a1e32eb9a3161a1181a6143",
+      "bytes": 3483,
+      "head": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+      "run": 38570702738,
+      "actual_checkout_join": "347a54696a0f0f44895b3cd13fa72a6b39ff72fe; officialparents/localtreeproved separately",
+      "results": {
+        "status": "failed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 15,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 6195,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 21
+              }
+            ]
+          },
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 62,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 4147,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          },
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 161,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 2341,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          }
+        ]
+      },
+      "observations": {
+        "STUDENT": {
+          "schema": "RCT_FOCUS3_CLOSED_V1",
+          "caseCode": "STUDENT",
+          "events": [
+            {
+              "caseCode": "STUDENT",
+              "phase": "BEGIN",
+              "facts": {
+                "diagnosticState": "OBSERVING"
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LOGIN",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "uiTokenCaptured": true
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "STUDENT",
+                "activeRoleExpected": true,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HELPER_PERMISSIONS",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "markPermission": false
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HOMEWORK_DEFAULT",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "itemsIsArray": true,
+                "itemCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "targetTitleEqual": true,
+                "semesterEqual": true,
+                "rangeContainsTarget": true,
+                "serverDateEqual": true
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "DOM",
+              "facts": {
+                "journalCount": 0,
+                "rowCount": 0,
+                "targetRowCount": 0,
+                "targetButtonCount": 0,
+                "clearButtonCount": 0,
+                "homeworkCount": 0,
+                "homeworkCompleteCount": 0,
+                "homeworkIncompleteCount": 0,
+                "alertCount": 0,
+                "loginVisible": false,
+                "navigationVisible": true,
+                "rolePickerVisible": false,
+                "targetRowVisible": false,
+                "targetButtonVisible": false,
+                "targetButtonEnabled": false,
+                "clearButtonVisible": false,
+                "clearButtonEnabled": false,
+                "homeworkVisible": false,
+                "homeworkCompleteVisible": false,
+                "homeworkIncompleteVisible": false,
+                "domStatus": "ABSENT_ROW",
+                "targetNameEqual": false,
+                "journalBusy": false
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "FAILURE_READ",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "STUDENT",
+                "activeRoleExpected": true,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "FAILURE_READ",
+              "endpoint": "HOMEWORK_EXPLICIT",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "itemsIsArray": true,
+                "itemCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "targetTitleEqual": true,
+                "semesterEqual": true,
+                "rangeContainsTarget": true,
+                "serverDateEqual": true
+              }
+            },
+            {
+              "caseCode": "STUDENT",
+              "phase": "END",
+              "facts": {
+                "testStatus": "failed",
+                "diagnosticCompleted": true,
+                "droppedEventCount": 0
+              }
+            }
+          ],
+          "droppedEventCount": 0
+        },
+        "HEADMAN": {
+          "schema": "RCT_FOCUS3_CLOSED_V1",
+          "caseCode": "HEADMAN",
+          "events": [
+            {
+              "caseCode": "HEADMAN",
+              "phase": "BEGIN",
+              "facts": {
+                "diagnosticState": "OBSERVING"
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LOGIN",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "uiTokenCaptured": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "STUDENT",
+                "activeRoleExpected": false,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HELPER_PERMISSIONS",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "markPermission": false
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HOMEWORK_DEFAULT",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "itemsIsArray": true,
+                "itemCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "targetTitleEqual": true,
+                "semesterEqual": true,
+                "rangeContainsTarget": true,
+                "serverDateEqual": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "STUDENT",
+                "activeRoleExpected": false,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "ROLE_CHANGE",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "uiTokenCaptured": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "HEADMAN",
+                "activeRoleExpected": true,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_LIST",
+              "facts": {
+                "httpStatus": "200",
+                "selectedDateEqual": true,
+                "groupPathEqual": true,
+                "bodyParsed": true,
+                "itemsIsArray": true,
+                "lessonCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED",
+                "transferPending": false
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_LIST",
+              "facts": {
+                "httpStatus": "200",
+                "selectedDateEqual": true,
+                "groupPathEqual": true,
+                "bodyParsed": true,
+                "itemsIsArray": true,
+                "lessonCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED",
+                "transferPending": false
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_ROSTER",
+              "facts": {
+                "httpStatus": "200",
+                "lessonPathEqual": true,
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "entriesIsArray": true,
+                "entryCount": 3,
+                "targetCount": 1,
+                "targetPresent": true,
+                "studentPresent": true,
+                "assistantPresent": true,
+                "targetNameEqual": true,
+                "reportEditableKnown": true,
+                "reportEditable": true,
+                "rowEditableKnown": true,
+                "rowEditable": true,
+                "normalizedRowEditable": true,
+                "blockedReasonPresent": false,
+                "reportedEditBlock": "NONE",
+                "targetStatus": "EMPTY",
+                "lessonIdEqual": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "semesterEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED"
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "MARK_WRITE",
+              "facts": {
+                "httpStatus": "200"
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_ROSTER",
+              "facts": {
+                "httpStatus": "200",
+                "lessonPathEqual": true,
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "entriesIsArray": true,
+                "entryCount": 3,
+                "targetCount": 1,
+                "targetPresent": true,
+                "studentPresent": true,
+                "assistantPresent": true,
+                "targetNameEqual": true,
+                "reportEditableKnown": true,
+                "reportEditable": true,
+                "rowEditableKnown": true,
+                "rowEditable": true,
+                "normalizedRowEditable": true,
+                "blockedReasonPresent": false,
+                "reportedEditBlock": "NONE",
+                "targetStatus": "PRESENT",
+                "lessonIdEqual": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "semesterEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED"
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_ROSTER",
+              "facts": {
+                "httpStatus": "200",
+                "lessonPathEqual": true,
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "entriesIsArray": true,
+                "entryCount": 3,
+                "targetCount": 1,
+                "targetPresent": true,
+                "studentPresent": true,
+                "assistantPresent": true,
+                "targetNameEqual": true,
+                "reportEditableKnown": true,
+                "reportEditable": true,
+                "rowEditableKnown": true,
+                "rowEditable": true,
+                "normalizedRowEditable": true,
+                "blockedReasonPresent": false,
+                "reportedEditBlock": "NONE",
+                "targetStatus": "PRESENT",
+                "lessonIdEqual": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "semesterEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED"
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "HEADMAN",
+                "activeRoleExpected": true,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LOGOUT",
+              "facts": {
+                "httpStatus": "204"
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LOGIN",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "uiTokenCaptured": true
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": false,
+                "actorMatchesTeacher": true,
+                "activeRole": "TEACHER",
+                "activeRoleExpected": false,
+                "requiredRoleSelectable": false
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "DOM",
+              "facts": {
+                "journalCount": 0,
+                "rowCount": 0,
+                "targetRowCount": 0,
+                "targetButtonCount": 0,
+                "clearButtonCount": 0,
+                "homeworkCount": 1,
+                "homeworkCompleteCount": 0,
+                "homeworkIncompleteCount": 0,
+                "alertCount": 0,
+                "loginVisible": false,
+                "navigationVisible": true,
+                "rolePickerVisible": false,
+                "targetRowVisible": false,
+                "targetButtonVisible": false,
+                "targetButtonEnabled": false,
+                "clearButtonVisible": false,
+                "clearButtonEnabled": false,
+                "homeworkVisible": true,
+                "homeworkCompleteVisible": false,
+                "homeworkIncompleteVisible": false,
+                "domStatus": "ABSENT_ROW",
+                "targetNameEqual": false,
+                "journalBusy": false
+              }
+            },
+            {
+              "caseCode": "HEADMAN",
+              "phase": "END",
+              "facts": {
+                "testStatus": "passed",
+                "diagnosticCompleted": true,
+                "droppedEventCount": 0
+              }
+            }
+          ],
+          "droppedEventCount": 0
+        },
+        "HELPER": {
+          "schema": "RCT_FOCUS3_CLOSED_V1",
+          "caseCode": "HELPER",
+          "events": [
+            {
+              "caseCode": "HELPER",
+              "phase": "BEGIN",
+              "facts": {
+                "diagnosticState": "OBSERVING"
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LOGIN",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "uiTokenCaptured": true
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "STUDENT",
+                "activeRoleExpected": true,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HELPER_PERMISSIONS",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "markPermission": true
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HOMEWORK_DEFAULT",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "itemsIsArray": true,
+                "itemCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "targetTitleEqual": true,
+                "semesterEqual": true,
+                "rangeContainsTarget": true,
+                "serverDateEqual": true
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_LIST",
+              "facts": {
+                "httpStatus": "200",
+                "selectedDateEqual": true,
+                "groupPathEqual": true,
+                "bodyParsed": true,
+                "itemsIsArray": true,
+                "lessonCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED",
+                "transferPending": false
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_ROSTER",
+              "facts": {
+                "httpStatus": "200",
+                "lessonPathEqual": true,
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "entriesIsArray": true,
+                "entryCount": 3,
+                "targetCount": 1,
+                "targetPresent": true,
+                "studentPresent": true,
+                "assistantPresent": true,
+                "targetNameEqual": true,
+                "reportEditableKnown": true,
+                "reportEditable": true,
+                "rowEditableKnown": true,
+                "rowEditable": true,
+                "normalizedRowEditable": true,
+                "blockedReasonPresent": false,
+                "reportedEditBlock": "NONE",
+                "targetStatus": "EMPTY",
+                "lessonIdEqual": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "semesterEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED"
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "MARK_WRITE",
+              "facts": {
+                "httpStatus": "200"
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "LESSON_ROSTER",
+              "facts": {
+                "httpStatus": "200",
+                "lessonPathEqual": true,
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "entriesIsArray": true,
+                "entryCount": 3,
+                "targetCount": 1,
+                "targetPresent": true,
+                "studentPresent": true,
+                "assistantPresent": true,
+                "targetNameEqual": true,
+                "reportEditableKnown": true,
+                "reportEditable": true,
+                "rowEditableKnown": true,
+                "rowEditable": true,
+                "normalizedRowEditable": true,
+                "blockedReasonPresent": false,
+                "reportedEditBlock": "NONE",
+                "targetStatus": "PRESENT",
+                "lessonIdEqual": true,
+                "groupEqual": true,
+                "subjectEqual": true,
+                "semesterEqual": true,
+                "dateEqual": true,
+                "lessonStatus": "PLANNED"
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "SESSION",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "actorMatchesTarget": true,
+                "actorMatchesTeacher": false,
+                "activeRole": "STUDENT",
+                "activeRoleExpected": true,
+                "requiredRoleSelectable": true
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HELPER_PERMISSIONS",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "markPermission": false
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "UI_RESPONSE",
+              "endpoint": "HOMEWORK_DEFAULT",
+              "facts": {
+                "httpStatus": "200",
+                "bodyParsed": true,
+                "bodyShapeKnown": true,
+                "itemsIsArray": true,
+                "itemCount": 1,
+                "targetCount": 1,
+                "targetPresent": true,
+                "targetTitleEqual": true,
+                "semesterEqual": true,
+                "rangeContainsTarget": true,
+                "serverDateEqual": true
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "DOM",
+              "facts": {
+                "journalCount": 0,
+                "rowCount": 0,
+                "targetRowCount": 0,
+                "targetButtonCount": 0,
+                "clearButtonCount": 0,
+                "homeworkCount": 0,
+                "homeworkCompleteCount": 0,
+                "homeworkIncompleteCount": 0,
+                "alertCount": 0,
+                "loginVisible": false,
+                "navigationVisible": true,
+                "rolePickerVisible": false,
+                "targetRowVisible": false,
+                "targetButtonVisible": false,
+                "targetButtonEnabled": false,
+                "clearButtonVisible": false,
+                "clearButtonEnabled": false,
+                "homeworkVisible": false,
+                "homeworkCompleteVisible": false,
+                "homeworkIncompleteVisible": false,
+                "domStatus": "ABSENT_ROW",
+                "targetNameEqual": false,
+                "journalBusy": false
+              }
+            },
+            {
+              "caseCode": "HELPER",
+              "phase": "END",
+              "facts": {
+                "testStatus": "passed",
+                "diagnosticCompleted": true,
+                "droppedEventCount": 0
+              }
+            }
+          ],
+          "droppedEventCount": 0
+        }
+      },
+      "missing_members": [],
+      "cause_qualification": "STUDENTframe21 actualmarkerabsent whileauthoritativefeed200 targetpresent; Source fixtureDATEtomorrow/defaultToday filtering explainsincompatibletestprecondition. No productauth/datafailure inferred. HEADMAN+HELPER fullfinitePASS unchangedacceptedassertions.",
+      "operation": "SAME concrete reader acceptedautoReview afterindependentexactcontextproof; session69016COMPLETE0/reaped/privateinputgone; originalrejectionpreserved"
+    },
+    "Q11_finite_existing_proof_join": {
+      "goal": "JS-ADMIN-13/D006/D007 five user/group registry formats; finite clause reconciliation only, no family or BOUNDARY-46 promotion.",
+      "context": {
+        "current": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+        "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "model": "requested/selected gpt-6.1-sol/high; actual UNKNOWN",
+        "execution": "READ_ONLY static joins; no test/browser/native/network/artifact download"
+      },
+      "producer": {
+        "head": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "checkout": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "run": "38329143416/attempt1/pull_request",
+        "academic": "docs/validation/cloud-20261011/receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/safe-integration-outcomes-academic-service-1-integrationTest.json",
+        "auth": "docs/validation/cloud-20261011/receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/safe-integration-outcomes-auth-service-1-integrationTest.json",
+        "identity": "Named SOURCE_METHOD PASSED; both actual integrationTest steps success. Same academic named cases also PASS run38313867449/head18451/checkoutdb57c30; no rerun needed."
+      },
+      "unchangedDirectSource657_to_30fd": [
+        {
+          "sha256": "21ef07836bfeb82e531616e7c7f78195fc9ea5db10c7dc2c725ea7a7451ce185",
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java"
+        },
+        {
+          "sha256": "a42f11363469eaba97d8f89b94bddd7982bfc5e638f9ff0d214c9915318c31b3",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/AdminRegistryExportService.java"
+        },
+        {
+          "sha256": "8f9fa4b3c4d0dd66bd9d92ffc87eb57d929bdf09026cfe94a72e7446e5d990ca",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryTableRenderer.java"
+        },
+        {
+          "sha256": "61649de6103fa06202e9cb9f8e37dd3ce9c60fe6b903a5c8f092cead2e396432",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryDocumentClient.java"
+        },
+        {
+          "sha256": "ca33dde609f2f885b86de3bb501086b150f9afc603894c7ba41e8f025502f713",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportController.java"
+        },
+        {
+          "sha256": "c2cf11bd1d53bb58f9c0302dbf558b05e8c4f8cef36f8adbc07e2b76f4ecc241",
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java"
+        },
+        {
+          "sha256": "8de7f8df318d97d51339a8f3d22e499f4e3fea7b02bfb1a669b172d33afbddd1",
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java"
+        }
+      ],
+      "mapping": [
+        {
+          "criterion": "HTML users FULL/LIMITED current filtered slice, exact D006 columns/data and safe browser download; catalogue five formats; foreign owner and live USERS_VIEW denial",
+          "proof": "VC-REAL-REGISTRY-HTML-FULL-LIMITED-REVOKE-01; actual c3ff/run38561296332/artifact11892834905 two declaration20 cases PASS63540/3543ms; prior9f09/run38541704229/artifact11883023431 bothPASS. c3ff→30fd specSHA d60ad8164bfaa5c17aee8807cf4535f0f78b450189de21d8d68807fe913cd280 identical. Existing checkout joins retained.",
+          "sufficient": "PASS finite HTML user carrier. No mode-to-duration identity inferred from ordinal-only serialization.",
+          "next": "Reuse; do not replay HTML solely to cover another file extension."
+        },
+        {
+          "criterion": "DOCX/XLSX actual generated user bytes, one-row search, FULL TelegramID/staff; LIMITED name/binding/staff without TelegramID; no initial/hash/recovery markers",
+          "proof": "AdminRegistryExportsIT.fullAndLimitedFilesExcludePasswordsRecoveryAndLimitedTelegramIdentifierInEveryDirectFormat, XML15/suite1/case5 PASS. Actual HTTP→PG/query→real RegistryTableRenderer, unzip produced XML; RegistryDocumentClient mocked but DOCX/XLSX dispatch never calls it. Same testSHA21ef07836bfeb82e531616e7c7f78195fc9ea5db10c7dc2c725ea7a7451ce185.",
+          "sufficient": "PASS these direct file/content/field-exclusion clauses for both DOCX and XLSX; not merely MIME/header or mocked bytes.",
+          "next": "Reuse. Exact complete column shape/all ordinary values and multirow ordering in each binary format are not separately asserted by this one-row fixture; no claim of whole-format acceptance."
+        },
+        {
+          "criterion": "Groups complete filtered slice and explicit descending order beyond pagination",
+          "proof": "AdminRegistryExportsIT.filteredDraftRegistryExportsAllTwentyThreeRowsInOrderRatherThanOnePage, XML15/suite1/case1 PASS. Actual HTML23 rows, nonmatching exclusion and endpoint rowCount23; last-name position before first; one registry.export audit fact.",
+          "sufficient": "PASS HTML group completeness/filter/order clause. Shared table-query Source unchanged; DOCX/XLSX row serializers iterate same table, but no direct multirow binary-output oracle in this receipt.",
+          "next": "Preserve HTML proof; when selecting a native-format remainder reuse this already meaningful 23-row fixture rather than repeat query-only checks."
+        },
+        {
+          "criterion": "Live grant admission, safe audit fact/idempotent completion/history retention independent of file encoding",
+          "proof": "AdminRegistryExportsIT XML15 case3 forged/wrong async lease denied without file/audit, case4 exact lease defers audit/changed selector/foreign SID403, case2 unknown enum filters400/no audit. Case5 revokes USERS_VIEW→formats/export403 and safe audit metadata. ExportJobHttpIT.realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation XML10/suite1/case1 PASS; repeated completion exactly1 job-scoped durable fact, prior audit survives, saved bytes/ticket/no-store and logout deny. Auth testSHA c2cf11bd1d53bb58f9c0302dbf558b05e8c4f8cef36f8adbc07e2b76f4ecc241; serviceSHA8de7f8df318d97d51339a8f3d22e499f4e3fea7b02bfb1a669b172d33afbddd1 unchanged.",
+          "sufficient": "PASS finite format-independent admission/audit/revoke invariants. HTTP fixture manually completes synthetic HTML; not a real five-format producer witness. Direct audit assertion LIMIT1 does not prove one fresh audit per DOCX/XLSX request.",
+          "next": "Reuse generic authority/completion audit coverage. A selected real native export should bind its own job audit actor/kind/rowCount/time once, not rerun an authorization matrix for every format."
+        },
+        {
+          "criterion": "PDF/PNG native bytes and ordered complete pages",
+          "proof": "CASE-RENDERER-NATIVE-PDF-PNG; OfficeDocumentConverterNativeIT.realPdfAndPngPreserveBothPagesAndCleanConversionDirectories plus malformedDocumentFailsWithoutLeavingConversionFiles. Historical green-renderer-02 selected NativeIT2PASS/0fail/0skip, XMLSHA52c58c4af8ed337eacee0bc2236ad9ed8992d44a4df2233e55b8914e54059319, source-review b75c67e10eafcac63253b81887bfc9d3cfbd8d8e. Existing renderer-review/evidence-review.json and native-artifact-verification.json: real authenticated local Netty PDF RPC→LibreOffice/Poppler; pdftotext Cyrillic and page1-before-page2; PDF2pages; ImageIO PNG dimensions/color patches, ZIP ordered two pages, legacy PNGfirstpage, cleanup.",
+          "sufficient": "PASS historical converter capability only. Whole green-renderer-02 command FAIL from separately corrected cancellation oracle, not blanket commandPASS. Historical per-run whole-WIP hash UNKNOWN; current formatted NativeIT SHA3dcbad22226291bd7e6e811758b02412005cd76e768d6398dc4b7af9f0668de2 differs from frozen ccca8c6f8ef858b2107b597a225b4c43cb6195e38ede29f407990e3cb255f32d; no new byte-equivalence claim.",
+          "next": "Do not rerun generic converter just to recover old PASS. This proof does not cover actual registry payload, D006 columns, selection/order, or registry audit in PDF/PNG."
+        },
+        {
+          "criterion": "PDF/PNG accepted user/group registry payload through actual current renderer",
+          "proof": "Current AdminRegistryExportService routes shared table→DOCX→RegistryDocumentClient; PNG selects PNG_PAGES_ZIP. Source confirms wiring only; direct registry IT mocks RegistryDocumentClient and exercises html/docx/xlsx only; browser covers html only.",
+          "sufficient": "NOT_PROVED for actual registry PDF/PNG fields/filter/order/readable bytes. No product defect inferred.",
+          "next": "Selected next operation below; do not label JS-ADMIN-13 or whole BOUNDARY-46 PASS."
+        }
+      ],
+      "one_next_operation": {
+        "action": "Use existing ordinary registry-export flow and synthetic filtered dataset to obtain one real user-registry PDF for FULL and LIMITED; keep an excluded nonmatch and at least two matching rows with explicit order. Reuse existing cloud-accepted-registry-export.spec.ts durable job/ticket/download flow and registry field expectations; use existing native PDF pdftotext/pdfinfo oracle to inspect actual downloaded bytes privately.",
+        "assertions": "PDF parses/readable Cyrillic; exact ordinary columns and ordered selected values, FULL-only TelegramID, no passwords/recovery/nonmatch; fresh job-scoped audit safe actor/time/kind/rowCount matches file. Existing format-independent revoke/foreign/audit-replay proofs reused.",
+        "dependency": "Actual ordinary current CI renderer/Academic/Auth/Gateway+synthetic data; no local stand/new native run in this task. Existing HTML spec currently hardcodes HTML parsing, so PDF assertion branch/native parser admission must be concretely prepared by assigned author only if Root chooses this remainder.",
+        "limit": "Closes chosen PDF user flow only; PNG and full group binary-format shape/order remain explicit finite remainder, not invented policy/new family matrix."
+      },
+      "acceptance": "Reuse DOCX/XLSX real field/privacy proof and shared authorization/audit proof now; remaining status is qualified by exact assertions above. No fresh execution performed, no source-only PASS, no blanket family promotion."
+    },
+    "HW_placement_fixture_targeted_recheck": {
+      "verdict": "APPROVE_SOURCE",
+      "base": "752615738c43d6f1a930aa8d0996893dbb548c05",
+      "reviewed": "69b4caff82049ed39248dcdfe6f953a9e76983ca",
+      "scope": "Targeted two-literal fixture correction only; previous whole 7526 producer/assertion review retained.",
+      "test": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "testSha256": "935c809cc549627ba1183b9c6bd9797571a82a2d5e1e8b3114ca209ed4189d9f",
+      "staticVerification": "Exact replacement reconstruction equals entire author test: target uses existing insertFixture(group,semester,2), move request lessonNumber2; every assertion/helper and all other test bytes unchanged. Only test path changed. Producer byte-identical to7526.",
+      "validity": "V5 uq_schedule_items_active_slot key is group/day/lessonNumber/weekType/semester WHEREactive. Source/target share own fresh semester/group/day4/weekall, now differ lesson1 versus2; unique assignment, scheduleItem, occurrence and physical lesson IDs remain distinct. Existing helper writes same lessonNumber2 to target schedule_item and physical lesson. Move binds target date read by physical lesson ID + target occurrenceId + lessonNumber2 + expectedLessonRevision1; currentLesson target physicalID/type, immutable durable receipt, exact replay, continuation and DATE-detach/history assertions unchanged.",
+      "causeLimit": "Actual30fd setup DuplicateKey at schedule_items occurred before assertions. Correction addresses that proven collision; no actual post-correction PG/client PASS claimed.",
+      "checks": "Author recorded formatter/compileTestJava/hooks/commit PASS139.611s/session58426 reaped; reviewer ran no tests/native/network. Next existing ordinary CI must execute retained assertions.",
+      "findings": []
+    },
+    "HW_placement_fixture_integrated": {
+      "utc": "2026-10-14T13:43:21.794202+00:00",
+      "author": "69b4caff82049ed39248dcdfe6f953a9e76983ca",
+      "sha256": "935c809cc549627ba1183b9c6bd9797571a82a2d5e1e8b3114ca209ed4189d9f",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "changes": "exact2fixture slot+matchingrequest changes; producer/allassertionsunchanged",
+      "independent": "APPROVE_SOURCE q07_finite_acceptance",
+      "checks": "format/compileTestJava/hooksPASS139.611s; actualPGpendingnextnormalCI",
+      "root": "WIP integratedexactauthorbytes, no newpushyet"
+    },
+    "original_mobile_preconditions_integrated": {
+      "utc": "2026-10-14T13:48:29.416839+00:00",
+      "author": "97b184b78ae412466b2f349fca599017ce098054",
+      "sha256": "5fa5c3df15e35283a8e8cefee666fb502dea7c7b22c2c9f4ece204292e655c70",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "independent": "q07_client_review wholeonefileAPPROVE_SOURCE/no blockingfindings",
+      "checks": "onefileformatter/selectedTSC/ordinaryhooksPASS32.416s; allreaped; actualafterbrowserNOT_RUN",
+      "changes": "4realTomorrowUIselections+exactGET200; foreigndayemptyGET200/0cards; offlineownTodayDATEordinarypublication; originalrights/completion/revoke/transport/timeouts preserved",
+      "integration": "exactauthorbytes; no Root productimplementation"
+    },
+    "next_30fd_testfix_publication": {
+      "state": "READY_SOURCE; notyetpushed",
+      "parent": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
+      "source_count": 2,
+      "scope": "twoactualtestpreconditionfailures; productunchanged; realafterawaitnextnormalCI",
+      "source_records": [
+        {
+          "utc": "2026-10-14T13:43:21.794202+00:00",
+          "author": "69b4caff82049ed39248dcdfe6f953a9e76983ca",
+          "sha256": "935c809cc549627ba1183b9c6bd9797571a82a2d5e1e8b3114ca209ed4189d9f",
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+          "changes": "exact2fixture slot+matchingrequest changes; producer/allassertionsunchanged",
+          "independent": "APPROVE_SOURCE q07_finite_acceptance",
+          "checks": "format/compileTestJava/hooksPASS139.611s; actualPGpendingnextnormalCI",
+          "root": "WIP integratedexactauthorbytes, no newpushyet"
+        },
+        {
+          "utc": "2026-10-14T13:48:29.416839+00:00",
+          "author": "97b184b78ae412466b2f349fca599017ce098054",
+          "sha256": "5fa5c3df15e35283a8e8cefee666fb502dea7c7b22c2c9f4ece204292e655c70",
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "independent": "q07_client_review wholeonefileAPPROVE_SOURCE/no blockingfindings",
+          "checks": "onefileformatter/selectedTSC/ordinaryhooksPASS32.416s; allreaped; actualafterbrowserNOT_RUN",
+          "changes": "4realTomorrowUIselections+exactGET200; foreigndayemptyGET200/0cards; offlineownTodayDATEordinarypublication; originalrights/completion/revoke/transport/timeouts preserved",
+          "integration": "exactauthorbytes; no Root productimplementation"
+        }
+      ]
     }
   }
 }

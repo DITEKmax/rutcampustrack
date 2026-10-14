@@ -288,7 +288,8 @@ public class AssignmentReplacementService {
         List<Map<String, Object>> rows =
                 jdbc.queryForList(
                         """
-                SELECT id, status::text AS status, revision
+                SELECT id, status::text AS status, revision,
+                       (date + start_time) AT TIME ZONE 'Europe/Moscow' > NOW() AS upcoming
                   FROM lessons
                  WHERE id IN ("""
                                 + placeholders
@@ -459,6 +460,9 @@ public class AssignmentReplacementService {
                     OPERATION_GUC,
                     operationId.toString());
             int[] counts = rebindFutureOccurrences(operationId, authority);
+            int[] oneOffCounts = rebindOneOffOccurrences(operationId, authority);
+            counts[0] += oneOffCounts[0];
+            counts[1] += oneOffCounts[1];
             jdbc.update(
                     """
                 UPDATE schedule_items item
@@ -617,6 +621,135 @@ public class AssignmentReplacementService {
                     skipped++;
                 }
             }
+        }
+        return new int[] {moved, skipped};
+    }
+
+    /** One-off origins have no recurring item; retain their physical identity while rebinding. */
+    private int[] rebindOneOffOccurrences(
+            UUID operationId, PreparedAssignmentCloseResponse authority) {
+        LocalDate from = parseDate(authority.getEffectiveFrom());
+        LocalDate until = parseDate(authority.getTargetValidUntilExclusive());
+        // Match the one-off lifecycle lock order: assignment fences, origins, occurrences, lessons.
+        // The already narrowed source fence prevents new eligible source occurrences.
+        jdbc.queryForList(
+                """
+                SELECT origin.id
+                  FROM schedule_one_off_lessons origin
+                  JOIN lesson_occurrences occurrence ON occurrence.one_off_lesson_id = origin.id
+                 WHERE occurrence.assignment_id = ? AND occurrence.occurrence_date >= ?
+                   AND occurrence.occurrence_date < ?
+                 ORDER BY origin.id FOR UPDATE OF origin
+                """,
+                authority.getSourceAssignmentId(),
+                from,
+                until);
+        List<Map<String, Object>> occurrences =
+                jdbc.queryForList(
+                        """
+                SELECT id AS occurrence_id, one_off_lesson_id, occurrence_date,
+                       current_lesson_id, revision
+                  FROM lesson_occurrences
+                 WHERE schedule_item_id IS NULL AND one_off_lesson_id IS NOT NULL
+                   AND assignment_id = ? AND assigned_teacher_id = ?
+                   AND group_id = ? AND subject_id = ? AND semester_id = ? AND lesson_type = ?
+                   AND occurrence_date >= ? AND occurrence_date < ?
+                 ORDER BY id FOR UPDATE
+                """,
+                        authority.getSourceAssignmentId(),
+                        authority.getSourceTeacherId(),
+                        authority.getGroupId(),
+                        authority.getSubjectId(),
+                        authority.getSemesterId(),
+                        authority.getLessonType(),
+                        from,
+                        until);
+        Map<Long, Map<String, Object>> lessons = lockCurrentLessons(occurrences);
+        jdbc.queryForObject(
+                "SELECT set_config('rutcampustrack.assignment_binding_operation_id', ?, true)",
+                String.class,
+                operationId.toString());
+        int moved = 0;
+        int skipped = 0;
+        for (Map<String, Object> occurrence : occurrences) {
+            long occurrenceId = number(occurrence.get("occurrence_id"));
+            Long lessonId = nullableNumber(occurrence.get("current_lesson_id"));
+            Map<String, Object> lesson = lessonId == null ? null : lessons.get(lessonId);
+            if (lessonId != null && lesson == null)
+                throw new ConflictException("Текущая разовая пара исчезла во время замены");
+            if (lesson == null
+                    || !"planned".equals(lesson.get("status"))
+                    || !Boolean.TRUE.equals(lesson.get("upcoming"))) {
+                skipped++;
+                continue;
+            }
+            long occurrenceRevision = number(occurrence.get("revision"));
+            long lessonRevision = number(lesson.get("revision"));
+            Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lessonId);
+            jdbc.update(
+                    """
+                INSERT INTO schedule_assignment_binding_ledger
+                    (operation_id, semester_id, occurrence_id, lesson_id, occurrence_date,
+                     expected_occurrence_revision, after_occurrence_revision,
+                     expected_lesson_revision, after_lesson_revision,
+                     before_assignment_id, before_teacher_id, after_assignment_id, after_teacher_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    operationId,
+                    authority.getSemesterId(),
+                    occurrenceId,
+                    lessonId,
+                    occurrence.get("occurrence_date"),
+                    occurrenceRevision,
+                    occurrenceRevision + 1,
+                    lessonRevision,
+                    lessonRevision + 1,
+                    authority.getSourceAssignmentId(),
+                    authority.getSourceTeacherId(),
+                    authority.getTargetAssignmentId(),
+                    authority.getTargetTeacherId());
+            int occurrenceUpdated =
+                    jdbc.update(
+                            """
+                UPDATE lesson_occurrences
+                   SET assignment_id = ?, assigned_teacher_id = ?, revision = revision + 1
+                 WHERE id = ? AND one_off_lesson_id = ? AND schedule_item_id IS NULL
+                   AND assignment_id = ? AND assigned_teacher_id = ? AND revision = ?
+                """,
+                            authority.getTargetAssignmentId(),
+                            authority.getTargetTeacherId(),
+                            occurrenceId,
+                            occurrence.get("one_off_lesson_id"),
+                            authority.getSourceAssignmentId(),
+                            authority.getSourceTeacherId(),
+                            occurrenceRevision);
+            int lessonUpdated =
+                    jdbc.update(
+                            """
+                UPDATE lessons
+                   SET assignment_id = ?, assigned_teacher_id = ?, revision = revision + 1
+                 WHERE id = ? AND occurrence_id = ? AND schedule_item_id IS NULL
+                   AND assignment_id = ? AND assigned_teacher_id = ?
+                   AND status::text = 'planned' AND revision = ?
+                """,
+                            authority.getTargetAssignmentId(),
+                            authority.getTargetTeacherId(),
+                            lessonId,
+                            occurrenceId,
+                            authority.getSourceAssignmentId(),
+                            authority.getSourceTeacherId(),
+                            lessonRevision);
+            if (occurrenceUpdated != 1 || lessonUpdated != 1)
+                throw new ConflictException("Разовая пара изменилась во время замены");
+            ScheduleActionRecordedEvent.publish(
+                    jdbc,
+                    events,
+                    "LESSON_EDITED",
+                    lessonId,
+                    null,
+                    actionBefore,
+                    java.time.OffsetDateTime.now());
+            moved++;
         }
         return new int[] {moved, skipped};
     }

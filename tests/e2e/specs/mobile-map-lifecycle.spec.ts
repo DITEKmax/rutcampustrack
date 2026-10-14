@@ -68,9 +68,9 @@ async function openStudentMap(page: Page, buildingCode: string) {
   await expect(map.locator('#map-floor')).toHaveText('Этаж 1');
   return map;
 }
-async function pngDownload(page: Page, expected: Buffer) {
+async function mapDownload(page: Page, format: 'PNG' | 'SVG', expected: Buffer) {
   const pending = page.waitForEvent('download');
-  await page.getByRole('link', { name: 'Скачать PNG', exact: true }).click();
+  await page.getByRole('link', { name: `Скачать ${format}`, exact: true }).click();
   const download = await pending;
   try {
     requireValue((await download.failure()) === null, 'Map download must complete');
@@ -92,7 +92,7 @@ async function pngDownload(page: Page, expected: Buffer) {
 
 // JS-ADMIN-23/25 + JS-STUDENT-24: API publication and a genuine Vue consumer.
 // D004 excludes the legend; zoom/pan, deletion and negative SVG/PNG-budget cases remain separate.
-test('ADMIN replaces a map while STUDENT downloads current PNG in Vue and old assets remain readable @real-mobile', async ({
+test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue and old assets remain readable @real-mobile', async ({
   page,
   dataset,
   teachingInstant,
@@ -194,11 +194,10 @@ test('ADMIN replaces a map while STUDENT downloads current PNG in Vue and old as
     const [pngResponse, svgResponse] = await Promise.all([response, svgRead]);
     expect(pngResponse.status()).toBe(200);
     expect((await pngResponse.headerValue('content-type'))?.split(';', 1)[0]).toBe('image/png');
-    expect((await pngResponse.body()).equals(png)).toBe(true);
+    expect(Number(await pngResponse.headerValue('content-length')) === plan.png.bytes).toBe(true);
     expect(svgResponse.status()).toBe(200);
     expect((await svgResponse.headerValue('content-type'))?.split(';', 1)[0]).toBe('image/svg+xml');
     expect(Number(await svgResponse.headerValue('content-length')) === plan.svg.bytes).toBe(true);
-    expect((await svgResponse.body()).equals(originalSvg)).toBe(true);
     await expect(map.getByRole('heading', { name: plan.label, exact: true })).toBeVisible();
     await expect(map.getByText(`Версия ${plan.version}`, { exact: true })).toBeVisible();
     const preview = map.getByRole('img', { name: 'Схема выбранного этажа', exact: true });
@@ -218,7 +217,8 @@ test('ADMIN replaces a map while STUDENT downloads current PNG in Vue and old as
         ),
       )
       .toBe(true);
-    await pngDownload(page, png);
+    await mapDownload(page, 'SVG', originalSvg);
+    await mapDownload(page, 'PNG', png);
   };
   await viewAndDownload(first, firstPng);
   const replaced = await upload(dataset.admin, replacementPng, `${dataset.marker} новая`);

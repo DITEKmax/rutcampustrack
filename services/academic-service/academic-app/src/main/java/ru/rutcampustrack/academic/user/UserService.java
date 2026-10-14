@@ -8,13 +8,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.lang.Nullable;
@@ -265,6 +269,58 @@ public class UserService {
                                 pageable.getPageSize(),
                                 org.springframework.data.domain.Sort.by(
                                         "lastName", "firstName", "middleName"));
+        boolean archivedRole =
+                roleStatusFilter != null && "ARCHIVED".equalsIgnoreCase(roleStatusFilter.trim());
+        if (archivedRole || (roleStatusFilter == null && statusFilter == AccountStatus.ARCHIVED)) {
+            // A restored account can still have archived grants. Do not force account ARCHIVED
+            // when the administrator explicitly selects archived role history.
+            Map<String, String> columns =
+                    Map.ofEntries(
+                            Map.entry("id", "id"),
+                            Map.entry("login", "login"),
+                            Map.entry("lastName", "last_name"),
+                            Map.entry("firstName", "first_name"),
+                            Map.entry("middleName", "middle_name"),
+                            Map.entry("role", "role"),
+                            Map.entry("status", "status"),
+                            Map.entry("employeeNumber", "employee_number"),
+                            Map.entry("createdAt", "created_at"));
+            List<Sort.Order> orders = new ArrayList<>();
+            for (Sort.Order order : effective.getSort()) {
+                String column = columns.get(order.getProperty());
+                if (column == null)
+                    throw new BadRequestException("sort", "Недопустимое поле сортировки");
+                orders.add(order.withProperty(column));
+            }
+            if (orders.stream().noneMatch(order -> order.getProperty().equals("id")))
+                orders.add(Sort.Order.asc("id"));
+            Pageable archivedPage =
+                    effective.isPaged()
+                            ? PageRequest.of(
+                                    effective.getPageNumber(),
+                                    effective.getPageSize(),
+                                    Sort.by(orders))
+                            : Pageable.unpaged(Sort.by(orders));
+            String pattern =
+                    search == null || search.isBlank()
+                            ? null
+                            : "%"
+                                    + UserSpecifications.escapeLike(
+                                            search.trim().toLowerCase(Locale.ROOT))
+                                    + "%";
+            return userRepository.findAdminRegistryIncludingArchived(
+                    pattern,
+                    roleFilter == null || roleFilter.isBlank()
+                            ? null
+                            : roleFilter.trim().toLowerCase(Locale.ROOT),
+                    roleStatusFilter == null
+                            ? null
+                            : roleStatusFilter.trim().toLowerCase(Locale.ROOT),
+                    roleStatusFilter == null && statusFilter != null
+                            ? statusFilter.name().toLowerCase(Locale.ROOT)
+                            : null,
+                    archivedPage);
+        }
         return userRepository.findAll(spec, effective);
     }
 

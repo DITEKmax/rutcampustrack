@@ -1,0 +1,74 @@
+{
+  "artifact": 11877240211,
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "run": 38525988847,
+  "digest": "sha256:3bcf697b916540e433d46df8fbd5df6e3279172cf2601e6ab64a7d5eebcdd64c",
+  "bytes": 440,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "cloud-accepted-registry-export.spec.ts",
+        "line": 18,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 11088,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 43
+          }
+        ]
+      },
+      {
+        "file": "cloud-accepted-registry-export.spec.ts",
+        "line": 18,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 10884,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 43
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "qualification": "Current actual finite cases, reported frames unauthenticated; registry same declaration line18 has ordinal identity only, no FULL/LIMITED inference from line."
+}

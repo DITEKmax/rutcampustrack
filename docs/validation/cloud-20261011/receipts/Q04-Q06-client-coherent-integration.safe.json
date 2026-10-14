@@ -1,0 +1,84 @@
+{
+  "schema": "rct.coherent-product-integration/v1",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "parent": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "source_inventory": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java": {
+      "author_revision": "6e59b8a6c66b92e8fa32243b37022c65cf13259d",
+      "sha256": "00431bf7abb7c0a04b0ed135d4a756bbcb208277d1ba81d2f2c2dc324c87eadf",
+      "byte_identity": true
+    },
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java": {
+      "author_revision": "6e59b8a6c66b92e8fa32243b37022c65cf13259d",
+      "sha256": "1822f15ace09e70b46ae0008284710060b21266eb96e2615fd57de2a8079db39",
+      "byte_identity": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java": {
+      "author_revision": "6e59b8a6c66b92e8fa32243b37022c65cf13259d",
+      "sha256": "3e06b4d68e61adfbb43805e1a31802ea271b141a2edeba100117e00588a05672",
+      "byte_identity": true
+    },
+    "tests/e2e/specs/mobile-real-server.spec.ts": {
+      "author_revision": "6e59b8a6c66b92e8fa32243b37022c65cf13259d",
+      "sha256": "b02d9e3889b68f43e3ff7e4319167c60a9ee949921ea971742c9e13dc88969a9",
+      "byte_identity": true
+    },
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/replacement/AssignmentReplacementService.java": {
+      "author_revision": "b83a3383f155ebe9cbea644b39b1ba374c3cdb08",
+      "sha256": "3f70dd8ec1beba45375227d3ce094f2ee8b1c51ef9ea19a98565b936b15893fe",
+      "byte_identity": true
+    },
+    "services/schedule-service/schedule-app/src/main/resources/db/migration/V31__one_off_assignment_replacement.sql": {
+      "author_revision": "b83a3383f155ebe9cbea644b39b1ba374c3cdb08",
+      "sha256": "ef47feedbc89cc4b1020b57d3baecb96d93865cdaffa336831ff7b8cea992f20",
+      "byte_identity": true
+    },
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java": {
+      "author_revision": "b83a3383f155ebe9cbea644b39b1ba374c3cdb08",
+      "sha256": "185b42ac7c9b9aacf3127dbd6cf9b3ff736f065552388fe2999b94212280f702",
+      "byte_identity": true
+    },
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java": {
+      "author_revision": "b83a3383f155ebe9cbea644b39b1ba374c3cdb08",
+      "sha256": "5f7925c8d1898ed3e2c8b30a2c5548449e25d66dfc39ecd43f96205a94087a23",
+      "byte_identity": true
+    },
+    "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts": {
+      "author_revision": "0b3f3a8f5254a68dd53549b7183f14bedffbfa0e",
+      "sha256": "15501f8fe982bdfa00ede2de7972340180aca1805a2a5b7a3bb582c9c4c1d52d",
+      "byte_identity": true
+    },
+    "tests/e2e/specs/cloud-accepted-registry-export.spec.ts": {
+      "author_revision": "0b3f3a8f5254a68dd53549b7183f14bedffbfa0e",
+      "sha256": "74554e1d529c5ac3aff4697a64e17fcf994b816b5870753fb80bf432b87ac50c",
+      "byte_identity": true
+    },
+    "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": {
+      "author_revision": "0b3f3a8f5254a68dd53549b7183f14bedffbfa0e",
+      "sha256": "532356a6356282a283fabb65ce456aca1f2eb4154d67898c1b658a8b372e2c02",
+      "byte_identity": true
+    },
+    "tests/e2e/specs/mobile-map-lifecycle.spec.ts": {
+      "author_revision": "6a9a19e3a15d3f86013c2782ddb79b522cc730cb",
+      "sha256": "81719b9e808ebfb55db7c56ebcc2f2ff2e67afd33b2d4c7766c8aa244c9474eb",
+      "byte_identity": true
+    },
+    ".github/workflows/ci.yml": {
+      "reviewed_sha256": "bf9caf85d2a413b6694f750ffb8c1ce6e24c3ddc7888ab8f69b26a68102e7a7d",
+      "Root_sole_writer": true,
+      "yaml_bash_python_parse": "PASS",
+      "actionlint1.7.11": "PASS",
+      "independent_review": "APPROVE_SOURCE"
+    }
+  },
+  "changed_sources": 13,
+  "actual_after": "NOT_RUN",
+  "reviews": [
+    "receipts/Q04-archive-registry-independent-review.safe.md",
+    "receipts/Q06-oneoff-replacement-independent-review.safe.md",
+    "receipts/Q09-Q11-Q14-fixture-corrections-independent-review.safe.md"
+  ],
+  "accepted_sources": "Q04 JS-ADMIN-04/2026-10-02 restore; Q06 accepted2026-09-23 all futurelessontransfer; currentVue/components for harness",
+  "no_API_proto_historical_migration_Angular_lockfile_changes": true,
+  "current_CI_failure": "Exacte4e9 new archive method soleAcademicCI/Coverage fail; clientcases see current-e4e9-*; newQ06frame220 diagnosis independent"
+}

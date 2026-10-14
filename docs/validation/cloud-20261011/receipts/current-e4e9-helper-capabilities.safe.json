@@ -1,0 +1,78 @@
+{
+  "artifact": 11877080680,
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "run": 38525988847,
+  "digest": "sha256:aa9362060ef9fa2c66f574ad9d525a0d90222a94741898f179999a8499ad0d55",
+  "bytes": 473,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 21,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2745,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 124,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 5945,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "cloud-accepted-helper-capabilities.spec.ts",
+            "line": 133
+          }
+        ]
+      },
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 174,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2810,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "HELPER_VIEW_STATS",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER_CANCEL_LESSONS",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER_MANAGE_EXCUSES",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "qualification": "Current actual finite cases, reported frames unauthenticated; registry same declaration line18 has ordinal identity only, no FULL/LIMITED inference from line."
+}

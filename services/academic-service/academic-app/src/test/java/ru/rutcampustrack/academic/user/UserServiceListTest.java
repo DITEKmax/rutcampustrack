@@ -3,6 +3,8 @@ package ru.rutcampustrack.academic.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -129,11 +131,14 @@ class UserServiceListTest {
 
     @Test
     void archivedRoleStatusRemainsFilterableAsReadOnlyHistory() {
-        when(userRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(userRepository.findAdminRegistryIncludingArchived(
+                        isNull(), eq("teacher"), eq("archived"), isNull(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
         service.listUsers(null, "TEACHER", null, "ARCHIVED", pageable);
 
-        verify(userRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(userRepository)
+                .findAdminRegistryIncludingArchived(
+                        isNull(), eq("teacher"), eq("archived"), isNull(), any(Pageable.class));
     }
 }

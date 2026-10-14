@@ -13745,6 +13745,97 @@
       "sha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70",
       "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
       "status": "testonlyb95b, Sourcecompiled locally; ENVstop beforeXML; realCIRED/PASS NOT_RUN; productunchanged"
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java",
+      "sha256": "00431bf7abb7c0a04b0ed135d4a756bbcb208277d1ba81d2f2c2dc324c87eadf",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "sha256": "1822f15ace09e70b46ae0008284710060b21266eb96e2615fd57de2a8079db39",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java",
+      "sha256": "3e06b4d68e61adfbb43805e1a31802ea271b141a2edeba100117e00588a05672",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/replacement/AssignmentReplacementService.java",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/replacement/AssignmentReplacementService.java",
+      "sha256": "3f70dd8ec1beba45375227d3ce094f2ee8b1c51ef9ea19a98565b936b15893fe",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/schedule-service/schedule-app/src/main/resources/db/migration/V31__one_off_assignment_replacement.sql",
+      "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V31__one_off_assignment_replacement.sql",
+      "sha256": "ef47feedbc89cc4b1020b57d3baecb96d93865cdaffa336831ff7b8cea992f20",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sha256": "185b42ac7c9b9aacf3127dbd6cf9b3ff736f065552388fe2999b94212280f702",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+      "sha256": "5f7925c8d1898ed3e2c8b30a2c5548449e25d66dfc39ecd43f96205a94087a23",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "15501f8fe982bdfa00ede2de7972340180aca1805a2a5b7a3bb582c9c4c1d52d",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "74554e1d529c5ac3aff4697a64e17fcf994b816b5870753fb80bf432b87ac50c",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "532356a6356282a283fabb65ce456aca1f2eb4154d67898c1b658a8b372e2c02",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-tests/e2e/specs/mobile-real-server.spec.ts",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "b02d9e3889b68f43e3ff7e4319167c60a9ee949921ea971742c9e13dc88969a9",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "bf9caf85d2a413b6694f750ffb8c1ce6e24c3ddc7888ab8f69b26a68102e7a7d",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "Q04 6e59 and Q06 b83 Source-approved + prior author checks reused by exact byte identity; Q09/Q11/Q14 0b3 Source-approved cached checks PASS; workflow syntax/actionlint PASS and reviewed. Actual after CI/DB/browser NOT_RUN."
+    },
+    {
+      "id": "CURRENT-E4E9-NEXT-PRODUCT-tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+      "sha256": "81719b9e808ebfb55db7c56ebcc2f2ff2e67afd33b2d4c7766c8aa244c9474eb",
+      "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "6a9a19e3 actualPNG+SVGdownloadoracle Source-approved+cachedformatter/type/hooksPASS, actualbrowserNOT_RUN; oldCDPfailurecauseUNKNOWN"
     }
   ],
   "research_receipt": {

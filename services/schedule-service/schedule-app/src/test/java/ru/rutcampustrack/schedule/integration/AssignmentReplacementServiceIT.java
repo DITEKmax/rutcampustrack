@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.protobuf.ByteString;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -21,9 +22,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.RecurringProtocolConflictException;
@@ -33,6 +37,7 @@ import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
 import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
 import ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.oneoff.OneOffLessonWriter;
 import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
 import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 import ru.rutcampustrack.schedule.replacement.AssignmentReplacementService;
@@ -72,6 +77,10 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     @Autowired RecurringLessonLifecycleWriter lifecycleWriter;
 
     @Autowired LessonRepository lessonRepository;
+
+    @Autowired OneOffLessonWriter oneOffWriter;
+
+    @Autowired PlatformTransactionManager transactionManager;
 
     @Autowired ru.rutcampustrack.schedule.lesson.LessonTransferWriter transferWriter;
 
@@ -1143,6 +1152,401 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
                                                 .clearSourceAssignmentId()
                                                 .build()))
                 .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void oneOffCloseAdoptThenNextDayReplacementPreservesHistoryAndReplay() throws Exception {
+        LocalDate today = oneOffWriter.today();
+        LocalDate until = today.plusDays(30);
+        var past = createOneOff(today.minusDays(1), (short) 1, today, until);
+        var active = createOneOff(today, (short) 2, today, until);
+        var future = createOneOff(today.plusDays(2), (short) 3, today, until);
+        var cancelled = createOneOff(today.plusDays(3), (short) 4, today, until);
+        jdbc.update("UPDATE lessons SET status='closed' WHERE id=?", past.physicalLessonId());
+        jdbc.update("UPDATE lessons SET status='active' WHERE id=?", active.physicalLessonId());
+        oneOffWriter.cancelPhysical(
+                cancelled.physicalLessonId(), "retained cancellation", ACTOR_ID);
+        long homework =
+                insertHomeworkBinding(
+                        new SeededOccurrence(future.occurrenceId(), future.physicalLessonId()));
+        String pastBefore = oneOffSnapshot(past);
+        String activeBefore = oneOffSnapshot(active);
+
+        UUID close = UUID.randomUUID(), adopt = UUID.randomUUID(), replace = UUID.randomUUID();
+        configureOneOffLifecycle(close, "CLOSE_UNASSIGN", today, until, "PREPARED");
+        replacementService.install(lifecycleRequest(close, "CLOSE_UNASSIGN", today));
+        configureOneOffLifecycle(close, "CLOSE_UNASSIGN", today, until, "APPLIED");
+        var closeCommand = oneOffCommit(close);
+        assertThat(replacementService.commit(closeCommand).getMovedCount()).isEqualTo(2);
+        assertThat(replacementService.commit(closeCommand).getState()).isEqualTo("COMMITTED");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT assignment_id FROM lessons WHERE id=?",
+                                Long.class,
+                                future.physicalLessonId()))
+                .isNull();
+        configureOneOffLifecycle(adopt, "ADOPT_UNASSIGNED", today, until, "PREPARED");
+        replacementService.install(lifecycleRequest(adopt, "ADOPT_UNASSIGNED", today));
+        configureOneOffLifecycle(adopt, "ADOPT_UNASSIGNED", today, until, "APPLIED");
+        assertThat(replacementService.commit(oneOffCommit(adopt)).getMovedCount()).isEqualTo(2);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT assignment_id FROM lessons WHERE id=?",
+                                Long.class,
+                                future.physicalLessonId()))
+                .isEqualTo(TARGET_ASSIGNMENT_ID);
+        String cancelledBefore = oneOffSnapshot(cancelled);
+        String futureBefore = oneOffSnapshot(future);
+        String homeworkBefore =
+                jdbc.queryForObject(
+                        "SELECT to_jsonb(binding)::text FROM lesson_homework_bindings binding WHERE binding_id=?",
+                        String.class,
+                        homework);
+        var authority =
+                oneOffReplacementAuthority(
+                        replace,
+                        TARGET_ASSIGNMENT_ID,
+                        TARGET_TEACHER_ID,
+                        OTHER_ASSIGNMENT_ID,
+                        OTHER_TEACHER_ID,
+                        today,
+                        today.plusDays(1),
+                        until);
+        installOneOffReplacement(authority);
+        authority
+                .setState("APPLIED")
+                .setTargetLifecycleState("ACTIVE")
+                .setSourceValidUntilExclusive(today.plusDays(1).toString());
+        var command = oneOffCommit(replace);
+        var receipt = replacementService.commit(command);
+        assertThat(receipt.getState()).isEqualTo("COMMITTED");
+        assertThat(receipt.getMovedCount()).as("one-off replacement moved count").isEqualTo(1);
+        assertThat(receipt.getSkippedCount()).isEqualTo(1);
+        var expected = objectMapper.readTree(futureBefore);
+        for (String key : List.of("occurrence", "lesson")) {
+            var row = (ObjectNode) expected.get(key);
+            row.put("assignment_id", OTHER_ASSIGNMENT_ID);
+            row.put("assigned_teacher_id", OTHER_TEACHER_ID);
+            row.put("revision", row.get("revision").asLong() + 1);
+        }
+        var expectedSnapshot = objectMapper.readTree(expected.toString());
+        assertThat(objectMapper.readTree(oneOffSnapshot(future))).isEqualTo(expectedSnapshot);
+        assertThat(oneOffSnapshot(past)).isEqualTo(pastBefore);
+        assertThat(oneOffSnapshot(active)).isEqualTo(activeBefore);
+        assertThat(oneOffSnapshot(cancelled)).isEqualTo(cancelledBefore);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT to_jsonb(binding)::text FROM lesson_homework_bindings binding WHERE binding_id=?",
+                                String.class,
+                                homework))
+                .isEqualTo(homeworkBefore);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_items", Long.class)).isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM schedule_assignment_binding_ledger WHERE operation_id=?",
+                                Long.class,
+                                replace))
+                .isEqualTo(1);
+        var actions =
+                jdbc.queryForList(
+                        "SELECT payload FROM schedule_outbox WHERE event_type='schedule.action-recorded' AND payload::jsonb->'payload'->>'action'='LESSON_EDITED'",
+                        String.class);
+        assertThat(actions).hasSize(1);
+        assertThat(replacementService.commit(command)).isEqualTo(receipt);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT payload FROM schedule_outbox WHERE event_type='schedule.action-recorded' AND payload::jsonb->'payload'->>'action'='LESSON_EDITED'",
+                                String.class))
+                .isEqualTo(actions);
+        assertThat(objectMapper.readTree(oneOffSnapshot(future))).isEqualTo(expectedSnapshot);
+    }
+
+    @Test
+    void oneOffReplacementRejectsUnknownStaleForeignAndUnconsumedBindingReceipts() {
+        LocalDate today = oneOffWriter.today();
+        LocalDate until = today.plusDays(30);
+        var future = createOneOff(today.plusDays(2), (short) 3, today, until);
+        UUID operation = UUID.randomUUID();
+        var authority =
+                oneOffReplacementAuthority(
+                        operation,
+                        SOURCE_ASSIGNMENT_ID,
+                        SOURCE_TEACHER_ID,
+                        TARGET_ASSIGNMENT_ID,
+                        TARGET_TEACHER_ID,
+                        today.minusDays(2),
+                        today.plusDays(1),
+                        until);
+        installOneOffReplacement(authority);
+        String before = oneOffSnapshot(future);
+        var transaction = new TransactionTemplate(transactionManager);
+        transaction.executeWithoutResult(
+                status -> {
+                    UUID missingFence = UUID.randomUUID();
+                    jdbc.update(
+                            """
+                INSERT INTO schedule_assignment_replacement_operations
+                    (operation_id,payload_hash,source_assignment_id,target_assignment_id,source_teacher_id,target_teacher_id,
+                     group_id,subject_id,semester_id,lesson_type,source_valid_from,valid_until_exclusive,effective_from,state)
+                SELECT ?,payload_hash,source_assignment_id,?,source_teacher_id,?,group_id,subject_id,semester_id,
+                    lesson_type,source_valid_from,valid_until_exclusive,effective_from,'APPLIED'
+                  FROM schedule_assignment_replacement_operations WHERE operation_id=?
+                """,
+                            missingFence,
+                            OTHER_ASSIGNMENT_ID,
+                            OTHER_TEACHER_ID,
+                            operation);
+                    jdbc.queryForObject(
+                            "SELECT set_config('rutcampustrack.assignment_binding_operation_id', ?, true)",
+                            String.class,
+                            missingFence.toString());
+                    assertThatThrownBy(
+                                    () ->
+                                            insertOneOffBinding(
+                                                    missingFence,
+                                                    future,
+                                                    0,
+                                                    OTHER_ASSIGNMENT_ID,
+                                                    OTHER_TEACHER_ID))
+                            .isInstanceOf(DataAccessException.class)
+                            .hasStackTraceContaining("exact source and target fences");
+                    status.setRollbackOnly();
+                });
+        for (int fault : List.of(0, 1, 2, 3)) {
+            UUID selected = fault == 0 ? UUID.randomUUID() : operation;
+            transaction.executeWithoutResult(
+                    status -> {
+                        jdbc.queryForObject(
+                                "SELECT set_config('rutcampustrack.assignment_binding_operation_id', ?, true)",
+                                String.class,
+                                selected.toString());
+                        assertThatThrownBy(
+                                        () ->
+                                                insertOneOffBinding(
+                                                        selected,
+                                                        future,
+                                                        fault == 1 ? 1 : 0,
+                                                        fault == 2
+                                                                ? OTHER_ASSIGNMENT_ID
+                                                                : TARGET_ASSIGNMENT_ID,
+                                                        fault == 3
+                                                                ? OTHER_TEACHER_ID
+                                                                : TARGET_TEACHER_ID))
+                                .isInstanceOf(DataAccessException.class);
+                        status.setRollbackOnly();
+                    });
+            assertThat(oneOffSnapshot(future)).isEqualTo(before);
+        }
+        transaction.executeWithoutResult(
+                status -> {
+                    jdbc.queryForObject(
+                            "SELECT set_config('rutcampustrack.assignment_binding_operation_id', ?, true)",
+                            String.class,
+                            operation.toString());
+                    insertOneOffBinding(
+                            operation, future, 0, TARGET_ASSIGNMENT_ID, TARGET_TEACHER_ID);
+                    // Even an admitted receipt cannot change any field beyond binding/revision.
+                    assertThatThrownBy(
+                                    () ->
+                                            jdbc.update(
+                                                    "UPDATE lesson_occurrences SET assignment_id=?,assigned_teacher_id=?,revision=revision+1,generation=generation+1 WHERE id=?",
+                                                    TARGET_ASSIGNMENT_ID,
+                                                    TARGET_TEACHER_ID,
+                                                    future.occurrenceId()))
+                            .isInstanceOf(DataAccessException.class);
+                    status.setRollbackOnly();
+                });
+        // A valid receipt left unconsumed must roll back at the deferred completion guard.
+        assertThatThrownBy(
+                        () ->
+                                transaction.executeWithoutResult(
+                                        status -> {
+                                            jdbc.queryForObject(
+                                                    "SELECT set_config('rutcampustrack.assignment_binding_operation_id', ?, true)",
+                                                    String.class,
+                                                    operation.toString());
+                                            insertOneOffBinding(
+                                                    operation,
+                                                    future,
+                                                    0,
+                                                    TARGET_ASSIGNMENT_ID,
+                                                    TARGET_TEACHER_ID);
+                                            jdbc.update(
+                                                    "UPDATE lesson_occurrences SET assignment_id=?,assigned_teacher_id=?,revision=revision+1 WHERE id=?",
+                                                    TARGET_ASSIGNMENT_ID,
+                                                    TARGET_TEACHER_ID,
+                                                    future.occurrenceId());
+                                        }))
+                .isInstanceOf(RuntimeException.class)
+                .hasStackTraceContaining("assignment binding receipt must be consumed");
+        assertThat(oneOffSnapshot(future)).isEqualTo(before);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM schedule_assignment_binding_ledger WHERE operation_id=?",
+                                Long.class,
+                                operation))
+                .isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT state FROM schedule_assignment_replacement_operations WHERE operation_id=?",
+                                String.class,
+                                operation))
+                .isEqualTo("APPLIED");
+        authority
+                .setState("APPLIED")
+                .setTargetLifecycleState("ACTIVE")
+                .setSourceValidUntilExclusive(today.plusDays(1).toString());
+        assertThat(replacementService.commit(oneOffCommit(operation)).getMovedCount()).isEqualTo(1);
+        assertThatThrownBy(
+                        () ->
+                                jdbc.update(
+                                        "UPDATE schedule_assignment_binding_ledger SET after_teacher_id=? WHERE operation_id=?",
+                                        OTHER_TEACHER_ID,
+                                        operation))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(
+                        () ->
+                                jdbc.update(
+                                        "UPDATE lessons SET assignment_id=?,assigned_teacher_id=?,revision=revision+1 WHERE id=?",
+                                        SOURCE_ASSIGNMENT_ID,
+                                        SOURCE_TEACHER_ID,
+                                        future.physicalLessonId()))
+                .isInstanceOf(DataAccessException.class);
+    }
+
+    private OneOffLessonWriter.Creation createOneOff(
+            LocalDate date, short number, LocalDate today, LocalDate until) {
+        return oneOffWriter.create(
+                new CreateOneOffLessonRequest(
+                        GROUP_ID,
+                        SUBJECT_ID,
+                        SOURCE_ASSIGNMENT_ID,
+                        date,
+                        number,
+                        null,
+                        null,
+                        "one-off replacement"),
+                UUID.randomUUID(),
+                ACTOR_ID,
+                new RecurringAssignmentAuthority(
+                        SOURCE_ASSIGNMENT_ID,
+                        SOURCE_TEACHER_ID,
+                        SUBJECT_ID,
+                        GROUP_ID,
+                        SEMESTER_ID,
+                        "lecture",
+                        today.minusDays(2),
+                        until));
+    }
+
+    private String oneOffSnapshot(OneOffLessonWriter.Creation row) {
+        return jdbc.queryForObject(
+                "SELECT jsonb_build_object('origin',to_jsonb(origin),'occurrence',to_jsonb(occurrence),'lesson',to_jsonb(lesson))::text FROM schedule_one_off_lessons origin JOIN lesson_occurrences occurrence ON occurrence.one_off_lesson_id=origin.id JOIN lessons lesson ON lesson.id=occurrence.current_lesson_id WHERE occurrence.id=?",
+                String.class,
+                row.occurrenceId());
+    }
+
+    private void configureOneOffLifecycle(
+            UUID id, String kind, LocalDate today, LocalDate until, String state) {
+        boolean close = "CLOSE_UNASSIGN".equals(kind);
+        var authority =
+                PreparedAssignmentCloseResponse.newBuilder()
+                        .setOperationId(id.toString())
+                        .setOperationKind(kind)
+                        .setGroupId(GROUP_ID)
+                        .setSubjectId(SUBJECT_ID)
+                        .setSemesterId(SEMESTER_ID)
+                        .setLessonType("lecture")
+                        .setSourceValidFrom((close ? today.minusDays(2) : today).toString())
+                        .setSourceValidUntilExclusive(until.toString())
+                        .setTargetValidUntilExclusive(until.toString())
+                        .setRequestedCutoff(today.toString())
+                        .setEffectiveFrom(today.toString())
+                        .setState(state)
+                        .setTargetLifecycleState("PREPARED".equals(state) ? "PREPARED" : "ACTIVE")
+                        .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH));
+        if (close)
+            authority
+                    .setSourceAssignmentId(SOURCE_ASSIGNMENT_ID)
+                    .setSourceTeacherId(SOURCE_TEACHER_ID);
+        else
+            authority
+                    .setTargetAssignmentId(TARGET_ASSIGNMENT_ID)
+                    .setTargetTeacherId(TARGET_TEACHER_ID);
+        when(academicGrpcClient.getPreparedAssignmentLifecycle(
+                        id, close ? SOURCE_ASSIGNMENT_ID : null))
+                .thenReturn(authority.build());
+    }
+
+    private PreparedAssignmentCloseResponse.Builder oneOffReplacementAuthority(
+            UUID id,
+            long sourceAssignment,
+            long sourceTeacher,
+            long targetAssignment,
+            long targetTeacher,
+            LocalDate sourceFrom,
+            LocalDate effective,
+            LocalDate until) {
+        return PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(id.toString())
+                .setOperationKind("REPLACE")
+                .setSourceAssignmentId(sourceAssignment)
+                .setSourceTeacherId(sourceTeacher)
+                .setTargetAssignmentId(targetAssignment)
+                .setTargetTeacherId(targetTeacher)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID)
+                .setSemesterId(SEMESTER_ID)
+                .setLessonType("lecture")
+                .setSourceValidFrom(sourceFrom.toString())
+                .setSourceValidUntilExclusive(until.toString())
+                .setTargetValidUntilExclusive(until.toString())
+                .setEffectiveFrom(effective.toString())
+                .setState("PREPARED")
+                .setTargetLifecycleState("PREPARED")
+                .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH));
+    }
+
+    private void installOneOffReplacement(PreparedAssignmentCloseResponse.Builder authority) {
+        UUID id = UUID.fromString(authority.getOperationId());
+        when(academicGrpcClient.getPreparedAssignmentCloseOperation(
+                        id, authority.getSourceAssignmentId()))
+                .thenAnswer(call -> authority.build());
+        replacementService.install(
+                InstallAssignmentCloseCapRequest.newBuilder()
+                        .setOperationId(id.toString())
+                        .setSourceAssignmentId(authority.getSourceAssignmentId())
+                        .setTargetAssignmentId(authority.getTargetAssignmentId())
+                        .setEffectiveFrom(authority.getEffectiveFrom())
+                        .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH))
+                        .build());
+    }
+
+    private static CommitAssignmentCloseRequest oneOffCommit(UUID id) {
+        return CommitAssignmentCloseRequest.newBuilder()
+                .setOperationId(id.toString())
+                .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH))
+                .build();
+    }
+
+    private void insertOneOffBinding(
+            UUID id, OneOffLessonWriter.Creation row, int stale, long assignment, long teacher) {
+        jdbc.update(
+                """
+            INSERT INTO schedule_assignment_binding_ledger(operation_id,semester_id,occurrence_id,lesson_id,occurrence_date,
+                expected_occurrence_revision,after_occurrence_revision,expected_lesson_revision,after_lesson_revision,
+                before_assignment_id,before_teacher_id,after_assignment_id,after_teacher_id)
+            SELECT ?,occurrence.semester_id,occurrence.id,lesson.id,occurrence.occurrence_date,
+                occurrence.revision+?,occurrence.revision+?+1,lesson.revision,lesson.revision+1,
+                occurrence.assignment_id,occurrence.assigned_teacher_id,?,?
+            FROM lesson_occurrences occurrence JOIN lessons lesson ON lesson.id=occurrence.current_lesson_id WHERE occurrence.id=?
+            """,
+                id,
+                stale,
+                stale,
+                assignment,
+                teacher,
+                row.occurrenceId());
     }
 
     private void configureLifecycle(UUID id, String kind, LocalDate cutoff, String state) {

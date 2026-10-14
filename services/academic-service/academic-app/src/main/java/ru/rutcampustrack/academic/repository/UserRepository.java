@@ -14,6 +14,34 @@ import ru.rutcampustrack.academic.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
+    String ADMIN_ARCHIVE_FILTERS =
+            """
+            (CAST(:searchPattern AS text) IS NULL
+             OR lower(u.login) LIKE :searchPattern ESCAPE '\\'
+             OR lower(u.last_name) LIKE :searchPattern ESCAPE '\\'
+             OR lower(u.first_name) LIKE :searchPattern ESCAPE '\\'
+             OR lower(coalesce(u.middle_name, '')) LIKE :searchPattern ESCAPE '\\'
+             OR lower(coalesce(u.employee_number, '')) LIKE :searchPattern ESCAPE '\\'
+             OR CAST(coalesce(u.telegram_id, 0) AS text) LIKE :searchPattern ESCAPE '\\')
+            AND (CAST(:role AS text) IS NULL OR EXISTS (
+                SELECT 1 FROM user_role_grants g
+                 WHERE g.user_id = u.id AND g.role = :role
+                   AND (CAST(:roleStatus AS text) IS NULL OR g.status = :roleStatus)))
+            AND (CAST(:accountStatus AS text) IS NULL OR CAST(u.status AS text) = :accountStatus)
+            """;
+
+    /** Explicit ADMIN archive filters only; ordinary lookups retain User's SQL restriction. */
+    @Query(
+            value = "SELECT u.* FROM users u WHERE " + ADMIN_ARCHIVE_FILTERS,
+            countQuery = "SELECT count(*) FROM users u WHERE " + ADMIN_ARCHIVE_FILTERS,
+            nativeQuery = true)
+    Page<User> findAdminRegistryIncludingArchived(
+            @Param("searchPattern") String searchPattern,
+            @Param("role") String role,
+            @Param("roleStatus") String roleStatus,
+            @Param("accountStatus") String accountStatus,
+            Pageable pageable);
+
     Optional<User> findByLogin(String login);
 
     Optional<User> findByTelegramId(Long telegramId);

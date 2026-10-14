@@ -40,7 +40,9 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     await loginPwa(page, user);
     const selected = await selectRole(page, 'Администратор');
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Найти пользователя', exact: true }).fill(target.login);
+    await page
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(target.login);
     await page.getByRole('button', { name: 'Найти', exact: true }).click();
     await expect(page.locator(`[data-user-id="${target.id}"]`)).toBeVisible();
     await expect(page.locator('.admin-users-card')).toHaveCount(1);

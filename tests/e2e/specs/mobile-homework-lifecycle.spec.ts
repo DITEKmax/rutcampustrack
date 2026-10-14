@@ -91,7 +91,9 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   await page.getByLabel('Дата', { exact: true }).fill(dataset.tomorrow);
   await page.getByRole('combobox', { name: /^Привязка/ }).selectOption('DATE');
   await expect(
-    page.locator('.assistant-homework__item').getByText(original.title, { exact: true }),
+    page
+      .getByText(original.title, { exact: true })
+      .and(page.locator('.assistant-homework__item strong')),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Изменить', exact: true }).click();
   const title = `${dataset.marker}-helper-edit`;
@@ -102,7 +104,7 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
   expect((await changedResponse).status()).toBe(200);
   await expect(
-    page.locator('.assistant-homework__item').getByText(title, { exact: true }),
+    page.getByText(title, { exact: true }).and(page.locator('.assistant-homework__item strong')),
   ).toBeVisible();
   await expect(
     page.locator('.assistant-homework__item').getByText(description, { exact: true }),

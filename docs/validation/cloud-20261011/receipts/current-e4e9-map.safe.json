@@ -1,0 +1,48 @@
+{
+  "artifact": 11876951049,
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "run": 38525988847,
+  "digest": "sha256:5010273914e86f6572b500f122881293356ce86f3f5ecd08173759077bc7acd4",
+  "bytes": 418,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-map-lifecycle.spec.ts",
+        "line": 95,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 2040,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-map-lifecycle.spec.ts",
+            "line": 197
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "MAP_ASSET_LIFECYCLE",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "qualification": "Exact current closed FAIL plus unauthenticated public Source frame; frame is diagnostic input, not proof of cause. No assertion values/bodies read."
+}

@@ -739,6 +739,14 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     ).toBe(true);
     await page.reload();
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await users.getByRole('button', { name: 'Фильтры и сортировка', exact: true }).click();
+    const archivedRoleFilter = users.locator('[data-picker="filter-role"]');
+    await archivedRoleFilter.locator('summary').click();
+    await archivedRoleFilter.getByRole('button', { name: 'Студенты', exact: true }).click();
+    const archivedStatusFilter = users.locator('[data-picker="filter-status"]');
+    await archivedStatusFilter.locator('summary').click();
+    await archivedStatusFilter.getByRole('button', { name: 'Архивная', exact: true }).click();
+    await users.getByRole('button', { name: 'Применить', exact: true }).click();
     await users
       .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
       .fill(created.login);

@@ -129,6 +129,8 @@ test('CANCEL_LESSONS confirms a real cancellation and revoked restore cannot res
   const lesson = await oneOff(dataset, dataset.today, 8);
   const { accessToken } = await loginPwa(page, user);
   await openAssistant(page, 'Посещаемость и журнал');
+  // An early next click during loadLessons() advances the date while lessons is empty.
+  await expect(page.locator('.headman-journal__date-nav output')).toContainText('1 пара');
   await page.getByRole('button', { name: 'Следующая пара или день', exact: true }).click();
   await expect(page.locator('.headman-journal__date-nav output')).toContainText('8 пара');
   await expect(page.getByRole('button', { name: 'Управление парой', exact: true })).toBeVisible();

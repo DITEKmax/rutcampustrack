@@ -946,6 +946,91 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
   });
 });
 
+test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
+  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', async ({
+    page,
+    activeHeadmanDataset: dataset,
+  }) => {
+    // The worker owns this disposable group; this case adds its own member and
+    // never changes a known student's mark or another browser's selected role.
+    const student = await dataset.user('STUDENT', dataset.group.id);
+    const reportPath = `/api/attendance/reports/lesson/${dataset.lesson.physicalLessonId}`;
+    const before = await dataset.headmanActor.call('GET', reportPath);
+    expect(
+      before.entries.some(
+        (row: { userId: number; status: string | null }) =>
+          Number(row.userId) === student.id && row.status === null,
+      ),
+    ).toBe(true);
+    const knownMarks = (
+      entries: { userId: number; status: string | null; source: string | null }[],
+    ) =>
+      entries
+        .filter((row) => Number(row.userId) !== student.id)
+        .map((row) => ({ userId: Number(row.userId), status: row.status, source: row.source }))
+        .sort((left, right) => left.userId - right.userId);
+
+    await installTelegramHost(page, syntheticInitData(dataset.headman.telegramId));
+    const [admitted, current] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/tma' &&
+          response.request().method() === 'POST',
+      ),
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      ),
+      page.goto('/mini-app/'),
+    ]);
+    expect(admitted.status()).toBe(200);
+    expect(current.status()).toBe(200);
+    let session = await current.json();
+    expect(String(session.userId) === String(dataset.headman.id)).toBe(true);
+    expect(
+      session.roles.some(
+        (grant: { role: string; selectable: boolean }) =>
+          grant.role === 'HEADMAN' && grant.selectable,
+      ),
+    ).toBe(true);
+    if (session.activeRole !== 'HEADMAN') {
+      const selected = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session/active-role' &&
+          response.request().method() === 'PUT',
+      );
+      await selectPwaRole(page, 'Староста');
+      const response = await selected;
+      expect(response.status()).toBe(200);
+      session = (await response.json()).session;
+    }
+    expect(
+      String(session.userId) === String(dataset.headman.id) && session.activeRole === 'HEADMAN',
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    const marked = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${student.id}` &&
+        response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: `Был: ${student.displayName}`, exact: true }).click();
+    expect((await marked).status()).toBe(200);
+    await expect(
+      page.locator(`.headman-journal__roster-list [data-user-id="${student.id}"]`),
+    ).toHaveAttribute('data-status', 'present');
+    const after = await dataset.headmanActor.call('GET', reportPath);
+    expect(
+      after.entries.some(
+        (row: { userId: number; status: string; source: string }) =>
+          Number(row.userId) === student.id && row.status === 'present' && row.source === 'headman',
+      ),
+    ).toBe(true);
+    expect(knownMarks(after.entries)).toEqual(knownMarks(before.entries));
+  });
+});
+
 test.describe('Production PWA service worker D002 @real-mobile', () => {
   test.use({ serviceWorkers: 'allow' });
   test('production worker update activates through the update gate and retains a warm launch', async ({

@@ -27855,6 +27855,2885 @@
       "scope": "Finite opt-in actual-bootstrap phase hint only if next clock-corrected real CI still fails; preserve original assertions/rethrow; no product cause verdict yet",
       "evidence": "Existing author outcome neutral1470PhasePlan on completion",
       "execution": "NOT_AUTHORIZED_OR_IMPLEMENTED_BY_PLAN; unnecessary if next ordinary CI passes"
+    },
+    "eee6c_actual_publication": {
+      "at": "2026-10-14T22:25:34.730664+00:00",
+      "head": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+      "commits": [
+        "01d69efdfe634c22d7cb95f1c43b16d2d6a8fadc",
+        "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c"
+      ],
+      "configuredChecks": {
+        "direct_pid": 832271,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 832271,
+            "start_ticks": 27040511
+          },
+          {
+            "pid": 832281,
+            "start_ticks": 27040517
+          },
+          {
+            "pid": 832288,
+            "start_ticks": 27040547
+          },
+          {
+            "pid": 832309,
+            "start_ticks": 27040554
+          },
+          {
+            "pid": 832366,
+            "start_ticks": 27040650
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 2.288549834047444,
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+          "--offline",
+          "tool",
+          "run",
+          "--from",
+          "pre-commit==4.6.2",
+          "pre-commit",
+          "run",
+          "--files",
+          "docs/validation/cloud-20261011/CURRENT.md",
+          "docs/validation/cloud-20261011/attempts.ndjson",
+          "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+          "docs/validation/cloud-20261011/resources.md",
+          "tests/e2e/fixtures/semester-effect-diagnostic.control.py",
+          "tests/e2e/fixtures/semester-effect-diagnostic.py"
+        ]
+      },
+      "rangeGitleaks": {
+        "direct_pid": 832525,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 832525,
+            "start_ticks": 27043725
+          },
+          {
+            "pid": 832534,
+            "start_ticks": 27043791
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 1.2129756869981065,
+        "argv": [
+          "/workspace/.cache/pre-commit/repotn63tv2a/golangenv-system/bin/gitleaks",
+          "git",
+          "--redact",
+          "--no-banner",
+          "--log-opts=62df260302fb6a63d60e04b72d1db664f3e1e799..eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c"
+        ],
+        "head": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c"
+      },
+      "ordinaryPush": {
+        "direct_pid": 832548,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 832548,
+            "start_ticks": 27047072
+          },
+          {
+            "pid": 832549,
+            "start_ticks": 27047073
+          },
+          {
+            "pid": 832550,
+            "start_ticks": 27047073
+          },
+          {
+            "pid": 832552,
+            "start_ticks": 27047108
+          },
+          {
+            "pid": 832554,
+            "start_ticks": 27047109
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 2.9240025479812175,
+        "head": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c"
+      },
+      "nativeReadback": {
+        "direct_pid": 832559,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 832559,
+            "start_ticks": 27047363
+          },
+          {
+            "pid": 832560,
+            "start_ticks": 27047364
+          },
+          {
+            "pid": 832561,
+            "start_ticks": 27047364
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 0.43479540199041367,
+        "refs": {
+          "refs/heads/codex/server-validation-20261011": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+          "refs/heads/main": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+        }
+      },
+      "authenticatedPR": {
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "head": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+        "headRef": "codex/server-validation-20261011",
+        "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "baseRef": "main",
+        "mergeCommitSha": "50c81ed149e9d10f1cf22afbd72d6f5dc315e475",
+        "authenticatedRead": true
+      },
+      "currentRuns": [
+        {
+          "id": 38647459951,
+          "name": "CI",
+          "status": "queued",
+          "conclusion": null,
+          "event": "pull_request",
+          "head_sha": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+          "run_attempt": 1,
+          "created_at": "2026-10-14T22:24:46Z",
+          "updated_at": "2026-10-14T22:24:46Z",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38647459951"
+        },
+        {
+          "id": 38647459999,
+          "name": "Coverage",
+          "status": "queued",
+          "conclusion": null,
+          "event": "pull_request",
+          "head_sha": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+          "run_attempt": 1,
+          "created_at": "2026-10-14T22:24:46Z",
+          "updated_at": "2026-10-14T22:24:46Z",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38647459999"
+        },
+        {
+          "id": 38647460022,
+          "name": "OpenAPI Drift Guard",
+          "status": "in_progress",
+          "conclusion": null,
+          "event": "pull_request",
+          "head_sha": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+          "run_attempt": 1,
+          "created_at": "2026-10-14T22:24:46Z",
+          "updated_at": "2026-10-14T22:25:06Z",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38647460022"
+        },
+        {
+          "id": 38647460142,
+          "name": "Security",
+          "status": "queued",
+          "conclusion": null,
+          "event": "pull_request",
+          "head_sha": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+          "run_attempt": 1,
+          "created_at": "2026-10-14T22:24:46Z",
+          "updated_at": "2026-10-14T22:24:46Z",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38647460142"
+        }
+      ],
+      "status": "PUBLISHED_CURRENT_GATES_PENDING_NOT_DONE",
+      "actualCheckout": "Pending actual checkout log, PR merge_commit_sha is only metadata until joined"
+    },
+    "eee6c_mobile_generated_consumer_FAIL": {
+      "at": "2026-10-14T22:28:51.390711+00:00",
+      "producer": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+      "run": 38647459951,
+      "job": 116137761984,
+      "step": 4,
+      "actualFailure": "Error: Generated mobile BFF types drifted; run npm run generate:types",
+      "source": "frontends/mobile-core/scripts/generate-types.mjs:33",
+      "cause": "Root updated canonical OpenAPI snapshot but omitted its existing generated TypeScript consumer; integration omission, not runtime product verdict",
+      "classification": "GENERATED_CONTRACT_INTEGRATION_DEFECT",
+      "minimumCorrection": "Run unchanged canonical generator from exact snapshot169a; keep current dependent contracts/type/build checks; no edits to generator/gates/lockfiles",
+      "newBrowser": "NOT_RUN yet/no pass inferred",
+      "next": "Assign sole generated-writer ownworktree then sufficient checks/Rootintegration",
+      "OpenAPIConfirmation": {
+        "run": 38647460022,
+        "job": 116137761546,
+        "step": 5,
+        "actualSameFailure": "Generated mobile BFF types drifted; run npm run generate:types",
+        "sameGeneratorFrame": "generate-types.mjs:33",
+        "causeNotNew": "Same omitted generated consumer; canonical d885 correction/local4PASS ready"
+      }
+    },
+    "eee6c_E15_renderer_existing_evidence_join": {
+      "at": "2026-10-14T22:29:40.619569+00:00",
+      "source": "renderer-outage.safe.json#E15_R2_current_acceptance_join",
+      "outcome": {
+        "state": "EXACT_SOURCE_SUFFICIENT_CURRENT_NAMED_RESULT_BODY_NOT_SAVED",
+        "at": "2026-10-14T22:28:39.677021+00:00",
+        "criterion": "E15-R2 finite async PDF renderer failure -> safe terminal ERROR/no partial file/no successful audit -> unconditional same-service restoration/readiness -> distinct fresh job READY/real PDF bytes/rows/successful audit; old job remains ERROR",
+        "acceptedActualProof": false,
+        "source": {
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+          "sha256": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+          "outageDeclarationLine": 980,
+          "outageTitle": "renderer outage terminates its PDF job safely and a fresh job downloads after recovery @cloud-accepted",
+          "identity": "Unique nonparameterized current Source declaration; no ordinal or FULL/LIMITED mode inference",
+          "sourceDeclarations": 3,
+          "configuredCaseInstances": 5,
+          "otherDeclarations": [
+            {
+              "line": 23,
+              "instances": 2,
+              "qualification": "FULL/LIMITED parameterized; safe core alone does not identify mode"
+            },
+            {
+              "line": 695,
+              "instances": 2,
+              "qualification": "FULL/LIMITED parameterized; safe core alone does not identify mode"
+            }
+          ],
+          "sourceCompatibility": "Root confirms registry6d25 byte-exact from published62df through eee6c399; locally verified current Source6d25. Actual result still must bind producer/checkout/report SHA."
+        },
+        "sourceOracle": {
+          "fault": "Exact admitted running/healthy/unpaused owned renderer is paused. POST202 job -> same identity queued/preparing/error, terminal GENERATION_FAILED. File/ticket409+no-store. Read-only SQL asserts attempts3/contentNULL/no successful registry.export fact. Failure/security/request audit allowed.",
+          "restoration": "finally always attempts unpause after any pause attempt; exact service/network identity, live unpaused state/readiness mandatory. Primary and cleanup failures preserved separately.",
+          "freshRecovery": "New request/different job -> READY through real Gateway; own ticket -> HTTP200 application/pdf/nonempty bounded %PDF bytes; real Poppler exact two ordered rows/full fields; successful committed export audit. Old job still ERROR/file409/contentNULL/no success audit.",
+          "budget": "Only this case240s; original cases120s, existing registry CIstep7min. No new product SLA."
+        },
+        "savedEvidenceExamined": {
+          "currentReceipt": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_actual_browser_finite_join",
+          "result": "Its five already-read artifacts are checkout/FIRST3/remaining5/worker/WebKit; no registry artifact/result row. Current terminal-gate entry has no registry artifact metadata.",
+          "priorRegistryBody": "/workspace/scratch/rct-validation/ci_874_browser5/current-browser.safe.json",
+          "priorProducer": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "priorArtifact": 11926113743,
+          "priorRows": [
+            {
+              "line": 23,
+              "status": "failed"
+            },
+            {
+              "line": 23,
+              "status": "failed"
+            },
+            {
+              "line": 692,
+              "status": "passed"
+            },
+            {
+              "line": 692,
+              "status": "passed"
+            }
+          ],
+          "qualification": "874 Source predates outage case; cannot prove E15-R2. Current62df step SUCCESS reported by Root is not named-case evidence."
+        },
+        "preciseRemainingRead": {
+          "producer": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+          "run": 38639510612,
+          "event": "pull_request",
+          "attempt": 1,
+          "browserJob": 116111136249,
+          "stepId": "registry-export",
+          "artifactName": "registry-export-safe-1",
+          "artifactId": "NOT_PRESENT_IN_SAVED_METADATA",
+          "artifactDigest": "NOT_PRESENT_IN_SAVED_METADATA",
+          "member": "safe-results.json",
+          "expectedExactRow": {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 980,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          },
+          "requiredGlobalGuards": "Official matching artifact producer/run/attempt/size/digest; closed core schema; runnerErrors0/unsafeArtifactfalse and valid source/report/privacy pins; exact unique line980 row, not row position. Retain official checkout9f3a/treefd4978 join.",
+          "existingParserPath": "/workspace/scratch/rct-validation/ci_493_remaining/registry/strict-browser-schema.py",
+          "existingParserSHA256": "e71febc9e1825b9ae89c8cf5e396644ec94378cc16fcf447a2f38b86d6bd9d6c",
+          "existingWrapperPath": "/workspace/scratch/rct-validation/ci_874_browser5/read-selected.py",
+          "parserBoundary": "Existing493 schema admits <=4 rows and declarations23/677; existing874 wrapper pins old Source9810 and maps23/692. Neither admits current695/980/5 cases. No reader/schema adaptation performed or approved here; Root may assign an exact current-source projection later, keeping mode identity unresolved for shared declarations.",
+          "noRuntimeNeeded": "Read existing published safe artifact; do not rerun the accepted operation merely to replace missing local named proof."
+        },
+        "actions": {
+          "networkArtifactFetch": false,
+          "newReaderSchemaOrSource": false,
+          "runtimeTests": false,
+          "GitSharedDocs": false,
+          "newReports": false,
+          "onlyWritten": "/workspace/scratch/rct-validation/q09_remaining_client_writer/renderer-outage.safe.json#E15_R2_current_acceptance_join"
+        }
+      },
+      "noNewRuntime": true
+    },
+    "eee6c_D015_TMA_logic_finite_join": {
+      "at": "2026-10-14T22:29:40.619569+00:00",
+      "source": "browser-final-boundaries.safe.json#D015_H1_logic_finite_join",
+      "outcome": {
+        "status": "FINITE_JOIN_COMPLETE_ONE_SHARED_HEADMAN_TMA_EXECUTION_CLAUSE_REMAINS",
+        "at_utc": "2026-10-14T22:29:09.177854+00:00",
+        "current_published_revision": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+        "new_current_runtime": "NOT_READ_OR_RUN; Root owns currentCI38647459951 and primary diagnostics",
+        "read_only": true,
+        "source_pins": [
+          {
+            "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+            "sha256": "53a958148387446c829c2163a4460f14cca1e1ec3146c6701d141789cce8a58f"
+          },
+          {
+            "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+            "sha256": "c3a819f34c4ba0efb8907afb6e883d8f5922346d91806a221eab5dc152d3f0f4"
+          },
+          {
+            "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+            "sha256": "e037c2da6c52e2e39968f7a3a2c7092ad010a188ae000bfffb731cf8d30a97b3"
+          },
+          {
+            "path": "frontends/tma-vue/src/App.vue",
+            "sha256": "49058fd3264458cf0659ea2aa8c14861464ca7ef1da6ccd35faf87cbfe8f31ac"
+          },
+          {
+            "path": "frontends/tma-vue/src/tma-auth.test.ts",
+            "sha256": "5a65c7b56051efd8ea084bd519857a3a6a88c2b6acdefce7f8eed54167e9a4ab"
+          },
+          {
+            "path": "tests/e2e/specs/mini-app.spec.ts",
+            "sha256": "0ebd9ee3eb829fa326ceb0e08b943181a499e0d6f3977ec185b31ffb715857c2"
+          },
+          {
+            "path": "tests/e2e/specs/cloud-accepted-tma-proof.spec.ts",
+            "sha256": "16e0cb7e2c242a8761ee79c4dbb17c049f85f0e2cbb5d9047f52082c61388c76"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "sha256": "6875030010567c46e01d53029ff85bf6e783d76cd0afd25919ad9632ba510e33"
+          },
+          {
+            "path": "frontends/tma-vue/src/tma-session.ts",
+            "sha256": "a19458cff4a75a1fd01962cb20d2ba3382795369302889d43169e436ca86dbf0"
+          },
+          {
+            "path": "frontends/tma-vue/src/telegram.ts",
+            "sha256": "850fe2bba6082345c16e5ae5de5540e689444216b6f154995f76384dac9182fd"
+          },
+          {
+            "path": "frontends/tma-vue/src/report-download-adapter.ts",
+            "sha256": "c36acbb337ee0b0b1f37263d43657e867cc6f88ef372f055acc0c18804514f2d"
+          },
+          {
+            "path": "frontends/mobile-core/src/features/notifications/notifications-launch.ts",
+            "sha256": "39ec0f5d2f06f22afc2764c6c8cbde5d3c3d6096eb206b51a728834405ca3072"
+          }
+        ],
+        "unchanged_prior_relevant_TMA_host_download_target_pins": {
+          "frontends/tma-vue/src/tma-session.ts": true,
+          "frontends/tma-vue/src/telegram.ts": true,
+          "frontends/tma-vue/src/report-download-adapter.ts": true,
+          "frontends/mobile-core/src/features/notifications/notifications-launch.ts": true
+        },
+        "finite_join": [
+          {
+            "clause": "Tampered/signature/missing/malformed/future/expired/reuse age window",
+            "disposition": "REUSE_ACCEPTED_FINITE_SERVER_PASS_AND_CURRENT_CONSUMER_SOURCE",
+            "evidence": "receipts/matrix-evidence-reconciliation/proposed-case-updates.json CASE-SD01-TMA-SERVER; actual AuthHTTP/PG TmaIT16PASS and deterministic TmaServiceTest3PASS with originalruntime/source-equivalence qualifications; portable-evidence-index lists retained closed members. No new runtime claim. mini-app.spec rejects tampered401/no owner/navigation/refresh cookie; cloud-accepted-tma-proof.spec has signed invalid-date/no session branches.",
+            "limit": "Exact original runtime whole-WIP tree UNKNOWN as retained; do not promote wholeH1/allcombination coverage."
+          },
+          {
+            "clause": "Reuse observes live Telegram binding/grants and session separation",
+            "disposition": "EXACT_SOURCE_METHOD_PASS_REUSED",
+            "evidence": "current-4065#S2_current_named_existing_proof, Auth run38603869090/artifact11914763251: replayCannotAuthenticateAfterTelegramBindingIsRemoved and replayReadsChangedGrantsInsteadOfReissuingPreviousSelectedAuthority SOURCE_METHOD/PASSED, current TmaITsha c3a819 matches. Current62df D003 admits exact same proof twice, protected teacher target and neutral/suspended denials PASS.",
+            "limit": "No new single-use promise or concurrent binding linearization acceptance."
+          },
+          {
+            "clause": "Duplicate query keys",
+            "disposition": "SOURCE_COHERENT_NO_NEW_REJECT_RULE_OR_PRODUCT_DEFECT",
+            "evidence": "TmaService.validateInitData and authenticateWithInitData both call same parseQueryString; decoded repeated key uses same last-value LinkedHashMap for HMAC and user/auth_date reads. No alternate interpretation observed. Existing queue duplicate wording is not an accepted blanket reject-all-duplicates product rule.",
+            "limit": "No dedicated duplicate-key runtime PASS asserted; add no invented policy/test campaign."
+          },
+          {
+            "clause": "In-memory initData/bearer, session-generation invalidation, profile/hostBack",
+            "disposition": "REUSED_BROWSER_AND_UNIT_LOGIC_WITH_CURRENT_SOURCE_PIN_JOIN",
+            "evidence": "Existing outcome.safe.json#D015CloudLogicSource.reuseEvidence: teacher profile/hostBack/no proof-or-bearer storage checkpoint232; c5f3 Coverage38584200556 MobileVue job115921688114 relevant TS unit run. Current TMA session/host/download/target hashes equal retained pins. mini-app teacher profile/Back assertions and tma-auth generation/stale/logout/refresh tests remain. Current62df exact D003 case verifies no proof/bearer local/sessionStorage.",
+            "limit": "Native Telegram Back/close remains owner; shared unit mocks are not native delivery."
+          },
+          {
+            "clause": "Typed target and accepted download adapter handoff",
+            "disposition": "ACTUAL_REAL_SERVER_SYNTHETIC_HOST_FINITE_PASS_62df",
+            "evidence": "current-4065#62df_actual_browser_finite_join exact D003 case736 passed3161ms, run38639510612 checkout9f3a85887fe2308b03be09da018c2f54cc90b214 treefd497858e6c75676c1b0c44210d746cde28fc684 producer62df. Source asserts typed ownTEACHERlesson target/protectedGET200, realHTMLjob202/ready/ticket200, HTTPS same-origin43tokenpath/safe matching filename, real file200 HTMLtable and one RAMhost download callback. Retained adapter units cover unsupported/stale/unsafe URL/filename/generation/401 retry.",
+            "limit": "Callback means host handoff accepted only; no actual Telegram/OS saved-file PASS. Casebody unchanged by successor6875 locator-only hunk elsewhere; wholecurrentCI pending."
+          },
+          {
+            "clause": "Shared STUDENT synthetic TMA admission/own read",
+            "disposition": "SOURCE_CARRIER_PRESENT_CURRENT_EXECUTION_PENDING",
+            "evidence": "mobile-real-server1611 D002 signs dataset.student proof, genuineAuth/session200 and identity, homework marker, existing slider online/offline/no-command/reload. Previous62df wholecase FAIL at1652; successor6875 fixes exactarticle-slider locator, currenteee6cCI pending.",
+            "limit": "Do not convert failed wholecase toPASS from earlier assertions; currentRoot reads actualrun."
+          },
+          {
+            "clause": "Shared HEADMAN signed TMA action",
+            "disposition": "ONE_REAL_REMAINING_CLOUD_EXECUTION_GAP",
+            "evidence": "All installTelegramHost sites in current e2e specs use TEACHER except STUDENT1611; no signedHEADMAN TMA carrier. App.vue1036 activatesHeadmanOwner and1001 current generation-bound APIs; Source wiring exists, PWAHEADMAN realactions alreadyPASS.",
+            "minimal_next_action": "When Root assigns Source/runtime after current usefulCI, reuse existingprivate mobile-real-server suite/dataset/host, authenticate linkedHEADMAN with signed proof, verify freshHEADMANsession and one existing authorized shared action with server readback. Reuse alreadyaccepted teacher target/download/Back and negativeproof tests; no per-role Cartesian repetition/new framework/provider.",
+            "limit": "No Source/product defect established and no implementation or runtime authorized/performed by this join."
+          }
+        ],
+        "D015_H2_retained_logic": {
+          "scope": "Prior accepted source/unit push endpoint+user binding/private-boundary, target allowlist, download and install logic retained;62df actual productionSWupdate/cache/warm+synthetic install3casesPASS are distinct finite browser logic. D017 assets/build/dist gap alreadyclosed.",
+          "native_status": "OWNER_MANUAL_PENDING; native Telegram launch/deeplink/Back/download, background/closed WebPush target/privacy and OS install/standalone stay ownerlocal, notCloud capability blocker afterretainedlogic criteria pass.",
+          "existing_owner_checklist": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#D015CloudLogicSource.nativeOwnerHandoff",
+          "checklist_duplicated": false,
+          "canonical_owner_decision": "docs/product/decisions/2026-10-14-owner-native-client-acceptance.md"
+        },
+        "limits": [
+          "Currenteee6c normalCI pending; historic producers remain explicit. No wholefamily PASS/readiness percentage.",
+          "B013/B014/B015 frozen; no ordinal identity/schema fallback, protectedreader or rejected sensitivity retries.",
+          "Q015 nonauthor homeworkDELETE ownerpending is separate."
+        ],
+        "effects": {
+          "only_this_existing_outcome_append": true,
+          "repository_shared_docs_or_Git_change": false,
+          "new_Source_tests_framework_or_provider": false,
+          "Node_browser_Java_Docker_HTTP_network_or_runtime": false
+        }
+      },
+      "noNewRuntime": true
+    },
+    "eee6c_generated_TS_correction_ready": {
+      "at": "2026-10-14T22:31:42.754353+00:00",
+      "author": "c66_request_enum_boundary",
+      "source": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "sha256": "d885a2d08344e4575076091cd65b43d0e3ddadb8e928b510167582aaaedcd033",
+      "outcome": {
+        "state": "GENERATED_CANONICAL_CONSUMER_AND_CHECK_PASS",
+        "cause": "Current eee6c CI38647459951 job116137761984 actual generate:types:check rejects stale consumer after accepted canonical snapshot169a update. No product/API rule change.",
+        "worktree": "/workspace/rct-worktrees/request-enum-874-20261014",
+        "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+        "accepted_input_revision": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+        "input_sha256": "169a08a4fbaff89d435212ac6a7450f735313c1ed49120565ffe68b6b9d2bc4e",
+        "generator_sha256": "69447310d34e4ed9442c47dad53cfdc68d261d1701d52adc140368fcd71cc401",
+        "before_sha256": "3d5a253daa8e3b27461625e7ef6657b3a0e8e14619e62f54208eca18cea7098e",
+        "frozen_before": {
+          "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java": "1c41e80e5ca0d3464256d40781efe24ade5b272ac87882fef2e717cd804fb5cc",
+          "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java": "68a68957d3a2b516f02505e5eac3bd5546337e255559c92e4b5cb7450f754c4a",
+          "tests/e2e/fixtures/mobile-dataset.ts": "758e26c26097ea047d099c142c4dfaac7cd584f7d9050f50d4266186b7838947"
+        },
+        "runs": [
+          {
+            "direct_pid": 833382,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 833382,
+                "start_ticks": 27082967
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "argv": [
+              "node",
+              "--max-old-space-size=160",
+              "frontends/mobile-core/scripts/generate-types.mjs"
+            ],
+            "cwd": "/workspace/rct-worktrees/request-enum-874-20261014",
+            "phase": "generate"
+          },
+          {
+            "direct_pid": 833394,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 833394,
+                "start_ticks": 27083097
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "argv": [
+              "node",
+              "--max-old-space-size=160",
+              "frontends/mobile-core/scripts/generate-types.mjs",
+              "--check"
+            ],
+            "cwd": "/workspace/rct-worktrees/request-enum-874-20261014",
+            "phase": "check"
+          }
+        ],
+        "limits": {
+          "overall_seconds": 30,
+          "sampled_parent_child_rss_bytes": 268435456,
+          "minimum_free_bytes": 4294967296,
+          "new_dependencies_or_network": false
+        },
+        "after_sha256": "d885a2d08344e4575076091cd65b43d0e3ddadb8e928b510167582aaaedcd033",
+        "frozen_after": {
+          "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java": "1c41e80e5ca0d3464256d40781efe24ade5b272ac87882fef2e717cd804fb5cc",
+          "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java": "68a68957d3a2b516f02505e5eac3bd5546337e255559c92e4b5cb7450f754c4a",
+          "tests/e2e/fixtures/mobile-dataset.ts": "758e26c26097ea047d099c142c4dfaac7cd584f7d9050f50d4266186b7838947"
+        },
+        "source_change": "Only generated mobile-bff.ts rewritten by canonical unchanged generator; snapshot/generator/API/locks/config untouched",
+        "own_dependency_symlink_removed": true,
+        "elapsed_seconds": 2.465575725014787,
+        "peak_sampled_parent_child_rss_bytes": 135458816,
+        "resource_qualification": "sampled not hard OS isolation",
+        "root_dependency_directory_inode_preserved": true,
+        "delta_summary": {
+          "added_public_paths": [
+            "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens",
+            "/api/v1/student/map/buildings/{buildingId}/floors/{floorId}/opens",
+            "/api/v1/student/statistics/ranking",
+            "/api/v1/teacher/catalog",
+            "/api/v1/teacher/journal/export",
+            "/api/v1/teacher/journal/export/formats",
+            "/api/v1/teacher/search",
+            "/api/v1/teacher/stats",
+            "/api/v1/teacher/stats/export",
+            "/api/v1/teacher/stats/export/formats"
+          ],
+          "removed_public_paths": [],
+          "added_operations": [
+            "catalog",
+            "exportJournal",
+            "exportStats",
+            "getStatisticsRanking",
+            "journalExportFormats",
+            "recordFloorOpen",
+            "recordFloorOpen_1",
+            "search",
+            "stats",
+            "statsExportFormats"
+          ],
+          "removed_operations": [],
+          "diff_numstat": {
+            "added_lines": 610,
+            "removed_lines": 3
+          },
+          "git_diff_check": "PASS",
+          "hand_edits": false,
+          "merged_typescript_and_current_ci": "ROOT_PENDING"
+        }
+      },
+      "RootExactCopy": true,
+      "RootMergedChecks": "NEXT",
+      "newCI": "PENDING_AFTER_COHERENT_SUCCESSOR",
+      "noGeneratorHandEdits": true
+    },
+    "62df_renderer_routed_outage_actual_acceptance": {
+      "at": "2026-10-14T22:33:17.381932+00:00",
+      "state": "FINITE_PASS_ACTUAL_GATEWAY_BROWSER_RENDERER_ERROR_AND_FRESH_RECOVERY",
+      "actual": {
+        "state": "CURRENT_EXACT_RENDERER_OUTAGE_SOURCE_CASE_PASS",
+        "producer": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+        "run": 38639510612,
+        "event": "pull_request",
+        "attempt": 1,
+        "artifact": 11931292202,
+        "bytes": 422,
+        "digest": "sha256:afb5cb76450efbe34b7c7e03efcb9d409455634b33ecbd312ada641a324e044c",
+        "sourceSHA256": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+        "sourceDeclaration": 980,
+        "uniqueNonparameterizedSource": true,
+        "noIdentityFromOrdinal": true,
+        "selected": {
+          "file": "cloud-accepted-registry-export.spec.ts",
+          "line": 980,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 95713,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        },
+        "result": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 23,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 63042,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 23,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3457,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 695,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 7501,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 695,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 5204,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 980,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 95713,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "qualification": [
+          {
+            "caseCode": "USER_HTML_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_HTML_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_NATIVE_PDF_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_NATIVE_PDF_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "RENDERER_OUTAGE_EXACT_SOURCE_DECLARATION",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "parserDelta": "Exact current Source declared rows23/695/980 and5row bound only; other schema/privacy rules unchanged",
+        "noNewRuntime": true,
+        "officialCheckoutJoin": {
+          "result": "PASS",
+          "checkoutSha": "9f3a85887fe2308b03be09da018c2f54cc90b214",
+          "treeSha": "fd497858e6c75676c1b0c44210d746cde28fc684",
+          "officialParents": [
+            "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "62df260302fb6a63d60e04b72d1db664f3e1e799"
+          ],
+          "producerSha": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+          "producerTreeSha": "fd497858e6c75676c1b0c44210d746cde28fc684",
+          "officialRun": {
+            "id": 38639510612,
+            "headSha": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+            "event": "pull_request",
+            "attempt": 1,
+            "status": "in_progress",
+            "conclusion": null
+          },
+          "sources": [
+            "GitHub REST git/commits checkout and producer",
+            "GitHub REST actions/runs current run",
+            "SHA256-bound checkout-safe artifact",
+            "local producer git tree matches official"
+          ]
+        }
+      },
+      "readNative": {
+        "direct_pid": 833768,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 833768,
+            "start_ticks": 27094754
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 0.5699738670373335
+      },
+      "currentSourceCompatibility": "Source6d25 unchanged62df through eee6c; distinct producerSHA retained",
+      "criterion": "E15-R2 concrete residual fulfilled; no production/provider/general drain claim",
+      "noNewRuntime": true
+    },
+    "eee6c_generated_consumer_merged_checks": {
+      "at": "2026-10-14T22:33:17.381932+00:00",
+      "state": "PASS4_APPLICABLE_PHASES",
+      "sourceSHA256": "d885a2d08344e4575076091cd65b43d0e3ddadb8e928b510167582aaaedcd033",
+      "actual": [
+        {
+          "direct_pid": 833606,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 833606,
+              "start_ticks": 27089603
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "generator-check",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "mobile-core/scripts/generate-types.mjs",
+            "--check"
+          ],
+          "elapsedSeconds": 1.751920348033309,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/generated-consumer-generator-check.log"
+        },
+        {
+          "direct_pid": 833628,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 833628,
+              "start_ticks": 27089777
+            },
+            {
+              "pid": 833648,
+              "start_ticks": 27089838
+            },
+            {
+              "pid": 833640,
+              "start_ticks": 27089829
+            },
+            {
+              "pid": 833641,
+              "start_ticks": 27089829
+            },
+            {
+              "pid": 833647,
+              "start_ticks": 27089837
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "contract",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/npm",
+            "run",
+            "test:contract"
+          ],
+          "elapsedSeconds": 0.9729904900304973,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/generated-consumer-contract.log"
+        },
+        {
+          "direct_pid": 833665,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 833665,
+              "start_ticks": 27089875
+            },
+            {
+              "pid": 833677,
+              "start_ticks": 27089913
+            },
+            {
+              "pid": 833678,
+              "start_ticks": 27089914
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "foundation-types",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/npm",
+            "run",
+            "typecheck:foundation"
+          ],
+          "elapsedSeconds": 8.764445201028138,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/generated-consumer-foundation-types.log"
+        },
+        {
+          "direct_pid": 833685,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 833685,
+              "start_ticks": 27090750
+            },
+            {
+              "pid": 833697,
+              "start_ticks": 27090784
+            },
+            {
+              "pid": 833698,
+              "start_ticks": 27090785
+            },
+            {
+              "pid": 833710,
+              "start_ticks": 27090823
+            },
+            {
+              "pid": 833711,
+              "start_ticks": 27090823
+            },
+            {
+              "pid": 833718,
+              "start_ticks": 27091210
+            },
+            {
+              "pid": 833728,
+              "start_ticks": 27091894
+            },
+            {
+              "pid": 833729,
+              "start_ticks": 27091894
+            },
+            {
+              "pid": 833752,
+              "start_ticks": 27093574
+            },
+            {
+              "pid": 833753,
+              "start_ticks": 27093574
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "workspace-types",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/npm",
+            "run",
+            "typecheck"
+          ],
+          "elapsedSeconds": 44.17901179700857,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/generated-consumer-workspace-types.log"
+        }
+      ],
+      "remoteCorrectedGates": "NOT_RUN_PENDING_NEXT_SUBSTANTIVE_PACKAGE"
+    },
+    "eee6c_bounded_Q01_Q12_existing_evidence_accounting": {
+      "at": "2026-10-14T22:34:28.109666+00:00",
+      "outcome": {
+        "recordedAt": "2026-10-14T22:32:44.935900+00:00",
+        "state": "BOUNDED_EXISTING_EVIDENCE_JOIN_ONLY",
+        "publishedHeadFromRoot": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+        "currentCIRunFromRoot": 38647459951,
+        "currentCIStatus": "IN_PROGRESS_NO_NEW_RESULTS_READ",
+        "selectedModel": "gpt-6.1-sol",
+        "selectedEffort": "high",
+        "actualModelEffort": "UNKNOWN",
+        "inputs": {
+          "receipts/matrix-evidence-reconciliation/remaining-execution-queue.json": "2873beefaf08ae9e12aa1eedf4e0e184fa417ddec826285a8417fbd15c0a41eb",
+          "verified-cases.csv": "6de55463bacbdddd7c517c7d7f66c7761bff63ab895af8788a4a1e3d1dc69649",
+          "receipts/current-4065-real-push-readback.safe.json": "537ded9b69985a537706fc9a485372a80edf7cfe381708ebe3b618652b28b6e9"
+        },
+        "verifiedRowsRead": 142,
+        "queueDomainEntriesRead": 48,
+        "governingTaskSha256": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+        "scope": "Only existingQ01–Q12 aliases/domain IDs. Q01/Q02 kept together where existing receipt joins them; no invented alias/parent table, new requirement, denominator or E13–15 refinement. Existing142rows are immutable reuse, not new added cases.",
+        "alreadyAdequateRemoveStaleRemainders": [
+          {
+            "criterion": "Journal chooser/clear/manual absent and main geo-block/unblock",
+            "queue": [
+              "CLIENT-HEADMAN",
+              "ATTENDANCE-CHECKIN"
+            ],
+            "reuse": [
+              "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01",
+              "VC-CLIENT-GEO-BLOCK-UNBLOCK-01"
+            ],
+            "root": "edb_journal_closure_review",
+            "removeStaleRemainder": "Generic chooser/edit-icon/manualABSENT/geo-block unexecuted; exact accepted journal slices are already142-ledger PASS."
+          },
+          {
+            "criterion": "Default neutral ADMIN selection core and durable revoked/live session actors across real Auth restart/fresh durable restore",
+            "queue": [
+              "AUTH-SESSION",
+              "CLIENT-AUTH-ROLES"
+            ],
+            "reuse": [
+              "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+              "VC-REAL-MULTIROLE-LOGOUT-ALL-01",
+              "VC-APP-RECOVERY-FRESH-PG-MONGO-TRANSFER-HISTORY-01"
+            ],
+            "root": "d106_recovery_actual",
+            "removeStaleRemainder": "Old q03q04Current4058 restart witness predates actual d106/edb restored old revoked+live checks before fresh login; no second restart drill. Neutral ADMIN core is already checkpoint-qualified, not complete profile/semester or terminal-role proof."
+          },
+          {
+            "criterion": "Replacement-only headman policy / restore without old authority",
+            "queue": [
+              "ACADEMIC-ADMIN",
+              "ACADEMIC-GROUPS"
+            ],
+            "reuse": [
+              "VC-REAL-ADMIN-CREATE-REPLACE-ARCHIVE-RESTORE-01",
+              "VC-ADMIN-REPLACE-ONLY-NO-PARTIAL-01",
+              "VC-ARCHIVED-USER-REGISTRY-QUERY-DB-01"
+            ],
+            "root": "874_finite_matrix_reconciliation",
+            "removeStaleRemainder": "Old Q012 waiting-owner branch is superseded by D016 and exact874 server conflict/no-partial/replacement proof. Q015 is different and remains open."
+          },
+          {
+            "criterion": "Standalone assignment close interruption/replay/adoption/current teacher history access",
+            "queue": [
+              "ACADEMIC-ASSIGNMENT"
+            ],
+            "reuse": [
+              "VC-REAL-ASSIGNMENT-CLOSE-ADOPT-REPLACE-HISTORY-01",
+              "VC-ONEOFF-REPLACE-HISTORY-REPLAY-DB-01",
+              "VC-ONEOFF-REPLACE-GUARDS-DB-01"
+            ],
+            "root": "62df_actual_browser_finite_join",
+            "additionalExistingEvidence": "Current62df assignment artifact11931675692/1105B/SHAfdc60a88423a208662b51a62f184663afcd06ed9a4c0563882ad48a64a2eb001, existing step41SUCCESS from supplied current receipt. No new download or methodcount inference.",
+            "removeStaleRemainder": "Generic assignment API never exercised or interrupted close unavailable is obsolete; actual UI assignment carrier is separate."
+          },
+          {
+            "criterion": "Recurring remove/return all retained past homework content/history/completion and elapsed no-backfill",
+            "queue": [
+              "SCHEDULE-CLOCK-GENERATION",
+              "SCHEDULE-TRANSFER-CANCEL"
+            ],
+            "reuse": [
+              "VC-Q07-PAST-HOMEWORK-COMPLETION-PRESERVATION-01",
+              "VC-Q07-NAMED-LOCAL-LIFECYCLE-SEAMS-01",
+              "VC-Q07-REAL-PWA-CANCEL-JOURNAL-RESTORE-01",
+              "VC-REAL-ROOM-PROVENANCE-ETAG-TODAY-01"
+            ],
+            "root": "c5f3_lesson_actual",
+            "removeStaleRemainder": "Nonempty past homework residual from q07JS40Current4065FiniteJoin is explicitly superseded by full c5f3 builder370PASS/artifact11904944724 and independent seed review. Current62df4body setup409 does not negate unchanged earlier semantic evidence."
+          },
+          {
+            "criterion": "Manual budget exhaustion AUTO approval and actually consuming newly increased allowance",
+            "queue": [
+              "ATTENDANCE-REQUESTS"
+            ],
+            "reuse": [
+              "VC-REAL-AUTO-REQUEST-N-INCREASE-PREFIX-01",
+              "VC-HEADMAN-N-MONGO-DATA-SENSITIVITY-01",
+              "VC-Q08-REAL-PWA-GEO-D005-01"
+            ],
+            "root": "d106_lesson_requests_actual",
+            "removeStaleRemainder": "Old c3ff logout-failed prefix limitation is superseded for new-attempt usage by d106 fullcase8 PASS used6/remaining1 after N5→7. Keep prefix row title/history intact; do not add duplicate case merely to count full completion."
+          },
+          {
+            "criterion": "Student homework navigation/order/focus/optimistic rollback/safe links; own-author DELETE",
+            "queue": [
+              "ACADEMIC-HOMEWORK",
+              "CLIENT-HOMEWORK"
+            ],
+            "reuse": [
+              "VC-CLIENT-PWA-HOMEWORK-COMPLETION-R2",
+              "VC-REAL-HOMEWORK-HELPER-EDIT-COMPLETION-REVOKE-01",
+              "VC-REAL-HOMEWORK-OWN-DELETE-HISTORY-REPLAY-01"
+            ],
+            "root": "JS_STUDENT_20_21_22_acceptance_review",
+            "removeStaleRemainder": "JS-STUDENT20/21/22 exact accepted stories already independently reconciled PASS d106. Own DELETE874 is independent of pending non-author Q015; do not block all homework on owner answer."
+          },
+          {
+            "criterion": "Real Notification consumer postcommit/preACK loss and ticket identity/foreign-subscribe boundary",
+            "queue": [
+              "NOTIFICATION-PREFERENCES-HISTORY",
+              "NOTIFICATION-WS-PUSH"
+            ],
+            "reuse": [
+              "VC-NOTIFICATION-ACK-REDELIVERY-READSTATE-01",
+              "VC-REAL-AUTH-WS-TICKET-IDENTITY-FOREIGN-SUBSCRIPTION-01"
+            ],
+            "root": "493_current_selected_read",
+            "removeStaleRemainder": "Old Q10_C_ACK_WS_remaining_Source_join missing consumer-loss/ticket rows predates accepted exact493 SOURCE_METHOD committedEffectsSurviveConsumerChannelLossBeforeAckAndRedeliverWithoutChangingReadState + Auth WS proof. No repeat ACK-loss/native broker drill."
+          }
+        ],
+        "oneNextItemPerOpenExistingPackage": [
+          {
+            "domainIds": [
+              "CLIENT-HEADMAN"
+            ],
+            "existingAlias": "Q01/Q02 existing client/journal receipts; no new alias table",
+            "classification": "EVIDENCE_GAP_ONLY",
+            "reuse": [
+              "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01",
+              "VC-CLIENT-GEO-BLOCK-UNBLOCK-01",
+              "VC-CLIENT-PWA-STUDENT-HELPER-MARK-REVOKE-64B",
+              "VC-HELPER-VIEW-STATS-LIVE-REVOKE-01",
+              "VC-HELPER-MANAGE-EXCUSES-LIVE-REVOKE-01"
+            ],
+            "oneNextItem": "Qualify one accepted helper partial-revocation operation: remove one capability while another remains and verify only the removed operation is refused. Full MARK revoke/statistics/excuse existing positives are reused.",
+            "basis": "Existing q07 acceptance outcome#q01q02 accepted_missing_by_family JS-HEADMAN14/15 and queue CLIENT-HEADMAN.",
+            "runDisposition": "No new run/test now; absence of linked partial-revoke proof is not an observed product defect."
+          },
+          {
+            "domainIds": [
+              "AUTH-SESSION",
+              "CLIENT-AUTH-ROLES"
+            ],
+            "existingAlias": "Q03",
+            "classification": "EVIDENCE_GAP_ONLY",
+            "reuse": [
+              "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+              "VC-REAL-MULTIROLE-LOGOUT-ALL-01",
+              "VC-APP-RECOVERY-FRESH-PG-MONGO-TRANSFER-HISTORY-01"
+            ],
+            "oneNextItem": "Qualify actual terminal STUDENT history-read/mutation-denial while active TEACHER remains usable; existing SUSPENDED/student role-switch proof does not establish terminal read-only behavior.",
+            "basis": "Existing q07 acceptance#q03q04Current4058 finiteClausePASSAndRemainder BOUNDARY03.",
+            "runDisposition": "No duplicate refresh/logout/restart proof; B014 login-rate checking remains frozen."
+          },
+          {
+            "domainIds": [
+              "ACADEMIC-ADMIN",
+              "ACADEMIC-GROUPS",
+              "CLIENT-ADMIN"
+            ],
+            "existingAlias": "Q04",
+            "classification": "EVIDENCE_GAP_ONLY",
+            "reuse": [
+              "VC-REAL-ADMIN-CREATE-REPLACE-ARCHIVE-RESTORE-01",
+              "CASE-SAQ-USER-ARCHIVE-RESTORE-ROLLBACK",
+              "VC-ADMIN-REPLACE-ONLY-NO-PARTIAL-01"
+            ],
+            "oneNextItem": "Qualify account archive/restore with one already-existing ticket or homework-history object and read the same object afterward; actual attendance/account/grant preservation already suffices separately.",
+            "basis": "Existing q03q04Current4058 JS-ADMIN04 residual; no archive/history kind inferred from empty fixture.",
+            "runDisposition": "D016 settled; no pending Q012 or repeat headman replacement/race suite."
+          },
+          {
+            "domainIds": [
+              "ACADEMIC-SEMESTER"
+            ],
+            "existingAlias": "Q05",
+            "classification": "ACTUAL_ARCHIVE_OPERATION_FAIL_CAUSE_UNKNOWN",
+            "reuse": [
+              "VC-REAL-SEMESTER-ARCHIVE-RESTORE-REPLAY-01",
+              "VC-SEMESTER-MOSCOW-DATE-AND-SCHEDULE-01"
+            ],
+            "oneNextItem": "Use the already-running eee6c ordinary semester diagnostic to distinguish the current missing Attendance effect ACK before any product/timeout correction.",
+            "basis": "Root current4065#62df_semester_actual_remaining_blocker; prior edb finite archive/restore PASS retained, latest62df ARCHIVING/PENDING + cleanupFAIL is separate real operation failure.",
+            "runDisposition": "Do not declare fixture/product/infra root cause from aggregate DLQ or unmatched hint; no new run or weakened barrier."
+          },
+          {
+            "domainIds": [
+              "ACADEMIC-ASSIGNMENT"
+            ],
+            "existingAlias": "Q06",
+            "classification": "EVIDENCE_GAP_CLIENT_CARRIER_ONLY_FOR_THIS_NEXT_ITEM",
+            "reuse": [
+              "VC-REAL-ASSIGNMENT-CLOSE-ADOPT-REPLACE-HISTORY-01",
+              "VC-ONEOFF-REPLACE-HISTORY-REPLAY-DB-01"
+            ],
+            "oneNextItem": "Qualify the ready HEADMAN assignment/replacement UI carrier for the already-proved close/adopt/next-date replacement operation; API protocol/current-history authority requires no duplicate proof.",
+            "basis": "Existing queue CLIENT-HEADMAN teacherassignment and ACADEMIC-ASSIGNMENT; saved assignment row explicitly limits API proof versus Vue flow.",
+            "runDisposition": "No broad subject/delete/race audit or new API requirement."
+          },
+          {
+            "domainIds": [
+              "SCHEDULE-CLOCK-GENERATION",
+              "SCHEDULE-TRANSFER-CANCEL"
+            ],
+            "existingAlias": "Q07",
+            "classification": "CURRENT_BODY_BLOCKED_UPSTREAM_FIXTURE_WITH_PRIOR_FINITE_PASS",
+            "reuse": [
+              "VC-Q07-PAST-HOMEWORK-COMPLETION-PRESERVATION-01",
+              "VC-Q07-NAMED-LOCAL-LIFECYCLE-SEAMS-01",
+              "VC-Q07-REAL-PWA-CANCEL-JOURNAL-RESTORE-01",
+              "VC-REAL-ROOM-PROVENANCE-ETAG-TODAY-01"
+            ],
+            "oneNextItem": "Qualify the four existing lesson bodies from current substantive eee6c CI after upstream semester admission; do not add another builder/history/room scenario.",
+            "basis": "Root current4065#62df_lesson_upstream_fixture_blocker; current62df bodies NOT_RUN on semester409; old accepted c5f3/874 remains own-revision evidence.",
+            "runDisposition": "Schedule Sunday fixture corrected a386 is source-only until current gates; no new semantic defect inferred."
+          },
+          {
+            "domainIds": [
+              "ATTENDANCE-CHECKIN",
+              "ATTENDANCE-REQUESTS",
+              "ATTENDANCE-READ-REPORT"
+            ],
+            "existingAlias": "Q08",
+            "classification": "EVIDENCE_GAP_TIMED_BOUNDARY",
+            "reuse": [
+              "VC-Q08-CHECKIN-MONGO-D005-RECEIPTS-01",
+              "VC-Q08-REAL-PWA-GEO-D005-01",
+              "VC-HEADMAN-N-MONGO-DATA-SENSITIVITY-01",
+              "VC-REAL-AUTO-REQUEST-N-INCREASE-PREFIX-01"
+            ],
+            "oneNextItem": "Qualify the accepted actual lesson-end+5 close result: blank becomes one ABSENT, explicit mark retained and duplicate close inert; use any existing exact clock→event→Mongo witness first.",
+            "basis": "Existing q07 acceptance#q08 missingOperations[0] B26; no new cutoff/formula/policy.",
+            "runDisposition": "No repeat N budget, D005, geo receipt or Mongo concurrency checks."
+          },
+          {
+            "domainIds": [
+              "ACADEMIC-HOMEWORK",
+              "CLIENT-HOMEWORK"
+            ],
+            "existingAlias": "Q09",
+            "classification": "ACTUAL_CLIENT_CASE_FAIL_RECHECK_PENDING_CURRENT_PUBLISHED_CLOCK_CORRECTION",
+            "reuse": [
+              "VC-REAL-HOMEWORK-HELPER-EDIT-COMPLETION-REVOKE-01",
+              "VC-REAL-HOMEWORK-OWN-DELETE-HISTORY-REPLAY-01",
+              "VC-CLIENT-PWA-HOMEWORK-COMPLETION-R2"
+            ],
+            "oneNextItem": "Qualify the current existing non-author/edit/inbox case after published progressing browser-clock correction; preserve its genuine PUT/history/completion/live-revocation assertions.",
+            "basis": "Root CURRENT and existing62df homework noPUT read; JS-STUDENT20/21/22 and own DELETE already sufficient separately.",
+            "runDisposition": "Do not assign UNKNOWN noPUT to backend mutation failure; Q015 blocks only non-author DELETE."
+          },
+          {
+            "domainIds": [
+              "NOTIFICATION-PREFERENCES-HISTORY",
+              "NOTIFICATION-WS-PUSH",
+              "CLIENT-NOTIFY"
+            ],
+            "existingAlias": "Q10",
+            "classification": "EVIDENCE_GAP_END_TO_END_AUDIENCE_INBOX_TARGET",
+            "reuse": [
+              "CASE-NP01-BR-01",
+              "CASE-NP01-BR-05",
+              "VC-NOTIFICATION-ACK-REDELIVERY-READSTATE-01",
+              "VC-REAL-AUTH-WS-TICKET-IDENTITY-FOREIGN-SUBSCRIPTION-01"
+            ],
+            "oneNextItem": "Complete the already-authored genuine command→audience→durable inbox/read→authorized PWA target path in the current homework case; lower-level ACK/WS/provider mocks do not replace this path.",
+            "basis": "Root Q10_genuine_inbox_Source_choice and Q10_genuine_inbox_Root_Source_integration; existing queue CLIENT-NOTIFY.",
+            "runDisposition": "Shares Q09 existing case, not a second run. Native Telegram/WebPush remains D015 OWNER_MANUAL_PENDING; Cloud audience/browser criterion remains required."
+          },
+          {
+            "domainIds": [
+              "EXPORT-ASYNC-CORE",
+              "EXPORT-ROSTER-ADMIN-MODELS"
+            ],
+            "existingAlias": "Q11",
+            "classification": "EVIDENCE_JOIN_GAP_FOR_LATEST_NATIVE_FORMAT_CARRIER",
+            "reuse": [
+              "VC-REAL-REGISTRY-HTML-FULL-LIMITED-REVOKE-01",
+              "VC-REGISTRY-DIRECT-FILE-FIELDS-PRIVACY-01",
+              "VC-REGISTRY-NATIVE-PDF-FIELDS-ORDER-AUDIT-01",
+              "CASE-SAQ-EXPORT-HTTP-REVOKE-AUDIT"
+            ],
+            "oneNextItem": "Join the already-produced current registry closed case to the reviewed PNG-content/audit assertions before keeping a generic missing-PNG remainder or promoting it; step35SUCCESS alone is insufficient.",
+            "basis": "Existing Q11_finite_existing_proof_join limits + Q11PngFormatSource and current62df registry step provenance. Group binary model/complete order are not inferred from user HTML/PDF.",
+            "runDisposition": "No HTML/PDF re-run, no native converter capability repeat, no per-mode ordinal identity inference/B015 fallback."
+          },
+          {
+            "domainIds": [
+              "ACADEMIC-MAP",
+              "CLIENT-MAP-FILES-EXPORTS"
+            ],
+            "existingAlias": "Q12",
+            "classification": "EVIDENCE_JOIN_GAP_FOR_EXTENDED_MAP_CASE",
+            "reuse": [
+              "VC-MAP-PUBLISH-VIEW-DOWNLOAD-VERSIONS-01"
+            ],
+            "oneNextItem": "Join the already-produced current map named closed result to the reviewed extended final-floor/API consumer/no-op/old-link/viewer/retry assertions; only then contract the old NOT_RUN remainder.",
+            "basis": "Root Q12_map_independent_whole_review/Q12_map_reviewed_Root_integration; edb exactmap314FAIL vs later62df step33SUCCESS is only a provenance lead until exact case join.",
+            "runDisposition": "No repeat publish/download/version bytes; D004 legend excluded. Ready final-delete UI or zoom/pan is not silently proved by API cleanup."
+          }
+        ],
+        "contraction": "8specific stale remainder groups reuse existing finite proof; no new PASS row/count/family promotion. Q09/Q10 share one already-authored client path and must not become duplicate runtime packages. Q11/Q12 next action is existing-result accounting, not a new test/run.",
+        "classificationRules": [
+          "No actual productFAIL declared from a missing receipt or step count.",
+          "Q05 current archive operation actually failed; product-versus-infra cause remains unknown. Q07 latest four bodies were blocked by upstream fixture state.",
+          "D016 replaces oldQ012 ambiguity; Q015 only non-author homeworkDELETE is OWNER_PENDING.",
+          "B013/B014/B015 remain PLATFORM_FROZEN; no equivalent model/agent/reader/runtime/schema/CI proposal.",
+          "D015 native-provider acceptance belongs owner; it does not exclude remaining Cloud logic/data/browser accepted actions."
+        ],
+        "limits": "Reused existing source/evidence qualifications as recorded; no fresh source-equivalence claim to eee6c for every historical input, no new network/artifact read, no wholefamily/gate/currentrevisionPASS. Finite nextitems select one known accepted residual each, not an exhaustive new scenario matrix.",
+        "effects": {
+          "networkOrArtifactReader": false,
+          "testsRunsOrNative": false,
+          "SourceOrGitMutation": false,
+          "sharedDocsWrites": false,
+          "newReports": "none; this same receipt section only",
+          "countChanges": 0,
+          "children": 0
+        }
+      },
+      "meaning": "8stale genericremainders removed by existingadequatefacts; no newruntime/familyPASS/countpromotion; 11finite nextitems originaldomains. Root current143 after independentrendererread is laterthan reviewer142snapshot.",
+      "fullStillAcceptedRemainder": {
+        "recordedAt": "2026-10-14T22:39:18.187346+00:00",
+        "state": "COMPLETE_FOR_ALL_ALREADY_CITED_EXPLICIT_RESIDUAL_FIELDS",
+        "source": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json",
+        "sourceSha256": "437c208198f752da2a8f41978d46e9d7ceb1eb68c9cada05e9df34d000a0d17e",
+        "correctionToPreviousScope": "Previous11 oneNextItems were scheduling priorities, explicitly not exhaustive. This field preserves the complete additional accepted residual content of the already-cited q07 sections, after the same8 reuse groups. Prior values/history are unchanged.",
+        "retainedDistinctExistingClauses": [
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-STUDENT-05"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-STUDENT-05"
+            ],
+            "stillRequiredText": "Search and archive-specific homework behavior remain separately qualified; day/week/month, multi-item order/focus, links and optimistic rollback are already credited by contraction7.",
+            "dependencyOrExistingOwner": "Existing PWA homework carrier; no backend or browser rerun prescribed.",
+            "relationToPrevious11": "Additional to Q09 priority.",
+            "qualification": "Search/archive words occur in an older composite family cell. Retain as source-qualified candidates; do not invent a new search endpoint or unsupported archive UI rule without existing accepted provenance."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-HEADMAN-01"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-HEADMAN-01"
+            ],
+            "stillRequiredText": "Journal read-action history and live counters beyond the already-proved mark/chooser/geo-block result.",
+            "dependencyOrExistingOwner": "Existing actual journal/client and saved backend audit/count proof.",
+            "relationToPrevious11": "Additional to Q01/Q02 partial-revoke priority.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-HEADMAN-01",
+              "JS-HEADMAN-01"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-HEADMAN-01",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-HEADMAN-01"
+            ],
+            "stillRequiredText": "Archived/terminal/foreign/revoked headman guards and mark CAS-conflict behavior remain qualified distinctly from successful clearing/manualABSENT.",
+            "dependencyOrExistingOwner": "Live authority/current lesson scope; reuse exact backend guards already accepted.",
+            "relationToPrevious11": "Additional journal boundaries; not another positive mark test.",
+            "qualification": "Do not repeat already-proved foreign attachment/helper full-revoke assertions; the old composite cell does not itself identify a missing deployed defect."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-HEADMAN-06",
+              "JS-HEADMAN-14",
+              "JS-HEADMAN-15"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-HEADMAN-06",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-HEADMAN-14",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-HEADMAN-15"
+            ],
+            "stillRequiredText": "Helper assign/edit capability-choice UI; distinct remaining capability boundaries; partial revoke while another capability remains; self/foreign/stale-foreground denial and 403/retry states.",
+            "dependencyOrExistingOwner": "Existing helper UI/current capability authority. MARK/full revoke and accepted VIEW_STATS/MANAGE_EXCUSES/CANCEL positives remain reused.",
+            "relationToPrevious11": "Contains previous11 partial-revoke item plus the other explicitly listed helper clauses.",
+            "qualification": "No capability×browser×role crossproduct; MARK-only fixture never proves all five capabilities."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-TEACHER-01"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-TEACHER-01"
+            ],
+            "stillRequiredText": "Teacher Today/catalog/journal/detail/excuse UI, with foreign/current-assignment/attachment scope.",
+            "dependencyOrExistingOwner": "Existing ready teacher carrier; backend group-history read/write-denial is already credited.",
+            "relationToPrevious11": "Additional existing teacher UI clauses beyond Q06 API-to-UI priority.",
+            "qualification": "Do not infer navigation or complete teacher client from page.request backend reads."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-ADMIN-07"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-ADMIN-07"
+            ],
+            "stillRequiredText": "LIMITED rights assign/update/revoke UI; authority-version/stale-retry; invalid permission, self/last-FULL and outage presentation where not qualified by exact saved proof.",
+            "dependencyOrExistingOwner": "Existing current 12-grant decision and UI; reuse server catalogue/last-FULL race receipts.",
+            "relationToPrevious11": "Additional to Q04 account history-object priority.",
+            "qualification": "Older family source cell is empty and explicitly requests Oct08 provenance. Keep qualified to that accepted catalogue; no new grant or new full matrix."
+          },
+          {
+            "existingClauseIds": [
+              "JS-ADMIN-26"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-ADMIN-26"
+            ],
+            "stillRequiredText": "Active ADMIN exposes no student/headman/teacher feature routes or requests before explicit role switch.",
+            "dependencyOrExistingOwner": "Existing role-owned UI and active-role admission.",
+            "relationToPrevious11": "Additional to Q03/Q04 priorities.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-AUTH-01"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-AUTH-01"
+            ],
+            "stillRequiredText": "Client invalid-login 401/alert/no protected navigation or cookie; accepted HttpOnly/Secure/Strict cookie behavior and memory-only bearer assertions still require their exact join.",
+            "dependencyOrExistingOwner": "Existing auth/browser receipts and current cookie policy.",
+            "relationToPrevious11": "Additional to Q03 terminal-role priority.",
+            "qualification": "Checkpoint wrong-password/login/cookie finite evidence stays reused; no repeated login-rate/IP exercise or B014 equivalent."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-AUTH-02"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-AUTH-02"
+            ],
+            "stillRequiredText": "Stale expectedSessionVersion, ungranted/read-only role states, and stale owner/data refusal beyond already-credited positive/suspended role selection.",
+            "dependencyOrExistingOwner": "Existing role CAS and session-owned client controls.",
+            "relationToPrevious11": "Additional to Q03 terminal-role priority.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-AUTH-04"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-AUTH-04"
+            ],
+            "stillRequiredText": "Unconfirmed logout under network failure remains latched, and late callbacks cannot restore old owner data. Logout-all success is already credited.",
+            "dependencyOrExistingOwner": "Existing session owner/network-failure path.",
+            "relationToPrevious11": "Additional to Q03; no repeat logout-all or durable-restart drill.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "BOUNDARY-01",
+              "JS-SYSTEM-14"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[0]"
+            ],
+            "stillRequiredText": "Canonical required login/profile/active-semester payload fields remain qualified independently of the already-proved neutral ADMIN bootstrap/explicit selection core.",
+            "dependencyOrExistingOwner": "Existing accepted canonical payload and saved auth/profile evidence.",
+            "relationToPrevious11": "Additional to Q03 terminal-role priority.",
+            "qualification": "Do not reintroduce the whole neutral-login flow as missing; only payload clauses left unqualified by the old field are retained."
+          },
+          {
+            "existingClauseIds": [
+              "BOUNDARY-03",
+              "JS-ADMIN-02"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[2]"
+            ],
+            "stillRequiredText": "Actual terminal STUDENT may read permitted history but cannot mutate, while active TEACHER remains usable.",
+            "dependencyOrExistingOwner": "Terminal grant/current role carrier.",
+            "relationToPrevious11": "Already previous11 Q03 next item; retained as part of complete list.",
+            "qualification": "SUSPENDED positive flow and terminal PG method do not automatically qualify the real client/history operation."
+          },
+          {
+            "existingClauseIds": [
+              "BOUNDARY-11",
+              "JS-ADMIN-01",
+              "JS-ADMIN-19"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[3]"
+            ],
+            "stillRequiredText": "Duplicate identity/create follows accepted existing-account/add-role path without a second account; collision and invalid role-specific input remain distinct from successful create/add-role.",
+            "dependencyOrExistingOwner": "Existing account identity/current admin operations.",
+            "relationToPrevious11": "Additional to Q04 archive-history priority.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "JS-ADMIN-01"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[3]"
+            ],
+            "stillRequiredText": "Bot-first-start initial-account delivery is a separately accepted clause, not established by successful administrator create.",
+            "dependencyOrExistingOwner": "Existing synthetic bot/provider capability as already authorized; no real private bot or new provider call.",
+            "relationToPrevious11": "Additional distinct delivery clause in old Q04 field.",
+            "qualification": "D015 transfers only native Telegram/WebPush/OS execution; it is not blanket exclusion of all initial credential-card logic. Reuse existing credential-card finite proofs before declaring a missing accepted branch."
+          },
+          {
+            "existingClauseIds": [
+              "JS-ADMIN-04"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[4]"
+            ],
+            "stillRequiredText": "Account archive/restore preserves an actual existing ticket or homework-history object, in addition to already-proved account/grants/attendance preservation.",
+            "dependencyOrExistingOwner": "Existing real history object and account lifecycle.",
+            "relationToPrevious11": "Already previous11 Q04 next item.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-TMA-01",
+              "BOUNDARY-49"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-TMA-01",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[2]"
+            ],
+            "stillRequiredText": "TMA profile/host Back, no persisted proof/token, and accepted signed STUDENT/HEADMAN shared operations; other role adapters are not inferred from TEACHER reuse alone.",
+            "dependencyOrExistingOwner": "Existing E14-H1 owner/synthetic host and real server; D015 native host execution stays owner manual.",
+            "relationToPrevious11": "Carried by reference to existing E14 scope, not a second Q01–12 package.",
+            "qualification": "Existing tamper/host Back finite checkpoint proofs remain reusable with their exact limits; no new role×operation matrix."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-TMA-02"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-TMA-02"
+            ],
+            "stillRequiredText": "Malformed/expired/future/duplicate proof client states, binding/account revocation and accepted inclusive86400 boundary remain distinct from valid reuse/suspended-TEACHER UI.",
+            "dependencyOrExistingOwner": "Existing E14-H1/auth proof owner.",
+            "relationToPrevious11": "Additional old family clauses delegated to the already-existing E14 work.",
+            "qualification": "CASE-SD01 server proof is reused; do not re-run its signed parser matrix merely because client state presentation remains unqualified."
+          },
+          {
+            "existingClauseIds": [
+              "JS-STUDENT-10",
+              "CLIENT-FE-OFFLINE-01",
+              "BOUNDARY-47"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-STUDENT-10",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-01",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[0]"
+            ],
+            "stillRequiredText": "Cached own schedule alongside homework; Moscow-day rollover; no offline new attachments, broader writes or role switch before authoritative online admission.",
+            "dependencyOrExistingOwner": "Existing E14-O1/D002 owner and production SW.",
+            "relationToPrevious11": "Existing assigned offline package; not duplicated in Q01–12.",
+            "qualification": "No offline statistics requirement is reinstated. Already-proved homework-only offline read/revoke/logout remains adequate for its slice."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-OFFLINE-02"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-02"
+            ],
+            "stillRequiredText": "Actual server-session expiry during offline reload remains distinct from explicit revocation; retain schedule/attachment/TMA authority boundaries.",
+            "dependencyOrExistingOwner": "Existing E14-O1 owner; security clock remains real.",
+            "relationToPrevious11": "Additional explicit old offline boundary delegated unchanged.",
+            "qualification": "Do not make an educational-clock advance stand in for security-session lifetime."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-OFFLINE-03",
+              "BOUNDARY-47"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-03",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[0]"
+            ],
+            "stillRequiredText": "Reconnect after role/grant/account change; delayed response/retry cannot replace the new owner/token.",
+            "dependencyOrExistingOwner": "Existing E14-O1 current actual case; latest cause/recheck remains with its assigned owner.",
+            "relationToPrevious11": "Additional old offline boundary; already-authored current case is reused.",
+            "qualification": "No new run, app edit or synthetic owner-isolation proof inferred here."
+          },
+          {
+            "existingClauseIds": [
+              "CLIENT-FE-OFFLINE-04",
+              "BOUNDARY-47",
+              "BOUNDARY-49"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-04",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[0]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[2]"
+            ],
+            "stillRequiredText": "TMA offline/reload never hydrates the durable PWA model and cannot write offline.",
+            "dependencyOrExistingOwner": "Existing E14-H1/O1 owner/current authored case.",
+            "relationToPrevious11": "Existing separate assigned client scope.",
+            "qualification": "A warm PWA snapshot and online TEACHER TMA reuse are not this proof."
+          },
+          {
+            "existingClauseIds": [
+              "BOUNDARY-48"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[1]"
+            ],
+            "stillRequiredText": "Install/standalone/update-worker/background-notification opt-out/iOS/unsupported-platform clauses remain with existing install/provider acceptance.",
+            "dependencyOrExistingOwner": "Existing E14-I1/H2 owner; native OS/Telegram/WebPush OWNER_MANUAL_PENDING under D015.",
+            "relationToPrevious11": "Delegated unchanged; no new install/provider package.",
+            "qualification": "Existing production worker update and synthetic install-decision finite PASSs remain credited; source wording is not a new native test requirement or a claim they prove OS install."
+          },
+          {
+            "existingClauseIds": [
+              "B26"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[0]"
+            ],
+            "stillRequiredText": "Accepted inclusive check-in boundary plus actual end+5 scheduler→event→Mongo closure: one ABSENT from blank, explicit marks retained and duplicate close inert.",
+            "dependencyOrExistingOwner": "Owned educational clock, dated Academic roster, Schedule/Attendance/Mongo; existing saved witnesses first.",
+            "relationToPrevious11": "Contains previous11 Q08 end+5 item plus its explicit inclusive-boundary clause.",
+            "qualification": "Existing accepted residual only; evidence gap is not a product defect."
+          },
+          {
+            "existingClauseIds": [
+              "B27",
+              "B28"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[1]"
+            ],
+            "stillRequiredText": "AUTO retry/no-expiry and approval days later without manual charge; same-lesson paid resubmission remain distinct from completed immediate AUTO/N-increase proof.",
+            "dependencyOrExistingOwner": "Existing real request queue/Mongo/current authority; no provider.",
+            "relationToPrevious11": "Additional to previous11 Q08 timed-boundary priority.",
+            "qualification": "Contraction6 already credits exhausted-budget AUTO, visible counts, authorized N change/audit and consuming new allowance. Do not repeat those; only the older delayed/retry/resubmission clauses are retained."
+          },
+          {
+            "existingClauseIds": [
+              "B31",
+              "B33"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[2]"
+            ],
+            "stillRequiredText": "Teacher historical journal/scoped ticket and matching statistics/file after mutation/replay; real Schedule outage is explicit unavailable, never false zero.",
+            "dependencyOrExistingOwner": "Current teacher grants/dated assignments, Schedule/Attendance/Academic; existing renderer only for accepted file comparison.",
+            "relationToPrevious11": "Additional to Q08 timed-boundary and Q06 API-to-UI priorities.",
+            "qualification": "Contraction4 credits current teacher whole-group historical access; local golden math/basic read/write denial remain reused. No role×format matrix or new formula."
+          },
+          {
+            "existingClauseIds": [
+              "B34"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[3]"
+            ],
+            "stillRequiredText": "DASHBOARD_VIEW reads known cross-service active counts, Moscow today/yesterday/all-time activity; one unavailable source is explicit rather than zero.",
+            "dependencyOrExistingOwner": "Existing ready admin overview/current capability and aggregate sources.",
+            "relationToPrevious11": "Additional distinct old dashboard clause.",
+            "qualification": "Local action/count arithmetic already suffices separately; no new dashboard UI, metric or outage SLA."
+          },
+          {
+            "existingClauseIds": [
+              "B41",
+              "JS-SYSTEM-09",
+              "JS-SYSTEM-10",
+              "JS-STUDENT-WEB-06"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[1]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q10finiteEvidenceJoin.finiteRemainder[0]"
+            ],
+            "stillRequiredText": "After actual membership/headman/helper change and retry, genuine event reaches real Academic audience and own Vue inbox/read/authorized target; keep old personal history and exclude new-group pre-join/foreign events.",
+            "dependencyOrExistingOwner": "Existing Q09/Q10 genuine notification case, actual Academic/Rabbit/Mongo/PWA.",
+            "relationToPrevious11": "Expands the full clauses already hidden inside previous11 Q10 priority; shares Q09 case, no duplicate run.",
+            "qualification": "Separate SQL audience/Mongo recipient/read proofs remain reused; do not infer this integration from injected queue events or static components."
+          },
+          {
+            "existingClauseIds": [
+              "B42",
+              "JS-SYSTEM-11"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[2]"
+            ],
+            "stillRequiredText": "Pending ordinary delivery across actual authority loss/recovery and live Telegram unbind/rebind must still honor own disabled/muted durable settings.",
+            "dependencyOrExistingOwner": "Existing accepted live binding authority plus controlled synthetic adapter; no private provider credentials.",
+            "relationToPrevious11": "Additional distinct old Q10 boundary.",
+            "qualification": "Newer Q10finiteEvidenceJoin.criterionMapping[2] already qualifies Mongo+Redis-facet+loopback core and explicitly requires no new OS Redis-restart test for those clauses. The older process-restart wording remains a qualified source tension, not a new mandatory Redis-restart campaign."
+          },
+          {
+            "existingClauseIds": [
+              "B41",
+              "JS-SYSTEM-09",
+              "JS-SYSTEM-11"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[4]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q10finiteEvidenceJoin.finiteRemainder[0]"
+            ],
+            "stillRequiredText": "One accepted fact reaches the existing client channel while the other channel fails; retry loses no history and creates no duplicate history.",
+            "dependencyOrExistingOwner": "Reuse the same genuine inbox event and existing controlled adapter failure; native provider portion stays D015 owner.",
+            "relationToPrevious11": "Additional channel-independence clause; no second event/browser package.",
+            "qualification": "No external exactly-once promise or new channel-selection policy."
+          },
+          {
+            "existingClauseIds": [
+              "JS-ADMIN-13",
+              "D006",
+              "D007"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[1]"
+            ],
+            "stillRequiredText": "DOCX/XLSX complete ordinary column shape/value set and multi-row selected ordering remain unqualified by the already-proved one-row field/privacy fixture.",
+            "dependencyOrExistingOwner": "Existing accepted registry model and binary decoders; no new renderer capability run.",
+            "relationToPrevious11": "Additional to previous11 Q11 latest-PNG-result join.",
+            "qualification": "Reuse direct DOCX/XLSX fields/privacy, shared selection and live grants; no full auth×format matrix."
+          },
+          {
+            "existingClauseIds": [
+              "JS-ADMIN-13",
+              "BOUNDARY-46",
+              "D006",
+              "D007"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[2]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[5]"
+            ],
+            "stillRequiredText": "Group-registry binary model has complete filtered rows, ordinary field shape and order in its accepted native formats; group PDF/PNG payload must be the actual registry model through renderer.",
+            "dependencyOrExistingOwner": "Existing 23-row filtered group fixture/table and actual accepted file consumers.",
+            "relationToPrevious11": "Additional distinct group-model residual beyond user HTML/PDF/PNG priority.",
+            "qualification": "Group HTML23-row proof and shared query loop stay credited; user registry output or converter capability alone does not prove group binary model. No new format or model introduced."
+          },
+          {
+            "existingClauseIds": [
+              "JS-ADMIN-13",
+              "BOUNDARY-46",
+              "D006",
+              "D007"
+            ],
+            "existingPointers": [
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[3]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[4]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[5]",
+              "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.one_next_operation"
+            ],
+            "stillRequiredText": "User registry PNG actual readable/ordered selected payload, and the chosen native job audit actor/time/kind/rowCount bound to its own file, remain to qualify from the already-produced case.",
+            "dependencyOrExistingOwner": "Previous11 existing current registry closed-result join; actual renderer/accepted bytes.",
+            "relationToPrevious11": "Already previous11 Q11 next item, now with its exact old payload/audit clauses.",
+            "qualification": "Existing user PDF finite content/order/audit is explicitly reused in previous11; older PDF-only next-operation text is superseded evidence, not a new required PDF rerun. Generic converter, revoke/audit-replay proofs are not repeated; no new per-format authorization matrix."
+          }
+        ],
+        "sourceFieldCoverage": [
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-STUDENT-05",
+            "originalFieldSha256": "d5e12d0a343734f3e36576df8a49694e9df52f6139aa9b59c8b159b46ee76113",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-STUDENT-05"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-STUDENT-21",
+            "originalFieldSha256": "e8077ede00136618efcbcdcc639f650b032092e2eebc2a44c5a4f85fa978011f",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction7 student order/focus/completed-bottom proof"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-STUDENT-WEB-04",
+            "originalFieldSha256": "059fdff5ba9021d9697efe2a229211dc4041a0b789d4e1e0683464d15ed5d985",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction7 actual optimistic PUT rollback/retry proof"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-STUDENT-10",
+            "originalFieldSha256": "6f134bc1606cf69f8dbc5c220abaee5220b56b650d8c091951c3821fcd1b940e",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-STUDENT-10",
+                "CLIENT-FE-OFFLINE-01",
+                "BOUNDARY-47"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-HEADMAN-01",
+            "originalFieldSha256": "56e1130704d068059cd586bb926e47bc3573d33ebbc0f92877d49d47fe86aa7f",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-HEADMAN-01"
+              ],
+              [
+                "CLIENT-FE-HEADMAN-01",
+                "JS-HEADMAN-01"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-HEADMAN-01",
+            "originalFieldSha256": "f14731979ef454705dc86dfa15a6d659d055d854fda0b7a6aae30bf7146a8595",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-HEADMAN-01",
+                "JS-HEADMAN-01"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-HEADMAN-06",
+            "originalFieldSha256": "4e7678ff6547542193f8aaef8d9779b8073148cbced606cbd05e9733993cd563",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-HEADMAN-06",
+                "JS-HEADMAN-14",
+                "JS-HEADMAN-15"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-HEADMAN-14",
+            "originalFieldSha256": "129c9b8b02583c3d10b0129f60aabb48d9cf9160461ed63bcfe4074df0a6425c",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-HEADMAN-06",
+                "JS-HEADMAN-14",
+                "JS-HEADMAN-15"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-HEADMAN-15",
+            "originalFieldSha256": "562c54f893ea75ed4bcc91d892c4cd12fa3c525cadf0504586d8265c17759189",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-HEADMAN-06",
+                "JS-HEADMAN-14",
+                "JS-HEADMAN-15"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-TEACHER-01",
+            "originalFieldSha256": "2d802e4f7fcb65fb3d7fe91de9098cb65fe12e5f7b5d734dd95fa3fcae83bb47",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-TEACHER-01"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-ADMIN-07",
+            "originalFieldSha256": "bb7d212386a51b893348f8decd9ecb1122a02f1134338750794e5c5bb0f422a8",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-ADMIN-07"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.JS-ADMIN-26",
+            "originalFieldSha256": "3f7d36fee5959a9de8db17848e49cb175b0a108a5d158db1ee4e9b759197d19e",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-26"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-AUTH-01",
+            "originalFieldSha256": "97f233f976dfad00c902b27eb0d0dad7141c7a25cd5ecf419a95c1368fc54142",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-AUTH-01"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-AUTH-02",
+            "originalFieldSha256": "af8860849d08c04d757b6f87363f5deb1e9f2f93ae0b3a9c8cb98bf3ac8da987",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-AUTH-02"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-AUTH-04",
+            "originalFieldSha256": "b6b7e247982239d70e576975ec86c3273353e96fbd4fac9d0061f913ea3e4b1b",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-AUTH-04"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-TMA-01",
+            "originalFieldSha256": "5a9ff8ac6ed9fdeb3a65b0f4f0f900f9d813f63cbceb37707c1fd3c0fb201e6f",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-TMA-01",
+                "BOUNDARY-49"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-TMA-02",
+            "originalFieldSha256": "6fbe9f01f394a61a8e788c3e9a6887c6e9040455420391a879c9b862b4a532b6",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-TMA-02"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-01",
+            "originalFieldSha256": "df50cb13f402f26a8bef27a5acd1034b6582e3564a139529dd2ad85b9604392e",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-STUDENT-10",
+                "CLIENT-FE-OFFLINE-01",
+                "BOUNDARY-47"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-02",
+            "originalFieldSha256": "fd619ea03a2500b242e2c9afb99cd4941cae14ccd04356bdf459ea861a8bb584",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-OFFLINE-02"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-03",
+            "originalFieldSha256": "cb5d8ab62a4b983adc574728200b4a1b4aa769f49e3c4899c86ad6e4d139cf6a",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-OFFLINE-03",
+                "BOUNDARY-47"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-OFFLINE-04",
+            "originalFieldSha256": "a12b53990e3709469119e7204fc4cf5658d06f1672194d81ac2189982a06606a",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-OFFLINE-04",
+                "BOUNDARY-47",
+                "BOUNDARY-49"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[0]",
+            "originalFieldSha256": "60faabe616f497f20ae6bec23d9287b2e83e698b91905f4e9b890245b5d63735",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-STUDENT-10",
+                "CLIENT-FE-OFFLINE-01",
+                "BOUNDARY-47"
+              ],
+              [
+                "CLIENT-FE-OFFLINE-03",
+                "BOUNDARY-47"
+              ],
+              [
+                "CLIENT-FE-OFFLINE-04",
+                "BOUNDARY-47",
+                "BOUNDARY-49"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[1]",
+            "originalFieldSha256": "dc5c34df063658c1da9201f0ae9f3506c08871622fdfb6516a254c497221d626",
+            "retainedUnderExistingClauseIds": [
+              [
+                "BOUNDARY-48"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_boundary[2]",
+            "originalFieldSha256": "346ec2d06cac485fc6f63aa4224106416c8e080c836b67148e22525529af798e",
+            "retainedUnderExistingClauseIds": [
+              [
+                "CLIENT-FE-TMA-01",
+                "BOUNDARY-49"
+              ],
+              [
+                "CLIENT-FE-OFFLINE-04",
+                "BOUNDARY-47",
+                "BOUNDARY-49"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[0]",
+            "originalFieldSha256": "c75d423ba2f89d8555815c6ca55d5623d40c4b069423fd796313f2303cedc56c",
+            "retainedUnderExistingClauseIds": [
+              [
+                "BOUNDARY-01",
+                "JS-SYSTEM-14"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[1]",
+            "originalFieldSha256": "32dc8232362bded260329f9656739f29999f541e37794a69720f65e9337e5415",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction2 actual retained revoked/live actors across Auth restart/fresh durable restore"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[2]",
+            "originalFieldSha256": "049f7cbafb282a445637223796895807aeb7a9bfe9c35a25de2d2086c3402643",
+            "retainedUnderExistingClauseIds": [
+              [
+                "BOUNDARY-03",
+                "JS-ADMIN-02"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[3]",
+            "originalFieldSha256": "5e7f03886a7f74e65ca29a54227e505e2d0fedf81dd9d4922e41e63c9a145271",
+            "retainedUnderExistingClauseIds": [
+              [
+                "BOUNDARY-11",
+                "JS-ADMIN-01",
+                "JS-ADMIN-19"
+              ],
+              [
+                "JS-ADMIN-01"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[4]",
+            "originalFieldSha256": "31b0b9199bcbe81f95b8d0b64d55e467f5b43c4c53f6d36922d7b11ee06e3d9b",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-04"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q03q04Current4058.finiteClausePASSAndRemainder[5]",
+            "originalFieldSha256": "ca3af3bf652b9cb8ed4949997b9113b0bba43703c653237c911d6671025fcdc1",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction3 D016 + exact replacement-only/no-partial proof"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q07JS40Current4065FiniteJoin.oneAcceptedResidual",
+            "originalFieldSha256": "7a461746e1278acfdcf25d6b1d06fbd7061b0837c422e714a34518da06413cb3",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction5 full nonempty past homework/history/completion builder proof"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[0]",
+            "originalFieldSha256": "d8c28b65910f077e9bc654bbc5ff7263fea6e105ac218714181287828bbb8b53",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B26"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[1]",
+            "originalFieldSha256": "e8edb1ff254441f4e576e85106c38dcc92980c6ed85cbaf28971ea6fd8d8cfdd",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B27",
+                "B28"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[2]",
+            "originalFieldSha256": "c3f02f7e1f3912d657c4b192a5347195d5f0d90c025c44664baaa8aea8caae00",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B31",
+                "B33"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q08.missingOperations[3]",
+            "originalFieldSha256": "dcec5a11f153bd84b9fdc8d4f3cded6df826b2dca6e51406614f6d12f9d3d6fc",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B34"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[0]",
+            "originalFieldSha256": "5154a021d4b69bee7bd5b77bf8bf9d90ae28a7f4feb3e21dde12384518e6d42f",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction8 exact ordinary consumer postcommit/preACK loss proof"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[1]",
+            "originalFieldSha256": "0d0c7a83ec2eaf99dbcc25b9709646912b469938b4ae1193fbb730debf2e1254",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B41",
+                "JS-SYSTEM-09",
+                "JS-SYSTEM-10",
+                "JS-STUDENT-WEB-06"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[2]",
+            "originalFieldSha256": "8fa083c3f659c4cc4decdb06938aebe994beb27be861e55996d1d221a1413024",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B42",
+                "JS-SYSTEM-11"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[3]",
+            "originalFieldSha256": "c971c1df1bfb072e5fd57a04b86cf2922cb528bf9b814955bf4c229438f670f8",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "contraction8 actual private ticket/foreign subscription proof"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[4]",
+            "originalFieldSha256": "90cfaedfcf0c6ed4c48eb6fe626ed66c30c1fcf15e3c22c7a73fbb6452d1c496",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B41",
+                "JS-SYSTEM-09",
+                "JS-SYSTEM-11"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q10finiteEvidenceJoin.finiteRemainder[0]",
+            "originalFieldSha256": "1408fab9ba43cfc3fd960275845d5d9d24bc9c0c756e5818d9063ee068836aab",
+            "retainedUnderExistingClauseIds": [
+              [
+                "B41",
+                "JS-SYSTEM-09",
+                "JS-SYSTEM-10",
+                "JS-STUDENT-WEB-06"
+              ],
+              [
+                "B41",
+                "JS-SYSTEM-09",
+                "JS-SYSTEM-11"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q10finiteEvidenceJoin.finiteRemainder[1]",
+            "originalFieldSha256": "967a4b8765a382040f332c3e429361e7d120134cf69f0e006fcf0035ea8b18ca",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "duplicate contraction8 ordinary consumer ACK-loss remainder"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q10finiteEvidenceJoin.finiteRemainder[2]",
+            "originalFieldSha256": "e2213dd985558ae54b967890b88cd1691195711ae72407f94f55ba1ffe85d455",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "duplicate contraction8 foreign private WS remainder"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[0]",
+            "originalFieldSha256": "0bb6bb08f73916c57f1af08ce42491cd53e4d13c036bec9e72884d18cc61da9d",
+            "retainedUnderExistingClauseIds": [],
+            "disposition": "already explicit previous11 HTML user reuse, no new proof/closure"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[1]",
+            "originalFieldSha256": "2b2ef2db63b1a1c9f96a186f1b48b87f4e10c2027844c2678cca7a3cbd47e70a",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-13",
+                "D006",
+                "D007"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[2]",
+            "originalFieldSha256": "c74014d68e5d28a065f89b2bd81dfe9420cf43a5ba7f5df75dbaf99827ce573f",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-13",
+                "BOUNDARY-46",
+                "D006",
+                "D007"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[3]",
+            "originalFieldSha256": "d45b1a9839b57de4169ea0530a336ac87c646fab5be74c77f5ca6503767a00e0",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-13",
+                "BOUNDARY-46",
+                "D006",
+                "D007"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[4]",
+            "originalFieldSha256": "1433ab1182826b0c15c5b6539c250f16f7069d208ebee0682eaa49d5c6d4ae77",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-13",
+                "BOUNDARY-46",
+                "D006",
+                "D007"
+              ]
+            ],
+            "disposition": "Generic converter capability already adequate; actual registry payload retained in linked remainder."
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.mapping[5]",
+            "originalFieldSha256": "e592be280fa03c424e805de48f9bfd832c98b6e689f35b520cbdef6e0d30e826",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-13",
+                "BOUNDARY-46",
+                "D006",
+                "D007"
+              ],
+              [
+                "JS-ADMIN-13",
+                "BOUNDARY-46",
+                "D006",
+                "D007"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#Q11finiteEvidenceJoin.one_next_operation",
+            "originalFieldSha256": "f16f0fb4c581e7c2056895f219266bba3fdacd043401a28245fc9182903354d5",
+            "retainedUnderExistingClauseIds": [
+              [
+                "JS-ADMIN-13",
+                "BOUNDARY-46",
+                "D006",
+                "D007"
+              ]
+            ],
+            "disposition": "PARTIAL_REUSE_AND_RETAINED_DISTINCT_CLAUSES"
+          }
+        ],
+        "previous11StillRetained": "Existing11 package entries remain. Q05 current archive-ACK actual failure, Q06 ready assignment UI carrier, Q07 current upstream-blocked body/gate qualification and Q12 existing extended-map result join remain exactly as previously recorded; this continuation adds no new queue package or case.",
+        "qualifiedLimitsNotNewRequirements": [
+          {
+            "existingPointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.Q12_map_independent_whole_review.residuals",
+            "text": "Earlier review excludes final-delete UI/zoom-pan/physical-store outage/positive usage telemetry from its proof. These are proof limits, not automatically new mandatory tests. Current extended-map exact result must be joined first; accepted-source grounding for any remaining distinct UI/usage/failure policy stays qualified, no Source audit performed."
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q01q02.accepted_missing_by_family.CLIENT-FE-STUDENT-05",
+            "text": "Composite search/archive wording is preserved but not promoted to a new server/client feature."
+          },
+          {
+            "existingPointer": "/workspace/scratch/rct-validation/q07_finite_acceptance/outcome.safe.json#q10.remainingOperations[2]",
+            "text": "Old Redis process-restart concern is not a new runtime requirement; newer already-cited Q10finiteEvidenceJoin.criterionMapping[2] expressly reuses exact durable/loopback core without new OS restart."
+          }
+        ],
+        "ownershipAndNonduplication": "Existing E14 owners retain D002/TMA/install scopes; their source clauses are carried by reference so they do not disappear or become a second Q01–12 package. Native-only execution is D015 OWNER_MANUAL_PENDING. Q015 blocks only non-author DELETE. B013/B014/B015 remain frozen with no equivalent check/reader/schema/model proposal.",
+        "exhaustionBoundary": "Every residual-bearing field in q01q02.accepted_missing_by_family/accepted_missing_by_boundary, q03q04Current4058.finiteClausePASSAndRemainder, q07JS40Current4065FiniteJoin.oneAcceptedResidual, q08.missingOperations, q10.remainingOperations, Q10finiteEvidenceJoin.finiteRemainder and Q11finiteEvidenceJoin.mapping/one_next_operation is accounted for above. No additional requirement was discovered by repo/Source audit. Not a claim that historical candidate matrix cells outside this explicitly allowed field set were re-audited.",
+        "proofClaims": "No new PASS or product defect; no new denominator/case/family count. Existing finite proof retains its exact producer/current-source qualification. Generalized old missing text is neither silently discarded nor a demand to repeat adequate checks.",
+        "effects": {
+          "onlyChange": "Append this one fullStillAcceptedRemainder field",
+          "networkArtifactSourceAuditRunsGitRootDocs": "NONE",
+          "newFiles": 0,
+          "previousHistoryRewritten": false
+        }
+      }
+    },
+    "eee6c_signed_HEADMAN_TMA_reviewed_ready": {
+      "at": "2026-10-14T22:36:00.824301+00:00",
+      "SourcePins": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0",
+        "tests/e2e/playwright.real-mobile.config.ts": "1f644fddae42b0172b7cc6c23c13fb4edd96919f1af34b414d786ec335526ab3",
+        ".github/workflows/ci.yml": "5d8d9fbae8fb14bf4c31cd4d5a5449e42894bcf2bf15353bf849b993dfba8bff"
+      },
+      "authorOutcome": {
+        "state": "SOURCE_READY_FOR_INDEPENDENT_REVIEW_ROOT_DISCOVERY_AND_TSC_PENDING",
+        "at_utc": "2026-10-14T22:33:43.383951+00:00",
+        "author_worktree": "/workspace/rct-worktrees/client-final-browser-874-20261014",
+        "producer_base": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+        "selected_model": "gpt-6.1-sol",
+        "selected_effort": "high",
+        "actual_runtime_model": "UNKNOWN",
+        "scope": "One missing E14-H1 signed HEADMAN TMA carrier; sole test author plus exact one-title config/CI selector additions approved by Root",
+        "source_pins": {
+          "tests/e2e/specs/mobile-real-server.spec.ts": {
+            "before": "6875030010567c46e01d53029ff85bf6e783d76cd0afd25919ad9632ba510e33",
+            "after": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0"
+          },
+          "tests/e2e/playwright.real-mobile.config.ts": {
+            "before": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+            "after": "1f644fddae42b0172b7cc6c23c13fb4edd96919f1af34b414d786ec335526ab3"
+          },
+          ".github/workflows/ci.yml": {
+            "before": "3b4dfbf78f06ee8ff029f32de7751abe2e7b5f8eea98373f4fc90853f9ed4143",
+            "after": "5d8d9fbae8fb14bf4c31cd4d5a5449e42894bcf2bf15353bf849b993dfba8bff"
+          }
+        },
+        "test_title": "D003 signed HEADMAN TMA marks an isolated own-group roster row",
+        "source_test_line": 949,
+        "new_behavior": [
+          "Existing synthetic signed Telegram proof admitted by real Auth; fresh /session200 matches ownheadman and selectableHEADMAN grant. Existing shared role selector obtains HEADMAN when not alreadyselected.",
+          "Create one unique STUDENT through existing dataset.user in worker-owned disposablegroup. Actual beforelessonreport requires its blankrow; existing ACTIVE/current fixture readiness remains outside unchanged60s testbody.",
+          "Shared real HEADMAN attendance screen sends exactownlesson/newstudent PUT; require200 and renderedpresent. Independent actual reportGET requires sameuserId/statuspresent/sourceheadman. Compare every other row userId/status/source with before to preserve knownmarks."
+        ],
+        "accepted_source_basis": {
+          "session": "Existing TMA app activateHeadmanOwner, generation-bound Headman APIs; existing D003/livebinding/grants/source proofs; shared selectPwaRole UI real roleadmission helper",
+          "action": "Existing FIRST3 headman real roster action/readback; same currentownlesson and button selectors",
+          "enrollment": "Academic UserService.java initial-user path229-234: joinedAt=activeSemester.dateFrom, currentgroupmembers evicted aftercommit. Dataset activeSemester covers today/tomorrow. No new real-vs-educational date rule.",
+          "own_record": "Unique newlycreated userID in ownworker-owned disposablegroup; no knownstudent mark or existingAPIactor selectedrole mutation. Root disposes wholeownedstand; no destructive per-test accountcleanup.",
+          "negative_reuse": "Existing teacher D003 neutral/suspended/protectedread-write denials and originalHEADMANforeignscope proofs retained. No distinctnewauthorityhole requiring Cartesian repetition; no fresh negative case added."
+        },
+        "isolation_and_limits": [
+          "Worker dataset is shared and serial; this test creates its own member/mark and explicitly compares othermarks. It does not prove arbitraryparalleloperation or all test orders.",
+          "Uses existing activeHeadmanDataset90s realGET readiness within180s workerfixture; no newtimecap/poll/SQL/jobforce/clockwrite. Testbody60s unchanged.",
+          "TMA host synthetic, auth/session/domain calls real. Does not prove nativeTelegram launch/hostBack/provider/OS effects. D015 remainsOWNER_MANUAL_PENDING.",
+          "Actual server/browser test NOT_RUN; do not promote Source or syntax PASS into CloudcriterionPASS. CurrentCI source8discovery/fulltypecheck pendingRootcopy."
+        ],
+        "additive_selector_changes": {
+          "config": "tests/e2e/playwright.real-mobile.config.ts existing private remaininggrep adds exactnewtitle only",
+          "workflow": ".github/workflows/ci.yml existingremaining5 CLIgrep adds exactnewtitle only",
+          "old_seven_titles_retained": true,
+          "expected_current_discovery": 8,
+          "other_isolated_selectors_projects_gates_timeouts_unchanged": true,
+          "safe_reporter_count_dependency": "None in current SafeReporter producer; emits sourcefile/line/project/status without fixed7names. Root externalclosed consumer needs legitimate8name/newsource-line bindings before reading futureartifact; no schema/identity/ordinal fallback.",
+          "actual_Playwright_list": "NOT_RUN in sparseauthorWT: playwright.config.ts/commonfixtureimports/node_modules absent. No filesmaterialized/moduleslinked; Root actualmerged discovery aftercopy required."
+        },
+        "light_checks": {
+          "cached_Pretty_apply_and_check": "PASS3ownedpaths; --semi preserves canonical tests/e2e override for externalWT",
+          "TypeScript_createSourceFile_parseDiagnostics": "PASS/zero twoTSfiles",
+          "exact_additive_scope": "PASS onehunk perfile; removecaseblock->exact6875spec; removesinglenewtitlealternative->exactoldconfig/CI",
+          "guard": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+          "per_child_deadline_seconds": 30,
+          "ownRSS_cap_bytes": 268435456,
+          "peak_observed_ownRSS_bytes": 165707776,
+          "node_heap_MiB": 128,
+          "elapsed_seconds": 2.7608423969941214,
+          "all_owned_processes_reaped": true,
+          "child_pids": [
+            833782,
+            833793,
+            833804
+          ],
+          "native_browser_domain_acceptance": false,
+          "fullmergedTSC": "Root pending"
+        },
+        "effects": {
+          "source_modified_only": [
+            "tests/e2e/specs/mobile-real-server.spec.ts",
+            "tests/e2e/playwright.real-mobile.config.ts",
+            ".github/workflows/ci.yml"
+          ],
+          "new_commonfixtures_App_product_framework_provider": false,
+          "Git_commits_push_sharedDocs": false,
+          "browser_Docker_HTTP_network_Gradle_stand": false,
+          "only_existing_scope_outcome_appended": true
+        },
+        "review": "PENDING independent review assigned byRoot",
+        "runtime": "NOT_RUN",
+        "frozen_B013_B014_B015_untouched": true,
+        "Q015_nonauthorDELETE_untouched": true
+      },
+      "independentReview": {
+        "recordedAt": "2026-10-14T22:35:26.732918+00:00",
+        "verdict": "APPROVE_SOURCE_ONLY",
+        "findings": [],
+        "base": "eee6c3996fbb7ca27f80c0b571bf03a79c3dd24c",
+        "sourcePins": {
+          "tests/e2e/specs/mobile-real-server.spec.ts": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0",
+          "tests/e2e/playwright.real-mobile.config.ts": "1f644fddae42b0172b7cc6c23c13fb4edd96919f1af34b414d786ec335526ab3",
+          ".github/workflows/ci.yml": "5d8d9fbae8fb14bf4c31cd4d5a5449e42894bcf2bf15353bf849b993dfba8bff",
+          "frontends/mobile-core/src/api/generated/mobile-bff.ts": "d885a2d08344e4575076091cd65b43d0e3ddadb8e928b510167582aaaedcd033"
+        },
+        "actualModel": "UNKNOWN",
+        "scope": "One additive signedHEADMAN TMA case, two exact title-selector additions and canonical generated consumer refresh only; no immutable E14/E15 full re-audit.",
+        "sourcePreservation": {
+          "removeNewDescribeRecoversPublishedSpecExact": true,
+          "removeSingleTitleAlternativeRecoversPublishedConfigAndCiExact": true,
+          "oldSevenNamedSelectorsRetained": true,
+          "oldBodiesAssertionsTimeoutsGatesPrivacyUnchanged": true,
+          "newCaseDeclaration": {
+            "title": "D003 signed HEADMAN TMA marks an isolated own-group roster row",
+            "file": "mobile-real-server.spec.ts",
+            "line": 950,
+            "project": "chromium"
+          },
+          "authorMetadataNote": "Author outcome source_test_line949 points at describe; actual test declaration is950. Root genuine discovery must bind950/current final Source rather than reuse that metadata or ordinal identity. Non-blocking Source assessment; no acceptance identity inferred."
+        },
+        "newCaseAssessment": {
+          "admission": "Existing syntheticInitData signs linked own HEADMAN Telegram identity with synthetic CI-only HMAC fixture and real Node security time. installTelegramHost stubs Telegram host SDK only, not Auth/session/role/domain HTTP. POST/tma200 and fresh GET/session200 require own headman ID/selectableHEADMAN; explicit shared UI role selection obtainsHEADMAN if baseSTUDENT default, validates resulting own identity/current role. Does not mutate existing headmanActor session role.",
+          "ownedRow": "Existing worker-owned serial disposable dataset; creates unique synthetic own-group STUDENT before report. Academic initial enrollment joinedAt=active semester dateFrom and group-member cache eviction after commit align historical roster read. Existing ACTIVE/current same-lesson worker readiness used unchanged. Pre-report requires that exact newstudent row with nullstatus, preventing a preexisting mark from satisfying success.",
+          "realEffectAndOracle": "Actual Headman journal button for unique displayName triggers exact ownlesson/newstudent PUT200. Exact row data-status present and independent authorized report GET require matching userId, status present, source headman. Before/after knownMarks arrays include every other userId/status/source, sorted semantically by ID for equality; no count-only/ordinal assertion, no unrelated known marks mutated. ReportService current Source confirms absent records map null and real persisted status/source become lowercase. This is sufficient for one shared signedHEADMAN action criterion when actual executed.",
+          "isolationCleanup": "Fresh browser context pertest and new member/mark only; same worker dataset serial. Root owns disposal of entire task-labelled stack, existing request context finally disposed. No destructive pertest group/account cleanup or borrowed live user, no external target. Real backend/ordinaryClock/authority/foreignscope behavior is retained; no native/provider or parallel/all-orders claim.",
+          "privacy": "Same suite trace/video/screenshot off, dedicated safe reporter + sanitizeTestErrors afterEach and NO_COPY_PROMPT remain. Synthetic credentials/proof/IDs/report bodies used RAM only; no logger/output added. Exact physical identity assertions are evaluated locally and canonical safe reporter emits only fixed Source result fields."
+        },
+        "generatedConsumerAssessment": {
+          "generatorPath": "frontends/mobile-core/scripts/generate-types.mjs",
+          "generatorSha256": "69447310d34e4ed9442c47dad53cfdc68d261d1701d52adc140368fcd71cc401",
+          "snapshotSha256": "169a08a4fbaff89d435212ac6a7450f735313c1ed49120565ffe68b6b9d2bc4e",
+          "generatorAndSnapshotEqualPublished": true,
+          "mechanism": "Unchanged openapi-typescript alphabetized generator hashes canonicalLF input, renders AST, and --check compares entire generated bytes. Candidate header matches accepted snapshot169a. Existing author exact generate+check native0 receipt retained; Root reports generator/contract/foundation/workspace4PASS.",
+          "delta": "Generated paths exactly39 snapshot paths; ten accepted paths/operations added, none removed. New DTOs/optional fields reflect accepted snapshot. Only removed prior lines are stale hash, one prior one-line int32 comment now expanded with description, and journal.lessonType:string now canonical string[]; adjacent date/pastOnly query fields reflect accepted contract. No handwritten consumer/API/schema/lock/generator change or unrelated removal identified.",
+          "runtimeLimit": "Generated/type checks prove consumer freshness and type compatibility, not actual new browser criterion or native behavior."
+        },
+        "validation": "Reviewer read Source/diff/current helpers and reused author/Root pinned check receipts; no test, browser, native, Node/Java/network execution in this review. Root merged actual8 discovery/TSC/browser remain pending at assignment; exact current remote outcomes must close named case after publication.",
+        "remaining": [
+          "SignedHEADMAN TMA actual browser NOT_RUN; do not claim Source PASS as E14-H1 acceptance.",
+          "Current D0021470/1319 remain requiredUNKNOWN until adequate corrected-current actual outcomes; oldcases unchanged.",
+          "D015 native Telegram/provider/download/OSinstall remains OWNER_MANUAL_PENDING; existing teacher/student/negative proofs retained with producer qualification.",
+          "B013/B014/B015 FROZEN unchanged, no strict-reader identity/schema/ordinal fallback; Q015 untouched."
+        ],
+        "effects": {
+          "sourceGitSharedDocsChanges": false,
+          "newRuntimeOrNetwork": false,
+          "onlyWrite": "existing browser-final-review.safe.json append"
+        }
+      },
+      "actualDeclarationLine": 950,
+      "authorLineCorrection": "949wasdescribe,950actualtest; no ordinalidentity",
+      "state": "SOURCE_APPROVED_COPY_TO_ROOT_THEN_MERGED_CHECKS",
+      "browserAcceptance": "NOT_RUN"
+    },
+    "62df_map_extended_actual_acceptance": {
+      "at": "2026-10-14T22:38:51.439839+00:00",
+      "state": "FINITE_PASS_EXACT_REAL_BROWSER_MAP_RETRY_DELETE_HISTORY_EMPTY_READBACK",
+      "actual": {
+        "state": "CURRENT_EXACT_MAP_EXTENDED_SOURCE_CASE_PASS",
+        "producer": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+        "run": 38639510612,
+        "event": "pull_request",
+        "attempt": 1,
+        "artifact": 11930427375,
+        "bytes": 367,
+        "digest": "sha256:376f7a244ad278b4b65a87ae472aae50c835477944fd4c2b3e0ac62cbc954a83",
+        "sourcePins": {
+          "tests/e2e/specs/mobile-map-lifecycle.spec.ts": "801a5e0e8cc660c2128c628564b486b838116b4c254a5ec72e657d99923adeac",
+          "tests/e2e/fixtures/safe-reporter.ts": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4",
+          "tests/e2e/fixtures/artifact-privacy.ts": "a2a5a0d0467eb7195c27b68beaed40038600ce0adf37c9ff817111a5d6d98d60"
+        },
+        "sourceDeclaration": 96,
+        "uniqueNonparameterizedSource": true,
+        "noIdentityFromOrdinal": true,
+        "selected": {
+          "file": "mobile-map-lifecycle.spec.ts",
+          "line": 96,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 6461,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        },
+        "result": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-map-lifecycle.spec.ts",
+              "line": 96,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 6461,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "qualification": [
+          {
+            "caseCode": "MAP_ASSET_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "schemaChanges": 0,
+        "bindingQualification": "Existing closed decoder unchanged; exact current producer source/reporter/privacy SHA binding replaces historical wrapper metadata only",
+        "noNewRuntime": true,
+        "officialCheckoutJoin": {
+          "result": "PASS",
+          "checkoutSha": "9f3a85887fe2308b03be09da018c2f54cc90b214",
+          "treeSha": "fd497858e6c75676c1b0c44210d746cde28fc684",
+          "officialParents": [
+            "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "62df260302fb6a63d60e04b72d1db664f3e1e799"
+          ],
+          "producerSha": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+          "producerTreeSha": "fd497858e6c75676c1b0c44210d746cde28fc684",
+          "officialRun": {
+            "id": 38639510612,
+            "headSha": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+            "event": "pull_request",
+            "attempt": 1,
+            "status": "in_progress",
+            "conclusion": null
+          },
+          "sources": [
+            "GitHub REST git/commits checkout and producer",
+            "GitHub REST actions/runs current run",
+            "SHA256-bound checkout-safe artifact",
+            "local producer git tree matches official"
+          ]
+        }
+      },
+      "nativeRead": {
+        "direct_pid": 834386,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 834386,
+            "start_ticks": 27126565
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 0.6362399530480616
+      },
+      "sourceOracle": [
+        "ADMIN real multipart creates PNG+SVG first plan; wrong-parent404, headman/LIMITED upload403 and current plan unchanged.",
+        "Real Vue STUDENT first/current replacement previews decode; current PNG/SVG MIME/length and actual blob-download bytes equal known fixtures; version2 preserves historical version1 and assets.",
+        "ADMIN viewer manifest/plan/asset403. One synthetic plan503 yields client error/no preview/download; route removed, real retry200 exact current asset IDs, live SVG MIME/length/decoded blob, actual restored SVG/PNG download bytes.",
+        "Final-floor deletion preview pins2 versions/4 assets/byte count/target/digest; password-confirmed command and same-operation replay return same COMPLETED result; both histories/four former asset routes404.",
+        "Same-hash sibling floor/plan/history identity and original bytes survive; fresh real manifest shows deleted building with empty floors and PWA disabled-floor/empty state/no preview/download."
+      ],
+      "limits": [
+        "The failed503 response is deliberately synthetic; subsequent retry/read/download is real.",
+        "Demand/open response is settled before preview, but no positive HMAC usage-count increment proof is asserted; do not close that separate criterion.",
+        "Zoom/pan, negative SVG/PNG budgets and deferred D004 legend remain separate; no whole MAP family PASS.",
+        "Final-floor deletion is API/password/replay plus PWA empty readback; do not claim a final-floor deletion UI not used here."
+      ],
+      "noNewRuntime": true
+    },
+    "62df_registry_PNG_mode_neutral_actual_acceptance": {
+      "at": "2026-10-14T22:38:51.439839+00:00",
+      "state": "FINITE_PASS_UNCONDITIONAL_PNG_CLAUSE_ONLY_NO_MODE_ATTRIBUTION",
+      "outcome": {
+        "state": "SUFFICIENT_EXISTING_MODE_NEUTRAL_PNG_CARRIER_PROOF_ONLY",
+        "source": {
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+          "sha256": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+          "declarationLine": 695,
+          "parameterization": "FULL/LIMITED; individual mode identity UNRESOLVED",
+          "unconditionalPngBlockLine": 794
+        },
+        "actual": {
+          "validatedBody": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/62df-registry-result.safe.json",
+          "producer": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+          "run": 38639510612,
+          "event": "pull_request",
+          "attempt": 1,
+          "artifact": 11931292202,
+          "bytes": 422,
+          "digest": "sha256:afb5cb76450efbe34b7c7e03efcb9d409455634b33ecbd312ada641a324e044c",
+          "caseRows": [
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 695,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 7501,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 695,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 5204,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ],
+          "checkoutJoin": "current4065#next_reviewed_integrations.62df_actual_browser_finite_join.outcome.officialCheckoutJoin; checkout9f3a85887fe2308b03be09da018c2f54cc90b214/treefd497858e6c75676c1b0c44210d746cde28fc684",
+          "interpretation": "Each reported PASS at exact Source declaration695 necessarily reaches its unconditional PNG block; no early successful return or conditional mode gate bypasses it. The narrow property is identical for either invocation, so no assignment of a row to a role/mode is required. This is a source-bound completed assertion clause, not an aggregate fallback to recover unavailable mode identity."
+        },
+        "acceptedNarrowAssertions": [
+          "Real async POST ADMIN_USERS format=png accepted202; same job identity progresses to READY; issued real Gateway ticket has ZIP filename; downloaded200 application/zip bytes.",
+          "Bounded RAM ZIP read/CRC, exact page-0001.png... ordered names and page count equal the preceding verified real PDF, no encrypted/path extraction or excess aggregate bytes.",
+          "Every PNG has signature/IHDR/A4-200dpi bounded dimensions and browser createImageBitmap succeeds.",
+          "For each ordered page, table-header-to-bottom RGBA pixels equal the same-page real PDF raster in the owned renderer, with nonempty ink; varying timestamp/context header above table is explicitly outside comparison."
+        ],
+        "limits": [
+          "No FULL/LIMITED result-row mode identity or separate per-mode/grant/Telegram-field acceptance can be inferred. B015 remains FROZEN.",
+          "The PNG path is real Gateway/API plus browser image decoding, not a separately asserted UI PNG menu click/download event.",
+          "PNG audit is not separately asserted for pngJob; preceding PDF has committed-audit proof. No PNG-specific audit PASS claim.",
+          "Only this tested two-row ADMIN_USERS carrier path; no all-registry-format or group-export family promotion."
+        ],
+        "recommendation": "Reuse this exact existing carrier/decode/order/pixel clause; no new PNG check/run or mode identity workaround needed. Retain mode-specific remainder UNRESOLVED where acceptance explicitly requires attribution."
+      },
+      "qualification": "No FULL/LIMITED identity, no PNG-specific audit, no UI-menu or group-export claim; B015 FROZEN_UNTOUCHED"
+    },
+    "eee6c_HEADMAN_TMA_merged_checks": {
+      "at": "2026-10-14T22:38:51.439839+00:00",
+      "state": "SOURCE_REVIEW_AND3APPLICABLE_MERGED_CHECKS_PASS",
+      "actual": [
+        {
+          "direct_pid": 834301,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 834301,
+              "start_ticks": 27119281
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "format",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--check",
+            "tests/e2e/specs/mobile-real-server.spec.ts",
+            "tests/e2e/playwright.real-mobile.config.ts",
+            ".github/workflows/ci.yml"
+          ],
+          "elapsedSeconds": 1.41132297902368,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/headman-merged-format.log"
+        },
+        {
+          "direct_pid": 834312,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 834312,
+              "start_ticks": 27119421
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "real-mobile-types",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+            "--noEmit",
+            "--pretty",
+            "false",
+            "-p",
+            "tests/e2e/tsconfig.real-mobile.json"
+          ],
+          "elapsedSeconds": 3.79888374597067,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/headman-merged-real-mobile-types.log"
+        },
+        {
+          "direct_pid": 834319,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 834319,
+              "start_ticks": 27119801
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true,
+          "phase": "actual-discovery8",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+            "test",
+            "--config",
+            "playwright.real-mobile.config.ts",
+            "--project=chromium",
+            "--grep",
+            "(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$",
+            "--list",
+            "--reporter=list"
+          ],
+          "elapsedSeconds": 2.3271650149836205,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/headman-merged-actual-discovery8.log"
+        }
+      ],
+      "discoveredCount": 8,
+      "newCaseActualDeclaration": 950,
+      "actualBrowser": "NOT_RUN_PENDING_PUBLISHED_NEXT_CI",
+      "priorAssertionsAndAllGates": "PRESERVED"
+    },
+    "headman_generated_precommit_Source_metadata_false_positive": {
+      "at": "2026-10-14T22:40:35.056825+00:00",
+      "state": "REAL_GITLEAKS_FAIL_PRESERVED_VERIFIED_SOURCE_HASH_METADATA",
+      "originalLine": 28218,
+      "rule": "generic-api-key",
+      "sourcePath": "frontends/tma-vue/src/tma-auth.test.ts",
+      "sourceFileSHAEqualsFlaggedValue": true,
+      "correction": "Represent identical 12source path/hash pairs as typed path/sha256 inventory instead of auth-filename dictionary keys; no Source/linter/security rule or exception changed",
+      "priorNative": {
+        "direct_pid": 834521,
+        "native_exit": 1,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 834521,
+            "start_ticks": 27135188
+          },
+          {
+            "pid": 834531,
+            "start_ticks": 27135192
+          },
+          {
+            "pid": 834559,
+            "start_ticks": 27135227
+          },
+          {
+            "pid": 834569,
+            "start_ticks": 27135293
+          },
+          {
+            "pid": 834592,
+            "start_ticks": 27135315
+          },
+          {
+            "pid": 834614,
+            "start_ticks": 27135336
+          },
+          {
+            "pid": 834640,
+            "start_ticks": 27135347
+          },
+          {
+            "pid": 834641,
+            "start_ticks": 27135347
+          },
+          {
+            "pid": 834639,
+            "start_ticks": 27135347
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": false,
+        "elapsedSeconds": 2.1785870490130037,
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+          "--offline",
+          "tool",
+          "run",
+          "--from",
+          "pre-commit==4.6.2",
+          "pre-commit",
+          "run",
+          "--files",
+          ".github/workflows/ci.yml",
+          "docs/validation/cloud-20261011/CURRENT.md",
+          "docs/validation/cloud-20261011/attempts.ndjson",
+          "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+          "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/remaining-execution-queue.json",
+          "docs/validation/cloud-20261011/resources.md",
+          "docs/validation/cloud-20261011/verified-cases.csv",
+          "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "tests/e2e/playwright.real-mobile.config.ts",
+          "tests/e2e/specs/mobile-real-server.spec.ts"
+        ]
+      }
+    },
+    "headman_generated_configured_checks_PASS": {
+      "at": "2026-10-14T22:41:37.387674+00:00",
+      "actual": {
+        "direct_pid": 834813,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 834813,
+            "start_ticks": 27142845
+          },
+          {
+            "pid": 834823,
+            "start_ticks": 27142850
+          },
+          {
+            "pid": 834830,
+            "start_ticks": 27142882
+          },
+          {
+            "pid": 834851,
+            "start_ticks": 27142892
+          },
+          {
+            "pid": 834860,
+            "start_ticks": 27142960
+          },
+          {
+            "pid": 834883,
+            "start_ticks": 27142983
+          },
+          {
+            "pid": 834906,
+            "start_ticks": 27143023
+          },
+          {
+            "pid": 834931,
+            "start_ticks": 27143030
+          },
+          {
+            "pid": 834991,
+            "start_ticks": 27143054
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 2.5246134719927795,
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+          "--offline",
+          "tool",
+          "run",
+          "--from",
+          "pre-commit==4.6.2",
+          "pre-commit",
+          "run",
+          "--files",
+          ".github/workflows/ci.yml",
+          "docs/validation/cloud-20261011/CURRENT.md",
+          "docs/validation/cloud-20261011/attempts.ndjson",
+          "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+          "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/remaining-execution-queue.json",
+          "docs/validation/cloud-20261011/resources.md",
+          "docs/validation/cloud-20261011/verified-cases.csv",
+          "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "tests/e2e/playwright.real-mobile.config.ts",
+          "tests/e2e/specs/mobile-real-server.spec.ts"
+        ]
+      },
+      "applicable": "All6 configuredhooks PASS (YAML/JSON/Gitleaks/largefile/EOF/trailing); current4Sourcepins unchanged",
+      "followupDocs": "Typed JSON/native result and existingmetrics row only; parser/scoped whitespace and commit-range Gitleaks apply, no repeated product suite"
     }
   }
 }

@@ -2357,7 +2357,8 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "CampusMapReadRepositoryIT real PG verifies versions/file-byte retention and failure rollback. Real browser sanitizer/render/download requires client stand. D004 excludes legend only; MAP-07 rooms excluded separately.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_finite_disposition": "Q12 reviewed extended currentSource96/801a exactPASS62df: retry/realdownload/finaldelete-replay/history-assets404/sibling-preserved/PWAempty. Separate zoom-pan/demandcounter notinferred; D004legendEXCLUDED. current4065#62df_map_extended_actual_acceptance"
     },
     {
       "id": "ACADEMIC-CACHE-DTO",
@@ -6924,7 +6925,8 @@
       "historical_dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL.",
       "current_product_revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
       "bounded_evidence": "receipts/export-resume +export-ebsr-recheck +export-root-coherent-source-bridge +export-merged-repository-review",
-      "current_ci_issue": "one ExportJobHttpIT global-audit oracle failure underfullsuite, source-onlycorrection assigned; actual19 selected runtimes earlierqualified notglobalPASS"
+      "current_ci_issue": "one ExportJobHttpIT global-audit oracle failure underfullsuite, source-onlycorrection assigned; actual19 selected runtimes earlierqualified notglobalPASS",
+      "current_finite_disposition": "Q11 PNG unconditional dispatch/ZIP/decode/page-order/pixels finitePASS62dfSource695; exactFULL/LIMITED mode attribution UNRESOLVED, no newmodeclaim. current4065#62df_registry_PNG_mode_neutral_actual_acceptance"
     },
     {
       "id": "CLIENT-AUTH-ROLES",
@@ -7092,7 +7094,8 @@
         "tests/e2e/REAL-MOBILE.md",
         "tests/e2e/specs/auth-token-lifecycle.spec.ts",
         "tests/e2e/specs/mini-app.spec.ts"
-      ]
+      ],
+      "current_finite_disposition": "Q12 reviewed extended currentSource96/801a exactPASS62df: retry/realdownload/finaldelete-replay/history-assets404/sibling-preserved/PWAempty. Separate zoom-pan/demandcounter notinferred; D004legendEXCLUDED. current4065#62df_map_extended_actual_acceptance"
     },
     {
       "id": "CLIENT-NOTIFY",
@@ -7302,7 +7305,7 @@
         "already_proved": "Actual assignment ownedSchedule stop→durable503→restart→same-channel success; real broker-down recovery pending→fresh restore→original transfer terminalonce; RF04 bounded cancellation and reusable channel.",
         "finite_missing_action": "Missing distinct failure policies only: authoritative auth/DB loss admission fails closed, applicable optional Redis/cached read behavior, actual renderer routed failure/error state, then resumed user action and unchanged/pending durable state; readiness/Actuator privacy **and routed user request**, not healthUP alone. Graceful drain: one in-flight accepted request on owned process then terminate/recover, existing deadlines/no lost accepted effect; no new drain SLA. First join existing Auth authority-outage503 and HealthDegradationIT named proofs, do not rerun Schedule/broker scenario already sufficient.",
         "resource_classification": "Normal CI scoped owned dependency faults with genuine route; Cloud fullstand resource blocked. Not every dependency×everyendpoint matrix. No production fault/prod-deploy checklist run.",
-        "current_disposition": "Existing exact657named health/exposure/optionalAuthRediscleanup/workerleasefailure-recovery and ca3drealPGauthorityoutage joined currentSource. No inventedcachedread fail-open/universaldrainSLA. One concrete residual: Gateway asyncPDF realrendererdependencyunavailable→safeERROR/no partialdownload; rendererrestore→freshREADY/realbytes. Existingcurrent4065#874_E15_finite_existing_proof_join."
+        "current_disposition": "Finite actualrouted renderer failure/error/no partialdownload→restore/freshREADY/PDF/rows/audit PASS current62df uniqueSource980/6d25 artifact11931292202; checkout9f3a joined. Reused priorrun, no repeatedruntime. Concrete E15-R2 residual closed; existing auth/health/broker proofs retained. current4065#62df_renderer_routed_outage_actual_acceptance."
       },
       {
         "alias_existing_scope": "**E15-R3** P18/P21 config/API consumers",

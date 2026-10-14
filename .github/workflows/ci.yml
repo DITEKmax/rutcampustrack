@@ -919,7 +919,7 @@ jobs:
           printf 'RCT_REMAINING5_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
-          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$'
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$'
 
       - name: Upload safe remaining five outcomes
         if: always() && steps.remaining5.outcome != 'skipped'

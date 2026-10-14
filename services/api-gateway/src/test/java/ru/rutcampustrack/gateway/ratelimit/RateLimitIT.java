@@ -4,18 +4,25 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -57,6 +64,8 @@ class RateLimitIT {
     @Autowired WebTestClient client;
 
     @Autowired ReactiveStringRedisTemplate redis;
+
+    @LocalServerPort int gatewayPort;
 
     @BeforeAll
     static void startInfra() {
@@ -108,6 +117,81 @@ class RateLimitIT {
         r.add("ATTENDANCE_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
         r.add("NOTIFICATION_WEB_URL", () -> "http://localhost:" + WIREMOCK.port());
     }
+
+    @Test
+    void fixedAndChunkedLoginBodiesOver4096AreRejectedBeforeUpstreamHttp() throws Exception {
+        // Real TCP requests exercise the configured Gateway route and GlobalFilter order.
+        // The upstream is an HTTP witness, not real Auth/password/session acceptance.
+        var loginStub =
+                WIREMOCK.stubFor(
+                        post(urlEqualTo("/auth/login"))
+                                .atPriority(1)
+                                .willReturn(aResponse().withStatus(401)));
+        int initialRequests = loginUpstreamRequests();
+        try {
+            for (boolean chunked : new boolean[] {false, true}) {
+                LoginHttpResponse response = sendLoginBody(4097, chunked);
+                assertThat(response.status()).isEqualTo(413);
+                assertThat(response.contentType())
+                        .startsWith(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                assertThat(loginUpstreamRequests()).isEqualTo(initialRequests);
+            }
+
+            // Exactly-at-bound bodies must still reach the HTTP upstream for both framings.
+            int forwarded = initialRequests;
+            for (boolean chunked : new boolean[] {false, true}) {
+                assertThat(sendLoginBody(4096, chunked).status()).isEqualTo(401);
+                assertThat(loginUpstreamRequests()).isEqualTo(++forwarded);
+            }
+        } finally {
+            WIREMOCK.removeStub(loginStub);
+        }
+    }
+
+    private int loginUpstreamRequests() {
+        // Count only; WireMock verify failures can otherwise dump synthetic request bodies.
+        return WIREMOCK.countRequestsMatching(postRequestedFor(urlEqualTo("/auth/login")).build())
+                .getCount();
+    }
+
+    private LoginHttpResponse sendLoginBody(int bytes, boolean chunked) throws Exception {
+        String json = "{\"login\":\"body-bound\",\"password\":\"synthetic\"}";
+        byte[] body =
+                (json + " ".repeat(bytes - json.getBytes(StandardCharsets.UTF_8).length))
+                        .getBytes(StandardCharsets.UTF_8);
+        HttpURLConnection connection =
+                (HttpURLConnection)
+                        URI.create("http://127.0.0.1:" + gatewayPort + "/api/auth/login")
+                                .toURL()
+                                .openConnection();
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
+        connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        connection.setRequestProperty("X-Forwarded-For", "198.51.100.73");
+        if (chunked) {
+            connection.setChunkedStreamingMode(1024);
+        } else {
+            connection.setFixedLengthStreamingMode(body.length);
+        }
+        try {
+            try (OutputStream output = connection.getOutputStream()) {
+                output.write(body);
+            }
+            int status = connection.getResponseCode();
+            try (InputStream response =
+                    status >= 400 ? connection.getErrorStream() : connection.getInputStream()) {
+                if (response != null) response.transferTo(OutputStream.nullOutputStream());
+            }
+            return new LoginHttpResponse(
+                    status, connection.getHeaderField(HttpHeaders.CONTENT_TYPE));
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    private record LoginHttpResponse(int status, String contentType) {}
 
     @Test
     @DisplayName(

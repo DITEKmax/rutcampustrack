@@ -89,7 +89,6 @@ public class LoginBodyExtractionFilter implements GlobalFilter, Ordered {
                                     exchange.mutate().request(decorated).build();
                             return chain.filter(mutated);
                         })
-                .doOnDiscard(DataBuffer.class, DataBufferUtils::release)
                 .onErrorResume(DataBufferLimitException.class, ignored -> tooLarge(exchange));
     }
 

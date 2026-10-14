@@ -107,7 +107,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     `Error\n    at (file://${spec}:91:1)`,
     `Error\n    at (${spec}/../mobile-real-server.spec.ts:91:1)`,
     `Error\n    at (${spec}:0:1)`,
-    `Error\n    at (${spec}:412:1)`,
+    `Error\n    at (${spec}:430:1)`,
     `Error\n    at (${spec}:91:999999)`,
     `Error\n    at (${spec}:91:0)`,
     `Error\n${frame()}\u0000`,

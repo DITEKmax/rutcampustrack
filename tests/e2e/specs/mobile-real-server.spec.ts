@@ -89,13 +89,14 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       .click();
     await page.locator('.headman-journal__excuse-form select').selectOption('ILLNESS');
     await page.getByLabel('Комментарий', { exact: true }).fill('Синтетическая причина');
+    const expectedPng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+      'base64',
+    );
     await page.locator('.headman-journal__excuse-form input[type="file"]').setInputFiles({
       name: 'синтетическая-справка.png',
       mimeType: 'image/png',
-      buffer: Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
-        'base64',
-      ),
+      buffer: expectedPng,
     });
     const attachmentSaved = page.waitForResponse(
       (response) =>
@@ -111,11 +112,28 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         new URL(response.url()).pathname === attachmentPath &&
         response.request().method() === 'GET',
     );
+    // The client severs popup.opener, so observe the owning context's new page.
+    const openedPopup = page.context().waitForEvent('page');
     await page.getByRole('button', { name: 'Открыть файл', exact: true }).click();
     const file = await opened;
     expect(file.status()).toBe(200);
     expect(file.headers()['content-type']).toContain('image/png');
-    expect((await file.body()).subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    const popup = await openedPopup;
+    try {
+      await popup.waitForURL(/^blob:/);
+      const openedBytesEqual = await popup.evaluate(async (expected) => {
+        const response = await fetch(location.href);
+        // Inspect only the fixture-sized Blob already obtained by the real client.
+        if (Number(response.headers.get('content-length')) !== expected.length) return false;
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        return (
+          bytes.length === expected.length && bytes.every((byte, index) => byte === expected[index])
+        );
+      }, Array.from(expectedPng));
+      expect(openedBytesEqual).toBe(true);
+    } finally {
+      await popup.close();
+    }
     const foreign = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
     expect([403, 404]).toContain(
       (await dataset.request.get(attachmentPath, { headers: foreign.headers() })).status(),

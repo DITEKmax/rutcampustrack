@@ -1,0 +1,114 @@
+{
+  "scope": "READ_ONLY_BOUNDED_ACTUAL_Q15_LIFECYCLE_CAUSE",
+  "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "model": {
+    "requested": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "actual": "UNKNOWN"
+  },
+  "verdict": "ACTUAL_FAILURE_ESTABLISHED_CAUSE_UNKNOWN_NO_JUSTIFIED_PRODUCT_CHANGE",
+  "source_sha256": {
+    "docs/validation/cloud-20261011/TASK-CONTRACT.md": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java": "910f2fd70474175ff8cdae8a4158fb9545e48749c8a70a3755e8dfa81591e20c",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java": "eae923f45f82c1f89bf9173393c0df6f14ed2c46e7002965ec5e5050b993e44d",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java": "38ec1cb6f70cd2af052648ac645491ee3166db9549adcde77199735d1628b597",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java": "380e03d271a45cfe9f866f4e24d648c97178771b8bc4b24fb7e5c9df9111b49b",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/SchedulingConfig.java": "b346a0d9e47dab541cff82ddd118d46b825cc3df4fb8d2fb90f8df15e331db95",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java": "1e24aceb98e4a6dd8841e22bed24dfac01bfe11fe9c9157833d8ba6ff64e3657",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/DomainEventListener.java": "4e15d7aa46851db58a4c209783d8f104c5f0be9e367c907fb9e94d0dfb396cab",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/SemesterArchiveEffectLedger.java": "06fb2ed9f3f2f4122bf303d046b913280502ddebced5fb61533525b5459b5383",
+    "services/shared/shared-outbox/src/main/java/ru/rutcampustrack/shared/outbox/jpa/JpaOutboxStorage.java": "5ccb40751fe6f1da78a40069f1dc9423ecb686eefa7c8f270395f8ef594e2144",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1",
+    "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/ClockInitializer.java": "58d6d34ff2502ee0ff1ad6071519792de36675ffb70a41b49c6a3a6aa0f6499d",
+    "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java": "da814bbe5c429102857baa744993b4bb22ae6776ac8c6eb8fcfff1a76f6c8db8",
+    "tests/e2e/infra/docker-compose.clock-fixture.yml": "ef73aee6aade53fdccf41fb9678ff3dc01454319425c000ed491e9531a6e3085",
+    "tests/e2e/fixtures/application-recovery.spec.ts": "602c5911faf3a1d4c19a5dfb46c6a5e06e701240edecf0e5b5495f309161befc",
+    ".github/workflows/ci.yml": "96cdf7fbfe2d61ef573d8adb601d2671212e3e3e27038fedf4e21a6ca9f03d87",
+    "docs/validation/cloud-20261011/receipts/current-10ab-application-recovery.safe.json": "a07517fd3a8ad750010f25532ba95ee9a25a474fb719ab0362f12926fd2af020"
+  },
+  "established_source_facts": [
+    {
+      "symbol": "LessonStatusTransitionJob#<autowired constructor> / #runTransitions",
+      "fact": "ObjectProvider<EducationalTime>.getIfAvailable selects EducationalTime.clock; ordinary Clock is fallback only. Same transaction queries PLANNED, obtains writable semesters, activates, queries ACTIVE again, closes and saves. No source evidence of split transaction or missing same-tick closure."
+    },
+    {
+      "symbol": "ClockInitializer#initialize / FileClock#instant / docker-compose.clock-fixture.yml",
+      "fact": "Fixture registers primary EducationalTime; FileClock rereads a bounded file each call and fails closed on unreadable/invalid data. Four services bind the parent directory read-only. Recovery writes 0644 then atomically renames into that directory. The source does not have the stale-file-inode mount bug."
+    },
+    {
+      "symbol": "SchedulingConfig#lockProvider / LessonStatusTransitionJob#runTransitions",
+      "fact": "Production scheduling is enabled outside test; ShedLock uses DB time, fixedDelay 60000ms, lockAtMostFor PT2M, lockAtLeastFor PT10S. Educational clock does not drive ShedLock."
+    },
+    {
+      "symbol": "ScheduleSemesterArchiveWriteFence#lockWritableSemesters / AcademicGrpcClient#getSemesterArchiveAuthorityState",
+      "fact": "All distinct candidate semesters are checked before any advisory lock. Authority is queried when local barrier is absent or RELEASED; remote failure aborts the entire job before target mutation. Advisory locks are transaction scoped. This batch-wide failure mechanism is source established, but no actual foreign failing authority is evidenced."
+    },
+    {
+      "symbol": "DomainEventListener#onDomainEvent / JpaOutboxStorage#save / SemesterArchiveEffectLedger#record",
+      "fact": "Events persist through BEFORE_COMMIT and participate in the job transaction; a listener failure can roll back statuses. No illegal transaction boundary or serialization failure has been established."
+    },
+    {
+      "symbol": "LessonStatusTransitionJobIT#catchesUpMissedTransitionsOnRestart",
+      "fact": "Existing real-PG test directly invokes the proxied job, checks three PLANNED rows become CLOSED in one tick and both event types persist. It uses one mocked Clock, one mocked semester authority and regular lessons; it does not prove scheduler timing or mounted FileClock visibility."
+    }
+  ],
+  "established_receipt_facts": {
+    "run": 38503763478,
+    "producer": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+    "seed_case_line": 326,
+    "seed_status": "FAILED",
+    "duration_ms": 91846,
+    "failure_before_backup": true,
+    "target_present": true,
+    "target_current": true,
+    "target_semester_matches": true,
+    "api_status": "PLANNED",
+    "pg_status": "planned",
+    "end_plus_5_due_at_expected_time": true,
+    "host_clock_file_matches_expected": true,
+    "unfinished_transfer": false,
+    "local_barrier": "NONE",
+    "shedlock_present": true,
+    "shedlock_currently_held": false,
+    "shedlock_acquired_within_3m": false
+  },
+  "diagnostic_limit": {
+    "symbol": ".github/workflows/ci.yml#lifecycle_diagnostic",
+    "fact": "reportedClasses, reportedLifecycleFailure and reportedAuthorityFrame are independent substring searches over one shared 160-line/180-second tail. They do not bind a class to one exception, its throwing frame, target, instant or transaction. IllegalStateException plus runTransitions does not prove that runTransitions threw IllegalStateException; absence of authority frame is not an exclusion.",
+    "unproved": [
+      "JVM educational instant equals expected instant",
+      "scheduler entered during the 90s poll",
+      "exception origin",
+      "target transaction commit or rollback",
+      "foreign semester authority failure",
+      "scheduler starvation",
+      "missing template",
+      "outbox serialization failure"
+    ]
+  },
+  "counterexample_hypothesis": {
+    "status": "NO_ACTUAL_CAUSAL_COUNTEREXAMPLE_ESTABLISHED",
+    "mechanism_available": "A failure while checking any other due semester rolls back/prevents the target tick; likewise unreadable FileClock fails before due selection. Both are conditional mechanisms, not a diagnosis.",
+    "reason_not_promoted": "No observed prerequisite establishes either mechanism. Injecting an arbitrary failure into a new unit/PG test would demonstrate rollback already implied by source rather than explain this actual run.",
+    "clear_scheduler_or_transaction_invariant_violation_found": false
+  },
+  "minimum_sufficient_next_check": {
+    "owner": "Root, existing lifecycle_diagnostic only",
+    "action": "On the next independently justified CI run, replace independent lifecycle log booleans with one bounded, private in-memory same-exception projection: require one exception block containing the exact runTransitions frame and emit only its exception class plus a finite source-origin enum (FILE_CLOCK, MISSING_TEMPLATE, SEMESTER_AUTHORITY, OUTBOX_LISTENER, JDBC_OR_LOCK, OTHER, UNKNOWN). Emit UNKNOWN if the bounded tail cannot associate one block. Keep raw text, arbitrary messages, IDs, dates and paths private and discard them. Keep the original assertion, 90s timeout and failing exit.",
+    "why": "This distinguishes the currently conflated source paths before spending a new PG lease or changing Schedule code. A source-owned throw-site then justifies one focused amendment of the existing LessonStatusTransitionJobIT if needed.",
+    "new_unit_or_pg_test_now": "NOT_JUSTIFIED_WITHOUT_THROW_SITE",
+    "no_unchanged_ci_repeat_for_diagnostics_alone": true
+  },
+  "execution": {
+    "product_config_docs_mutations": false,
+    "runtime_tests": false,
+    "network": false,
+    "raw_logs_or_private_artifacts_read": false,
+    "credentials_read": false,
+    "subagents": false,
+    "created": [
+      "/workspace/scratch/rct-validation/q15_schedule_lifecycle_cause/outcome.safe.json"
+    ]
+  }
+}

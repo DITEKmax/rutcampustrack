@@ -12794,6 +12794,110 @@
       "status": "6normalhooksPASS-0FAIL-reaped-5approvedSourcepins",
       "revision": "f27583dba73b05d8f20dce2752f75eb50423e2d6",
       "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-10AB-ADMIN-LIFECYCLE",
+      "path": "docs/validation/cloud-20261011/receipts/current-10ab-admin-lifecycle.safe.json",
+      "sha256": "70ab5d82217b6610e74ba540d1f5e63c6934ebcf6a70084d40c80ab044565b0c",
+      "status": "actual451FAIL618-causeUNKNOWN",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-10AB-APP-RECOVERY",
+      "path": "docs/validation/cloud-20261011/receipts/current-10ab-application-recovery.safe.json",
+      "sha256": "a07517fd3a8ad750010f25532ba95ee9a25a474fb719ab0362f12926fd2af020",
+      "status": "actual326seedFAIL-beforebackup-causeUNKNOWN",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-10AB-GATES",
+      "path": "docs/validation/cloud-20261011/receipts/current-10ab-gates-metadata.safe.json",
+      "sha256": "564b50868f63cb91c561885cba6e992385c953204e5adc5036a16ad8f17483c0",
+      "status": "CI-soleE2EFAIL-CovSecOpenAPIsuccess",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-10AB-PUSH",
+      "path": "docs/validation/cloud-20261011/receipts/current-10ab-real-push-readback.safe.json",
+      "sha256": "c7de01a8863da55771d4496cb2a091d0eca09a3836876118cf516557f9372873",
+      "status": "actualpush-readback-localRemotePR-equal",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q03-Q04-COHERENT-AUTHOR",
+      "path": "docs/validation/cloud-20261011/receipts/Q03-Q04-coherent-author.safe.json",
+      "sha256": "830dbbb9c74c3f56efe77b693ffaeb830c1b069be0fb3de6cd116a47e5a951a8",
+      "status": "4c4b-source-local-PASS-notruntime",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q03-AUTHORITY-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/Q03-client-authority-independent-review.safe.md",
+      "sha256": "e4f11a3d2035bda7776c7fe59f0475dec17d80cca6a2ac61923804b5b8a948dd",
+      "status": "whole-and-selection-APPROVE_SOURCE_LOCAL",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q04-CANDIDATE-RECHECK",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-admin-journey-independent-review.safe.md",
+      "sha256": "ffe02d70e94cd64d3123f43ffb5c28b7cf491ce1cbaea1d59d1aa06ff4f031c4",
+      "status": "onequerywaiter-APPROVE_SOURCE_LOCAL",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q15-JSON-CHAIN-RECHECK",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-current-application-recovery-independent-review.safe.md",
+      "sha256": "4f6490cfeac1997146fee6ad9db60e40609e2e56eba64a1a68c62724ff223df0",
+      "status": "JSONparserF1closed-APPROVE_SOURCE_LOCAL",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q15-CAUSE-SOURCE",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-lifecycle-source-cause.safe.json",
+      "sha256": "f7477fbd40042c716d05425485ad3dc219dbf9d8944cdaa293456daf05493a02",
+      "status": "17pins-no-justified-productpatch-causeUNKNOWN",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q05-CLOCK-RED",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-semester-clock-red-before.safe.json",
+      "sha256": "83478522f8d3d12f885534caa74cf19f4cf24af23a78d0c1b57347a2ebcdd0f3",
+      "status": "meaningfuloldcalendarRED-compilePASS-1assertionFAIL",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q05-CLOCK-AUTHOR",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-semester-clock-author.safe.json",
+      "sha256": "23b7bebc91ae18e7930888e92bb89c5a558d6a7a58f721a8a1ec3805c7b63a70",
+      "status": "0f7-16unit+2selectedPGPASS0FES-cleanup-reaped",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-Q05-CLOCK-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-semester-clock-independent-review.safe.md",
+      "sha256": "279caf82415991f0aa76a382427e057bb4a8d5e46ecbabae766f8aab8447bbf5",
+      "status": "F1closed-0f7-APPROVE_SOURCE_LOCAL",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-10AB-NEXT-COHERENT-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/Q03-Q04-Q05-Q15-coherent-checks.safe.json",
+      "sha256": "718de22b73500c567273a1a3fca9ed8c322f3d3bcdaa06562d287b797af63fa1",
+      "status": "format-TSC-discovery-parser-closedcontrols-PASS",
+      "revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "kind": "validation-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

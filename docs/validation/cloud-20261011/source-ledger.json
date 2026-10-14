@@ -12426,6 +12426,86 @@
       "status": "actual-six-hooks-PASS-reaped",
       "revision": "affe13286ca25ef282955a71a94b0aec67b281f5",
       "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-E9A5-TERMINAL-GATES-CHECKOUT",
+      "path": "docs/validation/cloud-20261011/receipts/current-e9a5-terminal-gates-checkout.safe.json",
+      "sha256": "0972a88f2d049f02f028164b4afe183ce401da312d48abe4ecab44b1f85c89b6",
+      "status": "actual-terminal-CI-FAIL-Coverage-Security-success-checkout-joined",
+      "revision": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-E9A5-AUTHIT",
+      "path": "docs/validation/cloud-20261011/receipts/current-e9a5-AuthIT.safe.json",
+      "sha256": "a7617488856a80bb65d2fb321325804f0183ce4ca84e165c4207fdb9516e807a",
+      "status": "actual-172PASS0FES",
+      "revision": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-E9A5-FIRST3",
+      "path": "docs/validation/cloud-20261011/receipts/current-e9a5-FIRST3.safe.json",
+      "sha256": "251e08703755931f6f0f6a301a896db826f3f7c102b8d59eae31e3dde3909fc4",
+      "status": "actual-studentPASS-headman-helperFAIL-NOT_STARTED",
+      "revision": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-E9A5-P09-CASE",
+      "path": "docs/validation/cloud-20261011/receipts/current-e9a5-P09-case.safe.json",
+      "sha256": "5e28d6874af96dc696f3cc4605b0fe527ab215397bf41ab474feb7e3a8f87a0b",
+      "status": "actual-finite-P09PASS",
+      "revision": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-E9A5-REAL-PUSH-READBACK",
+      "path": "docs/validation/cloud-20261011/receipts/current-e9a5-real-push-readback.safe.json",
+      "sha256": "72d0986361d5bbaac2fff72b890fa37360bfdf45ea7794b16a845e41e75fea6f",
+      "status": "actual-local-remote-draft-head-equal",
+      "revision": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "P11-GATEWAY-POOLED-RELEASE-RED-GREEN",
+      "path": "docs/validation/cloud-20261011/receipts/P11-Gateway-pooled-release-red-green.safe.json",
+      "sha256": "742190159dd1fd3fdbe78820b28075ae5d213b1273e99dc644233075e6f136ae",
+      "status": "finite-actualRED-originalTCP-GREEN-integrated-currentCI-pending",
+      "revision": "8b16b7793f03574801646e80befa8d57830adb17",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "P11-GATEWAY-POOLED-RELEASE-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/P11-Gateway-pooled-release-independent-review.safe.md",
+      "sha256": "b1162d58ef993e5b46ef17ce2d6da4c5d1cb44f10999ef6f39a408045a9a0661",
+      "status": "independent-whole-APPROVE",
+      "revision": "8b16b7793f03574801646e80befa8d57830adb17",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "FIRST3-REAL-BOOT-CLOCK-REGISTRATION-RED-GREEN",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-real-Boot-clock-registration-red-green.safe.json",
+      "sha256": "a0047d61a64d02d3e3a1cdf1c72b8194395be9e49e6c35ed5b1732f3ca44de93",
+      "status": "causal-actualBoot-RED-GREEN-integrated-genuinebrowser-pending",
+      "revision": "069f267ddd6cd12ee4c4fc3108970d8a3533e1b9",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "FIRST3-REAL-BOOT-CLOCK-REGISTRATION-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-real-Boot-clock-registration-independent-review.safe.md",
+      "sha256": "00813d7a5d289b03b99135d45651197991a522eb1c6b437b047742147aaee94b",
+      "status": "independent-whole-APPROVE",
+      "revision": "069f267ddd6cd12ee4c4fc3108970d8a3533e1b9",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-CLOCK-P11-NORMAL-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/current-clock-P11-coherent-normal-checks.safe.json",
+      "sha256": "60f087d4c6ec534119ae3dbd6d1c2ae9ace1e5c2b7b9ad08a954fb966a7c9bda",
+      "status": "actual-six-hooks-PASS-reaped-parsersPASS",
+      "revision": "069f267ddd6cd12ee4c4fc3108970d8a3533e1b9",
+      "kind": "validation-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

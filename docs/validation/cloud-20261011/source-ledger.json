@@ -12618,6 +12618,102 @@
       "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
       "revision": "f9569675d16d63184c66e78649995d861b9658a5",
       "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-897-REAL-PUSH-READBACK",
+      "path": "docs/validation/cloud-20261011/receipts/current-897-real-push-readback.safe.json",
+      "sha256": "a30828c4de47e905569dc1ac5248a1282d530c4c06a2412cf40604b019876f3d",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-897-FIRST3",
+      "path": "docs/validation/cloud-20261011/receipts/current-897-FIRST3.safe.json",
+      "sha256": "fb2598e42f5f26ad027d6e60979cb0822bb16babd814b0b358b40df65f933309",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-897-NEXT5",
+      "path": "docs/validation/cloud-20261011/receipts/current-897-next5.safe.json",
+      "sha256": "1f82a257727163c7b1b30528096380f0148a4c7282e702c9d22917fa655c37bc",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-897-Q04-ACADEMIC-CASES-CHECKOUT",
+      "path": "docs/validation/cloud-20261011/receipts/current-897-Q04-Academic-cases-checkout.safe.json",
+      "sha256": "e728e9dabcd9d610f4985f5b6954eaa7b1608a1269c40c423f8845a39c405b23",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q04-EXISTING-FINITE-PROOF-REUSE",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-existing-finite-proof-reuse.safe.json",
+      "sha256": "e1584d817435c01c391bd92f8132d34715c82e2f01076bdfa3c27cf79c66219b",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q15-CURRENT-APPLICATION-RECOVERY-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-current-application-recovery-independent-review.safe.md",
+      "sha256": "91daf4c6417b1612a7e5c82a435270a70c9e403e26aea31aa4ffd6688446bb76",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q15-CURRENT-APPLICATION-RECOVERY-LOCALCHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-current-application-recovery-localchecks.safe.json",
+      "sha256": "12b0101d8d9447986ab02e1f373711954aa6a2fcbd3eeb373dc1d5a49d577387",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q02-OFFLINE-SW-READONLY-DIAGNOSIS",
+      "path": "docs/validation/cloud-20261011/receipts/Q02-offline-SW-readonly-diagnosis.safe.json",
+      "sha256": "344e82e7a198f15dcab57d00ac8379dd2827710ac4fa276b03a27542df0d7e70",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q02-DISPOSABLE-PEER-TRUST-SOURCE",
+      "path": "docs/validation/cloud-20261011/receipts/Q02-disposable-peer-trust-source.safe.json",
+      "sha256": "210c051e3cb955f0ea6ff70362ba0901dad3ac403890df9c0dec341169f9b748",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q02-SEARCH-RETRY-LOCALCHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/Q02-search-retry-localchecks.safe.json",
+      "sha256": "957d18bacde3447d25e726ae027ae76f50db51e11972b9f3bbd6102f20b3136e",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-Q02-CURRENT-CLIENT-CHECKS-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/Q02-current-client-checks-independent-review.safe.md",
+      "sha256": "198b517e7d5889a6af111b95b038c793a220ed749373f5a0abfe059141c86fbf",
+      "status": "QUALIFIED_CURRENT_OR_SOURCE_REVIEW_SEE_RECEIPT",
+      "revision": "SOURCE_WIP_NOT_RUNTIME_PROOF",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-Q02-Q15-NORMAL-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/current-Q02-Q15-normal-checks.safe.json",
+      "sha256": "f583da60e82784421fb1105dd5885af5b79d1642d18670873b47db698d903c23",
+      "status": "6hooksPASS-0FAIL-reaped-2wholeReviewAddressedAPPROVE_SOURCE_LOCAL",
+      "revision": "fbcb788fd19ebf6444f9af8217916d11cdbc9e85",
+      "kind": "validation-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

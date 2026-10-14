@@ -1,0 +1,503 @@
+{
+  "base": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+  "branch": "codex/next5-search-retry-oracles-20261014",
+  "artifact": 11864765908,
+  "run": 38495986019,
+  "actual_old_runtime_error_category": "UNKNOWN",
+  "confirmed_source_causes": [
+    "LIMITED frame239 uses textbox against input type search implicit searchbox",
+    "EMPTY_RETRY route installed after owner eager homework query on login; times1 also insufficient because useHomework retries1 before errorUI"
+  ],
+  "changes": [
+    "Exact searchbox role",
+    "Own GET-only abort callback before login; real requestfailed observed, keep abort through actual manual-retry errorUI, exactcallback unroute finally; actual manualretry GET200 and fixture markerUI",
+    "Only existing out-of-range public frame literal follows production split POP finalempty effectiveSourceLineCount+1"
+  ],
+  "product_changes": false,
+  "privacy_schema_reporter_changes": false,
+  "source_pins": {
+    "tests/e2e/specs/mobile-real-server.spec.ts": "a85d18e4292e709aa3b03ca8e38237500dab9a8ef2485bd2cf6099370a96c658",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "e18f5886e71182df5d90f3fa9514e77caf0ef6c63bd57c9437be181a9c5197d1"
+  },
+  "unchanged_product_pins": {
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue": "a72004f513f5058113d7e163ccd1535d2dbe45c005145800e41f191153d824af",
+    "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue": "c5a03ead07e45f9fa51efbf08cebc06b8f76802cbeccf13b398ab9c7652d8ab2",
+    "frontends/mobile-core/src/features/homework/use-homework.ts": "4d602311b88cd65bab765ad82c7076fb24d8855fb3f791c192613e4e5b9aa678",
+    "frontends/mobile-core/src/features/homework/HomeworkScreen.vue": "709ba464401fa6cc7a787f6e74ebf75561fc34641b91ab96b92b17e2b3b4740d"
+  },
+  "preformat_effective_linecount": 447,
+  "preformat_negative_bound": 448,
+  "case_lines": [
+    14,
+    61,
+    160,
+    230,
+    257,
+    296,
+    314,
+    403
+  ],
+  "SW403": "OTHER_AUTHOR_READONLY_SCOPE_NO_LOCAL_EDITS",
+  "native_runs": 5,
+  "state": "MATCHER_CORRECTION_COMMITTED_LOCAL_CHECKS_PASS_CURRENT_CI_PENDING",
+  "source_pins_final": {
+    "tests/e2e/specs/mobile-real-server.spec.ts": "a8cbd2962d316745f304bf083957d0242f64c9a4371fcf7ca47f5280a97746ce",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "e2d964456f0316adf8782e3d6c8b3364e4859cb9eb9e3194c35b73a6d5699e71"
+  },
+  "checks": [
+    {
+      "phase": "format_apply",
+      "command": [
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "specs/mobile-real-server.spec.ts",
+        "artifact-controls/privacy.control.spec.ts"
+      ],
+      "terminal": {
+        "direct_pid": 615293,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 615293,
+            "start_ticks": 19669181
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "format_exact_idempotency",
+      "command": [
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "specs/mobile-real-server.spec.ts",
+        "artifact-controls/privacy.control.spec.ts"
+      ],
+      "terminal": {
+        "direct_pid": 615304,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 615304,
+            "start_ticks": 19669257
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "format_check",
+      "command": [
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "specs/mobile-real-server.spec.ts",
+        "artifact-controls/privacy.control.spec.ts"
+      ],
+      "terminal": {
+        "direct_pid": 615315,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 615315,
+            "start_ticks": 19669332
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "types",
+      "command": [
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "tsconfig.real-mobile.json"
+      ],
+      "terminal": {
+        "direct_pid": 615326,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 615326,
+            "start_ticks": 19669387
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "privacy_controls",
+      "command": [
+        "check-artifact-privacy.mjs"
+      ],
+      "terminal": {
+        "direct_pid": 615333,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 615333,
+            "start_ticks": 19669666
+          },
+          {
+            "pid": 615340,
+            "start_ticks": 19669671
+          },
+          {
+            "pid": 615353,
+            "start_ticks": 19669844
+          },
+          {
+            "pid": 615366,
+            "start_ticks": 19670000
+          },
+          {
+            "pid": 615379,
+            "start_ticks": 19670088
+          },
+          {
+            "pid": 615475,
+            "start_ticks": 19673178
+          },
+          {
+            "pid": 615488,
+            "start_ticks": 19673323
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  ],
+  "native_seconds": 42.59,
+  "formatter_exact_idempotency": true,
+  "privacy_control": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "normalChildStatus": 0,
+    "markerAbsent": true,
+    "producerBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": false
+    },
+    "originalMetadataLeakReproduced": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "guardControl": {
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "videoRejected": true,
+      "screenshotRejected": true,
+      "missingSnapshotGuardRejected": true,
+      "wrongSnapshotGuardRejected": true
+    },
+    "interruptedChildStatus": 0,
+    "interruptedChildSignal": null,
+    "interruptionBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": true
+    },
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "production_effective_linecount": 449,
+  "privacy_negative_bound": 450,
+  "case_lines_final": [
+    {
+      "line": 14,
+      "title": "STUDENT completion persists and another group cannot mutate the homework"
+    },
+    {
+      "line": 61,
+      "title": "HEADMAN marks the real roster and TEACHER reads without acquiring write permission"
+    },
+    {
+      "line": 160,
+      "title": "STUDENT helper marks with its capability and revocation denies the same effect"
+    },
+    {
+      "line": 230,
+      "title": "LIMITED ADMIN views accounts while creation is denied by UI and server"
+    },
+    {
+      "line": 257,
+      "title": "empty foreign-group homework and transport failure provide a real retry path"
+    },
+    {
+      "line": 298,
+      "title": "another live session revokes the browser session and recovery exposes login only"
+    },
+    {
+      "line": 316,
+      "title": "D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials"
+    },
+    {
+      "line": 405,
+      "title": "warm offline reload remains read-only; revoked session reconnect clears the cached user"
+    }
+  ],
+  "peaks": {
+    "rss": 401960960,
+    "shared": 6170750976
+  },
+  "births": [
+    {
+      "pid": 615293,
+      "start_ticks": 19669181
+    },
+    {
+      "pid": 615304,
+      "start_ticks": 19669257
+    },
+    {
+      "pid": 615315,
+      "start_ticks": 19669332
+    },
+    {
+      "pid": 615326,
+      "start_ticks": 19669387
+    },
+    {
+      "pid": 615333,
+      "start_ticks": 19669666
+    },
+    {
+      "pid": 615340,
+      "start_ticks": 19669671
+    },
+    {
+      "pid": 615353,
+      "start_ticks": 19669844
+    },
+    {
+      "pid": 615366,
+      "start_ticks": 19670000
+    },
+    {
+      "pid": 615379,
+      "start_ticks": 19670088
+    },
+    {
+      "pid": 615475,
+      "start_ticks": 19673178
+    },
+    {
+      "pid": 615488,
+      "start_ticks": 19673323
+    }
+  ],
+  "known_births_absent": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "local_check_failure_class": null,
+  "commit": "53f7e5ec3fcd6a5d6f19a61695fabc616321372e",
+  "normal_commit_native_exit": 0,
+  "active_hooks": [],
+  "hooks_bypassed": false,
+  "worktree_clean": true,
+  "review": "INDEPENDENT_WHOLE_Q02_PENDING_ROOT_COORDINATES",
+  "addressed_review_finding": {
+    "frozen_before": "53f7e5ec3fcd6a5d6f19a61695fabc616321372e",
+    "cause": "Query-only glob requires literal question mark; real initial StudentApi.getHomework() request omits query. Initial read therefore escaped the attempted transport outage.",
+    "correction": "Stable URL pathname predicate matches only homework endpoint with or without query, exact same function identity used for route and unroute; unchanged GET guard and real requestfailed/errorUI/manualGET200+marker assertions.",
+    "source_pin": "1baa244f10df755235b288d2f570569231aff7a946f6dd55beae3f708e1d28e6",
+    "changed_files": [
+      "tests/e2e/specs/mobile-real-server.spec.ts"
+    ],
+    "effective_linecount": 449,
+    "privacy_control_sha256_unchanged": "e2d964456f0316adf8782e3d6c8b3364e4859cb9eb9e3194c35b73a6d5699e71",
+    "privacy_bound_unchanged": 450,
+    "prior_privacy_PASS_reused": true,
+    "native_runs": 4,
+    "state": "MATCHER_CORRECTION_COMMITTED_LOCAL_CHECKS_PASS_CURRENT_CI_PENDING",
+    "source_pin_final": "1baa244f10df755235b288d2f570569231aff7a946f6dd55beae3f708e1d28e6",
+    "checks": [
+      {
+        "phase": "format_apply",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "specs/mobile-real-server.spec.ts"
+        ],
+        "terminal": {
+          "direct_pid": 616552,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 616552,
+              "start_ticks": 19732518
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_exact_idempotency",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "specs/mobile-real-server.spec.ts"
+        ],
+        "terminal": {
+          "direct_pid": 616563,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 616563,
+              "start_ticks": 19732598
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_check",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "--single-quote",
+          "specs/mobile-real-server.spec.ts"
+        ],
+        "terminal": {
+          "direct_pid": 616574,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 616574,
+              "start_ticks": 19732659
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "types",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "--project",
+          "tsconfig.real-mobile.json"
+        ],
+        "terminal": {
+          "direct_pid": 616585,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 616585,
+              "start_ticks": 19732712
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      }
+    ],
+    "native_seconds": 4.41,
+    "formatter_exact_idempotency": true,
+    "peaks": {
+      "rss": 328454144,
+      "shared": 6096494592
+    },
+    "births": [
+      {
+        "pid": 616552,
+        "start_ticks": 19732518
+      },
+      {
+        "pid": 616563,
+        "start_ticks": 19732598
+      },
+      {
+        "pid": 616574,
+        "start_ticks": 19732659
+      },
+      {
+        "pid": 616585,
+        "start_ticks": 19732712
+      }
+    ],
+    "known_births_absent": true,
+    "dependency_link_absent": true,
+    "private_tmp_absent": true,
+    "local_check_failure_class": null,
+    "commit": "ade968280db2821ac5755dfd3a7333894df3e1bd",
+    "normal_commit_native_exit": 0,
+    "active_hooks": [],
+    "hooks_bypassed": false,
+    "worktree_clean": true,
+    "review": "SAME_REVIEWER_ADDRESSED_RECHECK_PENDING"
+  }
+}

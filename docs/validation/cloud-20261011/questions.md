@@ -83,3 +83,8 @@ State: ANSWERED / SAME_CALLER_PLATFORM_APPROVAL_ACCEPTED / LOCAL_CHECKS_COMPLETE
 ## B014 — 2026-10-14 Gateway login IP-limit checking turn content rejection
 
 PLATFORM_BLOCKED/FROZEN. After Source preparation of one current5/IP realTCP witness, the author turn for fresh authorizednative checking and a future relevant sensitivity proposal failed with possible cybersecurity risk; displayed recommendation Daybreak access. Exact rejected suboperation UNKNOWN; no model/agent/rephrase/launcher/ordinaryCI equivalent bypass. This is not missing owner authorization/new quota. Source WIP retained; independent attachment/Q01/currentproof work continues. Native effects checked from own savedstate before dependentwork.
+
+## Q012 — Standalone removal of current group headman
+
+PENDING_OWNER, dependent ONLY Q04 standalone admin PATCH isHeadman=false/no replacement. Existing current runtime/test permits it; existing later wireframe133:310–325 says explicit removal forbidden/replace only but manifest marks source candidate copy-canonical/owner-date null, earlier samefile77/209 conflicts, referenced backend-conflicts293 is copy-archive. Accepted JS-ADMIN-07 requires transfer to new headman but does not decide standalone removal; no dated override found. Do not call existingbehavior DEFECT or no-remove accepted solelyfrom archive.
+Choices: A only replacement (recommended current later UI specification); B allow standalone removal, revoke old helper authority and move group to draft (existing legacy server behavior). All replacement/foreignscope/revocation/restore/current journal/recovery checks independent. Need explicit owner answer before dependent product/test changes; silence grants neither rule.

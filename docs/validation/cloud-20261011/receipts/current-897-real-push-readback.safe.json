@@ -1,0 +1,45 @@
+{
+  "revision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+  "native_push": {
+    "direct_pid": 611748,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 611748,
+        "start_ticks": 19513845
+      },
+      {
+        "pid": 611749,
+        "start_ticks": 19513846
+      },
+      {
+        "pid": 611750,
+        "start_ticks": 19513846
+      },
+      {
+        "pid": 611752,
+        "start_ticks": 19513885
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "transport_remote_designated_equal": true,
+  "transport_remote_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "authenticated_PR": {
+    "head": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "merge": "10b1546c19d789be9da58461fef3794ba8620220",
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2"
+  },
+  "qualified": "PARTIAL_CHECKPOINT_NORMAL_CI_PENDING_NOT_FINAL_D009"
+}

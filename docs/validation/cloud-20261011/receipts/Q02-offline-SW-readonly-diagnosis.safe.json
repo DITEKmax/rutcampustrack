@@ -1,0 +1,112 @@
+{
+  "utc": "2026-10-14T01:55:45.651506+00:00",
+  "scope": "READ_ONLY_Q02_D002_PRODUCTION_SW_READY_TIMEOUT",
+  "selected": "gpt-6.1-sol/high/forknone",
+  "actualModelEffort": "UNKNOWN",
+  "verdict": "ACTUAL_CAUSE_UNKNOWN_STRONG_TEST_TLS_HYPOTHESIS_MINIMAL_CI_TRUST_CORRECTION_PROPOSED",
+  "observedHead": "ca29f5bc8e182e002203ca03c8b131275c90373f",
+  "producer": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+  "runtimeEvidence": {
+    "receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-897-next5.safe.json",
+    "caseDeclarationLine": 385,
+    "status": "timedOut",
+    "durationMs": 60016,
+    "reportedFrames": [
+      385,
+      393
+    ],
+    "framesAreUntrusted": true,
+    "sourceAt393": "page.evaluate awaiting navigator.serviceWorker.ready",
+    "readyPendingCause": "UNKNOWN; source/frame correlation is not observed registration rejection",
+    "offlineReloadReadOnlyReconnectIsolationLogout": "NOT_PROVED_BY_THIS_RUN"
+  },
+  "acceptedRequirement": {
+    "decision": "D002 / docs/product/decisions/2026-10-11-pwa-offline-read-only-session.md",
+    "boundaries": [
+      "BOUNDARY-47",
+      "BOUNDARY-48",
+      "BOUNDARY-49"
+    ],
+    "behavior": "Last verified STUDENT cached schedule/homework read-only offline; online authoritative admission before writes; foreign user and explicit logout cannot hydrate old private snapshot."
+  },
+  "sourceChain": [
+    "docker-compose.e2e.yml:483-489 builds actual pwa-vue Dockerfile with VITE_PUBLIC_BASE=/app/.",
+    "frontends/pwa-vue/Dockerfile runs npm run build; package script uses vite build default production mode; vite.config.ts:19 enables worker only for production.",
+    "frontends/pwa-vue/src/main.ts:25-28 registers /app/sw.js, scope /app/, if serviceWorker and secure context. Rejection promise has no application catch.",
+    "vite.config.ts versionPolicyPlugin emits versioned sw.js; appShellPrecachePlugin emits sw-assets.js from final bundle file names.",
+    "public/sw.js:1 imports ./sw-assets.js; install waitUntil cache.addAll(precacheAssets); activate cleans owned caches then clients.claim(). Any registration/script/import/install failure can leave ready pending.",
+    "tests/e2e/infra/nginx/default.conf routes /app/ to pwa-nginx root; pwa-vue/nginx.conf has exact worker/script no-store routes and JS MIME through nginx standard mime.types.",
+    ".github/workflows/ci.yml generates self-signed test TLS and starts HTTPS localhost:8443. No browser trust-store provisioning in inspected current or published workflow before remaining5.",
+    "playwright.real-mobile.config.ts inherits playwright.config.ts:40 ignoreHTTPSErrors=true; test describe:384 overrides inherited serviceWorkers:block to allow; no Chromium launchOptions certificate flags or trusted cert fixture.",
+    "test awaits SW.ready before controller assertion and before setOffline(true), so warming real homework alone does not prove worker install or offline support."
+  ],
+  "testTlsHypothesis": {
+    "claim": "Self-signed edge certificate is accepted for page/API but rejected by Chromium service-worker script fetch, so registration rejects and ready never resolves.",
+    "strength": "SOURCE_SUPPORTED_NOT_ACTUAL_CONFIRMED",
+    "vendorSource": {
+      "version": "installed playwright-core and lock both 1.59.1; browsers.json Chromium147.0.7727.15/revision1217",
+      "page": "tests/e2e/node_modules/playwright-core/lib/server/chromium/crPage.js:422-423 sends Security.setIgnoreCertificateErrors on page target when context ignoreHTTPSErrors is true.",
+      "worker": "crServiceWorker.js constructor configures runtime/network/credentials/offline but contains no analogous Security.setIgnoreCertificateErrors setting.",
+      "qualification": "Vendor JS establishes target-setting asymmetry; actual Chromium certificate-validation behavior still needs its runtime rejection or causal control. No official Chromium source/documentation was accessed."
+    },
+    "existingTechnicalReference": "frontends/pwa-vue/scripts/verify-offline-shell.mjs:144-152 adds launch --ignore-certificate-errors for HTTPS as well as ignoreHTTPSErrors. This is neither authority nor an accepted fix.",
+    "alternativesStillOpen": [
+      "production registration guard not entered in actual CI bundle",
+      "worker script/import delivery or evaluation failure",
+      "cache.addAll install rejection",
+      "activation stalled"
+    ],
+    "counterexamplesToOverclaim": [
+      "serviceWorkers:block is not the effective test option because describe overrides allow",
+      "real UI/API success does not prove service-worker TLS trust",
+      "source emitted asset list or local file existence does not prove actual CI HTTP status/install",
+      "ready promise has no rejection path and can remain pending after registration has already failed"
+    ]
+  },
+  "retainedArtifacts": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue/dist",
+      "precacheEntries": 10,
+      "missingLocalFiles": 0,
+      "workerSha256": "8b8b4c82369c833ecc58b877d0e3a2a4885d2c45a793512e3e1a6b73e9b609f1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/pwa-nginx/dist",
+      "precacheEntries": 10,
+      "missingLocalFiles": 0,
+      "workerSha256": "8b8b4c82369c833ecc58b877d0e3a2a4885d2c45a793512e3e1a6b73e9b609f1"
+    }
+  ],
+  "artifactQualification": "Retained old local production artifacts only, not actual897 CI image. Current root pwa-vue/dist absent. No image/container inspection or artifact download performed.",
+  "sourceIdentity": "git diff 897 -- pwa-vue and inspected original test/config inputs empty; uncommitted Root workflow/Q15 and foreign docs/WIP preserved.",
+  "shortestCorrectionAndVerification": {
+    "classification": "TEST_TRUST_FIXTURE_ONLY_IF_CAUSAL_CHECK_CONFIRMS; no product change justified yet",
+    "proposal": "Provision trust of only this job-generated public server.crt in job-owned disposable CI Chromium NSS trust database, keep same HTTPS origin and actual production worker, and run genuine existing remaining5. Preserve certificate verification; do not add blanket certificate-ignore flags or change product registration/assertions/timeouts.",
+    "scope": "CI-only ephemeral GitHub runner; no local shared/root NSS writes, HOME override, real credentials, global VM changes or new runner/schema.",
+    "prerequisite": "Verify effective NSS database lookup for pinned Chromium147 using its current source/official documented behavior or bounded existing CI trust check. Do not assume legacy ~/.pki/nssdb versus XDG location. Confirm job owns new trust DB; import only generated public test certificate under unique label; fail closed on foreign preexisting DB; retain cleanup ownership.",
+    "minimalCausalControl": "If a cached existing production-shell HTTPS control can run with already-owned resources, use same worker/assets/origin/browser/context before and after importing only test certificate: RED with original context-ignore option and no blanket flag records fixed SW TLS rejection; GREEN with trusted certificate and ignoreHTTPSErrors=false reaches ready/controller and offline shell. No full server/mutation/dataset required for this trust primitive. Actual native execution requires fresh Root resource grant. If local control would require foreign/global writes, do not build another environment; use reviewed CI-only trust correction and genuine existing case to verify it.",
+    "controlHelperCaveat": "Existing verify-offline-shell.mjs cannot be credited unchanged: it explicitly disables certificate errors and snapshotDiagnostics opens obsolete rct-student-pwa-v3 cache while current built worker uses rct-student-pwa-v3-0.0.0, causing false coverage0. Any use needs only bounded trust-option and exact current worker-cache selection correction, separately reviewed; do not execute helper raw console/body/screenshot diagnostics in seeded real-client lane.",
+    "causalDecision": "If direct original registration reports certificate failure and trust alone restores activation, classify infrastructure TLS fixture. If trusted strict-TLS run still fails before ready, retain UNKNOWN and capture only bounded exact worker registration rejection/state from original registration; do not infer product defect or repeat unchanged timeout. No broad SW probe/dependency campaign.",
+    "acceptance": "Existing real385 must prove homework warm -> activated production worker -> offline reload/read-only -> online revoked-session denial -> foreign-user isolation -> logout/offline absence. Static shell control proves TLS/install primitive only; cached schedule, absolute expiry and install/update/provider families remain separate."
+  },
+  "effects": {
+    "repositoryWrites": 0,
+    "documentationWrites": 0,
+    "productChanges": 0,
+    "runtimeChecks": 0,
+    "browserLaunches": 0,
+    "networkCalls": 0,
+    "dockerCalls": 0,
+    "artifactDownloads": 0,
+    "subagents": 0,
+    "secretFilesRead": 0,
+    "createdFiles": [
+      "/workspace/scratch/rct-validation/pwa_offline_ready_diagnosis/outcome.safe.json"
+    ]
+  },
+  "limits": [
+    "No D002 PASS or product defect asserted.",
+    "B013/B014 frozen untouched.",
+    "No native/browser/Docker/network authorized or performed by this leaf."
+  ]
+}

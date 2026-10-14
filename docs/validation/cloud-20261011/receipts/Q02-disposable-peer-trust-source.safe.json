@@ -1,0 +1,10 @@
+{
+  "source": "https://chromium.googlesource.com/chromium/src/+/main/docs/linux/cert_management.md",
+  "read_utc": "2026-10-14T01:58:32.443764+00:00",
+  "kind": "technical-primary-reference-not-product-spec",
+  "facts": "Chromium M146+ default NSS location HOME/.local/share/pki/nssdb with existinglegacy HOME/.pki/nssdb fallback; NSS certutil selfsignedserver peer trust P,,; currentinstalledChromium147",
+  "choice": "CI-only disposableGitHubhostedrunner imports exactgeneratedpublicserver.crt aspeer, DERidentityreadback andownnicknamecleanup; no HOMEoverride/localNSS/globalcertskip/productTLSchanges",
+  "workflow_sha256": "6113311149c86b5e262bf94da34de4f78b3e79ba9ba5ec947840ef66c83a6e61",
+  "actual897cause": "UNKNOWN; workerTLS stronghypothesis",
+  "verification": "YAML and3embeddedPython ASTPASS; genuinecurrentCI pending; no localNSS/native/browser effects"
+}

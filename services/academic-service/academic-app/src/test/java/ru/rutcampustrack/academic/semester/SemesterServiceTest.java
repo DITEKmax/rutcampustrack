@@ -15,7 +15,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
@@ -34,6 +39,8 @@ import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
+import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /**
  * Unit tests for SemesterService validation added in BUG-006 п.7 / plan 58-05.
@@ -409,6 +416,155 @@ class SemesterServiceTest {
     }
 
     // ---------- helpers ----------
+
+    @Test
+    void educationalSemesterDatesUseMoscowWithoutReplacingSecurityClock() {
+        TimeZone previousZone = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            LocalDate utcDay = LocalDate.now(ZoneOffset.UTC);
+            AtomicReference<Instant> teachingInstant =
+                    new AtomicReference<>(utcDay.atTime(21, 30).toInstant(ZoneOffset.UTC));
+            // Match the existing EventIT clock: withZone snapshots its current instant.
+            Clock midnightMoscow =
+                    new Clock() {
+                        @Override
+                        public ZoneId getZone() {
+                            return ZoneOffset.UTC;
+                        }
+
+                        @Override
+                        public Clock withZone(ZoneId zone) {
+                            return Clock.fixed(instant(), zone);
+                        }
+
+                        @Override
+                        public Instant instant() {
+                            return teachingInstant.get();
+                        }
+                    };
+            LocalDate teachingDay = utcDay.plusDays(1);
+            SemesterService direct =
+                    new SemesterService(
+                            semesterRepository,
+                            semesterAssembler,
+                            entityManager,
+                            eventPublisher,
+                            assignmentRepository,
+                            jdbcTemplate,
+                            midnightMoscow);
+            org.mockito.Mockito.lenient()
+                    .when(semesterRepository.save(any(Semester.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            // At 00:30 Moscow this range ended yesterday, although the UTC date is unchanged.
+            assertThatThrownBy(
+                            () ->
+                                    direct.createSemester(
+                                            new CreateSemesterRequest(
+                                                    "Completed",
+                                                    utcDay.minusDays(1),
+                                                    utcDay,
+                                                    SemesterType.AUTUMN,
+                                                    utcDay.getYear())))
+                    .isInstanceOfSatisfying(
+                            BadRequestException.class,
+                            error -> assertThat(error.getField()).isEqualTo("dateTo"));
+            Semester completed = newSemester(88L, "Completed");
+            completed.setDateFrom(utcDay.minusDays(1));
+            completed.setDateTo(utcDay);
+            when(semesterRepository.findByIdForUpdate(88L)).thenReturn(Optional.of(completed));
+            assertThatThrownBy(
+                            () ->
+                                    direct.updateSemester(
+                                            88L,
+                                            new UpdateSemesterRequest(
+                                                    "Completed",
+                                                    completed.getDateFrom(),
+                                                    completed.getDateTo(),
+                                                    SemesterType.AUTUMN,
+                                                    utcDay.getYear())))
+                    .isInstanceOfSatisfying(
+                            ConflictException.class,
+                            error -> assertThat(error.getField()).isEqualTo("status"));
+            verify(semesterRepository, never()).save(any());
+
+            Clock realClock =
+                    Clock.fixed(utcDay.atTime(6, 0).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+            try (var context = new AnnotationConfigApplicationContext()) {
+                context.registerBean(SemesterRepository.class, () -> semesterRepository);
+                context.registerBean(SemesterAssembler.class, () -> semesterAssembler);
+                context.registerBean(EntityManager.class, () -> entityManager);
+                context.registerBean(ApplicationEventPublisher.class, () -> eventPublisher);
+                context.registerBean(AssignmentRepository.class, () -> assignmentRepository);
+                context.registerBean(JdbcTemplate.class, () -> jdbcTemplate);
+                context.registerBean(
+                        RequestContext.class, () -> org.mockito.Mockito.mock(RequestContext.class));
+                context.registerBean(Clock.class, () -> realClock);
+                context.registerBean(
+                        "defaultEducationalTime",
+                        EducationalTime.class,
+                        () -> new EducationalTime(realClock));
+                context.registerBean(
+                        "fixtureEducationalTime",
+                        EducationalTime.class,
+                        () -> new EducationalTime(midnightMoscow),
+                        definition -> definition.setPrimary(true));
+                context.registerBean(SemesterService.class);
+                context.registerBean(SemesterActivationJob.class);
+                context.refresh();
+                assertThat(LocalDate.now(realClock)).isEqualTo(utcDay);
+                assertThat(LocalDate.now(midnightMoscow.withZone(ZoneId.of("Europe/Moscow"))))
+                        .isEqualTo(teachingDay);
+                SemesterService service = context.getBean(SemesterService.class);
+
+                completed.setArchived(true);
+                completed.setStateVersion(4);
+                assertThatThrownBy(() -> service.beginRestoreTransition(88L))
+                        .isInstanceOfSatisfying(
+                                ConflictException.class,
+                                error -> assertThat(error.getField()).isEqualTo("dateTo"));
+                assertThat(completed.getStateVersion()).isEqualTo(4);
+                assertThat(completed.getArchiveTransition().name()).isEqualTo("NONE");
+
+                Semester due = newSemester(89L, "Due");
+                LocalDate nextTeachingDay = teachingDay.plusDays(1);
+                due.setDateFrom(nextTeachingDay);
+                due.setDateTo(nextTeachingDay.plusDays(30));
+                due.setSemesterType(SemesterType.AUTUMN);
+                due.setAcademicYear(teachingDay.getYear());
+                due.setActivationScheduled(true);
+                when(semesterRepository.findDueScheduledActivationIds(any(LocalDate.class)))
+                        .thenAnswer(
+                                inv ->
+                                        nextTeachingDay.equals(inv.getArgument(0))
+                                                ? List.of(89L)
+                                                : List.of());
+                // A wrong date must fail the observable state assertion, not unused-stub checks.
+                org.mockito.Mockito.lenient()
+                        .when(semesterRepository.findByIdForUpdate(89L))
+                        .thenReturn(Optional.of(due));
+                org.mockito.Mockito.lenient()
+                        .when(semesterRepository.findById(89L))
+                        .thenReturn(Optional.of(due));
+                org.mockito.Mockito.lenient()
+                        .when(semesterRepository.saveAndFlush(any(Semester.class)))
+                        .thenAnswer(inv -> inv.getArgument(0));
+                context.getBean(SemesterActivationJob.class).activateDueSemesters();
+                assertThat(due.isActive()).isFalse();
+                assertThat(due.isActivationScheduled()).isTrue();
+                teachingInstant.set(utcDay.plusDays(1).atTime(21, 30).toInstant(ZoneOffset.UTC));
+                context.getBean(SemesterActivationJob.class).activateDueSemesters();
+                assertThat(due.isActive()).isTrue();
+                assertThat(due.isActivationScheduled()).isFalse();
+                assertThat(due.getStateVersion()).isEqualTo(1);
+                context.getBean(SemesterActivationJob.class).activateDueSemesters();
+                assertThat(due.getStateVersion()).isEqualTo(1);
+            }
+        } finally {
+            TimeZone.setDefault(previousZone);
+        }
+    }
 
     @Test
     void activationRejectsClassificationOverlapAndExpiredCurrentBeforeNoopOrMutation() {

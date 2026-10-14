@@ -526,6 +526,35 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Run real Vue role transition and logout-all
+        id: role-logout
+        if: success() && steps.admin-lifecycle.outcome == 'success'
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_E2E_ROLE_LOGOUT: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-role-logout-${{ github.run_id }}-${{ github.run_attempt }}
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_ROLE_LOGOUT_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium
+
+      - name: Upload closed role transition and logout-all outcome
+        if: always() && steps.role-logout.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: role-logout-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_ROLE_LOGOUT_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Restore a real application checkpoint into fresh disposable databases
         id: application-recovery
         timeout-minutes: 12
@@ -639,11 +668,39 @@ jobs:
               classes = ('PSQLException', 'DataIntegrityViolationException', 'IllegalStateException',
                          'StatusRuntimeException', 'TransactionSystemException', 'NullPointerException')
               states = ('23502', '23503', '23505', '23514', '40P01', '40001', '55P03')
+              # Associate hints with ONE complete logged exception, never an unrelated tail match.
+              lifecycle = re.compile(rb'(?m)^\s*at ru\.rutcampustrack\.schedule\.lesson\.LessonStatusTransitionJob\.runTransitions\(')
+              exception = re.compile(rb'(?m)^(?:Caused by: )?(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$][A-Za-z0-9_$]*(?:Exception|Error)(?::|$)')
+              linked = []
+              # shared/logback-base.xml writes each complete exception in one JSON stack field.
+              for line in body.splitlines()[-160:]:
+                  try:
+                      record = json.loads(line)
+                  except (ValueError, RecursionError):
+                      continue
+                  if type(record) is not dict or type(record.get('stack')) is not str:
+                      continue
+                  stack = record['stack'].encode('utf-8', errors='replace')
+                  if exception.search(stack) and lifecycle.search(stack):
+                      linked.append(stack)
+              chain = linked[-1] if linked else b''
+              # These remain untrusted reported source hints, not target/commit or causal proof.
+              origins = (
+                  ('FILE_CLOCK', b'at ru.rutcampustrack.e2e.FileClock.instant('),
+                  ('SEMESTER_AUTHORITY', b'at ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence.readAuthority('),
+                  ('OUTBOX_LISTENER', b'at ru.rutcampustrack.schedule.event.DomainEventListener.onDomainEvent('),
+                  ('JDBC_OR_LOCK', b'at org.postgresql.'),
+              )
+              origin = 'UNKNOWN'
+              if chain:
+                  matches = [name for name, frame in origins if frame in chain]
+                  origin = matches[0] if len(matches) == 1 else 'OTHER'
               facts.update(logsObserved=readable,
-                           reportedClasses=[name for name in classes if re.search(rb'(?<![A-Za-z0-9_$])' + name.encode() + rb'(?![A-Za-z0-9_$])', body)],
-                           reportedSqlStates=[code for code in states if re.search(rb'SQLState: ?' + code.encode() + rb'(?![0-9A-Z])', body)],
-                           reportedLifecycleFailure=b'LessonStatusTransitionJob.runTransitions' in body,
-                           reportedAuthorityFrame=b'ScheduleSemesterArchiveWriteFence.readAuthority' in body)
+                           reportedClasses=[name for name in classes if re.search(rb'(?<![A-Za-z0-9_$])' + name.encode() + rb'(?![A-Za-z0-9_$])', chain)],
+                           reportedSqlStates=[code for code in states if re.search(rb'SQLState: ?' + code.encode() + rb'(?![0-9A-Z])', chain)],
+                           reportedLifecycleFailure=bool(chain),
+                           reportedAuthorityFrame=b'at ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence.readAuthority(' in chain,
+                           reportedLifecycleOrigin=origin)
               output = work / 'artifacts' / 'seed' / 'lifecycle-server.safe.json'
               fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
               with os.fdopen(fd, 'w') as stream:

@@ -608,6 +608,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         (response) =>
           new URL(response.url()).pathname ===
             `/api/academic/groups/${dataset.group.id}/headman/preview` &&
+          new URL(response.url()).searchParams.get('studentId') === String(created.id) &&
           response.request().method() === 'GET',
       ),
       replacement.getByLabel('Выбери старосту', { exact: true }).selectOption(String(created.id)),
@@ -818,5 +819,165 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     await expect(
       group.locator('dl > div').filter({ hasText: 'Студентов' }).locator('dd'),
     ).toHaveText(String(draft.studentCount));
+  });
+
+  // Q03: one live multirole authority transition and the ready client's logout-all.
+  test('SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions', async ({
+    page,
+    dataset,
+    playwright,
+  }) => {
+    const studentRole = `/api/academic/users/${dataset.teacher.id}/roles/STUDENT`;
+    await dataset.admin.call('PUT', studentRole, {
+      status: 'ACTIVE',
+      groupId: dataset.group.id,
+      telegramId: dataset.teacher.telegramId,
+    });
+    const logged = await loginPwa(page, dataset.teacher);
+    expect(logged.session.activeRole).toBe('STUDENT');
+    expect(
+      ['STUDENT', 'TEACHER'].every((role) =>
+        logged.session.roles.some((grant) => grant.role === role && grant.selectable),
+      ),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+    const homeworkPath = '/api/v1/student/homework';
+    expect(
+      (
+        await page.request.get(homeworkPath, {
+          headers: { Authorization: `Bearer ${logged.accessToken}` },
+        })
+      ).status(),
+    ).toBe(200);
+
+    await dataset.admin.call('PUT', studentRole, { status: 'SUSPENDED' });
+    // Live admission rejects the unselectable role before checking the old JWT version.
+    const deniedStudent = await page.request.get(homeworkPath, {
+      headers: { Authorization: `Bearer ${logged.accessToken}` },
+    });
+    expect(deniedStudent.status()).toBe(403);
+    expect((await deniedStudent.json()).code).toBe('WRONG_ROLE');
+    const [refreshed, current] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/refresh' &&
+          response.request().method() === 'POST',
+      ),
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      ),
+      page.reload(),
+    ]);
+    expect(refreshed.status()).toBe(200);
+    expect(current.status()).toBe(200);
+    const neutral = await current.json();
+    expect(neutral.activeRole ?? null).toBeNull();
+    expect(
+      neutral.roles.some(
+        (grant: { role: string; status: string; selectable: boolean }) =>
+          grant.role === 'STUDENT' && grant.status === 'SUSPENDED' && !grant.selectable,
+      ),
+    ).toBe(true);
+    expect(
+      neutral.roles.some(
+        (grant: { role: string; status: string; selectable: boolean }) =>
+          grant.role === 'TEACHER' && grant.status === 'ACTIVE' && grant.selectable,
+      ),
+    ).toBe(true);
+    await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+    const [selected] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session/active-role' &&
+          response.request().method() === 'PUT',
+      ),
+      selectPwaRole(page, 'Преподаватель'),
+    ]);
+    expect(selected.status()).toBe(200);
+    const teacherAdmission = await selected.json();
+    expect(teacherAdmission.session.activeRole).toBe('TEACHER');
+    await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+    const lessonPath = `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`;
+    const teacherHeaders = { Authorization: `Bearer ${teacherAdmission.accessToken}` };
+    const assigned = await page.request.get(lessonPath, { headers: teacherHeaders });
+    expect(assigned.status()).toBe(200);
+    const beforeLogout = await assigned.json();
+    expect(JSON.stringify(beforeLogout).includes(dataset.subject.name)).toBe(true);
+
+    // A separate cookie jar keeps this login from replacing the browser's refresh authority.
+    const origin = new URL(page.url()).origin;
+    const second = await playwright.request.newContext({
+      baseURL: origin,
+      ignoreHTTPSErrors: true,
+    });
+    try {
+      const other = await admit(second, dataset.teacher, 'TEACHER');
+      expect(other.session.sessionId !== teacherAdmission.session.sessionId).toBe(true);
+      expect((await second.get(lessonPath, { headers: other.headers() })).status()).toBe(200);
+      await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+      const profile = page.getByRole('main', { name: 'Профиль', exact: true });
+      const [listed] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/sessions' &&
+            response.request().method() === 'GET',
+        ),
+        profile.getByRole('button', { name: 'Активные сеансы', exact: true }).click(),
+      ]);
+      expect(listed.status()).toBe(200);
+      const sessions = await listed.json();
+      expect(
+        [teacherAdmission.session.sessionId, other.session.sessionId].every((sessionId) =>
+          sessions.items.some((item: { sessionId: string }) => item.sessionId === sessionId),
+        ),
+      ).toBe(true);
+      const screen = page.getByRole('main', { name: 'Активные сеансы', exact: true });
+      await expect(screen.getByRole('list', { name: 'Список активных сеансов' })).toBeVisible();
+      // Retain both actual current refresh proofs before the UI clears its own cookie.
+      const browserCookie = (await page.context().cookies(`${origin}/api/auth/refresh`)).find(
+        (cookie) => cookie.name === 'rct_refresh',
+      );
+      const secondCookie = (await second.storageState()).cookies.find(
+        (cookie) => cookie.name === 'rct_refresh',
+      );
+      expect(Boolean(browserCookie?.value && secondCookie?.value)).toBe(true);
+      expect(browserCookie?.value !== secondCookie?.value).toBe(true);
+      const [loggedOut] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/logout-all' &&
+            response.request().method() === 'POST',
+        ),
+        screen.getByRole('button', { name: 'Выйти на всех устройствах', exact: true }).click(),
+      ]);
+      expect(loggedOut.status()).toBe(204);
+      await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      for (const headers of [teacherHeaders, other.headers()]) {
+        expect((await second.get(lessonPath, { headers })).status()).toBe(401);
+      }
+      for (const cookie of [browserCookie, secondCookie]) {
+        const deniedRefresh = await second.post('/api/auth/refresh', {
+          headers: { Cookie: `rct_refresh=${cookie!.value}`, Origin: origin },
+        });
+        expect(deniedRefresh.status()).toBe(401);
+      }
+      // Fresh admission can still read the same assignment; revocation did not alter its data.
+      const fresh = await admit(second, dataset.teacher, 'TEACHER');
+      const retained = await fresh.call('GET', lessonPath);
+      expect(
+        JSON.stringify({ lesson: retained.lesson, roster: retained.roster }) ===
+          JSON.stringify({ lesson: beforeLogout.lesson, roster: beforeLogout.roster }),
+      ).toBe(true);
+      await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+    } finally {
+      await second.dispose();
+    }
   });
 });

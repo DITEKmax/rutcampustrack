@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,11 +34,13 @@ import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /** Business logic for Semester domain: CRUD, atomic activation, and archive lifecycle state. */
 @Service
 public class SemesterService {
 
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
     private static final int MIN_ACADEMIC_YEAR = 1;
     private static final int MAX_ACADEMIC_YEAR = 9998;
     private static final int SEMESTER_STATE_LOCK_NAMESPACE = 0x53454D;
@@ -49,10 +52,30 @@ public class SemesterService {
     private final ApplicationEventPublisher eventPublisher;
     private final AssignmentRepository assignmentRepository;
     private final JdbcTemplate jdbcTemplate;
-    private final Clock clock;
+    private final Clock educationalClock;
     @Autowired private ru.rutcampustrack.academic.security.RequestContext requestContext;
 
     @Autowired
+    public SemesterService(
+            SemesterRepository semesterRepository,
+            SemesterAssembler semesterAssembler,
+            EntityManager entityManager,
+            ApplicationEventPublisher eventPublisher,
+            AssignmentRepository assignmentRepository,
+            JdbcTemplate jdbcTemplate,
+            Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                semesterRepository,
+                semesterAssembler,
+                entityManager,
+                eventPublisher,
+                assignmentRepository,
+                jdbcTemplate,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());
+    }
+
+    /** Direct callers retain their supplied educational clock and Moscow calendar semantics. */
     public SemesterService(
             SemesterRepository semesterRepository,
             SemesterAssembler semesterAssembler,
@@ -67,7 +90,7 @@ public class SemesterService {
         this.eventPublisher = eventPublisher;
         this.assignmentRepository = assignmentRepository;
         this.jdbcTemplate = jdbcTemplate;
-        this.clock = clock;
+        this.educationalClock = clock;
     }
 
     /** Compatibility constructor for existing direct service tests. */
@@ -85,7 +108,7 @@ public class SemesterService {
                 eventPublisher,
                 assignmentRepository,
                 jdbcTemplate,
-                Clock.system(ZoneId.of("Europe/Moscow")));
+                Clock.system(MOSCOW));
     }
 
     @Transactional
@@ -137,7 +160,9 @@ public class SemesterService {
             throw new ConflictException(
                     "status", id, "Архивный семестр должен оставаться неактивным");
         }
-        if (!archivedMetadata && semester.getDateTo().isBefore(LocalDate.now())) {
+        if (!archivedMetadata
+                && semester.getDateTo()
+                        .isBefore(LocalDate.ofInstant(educationalClock.instant(), MOSCOW))) {
             throw new ConflictException("status", id, "Нельзя редактировать завершённый семестр");
         }
         validateAcademicYear(request.semesterType(), request.academicYear());
@@ -172,7 +197,8 @@ public class SemesterService {
         if (archivedMetadata
                 && datesChanged
                 && request.semesterType() == SemesterType.SPRING
-                && semester.getDateTo().isBefore(LocalDate.now(clock))
+                && semester.getDateTo()
+                        .isBefore(LocalDate.ofInstant(educationalClock.instant(), MOSCOW))
                 && semester.getPromotionCycleDateTo() == null) {
             semester.setPromotionCycleDateTo(semester.getDateTo());
         }
@@ -235,7 +261,8 @@ public class SemesterService {
         if (to == null) {
             throw new BadRequestException("dateTo", "Дата окончания обязательна");
         }
-        if (requireFutureStart && to.isBefore(LocalDate.now())) {
+        if (requireFutureStart
+                && to.isBefore(LocalDate.ofInstant(educationalClock.instant(), MOSCOW))) {
             throw new BadRequestException("dateTo", "Нельзя создать завершённый семестр");
         }
         if (to.isBefore(from)) {
@@ -280,7 +307,7 @@ public class SemesterService {
         if (scheduledOnly && !target.isActivationScheduled()) {
             return target;
         }
-        LocalDate today = LocalDate.now(clock.withZone(ZoneId.of("Europe/Moscow")));
+        LocalDate today = LocalDate.ofInstant(educationalClock.instant(), MOSCOW);
         Boolean activeDeletionPending =
                 jdbcTemplate.queryForObject(
                         """
@@ -474,7 +501,8 @@ public class SemesterService {
                     "Архивный семестр должен оставаться неактивным при восстановлении");
         }
 
-        if (semester.getDateTo().isBefore(LocalDate.now(clock))) {
+        if (semester.getDateTo()
+                .isBefore(LocalDate.ofInstant(educationalClock.instant(), MOSCOW))) {
             throw new ConflictException(
                     "dateTo",
                     id,

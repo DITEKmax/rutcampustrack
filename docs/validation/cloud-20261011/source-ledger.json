@@ -12570,6 +12570,54 @@
       "status": "fivehooksPASS-YAMLnotapplicable-reaped-safeparsersPASS",
       "revision": "fb5880dcb3d33f18856a1e3f082d74ab0046224a",
       "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-A032-REAL-PUSH-READBACK",
+      "path": "docs/validation/cloud-20261011/receipts/current-a032-real-push-readback.safe.json",
+      "sha256": "a70a0e54ad74483eb900cecd3767f99d34d1791fbb030014f8f7316b71faddb2",
+      "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
+      "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-A032-AUTHIT",
+      "path": "docs/validation/cloud-20261011/receipts/current-a032-AuthIT.safe.json",
+      "sha256": "f58a36f2b72ff4c46d68e8f68038ffa0febd19e677b802fd3ada6cf958e4568b",
+      "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
+      "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-A032-P11-CASE",
+      "path": "docs/validation/cloud-20261011/receipts/current-a032-P11-case.safe.json",
+      "sha256": "09cd8960f92e6fe56e028d8e3f4ef71dd867543bcd38d50a03e5dd08e5be9223",
+      "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
+      "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-A032-FIRST3",
+      "path": "docs/validation/cloud-20261011/receipts/current-a032-FIRST3.safe.json",
+      "sha256": "307654c2f1ef34824747c753257a064a6bf712dbb0565fbd14819afb767eab9e",
+      "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
+      "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-CURRENT-A032-CHECKOUT-JOIN",
+      "path": "docs/validation/cloud-20261011/receipts/current-a032-checkout-join.safe.json",
+      "sha256": "aa5da093dfe3126904c616c454aba9bb4c50981ab18c8fc5ba2bec0956570086",
+      "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
+      "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "EVIDENCE-FIRST3-PROFILE-LOGOUT-SOURCE-LOCAL",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-profile-logout-source-local.safe.json",
+      "sha256": "cdfec6358a70ce56726e8d10301883a28e64c0dc6dc43ecf32b69d4e87c94fdd",
+      "status": "FINITE_EVIDENCE_SEE_QUALIFICATIONS",
+      "revision": "f9569675d16d63184c66e78649995d861b9658a5",
+      "kind": "validation-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

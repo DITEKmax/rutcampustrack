@@ -1,0 +1,209 @@
+{
+  "root_source_revision": "f9569675d16d63184c66e78649995d861b9658a5",
+  "author_commit": "edb024e943442575088911de518d26c6c90561e9",
+  "source_sha256": "d274bb494923253dd9d770d62caac6ac2072f428809c8a3990e33fd05d4f5d15",
+  "outcome": {
+    "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+    "artifact": 11863547687,
+    "run": 38493688140,
+    "receipt": "docs/validation/cloud-20261011/receipts/current-a032-FIRST3.safe.json",
+    "observed": {
+      "student14": "PASS",
+      "helper160": "PASS_COMPLETE",
+      "headman61": "FAIL",
+      "reported_public_frame": 141,
+      "duration_ms": 2760,
+      "error_count": 2,
+      "runner_errors": 0,
+      "unsafe_artifact": false,
+      "full_opened_blob_68_bytes": "PASS_BEFORE_FRAME",
+      "foreign_attachment_denial": "PASS_BEFORE_FRAME",
+      "logout_response_observed": false,
+      "final_session_role": "HEADMAN",
+      "teacher_tail": "NOT_RUN",
+      "next5": "GATED_NOT_RUN"
+    },
+    "source_counterexample": {
+      "helper": "pwa-auth.ts54 opens profile;61 strict unscoped button name exit",
+      "headman_profile": "HeadmanScheduleScreen.vue1919-1928 renders ProfileScreen with onLogout without changing authView HEADMAN",
+      "profile_control": "ProfileScreen.vue72-85 main named Profile via aria-labelledby;150-161 exit button",
+      "global_control": "App.vue2511-2519 HEADMAN condition renders second exit button concurrently",
+      "classification": "CONFIRMED_SOURCE_LOCATOR_AMBIGUITY; ACTUAL_RUNTIME_ERROR_CATEGORY_UNKNOWN"
+    },
+    "two_error_boundary": {
+      "reporter": "safe-reporter.ts339 result.errors length; public locations remain independent entries, no error-identity/cause correlation",
+      "sanitizer": "artifact-privacy.ts128 maps only exact public spec frames; helper internal line is intentionally omitted; sanitization does not itself append errors",
+      "pending_waiter": "pwa-auth.ts56 begins waitForResponse before strict click61; click rejection prevents response await62",
+      "pinned_client": "page.js354 rejects response waiter on page close; workerMain.js66/145 appends unhandled rejection to currentTest.errors",
+      "conclusion": "Abandoned response waiter can produce separate teardown rejection. Actual second error identity/category UNKNOWN; duplicated original error also not excluded by current SAFE."
+    },
+    "minimal_correction_plan": {
+      "files": [
+        "tests/e2e/fixtures/pwa-auth.ts"
+      ],
+      "change": "Locate unique main named Profile; check its heading and click its exact exit button. Observe response and click together with Promise.all so response rejection is handled even if click rejects. Keep real POST route/method,204 and returned-login-heading assertions. No UI/server/schema/reporter changes.",
+      "checks": "Cached exact Prettier/idempotency/check and real-mobile TSC under fresh Root grant; existing browser-free privacy controls only if boundary dependency requires. Existing a032 real failure is RED; current corrected genuine HEADMAN61 full flow proves actual logout204 and teacher tail. Reuse unchanged student/helper PASS.",
+      "extra_diagnostics": "Not needed before minimal scoped locator correction; if current corrected flow still fails, then finite helper-stage/private error-category diagnosis inside existing helper, no raw error content/URL/body output."
+    },
+    "source_pins": {
+      "tests/e2e/fixtures/pwa-auth.ts": "61f6ceb0fe7f7c3ca547048f16ab6c5768a6a43a6e4fab7ef9b5e6529c744207",
+      "frontends/pwa-vue/src/App.vue": "7e92f203cb8111a34672063a6f871df3e7805d4ab6fc04516de9112a8cd8e58b",
+      "frontends/mobile-core/src/features/profile/ProfileScreen.vue": "5ab7c2540c5c4f7a42c664b985e6b5e39383f9c80f90c7ecab2f808a17535761",
+      "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue": "d60c4cfd4925826691322e47f980f4d1ad7361a2b0964f84e26729a22c9aa6d7",
+      "tests/e2e/fixtures/artifact-privacy.ts": "12c5c0cb6b8a49c815c763812177a76aa4d186e1873f6fa0ef341066a1dbaa67",
+      "tests/e2e/fixtures/safe-reporter.ts": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336"
+    },
+    "product_logout_defect": "NOT_PROVEN",
+    "native_runs": 4,
+    "source_mutations": 1,
+    "assigned_worktree": "codex/first3-profile-logout-scope-20261014 base a032",
+    "state": "PROFILE_LOGOUT_HELPER_COMMITTED_LOCAL_CHECKS_PASS_CURRENT_CI_PENDING",
+    "correction_preformat_pin": "d274bb494923253dd9d770d62caac6ac2072f428809c8a3990e33fd05d4f5d15",
+    "correction_final_pin": "d274bb494923253dd9d770d62caac6ac2072f428809c8a3990e33fd05d4f5d15",
+    "checks": [
+      {
+        "phase": "format_apply",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "fixtures/pwa-auth.ts"
+        ],
+        "terminal": {
+          "direct_pid": 610812,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 610812,
+              "start_ticks": 19491420
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_exact_idempotency",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "fixtures/pwa-auth.ts"
+        ],
+        "terminal": {
+          "direct_pid": 610823,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 610823,
+              "start_ticks": 19491478
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_check",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "--single-quote",
+          "fixtures/pwa-auth.ts"
+        ],
+        "terminal": {
+          "direct_pid": 610834,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 610834,
+              "start_ticks": 19491528
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "types",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "--project",
+          "tsconfig.real-mobile.json"
+        ],
+        "terminal": {
+          "direct_pid": 610845,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 610845,
+              "start_ticks": 19491579
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      }
+    ],
+    "native_seconds": 4.37,
+    "formatter_exact_idempotency": true,
+    "peaks": {
+      "rss": 325627904,
+      "shared": 6114070528
+    },
+    "births": [
+      {
+        "pid": 610812,
+        "start_ticks": 19491420
+      },
+      {
+        "pid": 610823,
+        "start_ticks": 19491478
+      },
+      {
+        "pid": 610834,
+        "start_ticks": 19491528
+      },
+      {
+        "pid": 610845,
+        "start_ticks": 19491579
+      }
+    ],
+    "known_births_absent": true,
+    "dependency_link_absent": true,
+    "private_tmp_absent": true,
+    "local_check_failure_class": null,
+    "commit": "edb024e943442575088911de518d26c6c90561e9",
+    "normal_commit_native_exit": 0,
+    "active_hooks": [],
+    "hooks_bypassed": false,
+    "worktree_clean": true
+  },
+  "root_review": "exact single-file diff approved; profile main scope preserves strictuniqueness/POST204/loginheading; Promise.all handles waiter+click rejection; no UI/rule/guard change",
+  "actual_current_after": "PENDING_NORMAL_CI"
+}

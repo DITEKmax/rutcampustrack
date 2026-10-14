@@ -1,0 +1,76 @@
+{
+  "revision": "f9569675d16d63184c66e78649995d861b9658a5",
+  "scoped_paths": [
+    "tests/e2e/fixtures/pwa-auth.ts",
+    "docs/validation/cloud-20261011/CURRENT.md",
+    "docs/validation/cloud-20261011/resources.md",
+    "docs/validation/cloud-20261011/attempts.ndjson",
+    "docs/validation/cloud-20261011/source-ledger.json",
+    "docs/validation/cloud-20261011/verified-cases.csv",
+    "docs/validation/cloud-20261011/defects.md",
+    "docs/validation/cloud-20261011/receipts/current-a032-AuthIT.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a032-checkout-join.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a032-P11-case.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a032-real-push-readback.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a032-FIRST3.safe.json",
+    "docs/validation/cloud-20261011/receipts/FIRST3-profile-logout-source-local.safe.json"
+  ],
+  "native": {
+    "direct_pid": 611360,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 611360,
+        "start_ticks": 19508104
+      },
+      {
+        "pid": 611372,
+        "start_ticks": 19508108
+      },
+      {
+        "pid": 611400,
+        "start_ticks": 19508147
+      },
+      {
+        "pid": 611407,
+        "start_ticks": 19508216
+      },
+      {
+        "pid": 611457,
+        "start_ticks": 19508238
+      },
+      {
+        "pid": 611458,
+        "start_ticks": 19508238
+      },
+      {
+        "pid": 611459,
+        "start_ticks": 19508238
+      },
+      {
+        "pid": 611460,
+        "start_ticks": 19508238
+      },
+      {
+        "pid": 611469,
+        "start_ticks": 19508246
+      },
+      {
+        "pid": 611524,
+        "start_ticks": 19508264
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "normal_hooks": "PASS; no disabledhook",
+  "parsers_and_diff_check": "PASS after csvwriter defaultCRLF correction to existingLF; original checkFAILpreserved in attempts",
+  "product_change": "singlepwa-authhelper only; no UI/API/grants/assertions",
+  "finalSHA": "PENDING_PARTIAL_CHECKPOINT"
+}

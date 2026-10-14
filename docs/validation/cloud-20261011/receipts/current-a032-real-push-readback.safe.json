@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-14T01:08:00.821107+00:00",
+  "local_sha": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "remote_branch_sha": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "authenticated_PR_head_sha": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "branch": "codex/server-validation-20261011",
+  "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "base": "main",
+  "merged": false,
+  "remote_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "advertised_merge": "9f0732ba13baa2626282692bd5b9aeb4f0531c14",
+  "actual_checkout": "PENDING_CURRENT_PRODUCER",
+  "native_push": {
+    "direct_pid": 608912,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 608912,
+        "start_ticks": 19364078
+      },
+      {
+        "pid": 608913,
+        "start_ticks": 19364079
+      },
+      {
+        "pid": 608914,
+        "start_ticks": 19364079
+      },
+      {
+        "pid": 608916,
+        "start_ticks": 19364119
+      },
+      {
+        "pid": 608918,
+        "start_ticks": 19364119
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "readbacks": "real gittransport +authenticated PRGET separately",
+  "newgates": "pending"
+}

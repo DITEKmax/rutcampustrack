@@ -265,7 +265,15 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
   for (const user of [dataset.student, dataset.headman]) {
     const row = page.locator(`.headman-journal__row[data-user-id="${user.id}"]`);
     await expect(row).toHaveAttribute('data-status', 'cancelled');
-    await expect(row.locator('.headman-journal__current')).toBeDisabled();
+    await expect(
+      row.getByRole('button', {
+        name: `Пара отменена: ${user.displayName}. Открыть выбор отметки`,
+        exact: true,
+      }),
+    ).toBeDisabled();
+    await expect(
+      row.getByRole('button', { name: `Изменить отметку: ${user.displayName}`, exact: true }),
+    ).toBeDisabled();
     await expect(row.getByRole('button', { name: 'Открыть файл', exact: true })).toHaveCount(0);
   }
 

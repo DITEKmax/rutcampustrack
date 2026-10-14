@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import type { Page } from '@playwright/test';
+import type { Download, Page } from '@playwright/test';
 import {
   test,
   expect,
@@ -88,7 +88,9 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
       throw datasetHttpFailure('GET', new URL(file.url()).pathname, file.status());
     expect(file.status()).toBe(200);
     expect(file.headers()['content-type'].split(';')[0]).toBe('text/html');
-    const content = (await file.body()).toString('utf8');
+    const download = await saved;
+    expect(await download.failure()).toBeNull();
+    const content = (await registryBrowserDownloadBytes(download)).toString('utf8');
     expect(content.startsWith('<!doctype html>')).toBe(true);
     const boundary = registryHtmlBoundary(
       content,
@@ -113,10 +115,8 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     expect(content.includes(String(target.telegramId))).toBe(mode === 'FULL');
     expect(content.includes(target.password)).toBe(false);
     expect(/парол|password|password-reset/i.test(content)).toBe(false);
-    const download = await saved;
     expect(download.suggestedFilename() === ticket.suggestedFilename).toBe(true);
     expect(download.suggestedFilename().endsWith('.html')).toBe(true);
-    expect(await download.failure()).toBeNull();
     await expect(
       page.getByRole('status').filter({ hasText: 'Файл готов. Скачивание передано браузеру.' }),
     ).toBeVisible();
@@ -214,6 +214,21 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
 // client carrier. These selected binary cases add the actual native producer
 // and its own committed audit, without replaying the format-independent denials.
 const registryByteLimit = 20 * 1024 * 1024;
+
+async function registryBrowserDownloadBytes(download: Download): Promise<Buffer> {
+  const stream = await download.createReadStream();
+  if (!stream) throw new Error('Registry browser download stream is unavailable');
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of stream) {
+    const bytes = Buffer.from(chunk);
+    size += bytes.length;
+    expect(size <= registryByteLimit).toBe(true);
+    chunks.push(bytes);
+  }
+  expect(size > 0).toBe(true);
+  return Buffer.concat(chunks);
+}
 
 function registryRequire(value: unknown, code: string): asserts value {
   if (!value) throw new Error(`Registry PDF check: ${code}`);

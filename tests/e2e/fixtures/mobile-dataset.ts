@@ -177,12 +177,15 @@ export class MobileDataset {
     )!;
     if (!this.semester) {
       const month = Number(this.today.slice(5, 7));
+      const teachingYesterday = shifted(this.today, -1);
+      const realToday = moscowDate();
       this.semester = await this.admin.call(
         'POST',
         '/api/academic/semesters',
         {
           name: this.marker,
-          dateFrom: shifted(this.today, -1),
+          // Notification audience events retain their real Moscow date.
+          dateFrom: teachingYesterday < realToday ? teachingYesterday : realToday,
           dateTo: shifted(this.today, 30),
           semesterType: month >= 7 ? 'AUTUMN' : 'SPRING',
           academicYear: Number(this.today.slice(0, 4)) - (month >= 7 ? 0 : 1),

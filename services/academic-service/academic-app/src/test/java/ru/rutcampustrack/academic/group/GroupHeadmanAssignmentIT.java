@@ -397,7 +397,7 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                                 fixture.groupId()),
                 "assistants",
                         jdbc.queryForList(
-                                "SELECT * FROM headman_assistants WHERE group_id = ? ORDER BY id",
+                                "SELECT to_jsonb(h)::text AS state FROM headman_assistants h WHERE group_id = ? ORDER BY id",
                                 fixture.groupId()),
                 "history",
                         jdbc.queryForList(

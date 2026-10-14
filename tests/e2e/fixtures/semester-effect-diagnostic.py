@@ -95,7 +95,89 @@ print(JSON.stringify({receipt:receipt,acks:acks}));
     )
 
 
-def _project(ledger, producer, receipt, acknowledgements, claims, stable, barrier_reason="SCHEDULE_EFFECT_ACK_PENDING"):
+def _mongo_claim_script(ledger):
+    # MongoIdempotencyStore persists event_id as a canonical UUID string.
+    return (
+        "const id="
+        + json.dumps(ledger["event_id"])
+        + r""";
+const d=db.getSiblingDB('attendance_db');
+print(JSON.stringify(d.event_consumer_processed.find(
+  {consumer_id:'attendance',event_id:id},{_id:1}
+).maxTimeMS(2000).limit(1).toArray().length===1));
+"""
+    )
+
+
+def _transport_flags(queues=None, bindings=None):
+    # Queue counts describe the observation after fixture cleanup, never delivery
+    # of the selected event. No message-get, consumer or requeue operation is used.
+    result = {
+        "available": False,
+        "bindingPresent": "UNKNOWN",
+        "mainPresent": "UNKNOWN",
+        "consumers": "UNKNOWN",
+        "messagesReady": "UNKNOWN",
+        "messagesUnacknowledged": "UNKNOWN",
+        "dlqPresent": "UNKNOWN",
+        "dlqMessagesReady": "UNKNOWN",
+        "dlqMessagesUnacknowledged": "UNKNOWN",
+        "exactDlqEventPresent": "UNKNOWN",
+    }
+    if (
+        type(queues) is not list
+        or type(bindings) is not list
+        or len(queues) > 512
+        or len(bindings) > 512
+        or any(type(row) is not dict or type(row.get("name")) is not str for row in queues)
+        or any(
+            type(row) is not dict
+            or any(type(row.get(key)) is not str for key in ("source_name", "destination_name", "destination_kind"))
+            for row in bindings
+        )
+    ):
+        return result
+
+    def count(row, key):
+        value = row.get(key)
+        return value if type(value) is int and 0 <= value <= 1000000000 else "UNKNOWN"
+
+    names = ("attendance-service.events", "attendance-service.events.dlq")
+    selected = [[row for row in queues if row["name"] == name] for name in names]
+    if any(len(rows) > 1 for rows in selected):
+        return result
+    main, dead = (rows[0] if rows else {} for rows in selected)
+    result.update(
+        available=True,
+        bindingPresent=any(
+            row["source_name"] == "rut-uit.events"
+            and row["destination_name"] == names[0]
+            and row["destination_kind"] == "queue"
+            for row in bindings
+        ),
+        mainPresent=bool(main),
+        consumers=count(main, "consumers"),
+        messagesReady=count(main, "messages_ready"),
+        messagesUnacknowledged=count(main, "messages_unacknowledged"),
+        dlqPresent=bool(dead),
+        dlqMessagesReady=count(dead, "messages_ready"),
+        dlqMessagesUnacknowledged=count(dead, "messages_unacknowledged"),
+    )
+    return result
+
+
+def _project(
+    ledger,
+    producer,
+    receipt,
+    acknowledgements,
+    claims,
+    stable,
+    barrier_reason="SCHEDULE_EFFECT_ACK_PENDING",
+    consumer_claim="UNKNOWN",
+    queues=None,
+    bindings=None,
+):
     def boolean(value):
         return value if type(value) is bool else "UNKNOWN"
 
@@ -103,7 +185,7 @@ def _project(ledger, producer, receipt, acknowledgements, claims, stable, barrie
         return sorted({_closed(row.get("status"), ("pending", "sent", "failed")) for row in rows})
 
     return {
-        "schema": "semester-effect.v1",
+        "schema": "semester-effect.v2",
         "observationPhase": "AFTER_FIXTURE_CLEANUP_BEFORE_CONTAINER_TEARDOWN",
         "found": ledger is not None,
         "selection": "LEDGER_CANDIDATE"
@@ -150,6 +232,8 @@ def _project(ledger, producer, receipt, acknowledgements, claims, stable, barrie
         if acknowledgements and all(type(value) is bool for value in claims)
         else "UNKNOWN",
         "stableLedger": boolean(stable),
+        "consumerClaimPresent": boolean(consumer_claim),
+        "transport": _transport_flags(queues, bindings),
     }
 
 
@@ -207,15 +291,16 @@ def main():
         spec.loader.exec_module(r)
         deadline = time.monotonic() + 50
 
-        def bounded_run(command, *, stdin=None, stdout=None, input_data=None):
-            if stdin is not None or stdout is not None or deadline - time.monotonic() <= 0:
+        def bounded_run(command, *, stdin=None, stdout=None, input_data=None, minimum_timeout=0):
+            child_timeout = min(5, deadline - time.monotonic())
+            if stdin is not None or stdout is not None or child_timeout <= minimum_timeout:
                 raise ValueError("Diagnostic deadline")
             child = subprocess.run(
                 command,
                 input=input_data,
                 capture_output=True,
                 check=False,
-                timeout=min(5, deadline - time.monotonic()),
+                timeout=child_timeout,
             )
             if child.returncode or len(child.stdout) > 262144 or len(child.stderr) > 262144:
                 raise ValueError("Diagnostic read unavailable")
@@ -292,6 +377,7 @@ def main():
             + " OR semester_id IS NULL) AND state<>'APPLIED' ORDER BY created_at,event_id,target,event_type,scope_id LIMIT 1) e),'null'::json)",
         )
         producer, acknowledgements, claims = [], [], []
+        consumer_claim = "UNKNOWN"
         receipt = _receipt_flags(None, {})
         stable = True
         if ledger is not None:
@@ -372,7 +458,137 @@ def main():
                 + ")),'null'::json)",
             )
             stable = current == ledger["state"]
-        result = _project(ledger, producer, receipt, acknowledgements, claims, stable, barrier_reason)
+        queues, bindings = None, None
+        if ledger is not None and ledger["target"] == "ATTENDANCE":
+            try:
+                # All primary reads are already retained. A separate optional
+                # child timeout must not discard their receipt/ACK projection.
+                consumer_claim = r.mongo_query(
+                    args.mongo_container, secret["MONGO_ROOT_PASSWORD"], _mongo_claim_script(ledger)
+                )
+            except (
+                OSError,
+                ValueError,
+                TypeError,
+                LookupError,
+                AttributeError,
+                RuntimeError,
+                subprocess.SubprocessError,
+            ):
+                consumer_claim = "UNKNOWN"
+            try:
+                # Recovery restarts the original rct-e2e broker; only its DBs
+                # are fresh recovery-project containers. Admit that exact source
+                # project/service/network before invoking passive JSON CLI reads.
+                broker_ids = (
+                    r.run(
+                        [
+                            "docker",
+                            "ps",
+                            "-q",
+                            "--filter",
+                            "label=com.docker.compose.project=rct-e2e",
+                            "--filter",
+                            "label=com.docker.compose.service=rabbitmq",
+                        ]
+                    )
+                    .decode()
+                    .split()
+                )
+                if len(broker_ids) != 1 or not re.fullmatch(r"[0-9a-f]{12,64}", broker_ids[0]):
+                    raise ValueError("Ambiguous source broker")
+                broker = broker_ids[0]
+                info = json.loads(
+                    r.run(
+                        [
+                            "docker",
+                            "inspect",
+                            "--format",
+                            '{"labels":{{json .Config.Labels}},"networks":{{json .NetworkSettings.Networks}}}',
+                            broker,
+                        ]
+                    )
+                )
+                if (
+                    type(info) is not dict
+                    or info["labels"].get("com.docker.compose.project") != "rct-e2e"
+                    or info["labels"].get("com.docker.compose.service") != "rabbitmq"
+                    or "rct-e2e_private_net" not in info["networks"]
+                ):
+                    raise ValueError("Unexpected source broker")
+                # The known Alpine broker supplies BusyBox timeout. SIGKILL
+                # stops the remote CLI even when it cannot service an RPC
+                # timeout; rabbitmqctl execs its Erlang VM in the same process.
+                # Reserve >4s of the host/global budget for its 3s lifetime.
+                prefix = [
+                    "docker",
+                    "exec",
+                    broker,
+                    "/bin/busybox",
+                    "timeout",
+                    "-s",
+                    "KILL",
+                    "3",
+                    "rabbitmqctl",
+                    "-q",
+                    "--timeout",
+                    "2",
+                    "--formatter",
+                    "json",
+                ]
+                queues = json.loads(
+                    r.run(
+                        [
+                            *prefix,
+                            "list_queues",
+                            "-p",
+                            "/",
+                            "name",
+                            "messages_ready",
+                            "messages_unacknowledged",
+                            "consumers",
+                        ],
+                        minimum_timeout=4,
+                    )
+                )
+                bindings = json.loads(
+                    r.run(
+                        [
+                            *prefix,
+                            "list_bindings",
+                            "-p",
+                            "/",
+                            "source_name",
+                            "destination_name",
+                            "destination_kind",
+                        ],
+                        minimum_timeout=4,
+                    )
+                )
+            except (
+                OSError,
+                ValueError,
+                TypeError,
+                LookupError,
+                AttributeError,
+                RuntimeError,
+                subprocess.SubprocessError,
+            ):
+                # Optional transport observation never discards the existing
+                # durable ledger/receipt projection or the original test failure.
+                queues, bindings = None, None
+        result = _project(
+            ledger,
+            producer,
+            receipt,
+            acknowledgements,
+            claims,
+            stable,
+            barrier_reason,
+            consumer_claim,
+            queues,
+            bindings,
+        )
         encoded = json.dumps(result, separators=(",", ":")).encode()
         if len(encoded) > 4096:
             raise ValueError("Diagnostic projection bound")

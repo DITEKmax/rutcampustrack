@@ -251,3 +251,8 @@ D017 accepts the existing green-blue rounded R RutTrack SVG as a temporary PWA i
 Supersedes only the missing accepted installation-asset branch of BRAND_DIRECTION's later-logo placeholder for current PWA. D015 still assigns native/device installation acceptance to the owner; Cloud verifies source, dimensions/declarations, build and applicable logic. Do not claim actual OS installation from asset generation. Keep server/browser/data/rights/gates and other accepted behavior unchanged.
 
 TASK-CONTRACT previousSHA d9132dda1bada9670a01abc5d77649f73b4d794779a56ae0c3b767bf7b79d988; currentSHA aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7.
+
+
+## T014 — unknown persisted Attendance enum transport boundary
+
+2026-10-14T19:03:16.924871+00:00: Technical implementation choice within TASK-CONTRACT unknown-code/fail-closed/no unexpected5xx rule, not a new owner product decision. Apply existing Attendance typed409 data-conflict convention with a fixed nonsecret message to unknown persisted finite Mongo enum codes; known stable codes, optional null, authorization and stored data remain unchanged. Limit to the Mongo enum readers and existing domain exception convention, not a blanket conversion/runtime catch. Public request validation remains separate. One genuine HTTP known→unknown/no-write→restored-positive test and relevant previous-reader counterexample/restored GREEN plus independent review are required before acceptance. Current generic500 is Source inference only; do not claim actual product defect before reproduction. Assigned c63_enum_http_boundary sole reader/test writer in isolated493 worktree; commonAPI/config/CI/rootdocs remain sole assignedowners.

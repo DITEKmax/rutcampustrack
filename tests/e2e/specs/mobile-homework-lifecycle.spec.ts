@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page, Request, Response } from '@playwright/test';
 import {
   Actor,
   MobileDataset,
@@ -289,19 +289,36 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'true');
   await expect(publishedNotificationCard).toBeVisible();
   const readPath = `${inboxPath}/${updatedNotification.id}/read-state`;
-  const [readResponse, targetResponse] = await Promise.all([
-    http(page, readPath, 'PUT'),
-    page.waitForResponse((response) => {
-      const url = new URL(response.url());
-      return (
-        response.request().method() === 'GET' &&
-        url.pathname === '/api/v1/student/homework' &&
-        url.searchParams.get('from') === dataset.tomorrow &&
-        url.searchParams.get('to') === dataset.tomorrow
-      );
-    }),
-    updatedNotificationCard.locator('.notification-card__main').click(),
-  ]);
+  const notificationAction = updatedNotificationCard.locator('.notification-card__main');
+  await expect(notificationAction).toBeEnabled();
+  let readRequestObserved = false;
+  const observeReadRequest = (request: Request) => {
+    if (request.method() === 'PUT' && new URL(request.url()).pathname === readPath)
+      readRequestObserved = true;
+  };
+  page.on('request', observeReadRequest);
+  let responses: [Response, Response, void];
+  try {
+    responses = await Promise.all([
+      http(page, readPath, 'PUT'),
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === '/api/v1/student/homework' &&
+          url.searchParams.get('from') === dataset.tomorrow &&
+          url.searchParams.get('to') === dataset.tomorrow
+        );
+      }),
+      notificationAction.click(),
+    ]);
+  } catch (error) {
+    expect.soft(readRequestObserved, 'Notification read-state PUT was emitted').toBe(true);
+    throw error;
+  } finally {
+    page.off('request', observeReadRequest);
+  }
+  const [readResponse, targetResponse] = responses;
   expect(readResponse.status()).toBe(200);
   const readCommand = readResponse.request().postDataJSON();
   expect(
@@ -1173,5 +1190,170 @@ isolated(
     expect.soft(inlineMaterialOpened).toBe(true);
     expect.soft(optimisticCompleted).toBe(true);
     expect(completedAtBottom).toBe(true);
+  },
+);
+
+// Own-author manual DELETE is an existing operation; this is API deletion plus
+// genuine HEADMAN archive/history UI, not UI delete/confirmation acceptance.
+// JS-HEADMAN-27/28/29; non-author DELETE remains outside this case pending Q015.
+isolated(
+  'HEADMAN author manual DELETE retains one read-only archive and edit history after replay @real-mobile',
+  async ({ page, scenario: dataset }) => {
+    test.setTimeout(120000);
+    const caseDeadline = Date.now() + 110000;
+    const author = dataset.headmanActor;
+    expect(author.session.activeRole).toBe('HEADMAN');
+    const path = `/api/academic/homeworks/${dataset.homework.id}`;
+    const historyPath = `${path}/history`;
+    const original = await author.call('GET', path);
+    expect(original).toMatchObject({
+      id: dataset.homework.id,
+      publishedBy: dataset.headman.id,
+      archived: false,
+      bindingMode: 'DATE',
+      lessonDate: dataset.tomorrow,
+      lessonNumber: null,
+    });
+    expect(original.bindingId).toBeGreaterThan(0);
+    const originalHistory = await author.call('GET', `${historyPath}?size=100`);
+    expect(Array.isArray(originalHistory.content)).toBe(true);
+
+    // Give the terminal read a real content change to preserve and display.
+    const title = `${dataset.marker}-manual-delete`;
+    const description = 'Синтетическая правка перед ручным архивированием';
+    await author.call('PUT', path, {
+      title,
+      description,
+      link: original.link,
+      expectedRevision: original.revision,
+      requestKey: randomUUID(),
+    });
+    const edited = await author.call('GET', path);
+    expect(edited).toMatchObject({
+      id: original.id,
+      bindingId: original.bindingId,
+      requestKey: original.requestKey,
+      publishedBy: dataset.headman.id,
+      title,
+      description,
+      archived: false,
+      revision: original.revision + 1,
+    });
+    const history = await author.call('GET', `${historyPath}?size=100`);
+    expect(history.content).toHaveLength(originalHistory.content.length + 1);
+    expect(history.content.slice(0, -1)).toEqual(originalHistory.content);
+    const edit = history.content[history.content.length - 1];
+    expect(edit).toMatchObject({
+      action: 'EDITED',
+      actorId: dataset.headman.id,
+      actorDisplayName: dataset.headman.displayName,
+      revision: edited.revision,
+      before: { title: original.title, description: original.description },
+      after: { title, description },
+    });
+    expect(Number.isFinite(Date.parse(edit.occurredAt))).toBe(true);
+
+    // A personal STUDENT grant cannot delete published content, even by ID.
+    const student = await admit(dataset.request, dataset.student, 'STUDENT');
+    const denied = await dataset.request.delete(path, { headers: student.headers() });
+    expect(denied.status()).toBe(403);
+    await denied.dispose();
+    expect(await author.call('GET', path)).toEqual(edited);
+    expect(await author.call('GET', `${historyPath}?size=100`)).toEqual(history);
+
+    // A fresh ACTIVE durable binding must traverse the real Schedule archive
+    // RPC before this synchronous 204; an already-archived shortcut is excluded.
+    await author.call('DELETE', path, undefined, [204]);
+    const activeRead = await dataset.request.get(path, { headers: author.headers() });
+    expect(activeRead.status()).toBe(404);
+    await activeRead.dispose();
+    const archived = await author.call('GET', `${path}?archived=true`);
+    expect(archived).toMatchObject({
+      id: edited.id,
+      bindingId: edited.bindingId,
+      requestKey: edited.requestKey,
+      publishedBy: edited.publishedBy,
+      groupId: edited.groupId,
+      subjectId: edited.subjectId,
+      semesterId: edited.semesterId,
+      bindingMode: edited.bindingMode,
+      lessonDate: edited.lessonDate,
+      lessonNumber: edited.lessonNumber,
+      title,
+      description,
+      link: edited.link,
+      revision: edited.revision,
+      archived: true,
+    });
+    expect(await author.call('GET', `${historyPath}?size=100`)).toEqual(history);
+    const archiveListPath = `/api/academic/homeworks?groupId=${dataset.group.id}&semesterId=${dataset.semester.id}&archived=true&size=100`;
+    const archiveList = await author.call('GET', archiveListPath);
+    expect(Array.isArray(archiveList._embedded?.homeworkResponseList)).toBe(true);
+    expect(
+      archiveList._embedded.homeworkResponseList.filter(
+        (item: { id: number }) => item.id === original.id,
+      ),
+    ).toHaveLength(1);
+
+    await author.call('DELETE', path, undefined, [204]);
+    expect(await author.call('GET', `${path}?archived=true`)).toEqual(archived);
+    expect(await author.call('GET', `${historyPath}?size=100`)).toEqual(history);
+    expect(await author.call('GET', archiveListPath)).toEqual(archiveList);
+    const terminalEdit = await dataset.request.put(path, {
+      headers: author.headers(),
+      data: {
+        title: `${title}-denied`,
+        description,
+        link: edited.link,
+        expectedRevision: edited.revision,
+        requestKey: randomUUID(),
+      },
+    });
+    expect(terminalEdit.status()).toBe(409);
+    await terminalEdit.dispose();
+    expect(await author.call('GET', `${path}?archived=true`)).toEqual(archived);
+    expect(await author.call('GET', `${historyPath}?size=100`)).toEqual(history);
+
+    await loginPwa(page, dataset.headman, {
+      retryUntilMs: Math.min(caseDeadline, Date.now() + 65000),
+    });
+    await selectPwaRole(page, 'Староста');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
+    const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
+    if (weekdayOffset === 6)
+      await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
+    const dayText = new Intl.DateTimeFormat('ru-RU', {
+      timeZone: 'Europe/Moscow',
+      day: 'numeric',
+      month: 'long',
+      weekday: 'long',
+    }).format(new Date(`${dataset.tomorrow}T12:00:00Z`));
+    const dayLabel = dayText.charAt(0).toUpperCase() + dayText.slice(1);
+    await page.getByRole('button', { name: dayLabel, exact: true }).click();
+    const card = page.locator(`.headman-homework__item[data-homework-id="${original.id}"]`);
+    await expect(card).toHaveCount(1);
+    await expect(card).toContainText(title);
+    await card.click();
+    await expect(page.getByText('Архив · только просмотр', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Изменить задание', exact: true })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByRole('button', { name: /Удалить|Восстановить|Вернуть из архива/ }),
+    ).toHaveCount(0);
+    const openedHistory = http(page, historyPath, 'GET');
+    await page.getByRole('button', { name: 'История изменений', exact: true }).click();
+    const historyRead = await openedHistory;
+    expect(historyRead.status()).toBe(200);
+    expect((await historyRead.json()).content).toEqual(history.content);
+    const region = page.getByRole('region', { name: 'История изменений', exact: true });
+    await expect(region.locator('li')).toHaveCount(history.content.length);
+    await expect(region).toContainText(dataset.headman.displayName);
+    await expect(region).toContainText('Задание изменено');
+    await expect(region).toContainText('название');
+    await expect(region).toContainText('текст');
+    expect(await author.call('GET', `${path}?archived=true`)).toEqual(archived);
+    expect(await author.call('GET', `${historyPath}?size=100`)).toEqual(history);
   },
 );

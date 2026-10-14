@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
@@ -10,13 +11,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -24,6 +40,8 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /**
  * Integration tests for all 4 attendance report endpoints. Proves RPRT-01 (lesson attendance),
@@ -31,6 +49,12 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
  * rules.
  */
 class ReportIT extends AbstractAttendanceIntegrationTest {
+
+    @Autowired private TestRestTemplate restTemplate;
+
+    @Autowired private ObjectMapper objectMapper;
+
+    @Autowired private InternalJwtTestFactory internalJwtTestFactory;
 
     private static final Long LESSON_ID = 1L;
     private static final Long GROUP_ID = 10L;
@@ -188,6 +212,121 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(
                         jsonPath("$.entries[?(@.userId == 102)].symbol")
                                 .value(hasItem(nullValue())));
+    }
+
+    @Test
+    void getLessonAttendance_unknownStoredStatusRefusesWithoutChangingKnownRows() throws Exception {
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .build());
+        insertAttendance(LESSON_ID, HEADMAN_USER_ID, AttendanceStatus.PRESENT);
+        insertAttendance(LESSON_ID, STUDENT_USER_ID, AttendanceStatus.ABSENT);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON));
+        headers.set(
+                "X-Internal-Token",
+                internalJwtTestFactory.validToken(
+                        HEADMAN_USER_ID,
+                        UUID.randomUUID(),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        GROUP_ID,
+                        true,
+                        false));
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        String path = "/attendance/reports/lesson/" + LESSON_ID;
+
+        // Use the real random-port HTTP server, including token validation and advice resolution.
+        assertKnownLessonAttendance(
+                restTemplate.exchange(path, HttpMethod.GET, request, String.class));
+
+        var collection = mongoTemplate.getCollection("attendances");
+        Document target =
+                collection
+                        .find(
+                                new Document("lesson_id", LESSON_ID)
+                                        .append("user_id", STUDENT_USER_ID))
+                        .first();
+        assertThat(target).isNotNull();
+        Document identity = new Document("_id", target.get("_id"));
+        String unknownCode = "future_status_http_boundary";
+        try {
+            assertThat(
+                            collection
+                                    .updateOne(
+                                            identity,
+                                            new Document(
+                                                    "$set", new Document("status", unknownCode)))
+                                    .getModifiedCount())
+                    .isEqualTo(1);
+            List<Document> attendanceBefore = rawDocuments("attendances");
+            List<Document> outboxBefore = rawDocuments("attendance_outbox");
+
+            ResponseEntity<String> refused =
+                    restTemplate.exchange(path, HttpMethod.GET, request, String.class);
+
+            assertThat(refused.getStatusCode())
+                    .as("unknown stored AttendanceStatus is a typed HTTP conflict")
+                    .isEqualTo(HttpStatus.CONFLICT);
+            assertThat(refused.getHeaders().getContentType())
+                    .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+            assertThat(refused.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertThat(refused.getBody())
+                    .isNotNull()
+                    .doesNotContain(
+                            unknownCode,
+                            "ConversionFailedException",
+                            "IllegalArgumentException",
+                            "ru.rutcampustrack",
+                            "org.springframework");
+            JsonNode problem = objectMapper.readTree(refused.getBody());
+            assertThat(problem.path("status").asInt()).isEqualTo(409);
+            assertThat(problem.path("type").asText())
+                    .isEqualTo(ErrorResponse.PROBLEM_BASE + "conflict");
+            assertThat(problem.path("instance").asText()).isEqualTo(path);
+            assertThat(problem.path("detail").asText()).isNotBlank();
+            assertThat(problem.has("entries")).isFalse();
+            assertThat(rawDocuments("attendances")).isEqualTo(attendanceBefore);
+            assertThat(rawDocuments("attendance_outbox")).isEqualTo(outboxBefore);
+        } finally {
+            collection.updateOne(
+                    identity, new Document("$set", new Document("status", target.get("status"))));
+        }
+
+        assertKnownLessonAttendance(
+                restTemplate.exchange(path, HttpMethod.GET, request, String.class));
+    }
+
+    private List<Document> rawDocuments(String collection) {
+        return mongoTemplate
+                .getCollection(collection)
+                .find()
+                .sort(new Document("_id", 1))
+                .into(new ArrayList<>());
+    }
+
+    private void assertKnownLessonAttendance(ResponseEntity<String> response) throws Exception {
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        JsonNode body = objectMapper.readTree(response.getBody());
+        assertThat(body.path("lessonId").asLong()).isEqualTo(LESSON_ID);
+        assertThat(body.path("entries").isArray()).isTrue();
+        Map<Long, String> statuses = new HashMap<>();
+        for (JsonNode entry : body.path("entries")) {
+            statuses.put(
+                    entry.path("userId").asLong(),
+                    entry.path("status").isNull() ? null : entry.path("status").asText());
+        }
+        assertThat(statuses)
+                .hasSize(3)
+                .containsEntry(HEADMAN_USER_ID, "present")
+                .containsEntry(STUDENT_USER_ID, "absent")
+                .containsEntry(102L, null);
     }
 
     // -------------------------------------------------------------------------

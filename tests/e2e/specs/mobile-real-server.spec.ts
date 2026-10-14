@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Page } from '@playwright/test';
+import type { Page, Request, Route } from '@playwright/test';
 import { test, expect, admit, selectPwaRole, type MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
@@ -34,6 +34,44 @@ async function selectTomorrowHomework(page: Page, dataset: MobileDataset): Promi
   expect(response.status()).toBe(200);
   const feed = await response.json();
   expect(feed.from === dataset.tomorrow && feed.to === dataset.tomorrow).toBe(true);
+}
+
+async function publishOfflineHomework(dataset: MobileDataset, title: string): Promise<void> {
+  const requestKey = randomUUID();
+  await expect
+    .poll(async () => {
+      const result = await dataset.headmanActor.call(
+        'POST',
+        '/api/academic/homeworks',
+        {
+          title,
+          description: 'Синтетическое задание для проверки границы офлайн-доступа',
+          link: null,
+          subjectId: dataset.subject.id,
+          groupId: dataset.group.id,
+          semesterId: dataset.semester.id,
+          lessonDate: dataset.today,
+          lessonNumber: null,
+          bindingMode: 'DATE',
+          lessonType: 'LECTURE',
+          requestKey,
+        },
+        [201, 200, 202],
+      );
+      return result.state !== 'PENDING' && result.id != null;
+    })
+    .toBe(true);
+}
+
+async function requireProductionWorker(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect
+    .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null), {
+      timeout: 15000,
+    })
+    .toBe(true);
 }
 
 test.describe('Current Vue roles with real synthetic domain @real-mobile', () => {
@@ -794,7 +832,100 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         return published.state !== 'PENDING' && published.id != null;
       })
       .toBe(true);
-    const { session } = await loginPwa(page, dataset.student);
+    const tomorrowRoom = `${dataset.marker}-offline-next-day`;
+    const tomorrowLesson = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: dataset.tomorrow,
+        lessonNumber: 2,
+        classroom: tomorrowRoom,
+      },
+      [201, 200],
+      { 'Idempotency-Key': randomUUID() },
+    );
+    const { accessToken, session } = await loginPwa(page, dataset.student);
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const schedule = await page.request.get(
+      `/api/v1/student/schedule?semesterId=${dataset.semester.id}`,
+      { headers },
+    );
+    expect(schedule.status()).toBe(200);
+    const lessons = (await schedule.json()).lessons;
+    expect(
+      lessons.some(
+        (lesson: { id: string; date: string }) =>
+          String(lesson.id) === String(dataset.lesson.physicalLessonId) &&
+          lesson.date === dataset.today,
+      ),
+    ).toBe(true);
+    expect(
+      lessons.some(
+        (lesson: { id: string; date: string }) =>
+          String(lesson.id) === String(tomorrowLesson.physicalLessonId) &&
+          lesson.date === dataset.tomorrow,
+      ),
+    ).toBe(true);
+    // A real active attachment is available online, but acquiring it offline is forbidden.
+    const fileName = 'offline-boundary.png';
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGP4/x8AAwAB//wl3FEAAAAASUVORK5CYII=',
+      'base64',
+    );
+    const created = await dataset.request.post('/api/v1/student/requests/excuse', {
+      headers: { ...headers, 'Idempotency-Key': randomUUID() },
+      multipart: {
+        request: {
+          name: 'request.json',
+          mimeType: 'application/json',
+          buffer: Buffer.from(
+            JSON.stringify({
+              lessonIds: [String(tomorrowLesson.physicalLessonId)],
+              reason: 'ILLNESS',
+              comment: dataset.marker,
+            }),
+          ),
+        },
+        files: { name: fileName, mimeType: 'image/png', buffer: png },
+      },
+    });
+    expect(created.status()).toBe(200);
+    const request = await created.json();
+    expect(request.attachments.length === 1 && request.attachments[0].state === 'ACTIVE').toBe(
+      true,
+    );
+    const attachmentPath = `/api/v1/student/requests/${request.summary.id}/attachments/${request.attachments[0].id}`;
+    const downloaded = await dataset.request.get(attachmentPath, { headers });
+    expect(downloaded.status()).toBe(200);
+    expect((await downloaded.body()).equals(png)).toBe(true);
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Заявки', exact: true }).click();
+    const attachment = page.getByRole('button', { name: `Открыть ${fileName}`, exact: true });
+    await expect(attachment).toBeEnabled();
+    let offlineAttachmentReads = 0;
+    const countAttachment = (item: Request) => {
+      if (new URL(item.url()).pathname === attachmentPath) offlineAttachmentReads += 1;
+    };
+    const pagesBefore = context.pages().length;
+    page.on('request', countAttachment);
+    await context.setOffline(true);
+    try {
+      await expect(attachment).toBeDisabled();
+      await attachment.press('Enter');
+      expect(offlineAttachmentReads).toBe(0);
+      expect(context.pages().length).toBe(pagesBefore);
+    } finally {
+      page.off('request', countAttachment);
+      const admitted = page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === '/api/auth/session' && item.request().method() === 'GET',
+      );
+      await context.setOffline(false);
+      expect((await admitted).status()).toBe(200);
+    }
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
     await page.evaluate(async () => {
@@ -807,19 +938,84 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       .toBe(true);
     const another = await admit(dataset.request, dataset.student, 'STUDENT');
     await another.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
-    await context.setOffline(true);
+    let completionCommands = 0;
+    const countCompletion = (item: Request) => {
+      if (new URL(item.url()).pathname.endsWith('/completion') && item.method() === 'PUT')
+        completionCommands += 1;
+    };
+    const browserTime = await page.evaluate(() => Date.now());
+    page.on('request', countCompletion);
     try {
-      await page.reload();
-      await page.getByRole('button', { name: 'Задания', exact: true }).click();
-      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
-      await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
-      await expect(page.getByRole('slider', { name: new RegExp(dataset.marker) })).toBeDisabled();
+      await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
+      await context.setOffline(true);
+      try {
+        await page.reload();
+        await expect(
+          page.locator('.today-list').getByText('Синтетическая аудитория', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.today-list .student-lesson')).toHaveCount(
+          lessons.filter((lesson: { date: string }) => lesson.date === dataset.today).length,
+        );
+        await expect(
+          page.locator('.today-list').getByText(tomorrowRoom, { exact: true }),
+        ).toHaveCount(0);
+        await expect(
+          page.getByRole('button', { name: 'Сменить роль, активная роль: студент', exact: true }),
+        ).toBeDisabled();
+        await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+        await page.getByRole('button', { name: 'Расписание семестра', exact: true }).click();
+        await expect(page.getByText('Сохранённое расписание', { exact: true })).toBeVisible();
+        const dates = page.getByRole('combobox', { name: 'Дата', exact: true });
+        await dates.selectOption(dataset.tomorrow);
+        await expect(
+          page.getByRole('heading', { name: dataset.marker, exact: true }).first(),
+        ).toBeVisible();
+        await expect(dates).toHaveValue(dataset.tomorrow);
+        await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+        // Moscow crosses midnight while UTC is still on the same calendar day.
+        await page.clock.setFixedTime(new Date(`${dataset.today}T21:00:01Z`));
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        await expect(
+          page.locator('.today-list').getByText(tomorrowRoom, { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.today-list .student-lesson')).toHaveCount(
+          lessons.filter((lesson: { date: string }) => lesson.date === dataset.tomorrow).length,
+        );
+        await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+        await expect(page.getByRole('slider', { name: new RegExp(dataset.marker) })).toBeDisabled();
+        const completion = page.getByRole('slider', { name: new RegExp(dataset.marker) });
+        for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
+        await completion.press('Enter');
+        expect(completionCommands).toBe(0);
+      } finally {
+        await page.clock.setFixedTime(new Date(browserTime));
+        const admission = page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/refresh' &&
+            item.request().method() === 'POST',
+        );
+        await context.setOffline(false);
+        expect(await (await admission).finished()).toBeNull();
+      }
+      await expect(
+        page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+      ).toBeVisible();
+      // Observe through admission denial: an offline queue must not replay on reconnect.
+      expect(completionCommands).toBe(0);
+      const saved = await another.call(
+        'GET',
+        `/api/v1/student/homework?from=${dataset.today}&to=${dataset.today}`,
+      );
+      const own = saved.items.find((item: { title: string }) => item.title === dataset.marker);
+      expect(own !== undefined && own.completed === false).toBe(true);
+      expect(completionCommands).toBe(0);
     } finally {
-      await context.setOffline(false);
+      page.off('request', countCompletion);
     }
-    await expect(
-      page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
-    ).toBeVisible();
     await loginPwa(page, dataset.foreignStudent);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
@@ -830,6 +1026,300 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
       await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
     } finally {
+      await context.setOffline(false);
+    }
+  });
+
+  test('D002 reconnect rechecks changed grants and a late old feed cannot replace the new account', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    const marker = `${dataset.marker}-offline-owner`;
+    await publishOfflineHomework(dataset, marker);
+    const multirole = await dataset.user('TEACHER');
+    const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
+    await dataset.admin.call('PUT', rolePath, {
+      status: 'ACTIVE',
+      groupId: dataset.group.id,
+      telegramId: multirole.telegramId,
+    });
+    try {
+      const logged = await loginPwa(page, multirole);
+      expect(logged.session.activeRole).toBe('STUDENT');
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText(marker, { exact: true })).toBeVisible();
+      await requireProductionWorker(page);
+      await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+      await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
+      const teacher = page.getByRole('button', { name: /Преподаватель/ });
+      await expect(teacher).toBeEnabled();
+      let roleCommands = 0;
+      const countRole = (item: Request) => {
+        if (
+          new URL(item.url()).pathname === '/api/auth/session/active-role' &&
+          item.method() === 'PUT'
+        )
+          roleCommands += 1;
+      };
+      page.on('request', countRole);
+      await context.setOffline(true);
+      try {
+        await expect(teacher).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+        await teacher.press('Enter');
+        expect(roleCommands).toBe(0);
+        await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
+      } finally {
+        page.off('request', countRole);
+        const current = page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/session' &&
+            item.request().method() === 'GET',
+        );
+        await context.setOffline(false);
+        const response = await current;
+        expect(response.status()).toBe(200);
+        const neutral = await response.json();
+        expect(neutral.activeRole ?? null).toBeNull();
+        expect(
+          neutral.roles.some(
+            (grant: { role: string; selectable: boolean }) =>
+              grant.role === 'STUDENT' && !grant.selectable,
+          ),
+        ).toBe(true);
+        expect(
+          neutral.roles.some(
+            (grant: { role: string; selectable: boolean }) =>
+              grant.role === 'TEACHER' && grant.selectable,
+          ),
+        ).toBe(true);
+      }
+      await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+      await selectPwaRole(page, 'Преподаватель');
+      await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+      await logoutPwa(page);
+    } finally {
+      await context.setOffline(false);
+      await dataset.admin.call('PUT', rolePath, { status: 'ACTIVE', groupId: dataset.group.id });
+    }
+
+    await loginPwa(page, dataset.student);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(marker, { exact: true })).toBeVisible();
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let held = false;
+    let fetchedOwnResponse = false;
+    let ownerReady = false;
+    let releasedToNewOwner = false;
+    let routeFailed = false;
+    let finishHeld: () => void = () => {};
+    const heldDone = new Promise<void>((resolve) => {
+      finishHeld = resolve;
+    });
+    let releaseTimer: ReturnType<typeof setTimeout> | undefined;
+    const path = '**/api/v1/student/homework?*';
+    const holdOldFeed = async (route: Route) => {
+      const url = new URL(route.request().url());
+      if (
+        route.request().method() !== 'GET' ||
+        url.searchParams.get('from') !== dataset.tomorrow ||
+        url.searchParams.get('to') !== dataset.tomorrow ||
+        held
+      ) {
+        await route.continue();
+        return;
+      }
+      held = true;
+      try {
+        const response = await route.fetch({ timeout: 10000 });
+        try {
+          const feed = await response.json();
+          fetchedOwnResponse =
+            response.status() === 200 &&
+            feed.items.some(
+              (item: { id: string }) => String(item.id) === String(dataset.homework.id),
+            );
+          releaseTimer = setTimeout(release, 15000);
+          await gate;
+          releasedToNewOwner = ownerReady;
+          await route.fulfill({ response });
+        } finally {
+          await response.dispose();
+        }
+      } catch {
+        routeFailed = true;
+        await route.abort('failed');
+      } finally {
+        finishHeld();
+      }
+    };
+    await page.route(path, holdOldFeed);
+    try {
+      await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
+      await expect.poll(() => fetchedOwnResponse).toBe(true);
+      await logoutPwa(page);
+      // Keep this document alive: loginPwa.goto would destroy the delayed callback.
+      await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
+      await page.getByLabel('Пароль', { exact: true }).fill(dataset.foreignStudent.password);
+      const [login, current] = await Promise.all([
+        page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/login' &&
+            item.request().method() === 'POST',
+        ),
+        page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/session' &&
+            item.request().method() === 'GET',
+        ),
+        page.getByRole('button', { name: 'Войти', exact: true }).click(),
+      ]);
+      expect(login.status()).toBe(200);
+      expect(current.status()).toBe(200);
+      expect(String((await current.json()).userId) === String(dataset.foreignStudent.id)).toBe(
+        true,
+      );
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(
+        page.getByText('Новые задания появятся здесь после публикации.', { exact: true }),
+      ).toBeVisible();
+      ownerReady = true;
+      const delivered = page.waitForResponse((item) => {
+        const url = new URL(item.url());
+        return (
+          url.pathname === '/api/v1/student/homework' &&
+          url.searchParams.get('from') === dataset.tomorrow
+        );
+      });
+      release();
+      const late = await delivered;
+      expect(late.status()).toBe(200);
+      await late.finished();
+      await heldDone;
+      expect(routeFailed).toBe(false);
+      expect(releasedToNewOwner).toBe(true);
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+      await expect
+        .poll(() =>
+          page.evaluate(
+            (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+            String(dataset.foreignStudent.id),
+          ),
+        )
+        .toBe(true);
+      await context.setOffline(true);
+      await page.reload();
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+          String(dataset.foreignStudent.id),
+        ),
+      ).toBe(true);
+    } finally {
+      release();
+      if (releaseTimer) clearTimeout(releaseTimer);
+      await page.unroute(path, holdOldFeed);
+      if (held) await heldDone;
+      await context.setOffline(false);
+    }
+  });
+
+  test('D002 TMA stays online-only beside a warm PWA snapshot', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    const marker = `${dataset.marker}-tma-offline`;
+    await publishOfflineHomework(dataset, marker);
+    await loginPwa(page, dataset.student);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(marker, { exact: true })).toBeVisible();
+    await requireProductionWorker(page);
+    const tma = await context.newPage();
+    try {
+      // The page fixture fixes educational Date only for its own page.
+      await tma.clock.setFixedTime(new Date(await page.evaluate(() => Date.now())));
+      await installTelegramHost(tma, syntheticInitData(dataset.student.telegramId));
+      const [admitted, current] = await Promise.all([
+        tma.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/tma' && item.request().method() === 'POST',
+        ),
+        tma.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/session' &&
+            item.request().method() === 'GET',
+        ),
+        tma.goto('/mini-app/'),
+      ]);
+      expect(admitted.status()).toBe(200);
+      expect(current.status()).toBe(200);
+      expect(String((await current.json()).userId) === String(dataset.student.id)).toBe(true);
+      expect(await tma.evaluate(() => navigator.serviceWorker.controller === null)).toBe(true);
+      expect(
+        await tma.evaluate(
+          (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+          String(dataset.student.id),
+        ),
+      ).toBe(true);
+      await tma.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(tma.getByText(marker, { exact: true })).toBeVisible();
+      const completion = tma.getByRole('slider', { name: new RegExp(marker) });
+      await expect(completion).toBeEnabled();
+      let commands = 0;
+      const countCommand = (item: Request) => {
+        const path = new URL(item.url()).pathname;
+        if (
+          item.method() !== 'GET' &&
+          (path.startsWith('/api/v1/student/') || path === '/api/auth/session/active-role')
+        )
+          commands += 1;
+      };
+      tma.on('request', countCommand);
+      await context.setOffline(true);
+      try {
+        await expect(
+          tma.getByText('TMA работает только при подключении к интернету', { exact: true }),
+        ).toBeVisible();
+        await expect(completion).toBeDisabled();
+        for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
+        await completion.press('Enter');
+        expect(commands).toBe(0);
+        // The production TMA shell is no-store and has no offline service worker.
+        // A network-denied reload proves no hydration, not native Telegram behavior.
+        let disconnected = false;
+        try {
+          await tma.reload({ waitUntil: 'domcontentloaded' });
+        } catch (error) {
+          disconnected =
+            error instanceof Error && error.message.includes('net::ERR_INTERNET_DISCONNECTED');
+        }
+        expect(disconnected).toBe(true);
+        await expect(tma.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+        await expect(tma.getByText(marker, { exact: true })).toHaveCount(0);
+        expect(commands).toBe(0);
+      } finally {
+        tma.off('request', countCommand);
+      }
+    } finally {
+      await tma.close();
       await context.setOffline(false);
     }
   });

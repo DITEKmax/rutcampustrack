@@ -12,6 +12,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 
 /**
  * MongoDB custom converters for enum serialization as lowercase strings (INFRA-02). Declared in a
@@ -20,6 +21,9 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
  */
 @Configuration
 public class MongoConvertersConfig {
+
+    private static final String UNKNOWN_STORED_CODE =
+            "Stored attendance data contains an unsupported code";
 
     // INFRA-02: Enum serialization as lowercase strings
     @Bean
@@ -48,7 +52,11 @@ public class MongoConvertersConfig {
     static class AttendanceStatusReader implements Converter<String, AttendanceStatus> {
         @Override
         public AttendanceStatus convert(String source) {
-            return AttendanceStatus.valueOf(source.toUpperCase(Locale.ROOT));
+            try {
+                return AttendanceStatus.valueOf(source.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new ConflictException(UNKNOWN_STORED_CODE);
+            }
         }
     }
 
@@ -64,7 +72,11 @@ public class MongoConvertersConfig {
     static class AttendanceSourceReader implements Converter<String, AttendanceSource> {
         @Override
         public AttendanceSource convert(String source) {
-            return AttendanceSource.valueOf(source.toUpperCase(Locale.ROOT));
+            try {
+                return AttendanceSource.valueOf(source.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new ConflictException(UNKNOWN_STORED_CODE);
+            }
         }
     }
 
@@ -82,7 +94,11 @@ public class MongoConvertersConfig {
     static class ExcuseTypeReader implements Converter<String, ExcuseType> {
         @Override
         public ExcuseType convert(String source) {
-            return ExcuseType.valueOf(source.toUpperCase(Locale.ROOT));
+            try {
+                return ExcuseType.valueOf(source.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new ConflictException(UNKNOWN_STORED_CODE);
+            }
         }
     }
 
@@ -98,7 +114,11 @@ public class MongoConvertersConfig {
     static class ExcuseTicketStatusReader implements Converter<String, ExcuseTicketStatus> {
         @Override
         public ExcuseTicketStatus convert(String source) {
-            return ExcuseTicketStatus.valueOf(source.toUpperCase(Locale.ROOT));
+            try {
+                return ExcuseTicketStatus.valueOf(source.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new ConflictException(UNKNOWN_STORED_CODE);
+            }
         }
     }
 }

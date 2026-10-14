@@ -392,6 +392,46 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
+      # Worker script validation needs actual certificate trust, independently of page error handling.
+      - name: Trust the disposable localhost certificate for Chromium workers
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y libnss3-tools
+          python3 - <<'PY_TRUST'
+          import hashlib, os, re, ssl, stat, subprocess
+          from pathlib import Path
+          if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
+              raise SystemExit('Test certificate trust requires a disposable GitHub-hosted runner')
+          cert = Path('tests/e2e/infra/certs/server.crt')
+          info = cert.lstat()
+          if not stat.S_ISREG(info.st_mode) or cert.is_symlink() or info.st_size > 16384:
+              raise SystemExit('Expected bounded generated public test certificate')
+          # Chromium M146+ uses this path, retaining an existing legacy database if present.
+          legacy = Path.home() / '.pki/nssdb'
+          database = legacy if legacy.exists() else Path.home() / '.local/share/pki/nssdb'
+          if database.is_symlink():
+              raise SystemExit('Test certificate database must not be a link')
+          database.mkdir(parents=True, exist_ok=True, mode=0o700)
+          nickname = 'rct-e2e-localhost-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT']
+          db_args = ['certutil', '-d', 'sql:' + str(database)]
+          def run(args):
+              result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+              if result.returncode:
+                  raise SystemExit('Disposable test certificate trust operation failed')
+              return result.stdout
+          if not (database / 'cert9.db').exists():
+              run([*db_args, '-N', '--empty-password'])
+          # Trust this self-signed server as a peer, not as a CA for other servers.
+          run([*db_args, '-A', '-t', 'P,,', '-n', nickname, '-i', str(cert)])
+          exported = run([*db_args, '-L', '-n', nickname, '-a']).decode('ascii')
+          pem = re.search(r'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', exported, re.S)
+          if not pem or hashlib.sha256(ssl.PEM_cert_to_DER_cert(pem[0])).digest() != hashlib.sha256(ssl.PEM_cert_to_DER_cert(cert.read_text())).digest():
+              raise SystemExit('Disposable trusted certificate identity mismatch')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('RCT_E2E_NSS_DB=' + str(database) + '\nRCT_E2E_NSS_NICKNAME=' + nickname + '\n')
+          print('PASS exact disposable localhost peer certificate trusted; TLS validation retained')
+          PY_TRUST
+
       - name: Run auth-flow @smoke specs (chromium only)
         working-directory: tests/e2e
         env:
@@ -456,6 +496,193 @@ jobs:
           path: ${{ env.RCT_REMAINING5_RUN }}/artifacts/safe-results.json
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Restore a real application checkpoint into fresh disposable databases
+        id: application-recovery
+        timeout-minutes: 12
+        if: success() && steps.remaining5.outcome == 'success'
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_APP_RECOVERY_RUN: ${{ runner.temp }}/rct-application-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_APP_RECOVERY_PROJECT: rct-recovery-${{ github.run_id }}-${{ github.run_attempt }}-dst
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          SSL_CERT_FILE: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          NODE_OPTIONS: --max-old-space-size=512
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+        run: |
+          umask 077
+          printf 'RCT_APP_RECOVERY_RUN=%s\nRCT_APP_RECOVERY_PROJECT=%s\n' "$RCT_APP_RECOVERY_RUN" "$RCT_APP_RECOVERY_PROJECT" >> "$GITHUB_ENV"
+          python3 - <<'PY_RECOVERY'
+          import importlib.util, json, os, subprocess
+          from pathlib import Path
+
+          root = Path.cwd()
+          work = Path(os.environ['RCT_APP_RECOVERY_RUN'])
+          project = os.environ['RCT_APP_RECOVERY_PROJECT']
+          work.mkdir(mode=0o700)
+          (work / 'artifacts').mkdir(mode=0o700)
+          for phase in ('seed', 'pending', 'admit', 'attachment'):
+              (work / 'artifacts' / phase).mkdir(mode=0o700)
+          (work / 'disposable-target').write_text('RCT_APP_RECOVERY_DISPOSABLE\n')
+          env_file = root / 'tests/e2e/.env.ci'
+          spec = importlib.util.spec_from_file_location('recovery', root / 'scripts/recovery.py')
+          recovery = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(recovery)
+          compose = ['docker', 'compose', '--env-file', str(env_file), '-p', 'rct-e2e',
+                     '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
+          stage = 'source'
+
+          def call(argv, *, cwd=root, env=None, seconds=180):
+              result = subprocess.run(argv, cwd=cwd, env=env, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, timeout=seconds)
+              if result.returncode:
+                  raise RuntimeError('Application recovery command failed')
+              return result.stdout
+
+          def api(phase):
+              call(['npx', 'playwright', 'test', '--config', 'playwright.application-recovery.config.ts'],
+                   cwd=root / 'tests/e2e', env={**os.environ, 'RCT_APP_RECOVERY_PHASE': phase}, seconds=330)
+
+          def inspect(container):
+              value = json.loads(call(['docker', 'inspect', container]))[0]
+              if value['Config']['Labels'].get('com.docker.compose.project') != 'rct-e2e':
+                  raise RuntimeError('Source container ownership mismatch')
+              return value
+
+          try:
+              config = json.loads(call([*compose, 'config', '--format', 'json']))
+              ids = {service: call([*compose, 'ps', '-q', service]).decode().strip()
+                     for service in config['services']}
+              if not all(ids.values()):
+                  raise RuntimeError('Source stack is incomplete')
+              sources = {service: inspect(cid) for service, cid in ids.items()}
+              network = 'rct-e2e_private_net'
+              network_info = json.loads(call(['docker', 'network', 'inspect', network]))[0]
+              if network_info['Labels'].get('com.docker.compose.project') != 'rct-e2e':
+                  raise RuntimeError('Source network ownership mismatch')
+              db_services = ('postgres-academic', 'postgres-schedule', 'mongo-attendance')
+              target = {'services': {}, 'networks': {'private_net': {'external': True, 'name': network}}}
+              for service in db_services:
+                  original = config['services'][service]
+                  target['services'][service] = {
+                      key: original[key] for key in ('image', 'environment', 'healthcheck', 'volumes')
+                      if key in original
+                  }
+                  target['services'][service].update(
+                      labels={'io.rutcampustrack.recovery': 'disposable'},
+                      networks={'private_net': {'aliases': [service]}})
+              target_file = work / 'fresh-target.compose.json'
+              target_file.write_text(json.dumps(target))
+              target_compose = ['docker', 'compose', '-p', project, '-f', str(target_file)]
+              api('seed')
+              stage = 'pending'
+              call([*compose, 'stop', '--timeout', '15', 'rabbitmq'])
+              if inspect(ids['rabbitmq'])['State']['Running']:
+                  raise RuntimeError('Owned broker did not stop')
+              api('pending')
+              stage = 'backup'
+              writers = [name for name in ids if name not in (*db_services, 'rabbitmq', 'redis')]
+              call([*compose, 'stop', '--timeout', '30', *writers])
+              if any(inspect(ids[name])['State']['Running'] for name in writers):
+                  raise RuntimeError('Application writers remain active')
+              db_args = ['--env-file', str(env_file), '--academic-container', ids['postgres-academic'],
+                         '--schedule-container', ids['postgres-schedule'], '--mongo-container', ids['mongo-attendance']]
+              bundle = work / 'bundle'
+              call(['python3', 'scripts/recovery.py', 'backup', *db_args,
+                    '--no-files', '--quiesced', '--output', str(bundle)])
+              pending = json.loads((work / 'pending.json').read_text())
+              baseline = work / 'capture.private.json'
+              call(['python3', 'scripts/test-application-recovery.py', 'capture', '--bundle', str(bundle),
+                    '--operation-id', pending['operationId'], '--request-file', str(work / 'request.json'),
+                    '--history-before', str(work / 'history-before.json'), '--history-pointer', pending['historyPointer'],
+                    '--history-lesson-id', str(pending['historyLessonId']), '--quiesced', '--output', str(baseline)])
+              stage = 'fresh-restore'
+              call([*compose, 'stop', '--timeout', '15', *db_services, 'redis'])
+              for service in db_services:
+                  if inspect(ids[service])['State']['Running']:
+                      raise RuntimeError('Source database did not stop')
+                  call(['docker', 'network', 'disconnect', network, ids[service]])
+              # New target containers have no application/Flyway startup or source database mounts.
+              call([*target_compose, 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '150'])
+              target_ids = {name: call([*target_compose, 'ps', '-q', name]).decode().strip() for name in db_services}
+              for name, cid in target_ids.items():
+                  restored_info = json.loads(call(['docker', 'inspect', cid]))[0]
+                  labels = restored_info['Config']['Labels']
+                  if (labels.get('com.docker.compose.project') != project
+                          or labels.get('io.rutcampustrack.recovery') != 'disposable'
+                          or restored_info['Image'] != sources[name]['Image']):
+                      raise RuntimeError('Fresh target identity mismatch')
+              target_args = ['--env-file', str(env_file), '--academic-container', target_ids['postgres-academic'],
+                             '--schedule-container', target_ids['postgres-schedule'], '--mongo-container', target_ids['mongo-attendance']]
+              call(['python3', 'scripts/recovery.py', 'restore', *target_args,
+                    '--no-files', '--bundle', str(bundle), '--target-project', project])
+              stage = 'application'
+              # Restart the same built apps, signing volume and TLS identities on restored databases.
+              call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
+                    '--wait', '--wait-timeout', '180', 'redis', 'rabbitmq', *writers], seconds=220)
+              for name in ('redis', 'rabbitmq', *writers):
+                  cid = call([*compose, 'ps', '-q', name]).decode().strip()
+                  if cid != ids[name] or inspect(cid)['Image'] != sources[name]['Image']:
+                      raise RuntimeError('Original application container or image changed')
+              if any(inspect(ids[name])['State']['Running'] for name in db_services):
+                  raise RuntimeError('Source database restarted unexpectedly')
+              connected = json.loads(call(['docker', 'network', 'inspect', network]))[0]['Containers']
+              if any(ids[name] in connected for name in db_services):
+                  raise RuntimeError('Source database endpoint remains attached')
+              if not all(target_ids[name] in connected for name in db_services):
+                  raise RuntimeError('Restored database endpoint is missing')
+              api('admit')
+              call(['python3', 'scripts/test-application-recovery.py', 'verify', *target_args,
+                    '--bundle', str(bundle), '--baseline', str(baseline), '--target-project', project,
+                    '--schedule-url', 'https://localhost:8443/api',
+                    '--history-url', 'https://localhost:8443' + pending['historyUrl'],
+                    '--actor-token-file', str(work / 'actor-token.private'),
+                    '--history-token-file', str(work / 'history-token.private'),
+                    '--timeout-seconds', '130', '--output', str(work / 'verified.private.json')])
+              api('attachment')
+              print('PASS real application recovery: fresh inventory, historical attachment and exact transfer replay')
+          except Exception as error:
+              print('FAIL application recovery stage=' + stage + ' class=' + type(error).__name__)
+              raise SystemExit(1)
+          PY_RECOVERY
+
+      - name: Upload closed application recovery API outcomes
+        if: always() && steps.application-recovery.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-recovery-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/*/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop owned fresh recovery targets
+        if: always() && env.RCT_APP_RECOVERY_PROJECT != ''
+        run: |
+          python3 - <<'PY_CLEANUP'
+          import json, os, subprocess
+          from pathlib import Path
+          project = os.environ['RCT_APP_RECOVERY_PROJECT']
+          target = Path(os.environ['RCT_APP_RECOVERY_RUN']) / 'fresh-target.compose.json'
+          ids = subprocess.check_output(['docker', 'ps', '-aq', '--filter', 'label=com.docker.compose.project=' + project], text=True).split()
+          for cid in ids:
+              info = json.loads(subprocess.check_output(['docker', 'inspect', cid]))[0]
+              if info['Config']['Labels'].get('io.rutcampustrack.recovery') != 'disposable':
+                  raise SystemExit('Recovery target cleanup ownership mismatch')
+          if ids:
+              if not target.is_file() or target.is_symlink():
+                  raise SystemExit('Recovery target cleanup configuration unavailable')
+              result = subprocess.run(['docker', 'compose', '-p', project, '-f', str(target), 'down', '--timeout', '15'],
+                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+              if result.returncode:
+                  raise SystemExit('Recovery target cleanup failed')
+          print('PASS recovery target cleanup; source data, signing volume and bundle retained')
+          PY_CLEANUP
+
+      - name: Remove only this job's test certificate trust
+        if: always() && env.RCT_E2E_NSS_NICKNAME != ''
+        run: |
+          certutil -d "sql:$RCT_E2E_NSS_DB" -D -n "$RCT_E2E_NSS_NICKNAME"
 
       - name: Stop isolated e2e containers
         if: always()

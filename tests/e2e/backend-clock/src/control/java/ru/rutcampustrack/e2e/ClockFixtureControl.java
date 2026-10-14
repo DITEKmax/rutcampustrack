@@ -7,6 +7,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Map;
+import org.springframework.boot.Banner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
@@ -95,6 +98,23 @@ public final class ClockFixtureControl {
                     require(utc.getZone().equals(ZoneId.of("UTC")));
                     Files.writeString(file, first.toString());
                 }
+            }
+            // Boot discovery must enroll the fixture; a direct initialize() call cannot prove it.
+            SpringApplication application = new SpringApplication(ClockFixtureControl.class);
+            application.setWebApplicationType(WebApplicationType.NONE);
+            application.setBannerMode(Banner.Mode.OFF);
+            application.setLogStartupInfo(false);
+            application.setApplicationContextFactory(type -> context("attendance-service"));
+            application.setDefaultProperties(
+                    Map.of("spring.application.name", "attendance-service"));
+            try (var bootContext = application.run()) {
+                Clock educational = bootContext.getBean(EducationalTime.class).clock();
+                require(educational instanceof FileClock);
+                require(educational.instant().equals(first));
+                require(
+                        bootContext.getBean(Clock.class)
+                                == bootContext.getBean("systemClock", Clock.class));
+                require(!(bootContext.getBean(Clock.class) instanceof FileClock));
             }
             Files.delete(file);
             rejects(() -> new FileClock(file, ZoneId.of("Europe/Moscow")).instant());

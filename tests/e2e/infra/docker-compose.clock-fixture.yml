@@ -13,7 +13,6 @@ services:
       - *teaching-clock-mount
     entrypoint:
       - java
-      - -Dcontext.initializer.classes=ru.rutcampustrack.e2e.ClockInitializer
       - -Drct.e2e.clock.enabled=true
       - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
       - -cp
@@ -24,7 +23,6 @@ services:
       - *teaching-clock-mount
     entrypoint:
       - java
-      - -Dcontext.initializer.classes=ru.rutcampustrack.e2e.ClockInitializer
       - -Drct.e2e.clock.enabled=true
       - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
       - -cp
@@ -35,7 +33,6 @@ services:
       - *teaching-clock-mount
     entrypoint:
       - java
-      - -Dcontext.initializer.classes=ru.rutcampustrack.e2e.ClockInitializer
       - -Drct.e2e.clock.enabled=true
       - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
       - -cp
@@ -46,7 +43,6 @@ services:
       - *teaching-clock-mount
     entrypoint:
       - java
-      - -Dcontext.initializer.classes=ru.rutcampustrack.e2e.ClockInitializer
       - -Drct.e2e.clock.enabled=true
       - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
       - -cp

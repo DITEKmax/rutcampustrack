@@ -367,6 +367,7 @@ springBootApps.forEach { path ->
 // Explicit external E2E artifact. No production source set, bootJar or assemble depends on it.
 val e2eClock = sourceSets.create("e2eClock") {
     java.setSrcDirs(listOf("tests/e2e/backend-clock/src/main/java"))
+    resources.setSrcDirs(listOf("tests/e2e/backend-clock/src/main/resources"))
 }
 val e2eClockControl = sourceSets.create("e2eClockControl") {
     java.setSrcDirs(listOf("tests/e2e/backend-clock/src/control/java"))
@@ -381,6 +382,7 @@ dependencies {
     add(e2eClockControl.implementationConfigurationName,
         platform("org.springframework.boot:spring-boot-dependencies:3.5.16"))
     add(e2eClockControl.implementationConfigurationName, "org.springframework:spring-context")
+    add(e2eClockControl.implementationConfigurationName, "org.springframework.boot:spring-boot")
     add(e2eClockControl.implementationConfigurationName, project(":services:shared:shared-web-api"))
 }
 tasks.register<Jar>("e2eClockFixtureJar") {

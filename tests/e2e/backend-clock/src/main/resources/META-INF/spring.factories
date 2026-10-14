@@ -1,0 +1,1 @@
+org.springframework.context.ApplicationContextInitializer=ru.rutcampustrack.e2e.ClockInitializer

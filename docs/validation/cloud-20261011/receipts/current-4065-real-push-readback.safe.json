@@ -35437,7 +35437,18 @@
         "clockOutcome": "PASSED",
         "disposeOutcome": "PASSED"
       },
-      "actualCheckout": "PENDING_OFFICIAL_CHECKOUT_JOIN",
+      "actualCheckout": {
+        "actualCheckout": "4f273f57f4bc2c8f2fa7d0390905ccb630119e14",
+        "actualTree": "96d6481f33012625d09e7772ff8c119b1fe62b4f",
+        "officialParents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "61dfb19fc1b50fd6889810f0c4ce9903582e851c"
+        ],
+        "producer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+        "producerTree": "96d6481f33012625d09e7772ff8c119b1fe62b4f",
+        "sourceTreeEqual": true,
+        "state": "OFFICIAL_ACTUAL_CHECKOUT_PARENT_TREE_JOIN_PASS"
+      },
       "qualification": "Sameexistingclosedcore+lifecyclev1 schema; exactnamedactualSource, onecasechromium; no ordinal/schema loosening",
       "qualification_old_failure": "Old62dfPENDING/SCHEDULE_EFFECT_ACK_PENDING retained, causeUNKNOWN. CurrentunchangednamedtestPASS80122ms/threeparticipantsRELEASED/allcleanupclockdisposalPASS; notclaimoldcausefixed/flaky orwholefamilyPASS. Actualcheckoutjoinpending."
     },
@@ -35495,6 +35506,574 @@
       "observation": "Currentneutralnamedcase1485 frame1555 is await logoutPwa(page), AFTER neutralrolepicker/emptyowner/teacherRolePUT/teacherfeatureowner assertions. OldEEE1470 is samehelpercall. Rootphasehypothesis was broader than actualcurrentprimaryfailureboundary.",
       "qualification": "Preserve overallcaseFAIL; precedingflow completion is not independentfinitePASS. Need Source diagnosis ofactuallogout helper; phaseinstrumentation onlyuntrusted hints, no productdefect/rootcause claim. No fresh rerun without newSourcecondition.",
       "next": "c66schedule/currentauthor Source diagnosis ofgenuineheadmanrole initialwait and PWA teacherlogout, no timeoutincrease/mock/rightsweakening."
+    },
+    "94ffb_actual_publication": {
+      "utc": "2026-10-14T23:33:18.095Z",
+      "parent": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+      "local": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+      "remote": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+      "PRhead": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+      "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "draft": true,
+      "base": "main",
+      "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "mergeMetadata": "6ea642307e76dcd142a44485ae65e194b4397c4b",
+      "actualCheckout": "PENDING_CURRENT_RUN_ARTIFACT",
+      "runs": [
+        {
+          "id": 38654585376,
+          "name": "Coverage",
+          "status": "queued",
+          "conclusion": null,
+          "event": "pull_request",
+          "attempt": 1,
+          "head_sha": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38654585376"
+        },
+        {
+          "id": 38654585349,
+          "name": "OpenAPI Drift Guard",
+          "status": "in_progress",
+          "conclusion": null,
+          "event": "pull_request",
+          "attempt": 1,
+          "head_sha": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38654585349"
+        },
+        {
+          "id": 38654585425,
+          "name": "Security",
+          "status": "queued",
+          "conclusion": null,
+          "event": "pull_request",
+          "attempt": 1,
+          "head_sha": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38654585425"
+        },
+        {
+          "id": 38654585567,
+          "name": "CI",
+          "status": "queued",
+          "conclusion": null,
+          "event": "pull_request",
+          "attempt": 1,
+          "head_sha": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+          "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38654585567"
+        }
+      ],
+      "sourcePaths": 8,
+      "totalCommitPaths": 13,
+      "publication": "Ordinaryconfiguredsixchecks/commit/rangeGitleaks/realpush/readback0; allownedreaped. Angular433baselinebytes/modes and25untrackedWIP preserved. No mainpush/merge/deploy.",
+      "next": "Currentordinarygates/browser; freshc67read-onlyrole/logout Source diagnosis, c66schedule pendinginterrupted no duplicatewriter."
+    },
+    "94ffb_role_logout_Source_diagnosis_assignment": {
+      "utc": "2026-10-14T23:35:45.339528+00:00",
+      "author": "c67_role_logout_source",
+      "state": "ASSIGN_THREEFILE_BOUNDED_FIXTURE_CORRECTION_AFTER_SOURCE_PLAN",
+      "findings": "TeacherProfile has no onLogout, nestedProfileScreen hidesExit, genuinePWA .pwa-logout exists. Existinghelper wronglyscopedonlynestedbutton. TMAinitialrole view istransitional whilebootstraploads; helperimmediateisVisible maychooseProfilebeforefinalneutralpicker. ActualactiveRolevaluenotcaptured, so racevulnerabilitynotprovedsoleactualcause.",
+      "scope": "Existingrequest-enum874WT handofffrominterruptedc66. Only pwa-auth.ts logout selector, mobile-real-server.ts headmanreadiness +removeunusedD002phaseprobe; App.vue removeonly47diagnosticlines. KeepapprovedTMAoracle/WebKitcatchdiagnostic/allbehavior/asserts/cleanup.",
+      "risk": "No productgrants/authtransport change; genuineUI/POST204/login retained. CorrectedactualbrowserNOT_RUN.",
+      "RootSoleWriter": "Git/commonconfig/docs; productSource solec67 ownWT afterexplicittransfer",
+      "baseInventory": [
+        {
+          "path": "frontends/pwa-vue/src/App.vue",
+          "sha256": "5633da8d18bdda4a0bc169a223601ed4688631d659e18745a84ffe99c70c8e89"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "87b1cfad2e1bb6467acfbfd325ee6d5cd7c4ffff8bde52563224bf1e7b29734c"
+        },
+        {
+          "path": "tests/e2e/fixtures/pwa-auth.ts",
+          "sha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99"
+        }
+      ],
+      "priorWriters": "c66request/c65client/c66schedule pending_init interrupted; noSource mutations active. c67 freshrequestedSol6.1high running; no fallback."
+    },
+    "61dfb_official_actual_checkout_join": {
+      "actualCheckout": "4f273f57f4bc2c8f2fa7d0390905ccb630119e14",
+      "actualTree": "96d6481f33012625d09e7772ff8c119b1fe62b4f",
+      "officialParents": [
+        "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "61dfb19fc1b50fd6889810f0c4ce9903582e851c"
+      ],
+      "producer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+      "producerTree": "96d6481f33012625d09e7772ff8c119b1fe62b4f",
+      "sourceTreeEqual": true,
+      "state": "OFFICIAL_ACTUAL_CHECKOUT_PARENT_TREE_JOIN_PASS"
+    },
+    "94ffb_role_logout_Source_initial_findings": {
+      "recordedAt": "2026-10-14T23:35:45.467084+00:00",
+      "state": "SOURCE_DIAGNOSIS_COMPLETE_NO_SOURCE_EDIT_NO_RUNTIME",
+      "selectedModel": "gpt-6.1-sol",
+      "selectedEffort": "high",
+      "actualRuntimeModelEffort": "UNKNOWN",
+      "governing": {
+        "TASK-CONTRACT.md": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+        "RULES.md": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+      },
+      "scope": "Only existing signed HEADMAN case950 and D002 reconnect case1485 at official61df; current spec/PWA App contain Root changes, so original failure lines are bound to git show61df, never inferred from current offsets.",
+      "primary": {
+        "receipt": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+        "producer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+        "run": 38649468413,
+        "officialSpecSha256": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0",
+        "headman": "FAIL at outer waitForResponse998 / selectPwaRole1003 after admission200/session200/current-user/selectable-HEADMAN assertions; exact activeRole value, DOM and inner failing action UNKNOWN.",
+        "D002": "FAIL at await logoutPwa1555 AFTER neutral session assertions, picker visibility, absent main navigation/old marker, teacher role admission and visible teacher owner. Original full case remains FAIL; preceding assertions are not promoted to independent finitePASS."
+      },
+      "headmanRoleReadiness": {
+        "classification": "SOURCE_ESTABLISHED_FIXTURE_READINESS_RACE; ACTUAL_EXCLUSIVE_RUNTIME_CAUSE_UNKNOWN",
+        "sourceChain": [
+          "mobile-real-server.spec.ts official950/974-1003 waits network responses and reads current.json, but never waits committed role-owner/picker UI before helper.",
+          "mobile-dataset.ts310-314 uses heading.isVisible(), a non-waiting snapshot; false immediately chooses Profile button click, with no branch reconsideration.",
+          "tma-vue/App.vue782-789 authenticates and awaits profile; bootstrap1033-1035 commits Vue profile only after await returns. Browser response/current.json completion does not establish that Vue commit/render has happened.",
+          "tma-vue/App.vue1086-1090 commits neutral authView=role. Template1391-1399 mounts RoleSwitchScreen without feature navigation; no Profile navigation button exists in that state.",
+          "tma-vue/App.vue213-229 initial authView=role; template1397 supplies loading while bootstrap runs. RoleSwitchScreen76-81 always renders heading, but90-104 hides role cards while loading. Therefore heading-only readiness can also observe a temporary picker before a nonneutral owner is installed.",
+          "RoleSwitchScreen114-123/42-47 preserves selectable/offline/pending guards and sends expectedSessionVersion via owner; TMA selectRole1138-1151 keeps real active-role PUT and activates actual headman owner."
+        ],
+        "boundedCorrectionPlan": "In existing selectPwaRole, define target-role card and exact Profile navigation button locators; before existing heading snapshot wait with ordinary expect for their union.first() to be visible. A ready target role card proves picker passed loading branch; a Profile button proves a feature owner has rendered. Then retain existing heading branch, UI clicks, real PUT waiter/status200 and main-navigation assertion. Existing timeouts unchanged. No heading-only gate, polling framework, fixture API role switch, mock or bootstrap-phase probe.",
+        "narrowAlternative": "Only in signed case before existing helper: authoritative current.activeRole null/omitted => wait exact picker heading AND target HEADMAN card enabled; nonnull other role => wait existing main navigation. This avoids deciding client readiness from a response alone. Do not assert activeRole null from the current closed artifact: its exact value is UNKNOWN.",
+        "acceptance": "Ordinary existing signed case must pass retained admission/session/current user/selectable role, PUT200, response user+activeRole HEADMAN, actual roster row mark and unchanged-row/readback assertions. No test-only role admission transport.",
+        "causalLimit": "Source proves an allowed failing interleaving and missing readiness contract; current closed outer frames do not prove that this exact interleaving occurred. No product auth/role-permission defect established."
+      },
+      "teacherLogout": {
+        "classification": "SOURCE_ESTABLISHED_FIXTURE_SCOPE_MISMATCH; SERVER_LOGOUT_OR_OWNER_CLEANUP_DEFECT_NOT_ESTABLISHED",
+        "sourceChain": [
+          "pwa-auth.ts105-118 opens Profile, verifies Profile heading, then scopes exact Logout to that main at115 while waiting genuine POST /api/auth/logout; asserts204 and login heading.",
+          "TeacherFeatureOwner.vue55-85 has no onLogout prop; ProfileScreen823-832 receives snapshot/loading/error/retry/navigation, but no on-logout callback.",
+          "ProfileScreen.vue25/36 declares optional onLogout default undefined;152-160 renders exact Logout button only v-if=onLogout. Therefore teacher Profile main has no such button irrespective of profile fetch success.",
+          "PWA App official2255-2272/current2302-2319 also passes no on-logout to TeacherFeatureOwner. Existing separate PWA button official2511-2518/current2558-2565 is class pwa-logout, authView teacher/headman/map, @click=logout, outside Profile main.",
+          "PWA current logout1861-1903 uses existing owner invalidation and auth.logout/clearOwnerSnapshot; this operation is unreachable through the helper-scoped absent teacher button. This Source path does not establish any actual POST/status/cleanup failure.",
+          "StudentFeatureOwner.vue2301-2309 supplies onLogout to ProfileScreen; existing helper scope is valid for that owner. TMA teacher also lacks the callback (App1429-1446); current PWA failure does not establish a separate TMA logout verdict."
+        ],
+        "boundedCorrectionPlan": "Preserve actual UI: after the unchanged Profile heading assertion choose its exact Logout button when present; only when absent choose the existing unique button.pwa-logout with exact Logout accessible name. Keep real POST waiter,204 and login heading unchanged. Limit fallback to this existing PWA hook; do not click the first arbitrary page button or call an API directly. Existing static onLogout render condition makes profile-button presence stable after profile main mounted. No product/design/permission change needed to address this fixture assumption.",
+        "productQualification": "Missing teacher Profile callback is a Source fact, but PWA already exposes working logout wiring outside that main. Calling it a missing product logout feature or moving/duplicating logout UI requires an independently accepted placement requirement; this diagnosis establishes fixture scope mismatch only.",
+        "acceptance": "Rerun the same existing D002 case after minimal fixture correction: preserve all neutral/offline/no-role-command/owner-clear assertions, teacher PUT/owner assertions, logout POST204/login, and later new-account/late-feed isolation tail. Do not skip logout or downgrade full-case FAIL."
+      },
+      "minimumFurtherPrimary": "No new execution in this leaf. Existing normal CI real-browser/server carriers after a reviewed minimal fixture correction are sufficient next evidence. Until then no current casePASS/root-cause exclusivity claim. If HEADMAN still fails, use existing private reported helper/action frame and original admission/session evidence under unchanged privacy schema; no new phase probe, raw payload, transport or ordinal identity fallback.",
+      "sourcePins": {
+        "tests/e2e/fixtures/mobile-dataset.ts": {
+          "official61dfSha256": "758e26c26097ea047d099c142c4dfaac7cd584f7d9050f50d4266186b7838947",
+          "currentSha256": "758e26c26097ea047d099c142c4dfaac7cd584f7d9050f50d4266186b7838947",
+          "currentEqualsOfficial": true
+        },
+        "tests/e2e/fixtures/pwa-auth.ts": {
+          "official61dfSha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99",
+          "currentSha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99",
+          "currentEqualsOfficial": true
+        },
+        "tests/e2e/specs/mobile-real-server.spec.ts": {
+          "official61dfSha256": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0",
+          "currentSha256": "87b1cfad2e1bb6467acfbfd325ee6d5cd7c4ffff8bde52563224bf1e7b29734c",
+          "currentEqualsOfficial": false
+        },
+        "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue": {
+          "official61dfSha256": "904a7cca3736cad2dff52f7bcf4cae410ed242cb092fd6ef50b49bf4c52c120b",
+          "currentSha256": "904a7cca3736cad2dff52f7bcf4cae410ed242cb092fd6ef50b49bf4c52c120b",
+          "currentEqualsOfficial": true
+        },
+        "frontends/mobile-core/src/features/profile/ProfileScreen.vue": {
+          "official61dfSha256": "5ab7c2540c5c4f7a42c664b985e6b5e39383f9c80f90c7ecab2f808a17535761",
+          "currentSha256": "5ab7c2540c5c4f7a42c664b985e6b5e39383f9c80f90c7ecab2f808a17535761",
+          "currentEqualsOfficial": true
+        },
+        "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue": {
+          "official61dfSha256": "bb60b9b010480730837034b1139065e17e5727de3402979f1e25e74d0c99f9aa",
+          "currentSha256": "bb60b9b010480730837034b1139065e17e5727de3402979f1e25e74d0c99f9aa",
+          "currentEqualsOfficial": true
+        },
+        "frontends/pwa-vue/src/App.vue": {
+          "official61dfSha256": "7e92f203cb8111a34672063a6f871df3e7805d4ab6fc04516de9112a8cd8e58b",
+          "currentSha256": "5633da8d18bdda4a0bc169a223601ed4688631d659e18745a84ffe99c70c8e89",
+          "currentEqualsOfficial": false
+        },
+        "frontends/tma-vue/src/App.vue": {
+          "official61dfSha256": "49058fd3264458cf0659ea2aa8c14861464ca7ef1da6ccd35faf87cbfe8f31ac",
+          "currentSha256": "49058fd3264458cf0659ea2aa8c14861464ca7ef1da6ccd35faf87cbfe8f31ac",
+          "currentEqualsOfficial": true
+        }
+      },
+      "checks": {
+        "criticalSourceReadAndOriginal61dfBinding": "PASS_SOURCE_ONLY",
+        "sourceSHAEquality": "PASS_REPORTED_PER_FILE",
+        "runtimeOrTests": "NOT_RUN",
+        "sourceEdits": false,
+        "GitMutation": false,
+        "rootDocsEdits": false,
+        "networkBrowserDockerJava": false,
+        "children": 0,
+        "onlyAssignedReceiptKeyAppended": true,
+        "B013_B014_B015": "FROZEN; no equivalent check, quota change, gateway/IP work or ordinal identity fallback"
+      }
+    },
+    "94ffb_role_logout_Source_ready": {
+      "utc": "2026-10-14T23:40:11.533717+00:00",
+      "authorOutcome": {
+        "recordedAt": "2026-10-14T23:35:45.467084+00:00",
+        "state": "SOURCE_DIAGNOSIS_COMPLETE_NO_SOURCE_EDIT_NO_RUNTIME",
+        "selectedModel": "gpt-6.1-sol",
+        "selectedEffort": "high",
+        "actualRuntimeModelEffort": "UNKNOWN",
+        "governing": {
+          "TASK-CONTRACT.md": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+          "RULES.md": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+        },
+        "scope": "Only existing signed HEADMAN case950 and D002 reconnect case1485 at official61df; current spec/PWA App contain Root changes, so original failure lines are bound to git show61df, never inferred from current offsets.",
+        "primary": {
+          "receipt": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+          "producer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+          "run": 38649468413,
+          "officialSpecSha256": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0",
+          "headman": "FAIL at outer waitForResponse998 / selectPwaRole1003 after admission200/session200/current-user/selectable-HEADMAN assertions; exact activeRole value, DOM and inner failing action UNKNOWN.",
+          "D002": "FAIL at await logoutPwa1555 AFTER neutral session assertions, picker visibility, absent main navigation/old marker, teacher role admission and visible teacher owner. Original full case remains FAIL; preceding assertions are not promoted to independent finitePASS."
+        },
+        "headmanRoleReadiness": {
+          "classification": "SOURCE_ESTABLISHED_FIXTURE_READINESS_RACE; ACTUAL_EXCLUSIVE_RUNTIME_CAUSE_UNKNOWN",
+          "sourceChain": [
+            "mobile-real-server.spec.ts official950/974-1003 waits network responses and reads current.json, but never waits committed role-owner/picker UI before helper.",
+            "mobile-dataset.ts310-314 uses heading.isVisible(), a non-waiting snapshot; false immediately chooses Profile button click, with no branch reconsideration.",
+            "tma-vue/App.vue782-789 authenticates and awaits profile; bootstrap1033-1035 commits Vue profile only after await returns. Browser response/current.json completion does not establish that Vue commit/render has happened.",
+            "tma-vue/App.vue1086-1090 commits neutral authView=role. Template1391-1399 mounts RoleSwitchScreen without feature navigation; no Profile navigation button exists in that state.",
+            "tma-vue/App.vue213-229 initial authView=role; template1397 supplies loading while bootstrap runs. RoleSwitchScreen76-81 always renders heading, but90-104 hides role cards while loading. Therefore heading-only readiness can also observe a temporary picker before a nonneutral owner is installed.",
+            "RoleSwitchScreen114-123/42-47 preserves selectable/offline/pending guards and sends expectedSessionVersion via owner; TMA selectRole1138-1151 keeps real active-role PUT and activates actual headman owner."
+          ],
+          "boundedCorrectionPlan": "In existing selectPwaRole, define target-role card and exact Profile navigation button locators; before existing heading snapshot wait with ordinary expect for their union.first() to be visible. A ready target role card proves picker passed loading branch; a Profile button proves a feature owner has rendered. Then retain existing heading branch, UI clicks, real PUT waiter/status200 and main-navigation assertion. Existing timeouts unchanged. No heading-only gate, polling framework, fixture API role switch, mock or bootstrap-phase probe.",
+          "narrowAlternative": "Only in signed case before existing helper: authoritative current.activeRole null/omitted => wait exact picker heading AND target HEADMAN card enabled; nonnull other role => wait existing main navigation. This avoids deciding client readiness from a response alone. Do not assert activeRole null from the current closed artifact: its exact value is UNKNOWN.",
+          "acceptance": "Ordinary existing signed case must pass retained admission/session/current user/selectable role, PUT200, response user+activeRole HEADMAN, actual roster row mark and unchanged-row/readback assertions. No test-only role admission transport.",
+          "causalLimit": "Source proves an allowed failing interleaving and missing readiness contract; current closed outer frames do not prove that this exact interleaving occurred. No product auth/role-permission defect established."
+        },
+        "teacherLogout": {
+          "classification": "SOURCE_ESTABLISHED_FIXTURE_SCOPE_MISMATCH; SERVER_LOGOUT_OR_OWNER_CLEANUP_DEFECT_NOT_ESTABLISHED",
+          "sourceChain": [
+            "pwa-auth.ts105-118 opens Profile, verifies Profile heading, then scopes exact Logout to that main at115 while waiting genuine POST /api/auth/logout; asserts204 and login heading.",
+            "TeacherFeatureOwner.vue55-85 has no onLogout prop; ProfileScreen823-832 receives snapshot/loading/error/retry/navigation, but no on-logout callback.",
+            "ProfileScreen.vue25/36 declares optional onLogout default undefined;152-160 renders exact Logout button only v-if=onLogout. Therefore teacher Profile main has no such button irrespective of profile fetch success.",
+            "PWA App official2255-2272/current2302-2319 also passes no on-logout to TeacherFeatureOwner. Existing separate PWA button official2511-2518/current2558-2565 is class pwa-logout, authView teacher/headman/map, @click=logout, outside Profile main.",
+            "PWA current logout1861-1903 uses existing owner invalidation and auth.logout/clearOwnerSnapshot; this operation is unreachable through the helper-scoped absent teacher button. This Source path does not establish any actual POST/status/cleanup failure.",
+            "StudentFeatureOwner.vue2301-2309 supplies onLogout to ProfileScreen; existing helper scope is valid for that owner. TMA teacher also lacks the callback (App1429-1446); current PWA failure does not establish a separate TMA logout verdict."
+          ],
+          "boundedCorrectionPlan": "Preserve actual UI: after the unchanged Profile heading assertion choose its exact Logout button when present; only when absent choose the existing unique button.pwa-logout with exact Logout accessible name. Keep real POST waiter,204 and login heading unchanged. Limit fallback to this existing PWA hook; do not click the first arbitrary page button or call an API directly. Existing static onLogout render condition makes profile-button presence stable after profile main mounted. No product/design/permission change needed to address this fixture assumption.",
+          "productQualification": "Missing teacher Profile callback is a Source fact, but PWA already exposes working logout wiring outside that main. Calling it a missing product logout feature or moving/duplicating logout UI requires an independently accepted placement requirement; this diagnosis establishes fixture scope mismatch only.",
+          "acceptance": "Rerun the same existing D002 case after minimal fixture correction: preserve all neutral/offline/no-role-command/owner-clear assertions, teacher PUT/owner assertions, logout POST204/login, and later new-account/late-feed isolation tail. Do not skip logout or downgrade full-case FAIL."
+        },
+        "minimumFurtherPrimary": "No new execution in this leaf. Existing normal CI real-browser/server carriers after a reviewed minimal fixture correction are sufficient next evidence. Until then no current casePASS/root-cause exclusivity claim. If HEADMAN still fails, use existing private reported helper/action frame and original admission/session evidence under unchanged privacy schema; no new phase probe, raw payload, transport or ordinal identity fallback.",
+        "sourcePins": {
+          "tests/e2e/fixtures/mobile-dataset.ts": {
+            "official61dfSha256": "758e26c26097ea047d099c142c4dfaac7cd584f7d9050f50d4266186b7838947",
+            "currentSha256": "758e26c26097ea047d099c142c4dfaac7cd584f7d9050f50d4266186b7838947",
+            "currentEqualsOfficial": true
+          },
+          "tests/e2e/fixtures/pwa-auth.ts": {
+            "official61dfSha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99",
+            "currentSha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99",
+            "currentEqualsOfficial": true
+          },
+          "tests/e2e/specs/mobile-real-server.spec.ts": {
+            "official61dfSha256": "57bba5b7f25da5ff1c1063165a8951a979b5e2ca66a3ed1cebc299e81340eda0",
+            "currentSha256": "87b1cfad2e1bb6467acfbfd325ee6d5cd7c4ffff8bde52563224bf1e7b29734c",
+            "currentEqualsOfficial": false
+          },
+          "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue": {
+            "official61dfSha256": "904a7cca3736cad2dff52f7bcf4cae410ed242cb092fd6ef50b49bf4c52c120b",
+            "currentSha256": "904a7cca3736cad2dff52f7bcf4cae410ed242cb092fd6ef50b49bf4c52c120b",
+            "currentEqualsOfficial": true
+          },
+          "frontends/mobile-core/src/features/profile/ProfileScreen.vue": {
+            "official61dfSha256": "5ab7c2540c5c4f7a42c664b985e6b5e39383f9c80f90c7ecab2f808a17535761",
+            "currentSha256": "5ab7c2540c5c4f7a42c664b985e6b5e39383f9c80f90c7ecab2f808a17535761",
+            "currentEqualsOfficial": true
+          },
+          "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue": {
+            "official61dfSha256": "bb60b9b010480730837034b1139065e17e5727de3402979f1e25e74d0c99f9aa",
+            "currentSha256": "bb60b9b010480730837034b1139065e17e5727de3402979f1e25e74d0c99f9aa",
+            "currentEqualsOfficial": true
+          },
+          "frontends/pwa-vue/src/App.vue": {
+            "official61dfSha256": "7e92f203cb8111a34672063a6f871df3e7805d4ab6fc04516de9112a8cd8e58b",
+            "currentSha256": "5633da8d18bdda4a0bc169a223601ed4688631d659e18745a84ffe99c70c8e89",
+            "currentEqualsOfficial": false
+          },
+          "frontends/tma-vue/src/App.vue": {
+            "official61dfSha256": "49058fd3264458cf0659ea2aa8c14861464ca7ef1da6ccd35faf87cbfe8f31ac",
+            "currentSha256": "49058fd3264458cf0659ea2aa8c14861464ca7ef1da6ccd35faf87cbfe8f31ac",
+            "currentEqualsOfficial": true
+          }
+        },
+        "checks": {
+          "criticalSourceReadAndOriginal61dfBinding": "PASS_SOURCE_ONLY",
+          "sourceSHAEquality": "PASS_REPORTED_PER_FILE",
+          "runtimeOrTests": "NOT_RUN",
+          "sourceEdits": false,
+          "GitMutation": false,
+          "rootDocsEdits": false,
+          "networkBrowserDockerJava": false,
+          "children": 0,
+          "onlyAssignedReceiptKeyAppended": true,
+          "B013_B014_B015": "FROZEN; no equivalent check, quota change, gateway/IP work or ordinal identity fallback"
+        },
+        "authorChecks": [
+          {
+            "direct_pid": null,
+            "native_exit": null,
+            "terminal_reason": "SUPERVISION_ERROR",
+            "signal_count": 0,
+            "settled": false,
+            "all_owned_processes_reaped": false,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": "FileNotFoundError",
+            "phase_success": false,
+            "check": "Cached canonical Prettier apply only two assigned E2E TS files",
+            "elapsedSeconds": 0.042,
+            "peakOwnRSSBytes": 0
+          },
+          {
+            "direct_pid": 841484,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 841484,
+                "start_ticks": 27486990
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "check": "Cached canonical Prettier apply only two assigned E2E TS files",
+            "elapsedSeconds": 1.03,
+            "peakOwnRSSBytes": 131293184
+          },
+          {
+            "direct_pid": 841503,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 841503,
+                "start_ticks": 27489042
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "check": "Two assigned TS canonical Prettier check and TS syntax; App SFC/script TS syntax plus canonical script/style Prettier and ESLint template check; no full semantic TSC",
+            "elapsedSeconds": 4.424,
+            "peakOwnRSSBytes": 376811520
+          }
+        ],
+        "authorImplementation": {
+          "recordedAt": "2026-10-14T23:38:59.408913+00:00",
+          "state": "SOURCE_READY_LIGHT_CHECKS_PASS_FROZEN_FOR_INDEPENDENT_REVIEW_RUNTIME_NOT_RUN",
+          "worktree": "/workspace/rct-worktrees/request-enum-874-20261014",
+          "publishedBaseline": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+          "sourceInventory": [
+            {
+              "path": "frontends/pwa-vue/src/App.vue",
+              "absolutePath": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/App.vue",
+              "sha256": "7e92f203cb8111a34672063a6f871df3e7805d4ab6fc04516de9112a8cd8e58b"
+            },
+            {
+              "path": "tests/e2e/fixtures/pwa-auth.ts",
+              "absolutePath": "/workspace/rct-worktrees/request-enum-874-20261014/tests/e2e/fixtures/pwa-auth.ts",
+              "sha256": "b84482c852786b5cd04308f5c6be850ae51760c845fde9a305f2cd6b389cd7df"
+            },
+            {
+              "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+              "absolutePath": "/workspace/rct-worktrees/request-enum-874-20261014/tests/e2e/specs/mobile-real-server.spec.ts",
+              "sha256": "6e61a83c3a04f72a4e4cb4d2625b5aa2d1895d0117fd9a11d59532a7eb2398db"
+            }
+          ],
+          "diffFrom94ff": "Exactly3 assigned files;18 insertions/194 deletions. App removes47 diagnostic lines; spec adds9 readiness lines and removes146 neutral-case probe lines; auth adds9 selector lines/replaces1 click.",
+          "proofs": {
+            "AppRestoredOfficial61dfByteExact": true,
+            "neutralD002EntireCaseRestoredOfficial61dfByteExact": true,
+            "specPureInverseTo94ffAfterOnlyGateAndAssignedProbeRestore": true,
+            "authPureInverseTo94ffAfterOnlySelectorAndClickRestore": true,
+            "allOldCaseDeclarationsAndTimeoutsUnchanged": true,
+            "approvedTMAOfflineOracleAndWebKitCatchHintsAndEntireLateFeedTailPreserved": "Proved by whole-spec inverse equality to94ff",
+            "fallbackSelector": "profile exact Logout when present, otherwise intersection button.pwa-logout AND exact accessible Logout; no .first or arbitrary global text",
+            "pwaFallbackUniqueness": "Exactly one button.pwa-logout declaration; conditional authView teacher/headman/map; @click invokes existing logout. Selector strictness retained, so future duplicates fail rather than choose arbitrarily.",
+            "sourceOnlyHeadmanQualification": "Actual prior activeRole value remains UNKNOWN; added gate follows current session.activeRole??null, preserving genuine real-server PUT and all user/role/mark/readback asserts.",
+            "probeGlobalRemoved": true,
+            "gitDiffCheck": "PASS"
+          },
+          "designSkill": {
+            "path": "/workspace/rct-worktrees/q07-lesson-cancel-20261014/docs/validation/cloud-20261011/skills/project/rutcampustrack-design/SKILL.md",
+            "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5",
+            "application": "Read current mobile/profile accepted references; no UI/template/style/state or design change. Only inert App diagnostic removal."
+          },
+          "guardSha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+          "verification": "Canonical cached Prettier apply/check2 assigned TS files; TS syntax both and App script; SFC parse; canonical App script/style Prettier and ESLint template check PASS. No whole-SFC Prettier; full semantic TSC/browser/server not run. Existing run_owned reaped both successful Node children, native elapsed1.03+4.424s, sampled own RSS131293184/376811520bytes, deadlines60s/RSS768MiB. Initial wrong /usr/bin/node path caused FileNotFoundError before child launch; retained separately as nonPASS, then actual cached binary used.",
+          "limits": {
+            "runtime": "NOT_RUN",
+            "fullTSC": "ROOT_NEXT",
+            "independentReview": "c68_role_logout_review_PENDING",
+            "GitMutations": false,
+            "networkBrowserDockerJava": false,
+            "otherWIP": "No assigned prior Java/generated/clock WIP edited",
+            "B013_B014_B015": "FROZEN",
+            "children": 0
+          }
+        }
+      },
+      "root": "3Source frozen, freshc68independent review running, Rootcopy/fullTSC/currentbrowser NOT_RUN. No new productgrants/authtransport/roles introduced."
+    },
+    "94ffb_role_logout_independent_review": {
+      "recordedAt": "2026-10-14T23:40:32.206596+00:00",
+      "reviewer": "c68_role_logout_review",
+      "state": "APPROVE_SOURCE_NO_FINDINGS_RUNTIME_NOT_RUN",
+      "selectedModel": "gpt-6.1-sol",
+      "selectedEffort": "high",
+      "actualRuntimeModelEffort": "UNKNOWN",
+      "governing": {
+        "TASK-CONTRACT.md": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+        "RULES.md": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+      },
+      "publishedBaseline": "94ffb8ce55eafcfebdbdd17b5d0bbe25fa220890",
+      "originalFailureProducer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+      "originalRun": 38649468413,
+      "worktree": "/workspace/rct-worktrees/request-enum-874-20261014",
+      "sourceSha256": [
+        {
+          "path": "frontends/pwa-vue/src/App.vue",
+          "sha256": "7e92f203cb8111a34672063a6f871df3e7805d4ab6fc04516de9112a8cd8e58b"
+        },
+        {
+          "path": "tests/e2e/fixtures/pwa-auth.ts",
+          "sha256": "b84482c852786b5cd04308f5c6be850ae51760c845fde9a305f2cd6b389cd7df"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "6e61a83c3a04f72a4e4cb4d2625b5aa2d1895d0117fd9a11d59532a7eb2398db"
+        }
+      ],
+      "scope": "Fresh independent read-only review of frozen coherent three-file HEADMAN initial-role/PWA teacher-logout fixture correction plus removal of diagnostic phase probes; no product authoring.",
+      "findings": [],
+      "accepted": [
+        {
+          "file": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "line": 998,
+          "observation": "Current-session null/omitted role waits exact picker heading and enabled HEADMAN card; nonnull other role waits real main navigation before the unchanged UI helper. RoleSwitchScreen hides cards while loading and enforces offline/selectable/pending guards. Waiters retain ordinary defaults.",
+          "boundary": "Admission200/session200, actual user identity/selectable grant, genuine PUT200, selected user+HEADMAN role, isolated roster PUT200, source/status readback and unchanged other marks all remain. No API preselection, timeout increase, fake owner, skip or permission bypass."
+        },
+        {
+          "file": "tests/e2e/fixtures/pwa-auth.ts",
+          "line": 109,
+          "observation": "Profile-scoped exact Logout remains preferred when present. Only absent profile button falls back to strict intersection button.pwa-logout and exact accessible Выйти. TeacherFeatureOwner has no logout callback; ProfileScreen renders its own button solely when onLogout exists, independently of snapshot loading. Existing unique PWA shell button invokes actual logout.",
+          "boundary": "No arbitrary first/global text selector, force click or direct API. Genuine POST /api/auth/logout,204 and login heading retained. Selector duplicates, missing/disabled button, missing/failed POST still fail. Existing student/headman callback paths stay preferred."
+        },
+        {
+          "file": "frontends/pwa-vue/src/App.vue",
+          "line": 997,
+          "observation": "All47 removed lines are temporary phase diagnostics; frozen App is byte-exact official61df. All146 removed neutral-case lines are its diagnostic callback/readback/soft-failure/rethrow/cleanup only; the entire resulting neutral case including late-feed tail is byte-exact official61df.",
+          "boundary": "Original assertion failures propagate naturally through finally; offline/grants/neutral picker/no owner/teacher transition/logout/new-account/late-feed/cleanup boundaries remain. No actual FAIL is converted into PASS."
+        }
+      ],
+      "independentSourceProofs": {
+        "allThreeFrozenPinsMatchedBeforeAndAfterReview": true,
+        "AppEqualsOfficial61dfByteExact": true,
+        "entireNeutralCaseEqualsOfficial61dfByteExact": true,
+        "wholeSpecEquals94ffAfterInverseOfOnlyNineLineGateAndWholeAssignedNeutralProbeDelta": true,
+        "wholeAuthEquals94ffAfterInverseOfOnlySelectorAndClickDelta": true,
+        "approvedTMAOfflineOracleAnd58LineWebKitReloadDiagnosticDeltaPreserved": true,
+        "originalCaseDeclarationsTimeoutsAndRemainingAssertionsUnchanged": true,
+        "criticalRootSourceFilesEqualOfficial61df": [
+          "tests/e2e/fixtures/mobile-dataset.ts",
+          "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue",
+          "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+          "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+          "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "frontends/tma-vue/src/App.vue"
+        ],
+        "reviewedDiff94ff": "3 files;18 insertions/194 deletions",
+        "reviewedDiff61df": "App exact; auth bounded selector; spec only nine-line readiness gate plus already approved WebKit reload and TMA offline oracle deltas"
+      },
+      "verification": {
+        "independent": "Critical UI/session/helper source reads, git show/diff and in-memory Python byte equality/inverse checks only; PASS_SOURCE_ONLY.",
+        "authorReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#freshRoleLogoutSourceDiagnosis.authorImplementation and .authorChecks",
+        "authorChecksReviewed": "Canonical twoTS Prettier apply/check, twoTS syntax, App SFC/script parse and canonical script/stylePrettier+ESLinttemplate PASS; successful native children exit0/reaped,1.030s and4.424s. Initial FileNotFoundError before child launch retained as nonPASS.",
+        "fullSemanticTSC": "NOT_RUN_BY_REVIEWER; ROOT_NEXT",
+        "realBrowserServer": "NOT_RUN_CORRECTED_SOURCE; pending Root normal CI at successor revision",
+        "priorPrimary": "Official61df HEADMAN case950 FAILED frames998/1003; D0021485 FAILED await logoutPwa1555 after transition assertions. Their overall status remains FAIL; previous partial assertions are not promoted to finite PASS."
+      },
+      "qualifications": [
+        "Source establishes allowed helper readiness race and teacher profile selector mismatch. Exact prior HEADMAN activeRole/DOM/inner action and exclusive runtime cause remain UNKNOWN; no product role/logout defect or corrected-browser PASS claimed.",
+        "Source approval permits Root scoped integration and required checks; it is not task DONE, current remote gate success or actual user-path acceptance.",
+        "B013/B014/B015 remain FROZEN; no equivalent model/agent/reader/schema/launcher/CI workaround. Q015 nonauthor DELETE pending and D015 native OWNER_MANUAL_PENDING unchanged."
+      ],
+      "mutations": {
+        "product": false,
+        "Git": false,
+        "rootDocs": false,
+        "runtimeNetworkBrowserDockerJava": false,
+        "children": 0,
+        "onlyAssignedExistingReceiptKeyWritten": true
+      }
+    },
+    "94ffb_role_logout_Root_integration": {
+      "utc": "2026-10-14T23:41:27.606423+00:00",
+      "state": "SOURCE_INDEPENDENT_APPROVED_MERGED_FORMAT_TSC_LINT_BUILD_PASS_PENDING_ORDINARY_PUBLICATION_CURRENT_BROWSER",
+      "inventory": [
+        {
+          "path": "frontends/pwa-vue/src/App.vue",
+          "sha256": "7e92f203cb8111a34672063a6f871df3e7805d4ab6fc04516de9112a8cd8e58b"
+        },
+        {
+          "path": "tests/e2e/fixtures/pwa-auth.ts",
+          "sha256": "b84482c852786b5cd04308f5c6be850ae51760c845fde9a305f2cd6b389cd7df"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "6e61a83c3a04f72a4e4cb4d2625b5aa2d1895d0117fd9a11d59532a7eb2398db"
+        }
+      ],
+      "scope": "Fixtureonlyselector/readiness; removeunusedclosedloopbackdiagnostics fromApp/neutraltest. AllacceptedTMAoffline/WebKitprimarydiag/originalrealasserts intact. No session/grants/API/schema/productrulechange.",
+      "actual": "NOT_RUN correctedbrowser"
+    },
+    "94ffb_role_logout_merged_checks_PASS": {
+      "utc": "2026-10-14T23:45:24.167633+00:00",
+      "checks": [
+        {
+          "phase": "TS-format",
+          "native_exit": 0,
+          "elapsedSeconds": 1.025,
+          "all_owned_processes_reaped": true,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/role-logout-TS-format.private.log"
+        },
+        {
+          "phase": "full-real-mobile-TSC",
+          "native_exit": 0,
+          "elapsedSeconds": 3.189,
+          "all_owned_processes_reaped": true,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/role-logout-full-real-mobile-TSC.private.log"
+        },
+        {
+          "phase": "workspace-lint",
+          "native_exit": 0,
+          "elapsedSeconds": 20.83,
+          "all_owned_processes_reaped": true,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/role-logout-workspace-lint.private.log"
+        },
+        {
+          "phase": "PWA-TMA-build",
+          "native_exit": 0,
+          "elapsedSeconds": 54.221,
+          "all_owned_processes_reaped": true,
+          "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/role-logout-PWA-TMA-build.private.log"
+        }
+      ],
+      "source": "ThreefileexactreviewedWorkingSource on94ffparent; actualnewbrowserNOT_RUN",
+      "reuse": "FullVueTypes94 actualPASS reused afteronlyremovingdiagnosticApp47lines; currentwholeworkspace lint andbothVitebuilds rerunPASS."
     }
   }
 }

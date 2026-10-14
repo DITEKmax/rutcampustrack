@@ -106,13 +106,21 @@ export async function logoutPwa(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Профиль', exact: true }).click();
   const profile = page.getByRole('main', { name: 'Профиль', exact: true });
   await expect(profile.getByRole('heading', { name: 'Профиль', exact: true })).toBeVisible();
+  const profileLogout = profile.getByRole('button', { name: 'Выйти', exact: true });
+  // Teacher PWA exposes logout in the app shell outside the profile main.
+  const logoutButton =
+    (await profileLogout.count()) > 0
+      ? profileLogout
+      : page
+          .locator('button.pwa-logout')
+          .and(page.getByRole('button', { name: 'Выйти', exact: true }));
   const [response] = await Promise.all([
     page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname === '/api/auth/logout' &&
         response.request().method() === 'POST',
     ),
-    profile.getByRole('button', { name: 'Выйти', exact: true }).click(),
+    logoutButton.click(),
   ]);
   expect(response.status()).toBe(204);
   await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();

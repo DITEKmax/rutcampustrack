@@ -997,33 +997,6 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   }
 }
 
-// Temporary D002 diagnostic; inert without an own, loopback-only test callback.
-function reportD002Bootstrap(
-  phase:
-    | 'ONLINE'
-    | 'BOOTSTRAP_START'
-    | 'AUTH_CANDIDATE'
-    | 'OWNER_DETACHED'
-    | 'ROLE_COMMITTED'
-    | null,
-  catchClass: 'STALE' | 'AUTH' | 'DEPENDENCY' | 'OTHER' | null = null,
-): void {
-  try {
-    if (!['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)) return;
-    const sink = Object.getOwnPropertyDescriptor(window, '__rctD002BootstrapProbe');
-    if (!sink || !('value' in sink) || typeof sink.value !== 'function') return;
-    sink.value(
-      Object.freeze({
-        phase,
-        catchClass,
-        oldOwnerPresent: api.value !== null || scope.value !== null || snapshot.value !== null,
-      }),
-    );
-  } catch {
-    // Diagnostics must not affect bootstrap or owner cleanup.
-  }
-}
-
 /** Invalidate reactive owner references before Vue unmounts its feature view. */
 function invalidateOwnerSynchronously(
   options: { clearAuth?: boolean } = {},
@@ -1064,7 +1037,6 @@ function invalidateOwnerSynchronously(
   semesterSchedule.value = null;
   onlineSemesterSchedule.value = null;
   snapshot.value = null;
-  reportD002Bootstrap('OWNER_DETACHED');
   return previous;
 }
 
@@ -1590,10 +1562,8 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
   }
   if (bootstrapping.value) return;
   bootstrapping.value = true;
-  reportD002Bootstrap('BOOTSTRAP_START');
   try {
     const authCandidate = await fetchAuthForCurrentGeneration(options);
-    reportD002Bootstrap('AUTH_CANDIDATE');
     authSnapshot.value = authCandidate.profile;
     authError.value = null;
     if (authCandidate.profile.activeRole === 'HEADMAN') {
@@ -1635,23 +1605,7 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
       authView.value = 'student';
     }
     sessionReady.value = true;
-    if (authView.value === 'role') reportD002Bootstrap('ROLE_COMMITTED');
   } catch (error) {
-    reportD002Bootstrap(
-      null,
-      error instanceof StaleSessionGenerationError
-        ? 'STALE'
-        : error instanceof AuthRequestError ||
-            error instanceof PwaAuthError ||
-            error instanceof ProfileRequestError
-          ? 'AUTH'
-          : error instanceof StudentApiError ||
-              error instanceof TeacherApiError ||
-              error instanceof HeadmanScheduleApiError ||
-              error instanceof AdminAccessApiError
-            ? 'DEPENDENCY'
-            : 'OTHER',
-    );
     if (error instanceof StaleSessionGenerationError) {
       return;
     }
@@ -2054,7 +2008,6 @@ function goOffline(): void {
 }
 
 function goOnline(): void {
-  reportD002Bootstrap('ONLINE');
   // Reconnect must verify the current session before restoring mutation
   // authority. Bootstrap mounts a fresh bound owner only after getSession and
   // schedule have passed the generation gate.

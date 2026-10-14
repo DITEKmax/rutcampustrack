@@ -995,6 +995,15 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
       ),
     ).toBe(true);
     if (session.activeRole !== 'HEADMAN') {
+      // Admission responses arrive before the corresponding Vue owner is ready.
+      if ((session.activeRole ?? null) === null) {
+        await expect(
+          page.getByRole('heading', { name: 'Сменить роль', exact: true }),
+        ).toBeVisible();
+        await expect(page.getByRole('button', { name: /Староста/ })).toBeEnabled();
+      } else {
+        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+      }
       const selected = page.waitForResponse(
         (response) =>
           new URL(response.url()).pathname === '/api/auth/session/active-role' &&
@@ -1549,7 +1558,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     await publishOfflineHomework(dataset, marker);
     const multirole = await dataset.user('TEACHER');
     const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
-    let probe: Awaited<ReturnType<Page['evaluateHandle']>> | null = null;
     await dataset.admin.call('PUT', rolePath, {
       status: 'ACTIVE',
       groupId: dataset.group.id,
@@ -1561,58 +1569,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
       await expect(page.getByText(marker, { exact: true })).toBeVisible();
       await requireProductionWorker(page);
-      probe = await page
-        .evaluateHandle(() => {
-          const key = '__rctD002BootstrapProbe';
-          if (Object.getOwnPropertyDescriptor(window, key)) return null;
-          const state: {
-            phase:
-              | 'ONLINE'
-              | 'BOOTSTRAP_START'
-              | 'AUTH_CANDIDATE'
-              | 'OWNER_DETACHED'
-              | 'ROLE_COMMITTED'
-              | null;
-            catchClass: 'STALE' | 'AUTH' | 'DEPENDENCY' | 'OTHER' | null;
-            oldOwnerPresent: boolean | null;
-          } = { phase: null, catchClass: null, oldOwnerPresent: null };
-          const callback = (record: unknown) => {
-            if (!record || typeof record !== 'object') return;
-            const fields = Object.getOwnPropertyDescriptors(record);
-            if (Object.keys(fields).sort().join(',') !== 'catchClass,oldOwnerPresent,phase') return;
-            if (!Object.values(fields).every((field) => 'value' in field)) return;
-            const phase = fields.phase.value;
-            const catchClass = fields.catchClass.value;
-            const oldOwnerPresent = fields.oldOwnerPresent.value;
-            if (
-              !(
-                phase === null ||
-                [
-                  'ONLINE',
-                  'BOOTSTRAP_START',
-                  'AUTH_CANDIDATE',
-                  'OWNER_DETACHED',
-                  'ROLE_COMMITTED',
-                ].includes(phase)
-              )
-            )
-              return;
-            if (
-              !(
-                catchClass === null || ['STALE', 'AUTH', 'DEPENDENCY', 'OTHER'].includes(catchClass)
-              )
-            )
-              return;
-            if (typeof oldOwnerPresent !== 'boolean') return;
-            if (phase !== null) state.phase = phase;
-            if (catchClass !== null) state.catchClass = catchClass;
-            state.oldOwnerPresent = oldOwnerPresent;
-          };
-          Object.defineProperty(callback, 'state', { value: state });
-          Object.defineProperty(window, key, { value: callback, configurable: true });
-          return callback;
-        })
-        .catch(() => null);
       await page.getByRole('button', { name: 'Профиль', exact: true }).click();
       await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
       const teacher = page.getByRole('button', { name: /Преподаватель/ });
@@ -1664,100 +1620,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await selectPwaRole(page, 'Преподаватель');
       await expect(page.locator('.teacher-feature-owner')).toBeVisible();
       await logoutPwa(page);
-    } catch (error) {
-      const observed = await probe
-        ?.evaluate((callback: unknown) => {
-          if (typeof callback !== 'function') return null;
-          const ownState = Object.getOwnPropertyDescriptor(callback, 'state');
-          if (!ownState || !('value' in ownState)) return null;
-          const state = ownState.value;
-          if (!state || typeof state !== 'object') return null;
-          const keys = Reflect.ownKeys(state);
-          if (
-            keys.length !== 3 ||
-            !keys.every(
-              (key) =>
-                typeof key === 'string' && ['phase', 'catchClass', 'oldOwnerPresent'].includes(key),
-            )
-          )
-            return null;
-          const fields = Object.getOwnPropertyDescriptors(state);
-          if (!Object.values(fields).every((field) => 'value' in field)) return null;
-          const phase = fields.phase?.value;
-          const catchClass = fields.catchClass?.value;
-          const oldOwnerPresent = fields.oldOwnerPresent?.value;
-          if (
-            !(
-              phase === null ||
-              [
-                'ONLINE',
-                'BOOTSTRAP_START',
-                'AUTH_CANDIDATE',
-                'OWNER_DETACHED',
-                'ROLE_COMMITTED',
-              ].includes(phase)
-            )
-          )
-            return null;
-          if (
-            !(catchClass === null || ['STALE', 'AUTH', 'DEPENDENCY', 'OTHER'].includes(catchClass))
-          )
-            return null;
-          if (!(oldOwnerPresent === null || typeof oldOwnerPresent === 'boolean')) return null;
-          return { phase, catchClass, oldOwnerPresent };
-        })
-        .catch(() => null);
-      // Diagnostic only: these fixed frames follow an original failure, never gate a pass.
-      switch (observed?.phase) {
-        case 'ONLINE':
-          expect.soft(false, 'D002 phase ONLINE').toBe(true);
-          break;
-        case 'BOOTSTRAP_START':
-          expect.soft(false, 'D002 phase BOOTSTRAP_START').toBe(true);
-          break;
-        case 'AUTH_CANDIDATE':
-          expect.soft(false, 'D002 phase AUTH_CANDIDATE').toBe(true);
-          break;
-        case 'OWNER_DETACHED':
-          expect.soft(false, 'D002 phase OWNER_DETACHED').toBe(true);
-          break;
-        case 'ROLE_COMMITTED':
-          expect.soft(false, 'D002 phase ROLE_COMMITTED').toBe(true);
-          break;
-        default:
-          expect.soft(false, 'D002 phase unavailable').toBe(true);
-      }
-      switch (observed?.catchClass) {
-        case 'STALE':
-          expect.soft(false, 'D002 catch STALE').toBe(true);
-          break;
-        case 'AUTH':
-          expect.soft(false, 'D002 catch AUTH').toBe(true);
-          break;
-        case 'DEPENDENCY':
-          expect.soft(false, 'D002 catch DEPENDENCY').toBe(true);
-          break;
-        case 'OTHER':
-          expect.soft(false, 'D002 catch OTHER').toBe(true);
-          break;
-      }
-      if (observed?.oldOwnerPresent === true)
-        expect.soft(false, 'D002 old owner present').toBe(true);
-      else if (observed?.oldOwnerPresent === false)
-        expect.soft(false, 'D002 old owner absent').toBe(true);
-      throw error;
     } finally {
-      if (probe) {
-        await probe
-          .evaluate((callback: unknown) => {
-            const key = '__rctD002BootstrapProbe';
-            const own = Object.getOwnPropertyDescriptor(window, key);
-            if (typeof callback === 'function' && own && 'value' in own && own.value === callback)
-              Reflect.deleteProperty(window, key);
-          })
-          .catch(() => {});
-        await probe.dispose().catch(() => {});
-      }
       await context.setOffline(false);
       await dataset.admin.call('PUT', rolePath, { status: 'ACTIVE', groupId: dataset.group.id });
     }

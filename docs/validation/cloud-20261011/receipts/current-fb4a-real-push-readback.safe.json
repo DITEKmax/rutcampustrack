@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-14T04:13:11.766Z",
+  "local": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+  "remote_branch": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+  "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "pr": {
+    "head": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "merge_commit_sha": "ec654976f36b3622fa21aa0c97a5aa9ed85b8a4d"
+  },
+  "push": {
+    "pid": 635358,
+    "session": 61852,
+    "exit": 0,
+    "settled": true,
+    "reaped": true,
+    "actual_not_dry_run": true
+  },
+  "transport_readback": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5\trefs/heads/codex/server-validation-20261011\n3908fad9624f97aec8891fc79338ceb6b0616bf3\trefs/heads/main\n",
+  "qualification": "actual checkout join pending; advertised merge only; partial IN_PROGRESS checkpoint, not DONE/D009"
+}

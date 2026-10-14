@@ -1,0 +1,580 @@
+{
+  "schema": "rct-current-ci-metadata/v1",
+  "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+  "event": "pull_request",
+  "run_attempt": 1,
+  "head_event_qualification": "EXPLICIT_OFFICIAL_WORKFLOW_RUN_GET_EQUAL_HEAD_PULL_REQUEST_ATTEMPT_1_ALL_FOUR",
+  "advertised_merge_sha": "ec654976f36b3622fa21aa0c97a5aa9ed85b8a4d",
+  "actual_checkout_merge_sha": "UNKNOWN",
+  "last_checked_at": "2026-10-14T04:36:01.148Z",
+  "metadata_call_state": "SETTLED_NO_PENDING_METADATA_CALL",
+  "state": "TERMINAL_CURRENT_RUN_METADATA",
+  "qualification": {
+    "case_results": "UNKNOWN_METADATA_ONLY",
+    "failure_cause": "UNKNOWN",
+    "built_images": "CONDITIONAL_SKIPPED",
+    "B013_B014": "FROZEN_NOT_IN_OBSERVER_SCOPE",
+    "artifact_downloaded": false,
+    "raw_logs_read": false,
+    "test_runtime_created": false,
+    "first3": "STEP_SUCCESS_CASES_UNKNOWN_ROOT_CLOSED_SAFE_READ_REQUIRED",
+    "remaining5": "STEP_SUCCESS_CASES_UNKNOWN_ROOT_CLOSED_SAFE_READ_REQUIRED",
+    "administrator_lifecycle": "STEP_FAILURE_CASE_451_AND_CAUSE_UNKNOWN_ROOT_CLOSED_SAFE_READER_REQUIRED",
+    "role_logout": "STEP_AND_UPLOAD_SKIPPED_NO_CASE_826_PROOF",
+    "application_recovery": "STEP_SUCCESS_CASE_328_AND_RESTORE_DETAILS_UNKNOWN_ROOT_CLOSED_SAFE_READER_REQUIRED",
+    "cleanup": {
+      "Stop owned fresh recovery targets": "STEP_SUCCESS",
+      "Remove only this job's test certificate trust": "STEP_SUCCESS",
+      "Stop isolated e2e containers": "STEP_SUCCESS"
+    }
+  },
+  "runs": [
+    {
+      "id": 38510200097,
+      "name": "OpenAPI Drift Guard",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "run_attempt": 1,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38510200097",
+      "created_at": "2026-10-14T04:12:32Z",
+      "updated_at": "2026-10-14T04:13:24Z",
+      "run_started_at": "2026-10-14T04:12:32Z",
+      "jobs": [
+        {
+          "id": 115676710739,
+          "name": "OpenAPI \u2194 generated types drift",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "artifacts": []
+    },
+    {
+      "id": 38510200275,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "run_attempt": 1,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38510200275",
+      "created_at": "2026-10-14T04:12:32Z",
+      "updated_at": "2026-10-14T04:14:46Z",
+      "run_started_at": "2026-10-14T04:12:32Z",
+      "jobs": [
+        {
+          "id": 115676711451,
+          "name": "Gitleaks (secrets)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711545,
+          "name": "Trivy (filesystem)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711670,
+          "name": "Trivy (config \u2014 Dockerfile + compose)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676712534,
+          "name": "Trivy (built images)",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ],
+      "artifacts": []
+    },
+    {
+      "id": 38510200248,
+      "name": "Coverage",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "run_attempt": 1,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38510200248",
+      "created_at": "2026-10-14T04:12:32Z",
+      "updated_at": "2026-10-14T04:31:58Z",
+      "run_started_at": "2026-10-14T04:12:32Z",
+      "jobs": [
+        {
+          "id": 115676711218,
+          "name": "Mobile Vue coverage \u2014 PWA, TMA, mobile-core",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711316,
+          "name": "Java coverage \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711404,
+          "name": "Java coverage \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711413,
+          "name": "Python coverage \u2014 notification-bot",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711428,
+          "name": "Java coverage \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711488,
+          "name": "Java coverage \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711492,
+          "name": "Java coverage \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676711620,
+          "name": "Java coverage \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115681633024,
+          "name": "Diff coverage report",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "artifacts": []
+    },
+    {
+      "id": 38510200083,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "event": "pull_request",
+      "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "run_attempt": 1,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38510200083",
+      "created_at": "2026-10-14T04:12:31Z",
+      "updated_at": "2026-10-14T04:35:48Z",
+      "run_started_at": "2026-10-14T04:12:31Z",
+      "jobs": [
+        {
+          "id": 115676710508,
+          "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710650,
+          "name": "Mobile Vue workspace",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710678,
+          "name": "Grafana dashboards structure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710701,
+          "name": "Java unit \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710703,
+          "name": "Python Lint & Test",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710783,
+          "name": "Playwright E2E auth flow",
+          "status": "completed",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-14T04:13:57Z",
+              "completed_at": "2026-10-14T04:14:01Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-14T04:14:01Z",
+              "completed_at": "2026-10-14T04:14:16Z"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-14T04:14:16Z",
+              "completed_at": "2026-10-14T04:14:21Z"
+            },
+            {
+              "name": "Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-14T04:14:21Z",
+              "completed_at": "2026-10-14T04:14:25Z"
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-14T04:14:25Z",
+              "completed_at": "2026-10-14T04:14:26Z"
+            },
+            {
+              "name": "Prepare disposable FIRST3 clock and private artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-14T04:14:26Z",
+              "completed_at": "2026-10-14T04:14:45Z"
+            },
+            {
+              "name": "Set up Docker Buildx",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-14T04:14:45Z",
+              "completed_at": "2026-10-14T04:14:53Z"
+            },
+            {
+              "name": "Generate self-signed TLS cert",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-14T04:14:53Z",
+              "completed_at": "2026-10-14T04:14:54Z"
+            },
+            {
+              "name": "Boot isolated Vue auth stack",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-10-14T04:14:54Z",
+              "completed_at": "2026-10-14T04:28:28Z"
+            },
+            {
+              "name": "Link synthetic Telegram teacher in the ephemeral database",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10,
+              "started_at": "2026-10-14T04:28:28Z",
+              "completed_at": "2026-10-14T04:28:28Z"
+            },
+            {
+              "name": "Install Playwright + browsers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11,
+              "started_at": "2026-10-14T04:28:28Z",
+              "completed_at": "2026-10-14T04:28:49Z"
+            },
+            {
+              "name": "Trust the disposable localhost certificate for Chromium workers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12,
+              "started_at": "2026-10-14T04:28:49Z",
+              "completed_at": "2026-10-14T04:28:51Z"
+            },
+            {
+              "name": "Run auth-flow @smoke specs (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-14T04:28:51Z",
+              "completed_at": "2026-10-14T04:29:10Z"
+            },
+            {
+              "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-14T04:29:10Z",
+              "completed_at": "2026-10-14T04:29:30Z"
+            },
+            {
+              "name": "Upload safe FIRST3 outcomes and observations",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15,
+              "started_at": "2026-10-14T04:29:30Z",
+              "completed_at": "2026-10-14T04:29:31Z"
+            },
+            {
+              "name": "Run remaining five accepted mobile scenarios (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16,
+              "started_at": "2026-10-14T04:29:31Z",
+              "completed_at": "2026-10-14T04:29:47Z"
+            },
+            {
+              "name": "Upload safe remaining five outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17,
+              "started_at": "2026-10-14T04:29:47Z",
+              "completed_at": "2026-10-14T04:29:47Z"
+            },
+            {
+              "name": "Run real Vue administrator account lifecycle",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 18,
+              "started_at": "2026-10-14T04:29:47Z",
+              "completed_at": "2026-10-14T04:30:09Z"
+            },
+            {
+              "name": "Upload closed administrator lifecycle outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19,
+              "started_at": "2026-10-14T04:30:09Z",
+              "completed_at": "2026-10-14T04:30:09Z"
+            },
+            {
+              "name": "Run real Vue role transition and logout-all",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 20,
+              "started_at": "2026-10-14T04:30:09Z",
+              "completed_at": "2026-10-14T04:30:09Z"
+            },
+            {
+              "name": "Upload closed role transition and logout-all outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 21,
+              "started_at": "2026-10-14T04:30:09Z",
+              "completed_at": "2026-10-14T04:30:09Z"
+            },
+            {
+              "name": "Restore a real application checkpoint into fresh disposable databases",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 22,
+              "started_at": "2026-10-14T04:30:09Z",
+              "completed_at": "2026-10-14T04:34:48Z"
+            },
+            {
+              "name": "Upload closed application recovery API outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 23,
+              "started_at": "2026-10-14T04:34:48Z",
+              "completed_at": "2026-10-14T04:34:49Z"
+            },
+            {
+              "name": "Stop owned fresh recovery targets",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24,
+              "started_at": "2026-10-14T04:34:49Z",
+              "completed_at": "2026-10-14T04:34:50Z"
+            },
+            {
+              "name": "Remove only this job's test certificate trust",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25,
+              "started_at": "2026-10-14T04:34:50Z",
+              "completed_at": "2026-10-14T04:34:50Z"
+            },
+            {
+              "name": "Stop isolated e2e containers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 26,
+              "started_at": "2026-10-14T04:34:50Z",
+              "completed_at": "2026-10-14T04:35:32Z"
+            },
+            {
+              "name": "Post Set up Docker Buildx",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 48,
+              "started_at": "2026-10-14T04:35:32Z",
+              "completed_at": "2026-10-14T04:35:44Z"
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 49,
+              "started_at": "2026-10-14T04:35:44Z",
+              "completed_at": "2026-10-14T04:35:44Z"
+            },
+            {
+              "name": "Post Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 50,
+              "started_at": "2026-10-14T04:35:44Z",
+              "completed_at": "2026-10-14T04:35:45Z"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 51,
+              "started_at": "2026-10-14T04:35:45Z",
+              "completed_at": "2026-10-14T04:35:45Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 52,
+              "started_at": "2026-10-14T04:35:45Z",
+              "completed_at": "2026-10-14T04:35:45Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 53,
+              "started_at": "2026-10-14T04:35:45Z",
+              "completed_at": "2026-10-14T04:35:45Z"
+            }
+          ]
+        },
+        {
+          "id": 115676710789,
+          "name": "ShellCheck scripts",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710809,
+          "name": "Java IT \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710825,
+          "name": "Java unit \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710837,
+          "name": "Java IT \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710841,
+          "name": "Java IT \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710869,
+          "name": "Java unit \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710911,
+          "name": "Java IT \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710915,
+          "name": "Java IT \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710942,
+          "name": "Java unit \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710950,
+          "name": "Java IT \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710967,
+          "name": "Java unit \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115676710968,
+          "name": "Java unit \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 11869917034,
+          "name": "application-recovery-safe-1",
+          "size_in_bytes": 1455,
+          "digest": "sha256:da0ba3fd4845c7cae7fd918ed9f9d181739ed55596fa454dd6734ba63a98507e",
+          "expired": false,
+          "created_at": "2026-10-14T04:34:49Z",
+          "expires_at": "2026-10-21T04:34:49Z",
+          "workflow_run": {
+            "id": 38510200083,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5"
+          }
+        },
+        {
+          "id": 11869694477,
+          "name": "admin-lifecycle-safe-1",
+          "size_in_bytes": 455,
+          "digest": "sha256:c380eedf2ec079adb86be31753eb2688c10fbf26ea97b3fbc1a7b85b8e322238",
+          "expired": false,
+          "created_at": "2026-10-14T04:30:09Z",
+          "expires_at": "2026-10-21T04:30:09Z",
+          "workflow_run": {
+            "id": 38510200083,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5"
+          }
+        }
+      ]
+    }
+  ]
+}

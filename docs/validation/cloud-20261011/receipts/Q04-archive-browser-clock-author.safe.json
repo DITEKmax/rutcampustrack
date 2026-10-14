@@ -1,0 +1,212 @@
+{
+  "started_utc": "2026-10-14T04:34:37.016215+00:00",
+  "branch": "codex/q04-archive-submit-clock-20261014",
+  "base": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+  "scope": "Source-first read-only until concrete cause; fixture mobile-real-server.spec.ts/privacy.control.spec.ts only if relevant. No product UI scope yet.",
+  "status": "COMMITTED_SOURCE_LOCAL_PASS_PENDING_REVIEW_AND_REAL_CI",
+  "preserved_q06": "f96a30296693389d52f9e7cff1e5b321fdd60df7",
+  "actual_failure": "CI38510200083 case451 reportedTimeoutError/staticframe709 awaiting POST archive; preview200 and fills passed. CauseUNKNOWN.",
+  "active_native": null,
+  "active_session": null,
+  "cause_source": "CI chooses weekday06:00Z; pagefixture previously froze ADMIN Date.now to teaching time. UserArchiveService.preview uses Instant.now()+10min; DB validates NOW(); AdminUsersScreen.submitLifecycle compares expiresAt<=Date.now then returns before POST. Synthetic ordinary04:30Z/expiry04:40Z/fixed06:00Z gives false expiry. Actual CI stale-branch remains inferred, no raw UI trace available.",
+  "authorized_scope_expansion": "Root explicitly assigned only mobile-dataset.ts condition exemption for RCT_E2E_ADMIN_LIFECYCLE=true; no UI/product edit.",
+  "changed": [
+    "tests/e2e/fixtures/mobile-dataset.ts"
+  ],
+  "checks_plan": "Unchanged b78 guard; fresh120s, Nodeheap512MiB/treeRSS512MiB/shared15GiB/reserve1GiB/workspacefloor4GiB/growth256MiB. Actual old/new pagefixture+submitLifecycle extracted viaTSAST and evaluated in RAM synthetic VM; no browser/network. Cached Prettierapply/exactidempotency/check singlefixture; existing tsconfig.real-mobile.json noEmit.",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "source_before_checks_sha256": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0",
+  "runtime": "Actual after-correction browser/backend NOT_RUN; observed fb4a pre-correction guard branch inferred from source, not raw trace.",
+  "updated_utc": "2026-10-14T04:38:33.933269+00:00",
+  "source_pins": {
+    "tests/e2e/fixtures/mobile-dataset.ts": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0",
+    "tests/e2e/specs/mobile-real-server.spec.ts": "17c87bf3a249cd2af837e67dff95f9c00d9f9a550018f8ddeed49cd3afb17af7",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "14bd3300ddca87ed27b822bc28bb126d01586dc90da829fb94cd21496c4129b7",
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue": "a72004f513f5058113d7e163ccd1535d2dbe45c005145800e41f191153d824af",
+    "frontends/mobile-core/src/features/admin-users/admin-users-client.ts": "4207450ca6a535be7befa6c49a73b4586ff8aedfe5fa7821774fa97db98b9968",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserArchiveService.java": "a18590c01546440712b8098b8caf3d113def12a8c51010f22caf2bb032bb9806",
+    "tests/e2e/backend-clock/prepare-clock.mjs": "6f81108e3fa95acbf915636732a99aae7061a05ca0f1b24642142adf6af442db"
+  },
+  "checks_started_utc": "2026-10-14T04:37:57.588258+00:00",
+  "checks_stop_utc": "2026-10-14T04:39:57.588274+00:00",
+  "check_results": [
+    {
+      "phase": "CLOCK_COUNTEREXAMPLE",
+      "seconds": 1.091,
+      "result": {
+        "direct_pid": 640253,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 640253,
+            "start_ticks": 20647056
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 0.638,
+      "result": {
+        "direct_pid": 640260,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 640260,
+            "start_ticks": 20647164
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 0.658,
+      "result": {
+        "direct_pid": 640271,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 640271,
+            "start_ticks": 20647229
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.766,
+      "result": {
+        "direct_pid": 640282,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 640282,
+            "start_ticks": 20647294
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "REAL_MOBILE_TSC",
+      "seconds": 2.84,
+      "result": {
+        "direct_pid": 640301,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 640301,
+            "start_ticks": 20647371
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  ],
+  "peaks": {
+    "rss": 352145408,
+    "shared": 5778284544
+  },
+  "counterexample": {
+    "actual_old_fixture_and_submit_guard_red": true,
+    "actual_corrected_fixture_and_submit_guard_green": true,
+    "synthetic_preview_ttl_minutes": 10,
+    "unchanged_other_lane_vectors": 5,
+    "all_code_outside_page_callback_byte_identical": true,
+    "product_ui_unchanged": true,
+    "backend_or_browser_runtime": false
+  },
+  "native_seconds": 5.993,
+  "native_runs": 5,
+  "source_after_sha256": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0",
+  "all_recorded_births_absent": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "proof_reproduction": {
+    "source": "Actual page ArrowFunction extracted from fb4a mobile-dataset.ts and current via TypeScript PropertyAssignment AST; actual submitLifecycle FunctionDeclaration extracted from unchanged AdminUsersScreen.vue script. Both transpile ES2022 then VM with synthetic refs and archiveUser callcounter. No product rewriting.",
+    "ordinary_instant": "2026-10-14T04:30:00.000Z",
+    "preview_expiry": "2026-10-14T04:40:00.000Z",
+    "teaching_instant": "2026-10-14T06:00:00.000Z",
+    "old_result": {
+      "archiveCalls": 0,
+      "stale": true
+    },
+    "corrected_result": {
+      "archiveCalls": 1,
+      "stale": false
+    },
+    "other_environment_vectors": [
+      {},
+      {
+        "RCT_E2E_REMAINING5": "true"
+      },
+      {
+        "RCT_E2E_REMAINING5": "true",
+        "RCT_E2E_ROLE_LOGOUT": "true"
+      },
+      {
+        "RCT_E2E_REMAINING5": "true",
+        "RCT_E2E_ADMIN_LIFECYCLE": "false"
+      },
+      {
+        "RCT_E2E_REMAINING5": "false",
+        "RCT_E2E_ADMIN_LIFECYCLE": "true"
+      }
+    ]
+  },
+  "commands": [
+    "node --max-old-space-size=512 -e actual_TS_AST_fixture_and_submitLifecycle_RAM_VM_counterexample",
+    "node --max-old-space-size=512 /workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs --write --single-quote fixtures/mobile-dataset.ts (apply then exact-idempotency)",
+    "node --max-old-space-size=512 /workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs --check --single-quote fixtures/mobile-dataset.ts",
+    "node --max-old-space-size=512 /workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc --noEmit --project tsconfig.real-mobile.json"
+  ],
+  "command_cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e",
+  "review": "PENDING_ROOT_INDEPENDENT_RECHECK",
+  "source_after_blob": "e1aac8a67e7e1df42e2985ac12f6fe988341d27e",
+  "normal_commit_exit": 0,
+  "normal_commit_output": "[codex/q04-archive-submit-clock-20261014 490bac73] test(e2e): keep admin archive preview on real browser time\n 1 file changed, 5 insertions(+), 1 deletion(-)\n",
+  "hooks_bypassed": false,
+  "commit": "490bac73bce08e220f08ecd71f9b66a6474e28d7",
+  "worktree_clean": true,
+  "counterexample_source": "\nconst fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),ts=require(process.argv[1]);\nconst original=fs.readFileSync(process.argv[2],'utf8'),current=fs.readFileSync(process.argv[3],'utf8'),vue=fs.readFileSync(process.argv[4],'utf8');\nfunction parsed(text){return ts.createSourceFile('source.ts',text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS)}\nfunction unique(root,accept){const found=[];function walk(n){if(accept(n))found.push(n);ts.forEachChild(n,walk)}walk(root);assert.equal(found.length,1);return found[0]}\nfunction pageFixture(text){const root=parsed(text);const prop=unique(root,n=>ts.isPropertyAssignment(n)&&n.name.getText(root)==='page'&&n.initializer.getText(root).includes('setFixedTime'));return {text:prop.initializer.getText(root),start:prop.initializer.getStart(root),end:prop.initializer.end}}\nconst before=pageFixture(original),after=pageFixture(current);assert.equal(original.slice(0,before.start),current.slice(0,after.start));assert.equal(original.slice(before.end),current.slice(after.end));\n\nconst script=vue.substring(vue.indexOf('>')+1,vue.indexOf('</script>'));\nconst root=parsed(script),submit=unique(root,n=>ts.isFunctionDeclaration(n)&&n.name?.text==='submitLifecycle').getText(root);\nconst compile=code=>ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;\nconst ordinary=Date.parse('2026-10-14T04:30:00.000Z'),teaching=new Date('2026-10-14T06:00:00.000Z');\nasync function applyFixture(text,env){let now=ordinary,calls=0,used=false;const page={clock:{setFixedTime:async date=>{calls++;now=date.getTime()}}};const box={process:{env},Error};vm.runInNewContext(compile('globalThis.fixture='+text),box);await box.fixture({page,teachingInstant:teaching},async()=>{used=true});assert(used);return {now,calls}}\nasync function submitAt(now){let archiveCalls=0;const ref=value=>({value});class BrowserDate extends Date{static now(){return now}};const b={Date:BrowserDate,crypto:{randomUUID:()=> '00000000-0000-4000-8000-000000000001'},selectedUser:ref({id:1}),view:ref('archive'),saving:ref(false),lifecycleLoading:ref(false),lifecycleConfirmed:ref(true),canArchive:ref(true),archivePreview:ref({expiresAt:new Date(ordinary+600000).toISOString(),requiresPassword:true,previewDigest:'a'.repeat(64)}),lifecycleStale:ref(false),lifecycleUncertain:ref(false),archivePassword:ref('SYNTHETIC_PROOF'),archivePasswordError:ref(null),error:ref(null),archiveInput:null,restoreOperation:null,profileOriginal:ref({}),notice:ref(null),mutationAbortController:null,beginMutation:()=>({revision:1,controller:new AbortController()}),isCurrentMutation:()=>true,props:{client:{archiveUser:async()=>{archiveCalls++}}},refresh:async()=>{},StaleSessionGenerationError:class extends Error{},AdminUsersApiError:class extends Error{},showError:()=>{throw Error('unexpected branch')}};vm.runInNewContext(compile(submit+';globalThis.submitLifecycle=submitLifecycle;'),b);await b.submitLifecycle();return {archiveCalls,stale:b.lifecycleStale.value}}\n(async()=>{const admin={RCT_E2E_REMAINING5:'true',RCT_E2E_ADMIN_LIFECYCLE:'true'};const red=await applyFixture(before.text,admin),green=await applyFixture(after.text,admin);const blocked=await submitAt(red.now),reached=await submitAt(green.now);assert.deepEqual(blocked,{archiveCalls:0,stale:true});assert.deepEqual(reached,{archiveCalls:1,stale:false});assert.equal(red.calls,1);assert.equal(green.calls,0);const vectors=[{}, {RCT_E2E_REMAINING5:'true'}, {RCT_E2E_REMAINING5:'true',RCT_E2E_ROLE_LOGOUT:'true'}, {RCT_E2E_REMAINING5:'true',RCT_E2E_ADMIN_LIFECYCLE:'false'}, {RCT_E2E_REMAINING5:'false',RCT_E2E_ADMIN_LIFECYCLE:'true'}];for(const env of vectors)assert.deepEqual(await applyFixture(before.text,env),await applyFixture(after.text,env));fs.writeFileSync(process.argv[5],JSON.stringify({actual_old_fixture_and_submit_guard_red:true,actual_corrected_fixture_and_submit_guard_green:true,synthetic_preview_ttl_minutes:10,unchanged_other_lane_vectors:vectors.length,all_code_outside_page_callback_byte_identical:true,product_ui_unchanged:true,backend_or_browser_runtime:false}),{flag:'wx',mode:0o600})})().catch(()=>process.exit(1));\n",
+  "counterexample_source_sha256": "0867c5cbce74fa2bf2cfdbb06c18354693ff1255f2ab90d278114ee51b415906",
+  "counterexample_source_provenance": "Exact Node -e proof source reconstructed from the already executed functions tool call; no rerun. Temporary input/output paths removed in finally; argv1 cachedtypescript, argv2 gitshowfb4a originalfixture, argv3 correctedfixture490bac73, argv4 unchangedAdminUsersScreen.vue, argv5 ownsafeoutput."
+}

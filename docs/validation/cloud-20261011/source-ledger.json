@@ -13006,6 +13006,195 @@
       "revision": "fd864eb028f271537d24d7b6c065b553c56d6440",
       "kind": "validation-evidence-not-product-spec",
       "revision_qualification": "checkpoint base; source author/review revisions explicitly retained inside receipt"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1665",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "970fcba46948b771db94408239b5189716aa41ba3b592d47e9ab48ba1fdf78bf",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1666",
+      "path": "docs/validation/cloud-20261011/boundary-scenarios.csv",
+      "sha256": "51240b7b6a9f68f858e6b8b7889038a6e68034031b4fe46f46daf15a3e8752e5",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1667",
+      "path": "docs/validation/cloud-20261011/defects.md",
+      "sha256": "15a01dd6fc76a7982a762daf3050f13722131a50c048b7145a431e6d42dd365c",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1668",
+      "path": "docs/validation/cloud-20261011/morning-handoff.md",
+      "sha256": "9674545b4598e3aa407141f9936264a8a21dff86b0e22497ca027c4654130a0a",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1669",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-admin-journey-independent-review.safe.md",
+      "sha256": "0edd9536e3e5c79712cb8c767465db03d3949162a93f3f2c846883edff3fc68e",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1670",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-archive-browser-clock-author.safe.json",
+      "sha256": "806df7fb08c5d7a2f83f294bae879a011109c27bdf987cb8eff2bc9f8f4a004d",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1671",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-Q06-common-ci-integration.safe.json",
+      "sha256": "c32361f3c796e70dd23be8237f0142c010ec9c92b931b97f05c13828aef1cd0a",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1672",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-Q15-api-fixtures-author.safe.json",
+      "sha256": "0858ec2c4f090920d1566a10eb6700389f7f3337898e4b7dba6d3c98d5dfc96d",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1673",
+      "path": "docs/validation/cloud-20261011/receipts/Q05-semester-api-independent-review.safe.md",
+      "sha256": "46f135b66001c369e5ae8e1b17bfe9da51b6a63a0c2386b1a1024753f79bd77f",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1674",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-assignment-api-independent-review.safe.md",
+      "sha256": "7ef6ebdf3cbbbc45064a1766543d52fedd92887beabc88f2eeab04a4e0a1c068",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1675",
+      "path": "docs/validation/cloud-20261011/receipts/Q06-cross-service-fixture-author.safe.json",
+      "sha256": "6c44017bf68246f9c9d45ed247fade45c23c8f02ad0641f788b3cca8c745a715",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1676",
+      "path": "docs/validation/cloud-20261011/receipts/current-fb4a-admin-lifecycle.safe.json",
+      "sha256": "8969328cfbb674be897592d181818a1adc836e9f965928c4d548f8deb6f310cd",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1677",
+      "path": "docs/validation/cloud-20261011/receipts/current-fb4a-application-recovery.safe.json",
+      "sha256": "c68f695e2cb21414b9ef43e589f11deccc59eed381940651f567eb09d3101c11",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1678",
+      "path": "docs/validation/cloud-20261011/receipts/current-fb4a-gates-metadata.safe.json",
+      "sha256": "032482168cd25f4473f3a732b26c97710b814a28a9eee70454b53bb6209774dd",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1679",
+      "path": "docs/validation/cloud-20261011/receipts/current-fb4a-real-push-readback.safe.json",
+      "sha256": "efb3b2970a3ce5e32f83e5d2f64639b002c524e91691e7b29ba61b7ccd45ad72",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1680",
+      "path": "docs/validation/cloud-20261011/verified-cases.csv",
+      "sha256": "48b53333d40f0a5804556509c9879a32633fa709176b7a88286a52e86359148d",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "validation-evidence-not-product-spec",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1681",
+      "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+      "sha256": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1682",
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1683",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "sha256": "b805469c283e71668e5cdc716011cb95d355c31681deacd7e978112552bcec8e",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1684",
+      "path": "tests/e2e/playwright.assignment-lifecycle.config.ts",
+      "sha256": "cfa219188cde95192b0208aa68094f38f1f2ca537a44f9533803d7c94c941f25",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-FB4A-NEXT-1685",
+      "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
+      "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce",
+      "status": "actual closed evidence or approved Source/local checks; explicit NOT_RUN retained",
+      "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
     }
   ],
   "research_receipt": {

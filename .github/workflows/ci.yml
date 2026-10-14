@@ -820,6 +820,136 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Verify real semester archive and restore participants
+        id: semester-lifecycle
+        timeout-minutes: 9
+        if: ${{ !cancelled() && steps.application-recovery.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-semester-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_SEMESTER_LIFECYCLE_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium
+
+      - name: Upload closed semester lifecycle outcome
+        if: always() && steps.semester-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: semester-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify interrupted assignment closure and next-day replacement
+        id: assignment-lifecycle
+        timeout-minutes: 12
+        if: ${{ !cancelled() && steps.semester-lifecycle.outcome == 'success' }}
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_ASSIGNMENT_LIFECYCLE_RUN: ${{ runner.temp }}/rct-assignment-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_ASSIGNMENT_LIFECYCLE_RUN=%s\n' "$RCT_ASSIGNMENT_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          python3 - <<'PY_ASSIGNMENT'
+          import json, os, subprocess
+          from pathlib import Path
+
+          root = Path.cwd()
+          work = Path(os.environ['RCT_ASSIGNMENT_LIFECYCLE_RUN'])
+          work.mkdir(mode=0o700)
+          (work / 'artifacts').mkdir(mode=0o700)
+          for phase in ('prepare', 'pending', 'resume'):
+              (work / 'artifacts' / phase).mkdir(mode=0o700)
+          (work / 'disposable-target').write_text('RCT_ASSIGNMENT_LIFECYCLE_DISPOSABLE\n')
+          compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
+                     '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
+
+          def call(argv, *, cwd=root, env=None, seconds=180):
+              result = subprocess.run(argv, cwd=cwd, env=env, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, timeout=seconds)
+              if result.returncode:
+                  raise RuntimeError('Assignment lifecycle command failed')
+              return result.stdout
+
+          def inspect(cid):
+              info = json.loads(call(['docker', 'inspect', cid], seconds=15))[0]
+              labels = info['Config']['Labels']
+              if (labels.get('com.docker.compose.project') != 'rct-e2e'
+                      or labels.get('com.docker.compose.service') != 'schedule-service'):
+                  raise RuntimeError('Schedule ownership mismatch')
+              return info
+
+          def api(phase):
+              call(['npx', 'playwright', 'test', '--config', 'playwright.assignment-lifecycle.config.ts',
+                    '--project=chromium'], cwd=root / 'tests/e2e',
+                   env={**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase},
+                   seconds=330 if phase == 'prepare' else 150)
+
+          cid = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
+          if not cid:
+              raise SystemExit('Owned Schedule is missing')
+          original = inspect(cid)
+          if not original['State']['Running'] or original['State'].get('Health', {}).get('Status') != 'healthy':
+              raise SystemExit('Owned Schedule is not ready')
+          restart_needed = False
+          stage = 'prepare'
+
+          def restart():
+              call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
+                    '--wait', '--wait-timeout', '120', 'schedule-service'], seconds=150)
+              current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
+              info = inspect(current)
+              if (current != cid or info['Image'] != original['Image']
+                      or not info['State']['Running']
+                      or info['State'].get('Health', {}).get('Status') != 'healthy'):
+                  raise RuntimeError('Original Schedule did not recover')
+
+          try:
+              api('prepare')
+              stage = 'pending'
+              restart_needed = True
+              call([*compose, 'stop', '--timeout', '15', 'schedule-service'], seconds=45)
+              if inspect(cid)['State']['Running']:
+                  raise RuntimeError('Owned Schedule did not stop')
+              api('pending')
+              stage = 'restart'
+              restart()
+              restart_needed = False
+              stage = 'resume'
+              api('resume')
+              print('PASS real assignment closure retry, retained history and next-day replacement')
+          except Exception as error:
+              print('FAIL assignment lifecycle stage=' + stage + ' class=' + type(error).__name__)
+              raise SystemExit(1)
+          finally:
+              if restart_needed:
+                  restart()
+          PY_ASSIGNMENT
+
+      - name: Upload closed assignment lifecycle outcomes
+        if: always() && steps.assignment-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: assignment-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_ASSIGNMENT_LIFECYCLE_RUN }}/artifacts/*/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Stop owned fresh recovery targets
         if: always() && env.RCT_APP_RECOVERY_PROJECT != ''
         run: |

@@ -310,7 +310,11 @@ export async function selectPwaRole(page: Page, label: string) {
 export const test = base.extend<{}, { dataset: MobileDataset; teachingInstant: Date | undefined }>({
   teachingInstant: [undefined, { scope: 'worker', option: true }],
   page: async ({ page, teachingInstant }, use) => {
-    if (process.env.RCT_E2E_REMAINING5 === 'true') {
+    // Account archive previews expire against real time, so their browser keeps that clock.
+    if (
+      process.env.RCT_E2E_REMAINING5 === 'true' &&
+      process.env.RCT_E2E_ADMIN_LIFECYCLE !== 'true'
+    ) {
       if (!teachingInstant) throw new Error('Remaining five teaching instant is required');
       // Align educational dates only; real browser timers and backend security clocks keep running.
       await page.clock.setFixedTime(teachingInstant);

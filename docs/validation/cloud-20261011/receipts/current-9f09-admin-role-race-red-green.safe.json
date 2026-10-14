@@ -1,0 +1,97 @@
+{
+  "defect": "DF-PWA-ADMIN-ROLE-LOAD-001",
+  "author_commit": "d7203234b9f557be53071c120b82a0aa71feb368",
+  "base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "source_sha256": {
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue": "97fed56752fa218ca757efb511bd75321fc6d4ebe2b79ea38e6e0db8b7475aae",
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts": "0e79e114cce35c3d0a3f43647381c61d4eb290c00c7ac3adf03bb8a2dc3023a5"
+  },
+  "before": {
+    "product_sha256": "a72004f513f5058113d7e163ccd1535d2dbe45c005145800e41f191153d824af",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/rutcampustrack/frontends/node_modules/vitest/vitest.mjs",
+      "run",
+      "mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "--testNamePattern",
+      "never loses a typed teacher number",
+      "--config",
+      "/tmp/rct-q04-role-red-4gkgkqjv/vitest.config.mts",
+      "--configLoader",
+      "runner",
+      "--maxWorkers",
+      "1",
+      "--no-file-parallelism",
+      "--reporter=json",
+      "--outputFile",
+      "/workspace/scratch/rct-validation/q06_api_resume_writer/q04-role-red.private.json"
+    ],
+    "classification": "MEANINGFUL_PRODUCT_RED: unchangeda72004f5, actualSFC namedregression1FAIL/0PASS/16SKIP, AssertionError expected empty string to be E2E-SYNTHETIC-TEACHER; noTypeError/syntax/infraerror. PrivateJSON6482B; nativeexit1/reaped. Actualbrowser9f09cause remainsUNKNOWN.",
+    "closed_assertion_summary": {
+      "failed": 1,
+      "passed": 0,
+      "pending": 16,
+      "failures": [
+        {
+          "named_regression": true,
+          "assertion_error": true,
+          "expected_synthetic_employee": true,
+          "received_empty": false,
+          "contains_type_error": false
+        }
+      ],
+      "empty_to_typed_exact_confirmed": true
+    },
+    "seconds": 3.285,
+    "native_exit": 1,
+    "settled": true,
+    "reaped": true
+  },
+  "after": {
+    "product_fix": "openRole refusesprofileLoading/saving; role-status/Addrole/options disabledsamebusy. Freshprofile completesbeforeentry ratherthancancelling/fakingread. No API/DTO/permissions/fieldvaluepolicy changes.",
+    "argv": [
+      "sfc-whole-green",
+      [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/vitest/vitest.mjs",
+        "run",
+        "mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+        "--config",
+        "/tmp/rct-q04-role-green-ekfgl1p7/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--reporter=json",
+        "--outputFile",
+        "/workspace/scratch/rct-validation/q06_api_resume_writer/q04-role-green.private.json"
+      ],
+      "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends"
+    ],
+    "sfc_summary": {
+      "passed": 17,
+      "failed": 0,
+      "pending": 0,
+      "success": true,
+      "regression_pass": true
+    },
+    "checks": "cachedexistingVueformatter/ESLint/TSformatter/strictvue-tsc/testlint/normalhooks/normalcommitPASS",
+    "seconds": 25.027,
+    "all_native_exit": 0,
+    "settled": true,
+    "reaped": true,
+    "tmp_removed": true,
+    "own_link_removed": true
+  },
+  "review": {
+    "reviewer": "q07_client_review",
+    "scope": "wholeexact2Sourcepaths",
+    "verdict": "APPROVE_SOURCE/no blockingfindings",
+    "notes": "freshloadretained/grantsunchanged/nativesdisabled+entryguard avoiddataerase/stuckstate; meaningfuldeferredactualSFCtest"
+  },
+  "original_browser_receipt": "current-9f09-admin-lifecycle.safe.json",
+  "qualification": "Actualcontrolledlocalproductdefectred/green. CorrectedfullbrowserNOT_RUN; originalreportedframe542doesnotuniquelyestablishruncause."
+}

@@ -13938,6 +13938,97 @@
       "sha256": "e912ff443f2ac2ef60bfe6061023edbc839e05492aad962f007f5306c9be2e03",
       "revision_base": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
       "status": "bed1 twoSPEC +2f57717 helper/control+RootCI independentlySourceAPPROVED; targetednativeauthorchecksPASS, Rootordinarychecks pending; actualafterNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "d0a04cef780479bf33131e04d826be81c27077308575a951729ad710e5e4205e",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "sha256": "97fed56752fa218ca757efb511bd75321fc6d4ebe2b79ea38e6e0db8b7475aae",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "sha256": "0e79e114cce35c3d0a3f43647381c61d4eb290c00c7ac3adf03bb8a2dc3023a5",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+      "path": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+      "sha256": "ab62be1b4bfea9819f7ffbccc3ba7d2fa5dd370cc1cab9e8849a038ad6276670",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/playwright.config.ts",
+      "path": "tests/e2e/playwright.config.ts",
+      "sha256": "c9bae8615ccab0d466d2de81f9b436d9f7321eb5b71ec2d7e3ac37092eb19393",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/playwright.lesson-lifecycle.config.ts",
+      "path": "tests/e2e/playwright.lesson-lifecycle.config.ts",
+      "sha256": "902b728094d881a9940ce7dae13b2986adf77b2c9e8839c4a2daa946f018899c",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/tsconfig.real-mobile.json",
+      "path": "tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "203b6c52defdc875eafb7eb01f5b70bb57243c90313c3f2c1a2ea3de8cee6b4f",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "sha256": "ed74db6b0824c791b68c804dc9a5c917c5cb7227686fc5c2a9842010d423d1f8",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "sha256": "145abc94cee11b4af6ebc4d4aa9994daf4d77bf426840fde14f8358dee0c12f5",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/fixtures/safe-reporter.ts",
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "04617a73120e234087c0c4663f8793608723267eec6ff6e646ea09b6ec6aca23",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/fixtures/artifact-privacy.ts",
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "b5712eedd084d676449907ce163d39b21390a011689d5b1384345f955bf910a6",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "de60e922c82757ec0275b191ed60c2dbfb7c989936dcd69c658dad596d04dc87",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-9F09-PRODUCT-tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "sha256": "4b47e22c3490489ee4b2762bc26d693183097f78e553014c2dbcdcda2d772738",
+      "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
     }
   ],
   "research_receipt": {

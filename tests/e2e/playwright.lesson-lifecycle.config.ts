@@ -17,7 +17,7 @@ for (const path of [run, join(run, 'artifacts')]) {
 }
 export default defineConfig<{}, { teachingInstant: Date | undefined }>({
   ...existing,
-  testMatch: /mobile-lesson-lifecycle\.spec\.ts/,
+  testMatch: /mobile-(?:lesson-lifecycle|schedule-lifecycle|attendance-requests)\.spec\.ts/,
   outputDir: join(run, 'artifacts'),
   grep: undefined,
   forbidOnly: true,

@@ -143,6 +143,58 @@ function failure(status: number, code = ''): AdminUsersApiError {
     detail: 'Synthetic rejected action',
   } as never)
 }
+describe('role editor and current profile load', () => {
+  it('never loses a typed teacher number when the pending profile read finishes', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const original = await client.getUser(1)
+    const fresh = { ...original, firstName: 'Обновлённая', fullName: 'Обновлённая Синтетика' }
+    let finishProfile!: (user: typeof original) => void
+    vi.spyOn(client, 'getUser')
+      .mockResolvedValue(fresh)
+      .mockResolvedValueOnce(original)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishProfile = resolve
+          }),
+      )
+    const update = vi.spyOn(client, 'updateRole').mockResolvedValue(fresh)
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+    await flush()
+    await click(nodes(root).find((node) => node.props['data-user-id'] === 1)!)
+    await click(button(root, 'Редактировать данные'))
+    const employeeNumber = 'E2E-SYNTHETIC-TEACHER'
+    const employeeInput = () =>
+      nodes(root).find((node) => node.tag === 'input' && node.props.maxlength === '32')!
+    let entered: TestElement | null = null
+    // Model a real click: the browser never dispatches a disabled button.
+    // If navigation is admitted, a late response must preserve the entered data.
+    if (!button(root, 'Добавить роль').props.disabled) {
+      await click(button(root, 'Добавить роль'))
+      await click(button(root, 'Преподаватель'))
+      entered = employeeInput()
+      await input(entered, employeeNumber)
+    }
+    finishProfile(fresh)
+    await flush()
+    expect(update).not.toHaveBeenCalled()
+    if (entered) expect(entered.value).toBe(employeeNumber)
+    else {
+      expect(text(root)).toContain(fresh.fullName)
+      await click(button(root, 'Добавить роль'))
+      await click(button(root, 'Преподаватель'))
+      await input(employeeInput(), employeeNumber)
+    }
+    await submit(root)
+    expect(update).toHaveBeenCalledOnce()
+    expect(update.mock.calls[0]!.slice(0, 3)).toEqual([
+      1,
+      'TEACHER',
+      { status: 'ACTIVE', employeeNumber },
+    ])
+    expect(text(root)).toContain('Роль сохранена.')
+  })
+})
 async function archive(outcomes: unknown[]): Promise<{
   root: TestElement
   archiveCall: ReturnType<typeof vi.fn>

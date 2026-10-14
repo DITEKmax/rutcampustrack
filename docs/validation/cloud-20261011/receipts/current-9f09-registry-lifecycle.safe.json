@@ -1,0 +1,60 @@
+{
+  "artifact": 11883023431,
+  "producer": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "run": 38541704229,
+  "digest": "sha256:3c40844ed6a30c6ff36cf705acf36ddd7f8423e88bd0418c0ddc0096204f2824",
+  "bytes": 385,
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "cloud-accepted-registry-export.spec.ts",
+        "line": 19,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3005,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "cloud-accepted-registry-export.spec.ts",
+        "line": 19,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3188,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "native_reader": {
+    "exit": 0,
+    "settled": true,
+    "reaped": true,
+    "private_reference_removed": true
+  },
+  "source_sha256": "58b5a99d432d612b0ea05e1505a6ff65c9738c1bf2ad9d5274eb9e8dcd3d58d0",
+  "actual_checkout_receipt": "current-9f09-checkout.safe.json",
+  "qualification": "Exact loop has two modes FULL/LIMITED and two PASS results; artifact serializes source declaration only, so no individual mode-to-duration identity is inferred. HTML browser carrier only; four other native formats remain separate."
+}

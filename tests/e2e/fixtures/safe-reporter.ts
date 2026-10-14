@@ -13,7 +13,51 @@ export const safeFailureAnnotation = 'rct-safe-failure-v1';
 
 /** Closed source routes only; IDs are matched in RAM and never copied into diagnostics. */
 const datasetHttpOperations = {
-  DATASET_SEMESTERS_READ_HTTP: { method: 'GET', path: /^\/api\/academic\/semesters\?size=100$/ },
+  DATASET_SEMESTERS_READ_HTTP: {
+    method: 'GET',
+    path: /^\/api\/academic\/semesters\?(?:size=100|page=[0-4]&size=200&sort=id,asc)$/,
+  },
+  DATASET_ADMIN_ACCESS_READ_HTTP: { method: 'GET', path: /^\/api\/academic\/admin-access\/me$/ },
+  DATASET_SEMESTER_READ_HTTP: {
+    method: 'GET',
+    path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}$/,
+  },
+  DATASET_SEMESTER_ARCHIVE_HTTP: {
+    method: 'POST',
+    path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/archive$/,
+  },
+  DATASET_SEMESTER_RESTORE_HTTP: {
+    method: 'POST',
+    path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/restore$/,
+  },
+  DATASET_SEMESTER_ARCHIVE_STATUS_HTTP: {
+    method: 'GET',
+    path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/archive\/status$/,
+  },
+  DATASET_LESSONS_READ_HTTP: {
+    method: 'GET',
+    path: /^\/api\/schedule\/groups\/[1-9][0-9]{0,18}\/lessons\?dateFrom=[1-9][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])&dateTo=[1-9][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])&size=200$/,
+  },
+  DATASET_ATTENDANCE_REPORT_HTTP: {
+    method: 'GET',
+    path: /^\/api\/attendance\/reports\/lesson\/[1-9][0-9]{0,18}$/,
+  },
+  DATASET_ATTENDANCE_MARK_HTTP: {
+    method: 'PUT',
+    path: /^\/api\/attendance\/lessons\/[1-9][0-9]{0,18}\/students\/[1-9][0-9]{0,18}$/,
+  },
+  DATASET_STUDENT_HISTORY_HTTP: {
+    method: 'GET',
+    path: /^\/api\/v1\/student\/attendance\?semesterId=[1-9][0-9]{0,18}$/,
+  },
+  DATASET_HOMEWORK_READ_HTTP: {
+    method: 'GET',
+    path: /^\/api\/academic\/homeworks\/[1-9][0-9]{0,18}$/,
+  },
+  DATASET_HOMEWORK_UPDATE_HTTP: {
+    method: 'PUT',
+    path: /^\/api\/academic\/homeworks\/[1-9][0-9]{0,18}$/,
+  },
   DATASET_SEMESTER_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/semesters$/ },
   DATASET_SEMESTER_ACTIVATE_HTTP: {
     method: 'PATCH',
@@ -307,6 +351,25 @@ export function safeFailureDiagnostics(
   }
   const diagnostics = [...result, ...reportedHints].slice(0, 8);
   return diagnostics.length || !hasErrors ? diagnostics : [failureDiagnostic()];
+}
+
+/** Preserve the first propagated body HTTP marker before a later cleanup error can replace it. */
+export function retainFirstDatasetHttpFailure(
+  annotations: TestResult['annotations'],
+  error: unknown,
+): void {
+  const diagnostic = classifySafeFailure(error);
+  if (diagnostic.stage !== 'DATASET_HTTP' || annotations.length > 32) return;
+  const previous = safeFailureDiagnostics(annotations);
+  if (previous.some((item) => item.stage === 'DATASET_HTTP')) return;
+  const coreCount = previous.filter((item) => !item.cause.startsWith('REPORTED_')).length;
+  if (coreCount >= 8) return;
+  if (previous.length >= 8 && !discardReportedFailureHint(annotations)) return;
+  if (annotations.length >= 32) return;
+  annotations.push({
+    type: safeFailureAnnotation,
+    description: `${diagnostic.cause}:${diagnostic.httpStatus}`,
+  });
 }
 
 interface SafeResult {

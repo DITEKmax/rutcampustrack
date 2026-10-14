@@ -1,0 +1,27 @@
+{
+  "source_commit": "9facae408c73ba230308dd9425de068642168f3e",
+  "base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "source_sha256": {
+    "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue": "ab62be1b4bfea9819f7ffbccc3ba7d2fa5dd370cc1cab9e8849a038ad6276670",
+    "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts": "145abc94cee11b4af6ebc4d4aa9994daf4d77bf426840fde14f8358dee0c12f5"
+  },
+  "accepted_requirement": "JS-HEADMAN-40/DF-PWA-BUILDER-REMOVE-001; TASK-JS-HEADMAN-40-REMOVAL-CURRENT-SCOPE",
+  "change": "Minimumexistingdesign ordinaryconfirm selectedtemplateDELETE viaexistingpreview/CAS/key/readback; preservepast/gap/seriesreturn; no newAPI/hardAcademicdelete/styles/grants",
+  "new_tests": "Two independent per-test existingMobileDataset scopes; realbuilderremove/cancel-return-parity/history/currentgeneration/negativegrants; warmBFFsemester200/304/foreignETag-roomCAS/newETag/Todayrefresh",
+  "checks": "exactVueformatter/ESLint/SPECformatter/selectedstrictVueTSC+E2ETSC/PWA+TMAactualbuild/hooks/normalcommitPASS",
+  "checking_correction": "firstselectedVueTSC omittedexistingvite/client ambient for ?url import; TMPtypes prerequisite corrected only, Source unchanged and passedformatter/lint not repeated",
+  "timing": {
+    "active_seconds": 68.353,
+    "first_to_last_child_launch_wall_seconds": 201.87,
+    "total_wall_limit180_result": "NOT_MET: includes fully stopped Source/model/tool gap",
+    "per_phase_resource_reap_guards": "held; no hardOSisolationclaim"
+  },
+  "cleanup": "20617+4229closed0/reaped/ownTMP+2linksremoved; nativeNONE",
+  "independent_review": {
+    "reviewer": "q07_client_review",
+    "verdict": "APPROVE_SOURCE/no blockingfindings",
+    "whole_exact_source": true,
+    "scope": "design/currentAPI/DTO/clientstates/actualassertions/history+authority/workerisolation/confirmationkeyboard+focus"
+  },
+  "actual_browser": "NOT_RUN; existinghistoricalPGproofs separatelyreused, not newbrowserPASS"
+}

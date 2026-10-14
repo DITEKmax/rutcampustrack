@@ -1,0 +1,64 @@
+{
+  "artifact": 11883378617,
+  "producer": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "run": 38541704229,
+  "digest": "sha256:2a96037397771158f939fae5892ee7fb80b62347fc96766d3187656f3e700f56",
+  "bytes": 463,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "semester-lifecycle.spec.ts",
+        "line": 228,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 28033,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_ERROR",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_FRAME_DATASET_CALL",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "semester-lifecycle.spec.ts",
+            "line": 228
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "SEMESTER_LIFECYCLE",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "native_reader": {
+    "exit": 0,
+    "settled": true,
+    "reaped": true,
+    "private_reference_removed": true
+  },
+  "cause": "UNKNOWN; REPORTED_FRAME_DATASET_CALL is an untrusted hint with no operation/status identity"
+}

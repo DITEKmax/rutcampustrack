@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NotificationAction } from '../notifications/notifications-v2-models';
 import { notificationNumericId } from '../notifications/notifications-actions';
-import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, watch } from 'vue';
 import type { AcademicWeekPolicy } from '../../domain/academic-week';
 import HeadmanLessonManagementScreen from '../headman-lesson-management/HeadmanLessonManagementScreen.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
@@ -86,6 +86,7 @@ import {
   type HeadmanScheduleSemester,
 } from './headman-schedule-client';
 import './headman-schedule-screen.pcss';
+import '../../shared/components/mobile-tools-sheet.pcss';
 import {
   hideDeniedHeadmanSchedule,
   persistRecurringIntent,
@@ -205,6 +206,18 @@ const lifecyclePreview = shallowRef<{
 } | null>(null);
 const recurringLocked = computed(
   () => formBusy.value || (recurringIntent.value !== null && !recurringIntent.value.rejected),
+);
+const removalDialog = ref<HTMLDialogElement | null>(null);
+const removalTrigger = ref<HTMLButtonElement | null>(null);
+const removalDialogOpen = ref(false);
+const removalTitleId = useId();
+const removalDescriptionId = useId();
+const removalPreview = computed(() =>
+  lifecyclePreview.value?.action === 'DELETE'
+    ? lifecyclePreview.value.result
+    : recurringIntent.value?.action === 'DELETE'
+      ? recurringIntent.value.preview
+      : null,
 );
 const headmanOwner = computed(
   () =>
@@ -985,10 +998,10 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
 }
 
 async function save(): Promise<void> {
-  if (!headmanOwner.value || denied.value) return;
+  if (!headmanOwner.value || denied.value || removalDialogOpen.value) return;
   if (editTarget.value) {
     if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring();
-    else if (lifecyclePreview.value) await applyRecurring();
+    else if (lifecyclePreview.value?.action === 'UPDATE') await applyRecurring();
     else {
       await previewRecurring('UPDATE');
       if (lifecyclePreview.value) await applyRecurring();
@@ -1219,7 +1232,7 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
   const api = props.api;
   const target = editTarget.value;
   const owner = currentRecurringOwner();
-  if (!selectedWeekTypes.value.length) {
+  if (action === 'UPDATE' && !selectedWeekTypes.value.length) {
     formError.value = 'Выбери хотя бы одну неделю.';
     return;
   }
@@ -1254,6 +1267,52 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
   } finally {
     if (isCurrent()) formBusy.value = false;
   }
+}
+
+function cancelRemoval(): void {
+  if (formBusy.value) return;
+  removalDialogOpen.value = false;
+}
+
+async function requestRemoval(): Promise<void> {
+  if (!headmanOwner.value || denied.value || !editTarget.value || formBusy.value) return;
+  if (recurringIntent.value?.action === 'DELETE' && !recurringIntent.value.rejected) {
+    await applyRecurring();
+    return;
+  }
+  await previewRecurring('DELETE');
+  if (lifecyclePreview.value?.action === 'DELETE') removalDialogOpen.value = true;
+}
+
+watch(removalDialogOpen, async (open) => {
+  await nextTick();
+  if (open !== removalDialogOpen.value) return;
+  if (open && !removalDialog.value?.open) removalDialog.value?.showModal();
+  else if (!open) {
+    removalDialog.value?.close();
+    if (lifecyclePreview.value?.action === 'DELETE') lifecyclePreview.value = null;
+    removalTrigger.value?.focus();
+  }
+});
+
+watch(
+  () =>
+    [
+      formOpen.value,
+      headmanOwner.value,
+      props.offline,
+      lifecyclePreview.value,
+      recurringIntent.value,
+    ] as const,
+  ([editorOpen, owner, offline, preview, intent]) => {
+    if (!editorOpen || !owner || offline || (intent?.rejected && !preview))
+      removalDialogOpen.value = false;
+  },
+  { flush: 'sync' },
+);
+
+async function confirmRemoval(): Promise<void> {
+  if (removalDialogOpen.value && removalPreview.value) await applyRecurring();
 }
 
 async function applyRecurring(): Promise<void> {
@@ -1571,6 +1630,7 @@ watch(
       editTarget.value,
       recurringIntent.value,
       lifecyclePreview.value,
+      removalDialogOpen.value,
       denied.value,
       selectedWeekTypes.value,
     ] as const,
@@ -1592,6 +1652,7 @@ watch(
                     : 'Сохранить слот',
             disabled:
               busy ||
+              removalDialogOpen.value ||
               offline ||
               readOnly ||
               intentRecoveryBlocked.value ||
@@ -1605,6 +1666,7 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  removalDialog.value?.close();
   weekPolicyRevision += 1;
   disposed = true;
   commandRevision += 1;
@@ -2241,10 +2303,20 @@ defineExpose({ openNotificationAction });
         />
         <footer class="headman-schedule__footer">
           <button
-            class="headman-schedule__primary"
+            ref="removalTrigger"
+            type="button"
+            :class="editTarget ? 'headman-schedule__primary headman-schedule__delete' : 'headman-schedule__secondary'"
+            :disabled="!editTarget || formBusy || offline || readOnly || !headmanOwner || intentRecoveryBlocked || (recurringLocked && recurringIntent?.action !== 'DELETE')"
+            @click="requestRemoval"
+          >
+            {{ recurringIntent?.action === 'DELETE' && !recurringIntent.rejected ? 'Повторить удаление' : 'Удалить пару' }}
+          </button>
+          <button
+            :class="editTarget ? 'headman-schedule__secondary' : 'headman-schedule__primary'"
             type="button"
             :disabled="
               formBusy ||
+                recurringIntent?.action === 'DELETE' ||
                 offline ||
                 readOnly ||
                 !headmanOwner ||
@@ -2267,6 +2339,54 @@ defineExpose({ openNotificationAction });
       </section>
     </main>
   </MobileShell>
+  <dialog
+    ref="removalDialog"
+    class="mobile-tools-sheet"
+    :aria-labelledby="removalTitleId"
+    :aria-describedby="removalDescriptionId"
+    :aria-busy="formBusy"
+    @cancel.prevent="cancelRemoval"
+    @close="removalDialogOpen = false"
+  >
+    <header>
+      <h2 :id="removalTitleId">
+        Удалить пару из конструктора?
+      </h2>
+    </header>
+    <div class="mobile-tools-sheet__content">
+      <p :id="removalDescriptionId">
+        Будущие пары этого шаблона перестанут создаваться. Прошедшие пары, отметки и домашние задания сохранятся. Если вернёшь такой же слот, серия продолжится.
+      </p>
+      <p
+        v-if="removalPreview"
+        role="status"
+      >
+        Будущих пар будет убрано: {{ removalPreview.removedCount }}.
+      </p>
+      <StudentWarningBlock
+        v-if="formError"
+        title="Проверь удаление"
+        :message="formError"
+      />
+      <button
+        type="button"
+        class="headman-schedule__secondary"
+        :disabled="formBusy"
+        autofocus
+        @click="cancelRemoval"
+      >
+        Отмена
+      </button>
+      <button
+        type="button"
+        class="headman-schedule__primary headman-schedule__delete"
+        :disabled="formBusy || !removalPreview || !headmanOwner || offline || intentRecoveryBlocked"
+        @click="confirmRemoval"
+      >
+        {{ formBusy ? 'Удаляем…' : 'Удалить пару' }}
+      </button>
+    </div>
+  </dialog>
   <RoleSwitchDialog
     v-if="homeRoleDialogOpen"
     :snapshot="profileView.snapshot ?? profile"

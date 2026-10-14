@@ -584,6 +584,7 @@ async function copyCredential(value: string): Promise<void> {
   }
 }
 function openRole(role: Exclude<AdminManagedRole, 'HEADMAN'>): void {
+  if (profileLoading.value || saving.value) return;
   editorRole.value = role;
   if (selectedUser.value) syncEditorFromUser(selectedUser.value);
   view.value = 'role';
@@ -2063,7 +2064,7 @@ onBeforeUnmount(() => {
             "
             class="admin-users-action admin-users-action--secondary"
             type="button"
-            :disabled="saving"
+            :disabled="saving || profileLoading"
             @click="openRole(grant.role)"
           >
             {{ grant.status === 'ARCHIVED' ? 'Назначить заново' : 'Изменить статус' }}
@@ -2090,7 +2091,7 @@ onBeforeUnmount(() => {
           type="button"
           :aria-expanded="addRoleExpanded"
           aria-controls="admin-users-add-role-options"
-          :disabled="saving"
+          :disabled="saving || profileLoading"
           @click="addRoleExpanded = !addRoleExpanded"
         >
           <span>Добавить роль</span><MobileIcon name="plus" />
@@ -2105,6 +2106,7 @@ onBeforeUnmount(() => {
             ).filter((role) => !selectedUser!.roles.some((grant) => grant.role === role))"
             :key="role"
             type="button"
+            :disabled="saving || profileLoading"
             @click="role === 'ADMIN' ? openPermissions('target') : openRole(role)"
           >
             {{ roleLabel(role) }}

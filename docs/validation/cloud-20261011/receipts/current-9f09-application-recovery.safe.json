@@ -1,0 +1,135 @@
+{
+  "artifact": 11883208936,
+  "producer": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "run": 38541704229,
+  "digest": "sha256:b8177131827276c34f77a84f850a6643ed838266b63b55680d1ed9279eb5cf83",
+  "bytes": 1454,
+  "phases": {
+    "admit": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 1281,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "pending": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 367,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "attachment": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 92,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "seed": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 106675,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {},
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [],
+  "diagnostic_schema": {
+    "admit": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "pending": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "attachment": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "seed": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES",
+  "actual_restore_step": {
+    "job": 115777784325,
+    "step": 38,
+    "result": "SUCCESS",
+    "duration_seconds": 313
+  },
+  "native_reader": {
+    "exit": 0,
+    "settled": true,
+    "reaped": true,
+    "private_reference_removed": true
+  },
+  "actual_checkout_receipt": "current-9f09-checkout.safe.json",
+  "qualification": "All four actual API phases plus real fresh disposable restore step. No browser-page proof from these APIRequestContexts; externalfilesystem modes/providers/fullP20 remain separate. No claim helper retry executed based on duration alone."
+}

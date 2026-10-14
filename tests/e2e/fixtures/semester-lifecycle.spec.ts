@@ -5,6 +5,7 @@ import { expect, type APIRequestContext } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit } from './mobile-dataset';
 import { TEST_USERS } from './users';
+import { retainFirstDatasetHttpFailure } from './safe-reporter';
 
 type Row = Record<string, any>;
 
@@ -675,6 +676,9 @@ test('FULL admin archives and restores the disposable CI semester through real p
       beforeHistory,
       'Permitted homework edit changed attendance history',
     );
+  } catch (error) {
+    retainFirstDatasetHttpFailure(info.annotations, error);
+    throw error;
   } finally {
     try {
       if (admin && originalAuthorityCaptured && previousActive && ownSemesterId) {

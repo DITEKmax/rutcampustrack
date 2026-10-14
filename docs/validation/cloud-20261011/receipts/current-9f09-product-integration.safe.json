@@ -1,0 +1,234 @@
+{
+  "base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "Source_paths": {
+    ".github/workflows/ci.yml": "d0a04cef780479bf33131e04d826be81c27077308575a951729ad710e5e4205e",
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue": "97fed56752fa218ca757efb511bd75321fc6d4ebe2b79ea38e6e0db8b7475aae",
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts": "0e79e114cce35c3d0a3f43647381c61d4eb290c00c7ac3adf03bb8a2dc3023a5",
+    "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue": "ab62be1b4bfea9819f7ffbccc3ba7d2fa5dd370cc1cab9e8849a038ad6276670",
+    "tests/e2e/playwright.config.ts": "c9bae8615ccab0d466d2de81f9b436d9f7321eb5b71ec2d7e3ac37092eb19393",
+    "tests/e2e/playwright.lesson-lifecycle.config.ts": "902b728094d881a9940ce7dae13b2986adf77b2c9e8839c4a2daa946f018899c",
+    "tests/e2e/tsconfig.real-mobile.json": "203b6c52defdc875eafb7eb01f5b70bb57243c90313c3f2c1a2ea3de8cee6b4f",
+    "tests/e2e/specs/mobile-attendance-requests.spec.ts": "ed74db6b0824c791b68c804dc9a5c917c5cb7227686fc5c2a9842010d423d1f8",
+    "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts": "145abc94cee11b4af6ebc4d4aa9994daf4d77bf426840fde14f8358dee0c12f5",
+    "tests/e2e/fixtures/safe-reporter.ts": "04617a73120e234087c0c4663f8793608723267eec6ff6e646ea09b6ec6aca23",
+    "tests/e2e/fixtures/artifact-privacy.ts": "b5712eedd084d676449907ce163d39b21390a011689d5b1384345f955bf910a6",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "de60e922c82757ec0275b191ed60c2dbfb7c989936dcd69c658dad596d04dc87",
+    "tests/e2e/fixtures/semester-lifecycle.spec.ts": "4b47e22c3490489ee4b2762bc26d693183097f78e553014c2dbcdcda2d772738"
+  },
+  "author_commits": {
+    "Q04": "d7203234b9f557be53071c120b82a0aa71feb368",
+    "Q07": "9facae408c73ba230308dd9425de068642168f3e",
+    "Q08": "8abaf957eb9b944362b1f80c1ee4b3a576b708f9",
+    "semester_diagnostic": "ee6f51ba75a4b6a78ffe7563bbe38dbec3207a13"
+  },
+  "independent_reviews": "wholeQ04+Q07q07_client_review;wholeQ08+Root4config+whole3semester+Rootliteralq07_finite_acceptance APPROVE/no blockingfindings",
+  "common4_checks": {
+    "native": "7476exit0/reaped",
+    "checks": "actionlint1.7.11/Prettier4config/normalhooksPASS"
+  },
+  "merged_checks": {
+    "results": [
+      {
+        "phase": "Root-privacy-format",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "tests/e2e/fixtures/artifact-privacy.ts"
+        ],
+        "direct_pid": 689726,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 689726,
+            "start_ticks": 22659959
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "merged-real-mobile-TSC",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+          "--noEmit",
+          "--project",
+          "tests/e2e/tsconfig.real-mobile.json"
+        ],
+        "direct_pid": 689737,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 689737,
+            "start_ticks": 22660030
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "merged-private-controls",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "tests/e2e/check-artifact-privacy.mjs"
+        ],
+        "direct_pid": 689744,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 689744,
+            "start_ticks": 22660370
+          },
+          {
+            "pid": 689751,
+            "start_ticks": 22660377
+          },
+          {
+            "pid": 689764,
+            "start_ticks": 22660523
+          },
+          {
+            "pid": 689777,
+            "start_ticks": 22660743
+          },
+          {
+            "pid": 689790,
+            "start_ticks": 22660835
+          },
+          {
+            "pid": 689803,
+            "start_ticks": 22663905
+          },
+          {
+            "pid": 689816,
+            "start_ticks": 22664039
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "git-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "direct_pid": 689829,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 689829,
+            "start_ticks": 22664141
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "Angular-baseline-unchanged",
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "--",
+          "frontends/web-panel"
+        ],
+        "direct_pid": 689850,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 689850,
+            "start_ticks": 22664195
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "source_unchanged": true,
+    "tmp_removed": true,
+    "existing_dependency_directory_preserved": true,
+    "total_wall_seconds": 42.713,
+    "limits": "sampledprocessresources; no hardOSisolationclaim"
+  },
+  "normal_final_hooks": "PENDING",
+  "new_actual_browser": "NOT_RUN; normalCIafterrealpushrequired",
+  "limits": "authorstoppedmodel/toolgaps exceededself-imposedtotalwallbudgets explicitlyrecorded inQ07/Q05receipts; no rerunformetric. Rootmergedoneforegroundactualwall180enforced. No backend/API/proto/DB/Angular/sourcebehaviorchangeincheckingcontrols; UIchangesexplicitaccepted.",
+  "inventory": {
+    "Created": [
+      "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "docs/validation/cloud-20261011/receipts/current-9f09-gates.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-real-push-readback.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-admin-lifecycle.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-checkout.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-registry-lifecycle.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-application-recovery.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-semester-lifecycle.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-P07-finite-join.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-admin-role-race-red-green.safe.json",
+      "docs/validation/cloud-20261011/receipts/Q08-current-client-Source-review.safe.json",
+      "docs/validation/cloud-20261011/receipts/Q07-current-builder-client-Source-review.safe.json",
+      "docs/validation/cloud-20261011/receipts/Q05-current-semester-closed-diagnostic.safe.json",
+      "docs/validation/cloud-20261011/receipts/current-9f09-product-integration.safe.json"
+    ],
+    "Modified": [
+      ".github/workflows/ci.yml",
+      "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+      "tests/e2e/playwright.config.ts",
+      "tests/e2e/playwright.lesson-lifecycle.config.ts",
+      "tests/e2e/tsconfig.real-mobile.json",
+      "tests/e2e/fixtures/safe-reporter.ts",
+      "tests/e2e/fixtures/artifact-privacy.ts",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "docs/validation/cloud-20261011/CURRENT.md",
+      "docs/validation/cloud-20261011/attempts.ndjson",
+      "docs/validation/cloud-20261011/defects.md",
+      "docs/validation/cloud-20261011/resources.md",
+      "docs/validation/cloud-20261011/scenarios.csv",
+      "docs/validation/cloud-20261011/verified-cases.csv",
+      "docs/validation/cloud-20261011/source-ledger.json"
+    ],
+    "Deleted": []
+  },
+  "pending_publication": "ONE normalcommit+push designatedbranch; actualnewchecksNOT_RUN"
+}

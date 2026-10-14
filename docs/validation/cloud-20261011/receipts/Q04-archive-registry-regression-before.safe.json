@@ -1,0 +1,13 @@
+{
+  "base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+  "author_commit": "b95b34e108dfc0dc274f89243d19aff968497534",
+  "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+  "sha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70",
+  "scope": "only existingIT new signedADMIN archivedregistry regression; production unchanged",
+  "rule": "explicitARCHIVED shows archivedaccounts and activeaccounts witharchivedrole; stableequal-nameIDs/page/count; role/statusfilter exclusions; ordinaryliststillhidesarchive; literalLIKEwildcards escaped",
+  "local_compile": "selectedUserSearchIT.class fresh beforeTestcontainers entered; no selectedXML",
+  "local_runtime": "ENV WORKSPACE_FLOOR stop, native-15/allJVMreaped18533closed; not assertionRED/PASS",
+  "owned_cleanup": "unchangedobserver/session99288settledtrue/failurenull/activeownempty/originalforeign0containers11vol3netexact/privateTMPgone/free4989628416",
+  "expected_CI": "normalexistingJavaIT meaningfulregression against unchangedproduction; actualNOT_RUN",
+  "product_fix": "separateauthorWT WIP notintegrated; no API/globalentityguard/rights/schema changes inthischeckpoint"
+}

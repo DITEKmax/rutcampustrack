@@ -1,0 +1,167 @@
+{
+  "base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+  "scope": "actualQ09Q12 blindframe correction through existingexactpublicspecconstants and Q09one-line bindinglabelprefix",
+  "sourcepins": {
+    "tests/e2e/fixtures/artifact-privacy.ts": "d200c9adb73cd8ead7967b82fdbdbd1cc0f2e8555498ccbde7f2e51688502da1",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "6707de06b0d46af08761aa8c38e2dae2609b7daa20d5f3b2bfd020ba0903f244",
+    "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "a2c98ce9612f317826b6b76d80e242b8998c5ba39f0036e0722b923f592ae726"
+  },
+  "source_delta": "four exactknownpublicSourcepaths only, no extraction/limits/status/fallback changes; existingpositiveandforeignframe controls; auth.spec remains disallowed; exactcurrentfile/source line-column checks retained",
+  "q09": "c654a77660251cbce90fb10bf5b906802cc0949b one-line /^Привязка/ only; actualoldFAIL causeUNKNOWN",
+  "checks": {
+    "results": [
+      {
+        "phase": "format-apply",
+        "direct_pid": 658735,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 658735,
+            "start_ticks": 21424280
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-check",
+        "direct_pid": 658746,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 658746,
+            "start_ticks": 21424385
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "direct_pid": 658757,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 658757,
+            "start_ticks": 21424474
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "privacy-controls",
+        "direct_pid": 658764,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 658764,
+            "start_ticks": 21424755
+          },
+          {
+            "pid": 658771,
+            "start_ticks": 21424762
+          },
+          {
+            "pid": 658784,
+            "start_ticks": 21424906
+          },
+          {
+            "pid": 658809,
+            "start_ticks": 21425066
+          },
+          {
+            "pid": 658822,
+            "start_ticks": 21425135
+          },
+          {
+            "pid": 658835,
+            "start_ticks": 21428222
+          },
+          {
+            "pid": 658849,
+            "start_ticks": 21428352
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tmp_removed": true,
+    "sources": {
+      "tests/e2e/playwright.registry-export.config.ts": "2bd9776cf016682ffa60ebdd7f7a20078194441e3ea42f6bbe75d6ec90fa90c7",
+      "tests/e2e/playwright.helper-capabilities.config.ts": "69b76953504b13f404c5f067bfe35560f06184fe719f4f5576f29de90508cf68",
+      "tests/e2e/specs/cloud-accepted-registry-export.spec.ts": "96961ce292b4b3462df85fd1eb1c9684ffc03190c7bccb9d88eedfd4134cac54",
+      "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts": "57269bd91d6338a426ba73dbac75e0b2d352ed7c1ee0ddeaa541aff7cc2127f6",
+      "tests/e2e/fixtures/cloud-accepted-support.ts": "494cc149246bccda611e934dfc7462b501216a6bbdc1dc100b94aec4c00ac50c",
+      "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "13c2b7aec8e0644504f8209ee3d8f4bc983a76c0034ef058e0485d143ab7f6d5",
+      "tests/e2e/fixtures/artifact-privacy.ts": "d200c9adb73cd8ead7967b82fdbdbd1cc0f2e8555498ccbde7f2e51688502da1",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "6707de06b0d46af08761aa8c38e2dae2609b7daa20d5f3b2bfd020ba0903f244",
+      "tests/e2e/tsconfig.real-mobile.json": "fd1bb7f763a32f4cf8e73bfe98210e94d3f9e7caaedc0e6b9d8c12f677a594f2"
+    }
+  },
+  "privacy_result": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "normalChildStatus": 0,
+    "markerAbsent": true,
+    "producerBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": false
+    },
+    "originalMetadataLeakReproduced": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "guardControl": {
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "videoRejected": true,
+      "screenshotRejected": true,
+      "missingSnapshotGuardRejected": true,
+      "wrongSnapshotGuardRejected": true
+    },
+    "interruptedChildStatus": 0,
+    "interruptedChildSignal": null,
+    "interruptionBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": true
+    },
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "actual_after": "BROWSER_BACKEND_NOT_RUN",
+  "next": "independenttargetedprivacy/source review; productQ04/Q06 prepare in separateWT",
+  "q09_targeted_correction": "b1158b079a5e0fd5951f35fe0e89b331b7e67579: exactrolecombobox plusprefix excludesaria-labeledsection; formatter/TSC PASS/reaped23330closed/TMPgone; allasserts preserved"
+}

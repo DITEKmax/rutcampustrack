@@ -1,0 +1,27 @@
+{
+  "artifact": 11874192294,
+  "run": 38521397600,
+  "digest": "sha256:e9e65d796e95945135d98194b0a389bee05c9a9c489077fd2c040d9a23a4eabf",
+  "bytes": 293,
+  "checkout": {
+    "checkout_sha": "74330241e4377166fa65b9ccee87433e15d319da",
+    "tree_sha": "b4cd6f1660f7cc947c72c340867afa27206e986d",
+    "producer_head_sha": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+  },
+  "merge_parent_and_tree_join": {
+    "official_git_merge_sha": "74330241e4377166fa65b9ccee87433e15d319da",
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    ],
+    "tree": "b4cd6f1660f7cc947c72c340867afa27206e986d",
+    "local_head_tree_equal": true,
+    "status": "PASS_ACTUAL_JOB_CHECKOUT_NOT_JUST_ADVERTISED"
+  },
+  "private_logs_or_bodies_read": false,
+  "closed_reader": {
+    "exit": 0,
+    "reaped": true,
+    "private_request_removed": true
+  }
+}

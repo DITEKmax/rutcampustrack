@@ -90,14 +90,29 @@ export async function deniedMark(dataset: MobileDataset, token: string): Promise
   const reportPath = `/api/attendance/reports/lesson/${dataset.lesson.physicalLessonId}`;
   const before = await dataset.headmanActor.call('GET', reportPath);
   const entry = before.entries.find((row: { userId: number }) => row.userId === dataset.student.id);
+  const expectedStatus =
+    entry?.status === null
+      ? 'EMPTY'
+      : typeof entry?.status === 'string'
+        ? entry.status.toUpperCase()
+        : '';
+  const expectedRevision = entry?.markRevision ?? 'EMPTY';
+  expect(
+    (entry?.status === null && entry.markRevision === null) ||
+      (typeof entry?.status === 'string' &&
+        ['PRESENT', 'EXCUSED', 'ABSENT'].includes(expectedStatus) &&
+        typeof expectedRevision === 'string' &&
+        expectedRevision !== 'EMPTY' &&
+        /^[A-Za-z0-9_-]{1,128}$/.test(expectedRevision)),
+  ).toBe(true);
   const response = await dataset.request.put(
     `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.student.id}`,
     {
       headers: { Authorization: `Bearer ${token}` },
       data: {
         status: 'PRESENT',
-        expectedStatus: String(entry.status).toUpperCase(),
-        expectedRevision: entry.markRevision ?? 'EMPTY',
+        expectedStatus,
+        expectedRevision,
       },
     },
   );

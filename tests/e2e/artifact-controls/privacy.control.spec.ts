@@ -198,7 +198,26 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     sanitize(refused, assignmentSpec, assignmentStart);
     expect(refused.location).toEqual(assignmentFallback);
   }
-  const unrelatedSpec = resolve(__dirname, '../specs/mobile-map-lifecycle.spec.ts');
+  for (const filename of [
+    'mobile-homework-lifecycle.spec.ts',
+    'mobile-map-lifecycle.spec.ts',
+    'cloud-accepted-registry-export.spec.ts',
+    'cloud-accepted-helper-capabilities.spec.ts',
+  ]) {
+    const publicSpec = resolve(__dirname, '../specs', filename);
+    const publicError: Record<string, unknown> = {
+      message: marker,
+      stack: `Error: ${marker}\n    at (${publicSpec}:1:1)`,
+    };
+    sanitize(publicError, publicSpec, 2);
+    expect(publicError.location).toEqual({ file: publicSpec, line: 1, column: 1 });
+    const foreignFrame: Record<string, unknown> = {
+      stack: `Error: ${marker}\n    at (${assignmentSpec}:${assignmentAssertion}:3)`,
+    };
+    sanitize(foreignFrame, publicSpec, 2);
+    expect(foreignFrame.location).toEqual({ file: publicSpec, line: 2, column: 1 });
+  }
+  const unrelatedSpec = resolve(__dirname, '../specs/auth.spec.ts');
   const unrelated: Record<string, unknown> = {
     stack: `Error: ${marker}\n    at (${assignmentSpec}:${assignmentAssertion}:3)`,
   };

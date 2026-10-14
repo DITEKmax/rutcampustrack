@@ -85,6 +85,78 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
+    void archivedRegistryFilterIncludesArchivedAccountsAndRestoredRoleHistory() throws Exception {
+        jdbcTemplate.update(
+                """
+                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
+                VALUES ('arclist_match_a','x','АрхивныйПоиск','Синтетика','student','archived',FALSE,FALSE,NOW(),NOW()),
+                       ('arclist_match_b','x','АрхивныйПоиск','Синтетика','student','active',FALSE,FALSE,NOW(),NOW()),
+                       ('arclist_match_c','x','АрхивныйПоиск','Синтетика','teacher','archived',FALSE,FALSE,NOW(),NOW()),
+                       ('arclist_match_d','x','АрхивныйПоиск','Синтетика','student','active',FALSE,FALSE,NOW(),NOW())
+                """);
+        jdbcTemplate.update(
+                """
+                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
+                SELECT id,role,CASE WHEN login='arclist_match_d' THEN 'suspended' ELSE 'archived' END,NOW(),NOW()
+                  FROM users WHERE login IN ('arclist_match_a','arclist_match_b','arclist_match_c','arclist_match_d')
+                """);
+
+        // Both an archived account and a restored ACTIVE account retain archived grants.
+        // Equal names require the ID tie-breaker; the unrelated role/status must not inflate count.
+        for (int page = 0; page < 2; page++) {
+            mockMvc.perform(
+                            get("/academic/users")
+                                    .header("X-User-Id", seedAdminId)
+                                    .header("X-User-Role", "ADMIN")
+                                    .with(signedAdmin())
+                                    .param("search", "ARCLIST_MATCH")
+                                    .param("role", "STUDENT")
+                                    .param("roleStatus", "ARCHIVED")
+                                    .param("sort", "lastName,asc", "firstName,asc")
+                                    .param("page", String.valueOf(page))
+                                    .param("size", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.page.totalElements", is(2)))
+                    .andExpect(jsonPath("$.page.totalPages", is(2)))
+                    .andExpect(
+                            jsonPath(
+                                    "$._embedded.userResponseList[0].login",
+                                    is(page == 0 ? "arclist_match_a" : "arclist_match_b")));
+        }
+        mockMvc.perform(
+                        get("/academic/users")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .param("search", "arclist_match")
+                                .param("status", "ARCHIVED")
+                                .param("sort", "login,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(2)))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.userResponseList[*].login",
+                                contains("arclist_match_a", "arclist_match_c")));
+        listAs("arclist_match")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(2)))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.userResponseList[*].login",
+                                containsInAnyOrder("arclist_match_b", "arclist_match_d")));
+        mockMvc.perform(
+                        get("/academic/users")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .param("search", "arclist%match")
+                                .param("role", "STUDENT")
+                                .param("roleStatus", "ARCHIVED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(0)));
+    }
+
+    @Test
     void search_caseInsensitive_filtersByLastName() throws Exception {
         listAs("иван")
                 .andExpect(status().isOk())

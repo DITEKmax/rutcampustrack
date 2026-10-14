@@ -51,7 +51,7 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     expect(
       (await formats.json()).formats.map((value: { code: string }) => value.code).sort(),
     ).toEqual(['docx', 'html', 'pdf', 'png', 'xlsx']);
-    await page.getByLabel('Формат выгрузки', { exact: true }).selectOption('html');
+    await page.getByLabel(/^Формат выгрузки/).selectOption('html');
     const created = http(page, '/api/auth/export-jobs', 'POST');
     const capability = page.waitForResponse(
       (response) =>
@@ -114,17 +114,25 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
       (
         await dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers: foreign.headers() })
       ).status(),
-    ).toBe(403);
+    ).toBe(404);
     expect(
       (
         await dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, {
           headers: foreign.headers(),
         })
       ).status(),
-    ).toBe(403);
+    ).toBe(404);
     if (mode === 'LIMITED') {
       const path = `/api/academic/users/${user.id}/admin-access`;
       const profile = await dataset.admin.call('GET', path);
+      // A fresh, working capability distinguishes live revocation from ticket expiry.
+      const freshTicketResponse = await dataset.request.post(
+        `/api/auth/export-jobs/${jobId}/ticket`,
+        { headers },
+      );
+      expect(freshTicketResponse.status()).toBe(200);
+      const freshTicket: { downloadPath: string } = await freshTicketResponse.json();
+      expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(200);
       await dataset.admin.call('PUT', path, {
         mode: 'LIMITED',
         permissions: ['GROUPS_VIEW'],
@@ -134,7 +142,7 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
         () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers }),
         () => dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, { headers }),
         () => dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, { headers }),
-        () => dataset.request.get(ticket.downloadPath),
+        () => dataset.request.get(freshTicket.downloadPath),
       ])
         expect((await operation()).status()).toBe(403);
       const unchanged = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);

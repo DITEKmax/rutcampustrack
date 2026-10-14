@@ -13668,6 +13668,83 @@
       "sha256": "6293f6ed95db9a28a7d8466b90fd1cb8b7cc697b76330872c9e163d1c90cf744",
       "status": "red-before/green-after current semantic checking evidence",
       "revision_base": "d3a9bd9b3675183e21b434a002eacce068d5ea49"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "8a4929ed9ab29c883fb74400f41a46143d4e83428ea34a7dfbb70d3ff21d5f30",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/playwright.registry-export.config.ts",
+      "path": "tests/e2e/playwright.registry-export.config.ts",
+      "sha256": "2bd9776cf016682ffa60ebdd7f7a20078194441e3ea42f6bbe75d6ec90fa90c7",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/playwright.helper-capabilities.config.ts",
+      "path": "tests/e2e/playwright.helper-capabilities.config.ts",
+      "sha256": "69b76953504b13f404c5f067bfe35560f06184fe719f4f5576f29de90508cf68",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/tsconfig.real-mobile.json",
+      "path": "tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "fd1bb7f763a32f4cf8e73bfe98210e94d3f9e7caaedc0e6b9d8c12f677a594f2",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "96961ce292b4b3462df85fd1eb1c9684ffc03190c7bccb9d88eedfd4134cac54",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "57269bd91d6338a426ba73dbac75e0b2d352ed7c1ee0ddeaa541aff7cc2127f6",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/fixtures/cloud-accepted-support.ts",
+      "path": "tests/e2e/fixtures/cloud-accepted-support.ts",
+      "sha256": "494cc149246bccda611e934dfc7462b501216a6bbdc1dc100b94aec4c00ac50c",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "a2c98ce9612f317826b6b76d80e242b8998c5ba39f0036e0722b923f592ae726",
+      "status": "Q09combobox authorformatter/TSC PASS, independentnarrowrecheckAPPROVE_SOURCE; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/fixtures/artifact-privacy.ts",
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "d200c9adb73cd8ead7967b82fdbdbd1cc0f2e8555498ccbde7f2e51688502da1",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-CLIENTREUSE-tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "6707de06b0d46af08761aa8c38e2dae2609b7daa20d5f3b2bfd020ba0903f244",
+      "status": "currentchecking/clientreuse Source; finalformatterTSCprivacycontrolsPASS; review receipts; actualafterNOT_RUN",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da"
+    },
+    {
+      "id": "CURRENT-75CB-NEXT-ARCHIVED-REGRESSION-services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+      "sha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70",
+      "revision_base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+      "status": "testonlyb95b, Sourcecompiled locally; ENVstop beforeXML; realCIRED/PASS NOT_RUN; productunchanged"
     }
   ],
   "research_receipt": {

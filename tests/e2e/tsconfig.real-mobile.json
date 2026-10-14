@@ -20,6 +20,10 @@
     "playwright.homework-lifecycle.config.ts",
     "specs/mobile-homework-lifecycle.spec.ts",
     "playwright.map-lifecycle.config.ts",
-    "specs/mobile-map-lifecycle.spec.ts"
+    "specs/mobile-map-lifecycle.spec.ts",
+    "playwright.registry-export.config.ts",
+    "specs/cloud-accepted-registry-export.spec.ts",
+    "playwright.helper-capabilities.config.ts",
+    "specs/cloud-accepted-helper-capabilities.spec.ts"
   ]
 }

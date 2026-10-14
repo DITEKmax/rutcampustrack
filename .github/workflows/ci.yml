@@ -779,6 +779,68 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Verify real Vue FULL and LIMITED registry downloads
+        id: registry-export
+        timeout-minutes: 3
+        if: ${{ !cancelled() && steps.remaining5.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_REGISTRY_EXPORT_RUN: ${{ runner.temp }}/rct-registry-export-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-registry-export-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_REGISTRY_EXPORT_RUN=%s\n' "$RCT_REGISTRY_EXPORT_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_REGISTRY_EXPORT_RUN"
+          mkdir -m 700 -- "$RCT_REGISTRY_EXPORT_RUN/artifacts"
+          npx playwright test --config playwright.registry-export.config.ts --project=chromium
+
+      - name: Upload closed registry export outcomes
+        if: always() && steps.registry-export.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: registry-export-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_REGISTRY_EXPORT_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify real Vue helper statistics cancellation and request decisions
+        id: helper-capabilities
+        timeout-minutes: 5
+        if: ${{ !cancelled() && steps.remaining5.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_HELPER_CAPABILITIES_RUN: ${{ runner.temp }}/rct-helper-capabilities-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-helper-capabilities-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_HELPER_CAPABILITIES_RUN=%s\n' "$RCT_HELPER_CAPABILITIES_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_HELPER_CAPABILITIES_RUN"
+          mkdir -m 700 -- "$RCT_HELPER_CAPABILITIES_RUN/artifacts"
+          npx playwright test --config playwright.helper-capabilities.config.ts --project=chromium
+
+      - name: Upload closed helper capability outcomes
+        if: always() && steps.helper-capabilities.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: helper-capabilities-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_HELPER_CAPABILITIES_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Verify interrupted assignment closure and next-day replacement
         id: assignment-lifecycle
         timeout-minutes: 12

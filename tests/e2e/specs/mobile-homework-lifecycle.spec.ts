@@ -89,7 +89,7 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   ).toEqual(['MANAGE_HOMEWORK']);
   await openAssistant(page, 'Домашние задания');
   await page.getByLabel('Дата', { exact: true }).fill(dataset.tomorrow);
-  await page.getByLabel('Привязка', { exact: true }).selectOption('DATE');
+  await page.getByRole('combobox', { name: /^Привязка/ }).selectOption('DATE');
   await expect(
     page.locator('.assistant-homework__item').getByText(original.title, { exact: true }),
   ).toBeVisible();

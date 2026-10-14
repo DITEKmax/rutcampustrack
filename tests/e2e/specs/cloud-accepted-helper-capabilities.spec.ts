@@ -207,7 +207,9 @@ test('MANAGE_EXCUSES decides a real request and revoked decision preserves the p
   await openAssistant(page, 'Уважительные причины и заявки');
   await page.locator(`[data-request-id="${requests[0]}"]`).click();
   await page.getByRole('button', { name: 'Отклонить', exact: true }).click();
-  await page.getByLabel('Причина отклонения', { exact: true }).fill('Синтетическая причина отказа');
+  await page
+    .getByRole('textbox', { name: /^Причина отклонения/ })
+    .fill('Синтетическая причина отказа');
   const decisionPath = `/api/attendance/requests/${requests[0]}/decision`;
   const decided = http(page, decisionPath, 'POST');
   await page.getByRole('button', { name: 'Отклонить заявку', exact: true }).click();

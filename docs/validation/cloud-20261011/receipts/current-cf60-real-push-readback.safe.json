@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-14T00:21:02.270279+00:00",
+  "local_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+  "remote_branch_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+  "authenticated_PR_head_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+  "branch": "codex/server-validation-20261011",
+  "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "target": "main",
+  "state": "open",
+  "merged": false,
+  "remote_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "advertised_merge": "a51fca22ae4b5a06536c9614f3e50798c2749f27",
+  "actual_checkout": "a51fca22ae4b5a06536c9614f3e50798c2749f27",
+  "native_push": {
+    "direct_pid": 605755,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 605755,
+        "start_ticks": 19096755
+      },
+      {
+        "pid": 605756,
+        "start_ticks": 19096755
+      },
+      {
+        "pid": 605757,
+        "start_ticks": 19096756
+      },
+      {
+        "pid": 605761,
+        "start_ticks": 19096791
+      },
+      {
+        "pid": 605759,
+        "start_ticks": 19096790
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "transport_readback": "REAL git ls-remote separately executed",
+  "API_readback": "authenticated official GitHub GET pulls/2 separately executed",
+  "new_gates": "PENDING_NEW_NORMAL_RUNS",
+  "actual_checkout_producer": "current-cf60-P11-case.safe.json metadata.checkoutSha",
+  "git_parents": [
+    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "cf60e65946b81139a47670c473c4212b3756a76c"
+  ],
+  "tree_sha": "71e094be69e61ce0bf7624d8223b5a4249e9253f",
+  "tree_equal_head": true
+}

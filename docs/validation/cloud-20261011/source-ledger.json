@@ -12506,6 +12506,70 @@
       "status": "actual-six-hooks-PASS-reaped-parsersPASS",
       "revision": "069f267ddd6cd12ee4c4fc3108970d8a3533e1b9",
       "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-CF60-REAL-PUSH-READBACK",
+      "path": "docs/validation/cloud-20261011/receipts/current-cf60-real-push-readback.safe.json",
+      "sha256": "6a7fbb6a8cc3d97618cfbc16c8127d8385ee1c265eb0d9bd818f11a3cb51119f",
+      "status": "actual-local-remote-draft-head-equal-checkout-joined",
+      "revision": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-CF60-AUTHIT",
+      "path": "docs/validation/cloud-20261011/receipts/current-cf60-AuthIT.safe.json",
+      "sha256": "75fc9d3d9db84e873ede93e56544104f846adba2f3fb5916ef09168cb6bdce2c",
+      "status": "actual-172PASS0FES-currentP09PASS",
+      "revision": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-CF60-P11-CASE",
+      "path": "docs/validation/cloud-20261011/receipts/current-cf60-P11-case.safe.json",
+      "sha256": "453b9a5818b42c96b22236277a350bfe1397388efacfd80bc6e63dc5d80f1fd5",
+      "status": "actual-exact-caseSOURCE_METHOD-PASS",
+      "revision": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-CF60-FIRST3",
+      "path": "docs/validation/cloud-20261011/receipts/current-cf60-FIRST3.safe.json",
+      "sha256": "d7e49cab7c6578523c18d45ec8827ec7d3bf536de2bac3295a053934bdc0a7c6",
+      "status": "actual-student-helperPASS-headman118FAIL_UNKNOWN",
+      "revision": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-CF60-TERMINAL-GATES-CHECKOUT",
+      "path": "docs/validation/cloud-20261011/receipts/current-cf60-terminal-gates-checkout.safe.json",
+      "sha256": "6472cc7198c55a779ddddaf5c64ab6b85204a29aa506445910a2941015cb4814",
+      "status": "actual-CI-FAIL-Coverage-Security-success-checkout-joined",
+      "revision": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "FIRST3-OPENED-BLOB-ORACLE-LOCALCHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-opened-Blob-oracle-localchecks.safe.json",
+      "sha256": "bbd2b19f588f6e4740e3bd2654731b11b7a4c513dae687f98365904c7f830f0c",
+      "status": "actual-five-local-checksPASS-sourceintegrated-genuinepending",
+      "revision": "fb5880dcb3d33f18856a1e3f082d74ab0046224a",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "FIRST3-OPENED-BLOB-ORACLE-INDEPENDENT-REVIEW",
+      "path": "docs/validation/cloud-20261011/receipts/FIRST3-opened-Blob-oracle-independent-review.safe.md",
+      "sha256": "7915c7bce964082feb315369e6be834a04207cd022202d24a1861cbef72f4b96",
+      "status": "independent-wholeAPPROVE_SOURCE_LOCAL",
+      "revision": "fb5880dcb3d33f18856a1e3f082d74ab0046224a",
+      "kind": "validation-evidence-not-product-spec"
+    },
+    {
+      "id": "CURRENT-OPENED-BLOB-NORMAL-CHECKS",
+      "path": "docs/validation/cloud-20261011/receipts/current-opened-Blob-normal-checks.safe.json",
+      "sha256": "3f860c43a72d8c80076c64359ed5b1b7857adc6314e25849bcdaf38804c843a4",
+      "status": "fivehooksPASS-YAMLnotapplicable-reaped-safeparsersPASS",
+      "revision": "fb5880dcb3d33f18856a1e3f082d74ab0046224a",
+      "kind": "validation-evidence-not-product-spec"
     }
   ],
   "research_receipt": {

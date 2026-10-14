@@ -1,0 +1,319 @@
+{
+  "at": "2026-10-14T01:00:55.962306+00:00",
+  "author": {
+    "base": "cf60e65946b81139a47670c473c4212b3756a76c",
+    "branch": "codex/first3-opened-blob-oracle-20261014",
+    "current_red_artifact": 11862180168,
+    "current_red_frame": 118,
+    "scope": "Only existing HEADMAN61 openedBlob full68byte boolean oracle; unchanged HTTP status/MIME/foreign-download/teacher-deny tail, existing privacy out-of-range frame constant technical binding.",
+    "actual_cause": "Current oldResponse.body failure category UNKNOWN; pinned Chromium fallback is plausible, not observed. Actual openedBlob bytes not yet checked in genuine current CI.",
+    "source_pins": {
+      "tests/e2e/specs/mobile-real-server.spec.ts": "8db10a60dd144d87cb2609f73b963ddbdeaa123a096cafae6886d26d1c22a540",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "ba14207264a877436fc1ac679bdb323ce374957970b2c6a56b84515a258b9c16"
+    },
+    "checks": [
+      {
+        "phase": "format_apply",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "specs/mobile-real-server.spec.ts",
+          "artifact-controls/privacy.control.spec.ts"
+        ],
+        "terminal": {
+          "direct_pid": 607701,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 607701,
+              "start_ticks": 19314620
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_exact_idempotency",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "specs/mobile-real-server.spec.ts",
+          "artifact-controls/privacy.control.spec.ts"
+        ],
+        "terminal": {
+          "direct_pid": 607755,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 607755,
+              "start_ticks": 19314731
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_check",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "--single-quote",
+          "specs/mobile-real-server.spec.ts",
+          "artifact-controls/privacy.control.spec.ts"
+        ],
+        "terminal": {
+          "direct_pid": 607766,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 607766,
+              "start_ticks": 19314823
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "types",
+        "command": [
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "--project",
+          "tsconfig.real-mobile.json"
+        ],
+        "terminal": {
+          "direct_pid": 607777,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 607777,
+              "start_ticks": 19314922
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "privacy_controls",
+        "command": [
+          "check-artifact-privacy.mjs"
+        ],
+        "terminal": {
+          "direct_pid": 607784,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 607784,
+              "start_ticks": 19315166
+            },
+            {
+              "pid": 607791,
+              "start_ticks": 19315171
+            },
+            {
+              "pid": 607804,
+              "start_ticks": 19315304
+            },
+            {
+              "pid": 607817,
+              "start_ticks": 19315434
+            },
+            {
+              "pid": 607830,
+              "start_ticks": 19315515
+            },
+            {
+              "pid": 607963,
+              "start_ticks": 19318591
+            },
+            {
+              "pid": 607976,
+              "start_ticks": 19318692
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      }
+    ],
+    "formatter_exact_idempotency": true,
+    "production_effective_linecount": 429,
+    "privacy_negative_bound": 430,
+    "case_lines": [
+      {
+        "line": 14,
+        "title": "STUDENT completion persists and another group cannot mutate the homework"
+      },
+      {
+        "line": 61,
+        "title": "HEADMAN marks the real roster and TEACHER reads without acquiring write permission"
+      },
+      {
+        "line": 160,
+        "title": "STUDENT helper marks with its capability and revocation denies the same effect"
+      },
+      {
+        "line": 230,
+        "title": "LIMITED ADMIN views accounts while creation is denied by UI and server"
+      },
+      {
+        "line": 257,
+        "title": "empty foreign-group homework and transport failure provide a real retry path"
+      },
+      {
+        "line": 278,
+        "title": "another live session revokes the browser session and recovery exposes login only"
+      },
+      {
+        "line": 296,
+        "title": "D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials"
+      },
+      {
+        "line": 385,
+        "title": "warm offline reload remains read-only; revoked session reconnect clears the cached user"
+      }
+    ],
+    "privacy_control": {
+      "state": "PRIVACY_BOUNDARIES_PASSED",
+      "normalChildStatus": 0,
+      "markerAbsent": true,
+      "producerBoundary": {
+        "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+        "markerAbsent": true,
+        "failureRetained": true,
+        "attachmentNotYetCreated": true,
+        "interrupted": false
+      },
+      "originalMetadataLeakReproduced": true,
+      "expectedFailureRetained": true,
+      "successRetained": true,
+      "guardControl": {
+        "canonicalReporterAccepted": true,
+        "sameBasenameAlternateRejected": true,
+        "extraReporterRejected": true,
+        "traceRejected": true,
+        "videoRejected": true,
+        "screenshotRejected": true,
+        "missingSnapshotGuardRejected": true,
+        "wrongSnapshotGuardRejected": true
+      },
+      "interruptedChildStatus": 0,
+      "interruptedChildSignal": null,
+      "interruptionBoundary": {
+        "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+        "markerAbsent": true,
+        "failureRetained": true,
+        "attachmentNotYetCreated": true,
+        "interrupted": true
+      },
+      "interruptionPassed": true,
+      "missingGuardRejectedBeforeOperation": true,
+      "browser": "NOT_STARTED"
+    },
+    "native_runs": 5,
+    "native_seconds": 41.84,
+    "peaks": {
+      "rss": 407822336,
+      "shared": 5961453568
+    },
+    "births": [
+      {
+        "pid": 607701,
+        "start_ticks": 19314620
+      },
+      {
+        "pid": 607755,
+        "start_ticks": 19314731
+      },
+      {
+        "pid": 607766,
+        "start_ticks": 19314823
+      },
+      {
+        "pid": 607777,
+        "start_ticks": 19314922
+      },
+      {
+        "pid": 607784,
+        "start_ticks": 19315166
+      },
+      {
+        "pid": 607791,
+        "start_ticks": 19315171
+      },
+      {
+        "pid": 607804,
+        "start_ticks": 19315304
+      },
+      {
+        "pid": 607817,
+        "start_ticks": 19315434
+      },
+      {
+        "pid": 607830,
+        "start_ticks": 19315515
+      },
+      {
+        "pid": 607963,
+        "start_ticks": 19318591
+      },
+      {
+        "pid": 607976,
+        "start_ticks": 19318692
+      }
+    ],
+    "dependency_link_absent": true,
+    "private_tmp_absent": true,
+    "state": "OPENED_BLOB_ORACLE_COMMITTED_LOCAL_CHECKS_PASS_CURRENT_CI_PENDING",
+    "commit": "2f0e37593233024515b5277917dfaa1eaedc0f72",
+    "normal_commit_native_exit": 0,
+    "active_hooks": [],
+    "hooks_bypassed": false,
+    "worktree_clean": true,
+    "known_births_absent": 11,
+    "review": "FINAL_READY_VERDICT_PENDING"
+  },
+  "integrated_sha": "fb5880dcb3d33f18856a1e3f082d74ab0046224a",
+  "actual_scope": "two testfiles only, same real UI openedBlob fullpublicfixturebytes; product unchanged",
+  "source_identity": true,
+  "independent_review": "FIRST3-opened-Blob-oracle-independent-review.safe.md",
+  "genuine_CI": "PENDING",
+  "old_cf60_exact_body_cause": "UNKNOWN",
+  "B013_B014": "FROZEN"
+}

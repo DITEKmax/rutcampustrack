@@ -79,3 +79,7 @@ State: ANSWERED / SAME_CALLER_PLATFORM_APPROVAL_ACCEPTED / LOCAL_CHECKS_COMPLETE
 2026-10-13T20:29:47.870838+00:00: Q011 ANSWERED affirmative «Подтверждаю эти конкретные локальные проверки». D014 confirms SAMEalreadyreviewed scopedNodecaller afteractualrejection; new Rootfreshgrant andautomaticapproval stillrequired. No effects/bypass/changedproductrule.
 
 2026-10-13T20:34:12.877350+00:00: Q011/D014 SAMEfunctionsaction automaticapproval ACCEPTED; Node4055 started, formatterapply0. Originalrejectionpreserved; no alternativecaller/bypass. Exacttype/control/sensitivity/cleanup results pending.
+
+## B014 — 2026-10-14 Gateway login IP-limit checking turn content rejection
+
+PLATFORM_BLOCKED/FROZEN. After Source preparation of one current5/IP realTCP witness, the author turn for fresh authorizednative checking and a future relevant sensitivity proposal failed with possible cybersecurity risk; displayed recommendation Daybreak access. Exact rejected suboperation UNKNOWN; no model/agent/rephrase/launcher/ordinaryCI equivalent bypass. This is not missing owner authorization/new quota. Source WIP retained; independent attachment/Q01/currentproof work continues. Native effects checked from own savedstate before dependentwork.

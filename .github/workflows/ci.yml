@@ -557,6 +557,9 @@ jobs:
         run: |
           docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml config --quiet
           docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml up -d --build --wait --wait-timeout 480
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml exec -T notification-web \
+            sh -c 'test ! -e /keys/private.key && test ! -L /keys/private.key'
+          printf '%s\n' 'PASS disposable Notification consumer has no signing private-key file'
 
       - name: Link synthetic Telegram teacher in the ephemeral database
         run: |
@@ -568,6 +571,7 @@ jobs:
         working-directory: tests/e2e
         run: |
           npm ci
+          node check-admission-retry.mjs
           npx playwright install --with-deps chromium
 
       # Worker script validation needs actual certificate trust, independently of page error handling.

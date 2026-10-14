@@ -13892,6 +13892,52 @@
       "sha256": "c0ce037dff7ae9654894356238b4a5dae709b62de3970cb4c86c0dcb27ec317e",
       "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
       "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "TASK-JS-HEADMAN-40-REMOVAL-CURRENT-SCOPE",
+      "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "fragment": "527–530",
+      "manifest_identity": "existingcopy-archive9772; generatedyaml59113 preparationnotauthority",
+      "status": "Accepted behavior resolved through explicitownerrequirement +currentTASKscope +READINESS/release-surface ownerrouting, no explicitUIdeferral; only linkingkeyproposalopen",
+      "scope": "HEADMANselectedrecurringtemplate remove→pastretained/futurestop→sameseriesreturn; nothardAcademicdelete/newhelperrights",
+      "reviewer": "q06_targeted_recheck/rct-source-resolution",
+      "actual": "SourceGAP UIentry; runtimeNOT_RUN"
+    },
+    {
+      "id": "CURRENT-0648-FOLLOWUP-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0d7a81aaa31c2c5e69e3572472a840d79373cff4f42be7c3e0a4f3a20572832b",
+      "revision_base": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+      "status": "bed1 twoSPEC +2f57717 helper/control+RootCI independentlySourceAPPROVED; targetednativeauthorchecksPASS, Rootordinarychecks pending; actualafterNOT_RUN"
+    },
+    {
+      "id": "CURRENT-0648-FOLLOWUP-tests/e2e/check-admission-retry.mjs",
+      "path": "tests/e2e/check-admission-retry.mjs",
+      "sha256": "8c04b1f36db71badfb44bf1ea31f283a2774f0e44ba5653110392eac997794fb",
+      "revision_base": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+      "status": "bed1 twoSPEC +2f57717 helper/control+RootCI independentlySourceAPPROVED; targetednativeauthorchecksPASS, Rootordinarychecks pending; actualafterNOT_RUN"
+    },
+    {
+      "id": "CURRENT-0648-FOLLOWUP-tests/e2e/fixtures/mobile-dataset.ts",
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "e84c6a6bccbef38e126ad25853e8920374361d411b6efc9ad25b50d381bd9171",
+      "revision_base": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+      "status": "bed1 twoSPEC +2f57717 helper/control+RootCI independentlySourceAPPROVED; targetednativeauthorchecksPASS, Rootordinarychecks pending; actualafterNOT_RUN"
+    },
+    {
+      "id": "CURRENT-0648-FOLLOWUP-tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "58b5a99d432d612b0ea05e1505a6ff65c9738c1bf2ad9d5274eb9e8dcd3d58d0",
+      "revision_base": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+      "status": "bed1 twoSPEC +2f57717 helper/control+RootCI independentlySourceAPPROVED; targetednativeauthorchecksPASS, Rootordinarychecks pending; actualafterNOT_RUN"
+    },
+    {
+      "id": "CURRENT-0648-FOLLOWUP-tests/e2e/specs/mobile-real-server.spec.ts",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "e912ff443f2ac2ef60bfe6061023edbc839e05492aad962f007f5306c9be2e03",
+      "revision_base": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+      "status": "bed1 twoSPEC +2f57717 helper/control+RootCI independentlySourceAPPROVED; targetednativeauthorchecksPASS, Rootordinarychecks pending; actualafterNOT_RUN"
     }
   ],
   "research_receipt": {

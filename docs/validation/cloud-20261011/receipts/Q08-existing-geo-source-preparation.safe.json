@@ -78,5 +78,89 @@
     "active_native": null,
     "runtime_resources": "NONE; no own dependency link/TMP/browser/container/server created"
   },
-  "do_not": "No product/UI/commonconfig/workflow/framework edits; no main/push/Ready/deploy/prod/Angular/newweb/credentials/subagents. B013/B014 frozen, Q012 unrelated. Return to concrete current Q05 failure immediately if Root reports it."
+  "do_not": "No product/UI/commonconfig/workflow/framework edits; no main/push/Ready/deploy/prod/Angular/newweb/credentials/subagents. B013/B014 frozen, Q012 unrelated. Return to concrete current Q05 failure immediately if Root reports it.",
+  "current0648_finite_reconciliation": {
+    "scope": "Readonly/static Q08 at06487e0a9dfdecf4c6be35592022f83a6a1f31a9/base3908; governing hashes unchanged, CURRENT/resources refreshed. Sol6.1/high actualUNKNOWN. No execution/network/Source/shared-doc edits; B013/B014 frozen.",
+    "verdict": "Link finite quota/terminal-race proof now; generic unexecuted quota/races is too broad. No whole Q08/family/boundary PASS or defect claim. Window predicate is static, not timed HTTP/scheduler proof; teacher/dashboard controlled outages are not real aggregate/client outages.",
+    "producers": {
+      "M184": "receipts/current18451-all-gates-SAFE/safe-integration-outcomes-attendance-service-1-integrationTest.json; producer18451c9dacc08625f038313ef2d62e36b3ba6423, checkoutdb57c30f1c27722985733f9b023bc4795854a307, run38313867449/1. Every method below explicitly PASSED/SOURCE_METHOD, not inferred from suite totals. Selected StudentCheckinTransactionIT/StudentRequestDomainIT/LessonActionAuditIT/AdminActivityGrpcIT current files byte-equal recorded source hashes.",
+      "U65": "receipts/ci_format65_receipts/safe-unit-outcomes-attendance-service-1.json; producer65e0baeff26ac5673420bfc55e51a75085636423, checkout96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26, run38236931589/1. Selected TeacherAttendanceReadGrpcServiceTest/AttendanceMetricCalculatorTest files byte-equal; named PASSED/SOURCE_METHOD only.",
+      "R597": "receipts/current597716-Attendance8-CI-PASS/attendance8-CI-current.safe.json; producer597716c3cae9f7d7f601cb5b5279baf598d841ef, checkoutbb4c4dfafcaf14e58721c5b211289409b51785a9, run38363252108/1. ReportIT named getStudentStats_excludesAuthoritativeCancelledAndTransferredStoredRecords PASS; current file SHA f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea exact.",
+      "clients": "VC-Q08-REAL-PWA-GEO-D005-01 / current-838d-geo.safe.json: producer838d671760633bcc3aed0524ea05cd63e7a76f3e, run38516604489, artifact11871424378, teaching-clock-geo.spec.ts:8 PASS9303ms. In-geofence PRESENT/STUDENT_GEO, replay/mismatch409 and D005 no-auto-request. Browser schema alone cannot attest checkout. Existing f8b VC-CLIENT-HEADMAN-EXCUSE-BLOB-01 separately proves exact68B/foreign denial/teacher read200+write403.",
+      "sourceCompatibility": "StudentCheckinService, StudentAttendanceSnapshotService, StudentRequestService, PairWriteCoordinator, AdminActivityReadRepository, TeacherAttendanceReadGrpcService and AttendanceMetricCalculator exact18451→current bytes. ReportService differs597→current only by29-line educational-clock constructor/import wiring; business method bodies retained, but current whole-file/runtime clock identity not claimed. RPC peers remain mocked in Mongo domain fixtures; no complete transitive source/wiring proof."
+    },
+    "reuse": [
+      {
+        "clause": "B26 / JS-STUDENT-01, JS-HEADMAN-03, OWNER-ATTENDANCE-WINDOW",
+        "proof": "M184 StudentCheckinTransactionIT.windowIsInclusiveAtBothBoundaries (40/1/24).",
+        "satisfied": "Static validateWindow accepts Moscow10:00–11:00 lesson at06:55Z/08:05Z and rejects1ms outside. It performs no boundary HTTP/Mongo mutation despite its IT class. Exact predicate proved; scheduler closure remains separate."
+      },
+      {
+        "clause": "B27 / JS-STUDENT-02, JS-HEADMAN-05; D005 precedence",
+        "proof": "M184 StudentCheckinTransactionIT.unavailableGeoPersistsOnePendingRequestReceiptCooldownAndOutboxCallAtomically (40/1/18); rejectedRequestGetsNewIdAtBoundary (40/1/22); concurrentGeoAndApproveConvergeWithoutMixedProvenance (40/1/27). Existing four-test D005 receipt and real PWA proof above.",
+        "satisfied": "Real Mongo pending request/receipt/pair/cooldown, rejected renewal and geo/approval consistency; publisher mocked in first method. Existing realOutboxCommitsOnceAndReplayDoesNotDuplicateEvent finite proof retained. D005 overrides archived manualABSENT overwrite: blocked attempt creates no auto request. Unlimited/non-expiring/days-later actual queue result remains separate."
+      },
+      {
+        "clause": "B28 / JS-STUDENT-06, JS-HEADMAN-24, AT-11, R-02",
+        "proof": "M184 StudentRequestDomainIT.sixConcurrentManualLateSubmissionsChargeExactlyFive (41/1/16); persistedLimitControlsOptionsAndSubmissionsUntilExhausted (41/1/5); rejectedAndCancelledManualLateRequestsDoNotRefundBudget (41/1/25).",
+        "satisfied": "Real Mongo six submissions→5 successes/1 conflict/5 charges; seeded N7/used5→remaining2 then exhausted refusal; reject/cancel no refund. No new quota race run needed. Seeded N7 does not prove N-change/audit; no-refund submits distinct lessons, not same-lesson resubmission."
+      },
+      {
+        "clause": "B30 / JS-STUDENT-23/26, JS-HEADMAN-43/44, AT-33/50",
+        "proof": "M184 StudentRequestDomainIT.cancelAndDecisionRaceLeaveOneTerminalLateOutcomeAndOneOutboxEvent (41/1/24); approvalAndRealPairWriterRacePreservesPresent (41/1/22); terminalDecisionDoesNotReplayForAnotherActorOutcomeOrComment (41/1/1).",
+        "satisfied": "Real Mongo cancel/approve one winner+one conflict, one terminal and one schema-valid outbox event; real pair-writer race preserves PRESENT; changed actor/outcome/comment cannot alter terminal replay. Generic terminal-race gap is already proved; whole multi-lesson/client semantics not promoted."
+      },
+      {
+        "clause": "B31 / JS-TEACHER-03/04/12 historical scope/bytes",
+        "proof": "M184 StudentRequestDomainIT.activeGroupTeacherReadsHistoricalTicketAndBytesWhileFormerTeacherIsDenied (41/1/8); existing f8b actual client proof above.",
+        "satisfied": "Real Mongo ticket/attachment and production teacher reader with Academic/Schedule mocked; separate actual teacher HTTP read/write denial. Not full real-authority historical teacher/client/metrics acceptance."
+      },
+      {
+        "clause": "B33 / four metrics, cancellation/transfer denominator",
+        "proof": "U65 AttendanceMetricCalculatorTest.calculatesCountsAndScaleTwoPercentagesFromHeldClosedOccurrences (37/1/9), zeroHeldKeepsFutureCountButReturnsNullPercentages (37/1/5), transferSourceAndCancelledRowsAreExcludedWhileTargetIsCountedOnce (37/1/2); R597 ReportIT case above.",
+        "satisfied": "Golden unit counts/rounding, zero-held nulls/future count, cancelled/transfer-source exclusion and one target. R597 real Mongo report uses mocked Schedule; no real API/file/current-clock join. Arithmetic does not need new tests."
+      },
+      {
+        "clause": "B34 + teacher outage / JS-ADMIN-11/22, AC-38; teacher current read",
+        "proof": "M184 LessonActionAuditIT.adminActivityCountsActualTransitionsOnceAndUsesActionTimeAndPublicationIdentity (4/1/7), autoMaterializationAndAuthoritativeEventRedeliveryKeepPermanentHistory (4/1/13); AdminActivityGrpcIT.signedJwtNeedsFreshDashboardCapabilityAndFailuresNeverReturnFakeZero (15/1/1). U65 TeacherAttendanceReadGrpcServiceTest.teacherStatsMapsScheduleDependencyFailureToUnavailable (21/1/2).",
+        "satisfied": "Real Mongo audit: transition/no-op identity, action time, same-time-yesterday cutoff, retained action history, all-time/publication counts. AdminActivityGrpcIT uses real signed local gRPC with mocked repository/authority implementation. Teacher outage unit maps mock Schedule failure→UNAVAILABLE. CASE-DR01 optional student projection is mocked, not teacher/dashboard outage."
+      }
+    ],
+    "missingOperations": [
+      {
+        "source": "B26 / accepted inclusive window + close tail",
+        "operation": "Actual teaching-clock boundary check-in then end+5 closure: dated blanks→one ABSENT, explicit marks retained and duplicate close inert.",
+        "missing": "Named predicate and local materialization are proved; a real timed scheduler→event→Mongo boundary result is not linked. No new time-policy/date cutoff.",
+        "harness": "Existing teaching-clock fixture/geo spec + LessonActionAuditIT.autoMaterializationAndAuthoritativeEventRedeliveryKeepPermanentHistory. Add only missing real clock→event result if no saved receipt.",
+        "dependency": "Owned teaching-clock Schedule/Attendance/dated Academic roster, existing PWA/API lane; not provider."
+      },
+      {
+        "source": "B27/B28 / automatic vs manual request lifecycle",
+        "operation": "Exhausted manual-budget student gets one AUTO request from fresh eligible blank lesson after failed geo, retries, then headman approves days later→PRESENT without manual charge. Qualify related request-flow gaps: same-lesson paid resubmission, visible remaining count, authorized N-change/audit.",
+        "missing": "Positive unlimited/no-expiry/live queue and N-change audit absent from joined proof. D005 blocked manualABSENT attempt still creates no automatic request.",
+        "harness": "StudentCheckinTransactionIT + StudentRequestDomainIT + existing real-mobile/headman request fixture. Reuse all proven local quota/races; first seek a saved named N-change receipt rather than adding a fresh suite.",
+        "dependency": "Real Mongo/outbox + live group authority and existing request queue; no external delivery/provider."
+      },
+      {
+        "source": "B31/B33 / current teacher historical journal and statistics",
+        "operation": "Teacher reads historical group journal/scoped ticket and matching stats/file after mutation/replay; real Schedule outage gives explicit unavailable instead of zero.",
+        "missing": "Actual current-authority/API/file/outage join; local golden math, Mongo teacher/history and actual teacher basic read/write denial already suffice separately.",
+        "harness": "Existing teacher API/client fixture, ReportIT, TeacherAttendanceReadGrpcServiceTest, teacher stats/export harness. No new formulas or role×format matrix.",
+        "dependency": "Real teacher grants/dated assignments, Schedule/Attendance/Academic and existing renderer when comparing file; bounded owned outage."
+      },
+      {
+        "source": "B34 / admin accepted active counts and source outage",
+        "operation": "DASHBOARD_VIEW user reads known cross-service counts/today-vs-yesterday/all-time; one unavailable source is explicit, not zero.",
+        "missing": "Named actual cross-service aggregate/client/outage result not linked. Do not repeat the proved local action-history/count arithmetic.",
+        "harness": "Existing DashboardActivityServiceTest/DashboardInvalidationIT + AdminActivityGrpcIT/LessonActionAuditIT/admin overview. Qualify saved evidence before extension.",
+        "dependency": "Live admin capability + relevant Academic/Attendance/map aggregate sources and existing Vue overview, not new dashboard UI."
+      }
+    ],
+    "next": "Root can link finite named criteria and narrow generic quota/race remainder now. Next distinct request result: missingOperations[1], reusing existing harness. Actual0648 CI observer separate; no execution here.",
+    "testSourceSha256": {
+      "checkin": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d",
+      "request": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99",
+      "audit": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    }
+  }
 }

@@ -1,0 +1,113 @@
+{
+  "state": "COHERENT_SOURCE_APPROVED_CHECKS_PASS_ACTUAL_AFTER_NOT_RUN",
+  "parent": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "author_commits": [
+    "e5cca6506320e4d5d31590457aabf426b8ab4708",
+    "bed1d7ecdc52080a272ecf942a198d97efc6908f",
+    "2f57717dec7694266c28b6b60ab7c0db3a691e90"
+  ],
+  "source_inventory": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0d7a81aaa31c2c5e69e3572472a840d79373cff4f42be7c3e0a4f3a20572832b"
+    },
+    {
+      "path": "tests/e2e/check-admission-retry.mjs",
+      "sha256": "8c04b1f36db71badfb44bf1ea31f283a2774f0e44ba5653110392eac997794fb"
+    },
+    {
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "e84c6a6bccbef38e126ad25853e8920374361d411b6efc9ad25b50d381bd9171"
+    },
+    {
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "58b5a99d432d612b0ea05e1505a6ff65c9738c1bf2ad9d5274eb9e8dcd3d58d0"
+    },
+    {
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "e912ff443f2ac2ef60bfe6061023edbc839e05492aad962f007f5306c9be2e03"
+    }
+  ],
+  "review": "independentwhole2specreview+targetedP2codefieldAPPROVE; independentwholehelper/control+RootCIAPPROVE",
+  "checks": {
+    "authors": "2specformatter/TSC/hooks/normalcommit8.354s+2.934sP2; helper18actualfunctioncontrols/formatter/TSC/hooks/commit12.944s; allreaped/TMPgone",
+    "Root": "Bootbashparse/actionlint1.7.11/workflowPrettier/all6normalhooks/gitdiffcheck/Angularbaselinebytes-modesPASS",
+    "root_terminal": {
+      "direct_pid": 681200,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 681200,
+          "start_ticks": 22338763
+        },
+        {
+          "pid": 681201,
+          "start_ticks": 22338763
+        },
+        {
+          "pid": 681202,
+          "start_ticks": 22338763
+        },
+        {
+          "pid": 681223,
+          "start_ticks": 22338860
+        },
+        {
+          "pid": 681245,
+          "start_ticks": 22338901
+        },
+        {
+          "pid": 681252,
+          "start_ticks": 22338925
+        },
+        {
+          "pid": 681273,
+          "start_ticks": 22338935
+        },
+        {
+          "pid": 681280,
+          "start_ticks": 22338992
+        },
+        {
+          "pid": 681301,
+          "start_ticks": 22339002
+        },
+        {
+          "pid": 681302,
+          "start_ticks": 22339018
+        },
+        {
+          "pid": 681356,
+          "start_ticks": 22339042
+        },
+        {
+          "pid": 681357,
+          "start_ticks": 22339042
+        },
+        {
+          "pid": 681358,
+          "start_ticks": 22339042
+        },
+        {
+          "pid": 681359,
+          "start_ticks": 22339042
+        },
+        {
+          "pid": 681372,
+          "start_ticks": 22339053
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    }
+  },
+  "after_real_CI": "NOT_RUN; current0648 terminalCIsoleE2EFAIL+18success, Cov/Sec/OpenAPISUCCESS are previousproducer",
+  "scope": "checkingonly no productAPI/proto/securitylimits/IP/key/clockchange; privatekeyexistence-only check readsno keyvalues; B013/B014FROZEN",
+  "accepted_next_gap": "JS-HEADMAN-40 builderremoveUI sufficientacceptedbehavior, Rootdesignskillreread; nextproductauthor afterthispush"
+}

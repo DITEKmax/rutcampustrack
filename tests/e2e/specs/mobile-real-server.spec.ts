@@ -831,8 +831,13 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       .getByRole('searchbox', { name: 'Найти группу', exact: true })
       .fill(dataset.group.name);
     await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
-    await expect(group.getByText('Староста не назначен', { exact: true })).toBeVisible();
     await group.locator('.admin-groups-item__trigger').click();
+    const draftHeadman = group
+      .locator('dl > div')
+      .filter({ has: page.locator('dt', { hasText: /^Староста$/ }) })
+      .locator('dd');
+    await expect(draftHeadman).toBeVisible();
+    await expect(draftHeadman).toHaveText('Не назначен');
     await expect(group).toContainText(draft.draftReason);
     await expect(
       group.locator('dl > div').filter({ hasText: 'Студентов' }).locator('dd'),

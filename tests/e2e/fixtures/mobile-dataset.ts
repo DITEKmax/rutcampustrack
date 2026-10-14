@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 import { expect, type APIRequestContext, type Page } from '@playwright/test';
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
@@ -46,9 +47,19 @@ export async function admit(
   user: TestUser,
   role?: Role,
 ): Promise<Actor> {
-  const response = await request.post('/api/auth/login', {
-    data: { login: user.login, password: user.password },
-  });
+  const login = () =>
+    request.post('/api/auth/login', {
+      data: { login: user.login, password: user.password },
+    });
+  let response = await login();
+  if (response.status() === 429) {
+    const retryAfter = response.headers()['retry-after'] ?? '';
+    const seconds = /^[0-9]+$/.test(retryAfter) ? Number(retryAfter) : 0;
+    if (Number.isSafeInteger(seconds) && seconds > 0 && seconds <= 60) {
+      await setTimeout(seconds * 1000);
+      response = await login();
+    }
+  }
   if (response.status() !== 200)
     throw new Error(`Synthetic actor login: HTTP ${response.status()}`);
   let token: string = (await response.json()).accessToken;

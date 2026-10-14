@@ -1,0 +1,18 @@
+{
+  "artifact": 11880148230,
+  "producer": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "run": 38536484758,
+  "digest": "sha256:7a42e16ad557ae0ca716ec730254870a5f9d5a235daebb8aaeef47ac8149950a",
+  "bytes": 399,
+  "projects_exact_owned_pair": true,
+  "bundle_manifest_sha256": "0f4a683342c446e82a84a6721cbcb0ce27d1b306770432dffd20a778a20271f9",
+  "checks": [
+    "exact PG data/schema/sequences",
+    "both Mongo documents/indexes/options",
+    "all file bytes/paths",
+    "overwrite/corruption/project/nonempty refusal"
+  ],
+  "actual_job": "115760493033SUCCESS; drill21s/ownedcleanupSUCCESS1s",
+  "limitations": "synthetic probe data/schema/sequences/indexes+file bytes/path inventory/refusals; not app attachment API, file modes, production providers or fullP20",
+  "private_logs_or_bodies_read": false
+}

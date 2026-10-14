@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   test,
   expect,
@@ -144,13 +145,54 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
         permissions: ['GROUPS_VIEW'],
         expectedVersion: profile.version,
       });
+      // The profile write bumps rolesVersion. Old credentials must fail as stale,
+      // before the request can reach the current registry permission check.
       for (const operation of [
         () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers }),
         () => dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, { headers }),
         () => dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, { headers }),
-        () => dataset.request.get(freshTicket.downloadPath),
+      ]) {
+        const denied = await operation();
+        expect(denied.status()).toBe(409);
+        expect((await denied.json()).code === 'SESSION_STATE_STALE').toBe(true);
+      }
+      expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
+
+      // Refresh the browser's owning session, whose cookie is independent of the
+      // synthetic actors above; a new login would change ownership and yield 404.
+      const refreshed = await page.request.post('/api/auth/refresh');
+      expect(refreshed.status()).toBe(200);
+      const currentHeaders = {
+        Authorization: `Bearer ${(await refreshed.json()).accessToken}`,
+      };
+      const current = await page.request.get('/api/auth/session', { headers: currentHeaders });
+      expect(current.status()).toBe(200);
+      const currentSession = await current.json();
+      expect(currentSession.sessionId === selected.session.sessionId).toBe(true);
+      expect(currentSession.activeRole).toBe('ADMIN');
+      for (const operation of [
+        () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers: currentHeaders }),
+        () =>
+          dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, {
+            headers: currentHeaders,
+          }),
+        () =>
+          dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, {
+            headers: currentHeaders,
+          }),
       ])
         expect((await operation()).status()).toBe(403);
+      // A new request also reaches live USERS_VIEW admission, independently of
+      // the old job's stored principal/version and idempotent replay identity.
+      expect(
+        (
+          await dataset.request.post('/api/auth/export-jobs', {
+            headers: currentHeaders,
+            data: { requestId: randomUUID(), report: job.request().postDataJSON().report },
+          })
+        ).status(),
+      ).toBe(403);
+      expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
       const unchanged = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);
       expect(unchanged.initialPassword === target.password).toBe(true);
     }

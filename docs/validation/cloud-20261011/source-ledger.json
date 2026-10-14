@@ -14419,6 +14419,60 @@
       "author_commit": "97b184b78ae412466b2f349fca599017ce098054",
       "status": "exactauthorRootintegration; relevantchecksPASS/independentAPPROVE; actualnextnormalCIpending",
       "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_30fd_testfix_publication"
+    },
+    {
+      "id": "CURRENT-D106-NEXT-tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "sha256": "d633d2f302a3cfed0f8133ea21e6a5f54fb12661d3e7cfa901c995486f0344aa",
+      "revision_base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "author_commit": "59498d461ea38f49e25040691658190ec91acc52",
+      "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
+    },
+    {
+      "id": "CURRENT-D106-NEXT-tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "8f0444288405f000ee033caf1012205f10d83a505314af8f1ca13ba9270be2c1",
+      "revision_base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "author_commit": "bbf5d6b1667e92139ed71796a511c5250148f6a5",
+      "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
+    },
+    {
+      "id": "CURRENT-D106-NEXT-tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "a7a93b56cbf5d376726512fae696ad728329fd9d3fd3dd10ab571cafb8451495",
+      "revision_base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "author_commit": "381bd53bd04c5c6512e6726e5204c62a83f2b498",
+      "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
+    },
+    {
+      "id": "CURRENT-D106-NEXT-tests/e2e/fixtures/pwa-auth.ts",
+      "path": "tests/e2e/fixtures/pwa-auth.ts",
+      "sha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99",
+      "revision_base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "author_commit": "381bd53bd04c5c6512e6726e5204c62a83f2b498",
+      "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
+    },
+    {
+      "id": "CURRENT-D106-NEXT-tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "sha256": "a923c96e765cb5bd3d01dc8545d520b02879cc1a364246b4bd61f309d4a9c2cd",
+      "revision_base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "author_commit": "01345d3d1459978430e38d642d6ed6693da22425",
+      "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
+    },
+    {
+      "id": "CURRENT-D106-NEXT-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "dc400e46f9609a6773744ad74735c57b1196f0a8c8af3546c1b55b9cab231ec6",
+      "revision_base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "author_commit": "ROOT_EXACT_WORKFLOW_HUNK",
+      "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
     }
   ],
   "research_receipt": {

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { lstatSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 import { expect, type APIRequestContext } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
@@ -8,6 +8,116 @@ import { TEST_USERS } from './users';
 import { retainFirstDatasetHttpFailure } from './safe-reporter';
 
 type Row = Record<string, any>;
+
+type SemesterStage =
+  | 'SETUP'
+  | 'COMMAND'
+  | 'PARTICIPANT_BARRIER'
+  | 'SETTLED_READBACK'
+  | 'REPLAY'
+  | 'ARCHIVED_READBACK'
+  | 'RESTORED_READBACK'
+  | 'PERMITTED_WRITE'
+  | 'CLEANUP_STATUS'
+  | 'ORIGINAL_AUTHORITY'
+  | 'COMPLETED';
+
+function semesterProgress() {
+  return {
+    stage: 'SETUP' as SemesterStage,
+    action: 'NONE' as 'NONE' | 'ARCHIVE' | 'RESTORE',
+    operationState: 'UNKNOWN',
+    academic: 'UNKNOWN',
+    schedule: 'UNKNOWN',
+    attendance: 'UNKNOWN',
+    retryable: 'UNKNOWN' as boolean | 'UNKNOWN',
+    transition: 'UNKNOWN',
+    active: 'UNKNOWN' as boolean | 'UNKNOWN',
+    archived: 'UNKNOWN' as boolean | 'UNKNOWN',
+    releasePending: 'UNKNOWN' as boolean | 'UNKNOWN',
+    writeBlocked: 'UNKNOWN' as boolean | 'UNKNOWN',
+    reasonCode: 'UNKNOWN',
+  };
+}
+
+function semesterReasonCode(reason: unknown) {
+  for (const event of [
+    'lesson.closed',
+    'lesson.cancelled',
+    'lesson.deleted',
+    'lesson.one_off.cancelled',
+    'homework.binding.archived',
+  ]) {
+    if (reason === `Ожидается точное подтверждение эффекта ${event}`)
+      return 'SCHEDULE_EFFECT_ACK_PENDING';
+    if (reason === `В outbox сохранено старое событие ${event} без точного effect receipt`)
+      return 'SCHEDULE_LEGACY_EFFECT_UNPROVEN';
+    if (reason === `Событие ${event} не содержит подтверждённую semester scope`)
+      return 'SCHEDULE_EFFECT_SCOPE_UNPROVEN';
+  }
+  switch (reason) {
+    case null:
+      return 'NONE';
+    case 'Ожидается завершение или reconciliation переноса пары в расписании':
+      return 'SCHEDULE_TRANSFER_PENDING';
+    case 'Ожидается подтверждение принятой публикации домашнего задания в расписании':
+      return 'SCHEDULE_PUBLICATION_PENDING';
+    case 'Ожидается подтверждение принятого изменения домашнего задания':
+      return 'SCHEDULE_EDIT_PENDING';
+    case 'Ожидается завершение принятого редактирования домашнего задания':
+      return 'ACADEMIC_EDIT_PENDING';
+    case 'Ожидается подтверждение принятой публикации домашнего задания в Academic':
+      return 'ACADEMIC_PUBLICATION_PENDING';
+    case 'Ожидается завершение ранее принятой публикации домашнего задания':
+      return 'ACADEMIC_ADMISSION_PENDING';
+    case 'Ожидается применение принятого переноса привязки домашнего задания':
+      return 'ACADEMIC_TRANSFER_PENDING';
+    case 'Ожидается точный ACK применения эффекта Schedule':
+      return 'ACADEMIC_EFFECT_ACK_PENDING';
+    case 'Ожидается применение отмены и точный ACK Schedule effect':
+      return 'SCHEDULE_CANCELLATION_ACK_PENDING';
+    case 'ARCHIVE_DRAIN_PENDING':
+    case 'ARCHIVE_SEAL_ACK_PENDING':
+    case 'RESTORE_RELEASE_PENDING':
+    case 'STALE_STATE_VERSION':
+    case 'ARCHIVE_TRANSITION_IN_PROGRESS':
+    case 'ARCHIVE_PREPARE_VERSION_MISMATCH':
+    case 'ATTENDANCE_EFFECT_REQUIRES_RECONCILIATION':
+    case 'ATTENDANCE_TRANSFER_REQUIRES_RECONCILIATION':
+    case 'RESTORE_REQUIRES_ARCHIVE_PREPARE':
+    case 'RESTORE_RELEASE_VERSION_MISMATCH':
+      return reason;
+    default:
+      return 'UNKNOWN';
+  }
+}
+
+function observeSemester(progress: ReturnType<typeof semesterProgress>, status: Row) {
+  const operation = status.operation ?? status;
+  const closed = (value: unknown, allowed: string[]) =>
+    allowed.find((candidate) => candidate === value) ?? 'UNKNOWN';
+  const boolean = (value: unknown): boolean | 'UNKNOWN' =>
+    typeof value === 'boolean' ? value : 'UNKNOWN';
+  progress.operationState = closed(operation.operationState, ['PENDING', 'COMPLETED', 'ERROR']);
+  for (const participant of ['academic', 'schedule', 'attendance'] as const) {
+    progress[participant] = closed(operation[participant], [
+      'NOT_STARTED',
+      'PENDING',
+      'READY',
+      'PREPARED_RESTORE',
+      'RELEASE_PENDING',
+      'RELEASED',
+      'DELETED',
+    ]);
+  }
+  progress.retryable = boolean(operation.retryable);
+  progress.transition = closed(status.transition, ['NONE', 'ARCHIVING', 'RESTORING', 'DELETING']);
+  progress.active = boolean(status.active);
+  progress.archived = boolean(status.archived);
+  progress.releasePending = boolean(status.releasePending);
+  progress.writeBlocked = boolean(status.writeBlocked);
+  progress.reasonCode = semesterReasonCode(operation.blockingReason);
+}
 
 function requireValue(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -144,21 +254,27 @@ async function terminal(
   semesterId: number,
   action: 'ARCHIVE' | 'RESTORE',
   key: string,
+  progress: ReturnType<typeof semesterProgress>,
   timeout = 120000,
 ) {
+  progress.action = action;
+  progress.stage = 'COMMAND';
   const path = `/api/academic/semesters/${semesterId}/${action === 'ARCHIVE' ? 'archive' : 'restore'}`;
   const operation = await admin.call('POST', path, undefined, [200, 202, 503], {
     'Idempotency-Key': key,
   });
+  observeSemester(progress, operation);
   requireValue(
     typeof operation.operationId === 'string',
     'Semester command must retain its operation identity',
   );
   let status: Row = {};
+  progress.stage = 'PARTICIPANT_BARRIER';
   await expect
     .poll(
       async () => {
         status = await admin.call('GET', `/api/academic/semesters/${semesterId}/archive/status`);
+        observeSemester(progress, status);
         requireValue(
           status.operation?.operationId === operation.operationId &&
             status.operation.action === action,
@@ -174,6 +290,7 @@ async function terminal(
     )
     .toBe(true);
   const participant = action === 'ARCHIVE' ? 'READY' : 'RELEASED';
+  progress.stage = 'SETTLED_READBACK';
   requireValue(
     ['academic', 'schedule', 'attendance'].every((name) => status.operation[name] === participant),
     'All three real semester participant receipts are required',
@@ -196,6 +313,7 @@ async function terminal(
       semester.archived === (action === 'ARCHIVE'),
     'Settled semester identity and inactive authority must agree',
   );
+  progress.stage = 'REPLAY';
   const replay = await admin.call('POST', path, undefined, [200], { 'Idempotency-Key': key });
   requireValue(
     replay.operationId === operation.operationId &&
@@ -203,6 +321,7 @@ async function terminal(
       replay.stateVersion === status.operation.stateVersion,
     'Semester command replay must retain the completed operation',
   );
+  progress.stage = 'COMPLETED';
   return status;
 }
 
@@ -283,6 +402,16 @@ test('FULL admin archives and restores the disposable CI semester through real p
   let archiveStarted = false;
   const archiveKey = randomUUID();
   const restoreKey = randomUUID();
+  const diagnostic = {
+    schema: 'semester-lifecycle.v1',
+    primary: semesterProgress(),
+    cleanup: semesterProgress(),
+    primaryFailure: false,
+    cleanupOutcome: 'NOT_REQUIRED',
+    clockOutcome: 'PENDING',
+    disposeOutcome: 'PENDING',
+  };
+  let primaryFailure: { error: unknown } | undefined;
   try {
     admin = await admit(request, TEST_USERS.admin, 'ADMIN');
     const adminAccess = await admin.call('GET', '/api/academic/admin-access/me');
@@ -569,7 +698,14 @@ test('FULL admin archives and restores the disposable CI semester through real p
     );
     clock.assertUnchanged();
     archiveStarted = true;
-    const archived = await terminal(admin, ownSemesterId, 'ARCHIVE', archiveKey);
+    const archived = await terminal(
+      admin,
+      ownSemesterId,
+      'ARCHIVE',
+      archiveKey,
+      diagnostic.primary,
+    );
+    diagnostic.primary.stage = 'ARCHIVED_READBACK';
     requireValue(
       (await semesters(admin)).every((row) => row.active === false),
       'Archive must not choose another active semester',
@@ -626,7 +762,8 @@ test('FULL admin archives and restores the disposable CI semester through real p
         afterRefusals.operation.operationId === archived.operation.operationId,
       'Refused writers changed the archive authority',
     );
-    await terminal(admin, ownSemesterId, 'RESTORE', restoreKey);
+    await terminal(admin, ownSemesterId, 'RESTORE', restoreKey, diagnostic.primary);
+    diagnostic.primary.stage = 'RESTORED_READBACK';
     const inactive = await admin.call('GET', `/api/academic/semesters/${ownSemesterId}`);
     requireValue(
       inactive.active === false &&
@@ -655,6 +792,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
       current.active === true && current.archived === false,
       'Explicit activation must restore current semester authority',
     );
+    diagnostic.primary.stage = 'PERMITTED_WRITE';
     const changed = await headman.call('PUT', homeworkPath, {
       ...deniedHomework,
       title: 'Разрешённое изменение после восстановления',
@@ -676,12 +814,17 @@ test('FULL admin archives and restores the disposable CI semester through real p
       beforeHistory,
       'Permitted homework edit changed attendance history',
     );
+    diagnostic.primary.stage = 'COMPLETED';
   } catch (error) {
+    primaryFailure = { error };
+    diagnostic.primaryFailure = true;
     retainFirstDatasetHttpFailure(info.annotations, error);
-    throw error;
   } finally {
+    let cleanupFailure: { error: unknown } | undefined;
     try {
       if (admin && originalAuthorityCaptured && previousActive && ownSemesterId) {
+        diagnostic.cleanupOutcome = 'PENDING';
+        diagnostic.cleanup.stage = 'CLEANUP_STATUS';
         // This final CI case has a separate outer timeout; hard termination cannot run finally.
         // Short request deadlines bound ordinary failure recovery inside its cleanup reserve.
         const cleanupRequest = await playwright.request.newContext({
@@ -695,6 +838,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
             'GET',
             `/api/academic/semesters/${ownSemesterId}/archive/status`,
           );
+          observeSemester(diagnostic.cleanup, status);
           if (
             archiveStarted &&
             (status.archived === true ||
@@ -705,10 +849,25 @@ test('FULL admin archives and restores the disposable CI semester through real p
               status.operation?.action === 'ARCHIVE' &&
               status.operation.operationState !== 'COMPLETED'
             ) {
-              await terminal(cleanupAdmin, ownSemesterId, 'ARCHIVE', archiveKey, 30000);
+              await terminal(
+                cleanupAdmin,
+                ownSemesterId,
+                'ARCHIVE',
+                archiveKey,
+                diagnostic.cleanup,
+                30000,
+              );
             }
-            await terminal(cleanupAdmin, ownSemesterId, 'RESTORE', restoreKey, 60000);
+            await terminal(
+              cleanupAdmin,
+              ownSemesterId,
+              'RESTORE',
+              restoreKey,
+              diagnostic.cleanup,
+              60000,
+            );
           }
+          diagnostic.cleanup.stage = 'ORIGINAL_AUTHORITY';
           const restored = await cleanupAdmin.call(
             'PATCH',
             `/api/academic/semesters/${previousActive.id}/activate`,
@@ -724,16 +883,59 @@ test('FULL admin archives and restores the disposable CI semester through real p
             active.length === 1 && Number(active[0].id) === Number(previousActive.id),
             'Original active semester identity changed during cleanup',
           );
+        } catch (error) {
+          cleanupFailure = { error };
         } finally {
-          await cleanupRequest.dispose();
+          try {
+            await cleanupRequest.dispose();
+          } catch (error) {
+            cleanupFailure ??= { error };
+          }
         }
+        if (cleanupFailure) throw cleanupFailure.error;
+        diagnostic.cleanup.stage = 'COMPLETED';
+        diagnostic.cleanupOutcome = 'COMPLETED';
       }
-    } finally {
-      try {
-        clock.assertUnchanged();
-      } finally {
-        await request.dispose();
-      }
+    } catch (error) {
+      diagnostic.cleanupOutcome = 'FAILED';
+      cleanupFailure = { error };
     }
+    try {
+      clock.assertUnchanged();
+      diagnostic.clockOutcome = 'PASSED';
+    } catch (error) {
+      diagnostic.clockOutcome = 'FAILED';
+      cleanupFailure ??= { error };
+    }
+    try {
+      await request.dispose();
+      diagnostic.disposeOutcome = 'PASSED';
+    } catch (error) {
+      diagnostic.disposeOutcome = 'FAILED';
+      cleanupFailure ??= { error };
+    }
+    try {
+      const directory = lstatSync(run);
+      const markerState = lstatSync(marker);
+      requireValue(
+        directory.isDirectory() &&
+          !directory.isSymbolicLink() &&
+          (directory.mode & 0o777) === 0o700 &&
+          markerState.isFile() &&
+          !markerState.isSymbolicLink() &&
+          (markerState.mode & 0o777) === 0o600 &&
+          markerState.size <= 64 &&
+          readFileSync(marker, 'utf8').trim() === 'RCT_SEMESTER_DISPOSABLE',
+        'Semester diagnostic requires the original owned directory',
+      );
+      const bytes = JSON.stringify(diagnostic);
+      requireValue(Buffer.byteLength(bytes) <= 4096, 'Semester diagnostic exceeds its bound');
+      // O_EXCL creation also rejects an existing symbolic link; never overwrite private inputs.
+      writeFileSync(join(run, 'lifecycle.safe.json'), bytes, { flag: 'wx', mode: 0o600 });
+    } catch (error) {
+      cleanupFailure ??= { error };
+    }
+    if (primaryFailure) throw primaryFailure.error;
+    if (cleanupFailure) throw cleanupFailure.error;
   }
 });

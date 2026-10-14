@@ -488,6 +488,8 @@ isolated(
       null,
       `${dataset.marker}-date-control`,
     );
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
     await logoutPwa(page);
 
     const admitted = await loginPwa(page, dataset.student);

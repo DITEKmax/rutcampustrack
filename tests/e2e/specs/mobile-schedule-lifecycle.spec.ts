@@ -1,4 +1,5 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import type { Page } from '@playwright/test';
 import { Actor, admit, expect, test as base, MobileDataset } from '../fixtures/mobile-dataset';
 import { http, registerPrivateSuite, selectRole } from '../fixtures/cloud-accepted-support';
@@ -70,6 +71,266 @@ function identities(rows: PhysicalLesson[]) {
       }),
     ),
   );
+}
+
+// This is reconstructed accepted historical state, not a past API publication.
+// Only the original publication/binding are seeded; normal APIs below create
+// the edit history and student completion used by the preservation oracle.
+function seedPastHomework(dataset: MobileDataset, lesson: PhysicalLesson, itemId: number) {
+  const assignment = dataset.subject.assignments[0];
+  for (const value of [
+    dataset.group.id,
+    dataset.subject.id,
+    dataset.semester.id,
+    dataset.headman.id,
+    dataset.student.id,
+    dataset.teacher.id,
+    assignment.id,
+    itemId,
+    lesson.id,
+    lesson.occurrenceId,
+  ]) {
+    if (!Number.isSafeInteger(value) || value <= 0)
+      throw new Error('Historical homework fixture identity invalid');
+  }
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(lesson.date) ||
+    lesson.date >= dataset.today ||
+    lesson.status !== 'CLOSED' ||
+    !lesson.current ||
+    lesson.generation !== 1 ||
+    lesson.scheduleItemId !== itemId ||
+    lesson.assignmentId !== assignment.id
+  )
+    throw new Error('Historical homework fixture lesson invalid');
+
+  function docker(args: string[], input?: string) {
+    try {
+      const result = spawnSync('docker', args, {
+        input,
+        encoding: 'utf8',
+        timeout: 8000,
+        killSignal: 'SIGKILL',
+        maxBuffer: 65536,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      if (result.error || result.status !== 0 || result.signal)
+        throw new Error('Historical homework fixture command failed');
+      return result.stdout.trim();
+    } catch {
+      throw new Error('Historical homework fixture command failed');
+    }
+  }
+  type Service = 'postgres-academic' | 'postgres-schedule';
+  const containers = new Map<Service, string>();
+  function inspect(service: Service, id: string) {
+    const observed = docker([
+      'inspect',
+      '--format',
+      '{{.Id}}|{{.State.Running}}|{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.service"}}',
+      id,
+    ]);
+    const fields = observed.split('|');
+    if (
+      fields.length !== 4 ||
+      !/^[a-f0-9]{64}$/.test(fields[0]) ||
+      !fields[0].startsWith(id) ||
+      fields[1] !== 'true' ||
+      fields[2] !== 'rct-e2e' ||
+      fields[3] !== service
+    )
+      throw new Error('Historical homework fixture container invalid');
+    return fields[0];
+  }
+  for (const service of ['postgres-academic', 'postgres-schedule'] as const) {
+    const id = docker([
+      'ps',
+      '-q',
+      '--filter',
+      'status=running',
+      '--filter',
+      'label=com.docker.compose.project=rct-e2e',
+      '--filter',
+      `label=com.docker.compose.service=${service}`,
+    ]);
+    if (!/^[a-f0-9]{12,64}$/.test(id))
+      throw new Error('Historical homework fixture container missing');
+    containers.set(service, inspect(service, id));
+  }
+  function sql(service: Service, statement: string) {
+    const id = containers.get(service)!;
+    if (inspect(service, id) !== id)
+      throw new Error('Historical homework fixture container changed');
+    return docker(
+      [
+        'exec',
+        '-i',
+        id,
+        'psql',
+        '-X',
+        '-qAt',
+        '--no-password',
+        '-U',
+        'rct_user',
+        '-d',
+        service === 'postgres-academic' ? 'academic_db' : 'schedule_db',
+        '-v',
+        'ON_ERROR_STOP=1',
+      ],
+      `BEGIN; SET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='1s';
+       SET LOCAL standard_conforming_strings=on; ${statement} COMMIT;`,
+    );
+  }
+  function idFrom(value: string) {
+    const id = Number(value);
+    if (!/^[1-9][0-9]*$/.test(value) || !Number.isSafeInteger(id))
+      throw new Error('Historical homework fixture row not admitted');
+    return id;
+  }
+  const quote = (value: string) => `'${value.replace(/'/g, "''")}'`;
+  const group = dataset.group.id,
+    subject = dataset.subject.id,
+    semester = dataset.semester.id,
+    actor = dataset.headman.id,
+    day = quote(lesson.date);
+  const title = 'Синтетическое прошлое ДЗ',
+    description = 'Сохранённое задание предыдущего занятия',
+    link = 'https://example.invalid/q07';
+  const key = randomUUID();
+  // Exact v3 original-create encoding from HomeworkService; no arbitrary hash
+  // and no reuse of this setup encoding as the observable preservation oracle.
+  const bytes: Buffer[] = [];
+  const int = (value: number) => {
+    const part = Buffer.alloc(4);
+    part.writeInt32BE(value);
+    bytes.push(part);
+  };
+  const long = (value: number) => {
+    const part = Buffer.alloc(8);
+    part.writeBigInt64BE(BigInt(value));
+    bytes.push(part);
+  };
+  const text = (value: string) => {
+    const part = Buffer.from(value, 'utf8');
+    int(part.length);
+    bytes.push(part);
+  };
+  int(3);
+  for (const value of [actor, group, subject, semester]) long(value);
+  text(lesson.date);
+  int(7);
+  long(lesson.occurrenceId);
+  long(1); // Accepted original generation, before its normal CLOSED transition.
+  for (const value of [title, description, link, 'LESSON', 'LECTURE']) text(value);
+  bytes.push(Buffer.from([1]));
+  long(lesson.occurrenceId);
+  long(1);
+  const hash = quote(createHash('sha256').update(Buffer.concat(bytes)).digest('hex'));
+  const intent = quote(
+    JSON.stringify({
+      groupId: group,
+      subjectId: subject,
+      semesterId: semester,
+      title,
+      description,
+      link,
+      bindingMode: 'LESSON',
+      lessonDate: lesson.date,
+      lessonNumber: 7,
+      lessonType: 'LECTURE',
+      selectedOccurrenceId: lesson.occurrenceId,
+      selectedOccurrenceRevision: 1,
+    }),
+  );
+  const scope = `EXISTS (SELECT 1 FROM semesters s JOIN assignments a ON a.semester_id=s.id
+    JOIN subjects sub ON sub.id=a.subject_id AND sub.group_id=a.group_id
+    WHERE s.id=${semester} AND s.is_active AND NOT s.is_archived
+      AND s.archive_transition='NONE' AND NOT s.archive_release_pending
+      AND ${day}::date BETWEEN s.date_from AND s.date_to
+      AND a.id=${assignment.id} AND a.group_id=${group} AND a.subject_id=${subject}
+      AND a.teacher_id=${dataset.teacher.id} AND a.lesson_type='lecture'
+      AND a.valid_from<=${day}::date
+      AND (a.valid_until_exclusive IS NULL OR a.valid_until_exclusive>${day}::date))
+    AND EXISTS (SELECT 1 FROM user_role_grants WHERE user_id=${actor}
+      AND role='headman' AND status='active' AND group_id=${group})
+    AND EXISTS (SELECT 1 FROM user_role_grants WHERE user_id=${dataset.student.id}
+      AND role='student' AND status='active' AND group_id=${group})`;
+  const homeworkId = idFrom(
+    sql(
+      'postgres-academic',
+      `SELECT nextval(pg_get_serial_sequence('homeworks','id')) WHERE ${scope};`,
+    ),
+  );
+  // Separate databases do not provide distributed atomicity. Any partial seed
+  // fails this case closed and remains solely for the existing CI stack teardown.
+  const bindingId = idFrom(
+    sql(
+      'postgres-schedule',
+      `INSERT INTO lesson_homework_bindings
+       (occurrence_id,current_lesson_id,homework_id,actor_id,request_key,payload_hash,state,
+        revision,created_at,updated_at)
+       SELECT o.id,l.id,${homeworkId},${actor},${quote(key)}::uuid,decode(${hash},'hex'),
+         'ACTIVE',2,(${day}::date+TIME '00:00') AT TIME ZONE 'Europe/Moscow',
+         (${day}::date+TIME '00:00:01') AT TIME ZONE 'Europe/Moscow'
+       FROM lessons l JOIN lesson_occurrences o ON o.id=l.occurrence_id
+       JOIN schedule_items i ON i.id=l.schedule_item_id
+       JOIN schedule_assignment_fences f ON f.assignment_id=l.assignment_id
+       WHERE l.id=${lesson.id} AND o.id=${lesson.occurrenceId} AND o.current_lesson_id=l.id
+         AND l.schedule_item_id=${itemId} AND o.schedule_item_id=i.id AND i.is_active
+         AND l.group_id=${group} AND l.subject_id=${subject} AND l.semester_id=${semester}
+         AND l.assignment_id=${assignment.id} AND l.assigned_teacher_id=${dataset.teacher.id}
+         AND l.lesson_type='lecture' AND l.lesson_number=7 AND l.date=${day}::date
+         AND l.status='closed' AND l.generation=1 AND o.generation=1 AND o.revision=1
+         AND o.group_id=l.group_id AND o.subject_id=l.subject_id AND o.semester_id=l.semester_id
+         AND o.assignment_id=l.assignment_id AND o.assigned_teacher_id=l.assigned_teacher_id
+         AND o.lesson_type=l.lesson_type AND o.occurrence_date=l.date
+         AND l.cancelled_at IS NULL AND l.start_time>TIME '00:00:01'
+         AND l.date<(CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
+         AND f.group_id=l.group_id AND f.subject_id=l.subject_id AND f.semester_id=l.semester_id
+         AND f.assigned_teacher_id=l.assigned_teacher_id AND f.lesson_type=l.lesson_type
+         AND f.valid_from<=l.date AND f.creation_cap_until_exclusive>l.date
+         AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations t
+           WHERE t.occurrence_id=o.id AND t.state<>'COMPLETED')
+         AND NOT EXISTS (SELECT 1 FROM schedule_semester_archive_barriers b
+           WHERE b.semester_id=${semester} AND b.participant_state<>'RELEASED')
+       RETURNING binding_id;`,
+    ),
+  );
+  const inserted = idFrom(
+    sql(
+      'postgres-academic',
+      `INSERT INTO homeworks
+       (id,group_id,subject_id,semester_id,title,description,link,published_by,actor_id,
+        lesson_date,lesson_number,binding_id,request_key,payload_hash,publication_state,
+        binding_mode,revision,lesson_type,placement_occurrence_id,placement_lesson_id,
+        placement_binding_revision,create_actor_role,create_intent,create_intent_kind,created_at,updated_at)
+       SELECT ${homeworkId},${group},${subject},${semester},${quote(title)},${quote(description)},
+         ${quote(link)},${actor},${actor},${day}::date,7,${bindingId},${quote(key)}::uuid,
+         decode(${hash},'hex'),'ACTIVE','LESSON',1,'LECTURE',${lesson.occurrenceId},${lesson.id},
+         2,'HEADMAN',${intent}::jsonb,'ORIGINAL_CREATE',
+         (${day}::date+TIME '00:00') AT TIME ZONE 'Europe/Moscow',
+         (${day}::date+TIME '00:00:01') AT TIME ZONE 'Europe/Moscow'
+       WHERE ${scope} RETURNING id;`,
+    ),
+  );
+  if (inserted !== homeworkId) throw new Error('Historical homework fixture publication mismatch');
+  function bindingRetained() {
+    return (
+      sql(
+        'postgres-schedule',
+        `SELECT count(*)=1 FROM lesson_homework_bindings WHERE binding_id=${bindingId}
+         AND homework_id=${homeworkId} AND actor_id=${actor} AND request_key=${quote(key)}::uuid
+         AND payload_hash=decode(${hash},'hex') AND state='ACTIVE' AND revision=2
+         AND group_id=${group} AND subject_id=${subject} AND semester_id=${semester}
+         AND occurrence_id=${lesson.occurrenceId} AND current_lesson_id=${lesson.id}
+         AND binding_mode='LESSON' AND placement_date=${day}::date AND placement_lesson_number=7
+         AND original_occurrence_id=${lesson.occurrenceId} AND original_binding_mode='LESSON'
+         AND original_date=${day}::date AND original_lesson_number=7 AND pending_edit_operation_id IS NULL;`,
+      ) === 't'
+    );
+  }
+  expect(bindingRetained()).toBe(true);
+  return { homeworkId, bindingId, key, title, description, link, bindingRetained };
 }
 
 async function fillSlot(page: Page, dataset: MobileDataset, labels: string[], room: string) {
@@ -210,6 +471,107 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
   expect(savedMark.status === 'present' && typeof savedMark.markRevision === 'string').toBe(true);
   const pastIdentity = identities(past);
 
+  const historical = seedPastHomework(dataset, past[0]!, item.id);
+  const homeworkPath = `/api/academic/homeworks/${historical.homeworkId}`;
+  const originalHomework = await dataset.headmanActor.call('GET', homeworkPath);
+  expect(
+    originalHomework.id === historical.homeworkId &&
+      originalHomework.bindingId === historical.bindingId &&
+      originalHomework.requestKey === historical.key &&
+      originalHomework.title === historical.title &&
+      originalHomework.description === historical.description &&
+      originalHomework.link === historical.link &&
+      originalHomework.groupId === dataset.group.id &&
+      originalHomework.subjectId === dataset.subject.id &&
+      originalHomework.semesterId === dataset.semester.id &&
+      originalHomework.publishedBy === dataset.headman.id &&
+      originalHomework.bindingMode === 'LESSON' &&
+      originalHomework.lessonDate === past[0]!.date &&
+      originalHomework.lessonNumber === 7 &&
+      originalHomework.lessonType === 'LECTURE' &&
+      originalHomework.revision === 1 &&
+      originalHomework.archived === false,
+  ).toBe(true);
+  const editedTitle = 'Синтетическое прошлое ДЗ после изменения';
+  // Omit placement fields: the accepted content-only operation creates real
+  // history on the retained past LESSON, without publishing onto a past date.
+  await dataset.headmanActor.call('PUT', homeworkPath, {
+    title: editedTitle,
+    description: historical.description,
+    link: historical.link,
+    expectedRevision: 1,
+    requestKey: randomUUID(),
+  });
+  const homeworkBefore = await dataset.headmanActor.call('GET', homeworkPath);
+  expect(
+    homeworkBefore.title === editedTitle &&
+      homeworkBefore.description === historical.description &&
+      homeworkBefore.link === historical.link &&
+      homeworkBefore.revision === 2 &&
+      homeworkBefore.bindingId === historical.bindingId &&
+      homeworkBefore.lessonDate === past[0]!.date &&
+      homeworkBefore.lessonNumber === 7 &&
+      homeworkBefore.lessonType === 'LECTURE' &&
+      homeworkBefore.archived === false,
+  ).toBe(true);
+  const historyPath = `${homeworkPath}/history?size=100`;
+  const historyBefore = await dataset.headmanActor.call('GET', historyPath);
+  const events = historyBefore._embedded?.homeworkHistoryResponseList ?? historyBefore.content;
+  expect(
+    Array.isArray(events) &&
+      historyBefore.totalElements === 1 &&
+      events.length === 1 &&
+      events[0].revision === 2 &&
+      events[0].actorId === dataset.headman.id &&
+      events[0].action === 'EDITED' &&
+      typeof events[0].occurredAt === 'string' &&
+      Number.isFinite(Date.parse(events[0].occurredAt)) &&
+      events[0].before?.title === historical.title &&
+      events[0].after?.title === editedTitle,
+  ).toBe(true);
+  const student = await admit(dataset.request, dataset.student, 'STUDENT');
+  const completed = await student.call(
+    'PUT',
+    `/api/v1/student/homework/${historical.homeworkId}/completion`,
+    { completed: true },
+  );
+  expect(
+    completed.id === String(historical.homeworkId) &&
+      completed.completed === true &&
+      typeof completed.completedAt === 'string' &&
+      Number.isFinite(Date.parse(completed.completedAt)),
+  ).toBe(true);
+  const feedPath = `/api/v1/student/homework?from=${past[0]!.date}&to=${past[0]!.date}`;
+  async function pastStudentHomework() {
+    const feed = await student.call('GET', feedPath);
+    expect(Array.isArray(feed.items)).toBe(true);
+    const matches = feed.items.filter((row: { id: string }) => row.id === completed.id);
+    expect(matches.length === 1).toBe(true);
+    return matches[0];
+  }
+  const studentBefore = await pastStudentHomework();
+  expect(
+    studentBefore.title === editedTitle &&
+      studentBefore.description === historical.description &&
+      studentBefore.link === historical.link &&
+      studentBefore.lessonDate === past[0]!.date &&
+      studentBefore.lessonNumber === 7 &&
+      studentBefore.bindingMode === 'LESSON' &&
+      studentBefore.archived === false &&
+      studentBefore.completed === true &&
+      studentBefore.completedAt === completed.completedAt,
+  ).toBe(true);
+  async function expectPastHomeworkRetained() {
+    const homework = await dataset.headmanActor.call('GET', homeworkPath);
+    const history = await dataset.headmanActor.call('GET', historyPath);
+    const personal = await pastStudentHomework();
+    expect(JSON.stringify(homework) === JSON.stringify(homeworkBefore)).toBe(true);
+    expect(JSON.stringify(history) === JSON.stringify(historyBefore)).toBe(true);
+    expect(JSON.stringify(personal) === JSON.stringify(studentBefore)).toBe(true);
+    expect(historical.bindingRetained()).toBe(true);
+  }
+  await expectPastHomeworkRetained();
+
   const slot = page.locator('.headman-schedule__slot').filter({ hasText: room });
   await slot.click();
   const remove = page.getByRole('button', { name: 'Удалить пару', exact: true });
@@ -284,6 +646,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
   expect((await dataset.headmanActor.call('GET', itemPath)).active).toBe(false);
   const stopped = (await physicalLessons(dataset)).filter((row) => row.scheduleItemId === item.id);
   expect(identities(stopped.filter((row) => row.date < dataset.today)) === pastIdentity).toBe(true);
+  await expectPastHomeworkRetained();
   const stoppedFuture = stopped.filter((row) => row.date >= dataset.today);
   expect(
     stoppedFuture.length === future.length &&
@@ -316,6 +679,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
   const resumed = (await physicalLessons(dataset)).filter((row) => row.scheduleItemId === item.id);
   expect(resumed.length === own.length).toBe(true);
   expect(identities(resumed.filter((row) => row.date < dataset.today)) === pastIdentity).toBe(true);
+  await expectPastHomeworkRetained();
   expect(
     resumed
       .filter((row) => row.date >= dataset.today)
@@ -383,6 +747,14 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
       retained.entries.find((entry: { userId: number }) => entry.userId === dataset.student.id),
     ) === JSON.stringify(savedMark),
   ).toBe(true);
+  await expectPastHomeworkRetained();
+  // Retire only this fixture through the normal archive operation before the
+  // original live-rights revocation. Immutable history remains for CI teardown.
+  await dataset.headmanActor.call('DELETE', homeworkPath, undefined, [204]);
+  const archivedHomework = await dataset.headmanActor.call('GET', `${homeworkPath}?archived=true`);
+  expect(archivedHomework.archived === true && archivedHomework.id === historical.homeworkId).toBe(
+    true,
+  );
 
   // Revocation after a real preview cannot turn a retained editor into authority.
   await slot.click();

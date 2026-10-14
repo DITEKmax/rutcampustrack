@@ -5116,7 +5116,7 @@
       "product_defect": "NOT_CLAIMED",
       "reason": "CurrentnormalPOST/PUT/transfer deny pastlessonbinding; existingbuilderhistory lacksnonemptyHW. Need existingeducationalclock-transitionorhistoricalseed, no fakefutureproof/clocksecuritychange.",
       "source_changed": false,
-      "next": "boundedtechnicalcarrierchoice aftercurrentCIcriticalpath"
+      "next": "Oneboundedread-onlyvalidhistoricalseed/actualexistingPGcarrier plan; ordinaryClockprecludeseducational-onlybackdate. No fakefutureproof/newproductclockseam."
     },
     "T013_FIRST3_Source_review": {
       "state": "ASSIGNED_SOURCE_ONLY",
@@ -6024,7 +6024,7 @@
       "integration": "exactauthorbytes; no Root productimplementation"
     },
     "next_30fd_testfix_publication": {
-      "state": "READY_SOURCE; notyetpushed",
+      "state": "REAL_PUSHED",
       "parent": "30fd74122298b056d68221bb31cc22d8fa3d10bf",
       "source_count": 2,
       "scope": "twoactualtestpreconditionfailures; productunchanged; realafterawaitnextnormalCI",
@@ -6048,6 +6048,2390 @@
           "checks": "onefileformatter/selectedTSC/ordinaryhooksPASS32.416s; allreaped; actualafterbrowserNOT_RUN",
           "changes": "4realTomorrowUIselections+exactGET200; foreigndayemptyGET200/0cards; offlineownTodayDATEordinarypublication; originalrights/completion/revoke/transport/timeouts preserved",
           "integration": "exactauthorbytes; no Root productimplementation"
+        }
+      ],
+      "utc": "2026-10-14T13:51:10.318383+00:00",
+      "head": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "local_remote_PR_equal": true,
+      "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "draft": true,
+      "target": "main",
+      "main_unmerged": true,
+      "publication": {
+        "phases": [
+          {
+            "phase": "stage",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          },
+          {
+            "phase": "ordinary-six-hooks",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          },
+          {
+            "phase": "git-diff-check",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          },
+          {
+            "phase": "Angular-baseline-unchanged",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          },
+          {
+            "phase": "normal-commit",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          },
+          {
+            "phase": "real-push",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          },
+          {
+            "phase": "remote-readback",
+            "exit": 0,
+            "settled": true,
+            "reaped": true
+          }
+        ],
+        "wall_seconds": 9.289,
+        "source_unchanged": true,
+        "tmp_removed": true,
+        "dependency_directory_preserved": true
+      },
+      "current_gates": "UNKNOWN pendingcurrentproducerreceipts",
+      "advertised_merge": "3edd49fdb228581bd65329aa2643357cdb46096f",
+      "actual_checkout": "3edd49fdb228581bd65329aa2643357cdb46096f"
+    },
+    "Q11_native_PDF_Source_choice": {
+      "utc": "2026-10-14T13:53:23.831851+00:00",
+      "solewriter": "q09_remaining_client_writer",
+      "file": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "scope": "FULL/LIMITEDtwoordereduserPDF actualjob/ticket/download +fixednativepdfinfo/pdftotext insideexactownedrenderer; narrowREADONLYownjob/actorAuthREADY audit viaexactownedpostgres-academic",
+      "requirements": "project+servicelabels/fixedargv/noarbitrarytargets; UUID/positiveactor, SQLsafeparameters; closedcount/kind/rowCount/time/actor assertions RAMonly; bounds/time/no rawstderr/credentials/artifacts",
+      "authority": "existingTASKsyntheticchecks; RoottechnicalSourceapproval no newproductpolicy; actualexecution onlyreviewednormalCI",
+      "PNG": "notimplemented; semanticproofremainsNOT_PROVED"
+    },
+    "d106_actual_checkout": {
+      "artifact": 11898613134,
+      "run": 38575174178,
+      "digest": "sha256:ed9bd8b99e33a0e5beb1a7f05795102a92966a9a077884285a665b48058df8e9",
+      "bytes": 293,
+      "checkout": {
+        "checkout_sha": "3edd49fdb228581bd65329aa2643357cdb46096f",
+        "tree_sha": "69e6d453373682861140c6c76e972e642c9afe0c",
+        "producer_head_sha": "d106ac451ceb0a439fd8db6450e19662d916b46c"
+      },
+      "merge_parent_and_tree_join": "PASS_OFFICIAL_GIT_PARENTS_3908+d106_AND_LOCAL_TREE_EQUAL",
+      "private_logs_or_bodies_read": false,
+      "native": "COMPLETE0/reaped/privateinputgone",
+      "current_runs": {
+        "ci": 38575174178,
+        "coverage": 38575173946,
+        "security": 38575173883,
+        "openapi": 38575173989
+      },
+      "current_status": "CI/Coveragepending; Security/OpenAPISUCCESS fromofficialobservermetadata"
+    },
+    "d106_schedule_coverage_actual": {
+      "summary": {
+        "artifact_id": 11900675392,
+        "name": "safe-coverage-outcomes-schedule-service-1",
+        "archive_bytes": 16489,
+        "archive_sha256": "a21af52fe9b3fb043f8f1f5d2cb8cb40b81377a794b47925fc9a4f9b75fdaa0c",
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "results": [
+          {
+            "metadata": {
+              "checkoutSha": "3edd49fdb228581bd65329aa2643357cdb46096f",
+              "prHeadSha": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+              "service": "schedule-service",
+              "task": "integrationTest",
+              "job": "java-coverage",
+              "runId": "38575173946",
+              "runAttempt": "1",
+              "testStepScope": "unit+integration+report",
+              "event": "pull_request",
+              "testStepOutcome": "success"
+            },
+            "collection": "RESULTS",
+            "counts": {
+              "PASSED": 210,
+              "FAILED": 0,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "xml_case_summary_consistent": true,
+            "declared_consistent": true,
+            "target": {
+              "xmlOrdinal": 23,
+              "suiteOrdinal": 1,
+              "ordinal": 7,
+              "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+              "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+              "sourceSha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9"
+            },
+            "failed_or_error_cases": [],
+            "source_acceptance": "NOT_PROMOTED",
+            "historical96_CAP_cause": "UNKNOWN"
+          },
+          {
+            "metadata": {
+              "checkoutSha": "3edd49fdb228581bd65329aa2643357cdb46096f",
+              "prHeadSha": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+              "service": "schedule-service",
+              "task": "test",
+              "job": "java-coverage",
+              "runId": "38575173946",
+              "runAttempt": "1",
+              "testStepScope": "unit+integration+report",
+              "event": "pull_request",
+              "testStepOutcome": "success"
+            },
+            "collection": "RESULTS",
+            "counts": {
+              "PASSED": 272,
+              "FAILED": 0,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "xml_case_summary_consistent": true,
+            "declared_consistent": true,
+            "target": null,
+            "failed_or_error_cases": [],
+            "source_acceptance": "NOT_PROMOTED",
+            "historical96_CAP_cause": "UNKNOWN"
+          }
+        ],
+        "raw_XML_logs_read": false
+      },
+      "exact_new_placement_rule": {
+        "xmlOrdinal": 10,
+        "suiteOrdinal": 1,
+        "ordinal": 10,
+        "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+        "method": "lessonPlacementReceiptRetainsPhysicalTypeAcrossReadMoveReplayAndDateEdit",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+        "sourceSha256": "935c809cc549627ba1183b9c6bd9797571a82a2d5e1e8b3114ca209ed4189d9f"
+      },
+      "producer_current_source_sha256": "df4373280c55aec8014eb3b3ac6c8853e04b86534ee18c425f4431ccf9df234e",
+      "rule": "ActualPG handlerretains immutablephysicaltype acrossread/move/replay/ACK→DATE, no fixturecollision. Before30fdsetupFAIL→corrected69b4namedGREEN; no claimoldproducercontrolledmutationexecuted orclientfullmovePASSyet.",
+      "native": "COMPLETE0/reaped/privateinputgone"
+    },
+    "Q07_past_homework_seed_choice": {
+      "utc": "2026-10-14T14:01:55.597520+00:00",
+      "plan": {
+        "status": "SOURCE_PLAN_READY_MINIMUM_TWO_ROW_HISTORICAL_SEED",
+        "scope": "Q07 / JS-HEADMAN-40 remaining nonempty past LESSON homework, completion/completedAt and history preservation through existing real Vue builder remove-return only",
+        "requestedSelectedModel": "gpt-6.1-sol/high",
+        "actualModel": "UNKNOWN",
+        "repo": "/workspace/rutcampustrack",
+        "observedHead": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "runtime": "NOT_RUN: no Docker, PostgreSQL, SQL, browser, server or tests executed; this is a source plan, not acceptance evidence",
+        "writes": "Only this private outcome; no tracked source/shared docs edits; no worktree/agents",
+        "criterion": {
+          "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:527",
+          "accepted": "Past lessons and all their data survive recurring slot removal; returning same subject/type continues same series",
+          "reuse": "Existing real builder IDs/marks/past-current/parity/helper/foreign/revoke PASS c3ff and real PostgreSQL elapsed-gap/no-backfill PASS 1aa6 remain sufficient for their finite criteria. Neither is newly rerun or claimed to prove nonempty Academic content/completion/history."
+        },
+        "keyFinding": {
+          "minimum": "Seed only one historical accepted publication and its matching Schedule binding. Do not seed history, receipts or completion: produce those through normal live APIs before builder removal.",
+          "why": [
+            "HomeworkEditCoordinator.update:68 routes a request without placement fields directly to HomeworkEditPersistence.content:87. Its authorizedHomework:373 checks live own-group management authority, active publication and DATE-only expiry, not past LESSON date. content:96-135 writes the real receipt, EDITED history, revision and events.",
+            "HomeworkLifecycle.expiredDate:20 only expires bindingMode DATE. A past-bound ACTIVE LESSON is not terminal just because its physical lesson is CLOSED.",
+            "HomeworkStudentService.setCompletion:62-125 permits this current-semester own-group active LESSON and returns persisted completedAt. AcademicGrpcServiceImpl:1699-1820 includes past ACTIVE LESSON content and completion in an explicit requested date range.",
+            "Ordinary POST creation and placement-changing PUT still reject past placement. No security/ordinary Clock override or EducationalTime shortcut is proposed."
+          ]
+        },
+        "existingCarrier": {
+          "case": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts:114, existing fresh scenario dataset, after past[0] and savedMark exist and before const slot/remove",
+          "dbPattern": ".github/workflows/ci.yml:1375-1390 already resolves owned rct-e2e service/container IDs and uses docker exec psql -X -qAt -U rct_user with ON_ERROR_STOP and bounded SQL; scripts/recovery.py also uses existing psql carrier",
+          "fixtures": "Academic HomeworkStudentCompletionConcurrencyIT:149 and HomeworkEditLifecycleIT:321 use explicit accepted legacy homeworks SQL fixtures; Schedule RecurringScheduleItemIT:2037 inserts a binding for an existing physical occurrence. These are source patterns, not sufficient cross-service runtime proof.",
+          "noNewFramework": "A narrow private helper inside the existing spec using Node built-ins and existing CI containers suffices; no runner/config/API/dependency/migration/observer framework needed. Root must assign this explicit spec+SQL fixture writer scope before implementation."
+        },
+        "exactSeed": {
+          "identifiers": "No fixed/global business IDs. Bind only dataset.group.id, subject.id, semester.id, headman.id, student.id, subject.assignments[0].id, item.id and validated past[0].id/occurrenceId. Generate one UUID create key. Allocate homework id and binding id from their own existing PostgreSQL sequences; never MAX(id)+1/reset/setval. Keep returned identifiers in RAM.",
+          "guardsBeforeAnyInsert": [
+            "Resolve exactly one running container for project=rct-e2e and each service=postgres-academic/postgres-schedule; inspect and pin labels and IDs. This carrier is limited to ordinary disposable CI, not the stopped Cloud stand.",
+            "SELECT exact own physical lesson joined to occurrence and schedule item: correct group/subject/semester/assignment/type, scheduleItemId=item.id, current_lesson_id=past.id, generation=1, CLOSED, number=7, date=D<dataset.today, no cancellation/transfer, no pending lifecycle operation. Do not create or modify any physical lesson, occurrence, assignment or fence.",
+            "Check current semester active/not archived/no archive transition or unreleased barrier, D within its bounds; exact Academic assignment and Schedule assignment fence match own teacher/group/subject/semester/LECTURE and cover D. Check current owned HEADMAN management and STUDENT group grants. Verify allocated IDs/create key absent and own target has no fixture binding for this key.",
+            "Represent a synthetic retained state accepted at T0 on D before lesson 7 starts, T1=T0+1 second. Require T0<T1<physical start and current time. Historical timestamps describe reconstructed fixture provenance, not an API call actually performed in the past; do not backdate the real Clock or weaken business validation."
+          ],
+          "scheduleRow": {
+            "databaseTable": "schedule_db.lesson_homework_bindings",
+            "columns": "binding_id=B, occurrence_id=O, current_lesson_id=L, homework_id=H, actor_id=headman, request_key=K, payload_hash=P, state='ACTIVE', revision=2, binding_mode='LESSON', created_at=T0, updated_at=T1, pending_edit_operation_id=NULL",
+            "provenance": "revision2 matches normal PENDING1 -> ACTIVE2 confirmation (HomeworkBindingService:230). V24 a_homework_binding_placement BEFORE INSERT derives group_id/subject_id/semester_id/placement_date/placement_lesson_number from the exact L/O and initializes original_occurrence_id/original_binding_mode/original_date/original_lesson_number. Let this existing trigger populate them; assert its exact outputs. No placement operations/transfer/archive ledgers are required for original publication."
+          },
+          "academicRow": {
+            "databaseTable": "academic_db.homeworks",
+            "columns": "id=H, group_id=G, subject_id=S, semester_id=SEM, title=A(nonempty own marker), description=nonempty synthetic text, link=https://example.invalid/q07 (nonempty), published_by=headman, actor_id=headman, lesson_date=D, lesson_number=7, binding_id=B, request_key=K, payload_hash=P, publication_state='ACTIVE', binding_mode='LESSON', revision=1, lesson_type='LECTURE', placement_occurrence_id=O, placement_lesson_id=L, placement_binding_revision=2, create_actor_role='HEADMAN', created_at=T0, updated_at=T1",
+            "createIntent": "Use exact HomeworkCreateIntent JSON for original A/content/link/scope/LESSON/D/7/LECTURE and selectedOccurrenceId=O, selectedOccurrenceRevision=the historical accepted occurrence revision 1; create_intent_kind='ORIGINAL_CREATE'. Leave terminal/archive fields NULL. Guard initial generation1 provenance before selecting accepted revision1; current CLOSED lesson revision is not the historical publication revision.",
+            "payloadHash": "Same P in both DBs, exact SHA-256 canonical HomeworkService.homeworkPayloadHash:710-729 encoding: big-endian int3; actor/group/subject/semester int64; length-prefixed UTF8 D; int7; occurrence int64; historical accepted occurrence revision1 int64; title/description/link length-prefixed UTF8; bindingMode length-prefixed 'LESSON'; lessonType length-prefixed 'LECTURE'; boolean true; selected occurrence int64 and selected revision1 int64. Null strings use int -1. This is synthetic accepted provenance, not an arbitrary repeated-byte hash."
+          },
+          "atomicity": "Two existing databases have no distributed SQL transaction. Use bounded local transactions with all preconditions and fail closed on any discrepancy; do not describe the two commits as atomic. Admission to UI assertions occurs only after exact cross-DB join verification and successful normal GET. On partial failure, fail this case and clean/archive only this owned fixture as described below; never continue with an orphan or disable triggers."
+        },
+        "minimalApiAndOracleChanges": [
+          "After seed, HEADMAN GET /api/academic/homeworks/H must return exact A/nonempty content/link, LESSON/D/7/LECTURE, binding B, placement L/O/revision2, content revision1 and active state.",
+          "HEADMAN PUT /api/academic/homeworks/H with only title=B(nonempty changed marker), description, link, requestKey=new UUID, expectedRevision=1; omit all placement/type/selected-occurrence fields so the ordinary content-only route is used. Require 200/revision2 and exactly one EDITED history item revision2, before A/after B, current own actor and nonempty occurredAt; exact immutable placement. This makes nonempty history through the genuine server transaction.",
+          "Admit dataset.student as STUDENT. PUT /api/v1/student/homework/H/completion with the existing HomeworkCompletionRequest shape {completed:true}. Require completed=true and nonempty parseable completedAt. Read GET /api/v1/student/homework?from=D&to=D and locate exact H; default Today is inadequate for past data. Require exactly one matching item and exact content/lesson/type/completion/completedAt. Use existing model shape, no hand-invented response fields.",
+          "Before removal save canonical exact HEADMAN homework projection, full history content plus totalElements (size100 and exact finite count), and exact student feed item including completedAt. Require nonempty values first; comparisons remain RAM booleans so assertion errors cannot expose bodies/IDs.",
+          "Immediately after genuine Vue DELETE and immediately after genuine Vue return POST, reread these same three APIs. Require exact unchanged content, revision, active state, binding/lesson/occurrence identity, history count/order/all immutable history fields, completed=true and exactly identical completedAt. A final same comparison after existing parity cycle may be appended without changing original asserts.",
+          "Keep every original identity/mark/parity/helper/foreign/revoke assertion and all current timeouts, reporter/privacy protections and independent scenario dataset. No new case, clock advance, generic family rerun or full matrix claim."
+        ],
+        "cleanupAndPrivacy": {
+          "normal": "After all preservation comparisons and before existing headman revocation, archive only H through normal HEADMAN DELETE /api/academic/homeworks/H; verify own binding/publication become terminal and history/completion remain retained. This is fixture retirement, not deletion of historical evidence. Existing scenario remains independent; normal CI Compose teardown disposes the entire synthetic run.",
+          "failure": "Track seed progress and exact B/H/K in RAM; never DELETE immutable binding/history or use CASCADE, TRUNCATE, disabled triggers, sequence reset, shared semester deletion or unrelated dataset cleanup. If both rows exist, use the same own normal archive. If partial commit makes public cleanup impossible, explicit exact-row fixture recovery/archive must be reviewed with seed implementation, fail the case and rely on existing disposable CI teardown; do not swallow cleanup failure or claim proof. No production/retained Cloud data touches.",
+          "native": "Fixed docker/psql argument vectors, SQL through stdin, positive numeric/UUID/date validation and correct SQL literals/parameters; bounded statements/child time/response size within existing test budget. All raw SQL output/stderr/IDs/content stay in RAM or existing private artifacts; report fixed codes/booleans only. No credential/environment dump or exported payload artifacts."
+        },
+        "remainingDependenciesAndRisks": [
+          "Source feasibility only: exact seed insert/FK/trigger behavior, API edit/completion/feed and actual preservation require normal CI real PostgreSQL/browser execution after implementation and independent history/data review.",
+          "Seed reconstructs an accepted historical state. It does not prove historical publication was performed through the API, nor is that publication transition the remaining JS40 criterion. Existing synthetic actor/assignment creation is fixture preparation; do not claim measured historical actor-time provenance beyond explicit effective assignment and current grant checks.",
+          "A coherent two-DB partial-seed cleanup is the only implementation detail requiring explicit review before runtime. Historical read legality is established by source; no owner product question identified.",
+          "The minimal two-row approach applies only to original generation1 historical LESSON. If runtime guards reveal transfer/restore or a historical assignment boundary, fail fixture admission instead of synthesizing authority/ledger rows or expanding the packet.",
+          "B013 T008 rights sensitivity and B014 Gateway IP checking remain frozen PLATFORM_BLOCKED; no equivalent checks or bypass work included."
+        ],
+        "checksAfterWriterAssignment": "One-file cached formatter + existing strict E2E TypeScript check, source/diff review preserving original assertions, targeted independent history/data review; then only existing case in ordinary CI with real PG/browser. No checks executed by this read-only planner.",
+        "sourceSha256": [
+          {
+            "sha256": "5e9b29382e03229e90e77b90e8bbec77767acbd4728c84758f7a813dc113430e",
+            "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts"
+          },
+          {
+            "sha256": "e84c6a6bccbef38e126ad25853e8920374361d411b6efc9ad25b50d381bd9171",
+            "path": "tests/e2e/fixtures/mobile-dataset.ts"
+          },
+          {
+            "sha256": "58e08f0f141ce964cb8cf258383109dce14edc6d3cf2d592d28ee27b78bd3a13",
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkService.java"
+          },
+          {
+            "sha256": "8659755b04f7aa6a1aae30bee40b37d05792e177cb359f857ef5c72f2240bf38",
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditCoordinator.java"
+          },
+          {
+            "sha256": "acae3286be5bd09d44b3760b57993664a45b3b3fe5fcc11ff38302eedbaa5981",
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditPersistence.java"
+          },
+          {
+            "sha256": "992939a0f72e4713dc74b0bfd51917a69d5be8c5df05e520a7ea030d6888373b",
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditHistory.java"
+          },
+          {
+            "sha256": "6bef22962a68dcc00a31c4e48e0a32cf4485b78a0c05dffd34ee3da2b0a2ba6f",
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkLifecycle.java"
+          },
+          {
+            "sha256": "9ec9a059155e3bc9661c3e04468591a2c71767e241f0bbbf14622a1bc5625568",
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java"
+          },
+          {
+            "sha256": "62dd5b704902f95ab45b8ecdd8ed957bb99c9f7cefce8c94554457b05183bef8",
+            "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkBindingService.java"
+          },
+          {
+            "sha256": "52c1782848b5c333975f9162d56f544a053c12207018876bc6e1d5881b42dca3",
+            "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql"
+          },
+          {
+            "sha256": "e84f97ed2e4c0fbf714b607761fc977cf104bde7e65d8f4ddedac9b4627c48ba",
+            "path": "services/academic-service/academic-app/src/main/resources/db/migration/V45__homework_edit_history.sql"
+          },
+          {
+            "sha256": "b1bc1c6e75a6bc8380e14bbd1226fe2bf030fa3d35ddfb7e1efb2097a47f8bcd",
+            "path": "services/academic-service/academic-app/src/main/resources/db/migration/V47__homework_placement_identity.sql"
+          },
+          {
+            "sha256": "7375e598eb957762da9748c2f41fa6f032433675abcee1fa4b26b70ecbad29e0",
+            "path": "services/academic-service/academic-app/src/main/resources/db/migration/V48__homework_lesson_type.sql"
+          },
+          {
+            "sha256": "8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc",
+            "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql"
+          },
+          {
+            "sha256": "ece54872308e35a9c19ebc81c0462fe240068f807bbc66b0ce608050d18b7d2c",
+            "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V24__homework_edit_placement.sql"
+          },
+          {
+            "sha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9",
+            "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java"
+          }
+        ]
+      },
+      "Root_choice": "Assignsameauthorsoleoneexistingbuilderfile Sourceimplementation. Minimumtwoacceptedhistoricalrows thenordinarycontentedit/history andcompletionAPI. PartialseedFAILclosed; no deletion/disableimmutableguards/claimdistributedatomicity; preserveownpartialstate foralreadyexistingfullownedCIteardown anddoNOTcontinueacceptance. Normalfullseedfixture archiveownH aftercomparisonsbeforeheadmanrevoke. No productclock/API/schema change/nativeCloudrun.",
+      "review": "oneindependentwholedatafixture review required beforeRootintegration/ordinaryCI"
+    },
+    "Q10_finite_existing_proof_join": {
+      "scope": "Q10/BOUNDARY-40..43 finite reuse only, at published d106ac451ceb0a439fd8db6450e19662d916b46c; current CI38575174178/Coverage38575173946 pending not claimed. Governing CURRENT/decisions/questions/resources refreshed; unchanged full TASK previously read. Selected gpt-6.1-sol/high actualUNKNOWN. No runtime/network/new checks or Source/shared-doc writes.",
+      "acceptedSources": [
+        "job-stories.md JS-SYSTEM-09 two independent channels and JS-SYSTEM-10 named events, including automatic late_checkin.requested",
+        "2026-09-25-notification-history-membership: personal old history retained/new group only since joining",
+        "2026-10-02-durable-notification-preferences + authority: Mongo user-owned settings, exact user/binding bot facet, unknown defers, disabled suppresses; external provider separately unconfirmed",
+        "D002 only permits offline schedule/homework read; it grants no offline inbox or writes."
+      ],
+      "actualProducer": {
+        "head": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "checkout": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "run": "38329143416/attempt1/pull_request",
+        "qualification": "Actual named SOURCE_METHOD PASS only; selected methods below and direct production pins byte-identical657→d106. No ORDINAL_ONLY method names inferred; no whole transitive runtime/current CI claim.",
+        "receipts": "docs/validation/cloud-20261011/receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/safe-integration-outcomes-{notification,auth,academic}-service-1-integrationTest.json"
+      },
+      "namedCases": {
+        "NotificationHistoryConsumerIT": {
+          "sourceSha256": "8577f8ba192dee3feeee8991c0d2f65976b01d9f21590d9f4e1819fdc4cb1476",
+          "namedPASS": {
+            "oneOffCancellationKeepsDatedRecipientHistoryAndReadStateOnReplay": "7/1/3",
+            "groupFailureRollsBackClaimAndCommittedReplayKeepsReadState": "7/1/4",
+            "homeworkUpdatedUsesDatedAudienceSanitizedSnapshotAndIdempotentReplay": "7/1/5",
+            "groupBroadcastIsPersistedForAcademicMembers": "7/1/6"
+          }
+        },
+        "NotificationStateV2IT": {
+          "sourceSha256": "46447bb94b3290d5741c69792f3b238a4a2431344a416c9c26c17091243f593a",
+          "namedPASS": {
+            "cursorIsBoundToUserRoleAndFilterAndLegacyNeverBackfillsHeadmanRole": "9/1/1",
+            "allRoleClaimHistoryAndIntentRollbackTogetherAndReplayCommitsOneIntent": "9/1/4",
+            "roleCommandsAreIsolatedAndUnreadReplayPreservesSentAtRetentionAndOrdering": "9/1/5",
+            "allRoleSnapshotAndRoleUnionRemainImmutableOnReplayWithoutBumpingReadOrSentAt": "9/1/7",
+            "allRoleDispatcherUsesUserIdentityAndRechecksAuthorityBeforeProviderAfterDurableRetry": "9/1/8",
+            "allRoleIntentClaimRetriesAfterOutageAndProviderLeaseCannotBeReplayedByAnotherWorker": "9/1/11"
+          }
+        },
+        "DurableNotificationPreferencesIT": {
+          "sourceSha256": "f1109458f6f07189151dc710cf0acf494d06f27612e3e366e338f7a8447794c2",
+          "namedPASS": {
+            "rebindCannotCopyLegacyFacetAndPartialConcurrentPatchesDoNotLoseFields": "10/1/3",
+            "adoptedChoicesSurviveRedisLossAndDoNotReimportOverMongo": "10/1/6",
+            "receiptIsAtomicAndReplayDoesNotToggleOrExtendMuteAndRechecksBinding": "10/1/8",
+            "authorityOutageRollsBackEventClaimBeforeEnqueueAndReplayAdmitsOnce": "10/1/9"
+          }
+        },
+        "WsTicketConcurrencyBoundaryIT": {
+          "sourceSha256": "01456fa7cadeda093733e4a7f0ce382f26c87efccc36687250e37be004bb8410",
+          "namedPASS": {
+            "logoutBeforeConsumeInvalidatesOutstandingTicket": "21/1/1",
+            "concurrentActualHttpConsumersHaveExactlyOneWinnerAndBurnTicket": "21/1/2",
+            "actualRedisThirtySecondExpiryRejectsUnconsumedTicket": "21/1/3"
+          }
+        },
+        "WsTicketIT": {
+          "sourceSha256": "b25e835a8d363cb9aff47423dd075058f51c52f525e9eacc055143c886d3b5de",
+          "namedPASS": {
+            "consumeTicket_revokedBeforeConsume_isRejectedAndBurned": "22/1/6"
+          }
+        },
+        "NotificationAudienceIT": {
+          "sourceSha256": "cb13b85dac3ae485f28174cec220feaaf726b82d9411a0840266e60ff3a9043f",
+          "namedPASS": {
+            "helperPermissionIsDerivedFromEventAndRevocationIsLive": "53/1/16",
+            "membershipUsesMoscowOccurredDayAndDoesNotGuessLegacyCoverage": "53/1/28"
+          }
+        }
+      },
+      "directSourcePins657_to_d106": [
+        {
+          "sha256": "7097b6785f3aec18896f042377ca49f2bad2781fcc4139048257035a5f1d870e",
+          "path": "WsTicketService.java"
+        },
+        {
+          "sha256": "823fe917918bf2159a9e60df333112032df34f9973a878ecfdbbe89461c38618",
+          "path": "NotificationPushIntentDispatcher.java"
+        },
+        {
+          "sha256": "face3909656e6842b3912984430315574b72390cfd753278ba36c06ca70aec5f",
+          "path": "NotificationPreferencesStore.java"
+        },
+        {
+          "sha256": "9c392f70a5cb2229c71b351efd739232da6adcb05451e977ecb282e43568344d",
+          "path": "BotNotificationPreferencesService.java"
+        },
+        {
+          "sha256": "09b8c8e42ef16c8189e4288b0b85c52af0f0ef987bb354b593dd8b88c6a16ab4",
+          "path": "NotificationInboxService.java"
+        },
+        {
+          "sha256": "c33a3b12f9b1cfe0af8c9fd8d9c830568305c0d2c265cfec8c93047e72f96ade",
+          "path": "NotificationHistoryEventProcessor.java"
+        },
+        {
+          "sha256": "158a166665fabc897323ec967d79fa40febb191ef898447d14d84e3c4726acb6",
+          "path": "NotificationHistoryConsumer.java"
+        },
+        {
+          "sha256": "4f9c6deabce43dd98300569f77bb3c984df656393e3000166606ce9c0bc505b1",
+          "path": "NotificationAudienceResolver.java"
+        },
+        {
+          "sha256": "8b2110d6347148c06f65e6e155c80d1c739b819b0186e8cec122b2ef85bcda8d",
+          "path": "WsSessionAdmissionOutboundInterceptor.java"
+        }
+      ],
+      "criterionMapping": [
+        {
+          "id": "B40 broker acceptance + local transaction/dedup",
+          "sufficient": "CASE-L01-ACADEMIC-BROKER-ACCEPTANCE: actual block/NACK→PENDING→original-envelope recovery. Producer0e717157/OutboxBrokerConfirmIT.negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers XMLf9798aa4d936610d6d4d82d12bece79333e967faacf8b3bc95863940b73b58c7; historical qualification retained. Named history7/1/4 realRabbit/Mongo rollback+read-preserving replay and StateV2 9/1/4 realMongo claim/history/intent rollback+oneintent PASS.",
+          "insufficient": "Confirms are not every-queue routing or consumer effect. Spy transaction rollback is not process death after commit before ACK. Credential-card NP01 broker7 crash/ACK proof is a different consumer.",
+          "next": "Reuse these PASS clauses; only absent ordinary-consumer crash/ACK observation remains."
+        },
+        {
+          "id": "B41 audience/history backend",
+          "sufficient": "Academic53/1/28 actualPG Moscow membership and53/1/16 helper-permission revoke; history7/1/6 actualfanout→Mongo recipient;7/1/3,5 cancellation/homework dated/sanitized immutable snapshots/read state on replay. StateV2 9/1/5 role-isolated read/unread/revision/sentAt/foreign404;9/1/1 user/role/filter-bound cursor and no legacyHEADMAN backfill;9/1/7 immutable replay/roleunion. All selected tests/directsources same657→d106.",
+          "insufficient": "Academic audience mocked in history; cancellation/homework inject history queue. Separate SQL/Mongo/direct inbox service proofs do not establish genuineVue inbox→read→authorized target.",
+          "next": "Reuse backend/date/dedup/ownership/read PASS. One real accepted event through actual audience into PWA inbox closes distinct integration/client risk."
+        },
+        {
+          "id": "B42 durable prefs/unknown/disabled/rebind core",
+          "sufficient": "Eligible finite PASS: realMongo10/1/6 settings survive deleting Redis facets;10/1/3 no copied binding/no lost partialpatch;10/1/8 atomicreceipt/replay no repeatedtoggle/extendedmute/currentbinding recheck;10/1/9 unknown rollsclaimback beforeenqueue/replay once. StateV2 9/1/8 durablePENDING then controlledauthority recheck beforeprovider;9/1/11 oneworker/oldleaserejected/retry/UNCERTAIN. Four actual aiogram/privateHTTP cases below cover adapter failure/retry/unknown→disabled→recovery.",
+          "insufficient": "Binding/provider controlled; Redis facet deletion notOSrestart. Externalprovider delivery explicitly separate in dated decision.",
+          "next": "Reuse Mongo+real loopback adapter proofs; no newOSrestart or duplicateHTTP test required for these exact clauses."
+        },
+        {
+          "id": "B43 ticket + real open-socket revoke",
+          "sufficient": "Auth21/1/1,2,3 and22/1/6: logoutbeforeconsume/singlewinner/replayburn/actualRedis30sexpiry/revokedbeforeconsume. VC-AUTH-OPEN-WS-LOGOUT-DELIVERY-01 current-a032-AuthIT.safe.json: run38493688140/heada03215a/checkout9f0732ba/artifact11863013257 XML17/1/1 RealAuthOpenSocketLogoutIT.realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives PASS; testSHA0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43 equalcurrent. Existing meaningfulRED/restoredGREEN retained.",
+          "insufficient": "Socket uses ownsubscriptions/directSimp; PrivateWsTransportIT also ownsubscriptions/stubAuth. Neither proves foreigndestination/ticketbinding denial or broker/audience/client channel.",
+          "next": "Keep ticket/revoke PASS; qualify saved foreign-subscription negative before adding only that missing assertion."
+        }
+      ],
+      "syntheticAdapter": {
+        "producer": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff historical local NP03/final; not current-CI claim",
+        "receipt": "docs/validation/cloud-20261011/receipts/notification-recovery-review/source-evidence-manifest.json#xml_summaries",
+        "actual": "NP03-http4PASS/0FES XML5cf4978946680d3ca5f1d7dfe75c60307d5244b8fa79b520396b7fea11e90968; retained in final9PASS XML01a105471ca4692f7584ce9f9321678d295b2c892641a1eecdbdb901b37cce4d",
+        "named": [
+          "test_actual_aiogram_http_failure_retries_then_records_one_success",
+          "test_actual_aiogram_429_rechecks_binding_and_headman_before_retry[binding]",
+          "test_actual_aiogram_429_rechecks_binding_and_headman_before_retry[headman]",
+          "test_private_preference_http_unknown_defers_then_disabled_suppresses_then_recovery_sends"
+        ],
+        "pins": "fa02→d106 bytes exact: test_provider_http_boundaries.py6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b; send_queue.py59700af6ee0bfd06d2cd82b6016ffb4bbd4621fcb958ddc17994d15cbb897f26; notification_prefs.py637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796. Full immediate per-phase dependency hash capture historically UNKNOWN; retained author/final review qualification, no invented run identity."
+      },
+      "finiteRemainder": [
+        {
+          "operation": "One accepted cancellation or automatic late-checkin event through real producer/broker/actualAcademic audience into existing PWA inbox; read then navigate authorized target. Keep old personal row and excluded pre-join/foreign row.",
+          "risk": "B41 actual inbox and recipient integration; same event can witness independent channel/routing while one adapter fails. Existing backend recipient/date/read rules need no duplicate test.",
+          "reuse": "NotificationAudienceIT + NotificationHistoryConsumerIT + NotificationStateV2IT + existing mobile dataset/PWA components; exact genuine client action currently missing."
+        },
+        {
+          "operation": "Ordinary notification consumer committed history effect then process death before ACK, restart/redelivery yields one retained effect.",
+          "risk": "B40 durable ACK/recovery distinct from transactional rollback and credential-card broker7.",
+          "reuse": "Existing Rabbit/Mongo history harness; no known qualifying ordinary-consumer receipt in this bounded join."
+        },
+        {
+          "operation": "Foreign private WS destination or ticket binding denies while own subscription receives live positive control.",
+          "risk": "B43 exact cross-user binding negative; no product defect inferred from missing proof.",
+          "reuse": "Existing PrivateWsTransportIT/RealAuthOpenSocketLogoutIT transport; qualify existing saved negative before adding assertion."
+        }
+      ],
+      "providerLimit": "Real external Telegram and browser WebPush provider delivery remain UNKNOWN, not excluded or covered by loopback HTTP. No real bot/credentials/provider call authorized here. Independent-channel delivery can first be meaningfully checked with controlled synthetic adapter failure using the one event/inbox operation; no exactly-once external-delivery promise or new channel-selection policy.",
+      "conclusion": "Link exact finite backend clauses, including B42 durable-settings/adapter core with seam/provider limits. No wholeQ10/B40/B41/B43 promotion. Prior q10 retained; this refreshes exact named joins and adds Mongo inbox/read+actualadapter receipts without rerun."
+    },
+    "Q11_native_PDF_author_ready": {
+      "utc": "2026-10-14T14:05:21.813744+00:00",
+      "sha256": "0aaaae3dc212bdb7a8f91207c69496c0d333372515de4178ee70be6aafb15b3c",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "commit": "5d0aef9f1c2fd108155340ce2d17e28a636be82f",
+      "parent": "30fd74122298b056d68221bb31cc22d8fa3d10bf; samepathunchangedd106",
+      "scope": "onefile+419/0; 2PDFactualjob/ownednativePopplerandreadonlyexactownaudit cases; original2HTMLbodiesbyteidentical",
+      "checks": "formatter/strictTSC/14RAMparsercontrols/diff/normalhooksPASS14.55s/reaped/ownTMP+linkgone",
+      "actualPDF_SQL_Docker_browser": "NOT_RUN",
+      "state": "READY_ONE_INDEPENDENT_REVIEW; notRootintegrated/pushed"
+    },
+    "d106_original_eight_client_actual": {
+      "utc": "2026-10-14T14:08:26.892455+00:00",
+      "head": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "actual_checkout": "3edd49fdb228581bd65329aa2643357cdb46096f; artifact+Gitparents+localtreejoined",
+      "first3": {
+        "artifact_id": 11900666671,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run_id": 38575174178,
+        "event": "pull_request",
+        "actual_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+        "archive_sha256": "3acb306cffce63e6338b68651d3ba59c341fd4ea4f97e53d7aeab28d5c616866",
+        "archive_bytes": 3450,
+        "member_names": [
+          "artifacts/safe-results.json",
+          "supervision/observations-headman.safe.json",
+          "supervision/observations-student.safe.json",
+          "supervision/observations-helper.safe.json"
+        ],
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 40,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 1973,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 89,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3692,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 188,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2090,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "STUDENT",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HEADMAN",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HELPER",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "observations": {
+          "HEADMAN": {
+            "schema": "RCT_FOCUS3_CLOSED_V1",
+            "caseCode": "HEADMAN",
+            "events": [
+              {
+                "caseCode": "HEADMAN",
+                "phase": "BEGIN",
+                "facts": {
+                  "diagnosticState": "OBSERVING"
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LOGIN",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "uiTokenCaptured": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "STUDENT",
+                  "activeRoleExpected": false,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HELPER_PERMISSIONS",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "markPermission": false
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "STUDENT",
+                  "activeRoleExpected": false,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_DEFAULT",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "ROLE_CHANGE",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "uiTokenCaptured": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "HEADMAN",
+                  "activeRoleExpected": true,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_LIST",
+                "facts": {
+                  "httpStatus": "200",
+                  "selectedDateEqual": true,
+                  "groupPathEqual": true,
+                  "bodyParsed": true,
+                  "itemsIsArray": true,
+                  "lessonCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED",
+                  "transferPending": false
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_LIST",
+                "facts": {
+                  "httpStatus": "200",
+                  "selectedDateEqual": true,
+                  "groupPathEqual": true,
+                  "bodyParsed": true,
+                  "itemsIsArray": true,
+                  "lessonCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED",
+                  "transferPending": false
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_ROSTER",
+                "facts": {
+                  "httpStatus": "200",
+                  "lessonPathEqual": true,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "entriesIsArray": true,
+                  "entryCount": 3,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "studentPresent": true,
+                  "assistantPresent": true,
+                  "targetNameEqual": true,
+                  "reportEditableKnown": true,
+                  "reportEditable": true,
+                  "rowEditableKnown": true,
+                  "rowEditable": true,
+                  "normalizedRowEditable": true,
+                  "blockedReasonPresent": false,
+                  "reportedEditBlock": "NONE",
+                  "targetStatus": "EMPTY",
+                  "lessonIdEqual": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "semesterEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED"
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "MARK_WRITE",
+                "facts": {
+                  "httpStatus": "200"
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_ROSTER",
+                "facts": {
+                  "httpStatus": "200",
+                  "lessonPathEqual": true,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "entriesIsArray": true,
+                  "entryCount": 3,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "studentPresent": true,
+                  "assistantPresent": true,
+                  "targetNameEqual": true,
+                  "reportEditableKnown": true,
+                  "reportEditable": true,
+                  "rowEditableKnown": true,
+                  "rowEditable": true,
+                  "normalizedRowEditable": true,
+                  "blockedReasonPresent": false,
+                  "reportedEditBlock": "NONE",
+                  "targetStatus": "PRESENT",
+                  "lessonIdEqual": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "semesterEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED"
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_ROSTER",
+                "facts": {
+                  "httpStatus": "200",
+                  "lessonPathEqual": true,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "entriesIsArray": true,
+                  "entryCount": 3,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "studentPresent": true,
+                  "assistantPresent": true,
+                  "targetNameEqual": true,
+                  "reportEditableKnown": true,
+                  "reportEditable": true,
+                  "rowEditableKnown": true,
+                  "rowEditable": true,
+                  "normalizedRowEditable": true,
+                  "blockedReasonPresent": false,
+                  "reportedEditBlock": "NONE",
+                  "targetStatus": "PRESENT",
+                  "lessonIdEqual": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "semesterEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED"
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "HEADMAN",
+                  "activeRoleExpected": true,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LOGOUT",
+                "facts": {
+                  "httpStatus": "204"
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LOGIN",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "uiTokenCaptured": true
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": false,
+                  "actorMatchesTeacher": true,
+                  "activeRole": "TEACHER",
+                  "activeRoleExpected": false,
+                  "requiredRoleSelectable": false
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "DOM",
+                "facts": {
+                  "journalCount": 0,
+                  "rowCount": 0,
+                  "targetRowCount": 0,
+                  "targetButtonCount": 0,
+                  "clearButtonCount": 0,
+                  "homeworkCount": 1,
+                  "homeworkCompleteCount": 0,
+                  "homeworkIncompleteCount": 0,
+                  "alertCount": 0,
+                  "loginVisible": false,
+                  "navigationVisible": true,
+                  "rolePickerVisible": false,
+                  "targetRowVisible": false,
+                  "targetButtonVisible": false,
+                  "targetButtonEnabled": false,
+                  "clearButtonVisible": false,
+                  "clearButtonEnabled": false,
+                  "homeworkVisible": true,
+                  "homeworkCompleteVisible": false,
+                  "homeworkIncompleteVisible": false,
+                  "domStatus": "ABSENT_ROW",
+                  "targetNameEqual": false,
+                  "journalBusy": false
+                }
+              },
+              {
+                "caseCode": "HEADMAN",
+                "phase": "END",
+                "facts": {
+                  "testStatus": "passed",
+                  "diagnosticCompleted": true,
+                  "droppedEventCount": 0
+                }
+              }
+            ],
+            "droppedEventCount": 0
+          },
+          "STUDENT": {
+            "schema": "RCT_FOCUS3_CLOSED_V1",
+            "caseCode": "STUDENT",
+            "events": [
+              {
+                "caseCode": "STUDENT",
+                "phase": "BEGIN",
+                "facts": {
+                  "diagnosticState": "OBSERVING"
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LOGIN",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "uiTokenCaptured": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "STUDENT",
+                  "activeRoleExpected": true,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HELPER_PERMISSIONS",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "markPermission": false
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_DEFAULT",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_EXPLICIT",
+                "facts": {
+                  "httpStatus": "200",
+                  "requestedRangeEqual": false,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "COMPLETION_WRITE",
+                "facts": {
+                  "httpStatus": "200"
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "STUDENT",
+                  "activeRoleExpected": true,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HELPER_PERMISSIONS",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "markPermission": false
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_DEFAULT",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_EXPLICIT",
+                "facts": {
+                  "httpStatus": "200",
+                  "requestedRangeEqual": false,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "DOM",
+                "facts": {
+                  "journalCount": 0,
+                  "rowCount": 0,
+                  "targetRowCount": 0,
+                  "targetButtonCount": 0,
+                  "clearButtonCount": 0,
+                  "homeworkCount": 2,
+                  "homeworkCompleteCount": 1,
+                  "homeworkIncompleteCount": 0,
+                  "alertCount": 0,
+                  "loginVisible": false,
+                  "navigationVisible": true,
+                  "rolePickerVisible": false,
+                  "targetRowVisible": false,
+                  "targetButtonVisible": false,
+                  "targetButtonEnabled": false,
+                  "clearButtonVisible": false,
+                  "clearButtonEnabled": false,
+                  "homeworkVisible": true,
+                  "homeworkCompleteVisible": true,
+                  "homeworkIncompleteVisible": false,
+                  "domStatus": "ABSENT_ROW",
+                  "targetNameEqual": false,
+                  "journalBusy": false
+                }
+              },
+              {
+                "caseCode": "STUDENT",
+                "phase": "END",
+                "facts": {
+                  "testStatus": "passed",
+                  "diagnosticCompleted": true,
+                  "droppedEventCount": 0
+                }
+              }
+            ],
+            "droppedEventCount": 0
+          },
+          "HELPER": {
+            "schema": "RCT_FOCUS3_CLOSED_V1",
+            "caseCode": "HELPER",
+            "events": [
+              {
+                "caseCode": "HELPER",
+                "phase": "BEGIN",
+                "facts": {
+                  "diagnosticState": "OBSERVING"
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LOGIN",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "uiTokenCaptured": true
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "STUDENT",
+                  "activeRoleExpected": true,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HELPER_PERMISSIONS",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "markPermission": true
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_DEFAULT",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_LIST",
+                "facts": {
+                  "httpStatus": "200",
+                  "selectedDateEqual": true,
+                  "groupPathEqual": true,
+                  "bodyParsed": true,
+                  "itemsIsArray": true,
+                  "lessonCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED",
+                  "transferPending": false
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_ROSTER",
+                "facts": {
+                  "httpStatus": "200",
+                  "lessonPathEqual": true,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "entriesIsArray": true,
+                  "entryCount": 3,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "studentPresent": true,
+                  "assistantPresent": true,
+                  "targetNameEqual": true,
+                  "reportEditableKnown": true,
+                  "reportEditable": true,
+                  "rowEditableKnown": true,
+                  "rowEditable": true,
+                  "normalizedRowEditable": true,
+                  "blockedReasonPresent": false,
+                  "reportedEditBlock": "NONE",
+                  "targetStatus": "EMPTY",
+                  "lessonIdEqual": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "semesterEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED"
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "MARK_WRITE",
+                "facts": {
+                  "httpStatus": "200"
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "LESSON_ROSTER",
+                "facts": {
+                  "httpStatus": "200",
+                  "lessonPathEqual": true,
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "entriesIsArray": true,
+                  "entryCount": 3,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "studentPresent": true,
+                  "assistantPresent": true,
+                  "targetNameEqual": true,
+                  "reportEditableKnown": true,
+                  "reportEditable": true,
+                  "rowEditableKnown": true,
+                  "rowEditable": true,
+                  "normalizedRowEditable": true,
+                  "blockedReasonPresent": false,
+                  "reportedEditBlock": "NONE",
+                  "targetStatus": "PRESENT",
+                  "lessonIdEqual": true,
+                  "groupEqual": true,
+                  "subjectEqual": true,
+                  "semesterEqual": true,
+                  "dateEqual": true,
+                  "lessonStatus": "PLANNED"
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "SESSION",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "actorMatchesTarget": true,
+                  "actorMatchesTeacher": false,
+                  "activeRole": "STUDENT",
+                  "activeRoleExpected": true,
+                  "requiredRoleSelectable": true
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HELPER_PERMISSIONS",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "markPermission": false
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "UI_RESPONSE",
+                "endpoint": "HOMEWORK_DEFAULT",
+                "facts": {
+                  "httpStatus": "200",
+                  "bodyParsed": true,
+                  "bodyShapeKnown": true,
+                  "itemsIsArray": true,
+                  "itemCount": 1,
+                  "targetCount": 1,
+                  "targetPresent": true,
+                  "targetTitleEqual": true,
+                  "semesterEqual": true,
+                  "rangeContainsTarget": true,
+                  "serverDateEqual": true
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "DOM",
+                "facts": {
+                  "journalCount": 0,
+                  "rowCount": 0,
+                  "targetRowCount": 0,
+                  "targetButtonCount": 0,
+                  "clearButtonCount": 0,
+                  "homeworkCount": 0,
+                  "homeworkCompleteCount": 0,
+                  "homeworkIncompleteCount": 0,
+                  "alertCount": 0,
+                  "loginVisible": false,
+                  "navigationVisible": true,
+                  "rolePickerVisible": false,
+                  "targetRowVisible": false,
+                  "targetButtonVisible": false,
+                  "targetButtonEnabled": false,
+                  "clearButtonVisible": false,
+                  "clearButtonEnabled": false,
+                  "homeworkVisible": false,
+                  "homeworkCompleteVisible": false,
+                  "homeworkIncompleteVisible": false,
+                  "domStatus": "ABSENT_ROW",
+                  "targetNameEqual": false,
+                  "journalBusy": false
+                }
+              },
+              {
+                "caseCode": "HELPER",
+                "phase": "END",
+                "facts": {
+                  "testStatus": "passed",
+                  "diagnosticCompleted": true,
+                  "droppedEventCount": 0
+                }
+              }
+            ],
+            "droppedEventCount": 0
+          }
+        },
+        "missing_members": [],
+        "source_assertions": "UNCHANGED_ACCEPTED_FIRST3",
+        "raw_logs_XML_HTML_error_context_read": false,
+        "buffer_limit": "POST_BUFFER_CLASSIFIER_NOT_HARD_RSS_BOUND",
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "remaining5": {
+        "artifact": 11900691773,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run": 38575174178,
+        "digest": "sha256:29e7bd71f278d4c65ff1ee6f6ce9635fb1062dbfcf1d7ea23e89b3c27b75de19",
+        "bytes": 417,
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 258,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 816,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 285,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3157,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 332,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2729,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 350,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 904,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 439,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 1775,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "LIMITED",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "EMPTY_RETRY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "LIVE_REVOKE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "TMA_REUSE_SUSPEND",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "PWA_OFFLINE_RECONNECT",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "source": "mobile-real-server.spec.ts exact5fa5c3df15e35283a8e8cefee666fb502dea7c7b22c2c9f4ece204292e655c70; exactcurrentdeclaration3/5proven, no union/range orcasebudgetchange",
+      "before_after": "30fdSTUDENTmarker21FAIL→97b184explicitTomorrow/defaultTodaycompatiblefixture→d106STUDENT40PASS1973ms. ExistingHEADMAN/HELPER data/rights remainedPASS, originalcompletion/reload/foreignassertions retained. Correctedempty/retry+offlineTodayfixture cases bothPASS.",
+      "reader_processes": "26730/45354COMPLETE0/allreaped/privateinputgone",
+      "qualification": "finite8clientcriteria only; laternovelHW/material/transfer/recovery/semester andothermatrixclauses notpromoted"
+    },
+    "d106_current_gates": {
+      "CI38575174178": "FAILONLYE2E;18otherjobsSUCCESS",
+      "Coverage38575173946": "SUCCESS9jobs",
+      "Security38575173883": "SUCCESS3jobs/imageSKIP",
+      "OpenAPI38575173989": "SUCCESS",
+      "event": "pull_request/attempt1",
+      "actualCheckout": "3edd49fd/parents/tree joined",
+      "E2E": "HWlogout491/registrylogin429/semester158FAIL; otherselectedlanes+all3cleanupSUCCESS"
+    },
+    "d106_homework_actual": {
+      "utc": "2026-10-14T14:12:42.533008+00:00",
+      "evidence": {
+        "artifact": 11900443024,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run": 38575174178,
+        "digest": "sha256:4f67697fdfd7b5942ce0988af59a45682370c8fff576f5287a875f3223447118",
+        "bytes": 470,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 26,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3573,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 364,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 12383,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "mobile-homework-lifecycle.spec.ts",
+                  "line": 491
+                }
+              ]
+            },
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 702,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3079,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "HOMEWORK_NON_AUTHOR_COMPLETION_REVOKE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HOMEWORK_TRANSFER_ARCHIVE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HOMEWORK_MATERIAL_OPTIMISTIC_ORDER",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "3edd49fd officialartifact/Gitparents/localtreejoined",
+      "conclusions": "Case26PASS3573ms; material/inline/optimism/period/order B702PASS3079ms. A364FAIL12383ms frame491/logout AFTERactualfutureplacementPUT+canonicalread/history assertions succeeded; wholeA remainsFAIL/newcauseunclassified. Typedproducerfix has actualPG exactmethodGREEN and realfutureeditPASSprefix.",
+      "reader": "firstSourceprep incorrectlyassumed all3declarations test(), butA/Buseexistingisolated()wrapper; correctedexacttitleproof; firstmissing-readerexit2 hadnoexternalread/producteffect; correctedreaderCOMPLETE0/allreaped/privateinputgone",
+      "next": "SAMEHWtestauthor diagnose exact491navigationprecondition; registrycurrentartifactread separately"
+    },
+    "Q11_native_PDF_independent_review": {
+      "utc": "2026-10-14T14:13:29.588274+00:00",
+      "commit": "5d0aef9f1c2fd108155340ce2d17e28a636be82f",
+      "reviewer": "q07_client_review",
+      "verdict": "APPROVE_SOURCE/no blockingfindings",
+      "source": "own q09-review.safe.md; wholeonefile labels/innerdeadline/readonlySQL/PDFcellgrammar/privacy",
+      "runtime": "NOT_RUN; reviewnotnativeacceptance"
+    },
+    "Q07_past_homework_author_ready": {
+      "utc": "2026-10-14T14:13:29.588714+00:00",
+      "commit": "59498d461ea38f49e25040691658190ec91acc52",
+      "sha256": "d633d2f302a3cfed0f8133ea21e6a5f54fb12661d3e7cfa901c995486f0344aa",
+      "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "parent": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "scope": "onefile +373/-1 cryptoimport; originalbaselineallotherlinessubsequence/oldasserts preserved; 2 historicalrows thenrealhistory/completionAPI/exactbefore-remove-return-parity snapshots/ownHarchive",
+      "checks": "format/strictTSC/normalhooksPASS13.352s/reaped/ownTMP+linkgone/PWactualdirunchanged",
+      "actualSQL_browser": "NOT_RUN",
+      "next": "oneindependentwholedatafixture review; no newpushbeforeusefulcurrentCIfinishes"
+    },
+    "d106_registry_actual": {
+      "utc": "2026-10-14T14:15:48.676577+00:00",
+      "evidence": {
+        "artifact": 11900328229,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run": 38575174178,
+        "digest": "sha256:861ecacaaae77008a7a2ef0d0b852e405a42abdcf3759cb6011cdb47d8ee43bb",
+        "bytes": 508,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2891,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 488,
+              "errorCount": 2,
+              "diagnostics": [
+                {
+                  "stage": "ACTOR_LOGIN",
+                  "cause": "ACTOR_LOGIN_HTTP",
+                  "httpStatus": 429
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "cloud-accepted-registry-export.spec.ts",
+                  "line": 42
+                },
+                {
+                  "file": "cloud-accepted-registry-export.spec.ts",
+                  "line": 42
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "3edd49fd joined",
+      "finding": "oneordinalmodePASS2891ms; othermodeFAIL488ms beforeexportatloginPwa caller42, typedACTOR_LOGIN_HTTP429. Cannot infermodefromordinal-onlyserializer. Productexportnotreachedinfailedcase; no flaky/productbugclaim.",
+      "boundary": "B014specificGatewayIPchecking remainsFROZEN; no quota mutation/burst/witness/alternateIP/allowlist/gateweakening. OrdinaryclientflowSource diagnosis only; honoractualserverRetryAfter iffixturecorrectionneeded.",
+      "next": "same registryauthorSource-onlydiagnose exactexistinglogin handling and reuse/budget correction; no equivalentB014checking"
+    },
+    "Q11_native_PDF_integrated": {
+      "utc": "2026-10-14T14:16:41.849272+00:00",
+      "author": "5d0aef9f1c2fd108155340ce2d17e28a636be82f",
+      "sha256": "0aaaae3dc212bdb7a8f91207c69496c0d333372515de4178ee70be6aafb15b3c",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "independent": "APPROVE_SOURCE q07_client_review",
+      "Root": "exactauthorbytes WIP; no newpush/cancel/usefuld106CIcontinues",
+      "actualPDF_SQL_Docker_browser": "NOT_RUN",
+      "current_originalHTML429": "separateSource-onlyfixture diagnosis bysameauthor; originalHTMLbodiesunchanged inthispackage"
+    },
+    "HW_A_exit_precondition_author_ready": {
+      "utc": "2026-10-14T14:17:22.954063+00:00",
+      "author": "bbf5d6b1667e92139ed71796a511c5250148f6a5",
+      "sha256": "8f0444288405f000ee033caf1012205f10d83a505314af8f1ca13ba9270be2c1",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "scope": "exact2lineactualBack+positiveNavgate beforeoldlogout491; removalroundtripspublished4c94, originalA/B/26asserts/timeoutsbytepreserved",
+      "Source_cause": "Assistantworkspace task surface hidesdock; singlepush task→rootMore requiresoneBack; observedruntimeonly491logout failure afterrealeditPASSprefix",
+      "checks": "format/selectedTSC/normalhooksPASS26.494s/reaped",
+      "actual_after": "NOT_RUN",
+      "next": "one targetedindependentboundaryrecheck; no fullreview/newdiagnostics"
+    },
+    "Q07_past_homework_independent_review": {
+      "verdict": "APPROVE_SOURCE",
+      "base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "reviewed": "59498d461ea38f49e25040691658190ec91acc52",
+      "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "sha256": "d633d2f302a3cfed0f8133ea21e6a5f54fb12661d3e7cfa901c995486f0344aa",
+      "findings": [],
+      "scope": "Independent whole one-fixture history/data/privacy review. Only assigned spec changed; baseline lines retained in order except augmented crypto import; original case2 exact suffix byte-equal, original assertions/timeouts retained.",
+      "dataFixture": "Existing own MobileDataset private-loopback/synthetic guards, fresh own group/subject/assignment/student/headman. Positive safe-integer IDs and past CLOSED current generation1 exact item/assignment checked; Academic SELECT scope rechecks active nontransition semester, lesson day range, exact subject/group/teacher assignment period and current active HEADMAN/STUDENT grants. Schedule INSERT joins exact physicalID+occurrence/current pointer/template/fence and immutable group/subject/semester/teacher/type/date tuple, no pending transfer/semester archive; current real Moscow date strictly later, publication timestamps before lesson start. Only sequence reservation and two own INSERTs; no mutable history rewrites/deletes/triggers bypass.",
+      "schemaAndIntent": "Opened ScheduleV17/V24 binding schema/initializer/identity guard: ACTIVE+homeworkId/revision2 valid; initializer fills scope/placement/original-placement from exact current physical lesson. Readonly bindingRetained verifies those fields and original scope/key/hash/revision/pending-null after each stage. AcademicV25/V45/V47/V48/V50 allow explicit ACTIVE LESSON/revision1/type/physical placement identity/revision2/HEADMAN ORIGINAL_CREATE. Canonical v3 Java DataOutputStream encoding independently matched HomeworkService.homeworkPayloadHash/writeNewCreateFields and HomeworkCreateIntent: BE actor/group/subject/semester/date/number7/original physical revision1/UTF8 content/LESSON/LECTURE/selected occurrence+revision1. No speculative mutable Subject default.",
+      "ordinaryApiValidity": "HomeworkEditCoordinator branches content-only requests without placement fields to real persistence, preserving historical date; existing authorization/semester/binding lock and publication guards remain. HomeworkLifecycle expires past DATE only; ACTIVE past LESSON remains readable/editable/completable under current Source. Original create is reconstructed historical data, not past API publication or a new product rule. Content-only PUT creates actual EDITED history/revision2; signed STUDENT completion API creates actual completedAt; current HomeworkResponse/history Page/student feed fields align with asserted DTOs.",
+      "oracle": "Nonempty original GET must match own ID/key/binding/title/body/link/scope/date/type/revision; actual normal edit must produce one valid EDITED history with before/after; actual student feed must contain exactly one own completed row with captured timestamp. Captured full actual homework/history/personal row responses are compared unchanged after removal, return and parity cycle, alongside exact Schedule binding readback. Empty/deleted/rewritten content/history/completion, wrong IDs or extra history fail booleans; expected preservation data is not reconstructed from seed hash. Existing past physical identity/attendance and revocation assertions retained.",
+      "privacyAndOwnership": "Fixed docker argv, no shell/env/credential dump. Discovery requires one running exact rct-e2e compose project+postgres-{academic,schedule} service; inspect full ID/labels before every exec. SQL values safe positive numbers or quoted fixed synthetic strings/UUID/date/hash. stdout/stderr captured RAM with64KiB maxBuffer and no printing; all command errors replaced by constant message, id-only admission or boolean expectations prevent row/SQL/credential output. 8s docker timeout and5s SQL statement/1s lock bounds; no new artifacts/config/deps. Existing private serial lesson-lifecycle config selects spec, same240s case/17min lane; actual added duration unknown, no timing PASS claim.",
+      "partialFailureAndCleanup": "TwoDB seed deliberately not distributed atomic; failure fails case closed and retains only task-owned partial fixture for existing CI teardown, as Root approved. No immutable-row deletion/rollback claim. Success archives own homework through ordinary DELETE204 before existing headman revoke and checks archived readback; original case teardown owns dataset/stack. No foreign state writes.",
+      "verification": "Static source/hash/line-subsequence and source/schema/API joins only. Author formatter/TSC/hooks PASS13.352s/reaped reused. Actual new SQL/Docker/PG/browser NOT_RUN; ordinary existing CI must admit seed, execute all assertions and measure duration. No new reviewer tests/runtime/network/shared writes; B013/B014 untouched."
+    },
+    "HW_A_exit_precondition_independent_review": {
+      "utc": "2026-10-14T14:19:11.786452+00:00",
+      "author": "bbf5d6b1667e92139ed71796a511c5250148f6a5",
+      "reviewer": "q07_client_review",
+      "verdict": "APPROVE_SOURCE/no findings",
+      "scope": "targetedoneBacktask→rootMore/positiveNavgate, alloriginalasserts/timeouts preserved",
+      "actualafter": "NOT_RUN"
+    },
+    "next_d106_test_package_integrated": {
+      "utc": "2026-10-14T14:19:11.810911+00:00",
+      "state": "ROOT_WIP/notpushed; currentd106CIusefulcontinues",
+      "items": [
+        {
+          "sha256": "d633d2f302a3cfed0f8133ea21e6a5f54fb12661d3e7cfa901c995486f0344aa",
+          "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+          "author": "59498d461ea38f49e25040691658190ec91acc52"
+        },
+        {
+          "sha256": "8f0444288405f000ee033caf1012205f10d83a505314af8f1ca13ba9270be2c1",
+          "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+          "author": "bbf5d6b1667e92139ed71796a511c5250148f6a5"
+        },
+        {
+          "sha256": "0aaaae3dc212bdb7a8f91207c69496c0d333372515de4178ee70be6aafb15b3c",
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+          "author": "5d0aef9f1c2fd108155340ce2d17e28a636be82f"
+        }
+      ],
+      "independent": "allthree APPROVE_SOURCE relevantformat/TSC/hooksPASS",
+      "actualafter": "NOT_RUN",
+      "currentRegistry429": "sameauthorSource-onlydiagnosis stillpending; frozenB014notretried"
+    },
+    "registry_login_429_checking_choice": {
+      "utc": "2026-10-14T14:22:37.254062+00:00",
+      "actual": "d106 typedHTTP429 caller42 beforeexport; origin/headerUNKNOWN, no product/exportbugclaim",
+      "Root_Source_assignment": "q09sole tests/e2e/fixtures/pwa-auth.ts and registrycaller foroptionalboundedone UIretryONLYactualintegerRetryAfter1..60 fittingoriginaltestdeadline. Existingnonoptincallersfailfastunchanged. Keep200/token/realbrowserSession/actor/navassertions; ownattemptlistenercleanup/nounhandledpromise; missinginvalidheader/second429/otherstatus/shortbudget failclosedfixedexistingtypederror. No API-login replacement/timeoutraise.",
+      "verification": "meaningfulscopedhelpercontrols inRAM forretry/no-retry/budget/listenercleanup plusformat/TSC/ordinaryhooks, onewholechangedrisksindependentreview beforeintegration. RealaftercurrentCIonly.",
+      "frozen": "NO quota probing/mutation/reset/alternateIP/allowlist/IPwitness/equivalentB014run. AcceptedSyntheticUIflowresponse handling only.",
+      "future_PDF": "approved5dSourcebodyretained, extraownerlogins riskarithmeticnotmeasured; no implicitlane180sraise; restructureonlyifactualtimingrequires"
+    },
+    "d106_recovery_actual": {
+      "utc": "2026-10-14T14:26:54.955438+00:00",
+      "evidence": {
+        "artifact": 11902412822,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run": 38575174178,
+        "digest": "sha256:476b4fd07537e674be6e16f5e8effd9d6e066f72bb7d59715169438fe071d165",
+        "bytes": 1457,
+        "phases": {
+          "attachment": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 476,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 108,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "pending": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 476,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 224,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "admit": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 476,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 1193,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "seed": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 476,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 45691,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          }
+        },
+        "lifecycle_closed_diagnostics": {},
+        "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+        "missing_phases": [],
+        "diagnostic_schema": {
+          "attachment": [
+            {
+              "caseCode": "APPLICATION_RECOVERY_PHASE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "pending": [
+            {
+              "caseCode": "APPLICATION_RECOVERY_PHASE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "admit": [
+            {
+              "caseCode": "APPLICATION_RECOVERY_PHASE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "seed": [
+            {
+              "caseCode": "APPLICATION_RECOVERY_PHASE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+        "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES"
+      },
+      "workflow": "samec3ffbyteidentical 4b7ec98683fddd758e40881a5dee76f86e12a002b8b3c7d95d92419c15f569ae; wholeApplicationRecoverystepSUCCESS247s perofficialmetadata",
+      "source": "application-recovery.spec.ts current013248/decl476 exactauthorfixturebbc9; originalbeforeANYfreshlogin oldrevoked+control/expirychecks unchanged",
+      "qualification": "all4actualseed/pending/freshrestoreadmit/attachment phasesPASS; restoredsamekeys/authsessions/data andoldrevokedwitness peractualSourceasserts; lifecyclecloseddiagnostics absentnotfabricated",
+      "native": "COMPLETE0/reaped/privateinputgone"
+    },
+    "d106_semester_actual": {
+      "utc": "2026-10-14T14:26:54.963710+00:00",
+      "evidence": {
+        "artifact": 11902688047,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run": 38575174178,
+        "digest": "sha256:777a5c5432b0e4086580b464d52518648e67a0694894795c26c0f892dc5c6398",
+        "bytes": 419,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "semester-lifecycle.spec.ts",
+              "line": 229,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 160969,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "semester-lifecycle.spec.ts",
+                  "line": 158
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "SEMESTER_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "source": "current4b47e22c3490489ee4b2762bc26d693183097f78e553014c2dbcdcda2d772738/decl229",
+      "failure": "160969ms frame158/causeUNKNOWN; Source/guarddiagnosis next, no flaky/productverdict",
+      "reader": "initialstaleschemaReporter/Privacypins loadbindingstoppedbeforeURL; reboundcanonicalGitpins/prevalidatedloadbindingPASS. corrected35780COMPLETE0/reaped/privateinputgone, allotherguards/casebudgetunchanged"
+    },
+    "Q05_primary_failure_diagnostic_choice": {
+      "utc": "2026-10-14T14:35:32.689019+00:00",
+      "actual": "d106 semester160969ms/frame158 primary/action/participant/cause UNKNOWN; cleanup may replace primary in finally, confirmed Source blindspot",
+      "source_author": "q06_api_resume_writer sole semester-lifecycle.spec.ts in assigned independent WT; Root sole workflow exact upload path",
+      "chosen": "minimum closed lifecycle.safe.json outside protected artifacts; finite states/booleans/exact-known reason codes UNKNOWN fallback; preserve primary exception and separately report cleanup failure; cleanup failure without primary still fails",
+      "limits": "All120/30/60/420s/assertions/barriers unchanged; no product fix/timeout relaxation/raw diagnostics/generic reporter/framework",
+      "next": "author prepares one fixture source package/format/TSC/meaningful privacy+primary-vs-cleanup controls; independent coherent review including Root exact workflow path then ordinary CI"
+    },
+    "registry_login_429_author_ready": {
+      "utc": "2026-10-14T14:35:32.689019+00:00",
+      "source": "381bd53bd04c5c6512e6726e5204c62a83f2b498",
+      "base": "5d0aef9f1c2fd108155340ce2d17e28a636be82f",
+      "outcome": {
+        "state": "SOURCE_READY_PENDING_WHOLE_DELTA_REVIEW_AND_ACTUAL_CI",
+        "base": "5d0aef9f1c2fd108155340ce2d17e28a636be82f",
+        "writerScope": [
+          "tests/e2e/fixtures/pwa-auth.ts",
+          "tests/e2e/specs/cloud-accepted-registry-export.spec.ts"
+        ],
+        "budgetChoice": "PW1.59.1 publicTestInfo.duration is always0 until test finish (types/test.d.ts2458–2461), no public in-flight elapsed start. Registry computes one absolute deadline at callback entry: min(originalinfo.timeout,120000)-30000 reserve, so normal120s gets conservative90s minus actualbodysetup elapsed before helper. No private PW fields or timeout changes.",
+        "observerChoice": "Own per-attempt page response listener captures actual browser login/session; no eager session promise/timer during429; finallyremove exact ownlistener. After successfullogin only, captured session or bounded directly awaited native waitForResponse; same original200/token/role/nav asserts. Retry once sameURL/form onlyactualinteger1..60 within remainingabsolute deadline; default callers fastfail.",
+        "checksPlan": "Knownfreshlight180wall/90phase/30cleanup/floor4GiB/growth128MiB/RSS1GiB/shared15+1/log1MiB; cachedNode512formatter/TSC +actual-helper RAMcontrols including1spositive/listenercleanup/strictheaders/status/deadline; originalPDFbyteequality/HTMLandhelperoracle preservation/diff/normalUV3.12hooks/one2filecommit. No nativebrowser/SQL/Docker/network/quota/probe.",
+        "preparedPins": [
+          {
+            "identity": {
+              "sha256": "d134a19f16a8cef7a60b7879a2dd30a687de1f67e5e2b21968e890a5bd082538"
+            },
+            "path": "tests/e2e/fixtures/pwa-auth.ts"
+          },
+          {
+            "identity": {
+              "sha256": "a7a93b56cbf5d376726512fae696ad728329fd9d3fd3dd10ab571cafb8451495"
+            },
+            "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts"
+          }
+        ],
+        "sourceSummary": "One optional same-form429 retry on actualpositive integer1..60 RetryAfter fitting conservative absolutebudget; ownperattempt actualresponsecollector no pending session promise on429; exactlistenerfinally cleanup; defaultfastfail, same200/token/session/role/nav assertions. Registry only original2HTMLcallers optin frombody-entry90scap; approvedPDFsection unchanged.",
+        "ramControls": "Actual helper extracted/transpiled with existingcachedTS;1srealpositivewait, default429fastfail, missing/invalidheaders, second429,400/401/503, insufficient/deadlineelapsed/currentURLchanged, latecompletion/sessionstatus/clickfailure/lateactualevent, cleanupforeignlisteners/timers/unhandled; originalasserts/logout/HTMLonlyoptinreversal/PDFbytepreservation. No actualbrowser/network/Docker/SQL or quota witness.",
+        "checkingPrefix": "q11-login-03",
+        "results": [
+          {
+            "phase": "ram-controls",
+            "direct_pid": 742005,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 742005,
+                "start_ticks": 24218525
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "diff",
+            "direct_pid": 742036,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 742036,
+                "start_ticks": 24218796
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "stage",
+            "direct_pid": 742081,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 742081,
+                "start_ticks": 24218844
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "hooks",
+            "direct_pid": 742126,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 742126,
+                "start_ticks": 24218903
+              },
+              {
+                "pid": 742136,
+                "start_ticks": 24218911
+              },
+              {
+                "pid": 742164,
+                "start_ticks": 24218962
+              },
+              {
+                "pid": 742220,
+                "start_ticks": 24219079
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "commit",
+            "direct_pid": 742288,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 742288,
+                "start_ticks": 24219201
+              },
+              {
+                "pid": 742330,
+                "start_ticks": 24219210
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 742330,
+                "start_ticks": 24219210,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "peaks": {
+          "minFree": 4846125056,
+          "ownRss": 127987712,
+          "sharedRss": 312713216,
+          "logs": 640
+        },
+        "elapsedWallSeconds": 7.684,
+        "failure": null,
+        "revision": "381bd53bd04c5c6512e6726e5204c62a83f2b498",
+        "sourcePins": [
+          {
+            "identity": {
+              "sha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99"
+            },
+            "path": "tests/e2e/fixtures/pwa-auth.ts"
+          },
+          {
+            "identity": {
+              "sha256": "a7a93b56cbf5d376726512fae696ad728329fd9d3fd3dd10ab571cafb8451495"
+            },
+            "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts"
+          }
+        ],
+        "tmpRemoved": true,
+        "ownLinkRemoved": true,
+        "actualBrowserNetworkDockerSql": "NOT_RUN",
+        "firstControlCarrierFailure": {
+          "receipt": "q11-login-01-terminal.safe.json",
+          "result": "Formatter apply/check and strictE2ETSC PASS, helperRAMcontrol stopped before logic at Node execFileSync(git show) EPERM (result alsoreportedstatus0; causalplatformdetailUNKNOWN). No hooks/stage/commit. No product/helpercounterexample established.",
+          "correction": "Remove child-process Git dependency from RAMcontrol. ExistingPython checking caller reads exact2baselineSources via alreadyused normal read-only git show, validates base5d and supplies one privateTMP JSONinput. Actualhelpercontrol becomes RAM/FS-only Node, no childspawn or extraauthority; source unchanged and no cachedPASS repeats.",
+          "cleanup": "allownedchildrenreaped, ownTMP/linkremoved; originalfailurepreserved"
+        },
+        "secondControlProofFailure": {
+          "receipt": "q11-login-02-terminal.safe.json",
+          "failure": "RAM control stopped on first old/newassert-preservation check before actual helper behavior. Proof printed old AST nodes using new SourceFile argument, which can reslice literals from wrong source positions. No Source changed and old login/token/session/role/nav assertions remain visible intact.",
+          "correction": "Compare each original/new assertion getText against its own node SourceFile, whitespace-normalized; preserve exact matcher/args. Narrow proof correction only, no assertion/oracle weakening; actual behavioral controls still pending.",
+          "cleanup": "allreaped/privateTMP+linkremoved"
+        },
+        "worktreeClean": true,
+        "terminalReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/q11-login-03-terminal.safe.json",
+        "controls": {
+          "state": "Q11_LOGIN_RAM_CONTROLS_PASSED",
+          "controls": 51,
+          "helperExtracted": true,
+          "originalLoginAssertionsPreserved": true,
+          "logoutExact": true,
+          "originalHTMLAfterOnlyOptInReversal": true,
+          "approvedPdfRegionExact": true,
+          "actualOneSecondWait": true,
+          "unhandledRejections": 0,
+          "remainingTimers": 0,
+          "actualBrowserNetworkDockerSql": "NOT_RUN",
+          "actual429OriginHeader": "UNKNOWN"
+        },
+        "checks": "Canonical formatter apply/check and strict existingE2ETSC PASS on same exactb293/a7a Source in q11-login-01; Source unchanged since. Actual extracted-helper RAM controls PASS q11-login-03; original login assertions/logout and originalHTML after reversing ONLYexplicitoptin preserved, approvedPDFregion exact. Diff PASS; normalUV3.12hooks4Passed+2YAML/JSONN/A; normal2filecommit PASS. No lintconfig for e2e; no newconfig/rule/deps.",
+        "actual": "Real429origin/header remainsUNKNOWN. No actualbrowser/network/Docker/SQL/quotacheck; normalCI afterreview/integration needed. Existing120s case and180sstep unchanged; no actualretryproof claimed.",
+        "reviewHandoff": "Root independent wholechangedrisk review on381bd53 versus5d; exact2files replacement afterreview. No newpush/cancel/currentd106CI rerun by author."
+      },
+      "next": "independent whole changed-risk review; real browser after NOT_RUN"
+    },
+    "JS_STUDENT_20_21_22_acceptance_review": {
+      "utc": "2026-10-14T14:35:32.689019+00:00",
+      "reviewer": "q07_client_review independent",
+      "verdict": "whole named stories JS-STUDENT-20/21/22 PASS recommendation, no residual mandatory clause",
+      "evidence": "d106 actualB702PASS3079ms/26PASS3573ms/currentcheckout3edd joined; current compatible SFC/controller controls, criteriontable /workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md",
+      "qualification": "A logout remains FAIL independently; no whole Q09 promotion",
+      "next": "Root finite scenario status refresh using existing actual evidence",
+      "Root_disposition": "PASS for exact3 whole namedstories; Q09A/otherfamilies unchanged",
+      "criteria": {
+        "JS-STUDENT-20": "ActualB initialDay/exclusiveMonth-Week-Day/realGET/browseedges/Todayoneaction/selection+completionreload; compatible actualSFCSSRcount+subject/current/empty-vs-unknown andcontrollerMoscow/date-memory/bounds controls",
+        "JS-STUDENT-21": "Actual reversepublish3→5→DATE/unfinishedfirst/completedretainedbottom/focus genuineACK+retry/durable completedAt/reload; held503 optimisticrollback+retry; compatible malformedACK/owner/concurrency controls",
+        "JS-STUDENT-22": "Actual main+inline oneclickHTTP(S)/exactURL/openernull/visiblehostname/mainSubjectlabel; finalexactcomponentSSRinlineSubjectlabel; unsafe literal/noaction/sole-safehref/noexecution; actualforeign/revoke boundaries"
+      },
+      "before_after": "c3ff actual4 flagsfalse→d106 fullB0errors with all4flagstrue; source/review/sensitivity unchanged; originalAFAIL retained",
+      "review_note_identity": "q07_client_review/q09-review.safe.md subsection d106 accepted JS-STUDENT-20/21/22; critical sources independently reopened",
+      "matrix_count_qualification": "218 overlappingfamilies, no independentfunction or completionpercentage claim"
+    },
+    "registry_login_429_independent_review": {
+      "utc": "2026-10-14T14:38:37.322322+00:00",
+      "source": "381bd53bd04c5c6512e6726e5204c62a83f2b498",
+      "reviewer": "q07_client_review independent",
+      "verdict": "APPROVE_SOURCE/no findings",
+      "summary": "Registry-only conservativebodyentry90s deadline in unchanged120s/3min; one actualintegerRetryAfter1..60/sameURL/UI retry withinremainingreserve; strictotherwise/default; perattempt ownresponsecollector/finallydetach; original200/token/session/role/nav/logout preserved; PDFregionexact5d; reviewed51RAMcontrols notrerun",
+      "actual": "browserafterNOT_RUN; actual429origin/headerUNKNOWN; B014frozenuntouched"
+    },
+    "registry_login_429_integrated": {
+      "utc": "2026-10-14T14:38:37.322322+00:00",
+      "source": "381bd53bd04c5c6512e6726e5204c62a83f2b498",
+      "exact2pins": [
+        {
+          "identity": {
+            "sha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99"
+          },
+          "path": "tests/e2e/fixtures/pwa-auth.ts"
+        },
+        {
+          "identity": {
+            "sha256": "a7a93b56cbf5d376726512fae696ad728329fd9d3fd3dd10ab571cafb8451495"
+          },
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts"
+        }
+      ],
+      "state": "RootWIP exactauthorbytes; normalcombinedhooks/push/currentactualCI pending"
+    },
+    "d106_lesson_read_attempt01": {
+      "utc": "2026-10-14T14:39:49.265391+00:00",
+      "artifact": 11900338054,
+      "result": "URLError at URL_OPEN; no artifact read, settled/reaped/privateinputgone",
+      "cause": "inner transport reason UNKNOWN; execution network permission was not requested in restricted sandbox",
+      "next": "same bounded read with explicit network permission, no change to validation/URLallowlist/TLS/caps; original terminal retained"
+    },
+    "d106_lesson_requests_actual": {
+      "utc": "2026-10-14T14:40:34.949116+00:00",
+      "evidence": {
+        "artifact": 11900338054,
+        "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+        "run": 38575174178,
+        "digest": "sha256:cfe080686f77c3b715817f4170f8ecc36cea40b144d8fd9a395f329b8bf4b36b",
+        "bytes": 435,
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-attendance-requests.spec.ts",
+              "line": 8,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 59330,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-lesson-lifecycle.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 62073,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-schedule-lifecycle.spec.ts",
+              "line": 109,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 51375,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-schedule-lifecycle.spec.ts",
+              "line": 413,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 58586,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "LESSON_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "3edd49fd/tree69e6 officialparents/localtree joined",
+      "source": "actual immutable d106 requests666c/lesson1478/schedule5e9; Rootfuture builderd633 deliberately excluded from evidence pins",
+      "conclusions": "All4 completePASS0errors: manualbudgetAUTO+headmanapprove+N5→7 preservesused5 and forbiddenforeign403, legitimate studentnewmanualattempt consumes→used6/remaining1; lessoncancelrestore/journal; builderidentity/parity/rights; ETagroomToday. HistoricalpastHW newseed notyetexecuted.",
+      "read": "first defaultnetwork transportURLError retained; SAME bounded TLS validatedread with explicitnetworkpermission COMPLETE0/settled/reaped/inputgone; no validation changes or new test run"
+    },
+    "N_named_story_reconciliation_scope": {
+      "utc": "2026-10-14T14:44:21.590042+00:00",
+      "agent": "q07_finite_acceptance read-only turn failed before work: selectedmodel atcapacity; no silentmodel fallback",
+      "Root_finite_source_check": "canonical JS-HEADMAN-24:666 also requires 3-attemptmanualABSENTabuse block and headman reset, distinct from acceptedNmanualbudget addition; no wholefamilyPASS from limit5→7 case. JS-STUDENT-02:704 requires actual sentnotification/disabledpendingbutton; currentcompletecase proves AUTOdata/replay/approve/currentmark, do not infer everyvisualpendingstate.",
+      "disposition": "Existing finite Ncase CLOSED complete; whole namedfamilies retainUNKNOWN until exactremaining clauseproof joined; no new productdefect/test run from evidence gap",
+      "evidence": "actual d106 completecurrentrequests case8 + canonical knowledge/job-stories666/704; no new broad audit"
+    },
+    "Q05_closed_diagnostic_author_ready": {
+      "utc": "2026-10-14T14:45:00.021620+00:00",
+      "source": "01345d3d1459978430e38d642d6ed6693da22425",
+      "parent": "69b4caff82049ed39248dcdfe6f953a9e76983ca",
+      "file": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "sha256": "a923c96e765cb5bd3d01dc8545d520b02879cc1a364246b4bd61f309d4a9c2cd",
+      "summary": "wx0600 <=4096 lifecycle.safe.json at RUNroot; separate finite primary/cleanup progress and primaryFailure/cleanup/clock/dispose outcomes; unknownreason→UNKNOWN, no raw data; primaryidentity retained across finally; no-primary any required failure stillfails",
+      "checks": "formatter/strictTSC first13.576s PASS then environmentNodechildGitEPERM beforecontrols; parentexistingGit→RAMonlycontrol, controls/hooks/commit PASS15.223s/allreaped/TMP+ownlinkgone",
+      "preservation": "all76originalassertioncalls and120/30/60/420s limits retained; actualcause UNKNOWN/runtimeNOT_RUN",
+      "next": "one independent wholechangedrisk review +Root exactworkflowuploadpath; no new tests/runtime"
+    },
+    "Q05_closed_diagnostic_independent_review": {
+      "utc": "2026-10-14T14:47:43.392815+00:00",
+      "source": "01345d3d1459978430e38d642d6ed6693da22425",
+      "reviewer": "q07_client_review independent",
+      "verdict": "APPROVE_SOURCE/no findings",
+      "checks": "Exact fixturea923 +Rootonlyciupload diff independentlyopened; finiteallowlist/unknownsecret rejection/filewx0600/4KiB/owned700+marker/fixedoutsideartifacts; primaryerroridentity +firstcleanup +clock/dispose/writefailure behavior; all76originalasserts/barriers/120/30/60/420 limits retained",
+      "actual": "newdiagnosticfile/runtimeNOT_RUN/barriercauseUNKNOWN"
+    },
+    "Q05_closed_diagnostic_integrated": {
+      "utc": "2026-10-14T14:47:43.392815+00:00",
+      "state": "RootWIP exact authorfixture +exact reviewed Rootworkflowupload; realafterNOT_RUN",
+      "fixture_sha256": "a923c96e765cb5bd3d01dc8545d520b02879cc1a364246b4bd61f309d4a9c2cd",
+      "workflow_sha256": "dc400e46f9609a6773744ad74735c57b1196f0a8c8af3546c1b55b9cab231ec6"
+    },
+    "next_d106_publication": {
+      "utc": "2026-10-14T14:48:25.800732+00:00",
+      "base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "state": "all6Source independentlyAPPROVED/exactRootbytes; one mergedformat/types/normalhooks/commit/realpush/readback next",
+      "Source": [
+        {
+          "identity": {
+            "sha256": "d633d2f302a3cfed0f8133ea21e6a5f54fb12661d3e7cfa901c995486f0344aa",
+            "author_commit": "59498d461ea38f49e25040691658190ec91acc52"
+          },
+          "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+          "reviewer": "q07_finite_acceptance",
+          "scope": "historical nonempty homework/history/completion preservation"
+        },
+        {
+          "identity": {
+            "sha256": "8f0444288405f000ee033caf1012205f10d83a505314af8f1ca13ba9270be2c1",
+            "author_commit": "bbf5d6b1667e92139ed71796a511c5250148f6a5"
+          },
+          "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+          "reviewer": "q07_client_review",
+          "scope": "helper task Back/nav exit precondition before original logout"
+        },
+        {
+          "identity": {
+            "sha256": "a7a93b56cbf5d376726512fae696ad728329fd9d3fd3dd10ab571cafb8451495",
+            "author_commit": "381bd53bd04c5c6512e6726e5204c62a83f2b498"
+          },
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+          "reviewer": "q07_client_review",
+          "scope": "genuine PDF positioned fields/order/audit +explicit bounded hinted UI login retry"
+        },
+        {
+          "identity": {
+            "sha256": "b293678ae1d0e7a3cc1e4fb9c8e4ba3bde507707bb44dfd85a97b1d144804b99",
+            "author_commit": "381bd53bd04c5c6512e6726e5204c62a83f2b498"
+          },
+          "path": "tests/e2e/fixtures/pwa-auth.ts",
+          "reviewer": "q07_client_review",
+          "scope": "one optional deadline-bound server-hinted retry; actual browser session collector cleanup"
+        },
+        {
+          "identity": {
+            "sha256": "a923c96e765cb5bd3d01dc8545d520b02879cc1a364246b4bd61f309d4a9c2cd",
+            "author_commit": "01345d3d1459978430e38d642d6ed6693da22425"
+          },
+          "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "reviewer": "q07_client_review",
+          "scope": "retain primary error plus finite safe primary/cleanup barrier diagnostics"
+        },
+        {
+          "identity": {
+            "sha256": "dc400e46f9609a6773744ad74735c57b1196f0a8c8af3546c1b55b9cab231ec6",
+            "author_commit": "ROOT_EXACT_WORKFLOW_HUNK"
+          },
+          "path": ".github/workflows/ci.yml",
+          "reviewer": "q07_client_review",
+          "scope": "only upload current safe-results plus optional closed RUN/lifecycle.safe.json"
+        }
+      ],
+      "product_API_proto_migrations": "unchanged fromd106; checking only",
+      "preservation": "Angularbaselineunchanged/old25untrackedWIPnotstaged/RootPWactualdirectorypreserved",
+      "actual_after": "NOT_RUN until nextnormalCI"
+    },
+    "d106_next_publication_first_hooks_failure": {
+      "utc": "2026-10-14T14:50:40.548006+00:00",
+      "actual": "mergedformat/typesPASS; stagePASS; ordinaryhooksGitleaks generic-api-key detected3 checksums next to pwa-auth/API context in own new evidence metadata; YAML/JSON/EOF/whitespacePASS",
+      "proven_origin": "Two finalchecksums exactly currentSource/ledger; first intermediatepreparedchecksum exact own authoroutcome.preparedPins Source identity, no credential value; full ownoriginal preserved scratch and earlierRootfailureprivate log. Imported metadata origin matched byteforbyte before format correction.",
+      "correction": "Only3 path→checksum dictionaries represented as identity-first arrayrecords, same paths/checksumbytes; no allowlist/rule/gate weakening or Source change. Retain original failedrun terminal; reuse sufficient mergedformat/typesPASS.",
+      "next": "restage exactsame14paths, normalhooks/diff/Angular/commit/realpush/readback",
+      "phase_results": [
+        {
+          "phase": "merged-format-check",
+          "native_exit": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true
+        },
+        {
+          "phase": "merged-types",
+          "native_exit": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true
+        },
+        {
+          "phase": "stage",
+          "native_exit": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true
+        },
+        {
+          "phase": "ordinary-six-hooks",
+          "native_exit": 1,
+          "settled": true,
+          "all_owned_processes_reaped": true
         }
       ]
     }

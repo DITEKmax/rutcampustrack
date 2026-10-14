@@ -266,7 +266,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     await logoutPwa(page);
     // The owner loads homework during login and retries failed reads automatically.
     // Keep the real transport unavailable until its manual-retry state is visible.
-    const homeworkRoute = '**/api/v1/student/homework?**';
+    const homeworkRoute = (url: URL) => url.pathname === '/api/v1/student/homework';
     const abortHomework: Parameters<typeof page.route>[1] = (route) =>
       route.request().method() === 'GET' ? route.abort('failed') : route.continue();
     await page.route(homeworkRoute, abortHomework);

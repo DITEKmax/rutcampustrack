@@ -28,7 +28,7 @@
     "seconds": "NOT_MEASURED",
     "tmp_removed": true,
     "inline_Q06_Python_AST": "PASS_NO_EXECUTION",
-    "normal_hooks": "PENDING",
+    "normal_hooks": "ALL_SIX_PASS",
     "actual_new_API": "NOT_RUN",
     "actual_after_Q04browser": "NOT_RUN"
   },
@@ -38,5 +38,8 @@
     "receipts/Q06-assignment-api-independent-review.safe.md"
   ],
   "runtime_ownership": "Q05 after successfulactualapplicationrecovery/currentsemester privatecheckpoint; Q06 afterQ05success onlytaskownedSchedule stop/restartidentity/health; allfinalcleanup retained",
-  "limits": "No parentfamilypromotion/actualnewAPI claim; samejob30min kept and realelapsedmustbeobserved; Q04 Sourcecause+VMproof but actualoldstalebranchnotcaptured; no hardterminationauthoritycleanupguarantee"
+  "limits": "No parentfamilypromotion/actualnewAPI claim; samejob30min kept and realelapsedmustbeobserved; Q04 Sourcecause+VMproof but actualoldstalebranchnotcaptured; no hardterminationauthoritycleanupguarantee",
+  "published_commit": "3e89c61b282233f4bda2db693bde939a83968bc2",
+  "commit_paths": 25,
+  "current_remote_readback": "receipts/current-3e89-real-push-readback.safe.json"
 }

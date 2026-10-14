@@ -2,6 +2,7 @@ import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
 import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
+import { datasetHttpFailure } from '../fixtures/safe-reporter';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 
 // Generated credentials stay in memory; browser traces can capture login POSTs.
@@ -713,6 +714,9 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       ),
       users.getByRole('button', { name: 'Архивировать аккаунт', exact: true }).click(),
     ]);
+    if (archived.status() !== 204) {
+      throw datasetHttpFailure('POST', `${userPath}/archive`, archived.status());
+    }
     expect(archived.status()).toBe(204);
     await expect(
       users.getByText('Аккаунт архивирован. История сохранена.', { exact: true }),

@@ -1,0 +1,153 @@
+{
+  "base": "3e89c61b282233f4bda2db693bde939a83968bc2",
+  "source": ".github/workflows/ci.yml",
+  "sha256": "7031eeea539530d19743d641655ab301c14ee97e68578ddf5966c0d4f7a37838",
+  "scope": "Exact verify subprocess only; closed constant code/status JSON, no stderr publication; original FAIL/timeouts/assertions retained; O_EXCL|NOFOLLOW0600 existing private admit dir; only exact extra SAFE upload",
+  "controls": {
+    "result": "PASS",
+    "12_classifier_vectors": true,
+    "timeout": true,
+    "existing_file_and_symlink_untouched": true,
+    "subprocess_success_failure_preserved": true,
+    "other_command_untouched": true,
+    "synthetic_secret_absent": true,
+    "tmp_removed": true
+  },
+  "control_source": "import ast,contextlib,io,json,os,re,stat,subprocess,tempfile,textwrap,types\nfrom pathlib import Path\nroot=Path('/workspace/rutcampustrack')\nsource=(root/'.github/workflows/ci.yml').read_text()\nblock=source.split(\"python3 - <<'PY_RECOVERY'\",1)[1].split('          PY_RECOVERY',1)[0]\ntree=ast.parse(textwrap.dedent(block))\nselected=[node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name in {'verify_failure','call'}]\nassert len(selected)==2\ncode=compile(ast.fix_missing_locations(ast.Module(body=selected,type_ignores=[])),'actual-workflow-helpers','exec')\nmarker='SYNTHETIC_PRIVATE_TOKEN_NOT_FOR_ARTIFACTS'\nresults=[]\nos.umask(0o077)\nwith tempfile.TemporaryDirectory(prefix='rct-recovery-diagnostic-controls-',dir='/tmp') as directory:\n    work=Path(directory)\n    (work/'artifacts'/'admit').mkdir(parents=True,mode=0o700)\n    path=work/'artifacts'/'admit'/'verification.safe.json'\n    ns={'root':root,'work':work,'os':os,'json':json,'re':re,'subprocess':subprocess}\n    exec(code,ns)\n    cases=[(b'FAIL application recovery: Timed out waiting for restored real participants\\n','PARTICIPANT_TIMEOUT',0),\n           (b'FAIL application recovery: Exact HTTP replay changed business state/history\\n','REPLAY_DATA',0),\n           (b'FAIL application recovery: Restored canonical lessons changed\\n','CANONICAL_STATE',0),\n           (b'FAIL application recovery: Application HTTP request failed with status 403\\n','HTTP_STATUS',403),\n           (b'FAIL application recovery: KeyError\\n','KEY_ERROR',0),\n           (('FAIL application recovery: '+marker+'\\n').encode(),'OTHER',0),\n           (('FAIL application recovery: KeyError\\n'+marker).encode(),'OTHER',0),\n           (('prefix '+marker+' FAIL application recovery: KeyError').encode(),'OTHER',0),\n           (b'FAIL application recovery: Application HTTP request failed with status 999\\n','OTHER',0),\n           (b'FAIL application recovery: KeyError\\n\\n','OTHER',0),\n           (b'X'*65537,'OTHER',0),(b'\\xff','OTHER',0)]\n    for data,cause,status in cases:\n        ns['verify_failure'](data)\n        public=path.read_bytes();value=json.loads(public)\n        assert value=={'stage':'APPLICATION_VERIFY','cause':cause,'httpStatus':status}\n        assert marker.encode() not in public and len(public)<160 and stat.S_IMODE(path.stat().st_mode)==0o600\n        path.unlink()\n    ns['verify_failure'](marker.encode(),timed_out=True)\n    assert json.loads(path.read_text())['cause']=='COMMAND_TIMEOUT';path.unlink()\n    # Existing-file and symlink failures must retain prior data and never follow the link.\n    path.write_text(marker)\n    with contextlib.redirect_stdout(io.StringIO()):ns['verify_failure'](b'')\n    assert path.read_text()==marker;path.unlink()\n    target=work/'target.private';target.write_text(marker);path.symlink_to(target)\n    with contextlib.redirect_stdout(io.StringIO()):ns['verify_failure'](b'')\n    assert target.read_text()==marker;path.unlink()\n    class FakeProcess:\n        PIPE=-1\n        TimeoutExpired=subprocess.TimeoutExpired\n        def __init__(self,timeout=False,success=False):self.timeout,self.success=timeout,success\n        def run(self,*args,**kwargs):\n            if self.timeout:raise self.TimeoutExpired(args[0],kwargs['timeout'])\n            return types.SimpleNamespace(returncode=0 if self.success else 1,stdout=b'UNCHANGED_SUCCESS',stderr=b'FAIL application recovery: Application endpoint unavailable\\n')\n    argv=['python3','scripts/test-application-recovery.py','verify','--private',marker]\n    for args,timeout,success in [(argv,False,False),(argv,True,False),(argv,False,True),(['docker','inspect',marker],False,False)]:\n        ns['subprocess']=FakeProcess(timeout,success)\n        try:\n            value=ns['call'](args)\n            assert success and value==b'UNCHANGED_SUCCESS'\n        except RuntimeError as error:\n            assert not timeout and not success and str(error)=='Application recovery command failed'\n        except subprocess.TimeoutExpired:\n            assert timeout\n        if args is argv and not success:\n            assert json.loads(path.read_text())['cause']==('COMMAND_TIMEOUT' if timeout else 'ENDPOINT_UNAVAILABLE');path.unlink()\n        else:assert not path.exists()\n    assert marker==target.read_text()\nprint(json.dumps({'result':'PASS','exact_classifier_cases':len(cases),'timeout':True,'existing_file_and_nofollow':True,'failure_and_success_preserved':True,'non_verifier_untouched':True,'secret_marker_absent':True,'tmp_removed':not work.exists()}))\n",
+  "actual_cause": "UNKNOWN_PENDING_NEW_NORMAL_CI",
+  "review": "APPROVE_SOURCE: receipts/Q15-verify-diagnostic-independent-review.safe.md",
+  "combined_local_checks": {
+    "results": [
+      {
+        "phase": "format-apply",
+        "direct_pid": 646353,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 646353,
+            "start_ticks": 20922481
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-idempotency",
+        "direct_pid": 646364,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 646364,
+            "start_ticks": 20922606
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-check",
+        "direct_pid": 646375,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 646375,
+            "start_ticks": 20922711
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "direct_pid": 646394,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 646394,
+            "start_ticks": 20922837
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tmp_removed": true,
+    "sources": {
+      "tests/e2e/playwright.lesson-lifecycle.config.ts": "34b4f5c9af08217998d6f8016a0dfa88cc16d1816eb2e6f1117be6e417cd077e",
+      "tests/e2e/playwright.config.ts": "e69918e75ddc4c85af2c8f4e5614892e5a889324e7e9f151306bfc565f669f2d",
+      "tests/e2e/tsconfig.real-mobile.json": "abe28e2843c86246e54f2d7d879de71eb7a6b8e50996bf254862ff637f909183",
+      "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts": "1478c562b92dc65790074450436314f4b61d7cf1ad40882faee9c05bd8b2d5b5",
+      "tests/e2e/specs/mobile-real-server.spec.ts": "0227272a625ffdca11ec7311019982bba4d49e34e0b2d0ee3784a88461500dcb",
+      "tests/e2e/fixtures/safe-reporter.ts": "af0dc4e7f35e77998477aa1640414ef45c7aabd39eec7e6974ebe932c298ee45",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "772fd18ae2f3460d070feb3bbc81a456544162366c82f9b9a2c0c7b4eaf91690",
+      "tests/e2e/playwright.teaching-clock.config.ts": "2e8d791e5bb14032ff8b2f6781c20ae86c9c1383477af595bfd737ad5283bcca"
+    }
+  },
+  "Q07_review": "APPROVE_SOURCE; both integration P2 corrected/rechecked: receipts/Q07-cancel-restore-client-independent-review.safe.md",
+  "normal_hooks": {
+    "all6": "PASS",
+    "bypassed": false,
+    "terminal": {
+      "direct_pid": 646465,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 646465,
+          "start_ticks": 20929101
+        },
+        {
+          "pid": 646477,
+          "start_ticks": 20929106
+        },
+        {
+          "pid": 646484,
+          "start_ticks": 20929134
+        },
+        {
+          "pid": 646505,
+          "start_ticks": 20929143
+        },
+        {
+          "pid": 646534,
+          "start_ticks": 20929217
+        },
+        {
+          "pid": 646665,
+          "start_ticks": 20929294
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    }
+  }
+}

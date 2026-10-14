@@ -13195,6 +13195,204 @@
       "revision": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
       "kind": "approved-current-checking-source",
       "revision_qualification": "published evidence producer or prospective integration base; exact author/review revisions inside receipts; new API runtime NOT_RUN"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1686",
+      "path": "tests/e2e/playwright.lesson-lifecycle.config.ts",
+      "sha256": "34b4f5c9af08217998d6f8016a0dfa88cc16d1816eb2e6f1117be6e417cd077e",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1687",
+      "path": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+      "sha256": "1478c562b92dc65790074450436314f4b61d7cf1ad40882faee9c05bd8b2d5b5",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1688",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-archive-status-author.safe.json",
+      "sha256": "01650ac52996f0887428ee9bcdb8cc980cfdd3e8a4f98f6b4d0e4e166291afcf",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1689",
+      "path": "docs/validation/cloud-20261011/receipts/Q04-archive-status-independent-review.safe.md",
+      "sha256": "69addb564a5d05a55ec6ad4b0ca7780862a446de4dea45f00b6ee7eb26759820",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1690",
+      "path": "docs/validation/cloud-20261011/receipts/Q07-cancel-restore-client-author.safe.json",
+      "sha256": "a314f3b89d9bb8ced2c7acc7f490b82213b5446570378aaea0682ebe56778bf0",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1691",
+      "path": "docs/validation/cloud-20261011/receipts/Q07-cancel-restore-client-independent-review.safe.md",
+      "sha256": "a94d1d961499fe4678d4e673beb6d22005727dbfcbb901a24488b5abad6e171a",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1692",
+      "path": "docs/validation/cloud-20261011/receipts/Q07-existing-finite-proof-reuse.safe.json",
+      "sha256": "8bd7dbd4a2a13f22c09f5d5f6c45de3b91ab89a38fcb80662291d801ed6a7198",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1693",
+      "path": "docs/validation/cloud-20261011/receipts/Q08-existing-geo-source-preparation.safe.json",
+      "sha256": "203eff614498625fcd3bcfaef7bf3e3e0f3148e6a9ddcba7818db3614616cb52",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1694",
+      "path": "docs/validation/cloud-20261011/receipts/Q08-geo-and-Q06-order-independent-review.safe.md",
+      "sha256": "63701f78d366f90155d6830aafebedabba6bf8818767dc2d17b47d14c61c5d75",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1695",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-verify-diagnostic-independent-review.safe.md",
+      "sha256": "b0a5c6184db58bef0bccbf98f17fa5e5dc7d4d014aaa3f005277e2c50fcb3ac6",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1696",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-verify-failure-diagnostic.safe.json",
+      "sha256": "bf4f173b35e4b336fc450b29969f79f63cb13545aaf4b2705753db3f956356c9",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1697",
+      "path": "docs/validation/cloud-20261011/receipts/current-3e89-admin-lifecycle.safe.json",
+      "sha256": "08edea2162e3ebeaa3378340dfa49ae1cc7f632216a84d9860f11a1b0a08d31b",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1698",
+      "path": "docs/validation/cloud-20261011/receipts/current-3e89-application-recovery.safe.json",
+      "sha256": "d06ef4bbda4dae1bccb144d94eabee5114e2de8e61367a7cdd5a813dc8ee6365",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1699",
+      "path": "docs/validation/cloud-20261011/receipts/current-3e89-real-push-readback.safe.json",
+      "sha256": "fb4422caf7547842f0d838689954f28dab15a3c5171ae1fb3092cc9db0952510",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "actual-safe-receipt",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1700",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "55137ec6425059b55e03cc6fcdbd6009a6666ef86e8cd9839b2070480258cde3",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1701",
+      "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "772fd18ae2f3460d070feb3bbc81a456544162366c82f9b9a2c0c7b4eaf91690",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1702",
+      "path": "tests/e2e/backend-clock/README.md",
+      "sha256": "40d1c2f3765a18ac8a81ed37f3ebcdbc82c50cb691f6a70021159015f69e4f0f",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1703",
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "af0dc4e7f35e77998477aa1640414ef45c7aabd39eec7e6974ebe932c298ee45",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1704",
+      "path": "tests/e2e/playwright.config.ts",
+      "sha256": "e69918e75ddc4c85af2c8f4e5614892e5a889324e7e9f151306bfc565f669f2d",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1705",
+      "path": "tests/e2e/playwright.teaching-clock.config.ts",
+      "sha256": "2e8d791e5bb14032ff8b2f6781c20ae86c9c1383477af595bfd737ad5283bcca",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1706",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "0227272a625ffdca11ec7311019982bba4d49e34e0b2d0ee3784a88461500dcb",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
+    },
+    {
+      "id": "CURRENT-3E89-NEXT-1707",
+      "path": "tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "abe28e2843c86246e54f2d7d879de71eb7a6b8e50996bf254862ff637f909183",
+      "status": "actual closed evidence or independently approved checking Source; actual newflows NOT_RUN",
+      "revision": "3e89c61b282233f4bda2db693bde939a83968bc2",
+      "kind": "approved-current-checking-source",
+      "revision_qualification": "prospective integration base; exact author/review/producer revisions in receipts"
     }
   ],
   "research_receipt": {

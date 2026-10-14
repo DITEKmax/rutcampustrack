@@ -21,6 +21,10 @@ const datasetHttpOperations = {
   },
   DATASET_GROUP_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/groups\/registry$/ },
   DATASET_USER_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/users$/ },
+  DATASET_USER_ARCHIVE_HTTP: {
+    method: 'POST',
+    path: /^\/api\/academic\/users\/[1-9][0-9]{0,18}\/archive$/,
+  },
   DATASET_HEADMAN_SET_HTTP: {
     method: 'PUT',
     path: /^\/api\/academic\/groups\/[1-9][0-9]{0,18}\/headman$/,
@@ -75,7 +79,7 @@ type ReportedFailureHint =
   | (typeof reportedClassHints)[keyof typeof reportedClassHints]
   | (typeof reportedFrameHints)[keyof typeof reportedFrameHints];
 const failureHttpStatuses = [
-  0, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504,
+  0, 200, 201, 202, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504,
 ] as const;
 type FailureHttpStatus = (typeof failureHttpStatuses)[number];
 
@@ -219,7 +223,7 @@ export function classifySafeFailure(error: unknown): SafeFailureDiagnostic {
     return failureDiagnostic(knownFailureMessages[message]);
   // Exact closed reported marker only; it cannot authenticate source execution or admit an actor.
   const datasetStatus =
-    /^Reported synthetic dataset ([A-Z_]+): HTTP (400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(
+    /^Reported synthetic dataset ([A-Z_]+): HTTP (200|201|202|400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(
       message,
     );
   if (
@@ -259,7 +263,9 @@ export function safeFailureDiagnostics(
       const description = ownData(annotation, 'description');
       const match =
         typeof description === 'string' && description.length <= 96
-          ? /^([A-Z_]+):(0|400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(description)
+          ? /^([A-Z_]+):(0|200|201|202|400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(
+              description,
+            )
           : null;
       const valid = match && Object.prototype.hasOwnProperty.call(failureStages, match[1]);
       const reported = match && isReportedHint(match[1]);

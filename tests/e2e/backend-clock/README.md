@@ -18,10 +18,16 @@ export RCT_E2E_TEACHING_CLOCK_DIR=/absolute/new/owned-clock-directory
 # Root reserves the exact disposable compose project, ports, IPAM and volumes first.
 docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml up -d --build --wait --wait-timeout 480
 cd tests/e2e
-RCT_E2E_SYNTHETIC_SEED=true node node_modules/playwright/cli.js test --config playwright.teaching-clock.config.ts
+export RCT_E2E_GEO_RUN=/absolute/new/owned-geo-run-directory
+umask 077
+mkdir -m 700 -- "$RCT_E2E_GEO_RUN"
+mkdir -m 700 -- "$RCT_E2E_GEO_RUN/artifacts"
+NODE_EXTRA_CA_CERTS="$PWD/infra/certs/server.crt" RCT_E2E_SYNTHETIC_SEED=true node node_modules/playwright/cli.js test --config playwright.teaching-clock.config.ts --project=chromium
 ```
 
 The override changes only entrypoints and mounts for the four educational services. It starts each existing production main class with `/app/BOOT-INF/classes:/app/BOOT-INF/lib/*` plus the externally mounted fixture jar. Base profiles/environments, authenticated TLS routes, status scheduler, publish/adoption fences and geofence remain enabled. Explicit security services reject this initializer identity, and they receive no fixture mount/property. OS time and authentication proof age are unchanged; actual downstream session/retention isolation requires the pending mixed-consumer tests and review.
+
+The dedicated selector now requires a new absolute private run and artifact directory and keeps HTTPS verification enabled. The disposable certificate must also be trusted by the selected Chromium profile, as in the normal CI trust step. Run this finite 09:00 scenario before the application-recovery seed advances the shared educational instant to noon; do not rewind a shared clock after durable lifecycle effects. CI uploads only the closed safe-results.json, never private request/session state.
 
 The dedicated spec supplies device coordinates at the accepted synthetic CI geofence center through the browser Geolocation API. Browser `Date` shares the teaching instant and Moscow zone via `setFixedTime`, which leaves timers running. Node dataset dates use the same worker option; the original real-mobile config defaults to real dates. The scenario polls actual ACTIVE status/eligibility, confirms a fresh plain student's browser check-in200/PRESENT/STUDENT_GEO, and checks an identical receipt replay. Reusing that key with changed valid coordinates must return409/IDEMPOTENCY_PAYLOAD_MISMATCH, preserve the student snapshot and authorized headman journal status/source/markRevision, then permit the original receipt replay. A different student's HEADMAN manualABSENT blocks both valid coordinates and unavailable-position attempts409/MANUAL_ABSENCE_REQUIRES_APPEAL, preservesABSENT and creates no automatic request. No mocked API/fixtureMode or direct DB status write.
 

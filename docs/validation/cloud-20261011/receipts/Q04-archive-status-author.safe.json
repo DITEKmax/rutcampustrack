@@ -1,0 +1,318 @@
+{
+  "started_utc": "2026-10-14T05:07:59.279128+00:00",
+  "base": "3e89c61b282233f4bda2db693bde939a83968bc2",
+  "branch": "codex/q04-archive-status-20261014",
+  "scope": "Initially Source-first diagnosis; only mobile-real-server.spec.ts/privacy.control.spec.ts checking scope; no UI/product/common edit or runtime until concrete approved diagnostic/proof.",
+  "actual": "3e89 admin451 fails5052ms at716 expect archive status204; returned status/code/body UNKNOWN.",
+  "status": "COMMITTED_SOURCE_LOCAL_PASS_PENDING_WHOLE_PRIVACY_REVIEW_AND_REAL_CI",
+  "active_native": null,
+  "active_session": null,
+  "previous_refs_preserved": true,
+  "receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-3e89-admin-lifecycle.safe.json",
+  "updated_utc": "2026-10-14T05:13:48.706749+00:00",
+  "source_findings": [
+    "ArchiveRequest operationId UUID/nonblank64hex previewDigest/password match Vue and AuthUserArchiveClient Proof fields; protected POST contract returns204.",
+    "Archive preview10minute security expiry/DBNOW coherent after ADMIN pageclock exemption; no timing raise needed.",
+    "Generated FULL admin password is same BCrypt input/initialPassword returned and used for already successful login; no source mismatch supports changing password.",
+    "Auth parses current signed session/admin/permissions, validates actual BCrypt; distinguishes401/403/429/503. Local preview fingerprint/DBTTL can return409; transactional archive can produce500. Without returnedHTTPstatus none is actualcause.",
+    "SafeReporter current closed annotations reject UNKNOWN with nonzero status; datasetHttpFailure currently excludes archive route. Existing first3 observer covers only first3cases."
+  ],
+  "proposed_minimal_diagnostic": "One exact POST archive datasetHttpOperations entry in existing safe-reporter; at this failed assertion only throw existing datasetHttpFailure on non204, retaining204 assertion and all following checks. No body read/path/IDs/rawmessage. Extend existing closed classifier privacy controls. Requires Root explicit safe-reporter scope before edit.",
+  "actual_status": "UNKNOWN_UNTIL_NEW_REAL_CI",
+  "actual_public_code": "NOT_READ",
+  "product_defect": "NOT_ESTABLISHED",
+  "native_or_browser_runs": 0,
+  "source_pins": {
+    "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/user/UserArchiveModels.java": "be597ea8c7729e05457dcdcdde7fdb42c223fe47e0023f375d180381c876d166",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserArchiveService.java": "a18590c01546440712b8098b8caf3d113def12a8c51010f22caf2bb032bb9806",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserArchiveRepository.java": "4c26d4d56ca7e99516c61ec9a8bdaf91ba67c4e4346c26e6acfd8aadf55020da",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/AuthUserArchiveClient.java": "841b15b37aca8cfa8572a74472c4ab3681534aaded39b6a669e96d31c900dad0",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SemesterDeletionConfirmationService.java": "7ff4cf06dc5c9911cc76f212f21d47d90a7f0b0e2f1119ad7becdf113d2f1811",
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue": "a72004f513f5058113d7e163ccd1535d2dbe45c005145800e41f191153d824af",
+    "frontends/mobile-core/src/features/admin-users/admin-users-client.ts": "4207450ca6a535be7befa6c49a73b4586ff8aedfe5fa7821774fa97db98b9968",
+    "tests/e2e/specs/mobile-real-server.spec.ts": "17c87bf3a249cd2af837e67dff95f9c00d9f9a550018f8ddeed49cd3afb17af7",
+    "tests/e2e/fixtures/safe-reporter.ts": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336"
+  },
+  "authorized_scope": "Root explicitly approved solechecker safe-reporter.ts+mobile-real-server.spec.ts+privacy.control.spec.ts; one exactPOSTarchive cause/no body/UI/product/schemafields/newframework.",
+  "source_before_checks_sha256": {
+    "specs/mobile-real-server.spec.ts": "0227272a625ffdca11ec7311019982bba4d49e34e0b2d0ee3784a88461500dcb",
+    "fixtures/safe-reporter.ts": "ad20570890c8f645a73e16f041aaf7342379c650889af87bf65920e4ad48ae1e",
+    "artifact-controls/privacy.control.spec.ts": "772fd18ae2f3460d070feb3bbc81a456544162366c82f9b9a2c0c7b4eaf91690"
+  },
+  "plan": "Five cached Node phases under unchanged b78; fresh120s/heap512/treeRSS512MiB/shared15GiB/reserve1GiB/floor4GiB/growth256MiB. Only own dependency link/TMP removed finally; browser-free existingprivacy normal/interrupted/missingguard suite, no redbaseline rerun/browser/server/DB/network.",
+  "issued_utc": "2026-10-14T05:12:31.504519+00:00",
+  "stop_utc": "2026-10-14T05:14:31.504534+00:00",
+  "commands": [
+    {
+      "phase": "FORMAT_APPLY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "specs/mobile-real-server.spec.ts",
+        "fixtures/safe-reporter.ts",
+        "artifact-controls/privacy.control.spec.ts"
+      ]
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "specs/mobile-real-server.spec.ts",
+        "fixtures/safe-reporter.ts",
+        "artifact-controls/privacy.control.spec.ts"
+      ]
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "specs/mobile-real-server.spec.ts",
+        "fixtures/safe-reporter.ts",
+        "artifact-controls/privacy.control.spec.ts"
+      ]
+    },
+    {
+      "phase": "REAL_MOBILE_TSC",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "tsconfig.real-mobile.json"
+      ]
+    },
+    {
+      "phase": "EXISTING_BROWSER_FREE_PRIVACY_CONTROLS",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "check-artifact-privacy.mjs"
+      ]
+    }
+  ],
+  "command_cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e",
+  "check_results": [
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 1.108,
+      "result": {
+        "direct_pid": 644954,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644954,
+            "start_ticks": 20854447
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 1.082,
+      "result": {
+        "direct_pid": 644965,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644965,
+            "start_ticks": 20854557
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.896,
+      "result": {
+        "direct_pid": 644976,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644976,
+            "start_ticks": 20854666
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "REAL_MOBILE_TSC",
+      "seconds": 2.497,
+      "result": {
+        "direct_pid": 644987,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644987,
+            "start_ticks": 20854755
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "EXISTING_BROWSER_FREE_PRIVACY_CONTROLS",
+      "seconds": 37.202,
+      "result": {
+        "direct_pid": 644994,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644994,
+            "start_ticks": 20855005
+          },
+          {
+            "pid": 645001,
+            "start_ticks": 20855010
+          },
+          {
+            "pid": 645014,
+            "start_ticks": 20855167
+          },
+          {
+            "pid": 645027,
+            "start_ticks": 20855300
+          },
+          {
+            "pid": 645061,
+            "start_ticks": 20855409
+          },
+          {
+            "pid": 645124,
+            "start_ticks": 20858488
+          },
+          {
+            "pid": 645137,
+            "start_ticks": 20858586
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  ],
+  "peaks": {
+    "rss": 433283072,
+    "shared": 6169812992
+  },
+  "privacy_control": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "normalChildStatus": 0,
+    "markerAbsent": true,
+    "producerBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": false
+    },
+    "originalMetadataLeakReproduced": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "guardControl": {
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "videoRejected": true,
+      "screenshotRejected": true,
+      "missingSnapshotGuardRejected": true,
+      "wrongSnapshotGuardRejected": true
+    },
+    "interruptedChildStatus": 0,
+    "interruptedChildSignal": null,
+    "interruptionBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": true
+    },
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "native_seconds": 42.785,
+  "native_runs": 5,
+  "source_after_sha256": {
+    "specs/mobile-real-server.spec.ts": "0227272a625ffdca11ec7311019982bba4d49e34e0b2d0ee3784a88461500dcb",
+    "fixtures/safe-reporter.ts": "af0dc4e7f35e77998477aa1640414ef45c7aabd39eec7e6974ebe932c298ee45",
+    "artifact-controls/privacy.control.spec.ts": "772fd18ae2f3460d070feb3bbc81a456544162366c82f9b9a2c0c7b4eaf91690"
+  },
+  "all_recorded_births_absent": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "diagnostic": "Existing datasetHttpFailure used only on this unexpected archive status; one exactPOSTarchive route/cause; only finite200/201/202 added to existing closedstatuslist. No responsebodyread. Original204 assertion and allrights/history preserved.",
+  "source_final": {
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": {
+      "sha256": "772fd18ae2f3460d070feb3bbc81a456544162366c82f9b9a2c0c7b4eaf91690",
+      "git_blob": "69ad0c16dbb71f6d08267ef39306dfa864ef13d0",
+      "lines": 363
+    },
+    "tests/e2e/fixtures/safe-reporter.ts": {
+      "sha256": "af0dc4e7f35e77998477aa1640414ef45c7aabd39eec7e6974ebe932c298ee45",
+      "git_blob": "a0551989353a8f27da905f9ef4aae6a65d8ec554",
+      "lines": 401
+    },
+    "tests/e2e/specs/mobile-real-server.spec.ts": {
+      "sha256": "0227272a625ffdca11ec7311019982bba4d49e34e0b2d0ee3784a88461500dcb",
+      "git_blob": "0473441a31125a3762071cdcaa2e3cc098c8b33a",
+      "lines": 988
+    }
+  },
+  "independent_review": "PENDING_ROOT_FRESH_WHOLE_3FILE_PRIVACY_REVIEW",
+  "next": "Normal3filecommit, fresh independentprivacyreview then Root updates closeddecoder binding and ordinaryCI; actual returnedarchive status stillUNKNOWN.",
+  "normal_commit_exit": 0,
+  "normal_commit_output": "[codex/q04-archive-status-20261014 84f0e3c3] test(e2e): report closed archive response status without request data\n 3 files changed, 54 insertions(+), 4 deletions(-)\n",
+  "hooks_bypassed": false,
+  "commit": "84f0e3c33ed431f4944f5ae6f2c77290d2ea6a94",
+  "worktree_clean": true
+}

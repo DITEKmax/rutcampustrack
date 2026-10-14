@@ -429,10 +429,28 @@ def validate_terminal(actual, baseline):
     stable_homework = lambda row: {
         k: v
         for k, v in row.items()
-        if k not in ("lesson_date", "lesson_number", "revision", "updated_at", "due_reminder_sent_at")
+        if k
+        not in (
+            "lesson_date",
+            "lesson_number",
+            "revision",
+            "updated_at",
+            "due_reminder_sent_at",
+            "placement_occurrence_id",
+            "placement_lesson_id",
+            "placement_binding_revision",
+        )
     }
     for homework in actual["homeworks"]:
         prior = prior_homeworks[homework["id"]]
+        bindings = [v for v in snapshot["bindings"] if v["homework_id"] == homework["id"]]
+        r.require(
+            len(bindings) == 1
+            and homework.get("placement_occurrence_id") == op["occurrence_id"]
+            and homework.get("placement_lesson_id") == op["target_lesson_id"]
+            and homework.get("placement_binding_revision") == bindings[0]["revision"] + 1,
+            "Restored homework placement identity/revision differs from accepted transfer",
+        )
         slot_changed = (prior["lesson_date"], prior["lesson_number"]) != (
             homework["lesson_date"],
             homework["lesson_number"],

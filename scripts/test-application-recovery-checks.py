@@ -28,6 +28,7 @@ def fixture():
         "batch_count": 1,
         "source_lesson_id": 11,
         "target_lesson_id": 12,
+        "occurrence_id": 1,
         "target_snapshot": {"date": "2026-10-10", "lesson_number": 2},
     }
     mark = {"_id": "past-user", "lesson_id": {"$numberLong": "1"}, "status": "PRESENT"}
@@ -40,9 +41,18 @@ def fixture():
             "lifecycle": [{"action": "TRANSFERRED"}],
             "schedule_bindings": [{"binding_id": 5, "current_lesson_id": 12}],
             "homeworks": [
-                {"id": 9, "lesson_date": "2026-10-09", "lesson_number": 1, "revision": 1, "title": "original"}
+                {
+                    "id": 9,
+                    "lesson_date": "2026-10-09",
+                    "lesson_number": 1,
+                    "revision": 1,
+                    "title": "original",
+                    "placement_occurrence_id": 1,
+                    "placement_lesson_id": 11,
+                    "placement_binding_revision": 5,
+                }
             ],
-            "bindings": [{"binding_id": 5, "homework_id": 9}],
+            "bindings": [{"binding_id": 5, "homework_id": 9, "revision": 5}],
             "protected_marks": [mark],
             "outbox": [{"id": 1, "payload": {"event_id": "unchanged-envelope"}, "status": "pending"}],
         }
@@ -62,7 +72,16 @@ def fixture():
         {"binding_id": 5, "operation_hash": op["operation_hash"], "target_lesson_id": 12, "result_state": "MOVED"}
     ]
     actual["homeworks"] = [
-        {"id": 9, "lesson_date": "2026-10-10", "lesson_number": 2, "revision": 2, "title": "original"}
+        {
+            "id": 9,
+            "lesson_date": "2026-10-10",
+            "lesson_number": 2,
+            "revision": 2,
+            "title": "original",
+            "placement_occurrence_id": 1,
+            "placement_lesson_id": 12,
+            "placement_binding_revision": 6,
+        }
     ]
     actual["mongo"] = {
         "marks": [json.dumps(mark)],
@@ -257,6 +276,13 @@ class EvidenceGuards(unittest.TestCase):
             lambda a: a["homeworks"][0].update(lesson_date="2026-10-11"),
             lambda a: a["homeworks"][0].update(title="lost original content"),
             lambda a: a["homeworks"][0].update(revision=3),
+            lambda a: a["homeworks"][0].update(placement_occurrence_id=2),
+            lambda a: a["homeworks"][0].update(placement_lesson_id=11),
+            lambda a: a["homeworks"][0].update(placement_binding_revision=5),
+            lambda a: a["homeworks"][0].update(placement_binding_revision=7),
+            lambda a: a["homeworks"][0].pop("placement_occurrence_id"),
+            lambda a: a["homeworks"][0].pop("placement_lesson_id"),
+            lambda a: a["homeworks"][0].pop("placement_binding_revision"),
             lambda a: a["outbox"][0].update(status="pending"),
             lambda a: a["outbox"][0].update(payload={"event_id": "replacement"}),
             lambda a: a["mongo"]["marks"].append(a["mongo"]["marks"][0]),

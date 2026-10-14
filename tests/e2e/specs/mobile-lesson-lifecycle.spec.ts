@@ -126,7 +126,7 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
   await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
   await expect(
     page.getByRole('button', {
-      name: `Был: ${dataset.student.displayName}. Снять отметку`,
+      name: `Был: ${dataset.student.displayName}. Открыть выбор отметки`,
       exact: true,
     }),
   ).toBeVisible();

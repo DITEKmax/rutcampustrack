@@ -8341,7 +8341,7 @@
     "next_d106_publication": {
       "utc": "2026-10-14T14:48:25.800732+00:00",
       "base": "d106ac451ceb0a439fd8db6450e19662d916b46c",
-      "state": "all6Source independentlyAPPROVED/exactRootbytes; one mergedformat/types/normalhooks/commit/realpush/readback next",
+      "state": "PUBLISHED realc5f3; local=remote=authenticatedPRhead; currentchecks/actualnewafter pending",
       "Source": [
         {
           "identity": {
@@ -8434,6 +8434,3946 @@
           "all_owned_processes_reaped": true
         }
       ]
+    },
+    "c5f3_actual_push_readback": {
+      "utc": "2026-10-14T14:51:46.425911+00:00",
+      "local": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "remote": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "parent": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+      "real_push_readback": true,
+      "authenticatedPR": {
+        "number": 2,
+        "head": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "draft": true,
+        "state": "open",
+        "merged": false,
+        "advertised_merge": "5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7",
+        "actual_checkout": "5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7"
+      },
+      "publication": {
+        "all7phasesPASS": true,
+        "elapsed_seconds": 10.082,
+        "source_unchanged": true,
+        "allreaped": true,
+        "tmp_removed": true,
+        "existing_root_PW_directory_preserved": true
+      },
+      "current_checks": "newruns pending; d106 actualreceipts do not certify newrevision; previous exactcompatible proof reused onlywithscopequalification"
+    },
+    "c5f3_current_metadata": {
+      "utc": "2026-10-14T15:28:12.315396+00:00",
+      "source": "officialmetadata observer",
+      "snapshot": {
+        "observer": "c5f3_ci_observer",
+        "scope": "read-only ordinary GitHub metadata",
+        "selected_model": "gpt-6.1-sol",
+        "selected_effort": "high",
+        "actual_model_effort": "UNKNOWN",
+        "observed_at": "2026-10-14T15:25:43.374Z",
+        "published_head": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "actual_pr_checkout": "5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7",
+        "pr_advertised_merge": "5f8d792d (parent packet only)",
+        "runs": [
+          {
+            "id": 38584200789,
+            "name": "CI",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "in_progress",
+            "conclusion": null,
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T14:55:43Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200789"
+          },
+          {
+            "id": 38584200556,
+            "name": "Coverage",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T15:07:49Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200556"
+          },
+          {
+            "id": 38584200939,
+            "name": "Security",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T14:53:18Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200939"
+          },
+          {
+            "id": 38584200514,
+            "name": "OpenAPI Drift Guard",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T14:52:55Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200514"
+          },
+          {
+            "id": 38584190704,
+            "name": "CI",
+            "event": "push",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "failure",
+            "created_at": "2026-10-14T14:51:02Z",
+            "updated_at": "2026-10-14T15:24:07Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584190704"
+          }
+        ],
+        "ci_jobs": [
+          {
+            "id": 115921689021,
+            "name": "ShellCheck scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689346,
+            "name": "Mobile Vue workspace",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689475,
+            "name": "Playwright E2E auth flow",
+            "status": "in_progress",
+            "conclusion": null,
+            "run_id": 38584200789,
+            "steps": [
+              {
+                "name": "Run auth-flow @smoke specs (chromium only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15
+              },
+              {
+                "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 16
+              },
+              {
+                "name": "Upload safe FIRST3 outcomes and observations",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 17
+              },
+              {
+                "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 18
+              },
+              {
+                "name": "Upload safe remaining five outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 19
+              },
+              {
+                "name": "Run real Vue administrator account lifecycle",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 20
+              },
+              {
+                "name": "Upload closed administrator lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 21
+              },
+              {
+                "name": "Run real Vue role transition and logout-all",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 22
+              },
+              {
+                "name": "Upload closed role transition and logout-all outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 23
+              },
+              {
+                "name": "Verify real student geolocation and manual absence prohibition",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 24
+              },
+              {
+                "name": "Upload closed student geolocation outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 25
+              },
+              {
+                "name": "Verify real Vue schedule lifecycle and attendance requests",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 26
+              },
+              {
+                "name": "Upload closed lesson lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 27
+              },
+              {
+                "name": "Verify real Vue helper homework edit and retained completion",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 28
+              },
+              {
+                "name": "Upload closed homework lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 29
+              },
+              {
+                "name": "Verify real Vue map viewing and download after API replacement",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 30
+              },
+              {
+                "name": "Upload closed map lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 31
+              },
+              {
+                "name": "Verify real Vue FULL and LIMITED registry downloads",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 32
+              },
+              {
+                "name": "Upload closed registry export outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 33
+              },
+              {
+                "name": "Verify real Vue helper statistics cancellation and request decisions",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 34
+              },
+              {
+                "name": "Upload closed helper capability outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 35
+              },
+              {
+                "name": "Verify interrupted assignment closure and next-day replacement",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 36
+              },
+              {
+                "name": "Upload closed assignment lifecycle outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 37
+              },
+              {
+                "name": "Restore a real application checkpoint into fresh disposable databases",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 38
+              },
+              {
+                "name": "Upload closed application recovery API outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 39
+              },
+              {
+                "name": "Verify real semester archive and restore participants",
+                "status": "in_progress",
+                "conclusion": null,
+                "number": 40
+              },
+              {
+                "name": "Upload closed semester lifecycle outcome",
+                "status": "pending",
+                "conclusion": null,
+                "number": 41
+              },
+              {
+                "name": "Stop owned fresh recovery targets",
+                "status": "pending",
+                "conclusion": null,
+                "number": 42
+              },
+              {
+                "name": "Remove only this job's test certificate trust",
+                "status": "pending",
+                "conclusion": null,
+                "number": 43
+              },
+              {
+                "name": "Stop isolated e2e containers",
+                "status": "pending",
+                "conclusion": null,
+                "number": 44
+              },
+              {
+                "name": "Post Set up Docker Buildx",
+                "status": "pending",
+                "conclusion": null,
+                "number": 84
+              },
+              {
+                "name": "Post Setup Gradle",
+                "status": "pending",
+                "conclusion": null,
+                "number": 85
+              },
+              {
+                "name": "Post Run actions/setup-java@v4",
+                "status": "pending",
+                "conclusion": null,
+                "number": 86
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "pending",
+                "conclusion": null,
+                "number": 87
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "pending",
+                "conclusion": null,
+                "number": 88
+              }
+            ]
+          },
+          {
+            "id": 115921689513,
+            "name": "Python Lint & Test",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689572,
+            "name": "Java unit — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689601,
+            "name": "Java unit — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689607,
+            "name": "Java unit — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689622,
+            "name": "Java unit — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689632,
+            "name": "Java IT — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689668,
+            "name": "Java unit — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689689,
+            "name": "Synthetic database and file recovery",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689697,
+            "name": "Java IT — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689698,
+            "name": "Java unit — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689727,
+            "name": "Java IT — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689742,
+            "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689796,
+            "name": "Java IT — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689919,
+            "name": "Java IT — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689930,
+            "name": "Java IT — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921690300,
+            "name": "Grafana dashboards structure",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 11906805031,
+            "name": "registry-export-safe-1",
+            "size_in_bytes": 408,
+            "expired": false,
+            "expires_at": "2026-10-21T15:16:21Z",
+            "created_at": "2026-10-14T15:16:22Z",
+            "digest": "sha256:f60d8e5eb95029791177660ded276edde0b44eb95fd0d8559c533f5d335238b0",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906746697,
+            "name": "application-recovery-safe-1",
+            "size_in_bytes": 1457,
+            "expired": false,
+            "expires_at": "2026-10-21T15:24:38Z",
+            "created_at": "2026-10-14T15:24:39Z",
+            "digest": "sha256:3086496e060a4d161b49908e4a1fe052dfec71b0b4bfd67da7c85abad6d180bb",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906460342,
+            "name": "homework-lifecycle-safe-1",
+            "size_in_bytes": 403,
+            "expired": false,
+            "expires_at": "2026-10-21T15:14:48Z",
+            "created_at": "2026-10-14T15:14:49Z",
+            "digest": "sha256:d057d51865d9a56a0dc4fdadf02716d0d9c6683249a5d6763ace6f874e9af0b4",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906218894,
+            "name": "assignment-lifecycle-safe-1",
+            "size_in_bytes": 1105,
+            "expired": false,
+            "expires_at": "2026-10-21T15:20:08Z",
+            "created_at": "2026-10-14T15:20:08Z",
+            "digest": "sha256:fe11ef85f9e594b201b836588128d2c2085f1190985f1b42b3776e6f98235e39",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906206961,
+            "name": "remaining5-safe-1",
+            "size_in_bytes": 417,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:19Z",
+            "created_at": "2026-10-14T15:09:20Z",
+            "digest": "sha256:3f5a6062e42ef5cf012bb695e0eb785a99af9830354d34e12780e91961197bf1",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905957206,
+            "name": "admin-lifecycle-safe-1",
+            "size_in_bytes": 367,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:33Z",
+            "created_at": "2026-10-14T15:09:34Z",
+            "digest": "sha256:915471c4b9b7ce986e783c8520d8b2d3304325cc5d5f5b28acad133028da8adf",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905835603,
+            "name": "safe-integration-outcomes-attendance-service-1",
+            "size_in_bytes": 12596,
+            "expired": false,
+            "expires_at": "2026-10-21T15:00:22Z",
+            "created_at": "2026-10-14T15:00:23Z",
+            "digest": "sha256:030454b6cad6013c05c4724cb1284f8cb38ddc263eb85b62f8c95c025b702835",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905825043,
+            "name": "safe-unit-outcomes-schedule-service-1",
+            "size_in_bytes": 5414,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:24Z",
+            "created_at": "2026-10-14T14:57:25Z",
+            "digest": "sha256:85e91a4fc338be3b5c301bba0fdf6a442b0d5d3461b65213db67e7c5fe326b48",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905650054,
+            "name": "safe-integration-outcomes-notification-service-1",
+            "size_in_bytes": 4159,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:04Z",
+            "created_at": "2026-10-14T14:57:05Z",
+            "digest": "sha256:c57760c2c03856fe55d8a8b2723150ac1df5f8dfa142092cf4ad16d0ecb3d053",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905535376,
+            "name": "changed-domain-regression-safe-attendance-service-1",
+            "size_in_bytes": 812,
+            "expired": false,
+            "expires_at": "2026-10-21T14:58:04Z",
+            "created_at": "2026-10-14T14:58:05Z",
+            "digest": "sha256:a117faea9f748e4e29ddcc60fcbd3fa89af7616ef4bc91dbdd95d38bf0743355",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905427311,
+            "name": "first3-safe-1",
+            "size_in_bytes": 3449,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:02Z",
+            "created_at": "2026-10-14T15:09:03Z",
+            "digest": "sha256:0823ed4bd5f796efa41bbdd5dde6938363694d117d1e46894c658dad7858d9f7",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905302500,
+            "name": "role-logout-safe-1",
+            "size_in_bytes": 366,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:43Z",
+            "created_at": "2026-10-14T15:09:44Z",
+            "digest": "sha256:4684e5490947e6611f4756e69a91f39b043e43fbca3856a1265f87f0768ab0d8",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905268931,
+            "name": "helper-capabilities-safe-1",
+            "size_in_bytes": 404,
+            "expired": false,
+            "expires_at": "2026-10-21T15:17:35Z",
+            "created_at": "2026-10-14T15:17:36Z",
+            "digest": "sha256:880a9db5c2198658e7d0dbb4ee2c21897575e85efa4d2fcfb954ede14fbfdada",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905242645,
+            "name": "student-geo-safe-1",
+            "size_in_bytes": 366,
+            "expired": false,
+            "expires_at": "2026-10-21T15:10:19Z",
+            "created_at": "2026-10-14T15:10:19Z",
+            "digest": "sha256:c6256c0e50595bb74f9d41cf4612ed12fe318487d7faa0ebb73139779de5c0e6",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905151310,
+            "name": "safe-integration-outcomes-schedule-service-1",
+            "size_in_bytes": 11015,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:41Z",
+            "created_at": "2026-10-14T14:57:41Z",
+            "digest": "sha256:7b8ada412cab85a7dbac1c56418fc379be125f30d99ef4a6d453cfafdfbe97cd",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905056295,
+            "name": "files-recovery-safe-1",
+            "size_in_bytes": 399,
+            "expired": false,
+            "expires_at": "2026-10-21T14:55:34Z",
+            "created_at": "2026-10-14T14:55:35Z",
+            "digest": "sha256:9a161a1b7683cfbc1d620f95599b43f56d66d35ac34c202f30d105a8dfc5d70b",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904971146,
+            "name": "safe-unit-outcomes-api-gateway-1",
+            "size_in_bytes": 6217,
+            "expired": false,
+            "expires_at": "2026-10-21T14:54:54Z",
+            "created_at": "2026-10-14T14:54:55Z",
+            "digest": "sha256:6e683c98d360593216cede02b40c3b485ff2b18bed36a45125233e0aeedeaa93",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904944724,
+            "name": "lesson-lifecycle-safe-1",
+            "size_in_bytes": 434,
+            "expired": false,
+            "expires_at": "2026-10-21T15:14:17Z",
+            "created_at": "2026-10-14T15:14:18Z",
+            "digest": "sha256:2bb3396491e4da0f0bb7c246273985aba9c6ca812176c406d83d27f0d60815aa",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904924975,
+            "name": "map-lifecycle-safe-1",
+            "size_in_bytes": 367,
+            "expired": false,
+            "expires_at": "2026-10-21T15:14:59Z",
+            "created_at": "2026-10-14T15:15:00Z",
+            "digest": "sha256:c1a26270034aa090723cf6f7f022025b32ec1025e4b3af3fbb59d57eb49e6398",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904757749,
+            "name": "safe-integration-outcomes-auth-service-1",
+            "size_in_bytes": 8565,
+            "expired": false,
+            "expires_at": "2026-10-21T15:01:10Z",
+            "created_at": "2026-10-14T15:01:10Z",
+            "digest": "sha256:c585c1f4c539f850753a7182ced22ed0f36827ab9e473425481bc7905da2d5af",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904756706,
+            "name": "safe-unit-outcomes-academic-service-1",
+            "size_in_bytes": 15369,
+            "expired": false,
+            "expires_at": "2026-10-21T14:55:43Z",
+            "created_at": "2026-10-14T14:55:43Z",
+            "digest": "sha256:f9739f93f5a536eab889ea793e75ef44d598caf3e292382df1830aa71ade6621",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904736746,
+            "name": "safe-unit-outcomes-notification-service-1",
+            "size_in_bytes": 7832,
+            "expired": false,
+            "expires_at": "2026-10-21T14:56:07Z",
+            "created_at": "2026-10-14T14:56:08Z",
+            "digest": "sha256:d830129a6a479d18992733bf4e810a2649c15cd9303ad9b003819a89dac1ab97",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904636955,
+            "name": "oneoff-regression-safe-1",
+            "size_in_bytes": 582,
+            "expired": false,
+            "expires_at": "2026-10-21T14:56:04Z",
+            "created_at": "2026-10-14T14:56:05Z",
+            "digest": "sha256:6177d6528d01ceca25ef764baf4607e96961f123b0b3ad432a463111aae5df05",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904604235,
+            "name": "safe-integration-outcomes-academic-service-1",
+            "size_in_bytes": 21609,
+            "expired": false,
+            "expires_at": "2026-10-21T15:07:26Z",
+            "created_at": "2026-10-14T15:07:27Z",
+            "digest": "sha256:bea7b3651e4bc242e46b6297f66a81d92eaa727049dbabc5d26223500a610905",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904349767,
+            "name": "changed-domain-regression-safe-schedule-service-1",
+            "size_in_bytes": 972,
+            "expired": false,
+            "expires_at": "2026-10-21T14:56:34Z",
+            "created_at": "2026-10-14T14:56:34Z",
+            "digest": "sha256:7b86be93f89d724556273d805cfde7aee72d8424390cf1871bdc139071a81eaf",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904269252,
+            "name": "checkout-safe-1",
+            "size_in_bytes": 292,
+            "expired": false,
+            "expires_at": "2026-10-21T14:53:47Z",
+            "created_at": "2026-10-14T14:53:48Z",
+            "digest": "sha256:b41eced74e5a1b7e4a8f966027c936f62daffcef1f28ee025f806229a0a6dbee",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904234859,
+            "name": "safe-integration-outcomes-api-gateway-1",
+            "size_in_bytes": 1416,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:29Z",
+            "created_at": "2026-10-14T14:57:30Z",
+            "digest": "sha256:bdba3c4f70c7d1d304425813795495932da5870d5f7e8b233fda615b3e3e4bd1",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11903569913,
+            "name": "safe-unit-outcomes-auth-service-1",
+            "size_in_bytes": 7774,
+            "expired": false,
+            "expires_at": "2026-10-21T14:55:24Z",
+            "created_at": "2026-10-14T14:55:24Z",
+            "digest": "sha256:a0b19276fc67a4f444ebfe8b02944fb635b2158f2f6b1b03293b65f9a47d92c2",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11903434732,
+            "name": "safe-unit-outcomes-attendance-service-1",
+            "size_in_bytes": 15570,
+            "expired": false,
+            "expires_at": "2026-10-21T14:54:09Z",
+            "created_at": "2026-10-14T14:54:09Z",
+            "digest": "sha256:a25da4cab1af5c97e2755b9a97ac801a4c745a43ddf03e770eaa995d0f22edc9",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          }
+        ],
+        "meaningful_changes": [
+          {
+            "at": "2026-10-14T14:53:21.696Z",
+            "change": "Initial metadata: OpenAPI completed success; Security/push CI in progress; PR CI/Coverage queued. Jobs may progress before aggregate run status."
+          },
+          {
+            "at": "2026-10-14T14:54:54.023Z",
+            "change": "Security completed success. CI E2E job115921689475 in Boot isolated Vue auth stack. checkout-safe-1 artifact11904269252 now available; no content read."
+          },
+          {
+            "at": "2026-10-14T14:56:26.428Z",
+            "change": "PR CI/Coverage now in_progress; Synthetic database and file recovery job115921689689 completed/success; E2E still booting."
+          },
+          {
+            "at": "2026-10-14T14:56:42.061Z",
+            "change": "Root supplied actual checkout5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7/tree96fb426c; no observer artifact body read."
+          },
+          {
+            "at": "2026-10-14T14:58:07.990Z",
+            "change": "CI15/19 jobs success, four in_progress and no failure. Coverage6/8 success. files-recovery-safe-1 artifact11905056295 available."
+          },
+          {
+            "at": "2026-10-14T15:08:06.094Z",
+            "change": "Coverage38584200556 completed/success. CI18/19 jobs success; E2E boot succeeded and Install Playwright + browsers in_progress."
+          },
+          {
+            "at": "2026-10-14T15:10:44.488Z",
+            "change": "E2E smoke/FIRST3/remaining5/admin lifecycle/role logout/geo steps completed success; schedule lifecycle step26 in_progress. No artifact content verdict."
+          },
+          {
+            "at": "2026-10-14T15:15:39.891Z",
+            "change": "E2E schedule lifecycle26, homework lifecycle28, map lifecycle30 completed/success; registry32 in_progress. New after homework outcome artifact11906460342 metadata available."
+          },
+          {
+            "at": "2026-10-14T15:18:13.780Z",
+            "change": "E2E registry32 and helper capabilities34 completed/success. Registry outcome11906805031 metadata available; assignment36 in_progress."
+          },
+          {
+            "at": "2026-10-14T15:23:07.013Z",
+            "change": "Assignment36 completed/success; restore application checkpoint38 in_progress, no current failure."
+          },
+          {
+            "at": "2026-10-14T15:25:43.374Z",
+            "change": "PR E2E recovery38 completed/success, semester40 in_progress. Separate pushCI38584190704 completed/failure; see push_jobs for exact failed step, not PR proof."
+          }
+        ],
+        "limitations": [
+          "metadata only, no raw logs/artifact contents/private URLs/downloads",
+          "PR event runs kept separate from push CI",
+          "No source-only acceptance promoted to PASS"
+        ],
+        "other_jobs": [
+          {
+            "run_id": 38584200556,
+            "jobs": [
+              {
+                "id": 115921688114,
+                "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688308,
+                "name": "Java coverage — academic-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688352,
+                "name": "Java coverage — attendance-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688390,
+                "name": "Java coverage — schedule-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688484,
+                "name": "Python coverage — notification-bot",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688694,
+                "name": "Java coverage — notification-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921689017,
+                "name": "Java coverage — auth-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921689707,
+                "name": "Java coverage — api-gateway",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115929721663,
+                "name": "Diff coverage report",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              }
+            ]
+          }
+        ],
+        "actual_checkout_source": "Root message: receipts/current-4065-real-push-readback.safe.json#c5f3_actual_checkout; not observer body read",
+        "actual_pr_tree": "96fb426ce250901b16c46509edf59a5aa6b81cab",
+        "checkout_join": "Root: official parents main3908fad+c5f3 and exact local HEAD tree equal",
+        "push_jobs": [
+          {
+            "id": 115921655059,
+            "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655498,
+            "name": "Python Lint & Test",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655528,
+            "name": "Mobile Vue workspace",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655579,
+            "name": "ShellCheck scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655628,
+            "name": "Java unit — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655843,
+            "name": "Playwright E2E auth flow",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 38584190704,
+            "steps": [
+              {
+                "name": "Verify real Vue FULL and LIMITED registry downloads",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 32
+              },
+              {
+                "name": "Verify real Vue helper statistics cancellation and request decisions",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 34
+              },
+              {
+                "name": "Verify real semester archive and restore participants",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 40
+              },
+              {
+                "name": "Stop isolated e2e containers",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 44
+              }
+            ]
+          },
+          {
+            "id": 115921655906,
+            "name": "Synthetic database and file recovery",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655907,
+            "name": "Java unit — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655929,
+            "name": "Java unit — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655992,
+            "name": "Java unit — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656021,
+            "name": "Java IT — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656260,
+            "name": "Java IT — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656298,
+            "name": "Java IT — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656354,
+            "name": "Java IT — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656407,
+            "name": "Java IT — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656413,
+            "name": "Java unit — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656422,
+            "name": "Grafana dashboards structure",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656596,
+            "name": "Java unit — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656776,
+            "name": "Java IT — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          }
+        ]
+      },
+      "qualification": "PR CI38584200789 stillIN_PROGRESS/semester; separatePUSHCI38584190704terminalFAILregistry/helper/semester, causesUNKNOWN/bodiesnotread. Sameheadfailuresmustbeclassified, notignoredasflakyorconfusedwithPRverdict."
+    },
+    "c5f3_actual_checkout": {
+      "artifact": 11904269252,
+      "run": 38584200789,
+      "digest": "sha256:b41eced74e5a1b7e4a8f966027c936f62daffcef1f28ee025f806229a0a6dbee",
+      "bytes": 292,
+      "checkout": {
+        "checkout_sha": "5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7",
+        "tree_sha": "96fb426ce250901b16c46509edf59a5aa6b81cab",
+        "producer_head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+      },
+      "merge_parent_and_tree_join": {
+        "state": "JOINED",
+        "officialGitParents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+        ],
+        "officialGitTree": "96fb426ce250901b16c46509edf59a5aa6b81cab",
+        "localHEADTreeEqual": true,
+        "native": "COMPLETE0/settled/reaped/privateinputgone"
+      },
+      "private_logs_or_bodies_read": false
+    },
+    "JS_HEADMAN_01_02_03_finite_acceptance_reconciliation": {
+      "utc": "2026-10-14T14:58:49.640500+00:00",
+      "reviewer": "q06_replacement_cause READONLY independentfromjournalimplementation",
+      "outcome": {
+        "utc": "2026-10-14T14:57:25.091172+00:00",
+        "state": "READONLY_COMPLETE_THREE_WHOLE_STORIES_REMAIN_UNKNOWN_FINITE_CRITICAL_JOURNAL_CRITERIA_PASS",
+        "authority": "canonical JSHEADMAN01:425-438,02:440-445,03:460; optionalbackendproposalquestions notnewcriteria; batchexplicitlycancelled",
+        "source_pins": {
+          "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+          "docs/validation/cloud-20261011/verified-cases.csv": "943f2a14830784ac4ffc34f39f5ca09d58891d7f958ad81e97fb6745b639da78",
+          "docs/validation/cloud-20261011/receipts/roster-IT01-partial3-SQL-resource-stop/it01-partial-xml.safe.json": "330ddd071ca41c7c63bdea1fbef29616d079b4c6aa1c551936e7052c272841d6",
+          "docs/validation/cloud-20261011/receipts/roster-GREEN01-actual44-unit-wire-PASS/green01-accepted.safe.json": "46ac467149a0d708b39109d5a41429e6159dbbbc093c55295745521ddfcd4457"
+        },
+        "runtime_join": {
+          "producer": "d106ac451ceb0a439fd8db6450e19662d916b46c",
+          "CI": 38575174178,
+          "actual_checkout": "3edd49fdb228581bd65329aa2643357cdb46096f",
+          "actual_tree": "69e6d453 (Rootofficialparents+localtreejoined)",
+          "source": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "source_sha256": "5fa5c3df15e35283a8e8cefee666fb502dea7c7b22c2c9f4ece204292e655c70",
+          "artifact": 11900666671,
+          "archive_sha256": "3acb306cffce63e6338b68651d3ba59c341fd4ea4f97e53d7aeab28d5c616866",
+          "closed_results": [
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 89,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3692,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 188,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2090,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ],
+          "limits": "SAFEbrowseritselfdoesnotassertcheckout; usesRootseparateofficialGit/treejoin. c5f3currentpendinggatesnotcertified. Noartifact/rawlog/XMLread."
+        },
+        "criterion_rows": [
+          {
+            "id": "JS-HEADMAN-01/currentmanualrealroster",
+            "verdict": "PASS_FINITE",
+            "actual": "HEADMAN89 strictrealPRESENTPUT200 oneclickfornamedstudent+renderedselectedstatus; ownheadmanEXCUSED200+exactBlobread/foreignattachmentdenial; assignedTEACHERreadslesson200/name butwrite403. HELPER188 activeSTUDENT(noHEADMANgrant) MARK_ATTENDANCE PUT200/reportPRESENT+revision; revocation sameeffect403 and durablePRESENTunchanged+UIhelperactiongone. Actualfullcases3692/2090ms,0errors.",
+            "sources": "gitshowd106 spec89-186,188-256. Enough realclientcriticaljournal/grantsproof; no countpromotion."
+          },
+          {
+            "id": "JS-HEADMAN-01/wholemandatorymechanics",
+            "verdict": "RESIDUAL_UNKNOWN",
+            "residual": "PositiveABSENT and completeimmediatelyvisible+/н/у state; filledcelledit/reopenchoices andrepeatselectedcircleactuallyclears; futurelessonUIhasnocircles/hasfuturestatus; sharedmanualcontrol onacceptedcurrentlessonandperiodjournal/selectlesson paths beyondonecurrentfixture. ExistingPRESENTsingleclick andEXCUSEDattachment path do not exercise these distinct branches. Batchcancelled therefore notrequired; oldbackendoperation/sourcefieldproposals do not addmandatoryunknowns."
+          },
+          {
+            "id": "JS-HEADMAN-01/signedwireandliveSQLrights",
+            "verdict": "PASS_FINITE_SUPPORT",
+            "actual": "VC-BACKEND-JOURNAL-SEMESTER-WIRE-FIX-01 two actualNettytests originalsignedactor/newjournalRPC/admissionstatus andprotectedSchedulemethodstilldenied; VC-JOURNAL-SEMESTER-LIVE-SQL-03-01 journalCapabilitiesRemainDistinctFromStatsAndCurrentAuthorityGuardsArchivedState +selectedArchivedReadCountsCurrentGrantsAndRejectsForeignOrRevokedActor +getSemesterState_reportsTransitionsReplayAndWriteBlock. New/oldtestfiles exact23482→d106 byteequal. SQLdirecthandlerisnotactualwire; separatewire/browserjoinscomplementit, notfullnewfamilyproof."
+          },
+          {
+            "id": "JS-HEADMAN-02/blockgeoonselectedlesson",
+            "verdict": "RESIDUAL_UNKNOWN",
+            "residual": "Neitherbrowser89/188 performs HEADMANmainlessonblockwithconfirmation→studentDTO/buttondisabled+ordinarygeo denied whilemanualmarkremainspossible→unblockwithoutconfirmation. SQL/wirejournaladmission doesnotprovegeo-block. ExistingD005manualABSENT denialisadifferentrule, notblocktoggle evidence. UnresolvedoldAPImechanism/closedcancelledquestionsnotinventednewrequiredpolicy."
+          },
+          {
+            "id": "JS-HEADMAN-03/autoabsentafterlesson",
+            "verdict": "RESIDUAL_UNKNOWN",
+            "residual": "Need existingclosedproof ofactualend/closeautomaticpath filling previouslyunmarkedmembersABSENT withoutmanualaction and retainingpreexistingmarks, thenauthoritativejournalread. Neithercurrentbrowsercasecrosseslessonend or invokesautoclose. No exactnamedDB/consumerclosecase bound inprovidedcurrentreceipt/verifiedcases; generic225IT/318unit countsinsufficient.",
+            "counterexample_to_false_reuse": "green01accepted ReportServiceTest.lessonAttendance_missingStudentShowsAbsent name is misleading: d106374–445 mockedclosedlesson+mockedreadlist+approvedticket; missing102 response.status/symbol assertedNULL (442–443). This is readonlyprojectiontest,nodurableautomaticabsencewriter. lessonAttendance_sameDayBeforeStart_isNotEditable isbackendeditableguardunit, notfutureUIcontrols."
+          }
+        ],
+        "compatibility": {
+          "source_comparison": "ThreeSQLtestfiles andtwoNettytestfiles byteequal23482→d106. Currentruntimebrowserusesexactd1065fa5 read, notnewc5f3Source. Supportingtestbodies independentlyopened; no currentchecks/gates inferredfromoldruntime.",
+          "three_SQL_SHA256": [
+            "4404fb71e3a455ce205814b7a6cdf621c6734f263fafdde604d1321118d8d437",
+            "6bdae6bba67a4c1e0e9418003847cd4314dd1e29f694c6c99f6a1d3a36ff07e6",
+            "dddf474ce95a7018477ce74636bc727f06317a1bac6ed5c610b4e72310abf46b"
+          ],
+          "two_wire_SHA256": [
+            "c377f4cf857dc6910794934b39467e9d214ad11176334dc4b9a3c81e2726df75",
+            "c83c74891358640afc248b4d1b1c76611ef258c34bb1ae381b0549e810921023"
+          ],
+          "wire_production_compatibility": "AcademicGrpcServiceImpl and AttendanceAcademicGrpcClient wholeSources exact23482→d106 byteequal; actualwireproofremainscompatible, notonlytestequal",
+          "wire_product_SHA256": [
+            "0fa25b2084fc9db9ba29b5e37b94802b46d2046c832257291547d7e1d597f2a1",
+            "de5280c787caa48245c2c882d303744006d4cf3735769154285de186aba1f741"
+          ]
+        },
+        "recommendation_one_action": "KeepwholeJS01/02/03UNKNOWN butreuse/attachfinitecriticaljournalPASSnow; Rootselectexactmandatoryresidual(existingnamedclosure/blockevidence first) ratherthanrerunningunchangedHEADMAN89/helper188 orpromotingstoriesfromtestcounts. No productdefect/absence claimfrommissingproof.",
+        "effects": "ONLYexistingownoutcomeupdated. NoSource/sharedmatrix/docs/nativechecks/network/browser/DB/newtests/agents."
+      },
+      "Root_disposition": "wholeJS01/02/03 remainUNKNOWN; existingfinitejournalpositive/rightsPASS kept; exactremaining acceptedUIedit/clear/future/mainblock/unblock/autoendABSENT, no source-onlybug"
+    },
+    "Q10_genuine_inbox_Source_choice": {
+      "utc": "2026-10-14T15:05:32.528731+00:00",
+      "base": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "sole_writer": "q09_remaining_client_writer only tests/e2e/specs/mobile-homework-lifecycle.spec.ts in existing assigned independentWT newbranchfromc5f3",
+      "plan": "append after allold case26 assertions: existing helper realUI PUT→homework.updated→actual currentSTUDENT inbox HOMEWORK_UPDATED exacthomeworkID/date/uniquetitle→UIreadPUT200→realrangedtargetGET200/card/exactcompletedAt→reload durablereadAt/sentAt+immutablePUBLISHEDsnapshot; narrowforeign404/revoked401 only ifdistinctuncoveredrisk",
+      "source_admission": "policy students+headman+teacher, noactor/selfexclusion; dataset.student differentfromeditor; authoritative datedroster/currentgrant; requiresemester.dateFrom covers realMoscoweventday because event uses OffsetDateTime.now, not teachingbrowserclock",
+      "constraints": "No newcase/config/framework/helper/product/API/proto/schema/lock; alloriginal120s/7min/oldasserts/privacy unchanged. Event mustordinaryproducer; no directnotificationDBseed/fakeRabbit/mockedUI/clockchange. CurrentusefulCI notcancelled/pusheduntilnewpackageconcrete. B013/B014frozen.",
+      "verification": "existingformat/strictselectedTSC/ordinaryhooks; onecoherentindependentreview; actualnewbackend/browser laternormalCI; criticalnewdata/rights sensitivity reuseknownadequateproof or bounded distinctmeaningfulcounterexample onceactualpathworks, no frozen-counterpart",
+      "source_plan_reference": "q09 existingownoutcome#Q10GenuineInboxSourcePlan, 21currentSourcepins/anchors; no newproductdecision"
+    },
+    "criterion_H_L01_L08_current_reconciliation": {
+      "utc": "2026-10-14T15:05:32.528731+00:00",
+      "reviewer": "q06_api_resume_writer read-only independentfrompriorfixes",
+      "outcome": {
+        "status": "READONLY_RECONCILIATION_COMPLETE_ROOT_MATRIX_UPDATE_ONLY",
+        "updated_utc": "2026-10-14T15:02:34.234442+00:00",
+        "source_revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "source_prior_join": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+        "actual_checkout_join": "Root-provided5f8d/tree96fb official3908+c5f3/currenttreeequal; no new gate claim",
+        "rows": [
+          {
+            "id": "L01",
+            "scenario_ids": [
+              "JS-SYSTEM-10",
+              "JS-HEADMAN-16",
+              "JS-HEADMAN-17"
+            ],
+            "disposition": "CONFIRMED_CLOSED_PRODUCER_CONFIRM_DEFECT; downstream Q10 proof remains separately mandatory",
+            "proof": "Actual Rabbit block/NACK leaves PENDING, recovery publishes exact original envelope; confirms do not assert durable consumer/audience effect. Historical delivery red/green and independent APPROVE reused.",
+            "refs": [
+              "verified-cases.csv#CASE-L01-ACADEMIC-BROKER-ACCEPTANCE",
+              "docs/validation/cloud-20261011/receipts/delivery-recheck/evidence-review.json",
+              "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-academic-service-1-integrationTest.json#OutboxBrokerConfirmIT.negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers,blockedBrokerKeepsIntentPendingAndRecoveryPublishesOriginalEvent"
+            ],
+            "current_join": "Exact current test032cb2 and publisher/three senders unchanged c16→c5f3. Existing18451 native SOURCE_METHOD PASS bound to current test.",
+            "mandatory_remaining": "Existing Q10 event→actual audience→PWA inbox/read/target and consumer loss after durable effect beforeACK→one effect after recovery; not another publisher test."
+          },
+          {
+            "id": "L02",
+            "scenario_ids": [
+              "JS-ADMIN-09",
+              "JS-STUDENT-05",
+              "JS-STUDENT-06",
+              "JS-SYSTEM-14"
+            ],
+            "disposition": "CONFIRMED_CLOSED_STALE_CACHE_DEFECT; optional projection outage correction closed",
+            "proof": "Production authority lookup on every current request; real controlled Netty Academic + real Mongo proves missed activation/archive event, no stale fallback on outage. DR01 red→green retains materialized projection when optional request actions authority fails.",
+            "refs": [
+              "verified-cases.csv#CASE-L02-SEMESTER-AUTHORITATIVE-READ",
+              "docs/validation/cloud-20261011/receipts/delivery-recheck/findings.md#DR01",
+              "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-attendance-service-1-integrationTest.json#SemesterCacheRequestOptionsIT"
+            ],
+            "current_join": "Current SemesterCacheService cc17c0 unchanged c16→c5f3; three exact current test06bcf6 native SOURCE_METHOD PASS18451.",
+            "mandatory_remaining": null,
+            "qualification": "Controlled Academic authority is not actual activation repository; Q05 archive barrier FAIL remains separate and is not evidence stale cache reappeared."
+          },
+          {
+            "id": "L03",
+            "scenario_ids": [
+              "JS-SYSTEM-13",
+              "AU-01",
+              "JS-HEADMAN-19",
+              "JS-TEACHER-07"
+            ],
+            "disposition": "CONFIRMED_CLOSED_RELEVANT_REDACTION_DEFECTS; existing narrow research PASS adequate",
+            "proof": "Actual QR invalid-proof redaction/no-store and omitted-advice sensitivity; OTP and internal reportproof realHTTP echoRED→safeGREEN/no state effects. Accepted initial-password exception preserved.",
+            "refs": [
+              "verified-cases.csv#CASE-L03-QR-REDACTION;CASE-SB01-OTP-VALIDATION-REDACTION;CASE-SB05-REPORT-PROOF-REDACTION",
+              "docs/validation/cloud-20261011/receipts/security-boundaries-review/verdict.json",
+              "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/matrix-reconciliation.safe.zip#proposed-research-dispositions.safe.json#L03"
+            ],
+            "current_join": "Scoped AuthInputValidation/ReportProof/QrLogin handlers unchanged c16→c5f3; existing EB native/source-qualified narrow acceptance retained.",
+            "mandatory_remaining": null,
+            "qualification": "Not a blanket audit of every log/export endpoint or whole security/client family."
+          },
+          {
+            "id": "L04",
+            "scenario_ids": [
+              "JS-ADMIN-02",
+              "JS-HEADMAN-08",
+              "JS-STUDENT-03",
+              "JS-STUDENT-01"
+            ],
+            "disposition": "CONFIRMED_CLOSED_LOCALE_AND_UNKNOWN_CODE_DEFECTS_BOUNDED; broader enum family remains qualified",
+            "proof": "Auth/Academic/Schedule/Mongo/BFF ROOT locale and unknown/null boundaries red→green. Later same dd0c SQL/HTTP nonempty scalar/ADMIN-role/ACTIVE-grant equality test: causal538RED2tags→96GREEN446/0fail/0skip closes old row-equality gap.",
+            "refs": [
+              "verified-cases.csv#CASE-ENUM-FILTER-LOCALE-001;CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES;CASE-SB03-MONGO-ENUM-ROUNDTRIP;CASE-SB04-BFF-UPSTREAM-ENUM-FENCE",
+              "docs/validation/cloud-20261011/receipts/enum-locale-current96-green-seal/safe-evidence.zip#finite-red-green-comparison.safe.json,target-outcome.safe.json"
+            ],
+            "current_join": "Current UserSpecifications49db and AcademicGrpcIT dd0c byte-identical to native96 GREEN Source pins.",
+            "mandatory_remaining": null,
+            "qualification": "Do not promote whole Java/API/proto/TS/DB unknown/legacy/transition inventory: existing RESEARCH-L04/BOUNDARY50 broader UNKNOWN remains; no newly identified concrete defect or numeric migration justified."
+          },
+          {
+            "id": "L05",
+            "scenario_ids": [
+              "JS-HEADMAN-11",
+              "JS-HEADMAN-13",
+              "JS-TEACHER-09",
+              "T001"
+            ],
+            "disposition": "CONFIRMED_CLOSED_T001_PUBLICATION_DEFECT; performance optimization OPTIONAL_JUSTIFIED",
+            "proof": "Pending adopted target was exposed; exact pending exclusion→resume publishes same target realPG RED→GREEN. Page1/10/50 current native test proves51 own rows/types/assignments/totals/no foreign rows; later native636/EB closes DLRV-DEP01 old source-provenance gap.",
+            "refs": [
+              "verified-cases.csv#CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY;CASE-DATA-T001-TEACHER-PUBLICATION",
+              "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/l05-reconciliation.json",
+              "docs/validation/cloud-20261011/receipts/data-lecture-review/bounded-cases.csv",
+              "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/matrix-reconciliation.safe.zip#selected-current-native.safe.json"
+            ],
+            "current_join": "Current SubjectListDataIT8eaa exact EB native SOURCE_METHOD PASS; SubjectRepository/Assembler unchanged c16→c5f3.",
+            "mandatory_remaining": null,
+            "qualification": "Historical query counts4/22/102 excluded independent JDBC and do not establish current latency/SLA. Current numeric extraction/optimization is not mandatory absent observed accepted user risk; no rerun."
+          },
+          {
+            "id": "L06",
+            "scenario_ids": [
+              "JS-STUDENT-05",
+              "JS-STUDENT-06",
+              "JS-HEADMAN-21",
+              "P21"
+            ],
+            "disposition": "ADEQUATE_PROTECTIVE_PER_ITEM_MECHANISM; exact mutable-command proof remains mandatory",
+            "proof": "Real Netty production client rejects entire read if transfer begins between compactbatch and peritem reads; recovery exact IDs/scopes; meaningful counterfeit missing guard RED→restoredGREEN. Mutable readiness checks reject transferred/foreign snapshots.",
+            "refs": [
+              "verified-cases.csv#CASE-DATA-L06-BATCH-TRANSFER-FENCE",
+              "docs/validation/cloud-20261011/receipts/data-lecture-review/bounded-cases.csv#DL06-TRANSFER",
+              "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/matrix-reconciliation.safe.zip#proposed-research-dispositions.safe.json#L06"
+            ],
+            "current_join": "Current client333aaa/testdf549 exact c16 unchanged; df549 native EB SOURCE_METHOD PASS.",
+            "mandatory_remaining": "Existing BOUNDARY24: actual mutable Attendance command during actual PENDING transfer must fail closed and leave durable mark/request unchanged, then valid recovery succeeds. Controlled client calls and P20 replay/history alone do not assert this.",
+            "qualification": "No protective call removal, GraphQL/DataLoader/contract optimization or performance target required."
+          },
+          {
+            "id": "L07",
+            "scenario_ids": [
+              "JS-ADMIN-09",
+              "DEC-2026-09-29-semester-archive-write-lock"
+            ],
+            "disposition": "ADEQUATE_EXISTING_LOCAL_CONCURRENCY; current Q05 integration blocker retained",
+            "proof": "Existing realPG archive/activation concurrent commands yield exact sole active target, source inactiveARCHIVING/writeblocked and exact archive outbox identity. This is local domain proof, not every HTTP restore interleaving.",
+            "refs": [
+              "docs/validation/cloud-20261011/receipts/data-lecture-review/bounded-cases.csv#DL07-SERIAL",
+              "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-integration-outcomes-academic-service-1-integrationTest.json#SemesterArchiveStateIT.archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester",
+              "docs/validation/cloud-20261011/receipts/current18451-all-gates-SAFE/safe-coverage-outcomes-academic-service-1-integrationTest.json#same",
+              "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#Q05_primary_failure_diagnostic_choice"
+            ],
+            "current_join": "Current exact SemesterArchiveStateIT dddf native18451 SOURCE_METHOD PASS and unchanged c16→c5f3. Later clock rule has independent realPG sensitivity proof; no lock architecture replacement inferred.",
+            "mandatory_remaining": "Current d106 real archive/restore participant barrier160969ms FAIL causeUNKNOWN. Reviewed01345 diagnostic nowpublishedc5f3; next actual evidence must classify and close accepted archive/restore flow, no timeout raise/hidden failure.",
+            "qualification": "Missing optimistic-lock annotation/advice alone is not a bug; no extra generic concurrency suite."
+          },
+          {
+            "id": "L08",
+            "scenario_ids": [
+              "JS-SYSTEM-04",
+              "JS-ADMIN-02",
+              "T002"
+            ],
+            "disposition": "ADEQUATE_DIFFERENT_VALID_SHARED_SCHEMA; existing narrow research PASS",
+            "proof": "Actual heldgrant-writer snapshot yields wholly new authority tuple; credential/session/event rollback and NP01 outbox/card invalidation rollback realPG PASS. Academic owns production Flyway; Auth disables Flyway and shares academic_db localtransaction.",
+            "refs": [
+              "docs/validation/cloud-20261011/receipts/data-lecture-developer/schema-ownership.md",
+              "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/schema-L08-supplement.safe.json",
+              "docs/validation/cloud-20261011/receipts/matrix-current-reconciliation/matrix-reconciliation.safe.zip#selected-current-native.safe.json",
+              "docs/validation/cloud-20261011/receipts/data-lecture-review/bounded-cases.csv#DL08-TUPLE,DL08-PW-EVENT,DL08-PW-SESSION"
+            ],
+            "current_join": "JdbcSessionAuthority b5cef6 + IT1a262 current byte-identical c16; existing EB exactSOURCE_METHOD PASS; V57 ownership supplement preserves credential/binding versions, bot_credential_messages and same-localtx outbox metadata.",
+            "mandatory_remaining": null,
+            "qualification": "No database-per-service claim, DBsplit/Saga/2PC requirement or distributed atomicity inference. Historical upgrades/freshrestore are separate Q15, currentd106 fourphasePASS reused."
+          }
+        ],
+        "source_pins": [
+          {
+            "path": "services/shared/shared-outbox/src/main/java/ru/rutcampustrack/shared/outbox/OutboxPublisherJob.java",
+            "current_sha256": "22c8af20dcc082755be763e278105141b9e7a16e032162522ec3a5e8f132ec85",
+            "same_c16": true
+          },
+          {
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitOutboxEventSender.java",
+            "current_sha256": "e02377e32a63b45cbe6aee6b2a19d14a9264171a6a6eec9210d5a9308d7c100e",
+            "same_c16": true
+          },
+          {
+            "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/RabbitOutboxEventSender.java",
+            "current_sha256": "0cdb09c3cc78abcfaeefbfcac40db7c626bf0916f44abd7d96f9fa13159647df",
+            "same_c16": true
+          },
+          {
+            "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/RabbitOutboxEventSender.java",
+            "current_sha256": "f05fe388002b625457a21b29c27e713a2ab165272d1f45be175f4994d8f8c67c",
+            "same_c16": true
+          },
+          {
+            "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java",
+            "current_sha256": "cc17c066d087f56391b3e8ca816c15e93e391d1ebb52ab6792fbcbb2cf6473de",
+            "same_c16": true
+          },
+          {
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+            "current_sha256": "65a296a382597c3761d50b318f4c31c261056047b0ec5f3afb448bcf2e99b550",
+            "same_c16": true
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+            "current_sha256": "8eaa871417dae52ccb9a2a1631b82c17d4b655a87a3d17b84224d96fda41aeb3",
+            "same_c16": true
+          },
+          {
+            "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+            "current_sha256": "333aaa9622b4d631122e9c22e51c40fca1293f0cc287798d7acf3adbf82e53cb",
+            "same_c16": true
+          },
+          {
+            "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+            "current_sha256": "df5499716ddfa95b0587f93e2d814697efcecc86f88dfbaeb062f83164a1492c",
+            "same_c16": true
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+            "current_sha256": "dddf474ce95a7018477ce74636bc727f06317a1bac6ed5c610b4e72310abf46b",
+            "same_c16": true
+          },
+          {
+            "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+            "current_sha256": "b5cef648221489390b9c2d2746bb5791a75dd1e2858d91001cf952226c5779b7",
+            "same_c16": true
+          },
+          {
+            "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+            "current_sha256": "1a2626b77562a95917f8b3c0e4b539111397d6f0cb982571b723d9d15cdc5024",
+            "same_c16": true
+          },
+          {
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java",
+            "current_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+            "same_c16": false
+          },
+          {
+            "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+            "current_sha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+            "same_c16": false
+          },
+          {
+            "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/AuthInputValidationExceptionHandler.java",
+            "current_sha256": "b7af2e82b51525c24f75a2036d5296873d7d11f1fb8e3b7bf3ad0e86619a8ff2",
+            "same_c16": true
+          },
+          {
+            "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/ReportProofValidationExceptionHandler.java",
+            "current_sha256": "59f36b5cab78061af213e8eba57906c37d34a5795b8c822ff75de49d521e6db7",
+            "same_c16": true
+          },
+          {
+            "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/QrLoginExceptionHandler.java",
+            "current_sha256": "d992a35d09284fbd9208ee8678570d311e96882f4fb4357853ba468fc0e7b7b7",
+            "same_c16": true
+          }
+        ],
+        "H_result": "All8 diagnostic addresses have explicit disposition and existing evidence. This does not promote8 parent families or wholeproduct. No mandatory optimization/architecture work identified. Existing accepted residuals are Q10 end-to-end/consumer-loss, BOUNDARY24 pending-transfer mutable no-write, Q05 archive participant barrier; not speculative bugs.",
+        "shared_docs_changed": false,
+        "Source_changed": false,
+        "native_validation_or_runtime": "NOT_RUN_READONLY_EXISTING_RECEIPTS_ONLY",
+        "active_native": null,
+        "active_session": null,
+        "own_clean_head": "01345d3d1459978430e38d642d6ed6693da22425"
+      },
+      "Root_disposition": "All8 explicitHdiagnosticdispositions nowrefreshed withactualexistingproof/currentSourcejoins; no blanket8parentPASS. Exactremainingaccepted Q10audience/consumerloss, BOUNDARY24 pending-transfer mutableno-write, Q05barrier. No performance/numericenum/DBsplitcampaign.",
+      "Root_matrix_result": "All8 matrix rows nowexplicitdispositions+refs; only narrowL02/L05 promotedPASS. L01/Q10, L04/B50, L06/B24, L07/Q05 exactmandatoryresiduals retained; existingL03/L08PASS unchanged."
+    },
+    "c5f3_semester_reader_Source_ready": {
+      "utc": "2026-10-14T15:13:07.721318+00:00",
+      "purpose": "ExistingactualQ05FAILnowpublishesnewfinite file; sameboundedreader mustvalidate2knownzipmembers before safeprojection, notrawlogs",
+      "Source": "/workspace/scratch/rct-validation/ci_c5f3_closed_read/semester/{download-semester-safe.py,strict-browser-schema.py,run-binding.actual.safe.json}",
+      "controls": {
+        "closedControls": 31,
+        "bindingAndCase348": "PASS",
+        "decoderSHA256": "afa28eb7a331dd49cc759a56bd6935680107cfe215ba27fe583e3c0a32462df8",
+        "schemaSHA256": "68796b776f3ddafa87ae4a2d7fc24bb6d3970c6d50ff718ed95dbedb3e278b23",
+        "priorSourcePrepStop": "Originalschema uses numeric keys229; initialtuple-rebind localassertSTOP before anyURL read. Correctednumeric348, othercoreguardsunchanged.",
+        "runtimeNetwork": "NOT_RUN"
+      },
+      "change": "sameoldstrictcore plus exact current348/sourcea923 +onlyfinite semester-lifecycle.v1 fields/enum/bool; coreflatwhenonlyfile orartifacts/safe-results plusoptionallifecycle.safe max4KiB; exactnames/noextras/duplicates/bounds/TLS/Sourcepinsunchanged",
+      "status": "SOURCE_READY_PENDING_ONE_PRIVACY_REVIEW; noactualartifactURLread/native"
+    },
+    "c5f3_semester_reader_independent_review": {
+      "utc": "2026-10-14T15:18:27.735393+00:00",
+      "reviewer": "q07_client_review independent",
+      "verdict": "APPROVE_SOURCE/no findings",
+      "pins": {
+        "decoder": "afa28eb7a331dd49cc759a56bd6935680107cfe215ba27fe583e3c0a32462df8",
+        "schema": "68796b776f3ddafa87ae4a2d7fc24bb6d3970c6d50ff718ed95dbedb3e278b23"
+      },
+      "summary": "Exactproducer01345/schema7top13progress/key/typefiniteallowlists/ZIPnames+optionaldiag matched; all31 controls inspected; unknownbeforeoutput/coreprivacyTLSdigestsourcepinsunchanged; no runtime/readbyreviewer"
+    },
+    "Q10_inbox_author_ready": {
+      "utc": "2026-10-14T15:18:27.735393+00:00",
+      "commit": "a904e3f820b8f9c3c1d7ac36944a5e2fe6ca3a0c",
+      "parent": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "file": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "45a8b24ab8b1afdc6c871b526a4695dba478713889840620a6b9cdd56d595dea",
+      "summary": "append175/0; wholebaselinebyteexactoutsideappend; genuineevent/audience/UIread/realprotectedtarget/durableimmutablecontent+readstate; existingHEADMANownrowcontrol/foreignstudentrow404; ownlogoutalloldbearer401; noextralogins/timeouts/config",
+      "checks": "formatter/strictTSC PASS reused after owninverseproofdelimiterstop; correctedproof/diff/normalhooks/commitPASS7.191s/reaped/TMP+linkgone/WTclean",
+      "actual": "browser/backend/sensitivityNOT_RUN; oneindependentreview next"
+    },
+    "Q01_Q02_Q03_journal_source_plan": {
+      "utc": "2026-10-14T15:18:27.735393+00:00",
+      "base": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "author": "q06_replacement_cause",
+      "scope": "existingjournal actualSFC control RED→GREEN +accepted main geo-block carrier/realbrowser; existingrequests storedAUTOABSENT+durableactions+realjournalreadback",
+      "source_decision": "canonicalJSHEAD01 explicitediticon and firstclickchooser/repeatselectedclear; candidatewire111/R11owner-dateNULLcannotoverride. ExistingPOST/DELETEblockage active-lesson corefitsstudentgeo-denied/manualallowed; no legacyPATCHdeprecation orclosedcancelledrule",
+      "accepted_plan_reference": "q06 ownoutcome#JS_HEADMAN_01_02_03_browser_extension_source_plan with9sourcepins; actualUIproductGAP hypotheses need componentrepro, finalrealbackendmandatory",
+      "minimal_checks": "existingactualSFCrender controls/format/types/lint/build bymodifiedrisk; original60/240s/cases/selectors retained; existingrequests schedulerwait reused; no newcase/framework/config"
+    },
+    "c5f3_homework_actual": {
+      "utc": "2026-10-14T15:22:26.283911+00:00",
+      "evidence": {
+        "artifact": 11906460342,
+        "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "run": 38584200789,
+        "digest": "sha256:d057d51865d9a56a0dc4fdadf02716d0d9c6683249a5d6763ace6f874e9af0b4",
+        "bytes": 403,
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 26,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 5198,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 364,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 13959,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-homework-lifecycle.spec.ts",
+              "line": 704,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 4267,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "HOMEWORK_NON_AUTHOR_COMPLETION_REVOKE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HOMEWORK_TRANSFER_ARCHIVE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HOMEWORK_MATERIAL_OPTIMISTIC_ORDER",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "5f8d792d/tree96fb/official3908+c5f3/localHEADtreeequal JOINED",
+      "native": "COMPLETE0/settled/reaped/privateinputgone",
+      "acceptance": "allselectedcasescompletePASS0errors/privacyfalse, finalSourcematched; newnotificationappend and journalremaining tests NOT inthisrevision",
+      "conclusions": "Full A364PASS13959ms afterretainedtypedproducer+reviewedBackprecondition; completeacceptedtransfer/archive/retainedbinding/history scenarios reachend. Case26PASS5198ms/B704PASS4267ms. NewQ10append isNOTinthisrevision."
+    },
+    "c5f3_lesson_actual": {
+      "utc": "2026-10-14T15:22:26.283911+00:00",
+      "evidence": {
+        "artifact": 11904944724,
+        "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "run": 38584200789,
+        "digest": "sha256:2bb3396491e4da0f0bb7c246273985aba9c6ca812176c406d83d27f0d60815aa",
+        "bytes": 434,
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-attendance-requests.spec.ts",
+              "line": 8,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 58132,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-lesson-lifecycle.spec.ts",
+              "line": 20,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 60465,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-schedule-lifecycle.spec.ts",
+              "line": 370,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 53769,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-schedule-lifecycle.spec.ts",
+              "line": 785,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 56416,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "LESSON_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "5f8d792d/tree96fb/official3908+c5f3/localHEADtreeequal JOINED",
+      "native": "COMPLETE0/settled/reaped/privateinputgone",
+      "acceptance": "allselectedcasescompletePASS0errors/privacyfalse, finalSourcematched; newnotificationappend and journalremaining tests NOT inthisrevision",
+      "conclusions": "Fullbuilder370 includes reviewedgenuinehistoricalnonemptyHW/history/completedAt before/afterremove-return/parity; all4casesPASS0error. ExistingonlymissingJSHEAD40clause nowproved; wholefamilyPASS withpriorrealPGelapsedgap/no-backfill and existingrights/identity proofs."
+    },
+    "c5f3_registry_reader_context_stop": {
+      "utc": "2026-10-14T15:22:26.283911+00:00",
+      "artifact": 11906805031,
+      "result": "SchemaBlocked CASE_PARAMETERIZED_DECLARATION; no outputbody saved/printed, settled/reaped/inputgone",
+      "cause": "oldschema had redundantline==20 guard afterline-in-CODES; current2loopdeclarations22/526 alreadyverifiedimmutableSource; Sourcecodeelsewhere correctlyrebound, redundantguard retainedoldcontext",
+      "correction": "sameexactread onlyafter bothcurrentdeclcontexts admitted and old20/unknown rejected bylocalcontrols; current2loopsFULL/LIMITED proof supports4total/2perdecl, no arbitraryline/cap/rule weakening",
+      "old_failure_preserved": true
+    },
+    "c5f3_registry_actual": {
+      "utc": "2026-10-14T15:24:17.249220+00:00",
+      "evidence": {
+        "artifact": 11906805031,
+        "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "run": 38584200789,
+        "digest": "sha256:f60d8e5eb95029791177660ded276edde0b44eb95fd0d8559c533f5d335238b0",
+        "bytes": 408,
+        "results": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 22,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 63669,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 22,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2634,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 526,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 5169,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-registry-export.spec.ts",
+              "line": 526,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3015,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "USER_HTML_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_HTML_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_NATIVE_PDF_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "USER_NATIVE_PDF_EXPORT_MODE_ORDINAL_ONLY",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "5f8d792d/tree96fb/official3908+c5f3/localHEADtreeequal JOINED",
+      "Source": "a7a93b56 whole4case spec exactreviewed381bd, PDFregionexact5d; canonicalnormalreporter/privacy unchanged",
+      "conclusions": "BothHTMLmodesPASS63669/2634ms; bothnativePDFmodesPASS5169/3015ms. Actual Auth job/ticket/download→genuineownedrenderer Poppler exactpositionedcolumns/cells/tworows/order/FULLTelegram/LIMITEDexclusion +actualownSQLreadonly7booleanauditallPASS. Ordinal-onlyserializer cannotassign individualdurationtomode; complete2perdeclaration provesbothmodes.",
+      "boundaries": "PNGsemantic/groupbinaryshape/order stillpending; original429origin/headerUNKNOWN, no quota-capacity claim. No product/authpolicychange.",
+      "reader": "originalredundantold20guardcorrectlyBLOCKED; exactcurrent22/526 +4Sourcecontexts bound/6negativecontrolsPASS, SAMEboundedread accepted/COMPLETE0/reaped/inputgone/no validationruleweakening"
+    },
+    "Q10_inbox_independent_review_R1": {
+      "utc": "2026-10-14T15:28:12.315396+00:00",
+      "reviewer": "q07_client_review independent",
+      "verdict": "CHANGES_REQUESTED oneP2 Q10-R1",
+      "Source": "a904e3f8 spec329–331",
+      "finding": "Preexistingcompletedcard visiblebeforeinbox; compile-valid omittedStudentFeatureOwner navigation.push668–677 stillrealreadPUT+openDate/refetch andsamevisiblecard, soasserts canPASS withouttargethandoff",
+      "correction": "Assertactualtarget completedSlider focused afterprotectedtargetreadback (or openinboxfromdifferentroot); preservealloldassertions. Othernewaudience/read/persistence/foreign/revokeasserts substantive.",
+      "sensitivity": "ExistingrealMongo/Academic rights/data proofs sufficientforoldclauses; newtargetchain requires selectiveomitnavigation.push→newhandofffails, exactrestore→sameGREEN. Distinctnavigationrisk, no B013/B014counterpart. ActualbrowserNOT_RUN; RootownsminimalexistingCIwiring later, no newframework.",
+      "next": "sameauthor onecoherentminimaltestcorrection; targetedindependentrecheck only"
+    },
+    "Q01_actual_component_RED": {
+      "utc": "2026-10-14T15:28:12.315396+00:00",
+      "base": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "author": "q06_replacement_cause",
+      "before_product": "allproductbytesuntouched; actualproductionJournal/Home SFC host",
+      "result": "3/3 intendedAssertionError: missingacceptededit/chooser action, futuredisabledchoicesstillrendered, missingactive-maingeo-blockaction; noimports/renderer/infraerrors",
+      "elapsed": "Vitest3.22s/guardwall6.734s/nativeexit1/allreaped/TMP+linksremoved",
+      "qualification": "componentRED provesacceptedUIdefect/GAP; realbackendbrowserafterstillmandatory, no componentPASSsubstitution",
+      "ids": [
+        "DF-PWA-JOURNAL-CHOOSER-001",
+        "DF-PWA-JOURNAL-FUTURE-001",
+        "GAP-PWA-HEADMAN-GEO-BLOCK-001"
+      ],
+      "next": "sameassignedauthor coherent UI/typedtransport/E2E +samecontrolsGREEN"
+    },
+    "Q01_edit_icon_technical_choice": {
+      "utc": "2026-10-14T15:28:12.315396+00:00",
+      "authority": "canonicalJSHEAD01:432 explicitacceptedediticon; candidatewire111/R11owner-dateNULLnotrepeal",
+      "choice": "minimaleditglyph ONLY currentMobileIcon16x16 inlineSVG/stroke1.25/roundcaps family, sameAPI/tokens/a11y; no newset/deps/style/Figmawrite",
+      "writer": "q06_replacement_cause explicitsharedMobileIconlease, Rootothercommonconfigs/contractsunchanged"
+    },
+    "c5f3_terminal_gates": {
+      "utc": "2026-10-14T15:31:18.387878+00:00",
+      "snapshot": {
+        "observer": "c5f3_ci_observer",
+        "scope": "read-only ordinary GitHub metadata",
+        "selected_model": "gpt-6.1-sol",
+        "selected_effort": "high",
+        "actual_model_effort": "UNKNOWN",
+        "observed_at": "2026-10-14T15:30:43.034Z",
+        "published_head": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "actual_pr_checkout": "5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7",
+        "pr_advertised_merge": "5f8d792d (parent packet only)",
+        "runs": [
+          {
+            "id": 38584200789,
+            "name": "CI",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "failure",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T15:29:10Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200789"
+          },
+          {
+            "id": 38584200556,
+            "name": "Coverage",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T15:07:49Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200556"
+          },
+          {
+            "id": 38584200939,
+            "name": "Security",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T14:53:18Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200939"
+          },
+          {
+            "id": 38584200514,
+            "name": "OpenAPI Drift Guard",
+            "event": "pull_request",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-14T14:51:06Z",
+            "updated_at": "2026-10-14T14:52:55Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584200514"
+          },
+          {
+            "id": 38584190704,
+            "name": "CI",
+            "event": "push",
+            "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+            "head_branch": "codex/server-validation-20261011",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "failure",
+            "created_at": "2026-10-14T14:51:02Z",
+            "updated_at": "2026-10-14T15:24:07Z",
+            "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38584190704"
+          }
+        ],
+        "ci_jobs": [
+          {
+            "id": 115921689021,
+            "name": "ShellCheck scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689346,
+            "name": "Mobile Vue workspace",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689475,
+            "name": "Playwright E2E auth flow",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 38584200789,
+            "steps": [
+              {
+                "name": "Run auth-flow @smoke specs (chromium only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15
+              },
+              {
+                "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 16
+              },
+              {
+                "name": "Upload safe FIRST3 outcomes and observations",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 17
+              },
+              {
+                "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 18
+              },
+              {
+                "name": "Upload safe remaining five outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 19
+              },
+              {
+                "name": "Run real Vue administrator account lifecycle",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 20
+              },
+              {
+                "name": "Upload closed administrator lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 21
+              },
+              {
+                "name": "Run real Vue role transition and logout-all",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 22
+              },
+              {
+                "name": "Upload closed role transition and logout-all outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 23
+              },
+              {
+                "name": "Verify real student geolocation and manual absence prohibition",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 24
+              },
+              {
+                "name": "Upload closed student geolocation outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 25
+              },
+              {
+                "name": "Verify real Vue schedule lifecycle and attendance requests",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 26
+              },
+              {
+                "name": "Upload closed lesson lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 27
+              },
+              {
+                "name": "Verify real Vue helper homework edit and retained completion",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 28
+              },
+              {
+                "name": "Upload closed homework lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 29
+              },
+              {
+                "name": "Verify real Vue map viewing and download after API replacement",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 30
+              },
+              {
+                "name": "Upload closed map lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 31
+              },
+              {
+                "name": "Verify real Vue FULL and LIMITED registry downloads",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 32
+              },
+              {
+                "name": "Upload closed registry export outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 33
+              },
+              {
+                "name": "Verify real Vue helper statistics cancellation and request decisions",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 34
+              },
+              {
+                "name": "Upload closed helper capability outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 35
+              },
+              {
+                "name": "Verify interrupted assignment closure and next-day replacement",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 36
+              },
+              {
+                "name": "Upload closed assignment lifecycle outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 37
+              },
+              {
+                "name": "Restore a real application checkpoint into fresh disposable databases",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 38
+              },
+              {
+                "name": "Upload closed application recovery API outcomes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 39
+              },
+              {
+                "name": "Verify real semester archive and restore participants",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 40
+              },
+              {
+                "name": "Upload closed semester lifecycle outcome",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 41
+              },
+              {
+                "name": "Stop owned fresh recovery targets",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 42
+              },
+              {
+                "name": "Remove only this job's test certificate trust",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 43
+              },
+              {
+                "name": "Stop isolated e2e containers",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 44
+              },
+              {
+                "name": "Post Set up Docker Buildx",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 84
+              },
+              {
+                "name": "Post Setup Gradle",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 85
+              },
+              {
+                "name": "Post Run actions/setup-java@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 86
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 87
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 88
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 89
+              }
+            ]
+          },
+          {
+            "id": 115921689513,
+            "name": "Python Lint & Test",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689572,
+            "name": "Java unit — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689601,
+            "name": "Java unit — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689607,
+            "name": "Java unit — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689622,
+            "name": "Java unit — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689632,
+            "name": "Java IT — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689668,
+            "name": "Java unit — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689689,
+            "name": "Synthetic database and file recovery",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689697,
+            "name": "Java IT — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689698,
+            "name": "Java unit — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689727,
+            "name": "Java IT — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689742,
+            "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689796,
+            "name": "Java IT — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689919,
+            "name": "Java IT — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921689930,
+            "name": "Java IT — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          },
+          {
+            "id": 115921690300,
+            "name": "Grafana dashboards structure",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584200789,
+            "steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 11907710500,
+            "name": "semester-lifecycle-safe-1",
+            "size_in_bytes": 842,
+            "expired": false,
+            "expires_at": "2026-10-21T15:28:09Z",
+            "created_at": "2026-10-14T15:28:10Z",
+            "digest": "sha256:808940417a5cc3d1a59e89f197378a6d6f2437a0ee6cae8da6c749b3dcce3756",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906805031,
+            "name": "registry-export-safe-1",
+            "size_in_bytes": 408,
+            "expired": false,
+            "expires_at": "2026-10-21T15:16:21Z",
+            "created_at": "2026-10-14T15:16:22Z",
+            "digest": "sha256:f60d8e5eb95029791177660ded276edde0b44eb95fd0d8559c533f5d335238b0",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906746697,
+            "name": "application-recovery-safe-1",
+            "size_in_bytes": 1457,
+            "expired": false,
+            "expires_at": "2026-10-21T15:24:38Z",
+            "created_at": "2026-10-14T15:24:39Z",
+            "digest": "sha256:3086496e060a4d161b49908e4a1fe052dfec71b0b4bfd67da7c85abad6d180bb",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906460342,
+            "name": "homework-lifecycle-safe-1",
+            "size_in_bytes": 403,
+            "expired": false,
+            "expires_at": "2026-10-21T15:14:48Z",
+            "created_at": "2026-10-14T15:14:49Z",
+            "digest": "sha256:d057d51865d9a56a0dc4fdadf02716d0d9c6683249a5d6763ace6f874e9af0b4",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906218894,
+            "name": "assignment-lifecycle-safe-1",
+            "size_in_bytes": 1105,
+            "expired": false,
+            "expires_at": "2026-10-21T15:20:08Z",
+            "created_at": "2026-10-14T15:20:08Z",
+            "digest": "sha256:fe11ef85f9e594b201b836588128d2c2085f1190985f1b42b3776e6f98235e39",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11906206961,
+            "name": "remaining5-safe-1",
+            "size_in_bytes": 417,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:19Z",
+            "created_at": "2026-10-14T15:09:20Z",
+            "digest": "sha256:3f5a6062e42ef5cf012bb695e0eb785a99af9830354d34e12780e91961197bf1",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905957206,
+            "name": "admin-lifecycle-safe-1",
+            "size_in_bytes": 367,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:33Z",
+            "created_at": "2026-10-14T15:09:34Z",
+            "digest": "sha256:915471c4b9b7ce986e783c8520d8b2d3304325cc5d5f5b28acad133028da8adf",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905835603,
+            "name": "safe-integration-outcomes-attendance-service-1",
+            "size_in_bytes": 12596,
+            "expired": false,
+            "expires_at": "2026-10-21T15:00:22Z",
+            "created_at": "2026-10-14T15:00:23Z",
+            "digest": "sha256:030454b6cad6013c05c4724cb1284f8cb38ddc263eb85b62f8c95c025b702835",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905825043,
+            "name": "safe-unit-outcomes-schedule-service-1",
+            "size_in_bytes": 5414,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:24Z",
+            "created_at": "2026-10-14T14:57:25Z",
+            "digest": "sha256:85e91a4fc338be3b5c301bba0fdf6a442b0d5d3461b65213db67e7c5fe326b48",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905650054,
+            "name": "safe-integration-outcomes-notification-service-1",
+            "size_in_bytes": 4159,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:04Z",
+            "created_at": "2026-10-14T14:57:05Z",
+            "digest": "sha256:c57760c2c03856fe55d8a8b2723150ac1df5f8dfa142092cf4ad16d0ecb3d053",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905535376,
+            "name": "changed-domain-regression-safe-attendance-service-1",
+            "size_in_bytes": 812,
+            "expired": false,
+            "expires_at": "2026-10-21T14:58:04Z",
+            "created_at": "2026-10-14T14:58:05Z",
+            "digest": "sha256:a117faea9f748e4e29ddcc60fcbd3fa89af7616ef4bc91dbdd95d38bf0743355",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905427311,
+            "name": "first3-safe-1",
+            "size_in_bytes": 3449,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:02Z",
+            "created_at": "2026-10-14T15:09:03Z",
+            "digest": "sha256:0823ed4bd5f796efa41bbdd5dde6938363694d117d1e46894c658dad7858d9f7",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905302500,
+            "name": "role-logout-safe-1",
+            "size_in_bytes": 366,
+            "expired": false,
+            "expires_at": "2026-10-21T15:09:43Z",
+            "created_at": "2026-10-14T15:09:44Z",
+            "digest": "sha256:4684e5490947e6611f4756e69a91f39b043e43fbca3856a1265f87f0768ab0d8",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905268931,
+            "name": "helper-capabilities-safe-1",
+            "size_in_bytes": 404,
+            "expired": false,
+            "expires_at": "2026-10-21T15:17:35Z",
+            "created_at": "2026-10-14T15:17:36Z",
+            "digest": "sha256:880a9db5c2198658e7d0dbb4ee2c21897575e85efa4d2fcfb954ede14fbfdada",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905242645,
+            "name": "student-geo-safe-1",
+            "size_in_bytes": 366,
+            "expired": false,
+            "expires_at": "2026-10-21T15:10:19Z",
+            "created_at": "2026-10-14T15:10:19Z",
+            "digest": "sha256:c6256c0e50595bb74f9d41cf4612ed12fe318487d7faa0ebb73139779de5c0e6",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905151310,
+            "name": "safe-integration-outcomes-schedule-service-1",
+            "size_in_bytes": 11015,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:41Z",
+            "created_at": "2026-10-14T14:57:41Z",
+            "digest": "sha256:7b8ada412cab85a7dbac1c56418fc379be125f30d99ef4a6d453cfafdfbe97cd",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11905056295,
+            "name": "files-recovery-safe-1",
+            "size_in_bytes": 399,
+            "expired": false,
+            "expires_at": "2026-10-21T14:55:34Z",
+            "created_at": "2026-10-14T14:55:35Z",
+            "digest": "sha256:9a161a1b7683cfbc1d620f95599b43f56d66d35ac34c202f30d105a8dfc5d70b",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904971146,
+            "name": "safe-unit-outcomes-api-gateway-1",
+            "size_in_bytes": 6217,
+            "expired": false,
+            "expires_at": "2026-10-21T14:54:54Z",
+            "created_at": "2026-10-14T14:54:55Z",
+            "digest": "sha256:6e683c98d360593216cede02b40c3b485ff2b18bed36a45125233e0aeedeaa93",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904944724,
+            "name": "lesson-lifecycle-safe-1",
+            "size_in_bytes": 434,
+            "expired": false,
+            "expires_at": "2026-10-21T15:14:17Z",
+            "created_at": "2026-10-14T15:14:18Z",
+            "digest": "sha256:2bb3396491e4da0f0bb7c246273985aba9c6ca812176c406d83d27f0d60815aa",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904924975,
+            "name": "map-lifecycle-safe-1",
+            "size_in_bytes": 367,
+            "expired": false,
+            "expires_at": "2026-10-21T15:14:59Z",
+            "created_at": "2026-10-14T15:15:00Z",
+            "digest": "sha256:c1a26270034aa090723cf6f7f022025b32ec1025e4b3af3fbb59d57eb49e6398",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904757749,
+            "name": "safe-integration-outcomes-auth-service-1",
+            "size_in_bytes": 8565,
+            "expired": false,
+            "expires_at": "2026-10-21T15:01:10Z",
+            "created_at": "2026-10-14T15:01:10Z",
+            "digest": "sha256:c585c1f4c539f850753a7182ced22ed0f36827ab9e473425481bc7905da2d5af",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904756706,
+            "name": "safe-unit-outcomes-academic-service-1",
+            "size_in_bytes": 15369,
+            "expired": false,
+            "expires_at": "2026-10-21T14:55:43Z",
+            "created_at": "2026-10-14T14:55:43Z",
+            "digest": "sha256:f9739f93f5a536eab889ea793e75ef44d598caf3e292382df1830aa71ade6621",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904736746,
+            "name": "safe-unit-outcomes-notification-service-1",
+            "size_in_bytes": 7832,
+            "expired": false,
+            "expires_at": "2026-10-21T14:56:07Z",
+            "created_at": "2026-10-14T14:56:08Z",
+            "digest": "sha256:d830129a6a479d18992733bf4e810a2649c15cd9303ad9b003819a89dac1ab97",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904636955,
+            "name": "oneoff-regression-safe-1",
+            "size_in_bytes": 582,
+            "expired": false,
+            "expires_at": "2026-10-21T14:56:04Z",
+            "created_at": "2026-10-14T14:56:05Z",
+            "digest": "sha256:6177d6528d01ceca25ef764baf4607e96961f123b0b3ad432a463111aae5df05",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904604235,
+            "name": "safe-integration-outcomes-academic-service-1",
+            "size_in_bytes": 21609,
+            "expired": false,
+            "expires_at": "2026-10-21T15:07:26Z",
+            "created_at": "2026-10-14T15:07:27Z",
+            "digest": "sha256:bea7b3651e4bc242e46b6297f66a81d92eaa727049dbabc5d26223500a610905",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904349767,
+            "name": "changed-domain-regression-safe-schedule-service-1",
+            "size_in_bytes": 972,
+            "expired": false,
+            "expires_at": "2026-10-21T14:56:34Z",
+            "created_at": "2026-10-14T14:56:34Z",
+            "digest": "sha256:7b86be93f89d724556273d805cfde7aee72d8424390cf1871bdc139071a81eaf",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904269252,
+            "name": "checkout-safe-1",
+            "size_in_bytes": 292,
+            "expired": false,
+            "expires_at": "2026-10-21T14:53:47Z",
+            "created_at": "2026-10-14T14:53:48Z",
+            "digest": "sha256:b41eced74e5a1b7e4a8f966027c936f62daffcef1f28ee025f806229a0a6dbee",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11904234859,
+            "name": "safe-integration-outcomes-api-gateway-1",
+            "size_in_bytes": 1416,
+            "expired": false,
+            "expires_at": "2026-10-21T14:57:29Z",
+            "created_at": "2026-10-14T14:57:30Z",
+            "digest": "sha256:bdba3c4f70c7d1d304425813795495932da5870d5f7e8b233fda615b3e3e4bd1",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11903569913,
+            "name": "safe-unit-outcomes-auth-service-1",
+            "size_in_bytes": 7774,
+            "expired": false,
+            "expires_at": "2026-10-21T14:55:24Z",
+            "created_at": "2026-10-14T14:55:24Z",
+            "digest": "sha256:a0b19276fc67a4f444ebfe8b02944fb635b2158f2f6b1b03293b65f9a47d92c2",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          },
+          {
+            "id": 11903434732,
+            "name": "safe-unit-outcomes-attendance-service-1",
+            "size_in_bytes": 15570,
+            "expired": false,
+            "expires_at": "2026-10-21T14:54:09Z",
+            "created_at": "2026-10-14T14:54:09Z",
+            "digest": "sha256:a25da4cab1af5c97e2755b9a97ac801a4c745a43ddf03e770eaa995d0f22edc9",
+            "producer": {
+              "id": 38584200789,
+              "repository_id": 1194500358,
+              "head_repository_id": 1194500358,
+              "head_branch": "codex/server-validation-20261011",
+              "head_sha": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26"
+            }
+          }
+        ],
+        "meaningful_changes": [
+          {
+            "at": "2026-10-14T14:53:21.696Z",
+            "change": "Initial metadata: OpenAPI completed success; Security/push CI in progress; PR CI/Coverage queued. Jobs may progress before aggregate run status."
+          },
+          {
+            "at": "2026-10-14T14:54:54.023Z",
+            "change": "Security completed success. CI E2E job115921689475 in Boot isolated Vue auth stack. checkout-safe-1 artifact11904269252 now available; no content read."
+          },
+          {
+            "at": "2026-10-14T14:56:26.428Z",
+            "change": "PR CI/Coverage now in_progress; Synthetic database and file recovery job115921689689 completed/success; E2E still booting."
+          },
+          {
+            "at": "2026-10-14T14:56:42.061Z",
+            "change": "Root supplied actual checkout5f8d792dfe92ac0c6f42526a7883edc0eb1a2be7/tree96fb426c; no observer artifact body read."
+          },
+          {
+            "at": "2026-10-14T14:58:07.990Z",
+            "change": "CI15/19 jobs success, four in_progress and no failure. Coverage6/8 success. files-recovery-safe-1 artifact11905056295 available."
+          },
+          {
+            "at": "2026-10-14T15:08:06.094Z",
+            "change": "Coverage38584200556 completed/success. CI18/19 jobs success; E2E boot succeeded and Install Playwright + browsers in_progress."
+          },
+          {
+            "at": "2026-10-14T15:10:44.488Z",
+            "change": "E2E smoke/FIRST3/remaining5/admin lifecycle/role logout/geo steps completed success; schedule lifecycle step26 in_progress. No artifact content verdict."
+          },
+          {
+            "at": "2026-10-14T15:15:39.891Z",
+            "change": "E2E schedule lifecycle26, homework lifecycle28, map lifecycle30 completed/success; registry32 in_progress. New after homework outcome artifact11906460342 metadata available."
+          },
+          {
+            "at": "2026-10-14T15:18:13.780Z",
+            "change": "E2E registry32 and helper capabilities34 completed/success. Registry outcome11906805031 metadata available; assignment36 in_progress."
+          },
+          {
+            "at": "2026-10-14T15:23:07.013Z",
+            "change": "Assignment36 completed/success; restore application checkpoint38 in_progress, no current failure."
+          },
+          {
+            "at": "2026-10-14T15:25:43.374Z",
+            "change": "PR E2E recovery38 completed/success, semester40 in_progress. Separate pushCI38584190704 completed/failure; see push_jobs for exact failed step, not PR proof."
+          },
+          {
+            "at": "2026-10-14T15:30:43.034Z",
+            "change": "TERMINAL PR CI38584200789 completed/failure; only E2E job115921689475 / semester step40 failed. Other18jobs and otherPRgates success. Semester diagnostic and cleanup artifact metadata saved."
+          }
+        ],
+        "limitations": [
+          "metadata only, no raw logs/artifact contents/private URLs/downloads",
+          "PR event runs kept separate from push CI",
+          "No source-only acceptance promoted to PASS"
+        ],
+        "other_jobs": [
+          {
+            "run_id": 38584200556,
+            "jobs": [
+              {
+                "id": 115921688114,
+                "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688308,
+                "name": "Java coverage — academic-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688352,
+                "name": "Java coverage — attendance-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688390,
+                "name": "Java coverage — schedule-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688484,
+                "name": "Python coverage — notification-bot",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921688694,
+                "name": "Java coverage — notification-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921689017,
+                "name": "Java coverage — auth-service",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115921689707,
+                "name": "Java coverage — api-gateway",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              },
+              {
+                "id": 115929721663,
+                "name": "Diff coverage report",
+                "status": "completed",
+                "conclusion": "success",
+                "run_id": 38584200556,
+                "steps": []
+              }
+            ]
+          }
+        ],
+        "actual_checkout_source": "Root message: receipts/current-4065-real-push-readback.safe.json#c5f3_actual_checkout; not observer body read",
+        "actual_pr_tree": "96fb426ce250901b16c46509edf59a5aa6b81cab",
+        "checkout_join": "Root: official parents main3908fad+c5f3 and exact local HEAD tree equal",
+        "push_jobs": [
+          {
+            "id": 115921655059,
+            "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655498,
+            "name": "Python Lint & Test",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655528,
+            "name": "Mobile Vue workspace",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655579,
+            "name": "ShellCheck scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655628,
+            "name": "Java unit — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655843,
+            "name": "Playwright E2E auth flow",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 38584190704,
+            "steps": [
+              {
+                "name": "Verify real Vue FULL and LIMITED registry downloads",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 32
+              },
+              {
+                "name": "Verify real Vue helper statistics cancellation and request decisions",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 34
+              },
+              {
+                "name": "Verify real semester archive and restore participants",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 40
+              },
+              {
+                "name": "Stop isolated e2e containers",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 44
+              }
+            ]
+          },
+          {
+            "id": 115921655906,
+            "name": "Synthetic database and file recovery",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655907,
+            "name": "Java unit — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655929,
+            "name": "Java unit — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921655992,
+            "name": "Java unit — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656021,
+            "name": "Java IT — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656260,
+            "name": "Java IT — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656298,
+            "name": "Java IT — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656354,
+            "name": "Java IT — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656407,
+            "name": "Java IT — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656413,
+            "name": "Java unit — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656422,
+            "name": "Grafana dashboards structure",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656596,
+            "name": "Java unit — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          },
+          {
+            "id": 115921656776,
+            "name": "Java IT — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 38584190704,
+            "steps": []
+          }
+        ],
+        "observer_status": "COMPLETE",
+        "terminal_summary": {
+          "pr_ci": "completed/failure;18jobs success; E2E job115921689475 only failure, step40semester only failed step",
+          "other_pr_gates": "Coverage/Security/OpenAPI completed/success",
+          "raw_contents": "NOT_READ",
+          "push_distinct": "38584190704 push completed/failure; steps32registry34helper40semester",
+          "acceptance_limit": "metadata only; actual scenario semantic/cause verdict requires Root existing bounded artifact decoding"
+        }
+      },
+      "conclusion": "PRCI onlysemesterFAIL; Cov/Sec/OpenAPISUCCESS; all3cleanupSUCCESS; separatepushCI threefailedsteps requirecauseclassification",
+      "next": "readexactcurrentclosedsemesterdiagnostic now; no unchangedtestrerun"
+    },
+    "Q01_schedule_home_readonly_scope": {
+      "utc": "2026-10-14T15:31:18.387878+00:00",
+      "writer": "q06_replacement_cause",
+      "additional_exact_path": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+      "hunk": "ExistingHome mount only :read-only=\"readOnly\"; Home newprop guard beforePOST; actualSFCreadOnlytrue+writabletrue no writablecontrol/effect",
+      "reason": "ParentreadOnlyalreadyexists/transmittedotherwritescreens; preserveacceptedreadonlyboundary, no newrole/serverrule"
+    },
+    "c5f3_semester_actual": {
+      "utc": "2026-10-14T15:34:37.992483+00:00",
+      "evidence": {
+        "artifact": 11907710500,
+        "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "run": 38584200789,
+        "digest": "sha256:808940417a5cc3d1a59e89f197378a6d6f2437a0ee6cae8da6c749b3dcce3756",
+        "bytes": 842,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "semester-lifecycle.spec.ts",
+              "line": 348,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 205505,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "semester-lifecycle.spec.ts",
+                  "line": 273
+                }
+              ]
+            }
+          ]
+        },
+        "lifecycle_closed_diagnostics": {
+          "schema": "semester-lifecycle.v1",
+          "primary": {
+            "stage": "PARTICIPANT_BARRIER",
+            "action": "ARCHIVE",
+            "operationState": "PENDING",
+            "academic": "PENDING",
+            "schedule": "PENDING",
+            "attendance": "PENDING",
+            "retryable": true,
+            "transition": "ARCHIVING",
+            "active": false,
+            "archived": false,
+            "releasePending": false,
+            "writeBlocked": true,
+            "reasonCode": "SCHEDULE_EFFECT_ACK_PENDING"
+          },
+          "cleanup": {
+            "stage": "PARTICIPANT_BARRIER",
+            "action": "ARCHIVE",
+            "operationState": "PENDING",
+            "academic": "PENDING",
+            "schedule": "PENDING",
+            "attendance": "PENDING",
+            "retryable": true,
+            "transition": "ARCHIVING",
+            "active": false,
+            "archived": false,
+            "releasePending": false,
+            "writeBlocked": true,
+            "reasonCode": "SCHEDULE_EFFECT_ACK_PENDING"
+          },
+          "primaryFailure": true,
+          "cleanupOutcome": "FAILED",
+          "clockOutcome": "PASSED",
+          "disposeOutcome": "PASSED"
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "SEMESTER_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "actual_checkout": "5f8d792d/tree96fb/official3908+c5f3/localHEADtreeequal JOINED",
+      "observed": "205505ms FAIL348/frame273; primary ARCHIVE/PARTICIPANT_BARRIER, operationPENDING/all3participantsPENDING/retryabletrue/ARCHIVING/writeBlockedtrue; reasonSCHEDULE_EFFECT_ACK_PENDING. Cleanup samependingreasonFAILED; clock/disposePASSED. Primary nowpreserved.",
+      "classification": "Actualserverbarrier waits exactScheduleeffect ACK; WHICH of5 eventtypes and cause lost/unconsumed/unack/replay/restore UNKNOWN. No product/fixture/envrootcauseverdict yet; doNOTrerununchanged",
+      "native": "COMPLETE0/settled/reaped/privateinputgone",
+      "next": "assigned Sourcecausaltrace producer→consumer effect/ACK/dedup/recovery and existingreceipts; onlyifinsufficient addminimumclosedownrowmetadata beforecleanup, no rawlogs/secrets/newframework"
+    },
+    "Q10_R1_correction_author_ready": {
+      "utc": "2026-10-14T15:34:37.992483+00:00",
+      "commit": "929775a7a022e6785e7c25f9bf9dcc58e8611ede",
+      "parent": "a904e3f820b8f9c3c1d7ac36944a5e2fe6ca3a0c",
+      "file": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "4ace26a97be81092143584ff68987134b22527820dfd5f671c198c89e30f7a35",
+      "correction": "Only +1 actualcompletedSlider.toBeFocused aftertargetreadback; missednavcannotactivatefocusmetadata; allpreviousasserts retained",
+      "checks": "Prettier/strictTSC/inverseproofs/diff/hooksPASS27.468s/reaped/TMP+linkgone/WTclean",
+      "actual": "newactualE2E+navsensitivityNOT_RUN; targetedrecheck next; no productmutation/configchanges"
+    },
+    "Q01_isolated_student_context_choice": {
+      "utc": "2026-10-14T15:34:37.992483+00:00",
+      "choice": "Reuseexistingfixturecaptureguard; newcontext onlybaseURL exactownedcurrentorigin and inherited existing configured ignoreHTTPSErrors option (ifundefinedomit), no addedTLSrelaxation beyond baselineproject. No video/HAR/tracing; finallyclose.",
+      "qualification": "Existingplaywright.config.ts baselineignoreHTTPSErrors=true fordisposableselfsignedloopback; thisbrowserflow doesNOTprovebrowsercertificateverification, separate TLS/RPCchecks unaffected. No globalSSL/transport/securitypolicychange.",
+      "reason": "HEADMAN-as-STUDENT hasHEADMAN_USES_JOURNAL priority, cannotbevalidGEO_BLOCKEDwitness. Useactualdataset.student afterclear, one necessarynormalUIlogin; no IP/quota manipulation."
+    },
+    "Q10_R1_targeted_recheck": {
+      "utc": "2026-10-14T15:41:06.856508+00:00",
+      "reviewer": "q07_client_review independent",
+      "commit": "929775a7a022e6785e7c25f9bf9dcc58e8611ede",
+      "verdict": "CLOSED/APPROVE_SOURCE",
+      "reason": "Sole targetfocus assertion distinguishes same visible card from active notification target; omission navigation.push retains read/GET but leaves target focusmetadata null; previous completionfocus consumed before reload",
+      "actual": "Browser/navigation omission RED→exactrestoreGREEN NOT_RUN",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+    },
+    "Q01_EXCUSED_repeat_Source_resolution": {
+      "utc": "2026-10-14T15:41:06.856508+00:00",
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "fragments": "JS-HEADMAN-01:425–436 repeat selected removes mark; no confirmation anywhere; no attachment-specific accepted override identified. JS-STUDENT-WEB-07:959 ticket files retained one year independently of ticket fate",
+      "decision": "Existing extra confirmation only oldcode, not accepted owner requirement. Selected EXCUSED must call existing guarded clearExcuse directly, just like accepted repeat-to-clear behavior. Keep server revision/rights/mutation/scope/409 logic and unrelated explicit attachment-dialog behavior unchanged. No file lifetime/server policy change. Include focused actualSFC selectedEXCUSED no-dialog/oneclear result check in sameauthor package. No new ownerquestion needed",
+      "scope": "existing Q01 soleauthor journal + affected focusedtest; same coherent package, only impacted checks/recheck"
+    },
+    "Q05_ACK_Source_liveness_candidate": {
+      "utc": "2026-10-14T15:42:27.902064+00:00",
+      "author": "q06_api_resume_writer read-only",
+      "source_counterexample": "Attendance listener transient remote/Mongo failure retries max3/100+200ms then RejectAndDontRequeue durableDLQ; lesson.closed preflight Schedule/historicalAcademic beforetransaction/receipt. Source outbox mayalreadybeSENT while required effectledgerpending, barrier hasnoexact event_payload republish/redrive",
+      "runtime_cause": "UNKNOWN; need exact pendingtype+outboxstate+receiptpresence/outcome+exacteventDLQpresence closedmetadata. Brokerloss hypothesis refuted: samebroker/volume acrossrestore",
+      "existing_mechanism": "Duplicate durable receipt on exactredelivery emitsnewACK; special lesson.closed branch exists. ExistingRabbitDecisionRetryIT proves3attempt→DLQ fordecision",
+      "next": "bounded source plan for minimum actual tracked event transientfailure→DLQ→healthy recovery proof and minimaldiagnostic, no rawIDs/bodies or unchanged E2E replay"
+    },
+    "c5f3_push_closed_read_grant": {
+      "utc": "2026-10-14T15:44:03.034873+00:00",
+      "event": "push",
+      "run": 38584190704,
+      "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "scope": "exactclosedregistry11905149366/helper11906535257/semester11906239310",
+      "source_pins": "/workspace/scratch/rct-validation/c5f3_ci_observer/push-closed-read/source-pins.safe.json",
+      "native": "45sforeground/30scleanup/512MiBRSS/256MiBgrowth/4GiBfloor/shared15GiB+1GiBreserve/1MiBlog",
+      "safety": "existing strict contentdecoder unchanged, explicit push/soleCI binding, normal verifiedTLS officialfreshURL nooutput, no rawlogs/IDs/credentials; no test/quota replay; actualcheckout notprovedbythisread",
+      "status": "ROOT_AUTHORIZED_RUN_ONCE_IF_FRESH_PREFLIGHT_PASSES"
+    },
+    "Q10_genuine_inbox_Root_Source_integration": {
+      "utc": "2026-10-14T15:44:20.739208+00:00",
+      "source_commit": "929775a7a022e6785e7c25f9bf9dcc58e8611ede",
+      "root_parent": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "inventory": [
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+      ],
+      "result": "exact independentlyAPPROVED source integrated toRootWIP; alloldassertions retained",
+      "actual": "newbrowser/navigationRED→restoreGREEN NOT_RUN"
+    },
+    "Q01_journal_author_Source_ready": {
+      "utc": "2026-10-14T15:45:11.251831+00:00",
+      "author": "q06_replacement_cause",
+      "base": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "commits": [
+        "bb7251b5de5e7cee5c10ce67ea5d5de89607ab49",
+        "59bdbedd9c353720f70f2b7ebd88c88cf49b0405"
+      ],
+      "worktree": "/workspace/rct-worktrees/q07-lesson-cancel-20261014",
+      "inventory": "exact11approvedpaths/no created-deleted",
+      "result": "Chooser/editglyph/repeatclearinclEXCUSED/futurehide/activeHomegeoblock+confirm/readOnlycarrier; realE2Eextendedsameoriginalcases",
+      "checks": "OldactualSFC3intendedRED→correctedGREEN; allaffected30focused acrossretainedruns; canonicalformat/types/E2ETSC/lint/PWAproductionbuild/normalhooksPASS. Lastcorrection45.064s482MB/reaped/temp+linksgone/clean",
+      "actual_new_browser": "NOT_RUN",
+      "next": "one independentwhole11pathreview, targetedcorrections only, integrateandrealnormalCI"
+    },
+    "Q05_ACK_minimum_discriminator_choice": {
+      "utc": "2026-10-14T15:45:11.251831+00:00",
+      "scope": "RootCIonly aftersemesterstep exits and BEFORE existingfreshrecoverytarget teardown; fixturecleanupalreadyattempted/timingexplicit",
+      "plan": "Reuse recovery.py pg_query/mongo_query+check_targets and exactseed.historyUrl pinnedsemester; earliestunprovenledgerrow only/IDs+payloadRAM; outputfiniteeffecttype/target/state/sourceoutboxstatus/receiptpresence-result-identitybooleans/ACKoutboxpresence-status-identitybooleans. ACADEMIC/ATTENDANCE branch onlyrealcurrenttarget. No broadqueuepeek/replay/rawlogs/newendpoint/framework",
+      "purpose": "Missingreceipt+sourceSENT vs receiptAPPLIED+ACKPENDING vs ACKSENT+ledgerPENDING discriminate; NONE aloneprovesDLQ or routing",
+      "status": "SourceplanREADY/no native, minimumCIimplementation next"
+    },
+    "c5f3_push_closed_partial_actual": {
+      "utc": "2026-10-14T15:46:10.078727+00:00",
+      "event": "push",
+      "run": 38584190704,
+      "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "registry": "HTML declaration22 oneFAILED63180ms/frame90/UNKNOWN-http0+REPORTED_CLASS_ERROR; otherHTML+bothPDFPASS. Classification needs frameSource, no productcauseyet",
+      "helper": "stats21+cancel124PASS; excuse179 FAIL872ms/frame211/ACTOR_LOGIN_HTTP429+REPORTED_CLASS_ERROR; safequota denialactual no causepolicyverdict/probe",
+      "semester": "readerfailedbeforeprojection; privatechildstdoutdiscarded bynewcaller so safeparserreasonUNKNOWN. No bytespersisted; no retryyet. Fix outputcaptureonly+re-readsameartifactjustified byconcretemissingdiagnostic, not unchangedtestreplay",
+      "native": "4.42s/3childrenreaped/privateinputsgone",
+      "next": "preservepartial;Source classify2publicframes, boundedoneconsumer capturecorrection/re-readsemester only"
+    },
+    "owner_parallel_flow_20261014": {
+      "utc": "2026-10-14T15:48:33.488511+00:00",
+      "source": "owner-authorized delegation continuation, no scope/DONE change",
+      "applied": "A sameauthor minimalactualsemesterdiagnosis; B journalwholeindependentreview→integrate; C Q10 approvedtestRootintegrated/CI sensitivitySourceWIP; D samecompletedauthor assignedmapfinalboundaries; E boundedremainingsecurity/session/enum proofreconciliation actualavailablevs external scopes; Root solecommonCI/docs/Gitintegrator",
+      "constraints": "no duplicatedstand/no newframework/no repeatedsufficientPASS/B013B014FROZEN/mandatorygatesretain/no production-main-deploy"
+    },
+    "c5f3_push_semester_reader_correction_actual": {
+      "utc": "2026-10-14T15:48:33.488511+00:00",
+      "artifact": 11906239310,
+      "event": "push",
+      "run": 38584190704,
+      "result": "0.674s/nativeexit1/reaped/privateinputgone; strictvalidate_results rejects DIAGNOSTIC_CAUSE_UNKNOWN atreader25; no bodypersisted/valueemitted",
+      "classification": "Readerfinitecausecatalogue mismatch or invalidartifact, actualproductcauseUNKNOWN. Need exactproducerSource causecatalogue compare before anotherread; no broad decoderloosening",
+      "evidence": "/workspace/scratch/rct-validation/c5f3_ci_observer/push-closed-read/semester-capture-correction/closed-error.safe.json"
+    },
+    "c5f3_push_semester_catalogue_correction": {
+      "utc": "2026-10-14T15:49:29.877529+00:00",
+      "source_sha256": "ecffb1b05e22a17f305bc909113e4c5964002ed6263e0aa88fd51b472b7fe570",
+      "scope": "only2finitecatalogueupdates fromalreadyreviewedhelper, exactproducer26HTTPcauses; allothercontentguardsunchanged",
+      "controls": "26valid plusunknown/private-marker/http0pair/wrongstage/boolstatus/extrabody rejectPASS",
+      "actual": "ROOT_AUTHORIZE_ONE_SAMEARTIFACT11906239310 readafterfreshURL/caps, noothertest/artifactrepeat",
+      "reader_sha256": "afa28eb7a331dd49cc759a56bd6935680107cfe215ba27fe583e3c0a32462df8"
+    },
+    "c5f3_push_semester_actual": {
+      "utc": "2026-10-14T15:50:47.704813+00:00",
+      "evidence": {
+        "artifact": 11906239310,
+        "producer": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+        "run": 38584190704,
+        "digest": "sha256:b1b8bc2d259c8361cce0e6bc5b0abee6ccafdad3e9f12f8c9d71bc22c0838f2a",
+        "bytes": 926,
+        "results": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "semester-lifecycle.spec.ts",
+              "line": 348,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 77582,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "DATASET_HTTP",
+                  "cause": "DATASET_STUDENT_HISTORY_HTTP",
+                  "httpStatus": 403
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_FRAME_DATASET_CALL",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "semester-lifecycle.spec.ts",
+                  "line": 714
+                }
+              ]
+            }
+          ]
+        },
+        "lifecycle_closed_diagnostics": {
+          "schema": "semester-lifecycle.v1",
+          "primary": {
+            "stage": "ARCHIVED_READBACK",
+            "action": "ARCHIVE",
+            "operationState": "COMPLETED",
+            "academic": "READY",
+            "schedule": "READY",
+            "attendance": "READY",
+            "retryable": false,
+            "transition": "NONE",
+            "active": false,
+            "archived": true,
+            "releasePending": false,
+            "writeBlocked": true,
+            "reasonCode": "NONE"
+          },
+          "cleanup": {
+            "stage": "COMPLETED",
+            "action": "RESTORE",
+            "operationState": "COMPLETED",
+            "academic": "RELEASED",
+            "schedule": "RELEASED",
+            "attendance": "RELEASED",
+            "retryable": false,
+            "transition": "NONE",
+            "active": false,
+            "archived": false,
+            "releasePending": false,
+            "writeBlocked": false,
+            "reasonCode": "NONE"
+          },
+          "primaryFailure": true,
+          "cleanupOutcome": "COMPLETED",
+          "clockOutcome": "PASSED",
+          "disposeOutcome": "PASSED"
+        },
+        "diagnostic_schema": [
+          {
+            "caseCode": "SEMESTER_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+        "raw_logs_HTML_XML_error_context_read": false,
+        "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+      },
+      "observed": "PUSHcase348FAILED77582ms/frame714/DATASET_STUDENT_HISTORY_HTTP403; primaryARCHIVED_READBACK completedARCHIVE/all3READY/archivedtrue/NONEreason; cleanup completedRESTORE/all3RELEASED/archivedfalse/writeBlockedfalse/clocks-disposePASS",
+      "classification": "Actualarchive andrestore participants complete onSAMEheadPUSH, distinctfromPRACKpendingbarrier. Failure is403 archivedstudenthistoryread. Source/specification resolution needed; no productvsfixture verdict yet",
+      "native": "0.93s/native0/settled/reaped/privateinputgone",
+      "next": "Aauthor examines archivedstudenthistory acceptedreadscope/actorgrants and source714; no unchanged rerun"
+    },
+    "Q01_whole_independent_review": {
+      "utc": "2026-10-14T15:52:20.502695+00:00",
+      "reviewer": "q07_client_review independent",
+      "reviewed_head": "59bdbedd9c353720f70f2b7ebd88c88cf49b0405",
+      "verdict": "CHANGES_REQUESTED twoP2",
+      "findings": [
+        {
+          "id": "Q01-R1",
+          "source": "HeadmanHomeScreen.vue:711–741",
+          "risk": "Newinlinealertdialog lacksfocusentry/Esc/return; keyboardfocus remainsafterconfirmDOM",
+          "correction": "Reuseexistingnativeconfirmationlifecycle or truthfulinline semantics plusfocusentry/dismiss/return; keep owner/pendingguards"
+        },
+        {
+          "id": "Q01-R2",
+          "source": "HeadmanJournalScreen.vue:2637–2638",
+          "risk": "Currentstatusbutton announcesclear/confirmclear but handleropenschooser",
+          "correction": "Truthful currentmark actionlabel; updateaffectedlocators onlysemanticcorrection, keepdata/CAS assertions"
+        }
+      ],
+      "other_scope": "whole11paths/data/rights/staleroute/2E2E reviewed nootherblockingfinding",
+      "actual_new_browser": "NOT_RUN",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md",
+      "next": "sameauthorcoherent2findingcorrection; targetedindependentrecheckR1R2only"
+    },
+    "Q10_existing_CI_sensitivity_Source": {
+      "utc": "2026-10-14T15:53:55.961493+00:00",
+      "writer": "Root soleCIconfigwriter",
+      "file": ".github/workflows/ci.yml",
+      "sha256": "5c41cc482fae743c471654509864e9c29bc2ff8064b9f6fe54d1edfce3e1329e",
+      "scope": "Existingjob afterordinaryHWsuite; onecontrolledcompile-valid omission ofStudentFeatureOwner homeworknavigation inephemeralrunner; rebuildonlyPWA/reloadownedNginx/boundedTLSreadiness; sameexactcase mustfailsolefocusassert332/0runnererrors/privacyfalse; exactSource restore/rebuild +samecaseGREEN; failuretraprestore, originalerrorpreserved, allmandatorygates/45minjob unchanged",
+      "evidence": "Sourceonly inversebytes+uniqueSourceboundary/focusassert; cachedPrettierwrite unchangedPASS/native80541complete0",
+      "actual": "NOT_RUN; onecoherentindependentWFreviewafterminimumQ05diagnostic joins; existingnormalCIgenuinebackend flow",
+      "platform": "UnrelatedUI-navigationcontrol, B013/B014 frozen/no rights-or-IPmutation"
+    },
+    "Q01_R2_affected_consumer_scope": {
+      "utc": "2026-10-14T15:54:20.696235+00:00",
+      "author": "sameq06_replacement_cause",
+      "additionalfile": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+      "allowed": "ONEexactoldjournal-current-circle accessiblelabel suffix Снять отметку→Открыть выбор отметки at129; no assertion/timeouts/flow/data changes",
+      "why": "Existingconsumer ofchangedtruthfulproductionaccessiblename, necessarycorrectlocator; otherhomeworksliderslabelsretained",
+      "review": "targetedR2affectedconsumer recheck included, no new wholepackagecampaign"
+    },
+    "Q05_inactive_student_history_oracle_resolution": {
+      "utc": "2026-10-14T15:56:17.634611+00:00",
+      "source": "canonicalJSADMIN10:231 archive retainsdata/readmechanismfuture; JSADMIN09 zeroactive allowed; StudentQueryService171/355 requiresactiveSemester; AcademicReadService85 findsactiveonly; MobileAcademicClient NOT_FOUND→403OUT_OF_SCOPE",
+      "observed": "PUSHsamehead archiveCOMPLETED but studentactive-only attendanceGET403 at714; exactpublicproblemcode notobserved yet",
+      "classification": "Confirmed fixtureoracle conflicts with accepted currentactive-onlystudentBFF, not established missingstudentarchivegrant/productdefect. PRACKbarrier remainsseparateUNKNOWN",
+      "allowed_correction": "All inactive-state studenthistory200/equality clauses mustassert typed403OUT_OF_SCOPE/nounexpectedbody; preservehistoricalmark/HW/schedule/report immutability/deniedwriterCASH/participantbarriers. After EXISTINGexplicitactivate re-read equality BEFORE permittedwrite; retainafterwrite equality. Do not inventarchivereadAPI orweakenbarriers/timeouts",
+      "author_scope": "sameq06_api_resume_writer onlytests/e2e/fixtures/semester-lifecycle.spec.ts, cleannewbranchfrozenc5f3 preservingoldrefs; minimalchecks+oneindependenttargetedSource review+normalCI actual"
+    },
+    "stream_E_finite_remaining": {
+      "utc": "2026-10-14T15:57:03.417087+00:00",
+      "agent": "remaining_security_enum_scopes read-only",
+      "disposition": "15finiteexistingresiduals/no productFAIL-GAP/no newparentPASS",
+      "durable_join": "receipts/matrix-evidence-reconciliation/remaining-execution-queue.json#current_finite_Q13_Q15_refinement",
+      "next": "E13-C1 Source-onlyauthor test; no fullstand/providerdependency; scopedunitnormalCI. MissingnativeTelegram/WebPush/iOS capability remainsseparateEXTERNAL_CAPABILITY_BLOCKED, notclaimsclosedby mocks",
+      "original_outcome_sha256": "9d0037127893ea88800db9f408c88c313a6c15d6a0a2591a9145dc37cb555759"
+    },
+    "Q01_R1_R2_author_correction_ready": {
+      "utc": "2026-10-14T15:57:03.417087+00:00",
+      "author": "q06_replacement_cause",
+      "commit": "714776cbb3b1770d49639b245c9e5b99a87ce9c2",
+      "parent": "59bdbedd9c353720f70f2b7ebd88c88cf49b0405",
+      "changed": "exact5affectedpaths; overall12approved",
+      "result": "Home truthfulinlinegroup/focusentry/Escape-cancel-ACKreturn, Journal truthfulchooseraction,7focusedactualSFCcontrols+existingE2Ekeyboardassertions/labels andsolelessonlabelconsumer",
+      "checks": "7affectedcontrolsPASS7unchangedexcluded;canonicalformat/types/E2ETSC/lint/hooksPASS44.849s/maxRSS494288896/reaped/clean/TMP+linksgone",
+      "actual_new_browser": "NOT_RUN",
+      "next": "one targetedindependentrecheckR1/R2+affectedconsumer; thenRootintegration/normalCI"
+    },
+    "Q01_R1_R2_targeted_recheck": {
+      "utc": "2026-10-14T15:58:57.013361+00:00",
+      "reviewer": "q07_client_review independent",
+      "head": "714776cbb3b1770d49639b245c9e5b99a87ce9c2",
+      "verdict": "CLOSED/APPROVE_SOURCE",
+      "scope": "5affectedpaths focusentry/Escape/cancel/ACKerror guardedreturn+truthfullabel+oneexactconsumer, overall12paths approved afterwhole+targetedreview",
+      "actual_browser": "NOT_RUN",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+    },
+    "Q01_reviewed_Root_Source_integration": {
+      "utc": "2026-10-14T15:58:57.013361+00:00",
+      "source_head": "714776cbb3b1770d49639b245c9e5b99a87ce9c2",
+      "root_parent": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "inventory": [
+        {
+          "identity": "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.vue",
+          "sha256": "7d0125e4be6116e8cf3349f862fa73dc14b57a5a8f9971bb7f4f0c02b595a6c2"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/headman-home/headman-home-screen.pcss",
+          "sha256": "71442bd34a8aa95830faa411cdfd4958185a473cc660c635cbb0e59bb927c5be"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+          "sha256": "81ba527cd3cfd28f5775f297b02c7b25f90882cae830b1505eea40284f0698ab"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.test.ts",
+          "sha256": "3225f7f414ff838ed9deb3d7b35ef3c22a3d80a36a7c136b8d8d24c6870c2b9e"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts",
+          "sha256": "3de79d6139404a22e5bacc49eee624bb04087a2f948b3ec988f4012120832cdb"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/headman-journal/headman-journal-operation.test.ts",
+          "sha256": "1a63472f658de07174bbeaa96556ace3f73ed6f2b597d8bf4c2ae45a51996477"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/headman-journal/headman-journal-screen.pcss",
+          "sha256": "d2924eaeb2ddeabd3f132ff0950c4d61e6f1d7071b155217fa8b30b8e0bfc495"
+        },
+        {
+          "identity": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+          "sha256": "7034b1b2ea586b5b2d667deccbf09b19d2b4a54cd5d6b587cccb94830395825f"
+        },
+        {
+          "identity": "frontends/mobile-core/src/shared/components/MobileIcon.vue",
+          "sha256": "da5c1f1f8cfdd5f9ab2a8ff08ff3743bcaea892c0f289b07ca7577c6e4fe754f"
+        },
+        {
+          "identity": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+          "sha256": "2f5a240a18c5555852cb5408fb1350471ea6f6378117ade540e45a3e760122a6"
+        },
+        {
+          "identity": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+          "sha256": "3615f9c542dd88e176cb67ef047f42ebbf7e0d1acf80108fb86f908d012d1fe5"
+        },
+        {
+          "identity": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "a0dee149ba09afae1be81cae8e158d1fa85e31e14ed0a00af8ff46eaf42d975b"
+        }
+      ],
+      "result": "exact12reviewedSourcepaths integrated RootWIP, noAPI/proto/schema/migration/config dependency change",
+      "actual": "newgenuinebackend/browserNOT_RUN, nextnormalCI"
+    },
+    "E13_C1_heavy_local_lease": {
+      "utc": "2026-10-14T16:05:14.908404+00:00",
+      "writer": "remaining_security_enum_scopes",
+      "scope": "one newCacheSerializationBoundaryTest actualserializer; initialGREEN thenonebenignURI rule RED→byteexactrestore→same3GREEN, no testcontainers/network",
+      "root_authorization": "GRANTED oneexclusiveGradlelease package600s/invocation180s/cleanup30; local JDK21/Gradle8.12/offline/no-daemon/no-parallel/oneworker/heap1GiB+metaspace384MiB/test512MiB; ownRSS3GiB/shared15GiB+1GiBreserve/availablememory6GiB; workspacefloor4GiB/ownWTgrowth256MiB/ownTMPcache128MiB/log1MiB",
+      "mutations": "ONLYnewtest committed; temporaryoneURIallowance inownedCacheConfig finallyexactrestore beforeanycommit; broadprodformat forbidden",
+      "qualification": "sampledexistingguard nothardOSisolation; nodeauthorslightchecks independent. Stoponfloor/growth, no caplower/alternateinfra. Formatterflag mustprovetargetnewfile only; Rootspotlessusesgitlsfiles andspotlessFilesunverified"
+    },
+    "Q05_diagnostic_wrong_semester_Source_correction": {
+      "utc": "2026-10-14T16:05:14.908404+00:00",
+      "found_by": "Root sourceintegrationinspection",
+      "counterexample": "Recovery seed.historyUrl originalrestoredsemester != Q05newcreated ownSemesterId/historyPath590; priorSourceplanwouldobservewrongledger",
+      "correction": "SAMEfixture soleauthor privatewx0600 scalar ownsemesterpin outsideartifacts, exactdiagnosticprivatepinvalidation; uploadONLYclosedprojection. No product/API/grant/barrier change; fixtureauthornewSourcefollowup+minimumchecks",
+      "status": "RETRACTED_ROOT_MISREAD_CURRENT_FIXTURE",
+      "counterevidence": "Exactc5fixture455–509 expectedSemesterId fromrecoveryseed, explicitlyforbidsPOSTsemester/fallbackactivate, ownSemesterId=expectedSemesterId anddatasetidentityassert. RootreopenedSourceconfirmed; prior distinctIDclaim false; no privatepin/newcode needed",
+      "correct_next": "Useexistingseedpin unchanged, no extraSourcehardening/handshake"
+    },
+    "Q10_C_ACK_WS_remaining_Source_join": {
+      "utc": "2026-10-14T16:05:14.908404+00:00",
+      "agent": "c5f3_ci_observer read-only",
+      "already_proved": "13exactnamedPASS;7WSunitpolicycases +ownrevokeSocket +committeddedupreplay/rollback.Sourceboundaries byteequal657→c5",
+      "missing": "Actualpostdurablecommit/preAUTO_ACKconsumerchannel loss/redelivery oneclaim-history-intent-stablemetadata; actualticketA+spoofedCONNECT/foreignSUBSCRIBE Bdenial withliveB-onlycontrol/noAprivateframe",
+      "next": "assignsameCwriter boundedexistingNotificationITfiles independentofA AttendanceSource; normalCIruntime onceSource reviewed, no localDockerlease",
+      "original_outcome": "/workspace/scratch/rct-validation/c5f3_ci_observer/q10-stream-c-outcome.safe.json"
+    },
+    "Q05_inactive_history_author_ready": {
+      "utc": "2026-10-14T16:07:18.823636+00:00",
+      "commit": "5a2764eade26e8ed625d000ad46829e4f4398315",
+      "parent": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "file": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "sha256": "9852da5d56fe30fbe91cf63d1065f49d574ecfc936a7e10453838bc51a61f3fd",
+      "result": "3inactive200/equalityoraclecalls correctedtyped403OUT_OF_SCOPE; exactretainedhistoryequalityafterexistingexplicitactivateBEFOREpermittedwrite; oldafterwriteandallbarriers/clocks/CAS retained",
+      "checks": "canonicalformat/strictTSC/RAMtyped403negative+fullinverseSourceproof/hooksPASS; final5phases5.389s/reaped/clean/noRuntime",
+      "diagnostic_source_sha256": "10b8d42095c24c93cff975a9f2f77968f69cec7c9e15e2e524881ec8a7c858f0",
+      "diagnostic_controls": "Exactpureprojectionfunctionsvalid/unknown/marker/scope/version/hash/result/errors/missing/AcademicACK/boundedreadonlyMongo PASS; DBnativeNOT_RUN",
+      "next": "RootintegrateWIP+samecoherentWF/harness independentreview/normalCI"
+    },
+    "Q12_map_author_Source_ready": {
+      "utc": "2026-10-14T16:07:18.823636+00:00",
+      "author": "q09_remaining_client_writer",
+      "base": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "head": "5530082782e50f020e2ce2aceefcd5f768f1a0fb",
+      "file": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+      "sha256": "5d3d480b9d841e94209e5e1fbed603d79f34ee694e012dd40ffaab84eb1eda15",
+      "result": "Appendexistingcase: ADMINviewer403, oneplan503+realPWA retry, finalfloorpreview/passwordcommand/replay,2historicalversions/4oldasset404, realPWAempty, samehashsiblingidentity/history/bytesunchanged. No newlogin/alloldassertions/timeouts/privacy retained",
+      "checks": "Prettier/strictTSC/inverse/diff/hooksPASS15.998+11.464s/reaped/WTclean",
+      "actual": "NOT_RUN; no nativebackend/mutation/probe",
+      "limits": "PWAAdminexistingformatclear notfinalfloorUI, noacceptedmobileUI-GAPverdictfromcandidatedesktop. UsageHMAC notwiredinCI; do notclaimdemandcounterflow covered",
+      "next": "oneindependentwholeonespecreview, thenRootintegration/normalCI"
+    },
+    "E13_C1_local_socket_environment_failure": {
+      "utc": "2026-10-14T16:08:49.654319+00:00",
+      "result": "Gradleoffline --no-daemon requires single-use localhostdaemon; SocketException Operationnotpermitted atTcpIncomingConnector.accept/socket0 beforeformatter/tests; native1/all2ownedbirthsreaped/newtest+CacheConfigSourceunchanged",
+      "classification": "Sandbox loopback capability failure, not product/testFAIL; no automaticapprovalrejection reported",
+      "next": "SAMEexactexistingguard/Gradlecaller with tooladditionalnetworkpermission onlyfornecessarylocalhostsocket; stilloffline/no remote/networkapp calls/noDocker, original600spackagebudgetremainingonly. Ifautomaticreviewrejects preserveblocker/nobypass",
+      "formatter": "ActualSpotless7.0.4 supported-PspotlessIdeHook absolute trackedtarget; spotlessFilesunverified flagdropped"
+    },
+    "Q05_verification_Root_WIP_integration": {
+      "utc": "2026-10-14T16:09:33.417532+00:00",
+      "fixture_source": "5a2764eade26e8ed625d000ad46829e4f4398315",
+      "fixture_sha256": "9852da5d56fe30fbe91cf63d1065f49d574ecfc936a7e10453838bc51a61f3fd",
+      "newverificationfiles": [
+        {
+          "identity": "tests/e2e/fixtures/semester-effect-diagnostic.py",
+          "sha256": "10b8d42095c24c93cff975a9f2f77968f69cec7c9e15e2e524881ec8a7c858f0"
+        },
+        {
+          "identity": "tests/e2e/fixtures/semester-effect-diagnostic.control.py",
+          "sha256": "1081f8e198f27840a5746a856fe370c62d4aaf923351f3bce0ea7c6f3f7e21c4"
+        }
+      ],
+      "wiring": "Control onlyownedSourcefilename literalchanged; mainRoothelperexactauthor10b8bytes. Newdiagnosticconditionfailureonly/no rawdata; RootWFcall+optionalclosedartifact next",
+      "review": "NOT_YET_APPROVED; samecoherentWF/fixture/diagnostic independentreview now",
+      "actual": "Q05 newafter+diagnosticDB nativeNOT_RUN"
+    },
+    "Q05_Q10_coherent_verification_review_input": {
+      "utc": "2026-10-14T16:15:11.771302+00:00",
+      "writer": "Root soleCI/verifications integration +Afixtureauthor5a276",
+      "pins": [
+        {
+          "identity": ".github/workflows/ci.yml",
+          "sha256": "2458a650b46789bada39e9c45bd16f8fe6762bb5d2860be76739c34008d76ad0"
+        },
+        {
+          "identity": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "sha256": "9852da5d56fe30fbe91cf63d1065f49d574ecfc936a7e10453838bc51a61f3fd"
+        },
+        {
+          "identity": "tests/e2e/fixtures/semester-effect-diagnostic.py",
+          "sha256": "ca85dd0a25e8929f6f20ca83adc49dea80230fba2d46c8c8dd9bfe5e94bfe525"
+        },
+        {
+          "identity": "tests/e2e/fixtures/semester-effect-diagnostic.control.py",
+          "sha256": "2e14c7b39bb2706b262f8e7c5dc4e2578926e9ea8dc5f189c5b97eebdcb01a59"
+        }
+      ],
+      "checks": "WFyaml/bash/2inlinePythonparse+6selectorcontrolsPASS; actualpureprojectioncontrolsPASS; pinnedRuff0.17format/lint finalPASS afterimportsort/2lambda-def/checkFalse+captureoutput/typedexpectedexceptions+fixedSystemExit. No ruleswaiver",
+      "qualifications": "InitialcachedRuffbinary0.11 mismatchidentified; exactpinned0.17 installedofficialPyPIinownedtoolcache. No product/dependencySource/lockchange. Runtimebrowser/DBdiagnosticNOT_RUN",
+      "review": "one independentcoherentWF+3verificationSource files next",
+      "correction_history": "InitialRuff0.17lintFAIL importsort/exec/BLE001 capturedbeforefinalPASS; no runtimeDB/helpermain execution; typedRecoveryError translated tofixedValueError."
+    },
+    "Q12_map_independent_whole_review": {
+      "utc": "2026-10-14T16:15:11.771302+00:00",
+      "reviewer": "q06_replacement_cause independent frommapauthor",
+      "head": "5530082782e50f020e2ce2aceefcd5f768f1a0fb",
+      "verdict": "APPROVE_SOURCE/no blockingfindings",
+      "scope": "exactonespec/alloldbytesinverse; actualfinalfloorAPI distinctPLAN_CLEAR; samehashcontrol/cascadeversion-assets/role403/retry/emptymanifest+UI coherent",
+      "residuals": "extendedactualbrowserNOT_RUN; no finaldeleteUI/zoompan/physicalstoreoutage/usagepositive orwholeQ12claim; reuseexistingnamedPGrollbackandreceiptproofs",
+      "evidence": "/workspace/scratch/rct-validation/q06_replacement_cause/outcome.safe.json#Q12Map553WholeIndependentReview"
+    },
+    "Q12_map_reviewed_Root_integration": {
+      "utc": "2026-10-14T16:15:11.771302+00:00",
+      "source": "5530082782e50f020e2ce2aceefcd5f768f1a0fb",
+      "root_parent": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "file": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+      "sha256": "5d3d480b9d841e94209e5e1fbed603d79f34ee694e012dd40ffaab84eb1eda15",
+      "actual": "SourceintegratedWIP/realextendedafterNOT_RUN; nextordinaryCI"
+    },
+    "E13_C1_actual_serializer_acceptance": {
+      "utc": "2026-10-14T16:16:56.709563+00:00",
+      "writer": "remaining_security_enum_scopes",
+      "test_sha256": "a743bc5f40a86d483e53bed052bd36923cf7dcd570fb65b0b644ac2f6faa8f07",
+      "production_sha256": "0a58b00bc627bace272edcd2636730c9a5dc751e81e972173355e580ad2ad5b0",
+      "actual": "3actualproductionserializer+BootRESTmapper testsGREEN, selectedbenignURIallowanceRED atsameexpectedexception assertion(java.lang.AssertionError), byteexactCacheConfigrestore+freshcompile same3GREEN; 0skip/no DB/RedisIObrowser/actorcacheclaim",
+      "fixture_failure": "Initiallightcontext missingBootString→Durationconversion caused3fixturefailbeforeassertions; installedactualApplicationConversionService onlytestfixture. Not productfailure; initialRootsocketENVfailure thensamecaller capabilityaccepted",
+      "elapsed_seconds": 497,
+      "formatter": "exacttargetGoogleJavaAOSP actualapply thenunchangedSource+UP-TO-DATE finaltask; no requirementrepeatformatterwithoutSourcechange",
+      "resources": "Allnativephasesreaped/no boundsviolations/nooutbound/DBDocker; heavyexclusiveleaseRELEASED",
+      "evidence": "SelectedsafeXMLcases/hashespersistedhere; originalsafeprocess/resource receipts ownchecks inauthorOUTCOME; independentreview confirms",
+      "next": "onefile normalowncommit+independentwhole3testreview; integratewhenready withoutwaitingotherstreams",
+      "selected_safe_runs": {
+        "corrected-green": {
+          "xml_sha256": "33e9ac621fdb466363dc8aec571ca97d471b54efefd0a7fb36f6cad60a5eeb88",
+          "test_sha256": "a743bc5f40a86d483e53bed052bd36923cf7dcd570fb65b0b644ac2f6faa8f07",
+          "production_sha256": "0a58b00bc627bace272edcd2636730c9a5dc751e81e972173355e580ad2ad5b0",
+          "cases": [
+            {
+              "name": "cacheTypeMetadataDoesNotChangeOrdinaryRestDtoMapping()",
+              "status": "PASSED",
+              "failure_type": null,
+              "missing_expected_exception": false
+            },
+            {
+              "name": "cachedDomainValuesAndCollectionsRetainTheirTypesAndDates()",
+              "status": "PASSED",
+              "failure_type": null,
+              "missing_expected_exception": false
+            },
+            {
+              "name": "foreignTypeMetadataIsRejectedWithoutBreakingAllowedValues()",
+              "status": "PASSED",
+              "failure_type": null,
+              "missing_expected_exception": false
+            }
+          ]
+        },
+        "uri-rule-red": {
+          "xml_sha256": "fd887e3d639ff4eacdd78074d2622b54132fc665857dca09e124f43f6de00296",
+          "test_sha256": "a743bc5f40a86d483e53bed052bd36923cf7dcd570fb65b0b644ac2f6faa8f07",
+          "production_sha256": "39f1c5acda2f848eb8f84cc8a34cdc731155d194756b38aeaf9854571a8370e1",
+          "cases": [
+            {
+              "name": "foreignTypeMetadataIsRejectedWithoutBreakingAllowedValues()",
+              "status": "FAILED",
+              "failure_type": "java.lang.AssertionError",
+              "missing_expected_exception": true
+            }
+          ]
+        },
+        "restored-green": {
+          "xml_sha256": "10b2bf2a9c7760a1bf066565818f5bd018c0b6a81198c80c5e8afc728150e12d",
+          "test_sha256": "a743bc5f40a86d483e53bed052bd36923cf7dcd570fb65b0b644ac2f6faa8f07",
+          "production_sha256": "0a58b00bc627bace272edcd2636730c9a5dc751e81e972173355e580ad2ad5b0",
+          "cases": [
+            {
+              "name": "cacheTypeMetadataDoesNotChangeOrdinaryRestDtoMapping()",
+              "status": "PASSED",
+              "failure_type": null,
+              "missing_expected_exception": false
+            },
+            {
+              "name": "cachedDomainValuesAndCollectionsRetainTheirTypesAndDates()",
+              "status": "PASSED",
+              "failure_type": null,
+              "missing_expected_exception": false
+            },
+            {
+              "name": "foreignTypeMetadataIsRejectedWithoutBreakingAllowedValues()",
+              "status": "PASSED",
+              "failure_type": null,
+              "missing_expected_exception": false
+            }
+          ]
+        }
+      }
+    },
+    "Q10_C_local_compile_heavy_lease": {
+      "utc": "2026-10-14T16:19:46.777358+00:00",
+      "author": "c5f3_ci_observer",
+      "scope": "onlyNotificationEventIdempotentIT+AuthRealAuthOpenSocketLogoutIT canonicalformatter andcompileTestJava; NOtests/runtimeDB/Rabbit/socketapp/networkoutbound",
+      "lease": "GRANTED exclusiveGradle420stotal/180spercall/cleanup30/JDK21/8.12offline/no-daemon/1worker/Xmx1gMeta384/ownRSS3GiB/growth256MiB/floor4GiB/shared15+1/log1MiB; currentfree4701814784",
+      "source": "supportedSpotlessIdeHook2exacttrackedtargets only, originaltest bodiesinversecheck; mutableSourceonlytwoallowedfiles",
+      "network_capability": "tooladditionalnetworktrue necessaryGradleloopbackdaemon, offlineallresolvers/appnetworkneverexecuted; no platformrejection/bypass"
+    },
+    "c5f3_next_merged_six_TS_check": {
+      "check": "merged strict sixE2E TS",
+      "exit": 0,
+      "elapsed_seconds": 5.672,
+      "Playwright_actual_directory_preserved": true,
+      "native_tests": "NOT_RUN"
+    },
+    "Q05_Q10_coherent_verification_review": {
+      "utc": "2026-10-14T16:23:45.751561+00:00",
+      "reviewer": "q07_client_review independent",
+      "verdict": "APPROVE_SOURCE/no blockingfindings",
+      "scope": "exact4pins reviewinput; typedinactive403oracles+currenthistoryreadback; exactownedreadonlyclosedSQL/Mongo diagnostic; actualnavfault/focusselector/byteexactPWArestore guardedworkflow",
+      "limits": "newactualDBdiagnostic/browsernavRED→restoreGREEN NOT_RUN; futureartifactconsumer mustexplicitlyadmit3members+closedsemester-effect.v1 schema, do notweaken ZIP/type/privacy guards",
+      "evidence": "/workspace/scratch/rct-validation/q07_client_review/q09-review.safe.md"
+    },
+    "E13_C1_independent_review": {
+      "utc": "2026-10-14T16:23:45.751561+00:00",
+      "reviewer": "q06_replacement_cause independent",
+      "head": "4c636d40ce0eca7a2cee3079f8a590e502279cb8",
+      "verdict": "APPROVE_SOURCE/no findings",
+      "source": "actualcachecarriers+serializer/independentRESTmapper/unchangedtestbenignURI-onlyRED→exactrestoredsame3GREEN independentlySourcejoined",
+      "limits": "localserializer+mapperonly/no RedisIO/actorkeyTTL/HTTP/provider/fullQ13claim",
+      "evidence": "/workspace/scratch/rct-validation/q06_replacement_cause/outcome.safe.json#E13C1Cache4c636WholeIndependentReview"
+    },
+    "E13_C1_Root_reviewed_integration": {
+      "utc": "2026-10-14T16:23:45.751561+00:00",
+      "source_head": "4c636d40ce0eca7a2cee3079f8a590e502279cb8",
+      "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/CacheSerializationBoundaryTest.java",
+      "test_sha256": "a743bc5f40a86d483e53bed052bd36923cf7dcd570fb65b0b644ac2f6faa8f07",
+      "result": "Onlynew192lineactualserializerboundarytest exactRootintegrated; allproductionJavaunchangedfromc5",
+      "current_normal_CI": "NEXT_PUBLISH_REQUIRED"
+    },
+    "Q10_C_compile_capture_correction": {
+      "utc": "2026-10-14T16:25:04.121779+00:00",
+      "observed": "2targetSpotlessapply/checkPASS21s+20s; compileFileTooLarge becauseauthorcallerRLIMIT_FSIZE1MiB appliedallGradleartifactwrites, notonlyprivateLog. STOP_REQUEST143/allownedreaped/heavyleasereleased139s; noDB/test/nativeApp",
+      "classification": "ConfirmedowncapturecallerFAIL notJava/productFAIL; source2filesformatted/inverseunchangedoldtests qualified",
+      "correction": "RemoveonlyglobalfileRLIMIT; reuseexistingguard/privatecapture withminimumboundedlogwriter (no newframework/launcher); samecompile-only argv/caps fresh180s+30cleanup exclusivelease. No formatterrerun/cacheprune/deletion",
+      "root_priority": "Do notdelayreadyRootpublication/CI foruncommittedCnewtests; correctandcompileindependentlywhilecurrentpackagepublishes"
+    },
+    "c5f3_next_coherent_publication_preflight": {
+      "utc": "2026-10-14T16:28:01.824655+00:00",
+      "base": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "inventory": "19reviewedproduct-or-checkingSource+9existingtaskdocs=28exactpaths",
+      "source": "Q01UX714776;Q10inbox929775;Q12map553008;Q05fixture5a276+Rootcloseddiag/WF;C1serializer4c636",
+      "checks": "independentwhole/targetedreviewsAPPROVE; merged6E2ETS0/5.672s; Ruff0.17format/lint+purecontrols/yaml/bash/selectorPASS; knownauthorformatter/type/lint/build proofs reused; normalhooks/commit/push/readback next",
+      "native_grant": "existingforegroundb78/180total/90phase/cleanup30/floor4GiB/growth128MiB/ownRSS1GiB/shared15+1/log1MiB; onlynormalofflinehooks/Gitassignedbranchnetwork; no browser/backend/DB/apps",
+      "ownership": "Rootonlyintegrator; preserveactualPlaywrightdir/Angular433/original25untracked; CcompileactiveisolatedWTnotincludedandnotblocking"
     }
   }
 }

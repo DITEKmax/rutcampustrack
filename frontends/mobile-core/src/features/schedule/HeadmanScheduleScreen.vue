@@ -1847,6 +1847,7 @@ defineExpose({ openNotificationAction });
       :homework-enabled="moreAvailability.homework"
       :log-enabled="lessonActionsApi !== null"
       :offline="offline"
+      :read-only="readOnly"
       :role-switch-disabled="homeRoleSwitchDisabled"
       @select-date="selectedDate = $event"
       @role-switch="openHomeRoleSwitch"

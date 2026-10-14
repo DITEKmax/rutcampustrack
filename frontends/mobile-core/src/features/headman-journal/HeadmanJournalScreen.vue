@@ -3,7 +3,15 @@ import {
   exportStateLabel,
   reportDownloadAcceptedMessage,
 } from '../../shared/report-download-client';
-import { defineAsyncComponent, computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import {
+  defineAsyncComponent,
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
 import { HeadmanManualPreview, type ManualPreviewState } from './headman-manual-preview';
 const AttachmentPdfPreview = defineAsyncComponent(
   () => import('../../shared/components/AttachmentPdfPreview.vue'),
@@ -130,8 +138,7 @@ function requestClearExcuse(entry: HeadmanJournalRosterEntry): void {
     entry.status !== 'EXCUSED'
   )
     return;
-  clearConfirmation.value = { scope, entry };
-  clearConfirmationDialog.value?.showModal();
+  void clearExcuse(entry);
 }
 async function confirmClearExcuse(): Promise<void> {
   const confirmation = clearConfirmation.value;
@@ -149,6 +156,24 @@ async function confirmClearExcuse(): Promise<void> {
   await clearExcuse(confirmation.entry);
 }
 const linkedTicketEntry = shallowRef<HeadmanJournalRosterEntry | null>(null);
+const editingUserId = ref<number | null>(null);
+const markControls = new Map<string, { focus(): void }>();
+function rememberMarkControl(key: string, element: unknown): void {
+  if (element && typeof (element as HTMLElement).focus === 'function')
+    markControls.set(key, element as HTMLElement);
+  else markControls.delete(key);
+}
+watch(report, () => {
+  editingUserId.value = null;
+});
+const lessonNotStarted = computed(
+  () => selectedLesson.value?.status === 'PLANNED' && report.value?.editable === false,
+);
+function openMarkChoices(entry: HeadmanJournalRosterEntry): void {
+  if (pendingUserId.value !== null || !canWrite(entry) || !entry.markRevision) return;
+  editingUserId.value = entry.userId;
+  void nextTick(() => markControls.get(`${entry.userId}:${entry.status}`)?.focus());
+}
 const excuseUserId = ref<number | null>(null);
 const excuseType = ref<HeadmanJournalExcuseType | ''>('');
 const excuseComment = ref('');
@@ -1841,7 +1866,14 @@ async function submitExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
     setRowError(entry.userId, message);
     emit('error', cause);
   } finally {
-    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) pendingUserId.value = null;
+    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) {
+      pendingUserId.value = null;
+      await nextTick();
+      if (mutationCurrent(scope))
+        (
+          markControls.get(`${entry.userId}:current`) ?? markControls.get(`${entry.userId}:PRESENT`)
+        )?.focus();
+    }
   }
 }
 
@@ -1875,7 +1907,14 @@ async function clearExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
     setRowError(entry.userId, message);
     emit('error', cause);
   } finally {
-    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) pendingUserId.value = null;
+    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) {
+      pendingUserId.value = null;
+      await nextTick();
+      if (mutationCurrent(scope))
+        (
+          markControls.get(`${entry.userId}:current`) ?? markControls.get(`${entry.userId}:PRESENT`)
+        )?.focus();
+    }
   }
 }
 
@@ -1919,7 +1958,14 @@ async function applyStatus(
     setRowError(entry.userId, message);
     emit('error', cause);
   } finally {
-    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) pendingUserId.value = null;
+    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) {
+      pendingUserId.value = null;
+      await nextTick();
+      if (mutationCurrent(scope))
+        (
+          markControls.get(`${entry.userId}:current`) ?? markControls.get(`${entry.userId}:PRESENT`)
+        )?.focus();
+    }
   }
 }
 
@@ -2103,6 +2149,7 @@ watch(
     ] as const,
   () => {
     mutationGeneration += 1;
+    editingUserId.value = null;
     pendingUserId.value = null;
     excuseUserId.value = null;
     excuseFile.value = null;
@@ -2556,7 +2603,7 @@ onBeforeUnmount(() => {
           </button>
 
           <div
-            v-if="entry.status === 'EMPTY' && excuseUserId === null"
+            v-if="!lessonNotStarted && (entry.status === 'EMPTY' || editingUserId === entry.userId) && excuseUserId === null"
             class="headman-journal__picker"
             role="group"
             :aria-label="`Отметка: ${entry.displayName}`"
@@ -2564,6 +2611,7 @@ onBeforeUnmount(() => {
             <button
               v-for="choice in ['PRESENT', 'EXCUSED', 'ABSENT'] as const"
               :key="choice"
+              :ref="element => rememberMarkControl(`${entry.userId}:${choice}`, element)"
               type="button"
               :disabled="
                 pendingUserId !== null ||
@@ -2571,6 +2619,7 @@ onBeforeUnmount(() => {
                   (choice === 'EXCUSED' && !canManageExcuses())
               "
               :aria-label="`${statusLabel(choice)}: ${entry.displayName}`"
+              :aria-pressed="entry.status === choice"
               @click="onStatusClick(entry, choice)"
             >
               <span
@@ -2580,24 +2629,36 @@ onBeforeUnmount(() => {
             </button>
           </div>
           <button
-            v-else-if="excuseUserId === null"
+            v-else-if="!lessonNotStarted && excuseUserId === null"
+            :ref="element => rememberMarkControl(`${entry.userId}:current`, element)"
             class="headman-journal__current"
             type="button"
             :disabled="pendingUserId !== null || !canClearEntry(entry)"
-            :aria-label="`${statusLabel(entry.status)}: ${entry.displayName}. ${entry.status === 'EXCUSED' ? 'Подтвердить снятие' : 'Снять отметку'}`"
-            @click="
-              entry.status === 'EXCUSED'
-                ? requestClearExcuse(entry)
-                : entry.status === 'PRESENT' || entry.status === 'ABSENT'
-                  ? onStatusClick(entry, entry.status)
-                  : undefined
-            "
+            :aria-label="`${statusLabel(entry.status)}: ${entry.displayName}. Открыть выбор отметки`"
+            @click="openMarkChoices(entry)"
           >
             <span
               class="headman-journal__status-circle"
               :data-status="entry.status.toLowerCase()"
             >{{ statusSymbol(entry.status) }}</span>
           </button>
+
+          <button
+            v-if="!lessonNotStarted && entry.status !== 'EMPTY' && editingUserId !== entry.userId && excuseUserId === null"
+            class="headman-journal__current"
+            type="button"
+            :disabled="pendingUserId !== null || !canWrite(entry) || !entry.markRevision"
+            :aria-label="`Изменить отметку: ${entry.displayName}`"
+            @click="openMarkChoices(entry)"
+          >
+            <MobileIcon name="edit" />
+          </button>
+          <p
+            v-if="lessonNotStarted"
+            class="headman-journal__future"
+          >
+            Пара ещё не началась
+          </p>
 
           <button
             v-if="entry.status !== 'EMPTY' && canWrite(entry) && !entry.markRevision"

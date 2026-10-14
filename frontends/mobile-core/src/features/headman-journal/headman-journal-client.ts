@@ -47,6 +47,7 @@ export interface HeadmanJournalLesson {
   readonly endTime: string | null
   readonly room: string | null
   readonly lessonType: string | null
+  readonly blockedByHeadman?: boolean
   readonly occurrenceId?: string | null
   readonly occurrenceRevision: string | null
   readonly current: boolean
@@ -350,6 +351,18 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     }
   }
 
+  async setHeadmanBlock(lessonId: number, blocked: boolean): Promise<HeadmanJournalLesson> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/blockage`, {
+      method: blocked ? 'POST' : 'DELETE',
+    })
+    const lesson = normalizeLesson(value)
+    if (!lesson || lesson.id !== lessonId || lesson.blockedByHeadman !== blocked) {
+      throw new Error('Сервер не подтвердил состояние геоблокировки выбранной пары.')
+    }
+    return lesson
+  }
+
   async cancelLesson(lessonId: number, reason: string): Promise<HeadmanJournalLesson> {
     assertPositiveInteger(lessonId, 'lessonId')
     const normalizedReason = reason.trim()
@@ -644,6 +657,9 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
     ...(record.occurrenceId === undefined
       ? {}
       : { occurrenceId: positiveDecimalValue(record.occurrenceId) }),
+    ...(typeof record.blockedByHeadman === 'boolean'
+      ? { blockedByHeadman: record.blockedByHeadman }
+      : {}),
     occurrenceRevision,
     current: booleanValue(record.current) ?? false,
     transferOperationId,

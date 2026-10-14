@@ -391,3 +391,18 @@
 .headman-home__calendar button[aria-current='date']::after {
   display: none;
 }
+
+.headman-home__block-confirm {
+  display: grid;
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-3);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-home__block-confirm button {
+  min-block-size: var(--rct-control-min-touch);
+}
+.headman-home__geo-block {
+  grid-column: 1 / -1;
+}

@@ -14473,6 +14473,177 @@
       "author_commit": "ROOT_EXACT_WORKFLOW_HUNK",
       "status": "exact reviewed Rootintegration; relevantauthorchecksPASS; currentnextactualCIpending",
       "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.next_d106_publication"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1843",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "2458a650b46789bada39e9c45bd16f8fe6762bb5d2860be76739c34008d76ad0",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1844",
+      "path": "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.vue",
+      "sha256": "7d0125e4be6116e8cf3349f862fa73dc14b57a5a8f9971bb7f4f0c02b595a6c2",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1845",
+      "path": "frontends/mobile-core/src/features/headman-home/headman-home-screen.pcss",
+      "sha256": "71442bd34a8aa95830faa411cdfd4958185a473cc660c635cbb0e59bb927c5be",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1846",
+      "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "sha256": "81ba527cd3cfd28f5775f297b02c7b25f90882cae830b1505eea40284f0698ab",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1847",
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.test.ts",
+      "sha256": "3225f7f414ff838ed9deb3d7b35ef3c22a3d80a36a7c136b8d8d24c6870c2b9e",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1848",
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts",
+      "sha256": "3de79d6139404a22e5bacc49eee624bb04087a2f948b3ec988f4012120832cdb",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1849",
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-operation.test.ts",
+      "sha256": "1a63472f658de07174bbeaa96556ace3f73ed6f2b597d8bf4c2ae45a51996477",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1850",
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-screen.pcss",
+      "sha256": "d2924eaeb2ddeabd3f132ff0950c4d61e6f1d7071b155217fa8b30b8e0bfc495",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1851",
+      "path": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+      "sha256": "7034b1b2ea586b5b2d667deccbf09b19d2b4a54cd5d6b587cccb94830395825f",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1852",
+      "path": "frontends/mobile-core/src/shared/components/MobileIcon.vue",
+      "sha256": "da5c1f1f8cfdd5f9ab2a8ff08ff3743bcaea892c0f289b07ca7577c6e4fe754f",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1853",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/CacheSerializationBoundaryTest.java",
+      "sha256": "a743bc5f40a86d483e53bed052bd36923cf7dcd570fb65b0b644ac2f6faa8f07",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1854",
+      "path": "tests/e2e/fixtures/semester-effect-diagnostic.control.py",
+      "sha256": "2e14c7b39bb2706b262f8e7c5dc4e2578926e9ea8dc5f189c5b97eebdcb01a59",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1855",
+      "path": "tests/e2e/fixtures/semester-effect-diagnostic.py",
+      "sha256": "ca85dd0a25e8929f6f20ca83adc49dea80230fba2d46c8c8dd9bfe5e94bfe525",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1856",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "sha256": "9852da5d56fe30fbe91cf63d1065f49d574ecfc936a7e10453838bc51a61f3fd",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1857",
+      "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "sha256": "2f5a240a18c5555852cb5408fb1350471ea6f6378117ade540e45a3e760122a6",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1858",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "4ace26a97be81092143584ff68987134b22527820dfd5f671c198c89e30f7a35",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1859",
+      "path": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+      "sha256": "3615f9c542dd88e176cb67ef047f42ebbf7e0d1acf80108fb86f908d012d1fe5",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1860",
+      "path": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+      "sha256": "5d3d480b9d841e94209e5e1fbed603d79f34ee694e012dd40ffaab84eb1eda15",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
+    },
+    {
+      "id": "CURRENT-C5F3-NEXT-1861",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "a0dee149ba09afae1be81cae8e158d1fa85e31e14ed0a00af8ff46eaf42d975b",
+      "status": "independently reviewed current Source/local checks; actual newbrowser and finalCI NOT_RUN retained",
+      "revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+      "kind": "reviewed-current-product-or-checking-source",
+      "revision_qualification": "Prospective integration base; author714776/929775/553008/5a276/4c636 and RootWFexactpins in current-4065 receipt; cacheactualSourcepinred-restore-green distinguished"
     }
   ],
   "research_receipt": {

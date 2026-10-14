@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import { test, expect, admit, selectPwaRole, type MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
-import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
+import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
 import { datasetHttpFailure } from '../fixtures/safe-reporter';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 
@@ -89,7 +89,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
   test('HEADMAN marks the real roster and TEACHER reads without acquiring write permission', async ({
     page,
     dataset,
-  }) => {
+    ignoreHTTPSErrors,
+  }, info) => {
     await loginPwa(page, dataset.headman);
     await selectPwaRole(page, 'Староста');
     await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
@@ -105,10 +106,213 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect((await marked).status()).toBe(200);
     await expect(
       page.getByRole('button', {
-        name: `Был: ${dataset.student.displayName}. Снять отметку`,
+        name: `Был: ${dataset.student.displayName}. Открыть выбор отметки`,
         exact: true,
       }),
     ).toBeVisible();
+    const id = dataset.lesson.physicalLessonId;
+    const markPath = `/api/attendance/lessons/${id}/students/${dataset.student.id}`;
+    const reportPath = `/api/attendance/reports/lesson/${id}`;
+    const studentRow = () =>
+      page.locator(`.headman-journal__roster-list [data-user-id="${dataset.student.id}"]`);
+    const storedStudent = async () => {
+      const report = await dataset.headmanActor.call('GET', reportPath);
+      return report.entries.find(
+        (row: { userId: number }) => Number(row.userId) === dataset.student.id,
+      );
+    };
+    const choose = async (label: string, method: 'PUT' | 'DELETE') => {
+      const response = page.waitForResponse(
+        (item) => new URL(item.url()).pathname === markPath && item.request().method() === method,
+      );
+      await studentRow()
+        .getByRole('button', { name: `${label}: ${dataset.student.displayName}`, exact: true })
+        .click();
+      expect((await response).status()).toBe(200);
+    };
+    const openChoices = async () => {
+      const before = await storedStudent();
+      await studentRow()
+        .getByRole('button', {
+          name: `Изменить отметку: ${dataset.student.displayName}`,
+          exact: true,
+        })
+        .click();
+      for (const label of ['Был', 'Уважительная причина', 'Не был']) {
+        await expect(
+          studentRow().getByRole('button', {
+            name: `${label}: ${dataset.student.displayName}`,
+            exact: true,
+          }),
+        ).toBeVisible();
+      }
+      expect(await storedStudent()).toEqual(before);
+    };
+    await openChoices();
+    await expect(
+      studentRow().getByRole('button', {
+        name: `Был: ${dataset.student.displayName}`,
+        exact: true,
+      }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await choose('Был', 'DELETE');
+    await expect(studentRow()).toHaveAttribute('data-status', 'empty');
+    expect((await storedStudent()).status).toBeNull();
+    await choose('Не был', 'PUT');
+    await expect(studentRow()).toHaveAttribute('data-status', 'absent');
+    expect(await storedStudent()).toMatchObject({ status: 'absent', source: 'headman' });
+    await openChoices();
+    await choose('Не был', 'DELETE');
+    await expect(studentRow()).toHaveAttribute('data-status', 'empty');
+
+    // The existing student's blank row is a genuine geo witness; a headman remains
+    // HEADMAN_USES_JOURNAL even after choosing its STUDENT role.
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }),
+    ).toBeVisible();
+    const blockTrigger = page.getByRole('button', {
+      name: 'Заблокировать геоотметки',
+      exact: true,
+    });
+    await blockTrigger.focus();
+    await blockTrigger.press('Enter');
+    const confirmation = page.getByRole('group', {
+      name: 'Подтвердить блокировку геоотметок',
+      exact: true,
+    });
+    await expect(confirmation).toBeVisible();
+    const cancelBlock = confirmation.getByRole('button', { name: 'Отмена', exact: true });
+    await expect(cancelBlock).toBeFocused();
+    await cancelBlock.press('Escape');
+    await expect(confirmation).toHaveCount(0);
+    await expect(blockTrigger).toBeFocused();
+    await blockTrigger.press('Enter');
+    await expect(cancelBlock).toBeFocused();
+    await cancelBlock.click();
+    await expect(confirmation).toHaveCount(0);
+    await expect(blockTrigger).toBeFocused();
+    await expect(
+      page.getByRole('button', { name: 'Заблокировать геоотметки', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Заблокировать геоотметки', exact: true }).click();
+    const blocked = page.waitForResponse(
+      (item) =>
+        new URL(item.url()).pathname === `/api/schedule/lessons/${id}/blockage` &&
+        item.request().method() === 'POST',
+    );
+    await confirmation
+      .getByRole('button', { name: 'Подтвердить блокировку геоотметок', exact: true })
+      .click();
+    const blockAck = await blocked;
+    expect(blockAck.status()).toBe(200);
+    expect((await blockAck.json()).blockedByHeadman).toBe(true);
+    const browser = page.context().browser();
+    if (!browser) throw new Error('Synthetic student browser context is required');
+    requirePrivateArtifacts(info);
+    // Match the existing disposable stand's TLS setting; do not enable capture.
+    const studentContext = await browser.newContext({
+      baseURL: new URL(page.url()).origin,
+      ...(ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors }),
+    });
+    try {
+      const studentPage = await studentContext.newPage();
+      const studentLogin = await loginPwa(studentPage, dataset.student);
+      const headers = { Authorization: `Bearer ${studentLogin.accessToken}` };
+      const snapshot = async () => {
+        const response = await studentPage.request.get('/api/v1/student/today', { headers });
+        expect(response.status()).toBe(200);
+        return (await response.json()).lessons.find(
+          (row: { schedule: { id: string } }) => row.schedule.id === String(id),
+        );
+      };
+      const budget = async () => {
+        const response = await studentPage.request.get('/api/v1/student/requests/options', {
+          headers,
+        });
+        expect(response.status()).toBe(200);
+        return (await response.json()).budget;
+      };
+      const beforeBudget = await budget();
+      expect((await snapshot()).checkinEligibility).toMatchObject({
+        allowed: false,
+        reason: 'GEO_BLOCKED',
+      });
+      await expect(
+        studentPage.getByRole('button', { name: 'Отметка по геолокации недоступна', exact: true }),
+      ).toBeDisabled();
+      const denied = await studentPage.request.post(`/api/v1/student/lessons/${id}/checkin`, {
+        headers: { ...headers, 'Idempotency-Key': randomUUID() },
+        data: { geo: { kind: 'COORDINATES', latitude: 0, longitude: 0 } },
+      });
+      expect(denied.status()).toBe(409);
+      expect((await snapshot()).request).toBeNull();
+      expect(await budget()).toEqual(beforeBudget);
+      await page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }).click();
+      await choose('Был', 'PUT');
+      expect(await storedStudent()).toMatchObject({ status: 'present', source: 'headman' });
+      await openChoices();
+      await choose('Был', 'DELETE');
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+      const unblocked = page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === `/api/schedule/lessons/${id}/blockage` &&
+          item.request().method() === 'DELETE',
+      );
+      await page.getByRole('button', { name: 'Разблокировать геоотметки', exact: true }).click();
+      const unblockAck = await unblocked;
+      expect(unblockAck.status()).toBe(200);
+      expect((await unblockAck.json()).blockedByHeadman).toBe(false);
+      await expect(confirmation).toHaveCount(0);
+      await studentPage.reload();
+      await expect(
+        studentPage.getByRole('button', { name: 'Отметиться', exact: true }),
+      ).toBeEnabled();
+      expect((await snapshot()).checkinEligibility).toMatchObject({
+        allowed: true,
+        reason: 'ELIGIBLE',
+      });
+      expect(await budget()).toEqual(beforeBudget);
+    } finally {
+      await studentContext.close();
+    }
+    await page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }).click();
+    await choose('Был', 'PUT');
+    await expect(studentRow()).toHaveAttribute('data-status', 'present');
+    const future = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: dataset.tomorrow,
+        lessonNumber: 1,
+        classroom: 'Синтетическая аудитория',
+      },
+      [201, 200],
+      { 'Idempotency-Key': randomUUID() },
+    );
+    const futureReport = page.waitForResponse(
+      (item) =>
+        new URL(item.url()).pathname ===
+          `/api/attendance/reports/lesson/${future.physicalLessonId}` &&
+        item.request().method() === 'GET',
+    );
+    await page.getByRole('button', { name: 'Следующая пара или день', exact: true }).click();
+    const futureRead = await futureReport;
+    expect(futureRead.status()).toBe(200);
+    expect(await futureRead.json()).toMatchObject({
+      editable: false,
+      lessonDate: dataset.tomorrow,
+    });
+    await expect(page.getByText('Пара ещё не началась', { exact: true }).first()).toBeVisible();
+    await expect(page.locator('.headman-journal__picker')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Предыдущая пара или день', exact: true }).click();
+    await expect(studentRow()).toHaveAttribute('data-status', 'present');
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
     await page
       .getByRole('button', {
         name: `Уважительная причина: ${dataset.headman.displayName}`,
@@ -214,7 +418,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect((await marked).status()).toBe(200);
     await expect(
       page.getByRole('button', {
-        name: `Был: ${dataset.assistant.displayName}. Снять отметку`,
+        name: `Был: ${dataset.assistant.displayName}. Открыть выбор отметки`,
         exact: true,
       }),
     ).toBeVisible();

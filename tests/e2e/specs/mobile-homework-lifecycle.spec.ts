@@ -213,6 +213,182 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
     bindingMode: completed.bindingMode,
   });
   expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(history);
+
+  // JS-HEADMAN-17 / JS-SYSTEM-10: this real UI edit must reach its dated audience.
+  // The event uses the real clock, independently of the educational browser clock.
+  const moscowDay = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Moscow',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  expect(
+    dataset.semester.dateFrom <= moscowDay.format(new Date(edit.occurredAt)) &&
+      dataset.semester.dateFrom <= moscowDay.format(new Date()),
+  ).toBe(true);
+  type NotificationRow = {
+    id: string;
+    type: string;
+    sentAt: string;
+    readAt: string | null;
+    revision: string;
+    details: { label: string; value: string }[];
+    action: { kind: string; role: string; homeworkId: string; lessonDate: string } | null;
+  };
+  const inboxPath = '/api/notifications/inbox';
+  const matchesHomework = (row: NotificationRow, type: string, itemTitle: string) =>
+    row.type === type &&
+    row.action?.kind === 'homework' &&
+    row.action.homeworkId === String(original.id) &&
+    row.action.lessonDate === dataset.tomorrow &&
+    row.details.some((detail) => detail.label === 'Задание' && detail.value === itemTitle);
+  let notificationRows: NotificationRow[] = [];
+  await expect
+    .poll(
+      async () => {
+        const inbox = await readStudent.call('GET', `${inboxPath}?limit=100`);
+        expect(inbox.role === 'STUDENT' && Array.isArray(inbox.items)).toBe(true);
+        notificationRows = inbox.items;
+        return (
+          notificationRows.filter((row) => matchesHomework(row, 'HOMEWORK_UPDATED', title))
+            .length === 1 &&
+          notificationRows.filter((row) =>
+            matchesHomework(row, 'HOMEWORK_PUBLISHED', original.title),
+          ).length === 1
+        );
+      },
+      { timeout: 20000, message: 'Real homework publication and edit reach the student inbox' },
+    )
+    .toBe(true);
+  const updatedNotification = notificationRows.find((row) =>
+    matchesHomework(row, 'HOMEWORK_UPDATED', title),
+  )!;
+  const publishedNotification = notificationRows.find((row) =>
+    matchesHomework(row, 'HOMEWORK_PUBLISHED', original.title),
+  )!;
+  expect(
+    updatedNotification.action?.role === 'STUDENT' &&
+      updatedNotification.readAt === null &&
+      Number.isFinite(Date.parse(updatedNotification.sentAt)),
+  ).toBe(true);
+  const notificationsDialog = page.getByRole('dialog', { name: 'Уведомления', exact: true });
+  const updatedNotificationCard = notificationsDialog
+    .locator('.notification-card')
+    .filter({ has: page.getByText(title, { exact: true }) });
+  const publishedNotificationCard = notificationsDialog
+    .locator('.notification-card')
+    .filter({ has: page.getByText(original.title, { exact: true }) });
+  const [openedInbox] = await Promise.all([
+    http(page, inboxPath, 'GET'),
+    page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
+  ]);
+  expect(openedInbox.status()).toBe(200);
+  await expect(updatedNotificationCard).toBeVisible();
+  await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'true');
+  await expect(publishedNotificationCard).toBeVisible();
+  const readPath = `${inboxPath}/${updatedNotification.id}/read-state`;
+  const [readResponse, targetResponse] = await Promise.all([
+    http(page, readPath, 'PUT'),
+    page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === '/api/v1/student/homework' &&
+        url.searchParams.get('from') === dataset.tomorrow &&
+        url.searchParams.get('to') === dataset.tomorrow
+      );
+    }),
+    updatedNotificationCard.locator('.notification-card__main').click(),
+  ]);
+  expect(readResponse.status()).toBe(200);
+  const readCommand = readResponse.request().postDataJSON();
+  expect(
+    readCommand.read === true && readCommand.expectedRevision === updatedNotification.revision,
+  ).toBe(true);
+  const readReceipt = await readResponse.json();
+  const readNotification = readReceipt.item as NotificationRow;
+  expect(
+    readReceipt.role === 'STUDENT' &&
+      readNotification.id === updatedNotification.id &&
+      readNotification.sentAt === updatedNotification.sentAt &&
+      readNotification.revision !== updatedNotification.revision &&
+      typeof readNotification.readAt === 'string' &&
+      Number.isFinite(Date.parse(readNotification.readAt)),
+  ).toBe(true);
+  expect(targetResponse.status()).toBe(200);
+  const targetFeed = await targetResponse.json();
+  const targetItems = targetFeed.items.filter((item: { id: string }) => item.id === completed.id);
+  expect(targetItems.length === 1).toBe(true);
+  expect(
+    targetItems[0].title === title &&
+      targetItems[0].description === description &&
+      targetItems[0].lessonDate === dataset.tomorrow &&
+      targetItems[0].completed === true &&
+      targetItems[0].completedAt === completed.completedAt,
+  ).toBe(true);
+  await expect(notificationsDialog).toHaveCount(0);
+  await expect(card).toBeVisible();
+  await expect(card).toHaveAttribute('data-completion', 'completed');
+  await expect(completedSlider).toBeFocused();
+
+  await page.reload();
+  const [reopenedInbox] = await Promise.all([
+    http(page, inboxPath, 'GET'),
+    page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
+  ]);
+  expect(reopenedInbox.status()).toBe(200);
+  const durableInbox = await reopenedInbox.json();
+  expect(durableInbox.role === 'STUDENT' && Array.isArray(durableInbox.items)).toBe(true);
+  const durableRows = durableInbox.items as NotificationRow[];
+  expect(
+    durableRows.filter((row) => row.id === updatedNotification.id).length === 1 &&
+      durableRows.some((row) => JSON.stringify(row) === JSON.stringify(readNotification)) &&
+      durableRows.some((row) => JSON.stringify(row) === JSON.stringify(publishedNotification)),
+  ).toBe(true);
+  await expect(updatedNotificationCard).toBeVisible();
+  await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'false');
+  await expect(publishedNotificationCard).toBeVisible();
+
+  // A different already-admitted recipient can read its own event, not this student's row.
+  const headmanInbox = await dataset.headmanActor.call('GET', `${inboxPath}?limit=100`);
+  expect(headmanInbox.role === 'HEADMAN' && Array.isArray(headmanInbox.items)).toBe(true);
+  const headmanRows = (headmanInbox.items as NotificationRow[]).filter((row) =>
+    matchesHomework(row, 'HOMEWORK_UPDATED', title),
+  );
+  expect(
+    headmanRows.length === 1 &&
+      headmanRows[0].action?.role === 'HEADMAN' &&
+      headmanRows[0].id !== updatedNotification.id &&
+      !headmanInbox.items.some((row: NotificationRow) => row.id === updatedNotification.id),
+  ).toBe(true);
+  const foreignRead = await dataset.request.put(readPath, {
+    headers: dataset.headmanActor.headers(),
+    data: { read: false, expectedRevision: readNotification.revision },
+  });
+  expect(foreignRead.status()).toBe(404);
+  await foreignRead.dispose();
+  const unchangedInbox = await readStudent.call('GET', `${inboxPath}?limit=100`);
+  expect(
+    unchangedInbox.items.some(
+      (row: NotificationRow) => JSON.stringify(row) === JSON.stringify(readNotification),
+    ),
+  ).toBe(true);
+
+  await readStudent.call('POST', '/api/auth/logout-all', undefined, [204]);
+  const revokedInbox = await dataset.request.get(inboxPath, { headers: readStudent.headers() });
+  expect(revokedInbox.status()).toBe(401);
+  await revokedInbox.dispose();
+  const revokedRead = await dataset.request.put(readPath, {
+    headers: readStudent.headers(),
+    data: { read: false, expectedRevision: readNotification.revision },
+  });
+  expect(revokedRead.status()).toBe(401);
+  await revokedRead.dispose();
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.notification-card')).toHaveCount(0);
 });
 
 // These mutations must not reuse the original worker-scoped lesson/homework.

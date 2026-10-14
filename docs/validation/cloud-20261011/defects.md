@@ -309,3 +309,10 @@ Evidence once: receipts/current-4065-real-push-readback.safe.json#next_reviewed_
 
 - DF-HOMEWORK-PLACEMENT-TYPE-001 CLOSED: typed physical lesson receipt retains lessonType; named real PostgreSQL test PASS210IT context plus actual A future placement PUT200/canonical binding/revision/history prefix PASS before unrelated logout491. Whole A remains FAIL pending reviewed navigation precondition. Evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.d106_schedule_coverage_actual and #d106_homework_actual.
 - DF-PWA-HOMEWORK-PERIOD-001 CLOSED; DF-PWA-HOMEWORK-CARD-001 CLOSED: published T013/card implementation, independent review/rechecks and meaningful prior RED controls; d106 full browser B702 PASS3079ms/zeroerrors proves periods, material links, optimistic rollback/retry and completed-bottom/focus. JS-STUDENT-20/21/22 independently reconciled PASS; other Q09 clauses remain separate. Evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.JS_STUDENT_20_21_22_acceptance_review and #d106_homework_actual. Historical before FAIL/GAP entries retained.
+
+## 2026-10-14T15:28:12.315396+00:00 — real production-component journal RED
+
+- DF-PWA-JOURNAL-CHOOSER-001 P2 OPEN: marked-row click clears immediately instead of opening accepted choices/edit affordance; actual unchanged c5f3 SFC semantic RED, not infra.
+- DF-PWA-JOURNAL-FUTURE-001 P3 OPEN: future noneditable row renders three disabled choices where accepted flow requires future state without choices; actual unchanged SFC RED.
+- GAP-PWA-HEADMAN-GEO-BLOCK-001 P2 OPEN: ready main screen lacks accepted active-lesson geo-block control; existing server POST/DELETE blockage fits geo-denial/manual-allowed contract. Actual unchanged Home SFC missing-action RED.
+Source/evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.Q01_actual_component_RED. Same author assigned coherent fix, designskill/currentcomponents; final real backend/browser still required.

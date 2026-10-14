@@ -7201,5 +7201,104 @@
       "missing_oracle": "Exact observable state above; source/fixture existence does not prove execution. Use existing current templates/harness below, extending only uncovered accepted criterion.",
       "actual_runtime_this_receipt": "NOT_RUN"
     }
-  ]
+  ],
+  "current_finite_Q13_Q15_refinement": {
+    "utc": "2026-10-14T15:57:03.417087+00:00",
+    "source_revision": "c5f3b9fd1114c64eaa1202f280d043b0e0237c26",
+    "meaning": "Refines existing scope IDs only, no new stories/requirements/denominator/productdefect/wholefamilyPASS. Existingproofs retained atactualproducer revisions",
+    "rows": [
+      {
+        "alias_existing_scope": "**E13-C1** ACADEMIC-CACHE-DTO / P14",
+        "already_proved": "CacheConfig:86–119 действительно создаёт локальный whitelist mapper и serializer; CacheIT проверяет ключи/TTL/eviction. Полное чтение CacheIT/RbacCacheIT не обнаружило foreign-type assertion. Source не runtime.",
+        "finite_missing_action": "Один focused production-serializer check: взять serializer из настоящего CacheConfig/RedisCacheManager, roundtrip реально используемого cached объекта с date+collection; отказ benign excluded @class; обычный REST mapper сохраняет собственный DTO contract. Не копировать whitelist в тест. Предлагаемый новый CacheSerializationBoundaryTest в A/config, `./gradlew :services:academic-service:academic-app:test --tests '*CacheSerializationBoundaryTest'`. Это новое имя, сейчас файла нет. Один meaningful bad-whitelist/known-bad control только этого правила + restored GREEN, независимое review.",
+        "resource_classification": "READY source/checking package, Java/no external provider/no fullstand; normal CI academic unit lane. Native запуск — отдельный Root ресурсный lease; я его не запускал. Evidence gap, не доказанный deserialize exploit."
+      },
+      {
+        "alias_existing_scope": "**E13-C2** ACADEMIC-CACHE-DTO / P01/P02/P13",
+        "already_proved": "ReadService:56/98/122 ключи group/user/user:group; roster явно uncached/current. CacheIT current-grant roster и transfer есть; реальный admin replacement/revoke PASS4058; protected homework/helper/foreign PASS существуют.",
+        "finite_missing_action": "Один authoritative cached user/group read как actor A cold/warm, тот же ресурс actor B own/foreign, committed replacement/transfer/revoke → свежий результат/deny; rollback → прежний результат. Проверять реальные response data+deny/no writes, не только наличие/удаление ключа. Сначала exact named-current SAFE outcomes для CacheIT.getGroupMembers_readsCurrentGrantWithoutSemesterCoupling, transferStudent_currentRosterMovesStudentBetweenGroups; если нужного actor assertion нет, минимальное расширение CacheIT/существующего HTTP authority IT. `./gradlew :services:academic-service:academic-app:integrationTest --tests '*CacheIT.getGroupMembers_readsCurrentGrantWithoutSemesterCoupling' --tests '*CacheIT.transferStudent_currentRosterMovesStudentBetweenGroups'` только при недостаточном существующем proof/change.",
+        "resource_classification": "Normal CI academic IT/PG+Redis, isolated fixtures; fullstand Cloud сейчас ниже floor. Не использовать `headmanChange...`/`patchUser_headmanRevoke...` как самостоятельное removal oracle: оно зависит от Q012. Не возвращаться к T008 B013 mutation. Evidence gap."
+      },
+      {
+        "alias_existing_scope": "**E13-E1** BOUNDARY50 / L04 / SB-E01/02/03/04",
+        "already_proved": "CASE-SD02 + CASE-SB02/03 + CASE-ENUM-FILTER-LOCALE-001: known/null/unknown+tr-TR ASCII roundtrips и SQL row equality; Mongo raw free_attendance/late_checkin/illness/submitted+optional null и corruption refusal. Existing meaningful RED→GREEN для locale повторять не надо.",
+        "finite_missing_action": "Дополнить ровно missing boundary: raw unknown Mongo code через актуальный публичный affected read → contracted safe error/no raw code/no write, рядом known positive. ConversionFailedException на repository уже PASS, но публичный HTTP status этим не установлен. Existing EnumSerializationIT.unknownCodeFailsClosedAndOptionalNullKeepsItsMeaning неизменённый повтор не закроет HTTP. Минимально добавить один actual HTTP branch к имеющемуся Attendance IT с real Mongo; E1 не требует all-domain re-inventory.",
+        "resource_classification": "Normal CI Attendance IT/Mongo; protected runtime/grant only fixture already used. UNKNOWN evidence; публичный500 пока не воспроизведён. Не обходить SQL constraints неизвестной строкой и не называть это обычным supported input."
+      },
+      {
+        "alias_existing_scope": "**E13-E2** BOUNDARY50 / P02/P21 / SB-E05/06/12",
+        "already_proved": "CASE-SB04 unknown Schedule/Attendance upstream enums → BFF503/no-store; CASE-RF01 unspecified/unknown renderer format → INVALID_ARGUMENT; real homework binding/lessonType positive paths, native exports/map positives accepted. Current StudentQueryService:432 blank bindingMode → LESSON, unknown→typed503; :728 generic enum fence.",
+        "finite_missing_action": "Непокрытые текущие consumers: explicit blank-legacy homework mode→LESSON, unknown nonblank→503; optional/missing vs UNRECOGNIZED proto values must retain existing null meaning or typed refusal. Начать StudentHomeworkHttpGrpcIT existing real HTTP/signed-gRPC seam, один known+blank+unknown table на этом current binding field; затем только такие же ранее перечисленные map format/state и request source/status consumers, где отсутствует exact existing proof. Не повторять already accepted SB04/RF01. TS contract assertion сравнивает fixed accepted codes с штатным generated schema/актуальным consumer; неизвестный не создаёт authority.",
+        "resource_classification": "Normal CI BFF IT, in-process/synthetic producers допустимы для этого mapping invariant; он не доказывает реальные producer DB grants. Без нового proto/API/enum-number изменения. Evidence gap; не утверждать product fault от valueOf grep."
+      },
+      {
+        "alias_existing_scope": "**E13-E3** BOUNDARY50 / P18 / SB-E06/07/08/09/10/11",
+        "already_proved": "Export state CASE-SAQ-EXPORT-ENUM-DB-WIRE PREPARING/READY/ERROR/unknown+ordinal refusal; Schedule populated V17→V30 и V30→V31 + текущая208IT green; real transfer/cancel/restore/archive-related history и typed lessonType210IT. ProgramType explicit1–9, sort allowlists/descriptors и grants — existing canonical boundaries.",
+        "finite_missing_action": "Остаток не «проверить всё enum заново»: join existing fixed12domain table к exact already executed method/source/SAFE tuple; недостающие accepted legacy rows только Homework LESSON/DATE+publication state, semester operation terminal/retry, ProgramType historic1/7 duration fallback, sort unknown/null+tie order. Использовать существующие HomeworkMigrationIT/GroupRegistryIT/semester named cases на populated fixtures. Смена storage не планируется: no new migration/rollback theatre. DB/wire names/numbers считаются immutable; insertion/rename не должны менять их смысл. Совместимость real supported client schema → actual producer projection проверяется E2/current accepted user path.",
+        "resource_classification": "Normal CI existing PG IT + current generated consumer/type lane. Exact missing selected-method evidence сначала read-only join, не весь suite. Обязательны stable/legacy semantics, не обязательна новая enum abstraction для descriptor/sort allowlist или числовое хранение."
+      },
+      {
+        "alias_existing_scope": "**E13-S1** SHARED-SECURITY-ERRORS / P21",
+        "already_proved": "Existing TLS Netty tests real own/reverse principals + plaintext/no-token/untrusted/wronghost refusal; JWT15 actual PASS; RF04 real cancellation/deadline and next same-channel call PASS. T008 current journal actual positive/foreign/revoke proofs accepted отдельно.",
+        "finite_missing_action": "Exact current protected methods: join service-specific policy registration + credentials with existing tests (assignment-close directions, bot-only credential methods), preserving unrelated-method inertness. Если какого-то handler-policy witness нет, one owned actual protected RPC valid control + wrong caller/target/method denied before handler. Shared TLS generic handler не доказывает every deployed handler. Сначала existing AssignmentCloseServiceIdentityInterceptorTest / BotCredentialServiceIdentityInterceptorTest exact named outcomes, не запуск всех RPC.",
+        "resource_classification": "Normal CI relevant shared/service tests; no new blanket TLS policy. B013 T008 sensitivity и B014 Gateway IP checking FROZEN/PLATFORM_BLOCKED: исключены из next commands и любых equivalent CI/model/launcher attempts. Missing method proof — evidence gap; platform gaps отдельно."
+      },
+      {
+        "alias_existing_scope": "**E13-S2** P08/P11 / session security",
+        "already_proved": "Actual cookie/login/refresh/logout checkpoint232; current4058 role-transition/two-session logoutall denied access+refresh; SB01/SB05 redaction, SB06 actual password commit/clear; narrow P07 real public-key provision; P11 realTCP4097deny→4096forward with causal buffer-fix RED→GREEN.",
+        "finite_missing_action": "Current cookie attributes + applicable Origin/CORS/CSRF issuance/clear and invalid denied UI where not source-joined; server expiry/refresh-singlewinner/password-reset or binding transition still go Q03 existing auth methods. P11 proof uses real HTTP controlled upstream401: do not infer genuineAuth/directAuth4096 protection. DirectAuth reachability needs current deployment-route disposition; **не вводить новое прямое4096 quota**, если она не accepted. Ни login-rate probing, ни workaround B014. Minimum existing SessionAuthFlowIT/SameSiteCookieContractIT named-source result + applicable browser flow assertion, not broad pentest.",
+        "resource_classification": "Auth normal CI PG+Redis / browser current E2E; no external bot needed for synthetic reset adapter. Native provider part E14-H2. Existing partial PASS retain original revision; public secret/no-store mismatch newly observed would be product defect, presently UNKNOWN."
+      },
+      {
+        "alias_existing_scope": "**E14-O1** CLIENT-FE-OFFLINE01–04 / B47 / D002",
+        "already_proved": "VC-CLIENT-D002-OFFLINE-RECONNECT-CACHE-01: currentd106 real productionSW warm HW read-only, revoked-session reconnect deny, foreign marker absent, offline explicit logout.",
+        "finite_missing_action": "Один существующий productionSW scenario расширить до **schedule** read + Moscow day rollover; offline attachment/write/role-switch disabled; expiry именно обычной server-session lifetime (revoke не expiry); reconnect после role/grant/account change; delayed callback не меняет нового owner. TMA offline reload не hydrates PWA snapshot и не пишет. Это конечные различающиеся политики, не все комбинации. `npm run test:real-mobile -- --project=chromium` с current real-mobile config и source-derived exact grep; teaching clock отдельно от security expiry.",
+        "resource_classification": "Normal CI existing realMobile HTTPS stack+browser; Cloud fullstand floor unmet, no same-start retry. Ready for bounded spec author, no external Telegram required for synthetic TMA. Cache test UNIT/SW mock недостаточен."
+      },
+      {
+        "alias_existing_scope": "**E14-I1** CLIENT-INSTALL-PUSH / B48 / JS-STUDENT09",
+        "already_proved": "Current install controller различает installed/ios/standalone/unavailable; production main registers scoped sw.js, versioned worker install/activate/SKIP_WAITING source; mock tests supporting only.",
+        "finite_missing_action": "Genuine production worker V1→V2 update: install/wait/acceptedactivation and scoped cache cleanup, ordinary warm launch; unsupported/denied install state и iOS instruction rendering. В existing browser lane one real update/registration flow; системная установленная иконка/standalone launch требует capable native browser/device receipt. Не считать JS `appinstalled` mock proof of OS install.",
+        "resource_classification": "Browser/SW update Cloud/CI feasible with productionbuild+HTTPS. Native desktop/Android install and iOS Safari actual install/device proof external capability; finite external evidence gap, not existing product failure. iOS wording/render may be checked synthetically, not installation."
+      },
+      {
+        "alias_existing_scope": "**E14-W1** WebKit subset Q14",
+        "already_proved": "T005 native43 independent addendum: 25 ELF+14 DSO+4 capability checks PASS; all process/resource qualifications explicit. Это **не browser launch**.",
+        "finite_missing_action": "One genuine WebKit launch + existing critical login/role admission/offline read, current production build+real backend. Existing `playwright.real-mobile.config.ts` excludes WebKit when remaining5=true; simply adding --project=webkit to that lane discovers no such project. Need own ordinary configured WebKit lane with existing assertions, no silent launcher/env changes.",
+        "resource_classification": "Existing official dependency/local-DSO representation reviewed; new browser grant/resource plan required before local execution. Normal CI ordinary install/runtime lane is feasible checking work; native Safari/iOS ≠ WebKit Playwright. No blanket provider or security bypass; B014 unrelated and frozen."
+      },
+      {
+        "alias_existing_scope": "**E14-H1** CLIENT-FE-TMA01/02/03 / B49 / D003",
+        "already_proved": "CASE-SD01 malformed/future/window86400/reuse/fresh binding authority; real teacher synthetic host+Back checkpoint232 and currentD003 reuse/suspend slice.",
+        "finite_missing_action": "Current exact consumer join for tampered/duplicates/expiry state/no proof-token persistence/profile+hostBack; same shared operations with signed synthetic STUDENT/HEADMAN proof; accepted target/download adapter result. Minimal existing mini-app.spec + current mobile-real-server D003 exact selected methods, extend only missing target/download assertions.",
+        "resource_classification": "Normal CI synthetic host+real auth/server, no provider credential access. Native Telegram launch/deeplink/download still H2. Test-only synthetic initData does not close native host."
+      },
+      {
+        "alias_existing_scope": "**E14-H2** CLIENT-TMA-PROVIDER / CLIENT-INSTALL-PUSH / BOT-DELIVERY",
+        "already_proved": "Python provider mocks/adapters+durable delivery/preference proofs, current synthetic TMA/browser actions; old prior native receipt only if exact dated receipt/source scope can be joined.",
+        "finite_missing_action": "Actual assigned test Telegram client binding + launch/deeplink/Back/download; actual assigned WebPush subscription background/closed delivery→current-recipient target, opt-out/unbind/logout no private late delivery; actual external OTP/initial credential card effect/cleanup uses own test provider. One positive and accepted private-boundary negative per **distinct provider policy**, not new promises of provider exactly-once.",
+        "resource_classification": "**EXTERNAL_CAPABILITY_BLOCKED** from existing frontend-inventory resource observation: no assigned native Telegram/test binding/provider identities/subscriptions and no inspected prior receipt proving these clauses. I did not inspect env/secrets or re-probe. Root can join safe historical receipt or obtain assigned test capability; no private bot/production use. Ordinary CI mocks cannot promote native/provider clause."
+      },
+      {
+        "alias_existing_scope": "**E15-R1** RECOVERY/P20/B51 files",
+        "already_proved": "VC-APP-RECOVERY-FRESH-PG-MONGO-TRANSFER-HISTORY-01 currentd106 all4 phases PASS: seed45691/pending224/admit1193/attachment108ms + actual full restore step247s, exact checkout3edd/tree69e6 join, original unexpired revoked/control before freshlogin. VC-RECOVERY-FILES-PG-MONGO-CLI-01 PASS0648: real file paths/bytes/hash + schema/indices/sequences/refusals.",
+        "finite_missing_action": "Existing recovery.py:199–211 `file_inventory` stores path/directory/size/sha only, no filemode; application run `--no-files` and attachment is Mongo Binary. Thus **external filesystem owner/application readability/modes/API consumer** is unproved. On existing files-mode drill include a bounded real accepted file asset, preserve expected read permissions and verify via the actual consuming service/API after fresh restore; retain refusal controls, no all4application repeat just for duplicate DB proof.",
+        "resource_classification": "Normal CI existing recovery-files + existing application-consumer source extension; owned disposable filesystem/service UID. Mode omission is evidence/coverage gap, not demonstrated restore mode corruption. Exact required modes derive current consumer, no invented universal0777/ownership policy."
+      },
+      {
+        "alias_existing_scope": "**E15-R2** HEALTH-OUTAGE/P19/P21/B51",
+        "already_proved": "Actual assignment ownedSchedule stop→durable503→restart→same-channel success; real broker-down recovery pending→fresh restore→original transfer terminalonce; RF04 bounded cancellation and reusable channel.",
+        "finite_missing_action": "Missing distinct failure policies only: authoritative auth/DB loss admission fails closed, applicable optional Redis/cached read behavior, actual renderer routed failure/error state, then resumed user action and unchanged/pending durable state; readiness/Actuator privacy **and routed user request**, not healthUP alone. Graceful drain: one in-flight accepted request on owned process then terminate/recover, existing deadlines/no lost accepted effect; no new drain SLA. First join existing Auth authority-outage503 and HealthDegradationIT named proofs, do not rerun Schedule/broker scenario already sufficient.",
+        "resource_classification": "Normal CI scoped owned dependency faults with genuine route; Cloud fullstand resource blocked. Not every dependency×everyendpoint matrix. No production fault/prod-deploy checklist run."
+      },
+      {
+        "alias_existing_scope": "**E15-R3** P18/P21 config/API consumers",
+        "already_proved": "Current generated OpenAPI/type gates; stable Schedule migrations and actual restored app data/histories; shared schema atomic Auth/Academic proofs.",
+        "finite_missing_action": "Join current supported producer/API/DB codes and actual deployed/supported consumer with exact source/gate receipts; named remaining E13-E2/E3 cover enum/legacy transitions. Existing P21 stable tags/reserved semantics remain, no need artificial old/new release deployment when contract/storage unchanged. Config/routing claim uses current owned runtime route, health endpoint alone insufficient.",
+        "resource_classification": "Normal CI contract/generated consumers/PG IT + narrow route; no DB split/Saga/transport migration. Concrete incompatible accepted consumer would FAIL, none established here."
+      }
+    ],
+    "next_ready": "E13-C1 productioncache serializer realDTO/date/collection+benignforeign type refusal; independentSource-author/test scope next",
+    "optional": "L05SQL/L06RPC performance, DBsplit/Saga/framework remainoptional; offsiteRPO/RTOdecisiondeferred. B013/B014FROZEN; Q012onlystandalone removal; no owneranswersinferred"
+  }
 }

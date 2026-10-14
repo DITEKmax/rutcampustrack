@@ -63,13 +63,49 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     .poll(
       async () => {
         const available = await options();
-        return manualLessons.every((id) =>
+        const allClosed = manualLessons.every((id) =>
           available.lessons.some(
             (option: { lesson: { id: string; status: string }; lateCheckinEligible: boolean }) =>
               option.lesson.id === id &&
               option.lesson.status === 'closed' &&
               option.lateCheckinEligible,
           ),
+        );
+        if (!allClosed) return false;
+        const report = await dataset.headmanActor.call(
+          'GET',
+          `/api/attendance/reports/lesson/${manualLessons[0]}`,
+        );
+        const entry = report.entries.find(
+          (row: { userId: number }) => Number(row.userId) === dataset.student.id,
+        );
+        if (
+          entry?.status !== 'absent' ||
+          entry.source !== 'auto_scheduler' ||
+          typeof entry.markRevision !== 'string' ||
+          !entry.markRevision
+        )
+          return false;
+        const actions = await dataset.headmanActor.call(
+          'GET',
+          `/api/attendance/reports/lesson/${manualLessons[0]}/actions?limit=50`,
+        );
+        return (
+          actions.items.filter(
+            (action: {
+              action: string;
+              outcome: string;
+              student: { userId: number } | null;
+              actor: unknown;
+              after: { status: string; source: string } | null;
+            }) =>
+              action.action === 'AUTO_ABSENT' &&
+              action.outcome === 'APPLIED' &&
+              Number(action.student?.userId) === dataset.student.id &&
+              action.actor === null &&
+              action.after?.status === 'ABSENT' &&
+              action.after.source === 'AUTO_SCHEDULER',
+          ).length === 1
         );
       },
       { timeout: 120000, intervals: [1000], message: 'Own closed lessons become request-eligible' },
@@ -183,6 +219,22 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
 
   const headman = await loginPwa(page, dataset.headman);
   if (headman.session.activeRole !== 'HEADMAN') await selectPwaRole(page, 'Староста');
+  await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+  const yesterdayDate = new Date(`${yesterday}T12:00:00Z`);
+  if (yesterdayDate.getUTCDay() === 0)
+    await page.getByRole('button', { name: 'Предыдущая неделя', exact: true }).click();
+  await page.getByRole('button', { name: yesterday, exact: true }).click();
+  const pastReport = page.waitForResponse(
+    (item) =>
+      new URL(item.url()).pathname === `/api/attendance/reports/lesson/${manualLessons[0]}` &&
+      item.request().method() === 'GET',
+  );
+  await page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }).click();
+  expect((await pastReport).status()).toBe(200);
+  await expect(
+    page.locator(`.headman-journal__roster-list [data-user-id="${dataset.student.id}"]`),
+  ).toHaveAttribute('data-status', 'absent');
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await page.getByRole('button', { name: 'Заявки', exact: true }).click();
   await page.locator(`[data-request-id="${requestId}"]`).click();
   await expect(

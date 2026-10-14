@@ -80,6 +80,39 @@ describe('HeadmanJournalApi', () => {
     ])
   })
 
+  it('changes only the existing headman blockage resource and requires its exact ACK', async () => {
+    const calls: Array<{ path: string; method: string | undefined }> = []
+    let malformed = false
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'synthetic-token',
+      fetcher: async (input, init) => {
+        calls.push({ path: String(input), method: init?.method })
+        return jsonResponse({
+          id: 42,
+          groupId: 7,
+          date: '2026-09-21',
+          status: 'ACTIVE',
+          current: true,
+          ...(malformed ? {} : { blockedByHeadman: init?.method === 'POST' }),
+        })
+      },
+    })
+    await expect(api.setHeadmanBlock(42, true)).resolves.toMatchObject({
+      id: 42,
+      blockedByHeadman: true,
+    })
+    await expect(api.setHeadmanBlock(42, false)).resolves.toMatchObject({
+      id: 42,
+      blockedByHeadman: false,
+    })
+    expect(calls).toEqual([
+      { path: '/api/schedule/lessons/42/blockage', method: 'POST' },
+      { path: '/api/schedule/lessons/42/blockage', method: 'DELETE' },
+    ])
+    malformed = true
+    await expect(api.setHeadmanBlock(42, true)).rejects.toThrow('Сервер не подтвердил')
+  })
+
   it('sends the frozen transfer payload and follows the scoped operation status', async () => {
     const requests: Array<{ path: string; init: RequestInit }> = []
     const pending = {

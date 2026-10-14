@@ -2,6 +2,7 @@
 import copyIcon from '../../assets/admin/copy.svg';
 defineProps<{
   name:
+    | 'edit'
     | 'plus'
     | 'table'
     | 'chart'
@@ -54,7 +55,11 @@ defineProps<{
     aria-hidden="true"
   >
     <path
-      v-if="name === 'back'"
+      v-if="name === 'edit'"
+      d="m10.5 2.5 3 3-7.5 7.5-4 1 1-4ZM9 4l3 3"
+    />
+    <path
+      v-else-if="name === 'back'"
       d="M10 3.5 5.5 8 10 12.5"
     />
     <path

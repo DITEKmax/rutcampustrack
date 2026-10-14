@@ -653,6 +653,7 @@ jobs:
           mkdir -m 700 -- "$RCT_FOCUS3_RUN/artifacts" "$RCT_FOCUS3_RUN/supervision"
           chmod +x gradlew
           ./gradlew e2eClockFixtureJar e2eClockFixtureControl --no-daemon --max-workers=1
+          python3 tests/e2e/fixtures/semester-effect-diagnostic.control.py
           (
             umask 022
             node tests/e2e/backend-clock/prepare-clock.mjs "$RCT_E2E_TEACHING_CLOCK_DIR" "$PWD/build/e2e-clock/clock-fixture.jar"
@@ -1039,6 +1040,113 @@ jobs:
         with:
           name: helper-capabilities-safe-${{ github.run_attempt }}
           path: ${{ env.RCT_HELPER_CAPABILITIES_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Check the real homework notification target against a controlled navigation fault
+        id: homework-target-sensitivity
+        timeout-minutes: 7
+        if: ${{ !cancelled() && steps.homework-lifecycle.outcome == 'success' }}
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_HOMEWORK_TARGET_RUN: ${{ runner.temp }}/rct-homework-target-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_HOMEWORK_TARGET_RUN=%s\n' "$RCT_HOMEWORK_TARGET_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_HOMEWORK_TARGET_RUN"
+          mkdir -m 700 -- "$RCT_HOMEWORK_TARGET_RUN/red" "$RCT_HOMEWORK_TARGET_RUN/green"
+          mkdir -m 700 -- "$RCT_HOMEWORK_TARGET_RUN/red/artifacts" "$RCT_HOMEWORK_TARGET_RUN/green/artifacts"
+          owner=frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue
+          original="$RCT_HOMEWORK_TARGET_RUN/original.vue"
+          cp -- "$owner" "$original"
+          compose() {
+            docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml "$@"
+          }
+          rebuild_pwa() {
+            compose build pwa-nginx &&
+              compose up -d --no-deps --force-recreate pwa-nginx &&
+              compose exec -T nginx nginx -s reload &&
+              curl --silent --show-error --fail --retry 5 --retry-all-errors --retry-delay 1 --retry-max-time 15 --max-time 5 --cacert tests/e2e/infra/certs/server.crt https://localhost:8443/app/ >/dev/null
+          }
+          restore_pwa() {
+            local result=$?
+            trap - EXIT
+            cp -- "$original" "$owner"
+            if ! cmp --silent "$original" "$owner" || ! rebuild_pwa; then
+              if [ "$result" -eq 0 ]; then result=1; fi
+            fi
+            exit "$result"
+          }
+          trap restore_pwa EXIT
+          python3 - <<'PY_HOMEWORK_NAVIGATION_FAULT'
+          from pathlib import Path
+
+          owner = Path('frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue')
+          original = owner.read_text()
+          navigation = '  if (navigate) navigation.push(homeworkNotificationRoute);'
+          if original.count(navigation) != 1:
+              raise SystemExit('Expected exactly one homework notification navigation boundary')
+          owner.write_text(original.replace(navigation, '  if (navigate) void homeworkNotificationRoute;'))
+          PY_HOMEWORK_NAVIGATION_FAULT
+          rebuild_pwa
+          set +e
+          (
+            cd tests/e2e
+            RCT_HOMEWORK_LIFECYCLE_RUN="$RCT_HOMEWORK_TARGET_RUN/red" \
+              RCT_REMAINING5_RUN="$RCT_HOMEWORK_TARGET_RUN/red" \
+              npx playwright test --config playwright.homework-lifecycle.config.ts --project=chromium --grep 'MANAGE_HOMEWORK non-author edits'
+          )
+          fault_exit=$?
+          set -e
+          test "$fault_exit" -eq 1
+          python3 - <<'PY_HOMEWORK_NAVIGATION_RED'
+          import json, os
+          from pathlib import Path
+
+          report = json.loads((Path(os.environ['RCT_HOMEWORK_TARGET_RUN']) / 'red/artifacts/safe-results.json').read_text())
+          if (set(report) != {'status', 'runnerErrors', 'unsafeArtifact', 'suppressedStdoutBytes', 'suppressedStderrBytes', 'results'}
+                  or report['status'] != 'failed' or report['runnerErrors'] != 0
+                  or report['unsafeArtifact'] is not False
+                  or report['suppressedStdoutBytes'] != 0 or report['suppressedStderrBytes'] != 0
+                  or len(report['results']) != 1):
+              raise SystemExit('Navigation control did not produce one private test failure')
+          result = report['results'][0]
+          spec = Path('tests/e2e/specs/mobile-homework-lifecycle.spec.ts')
+          assertion = '  await expect(completedSlider).toBeFocused();'
+          lines = spec.read_text().splitlines()
+          if lines.count(assertion) != 1:
+              raise SystemExit('Expected one notification target focus assertion')
+          if (result['file'] != spec.name or result['status'] != 'failed'
+                  or result['expectedStatus'] != 'passed' or result['errorCount'] != 1
+                  or result['errorLocations'] != [{'file': spec.name, 'line': lines.index(assertion) + 1}]):
+              raise SystemExit('Navigation control failed outside the target focus assertion')
+          print('PASS controlled navigation omission reaches the target focus assertion and fails there')
+          PY_HOMEWORK_NAVIGATION_RED
+          cp -- "$original" "$owner"
+          cmp --silent "$original" "$owner"
+          rebuild_pwa
+          trap - EXIT
+          (
+            cd tests/e2e
+            RCT_HOMEWORK_LIFECYCLE_RUN="$RCT_HOMEWORK_TARGET_RUN/green" \
+              RCT_REMAINING5_RUN="$RCT_HOMEWORK_TARGET_RUN/green" \
+              npx playwright test --config playwright.homework-lifecycle.config.ts --project=chromium --grep 'MANAGE_HOMEWORK non-author edits'
+          )
+
+      - name: Upload closed homework notification sensitivity outcomes
+        if: always() && steps.homework-target-sensitivity.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: homework-target-sensitivity-safe-${{ github.run_attempt }}
+          path: |
+            ${{ env.RCT_HOMEWORK_TARGET_RUN }}/red/artifacts/safe-results.json
+            ${{ env.RCT_HOMEWORK_TARGET_RUN }}/green/artifacts/safe-results.json
           if-no-files-found: warn
           retention-days: 7
 
@@ -1580,6 +1688,11 @@ jobs:
           printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
           npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium
 
+      - name: Locate the pending semester effect without exposing event data
+        timeout-minutes: 1
+        if: ${{ !cancelled() && steps.semester-lifecycle.outcome == 'failure' }}
+        run: python3 tests/e2e/fixtures/semester-effect-diagnostic.py
+
       - name: Upload closed semester lifecycle outcome
         if: always() && steps.semester-lifecycle.outcome != 'skipped'
         uses: actions/upload-artifact@v4
@@ -1588,6 +1701,7 @@ jobs:
           path: |
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/artifacts/safe-results.json
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/lifecycle.safe.json
+            ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/effect.safe.json
           if-no-files-found: warn
           retention-days: 7
 

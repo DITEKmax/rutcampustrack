@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue';
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../domain/academic-week';
@@ -39,6 +39,7 @@ const props = withDefaults(
     homeworkApi?: HeadmanHomeworkApi | null;
     selectedDate?: string;
     offline?: boolean;
+    readOnly?: boolean;
     roleSwitchDisabled?: boolean;
     homeworkEnabled?: boolean;
     logEnabled?: boolean;
@@ -52,6 +53,7 @@ const props = withDefaults(
     homeworkApi: null,
     selectedDate: '',
     offline: false,
+    readOnly: false,
     roleSwitchDisabled: true,
     homeworkEnabled: false,
     logEnabled: false,
@@ -143,6 +145,93 @@ const ordinal = computed(() => {
     ? academicWeekOrdinal(selectedDate.value, semester.dateFrom ?? null, semester.dateTo ?? null)
     : null;
 });
+const blockConfirm = ref(false);
+const blockTrigger = ref<HTMLButtonElement | null>(null);
+const blockCancel = ref<HTMLButtonElement | null>(null);
+function focusBlockTrigger(revision: number): void {
+  void nextTick(() => {
+    if (!disposed && revision === blockRevision && canBlock.value && !blockPending.value)
+      blockTrigger.value?.focus();
+  });
+}
+function openBlockConfirmation(): void {
+  if (!canBlock.value || blockPending.value) return;
+  const revision = blockRevision;
+  blockConfirm.value = true;
+  void nextTick(() => {
+    if (!disposed && revision === blockRevision && blockConfirm.value && canBlock.value)
+      blockCancel.value?.focus();
+  });
+}
+function dismissBlockConfirmation(): void {
+  if (!blockConfirm.value) return;
+  blockConfirm.value = false;
+  focusBlockTrigger(blockRevision);
+}
+const blockPending = ref(false);
+const blockError = ref<string | null>(null);
+let blockRevision = 0;
+const canBlock = computed(
+  () =>
+    !!props.api?.writable &&
+    !props.offline &&
+    !props.readOnly &&
+    selectedLesson.value?.current === true &&
+    selectedLesson.value.status === 'ACTIVE' &&
+    typeof selectedLesson.value.blockedByHeadman === 'boolean',
+);
+watch(
+  () =>
+    [
+      props.api,
+      props.groupId,
+      props.offline,
+      props.readOnly,
+      selectedDate.value,
+      selectedLessonId.value,
+    ] as const,
+  () => {
+    blockRevision += 1;
+    blockConfirm.value = false;
+    blockPending.value = false;
+    blockError.value = null;
+  },
+  { flush: 'sync' },
+);
+async function changeGeoBlock(blocked: boolean): Promise<void> {
+  const api = props.api;
+  const lesson = selectedLesson.value;
+  const group = props.groupId;
+  if (!api || !lesson || lesson.groupId !== group || !canBlock.value || blockPending.value) return;
+  const run = ++blockRevision;
+  const current = () =>
+    !disposed &&
+    run === blockRevision &&
+    api === props.api &&
+    group === props.groupId &&
+    lesson.id === selectedLessonId.value &&
+    !props.offline &&
+    !props.readOnly;
+  blockConfirm.value = false;
+  blockPending.value = true;
+  blockError.value = null;
+  try {
+    const updated = await api.setHeadmanBlock(lesson.id, blocked);
+    if (!current()) return;
+    if (updated.groupId !== group) throw new Error('Сервер вернул другую группу пары.');
+    lessons.value = lessons.value.map((item) => (item.id === lesson.id ? updated : item));
+  } catch (cause) {
+    if (!current() || cause instanceof StaleSessionGenerationError) return;
+    blockError.value =
+      cause instanceof Error ? cause.message : 'Не удалось изменить геоблокировку.';
+    emit('error', cause);
+  } finally {
+    if (current()) {
+      blockPending.value = false;
+      focusBlockTrigger(run);
+    }
+  }
+}
 async function loadWeekPolicy(): Promise<void> {
   const run = ++weekRevision;
   const api = props.weekPolicyApi;
@@ -368,6 +457,7 @@ watch(
 );
 onBeforeUnmount(() => {
   disposed = true;
+  blockRevision += 1;
   weekRevision += 1;
   loadRevision += 1;
   detailRevision += 1;
@@ -637,7 +727,48 @@ onBeforeUnmount(() => {
           {{ homeworkError }}
         </p>
       </section>
+      <p
+        v-if="blockError"
+        role="alert"
+      >
+        {{ blockError }}
+      </p>
+      <div
+        v-if="blockConfirm && canBlock"
+        class="headman-home__block-confirm"
+        role="group"
+        aria-label="Подтвердить блокировку геоотметок"
+        @keydown.esc.stop.prevent="dismissBlockConfirmation"
+      >
+        <p>Заблокировать геоотметки студентов на выбранной паре? Ты сможешь продолжить ручной учёт.</p>
+        <button
+          ref="blockCancel"
+          type="button"
+          @click="dismissBlockConfirmation"
+        >
+          Отмена
+        </button>
+        <button
+          type="button"
+          aria-label="Подтвердить блокировку геоотметок"
+          @click="changeGeoBlock(true)"
+        >
+          Заблокировать
+        </button>
+      </div>
       <div class="headman-home__actions">
+        <button
+          v-if="canBlock"
+          ref="blockTrigger"
+          class="headman-home__geo-block"
+          type="button"
+          :disabled="blockPending"
+          :aria-busy="blockPending"
+          :aria-label="selectedLesson.blockedByHeadman ? 'Разблокировать геоотметки' : 'Заблокировать геоотметки'"
+          @click="selectedLesson.blockedByHeadman ? changeGeoBlock(false) : openBlockConfirmation()"
+        >
+          {{ selectedLesson.blockedByHeadman ? 'Разблокировать геоотметки' : 'Заблокировать геоотметки' }}
+        </button>
         <button
           type="button"
           :data-active="selectedLesson.status === 'ACTIVE'"

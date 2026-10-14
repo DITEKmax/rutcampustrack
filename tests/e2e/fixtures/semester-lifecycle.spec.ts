@@ -345,6 +345,20 @@ async function conflict(
   );
 }
 
+async function inactiveStudentHistory(request: APIRequestContext, student: Actor, path: string) {
+  const response = await request.get(path, { headers: student.headers() });
+  requireValue(
+    response.status() === 403 &&
+      response.headers()['content-type']?.includes('application/problem+json'),
+    'Inactive student history must return a typed scope denial',
+  );
+  const body = await response.json();
+  requireValue(
+    body.status === 403 && body.code === 'OUT_OF_SCOPE',
+    'Inactive student history scope denial changed',
+  );
+}
+
 test('FULL admin archives and restores the disposable CI semester through real participants', async ({
   playwright,
 }, info) => {
@@ -710,11 +724,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
       (await semesters(admin)).every((row) => row.active === false),
       'Archive must not choose another active semester',
     );
-    equal(
-      history(await student.call('GET', historyPath)),
-      beforeHistory,
-      'Archive changed student history',
-    );
+    await inactiveStudentHistory(request, student, historyPath);
     equal(await markProjection(), beforeMark, 'Archive changed the historical mark');
     equal(
       fields(await headman.call('GET', homeworkPath), homeworkFields),
@@ -748,11 +758,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
       beforeHomework,
       'Archived Homework writer had an effect',
     );
-    equal(
-      history(await student.call('GET', historyPath)),
-      beforeHistory,
-      'Archived refusals changed student history',
-    );
+    await inactiveStudentHistory(request, student, historyPath);
     const afterRefusals = await admin.call(
       'GET',
       `/api/academic/semesters/${ownSemesterId}/archive/status`,
@@ -775,11 +781,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
       (await semesters(admin)).every((row) => row.active === false),
       'Restore must not activate another semester',
     );
-    equal(
-      history(await student.call('GET', historyPath)),
-      beforeHistory,
-      'Restore changed student history',
-    );
+    await inactiveStudentHistory(request, student, historyPath);
     equal(await markProjection(), beforeMark, 'Restore changed historical attendance');
     equal(await scheduleProjection(), beforeSchedule, 'Restore changed canonical lessons');
     equal(
@@ -791,6 +793,11 @@ test('FULL admin archives and restores the disposable CI semester through real p
     requireValue(
       current.active === true && current.archived === false,
       'Explicit activation must restore current semester authority',
+    );
+    equal(
+      history(await student.call('GET', historyPath)),
+      beforeHistory,
+      'Archive and restore changed student history after explicit activation',
     );
     diagnostic.primary.stage = 'PERMITTED_WRITE';
     const changed = await headman.call('PUT', homeworkPath, {

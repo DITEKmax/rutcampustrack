@@ -1,0 +1,397 @@
+"""Inline in a separate failure-only CI step; never replace the semester test exit."""
+
+import importlib.util
+import json
+import os
+import re
+import stat
+import subprocess
+import time
+import uuid
+from pathlib import Path
+from types import SimpleNamespace
+
+
+def _closed(value, choices):
+    return next((choice for choice in choices if type(value) is str and value == choice), "UNKNOWN")
+
+
+def _canonical_uuid(value):
+    if type(value) is not str or str(uuid.UUID(value)) != value:
+        raise ValueError("Invalid private identity")
+    return value
+
+
+def _receipt_flags(row, ledger):
+    if row is None:
+        return {"present": False, "result": "MISSING", "identityMatches": "UNKNOWN", "hashMatches": "UNKNOWN"}
+    return {
+        "present": True,
+        "result": _closed(row.get("result"), ("PENDING", "APPLIED", "ERROR")),
+        "identityMatches": row.get("source_event_id") == ledger["event_id"]
+        and row.get("source_event_type") == ledger["event_type"]
+        and row.get("target") == ledger["target"]
+        and type(row.get("semester_id")) is int
+        and row["semester_id"] == ledger["semester_id"],
+        "hashMatches": row.get("payload_hash") == ledger["payload_hash"],
+    }
+
+
+def _ack_flags(envelope, ledger):
+    payload = envelope.get("payload")
+    if not isinstance(payload, dict):
+        return False
+    return (
+        envelope.get("source") == ("attendance-service" if ledger["target"] == "ATTENDANCE" else "academic-service")
+        and envelope.get("event_type") == "semester.archive.effect.ack"
+        and type(envelope.get("event_version")) is int
+        and envelope["event_version"] == 1
+        and payload.get("source_event_id") == ledger["event_id"]
+        and payload.get("target") == ledger["target"]
+        and payload.get("source_event_type") == ledger["event_type"]
+        and type(payload.get("semester_id")) is int
+        and payload["semester_id"] == ledger["semester_id"]
+        and payload.get("payload_hash") == ledger["payload_hash"]
+        and payload.get("result") in ("APPLIED", "ERROR")
+    )
+
+
+def _ack_row(row, ledger):
+    try:
+        envelope = json.loads(row["payload"]) if type(row["payload"]) is str else row["payload"]
+        event_id = _canonical_uuid(envelope["event_id"])
+        matches = _ack_flags(envelope, ledger)
+    except (KeyError, TypeError, ValueError, AttributeError):
+        event_id, matches = None, False
+    return {"status": row.get("status"), "identity_matches": matches, "event_id": event_id}
+
+
+def _mongo_script(ledger):
+    context = json.dumps(
+        {
+            "id": ledger["event_id"],
+            "hash": ledger["payload_hash"],
+            "semester": ledger["semester_id"],
+            "type": ledger["event_type"],
+        }
+    )
+    return (
+        "const k="
+        + context
+        + r""";
+const d=db.getSiblingDB('attendance_db');
+const receipt=d.semester_archive_effect_receipts.find(
+  {_id:k.id+':ATTENDANCE'},
+  {_id:0,result:1,source_event_id:1,source_event_type:1,target:1,semester_id:1,payload_hash:1}
+).maxTimeMS(2000).limit(1).toArray()[0]||null;
+if(receipt) receipt.semester_id=Number(receipt.semester_id);
+const pattern='"source_event_id"\\s*:\\s*"'+k.id+'"';
+const acks=d.attendance_outbox.find(
+  {event_type:'semester.archive.effect.ack',payload:{$regex:pattern}},
+  {_id:0,status:1,payload:1}
+).sort({created_at:-1}).maxTimeMS(2000).limit(3).toArray();
+print(JSON.stringify({receipt:receipt,acks:acks}));
+"""
+    )
+
+
+def _project(ledger, producer, receipt, acknowledgements, claims, stable, barrier_reason="SCHEDULE_EFFECT_ACK_PENDING"):
+    def boolean(value):
+        return value if type(value) is bool else "UNKNOWN"
+
+    def states(rows):
+        return sorted({_closed(row.get("status"), ("pending", "sent", "failed")) for row in rows})
+
+    return {
+        "schema": "semester-effect.v1",
+        "observationPhase": "AFTER_FIXTURE_CLEANUP_BEFORE_CONTAINER_TEARDOWN",
+        "found": ledger is not None,
+        "selection": "LEDGER_CANDIDATE"
+        if ledger is not None
+        else (
+            "LEGACY_OUTBOX_UNAVAILABLE"
+            if barrier_reason == "SCHEDULE_LEGACY_EFFECT_UNPROVEN"
+            else "NO_LEDGER_CANDIDATE"
+        ),
+        "eventKind": _closed(
+            (ledger or {}).get("event_type"),
+            (
+                "lesson.closed",
+                "lesson.cancelled",
+                "lesson.deleted",
+                "lesson.one_off.cancelled",
+                "homework.binding.archived",
+            ),
+        ),
+        "target": _closed((ledger or {}).get("target"), ("ATTENDANCE", "ACADEMIC")),
+        "ledgerState": _closed((ledger or {}).get("state"), ("PENDING", "ERROR", "APPLIED")),
+        "scopeMissing": ledger is not None and ledger.get("semester_id") is None,
+        "sourceMatches": boolean((ledger or {}).get("source_matches")),
+        "versionMatches": boolean((ledger or {}).get("version_matches")),
+        "payloadScopeMatches": boolean((ledger or {}).get("scope_matches")),
+        "payloadTypeMatches": boolean((ledger or {}).get("type_matches")),
+        "payloadEventMatches": boolean((ledger or {}).get("event_matches")),
+        "producerPresent": bool(producer),
+        "producerStates": states(producer),
+        "producerSampleCapped": len(producer) == 3,
+        "receipt": {
+            "present": boolean(receipt.get("present")),
+            "result": _closed(receipt.get("result"), ("MISSING", "PENDING", "APPLIED", "ERROR")),
+            "identityMatches": boolean(receipt.get("identityMatches")),
+            "hashMatches": boolean(receipt.get("hashMatches")),
+        },
+        "ackPresent": bool(acknowledgements),
+        "ackStates": states(acknowledgements),
+        "ackSampleCapped": len(acknowledgements) == 3,
+        "ackIdentityMatches": all(row["identity_matches"] is True for row in acknowledgements)
+        if acknowledgements
+        else "UNKNOWN",
+        "ackClaimPresent": any(claims)
+        if acknowledgements and all(type(value) is bool for value in claims)
+        else "UNKNOWN",
+        "stableLedger": boolean(stable),
+    }
+
+
+def main():
+    # No exception, command, captured stdout/stderr, private identity or credential is printed.
+    try:
+        root = Path(os.environ["GITHUB_WORKSPACE"])
+        temporary = Path(os.environ["RUNNER_TEMP"])
+        run_id, attempt = os.environ["GITHUB_RUN_ID"], os.environ["GITHUB_RUN_ATTEMPT"]
+        if not all(re.fullmatch(r"[1-9][0-9]*", value) for value in (run_id, attempt)):
+            raise ValueError("Invalid CI identity")
+        project = "rct-recovery-" + run_id + "-" + attempt + "-dst"
+        if os.environ["RCT_APP_RECOVERY_PROJECT"] != project:
+            raise ValueError("Unexpected recovery project")
+        recovery = temporary / ("rct-application-recovery-" + run_id + "-" + attempt)
+        output = temporary / ("rct-semester-lifecycle-" + run_id + "-" + attempt)
+        if os.environ["RCT_APP_RECOVERY_RUN"] != str(recovery) or os.environ["RCT_SEMESTER_LIFECYCLE_RUN"] != str(
+            output
+        ):
+            raise ValueError("Unexpected owned path")
+
+        def guarded(path, size, mode, directory=False):
+            value = path.lstat()
+            if stat.S_ISLNK(value.st_mode) or stat.S_IMODE(value.st_mode) != mode or value.st_uid != os.getuid():
+                raise ValueError("Unowned diagnostic input")
+            if directory:
+                if not stat.S_ISDIR(value.st_mode):
+                    raise ValueError("Invalid directory")
+            elif not stat.S_ISREG(value.st_mode) or value.st_size > size:
+                raise ValueError("Unbounded diagnostic input")
+
+        for directory, marker in ((recovery, "RCT_APP_RECOVERY_DISPOSABLE"), (output, "RCT_SEMESTER_DISPOSABLE")):
+            guarded(directory, 0, 0o700, True)
+            guarded(directory / "disposable-target", 64, 0o600)
+            if (directory / "disposable-target").read_text().strip() != marker:
+                raise ValueError("Marker mismatch")
+        guarded(output / "lifecycle.safe.json", 4096, 0o600)
+        progress = json.loads((output / "lifecycle.safe.json").read_text())
+        barrier_reason = progress.get("primary", {}).get("reasonCode")
+        if (
+            progress.get("schema") != "semester-lifecycle.v1"
+            or progress.get("primaryFailure") is not True
+            or barrier_reason
+            not in ("SCHEDULE_EFFECT_ACK_PENDING", "SCHEDULE_LEGACY_EFFECT_UNPROVEN", "SCHEDULE_EFFECT_SCOPE_UNPROVEN")
+        ):
+            raise ValueError("Different semester failure")
+        guarded(recovery / "seed.json", 65536, 0o600)
+        seed = json.loads((recovery / "seed.json").read_text())
+        match = re.fullmatch(r"/api/v1/student/attendance\?semesterId=([1-9][0-9]*)", seed.get("historyUrl", ""))
+        if not match or int(match[1]) > 9007199254740991:
+            raise ValueError("Invalid private semester pin")
+        semester = int(match[1])
+        spec = importlib.util.spec_from_file_location("recovery", root / "scripts/recovery.py")
+        r = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(r)
+        deadline = time.monotonic() + 50
+
+        def bounded_run(command, *, stdin=None, stdout=None, input_data=None):
+            if stdin is not None or stdout is not None or deadline - time.monotonic() <= 0:
+                raise ValueError("Diagnostic deadline")
+            child = subprocess.run(
+                command,
+                input=input_data,
+                capture_output=True,
+                check=False,
+                timeout=min(5, deadline - time.monotonic()),
+            )
+            if child.returncode or len(child.stdout) > 262144 or len(child.stderr) > 262144:
+                raise ValueError("Diagnostic read unavailable")
+            return child.stdout
+
+        # Same helper semantics/captured output, adding only per-child deadline and output bound.
+        r.run = bounded_run
+
+        def container(service):
+            found = (
+                r.run(
+                    [
+                        "docker",
+                        "ps",
+                        "-q",
+                        "--filter",
+                        "label=com.docker.compose.project=" + project,
+                        "--filter",
+                        "label=com.docker.compose.service=" + service,
+                        "--filter",
+                        "label=io.rutcampustrack.recovery=disposable",
+                    ]
+                )
+                .decode()
+                .split()
+            )
+            if len(found) != 1 or not re.fullmatch(r"[0-9a-f]{12,64}", found[0]):
+                raise ValueError("Ambiguous owned target")
+            return found[0]
+
+        args = SimpleNamespace(
+            academic_container=container("postgres-academic"),
+            schedule_container=container("postgres-schedule"),
+            mongo_container=container("mongo-attendance"),
+            target_project=project,
+        )
+        try:
+            r.check_targets(args, restore=True)  # Read-only identity check; invokes no restore.
+        except r.RecoveryError:
+            raise ValueError("Owned diagnostic targets unavailable") from None
+        env_file = root / "tests/e2e/.env.ci"
+        env_info = env_file.lstat()
+        if (
+            not stat.S_ISREG(env_info.st_mode)
+            or stat.S_ISLNK(env_info.st_mode)
+            or env_info.st_size > 65536
+            or stat.S_IMODE(env_info.st_mode) & 0o022
+        ):
+            raise ValueError("Unsafe synthetic CI configuration")
+        try:
+            secret = r.credentials(env_file)
+        except r.RecoveryError:
+            raise ValueError("Synthetic diagnostic configuration unavailable") from None
+
+        def pg(store, query):
+            result = r.pg_query(
+                getattr(args, store + "_container"),
+                secret["POSTGRES_" + store.upper() + "_PASSWORD"],
+                store + "_db",
+                "BEGIN READ ONLY; SET LOCAL statement_timeout='2000ms'; " + query + "; COMMIT;",
+            )
+            values = [line for line in result.splitlines() if line not in ("BEGIN", "SET", "COMMIT")]
+            if len(values) != 1:
+                raise ValueError("Ambiguous SQL projection")
+            return json.loads(values[0])
+
+        # Same scope/state as the barrier, including global NULL scope. Its tie ordering is
+        # unspecified; this deterministic ledger candidate is not a unique cause under ties.
+        # Legacy outbox UNION rows are not inspected: report that limitation explicitly.
+        ledger = pg(
+            "schedule",
+            "SELECT coalesce((SELECT row_to_json(e) FROM (SELECT event_id,target,event_type,semester_id,scope_id,encode(payload_hash,'hex') AS payload_hash,state,(event_payload->>'source'='schedule-service') AS source_matches,(event_payload->'event_version'='1'::jsonb) AS version_matches,(event_payload#>'{payload,semester_id}'=to_jsonb(semester_id) AND scope_id=semester_id) AS scope_matches,(event_payload->>'event_type'=event_type) AS type_matches,(event_payload->>'event_id'=event_id::text) AS event_matches FROM schedule_semester_archive_effect_ledger WHERE (semester_id="
+            + str(semester)
+            + " OR semester_id IS NULL) AND state<>'APPLIED' ORDER BY created_at,event_id,target,event_type,scope_id LIMIT 1) e),'null'::json)",
+        )
+        producer, acknowledgements, claims = [], [], []
+        receipt = _receipt_flags(None, {})
+        stable = True
+        if ledger is not None:
+            identity = _canonical_uuid(ledger["event_id"])
+            if not re.fullmatch(r"[0-9a-f]{64}", ledger["payload_hash"]) or ledger["target"] not in (
+                "ATTENDANCE",
+                "ACADEMIC",
+            ):
+                raise ValueError("Invalid private effect key")
+            if (
+                _closed(
+                    ledger["event_type"],
+                    (
+                        "lesson.closed",
+                        "lesson.cancelled",
+                        "lesson.deleted",
+                        "lesson.one_off.cancelled",
+                        "homework.binding.archived",
+                    ),
+                )
+                == "UNKNOWN"
+            ):
+                raise ValueError("Invalid private effect type")
+            producer = pg(
+                "schedule",
+                "SELECT coalesce(json_agg(t),'[]'::json) FROM (SELECT status FROM schedule_outbox WHERE payload->>'event_id'='"
+                + identity
+                + "' AND event_type='"
+                + ledger["event_type"]
+                + "' ORDER BY created_at DESC LIMIT 3) t",
+            )
+            if ledger["target"] == "ATTENDANCE":
+                observed = r.mongo_query(args.mongo_container, secret["MONGO_ROOT_PASSWORD"], _mongo_script(ledger))
+                raw_receipt = observed["receipt"]
+                if raw_receipt is not None:
+                    raw_receipt["semester_id"] = int(raw_receipt["semester_id"])
+                receipt = _receipt_flags(raw_receipt, ledger)
+                raw_acks = observed["acks"]
+                for row in raw_acks:
+                    acknowledgements.append(_ack_row(row, ledger))
+            else:
+                raw_receipt = pg(
+                    "academic",
+                    "SELECT coalesce((SELECT json_build_object('source_event_id',source_event_id,'source_event_type',event_type,'target','ACADEMIC','semester_id',semester_id,'payload_hash',encode(payload_hash,'hex'),'result',state) FROM academic_semester_archive_effect_receipts WHERE source_event_id='"
+                    + identity
+                    + "'::uuid),'null'::json)",
+                )
+                receipt = _receipt_flags(raw_receipt, ledger)
+                raw_acks = pg(
+                    "academic",
+                    "SELECT coalesce(json_agg(t),'[]'::json) FROM (SELECT status,payload FROM academic_outbox WHERE event_type='semester.archive.effect.ack' AND payload#>>'{payload,source_event_id}'='"
+                    + identity
+                    + "' ORDER BY created_at DESC LIMIT 3) t",
+                )
+                for row in raw_acks:
+                    acknowledgements.append(_ack_row(row, ledger))
+            for row in acknowledgements:
+                claims.append(
+                    pg(
+                        "schedule",
+                        "SELECT to_json(EXISTS(SELECT 1 FROM event_consumer_processed WHERE consumer_id='schedule' AND event_id='"
+                        + row["event_id"]
+                        + "'::uuid))",
+                    )
+                    if row["event_id"]
+                    else "UNKNOWN"
+                )
+            current = pg(
+                "schedule",
+                "SELECT coalesce(to_json((SELECT state FROM schedule_semester_archive_effect_ledger WHERE event_id='"
+                + identity
+                + "'::uuid AND target='"
+                + ledger["target"]
+                + "' AND event_type='"
+                + ledger["event_type"]
+                + "' AND scope_id="
+                + str(int(ledger["scope_id"]))
+                + ")),'null'::json)",
+            )
+            stable = current == ledger["state"]
+        result = _project(ledger, producer, receipt, acknowledgements, claims, stable, barrier_reason)
+        encoded = json.dumps(result, separators=(",", ":")).encode()
+        if len(encoded) > 4096:
+            raise ValueError("Diagnostic projection bound")
+        guarded(output, 0, 0o700, True)
+        descriptor = os.open(output / "effect.safe.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(encoded)
+    except (
+        OSError,
+        ValueError,
+        TypeError,
+        LookupError,
+        AttributeError,
+        ImportError,
+        RuntimeError,
+        subprocess.SubprocessError,
+    ):
+        raise SystemExit("Semester effect diagnostic unavailable") from None
+
+
+if __name__ == "__main__":
+    main()

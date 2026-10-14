@@ -281,3 +281,9 @@ At 9f09, beginning profile edit starts an asynchronous user read while Add-role 
 ## CHECK-PRIVATE-FRAME-ORACLE-001 — P3 checking fixture, corrected
 
 Existing privacy negative control assumed public line989 was outside mobile-real-server.spec.ts. At published9f09 the file has1006lines, so correct bounded frame handling caused a false control failure. Author ee6f51ba uses actual source line count+1, preserving an out-of-range input and fallback assertion. Existing browser-free normal/interruption/missing-guard controls then PASS; original attempt preserved. This is a checking-oracle defect, not a demonstrated product disclosure. Whole independent privacy review pending.
+
+## GAP-HEADMAN-BUDGET-INCREASE-001 — accepted manual limit increase carrier absent
+
+2026-10-14T10:42:55.890056+00:00: SOURCE GAP, severity MAJOR/user function unavailable; R-2/AT-11 closed policy, JS-HEADMAN-24/JS-STUDENT-02. Current persisted limit reader and seeded limit7 tests do not supply an actor operation/audit. HEADMAN own-group may add N, used unchanged, remaining visible, audit required. No helper authority established. T012 minimal contract frozen; same author isolated implementation assigned. Runtime before/after NOT_RUN, source absence is not a claimed 5xx/security defect. Exact source/pins/proposal: existing receipts/Q08-existing-geo-source-preparation.safe.json#N_accepted_source_resolution_4058.
+
+2026-10-14 current4058: DF-PWA-ADMIN-ROLE-LOAD-001 fixed behavior verified in full realVue admin452 PASS5758ms after meaningful oldSFCRED/new17GREEN andindependentwholeSourceAPPROVE; exactnewaccountrole/data/replacement/archive/restoreproof in receipts/current-4058-client-acceptance.safe.json. Original9f09 run's unique cause remains UNKNOWN; fixedconfirmedSource race has its own counterexample.

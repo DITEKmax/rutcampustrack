@@ -84,9 +84,21 @@ async function fillSlot(page: Page, dataset: MobileDataset, labels: string[], ro
   }
   await form.getByRole('button', { name: 'Номер пары: выбери номер пары', exact: true }).click();
   await form.locator('button[data-slot="7"]').click();
-  await form.getByLabel('Предмет', { exact: true }).selectOption(String(dataset.subject.id));
   await form
-    .getByLabel('Тип занятия', { exact: true })
+    .locator('label')
+    .filter({
+      has: page.locator('span.headman-schedule__field-caption').filter({ hasText: /^Предмет$/ }),
+    })
+    .locator('select')
+    .selectOption(String(dataset.subject.id));
+  await form
+    .locator('label')
+    .filter({
+      has: page
+        .locator('span.headman-schedule__field-caption')
+        .filter({ hasText: /^Тип занятия$/ }),
+    })
+    .locator('select')
     .selectOption(String(dataset.subject.assignments[0].id));
   await form.getByLabel('Аудитория', { exact: true }).fill(room);
 }

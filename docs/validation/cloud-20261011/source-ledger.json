@@ -14029,6 +14029,34 @@
       "sha256": "4b47e22c3490489ee4b2762bc26d693183097f78e553014c2dbcdcda2d772738",
       "revision_base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
       "status": "wholeindependentSourceAPPROVE; authortargetedchecksPASS; Root7476common4checks/7077merged5checksPASS/sourceunchanged/reaped; normalfinalhooks/pushpending; actualnewbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-4058-CHECKING-frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "path": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "sha256": "7fc76af97c7cf2e80ac235a42d46fc55d936b0ba790f3d1fcc9b1cd88b91d7e9",
+      "revision_base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "status": "authorchecksPASSorqualified17GREEN; Root6mergedchecksPASS45.55s; ordinaryfinalhooks/pushpending; actualcorrectedbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-4058-CHECKING-tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "sha256": "5e9b29382e03229e90e77b90e8bbec77767acbd4728c84758f7a813dc113430e",
+      "revision_base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "status": "authorchecksPASSorqualified17GREEN; Root6mergedchecksPASS45.55s; ordinaryfinalhooks/pushpending; actualcorrectedbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-4058-CHECKING-tests/e2e/fixtures/artifact-privacy.ts",
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "0eb2c3fec3cc171a30ea78baabb5b3485b1ee8973ce56a655cd81cce5da6653a",
+      "revision_base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "status": "authorchecksPASSorqualified17GREEN; Root6mergedchecksPASS45.55s; ordinaryfinalhooks/pushpending; actualcorrectedbrowserNOT_RUN"
+    },
+    {
+      "id": "CURRENT-4058-CHECKING-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "38c94ceaa91ff5102ea5788572d7c4637f1c9167602651e95488ebac72f98d37",
+      "revision_base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "status": "authorchecksPASSorqualified17GREEN; Root6mergedchecksPASS45.55s; ordinaryfinalhooks/pushpending; actualcorrectedbrowserNOT_RUN"
     }
   ],
   "research_receipt": {

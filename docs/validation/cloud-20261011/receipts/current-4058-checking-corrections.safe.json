@@ -1,0 +1,837 @@
+{
+  "base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+  "fixture_author": "956eadf863dbfc8798a8ef38f0cb51d08cae7aab",
+  "selector_author": "d0ef426f6c97067f1a2bf81b6e0b6997c7b3e33e",
+  "fixture": {
+    "status": "AUTHOR_COMMITTED_EXISTING17_GREEN_OUTPUT_GUARD_QUALIFIED",
+    "base": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+    "branch": "codex/q07-closed-dialog-renderer-20261014",
+    "scope": [
+      "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+    ],
+    "known_bad": "Coverage38548579807/job115800672276/113files1FAIL112PASS/1030tests17FAIL1013PASS; failedassistant-homework-back class17; finiteTypeErrorclose/frameHeadmanScheduleScreen.vue1669:24. Exact4058Sourcejoin:test05494da7/productab62be1b; no oldclassrerun perRootreuse instruction.",
+    "cause": "CustomrendererfactoryNode lacksnativeclose; realproductunmountclosesalwaysmountednativeconfirmationdialog. These17cases neveropenit; nativecloseonalreadyclosedialog isnoop. Fixturecapabilitymismatch, no realbrowserproductdefectclaim.",
+    "correction": "OptionalNode.close type +conditionalONLYtagdialog close() noop; no showModal/open-dialog emulation. All codefromfunctionremove onward(including17cases/asserts) byte-identical SHA3fa48fb819f2bdbbf4778a6bee55f9de1080166fb80683d116c4423a3275a86a.",
+    "source_sha256": "7fc76af97c7cf2e80ac235a42d46fc55d936b0ba790f3d1fcc9b1cd88b91d7e9",
+    "product_sha256": "ab62be1b4bfea9819f7ffbccc3ba7d2fa5dd370cc1cab9e8849a038ad6276670",
+    "runtime": "No browser/DB/network/Java/full113suite; current4058genuineE2E untouched, actualnewnormalCI pendingRoot",
+    "active_native": null,
+    "active_session": null,
+    "updated_utc": "2026-10-14T10:34:07.800729+00:00",
+    "checks": {
+      "state": "PARTIAL_OR_FAIL",
+      "results": [
+        {
+          "phase": "format-apply",
+          "direct_pid": 690801,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 690801,
+              "start_ticks": 22754802
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "format-check",
+          "direct_pid": 690812,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 690812,
+              "start_ticks": 22754914
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "selected-vue-tsc",
+          "direct_pid": 690823,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 690823,
+              "start_ticks": 22754992
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "lint",
+          "direct_pid": 690838,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 690838,
+              "start_ticks": 22756125
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "same-class-coverage",
+          "direct_pid": 690849,
+          "native_exit": 0,
+          "terminal_reason": "LOG_CAP",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 690849,
+              "start_ticks": 22756332
+            },
+            {
+              "pid": 690861,
+              "start_ticks": 22756365
+            },
+            {
+              "pid": 690866,
+              "start_ticks": 22756393
+            }
+          ],
+          "adopted_waitpid_receipts": [
+            {
+              "pid": 690861,
+              "start_ticks": 22756365,
+              "native_exit": 0
+            }
+          ],
+          "supervision_error_type": null,
+          "phase_success": false
+        }
+      ],
+      "commands": [
+        [
+          "format-apply",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013"
+        ],
+        [
+          "format-check",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--check",
+            "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013"
+        ],
+        [
+          "selected-vue-tsc",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/vue-tsc/bin/vue-tsc.js",
+            "--noEmit",
+            "--project",
+            "/tmp/rct-q07-closed-dialog-adv4z9gf/tsconfig.json"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013"
+        ],
+        [
+          "lint",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/eslint/bin/eslint.js",
+            "--max-warnings=0",
+            "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends"
+        ],
+        [
+          "same-class-coverage",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/vitest/vitest.mjs",
+            "run",
+            "mobile-core/src/features/homework/assistant-homework-back.test.ts",
+            "--config",
+            "/tmp/rct-q07-closed-dialog-adv4z9gf/vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers",
+            "1",
+            "--no-file-parallelism",
+            "--coverage",
+            "--coverage.reporter=json-summary",
+            "--coverage.reportsDirectory",
+            "/tmp/rct-q07-closed-dialog-adv4z9gf/coverage",
+            "--reporter=json",
+            "--outputFile",
+            "/workspace/scratch/rct-validation/q06_api_resume_writer/q07-closed-dialog-corrected.private.json"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends"
+        ],
+        [
+          "stage",
+          [
+            "git",
+            "add",
+            "--",
+            "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013"
+        ],
+        [
+          "ordinary-hooks",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+            "--offline",
+            "tool",
+            "run",
+            "--from",
+            "pre-commit==4.6.2",
+            "pre-commit",
+            "run",
+            "--files",
+            "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013"
+        ],
+        [
+          "normal-commit",
+          [
+            "git",
+            "commit",
+            "-m",
+            "test(mobile): model closed native dialogs in homework renderer"
+          ],
+          "/workspace/rct-worktrees/first3-spec-frame-20261013"
+        ]
+      ],
+      "peaks": {
+        "min_workspace_free": 4928290816,
+        "owned_rss": 716648448,
+        "shared_memory": 6117851136,
+        "log_bytes": 10726053
+      },
+      "wall_seconds": 28.254,
+      "remaining_wall_seconds": 151.746,
+      "tmp_removed": true,
+      "link_removed": true,
+      "source_sha256": "7fc76af97c7cf2e80ac235a42d46fc55d936b0ba790f3d1fcc9b1cd88b91d7e9",
+      "limits": "singleforegroundwall180s/perphase120s/cleanup30s/floor4GiB/growth128MiB/RSS1GiB/shared15GiB+1reserve/log1MiB",
+      "tool_session": {
+        "id": 50873,
+        "exit": 0,
+        "reaped": true
+      }
+    },
+    "attempt01_output_guard": {
+      "classification": "LOG_CAP_STOP_NOT_PRODUCT_FAIL",
+      "test_native_exit": 0,
+      "bounded_phase_success": false,
+      "class_summary": {
+        "passed": 17,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "private_file_sizes": {
+        "q07-closed-dialog-corrected.private.json": 10725773,
+        "q07-closed-dialog-format-apply.private.log": 94,
+        "q07-closed-dialog-selected-vue-tsc.private.log": 0,
+        "q07-closed-dialog-same-class-coverage.private.log": 120,
+        "q07-closed-dialog-lint.private.log": 0,
+        "q07-closed-dialog-format-check.private.log": 66
+      },
+      "finite_log_predicates": {
+        "vue_warn_present": false,
+        "ssr_context_warning_present": false,
+        "vue_warn_count": 0
+      },
+      "cleanup": "allreaped/ownTMP+frontendlinkgone",
+      "source": "UNCHANGED_AFTER_FORMAT_TYPE_LINT_PASS",
+      "private_json_sha256": "1a461862abe45bc4f49600ac464bea2c90c361dc6c6e31d69f55a32f73d0598c",
+      "coverage_map_bytes": 10717901,
+      "test_results_bytes": 7375,
+      "statement": "Actualcorrected17PASS/nativeexit0/V8coveragecompleted; boundedinvocationNOTPASS becauseJSONreporteremitscoverageMapburst>1MiB. Retainactualtestresult separatefromoutputresourceSTOP. No methodorassertionfailure hidden.",
+      "oversized_private_json_removed": true,
+      "removal_reason": "Ownfailed-runoversizedcoverageMapartifact; exactoriginalSHA/bytes/native/classcounts retainedinexistingoutcome. No Source/testevidenceclassification rewritten."
+    },
+    "finish": {
+      "state": "PASS",
+      "results": [
+        {
+          "phase": "stage",
+          "direct_pid": 691511,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 691511,
+              "start_ticks": 22780489
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "ordinary-hooks",
+          "direct_pid": 691532,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 691532,
+              "start_ticks": 22780558
+            },
+            {
+              "pid": 691544,
+              "start_ticks": 22780568
+            },
+            {
+              "pid": 691572,
+              "start_ticks": 22780608
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "normal-commit",
+          "direct_pid": 691668,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 691668,
+              "start_ticks": 22780743
+            },
+            {
+              "pid": 691710,
+              "start_ticks": 22780764
+            }
+          ],
+          "adopted_waitpid_receipts": [
+            {
+              "pid": 691710,
+              "start_ticks": 22780764,
+              "native_exit": 0
+            }
+          ],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      ],
+      "commands": [
+        [
+          "stage",
+          [
+            "git",
+            "add",
+            "--",
+            "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ]
+        ],
+        [
+          "ordinary-hooks",
+          [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+            "--offline",
+            "tool",
+            "run",
+            "--from",
+            "pre-commit==4.6.2",
+            "pre-commit",
+            "run",
+            "--files",
+            "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+          ]
+        ],
+        [
+          "normal-commit",
+          [
+            "git",
+            "commit",
+            "-m",
+            "test(mobile): model closed native dialogs in homework renderer"
+          ]
+        ]
+      ],
+      "peaks": {
+        "min_workspace_free": 4938952704,
+        "owned_rss": 110034944,
+        "shared_memory": 5499707392,
+        "log_bytes": 629
+      },
+      "wall_seconds": 3.297,
+      "tmp_removed": true,
+      "tool_session": {
+        "id": 70997,
+        "exit": 0,
+        "reaped": true
+      }
+    },
+    "author_commit": "956eadf863dbfc8798a8ef38f0cb51d08cae7aab",
+    "final_source_sha256": "7fc76af97c7cf2e80ac235a42d46fc55d936b0ba790f3d1fcc9b1cd88b91d7e9",
+    "unchanged_oracle_suffix_sha256": "3fa48fb819f2bdbbf4778a6bee55f9de1080166fb80683d116c4423a3275a86a",
+    "lease_released": true,
+    "clean": true,
+    "inventory": [
+      "M\tfrontends/mobile-core/src/features/homework/assistant-homework-back.test.ts"
+    ],
+    "verification": "Knownbad4058CI17FAIL reused; corrected SAME17existingtests withV8coverage actual17PASS/0FAIL/nativeexit0/JSONsuccess true. Formattercheck/strictselectedVueTSC/lint/hooks/normalcommitPASS. Initialcheckinginvocation stoppedLOG_CAP duejsonreportercoverageMap10.7MB; noall-bounded-checksPASSclaim. No rerunof17orpassedchecks; oversizedownprivateJSONremovedafterSHA/size/summaryreceipt, onlyremaininghooks+commit fresh3.304s/allreaped/TMPgone."
+  },
+  "selectors": {
+    "state": "PASS",
+    "updated_at": "2026-10-14T10:46:02.171526+00:00",
+    "phase": "normal-commit",
+    "active_native": null,
+    "active_session": null,
+    "results": [
+      {
+        "phase": "prettier-check",
+        "direct_pid": 694352,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 694352,
+            "start_ticks": 22853252
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "selected-strict-e2e-tsc",
+        "direct_pid": 694376,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 694376,
+            "start_ticks": 22853374
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "stage",
+        "direct_pid": 694383,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 694383,
+            "start_ticks": 22853836
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "ordinary-hooks",
+        "direct_pid": 694404,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 694404,
+            "start_ticks": 22853899
+          },
+          {
+            "pid": 694416,
+            "start_ticks": 22853906
+          },
+          {
+            "pid": 694444,
+            "start_ticks": 22853942
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "normal-commit",
+        "direct_pid": 694549,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 694549,
+            "start_ticks": 22854123
+          },
+          {
+            "pid": 694591,
+            "start_ticks": 22854133
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 694591,
+            "start_ticks": 22854133,
+            "native_exit": 0
+          }
+        ],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "peaks": {
+      "min_workspace_free": 4938117120,
+      "owned_rss": 336789504,
+      "shared_memory": 5825642496,
+      "log_bytes": 707
+    },
+    "elapsed_wall_seconds": 9.337,
+    "commands": [
+      [
+        "prettier-check",
+        [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/specs/mobile-schedule-lifecycle.spec.ts"
+        ]
+      ],
+      [
+        "selected-strict-e2e-tsc",
+        [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+          "--noEmit",
+          "--project",
+          "/tmp/rct-q07-selectors02-w4_0f5ag/selected.json"
+        ]
+      ],
+      [
+        "stage",
+        [
+          "git",
+          "add",
+          "--",
+          "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts"
+        ]
+      ],
+      [
+        "ordinary-hooks",
+        [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+          "--offline",
+          "tool",
+          "run",
+          "--from",
+          "pre-commit==4.6.2",
+          "pre-commit",
+          "run",
+          "--files",
+          "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts"
+        ]
+      ],
+      [
+        "normal-commit",
+        [
+          "git",
+          "commit",
+          "-m",
+          "test(e2e): select builder options through exact field captions"
+        ]
+      ]
+    ],
+    "source_sha256": "5e9b29382e03229e90e77b90e8bbec77767acbd4728c84758f7a813dc113430e",
+    "tmp_removed": true,
+    "link_removed": true,
+    "limits": "wall180/phase120/cleanup30/floor4GiB/RSS1GiB/growth128MiB/shared15+1/log1MiB",
+    "status": "AUTHOR_COMMITTED_SOURCE_SELECTOR_CORRECTION",
+    "author_commit": "d0ef426f6c97067f1a2bf81b6e0b6997c7b3e33e",
+    "parent": "956eadf863dbfc8798a8ef38f0cb51d08cae7aab",
+    "branch": "codex/q07-builder-selectors-20261014",
+    "clean": true,
+    "tool_session": {
+      "id": 67648,
+      "exit": 0,
+      "reaped": true
+    },
+    "lease_released": true,
+    "test_cases_and_oracles_byte_identical": true,
+    "unchanged_test_tail_sha256": "b0fad84c361b5929f1da6c54fb6d9523828afc96c53cb1121b9fb195f8c37817",
+    "actual_cause": "4058 unique actual cause UNKNOWN; concrete Source selectors corrected; actual corrected browser NOT_RUN"
+  },
+  "root_privacy": "onlytwofinitepublicSpecs paths to expose actualpublicframes fornewcases; no parser/limits/status/secretchanges",
+  "root_ci_diagnostic": "onlylogger_name→logger/message→msg matchingactualcurrentAcademicsharedLogback; no product/retry/assertionweakening",
+  "runtime": "correctedactualbrowserNOT_RUN; knownbad4058 retained; fixture17actualGREEN withLOG_CAP_NOTPASSqualification",
+  "root_source_pins": {
+    "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts": "7fc76af97c7cf2e80ac235a42d46fc55d936b0ba790f3d1fcc9b1cd88b91d7e9",
+    "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts": "5e9b29382e03229e90e77b90e8bbec77767acbd4728c84758f7a813dc113430e",
+    "tests/e2e/fixtures/artifact-privacy.ts": "0eb2c3fec3cc171a30ea78baabb5b3485b1ee8973ce56a655cd81cce5da6653a",
+    ".github/workflows/ci.yml": "38c94ceaa91ff5102ea5788572d7c4637f1c9167602651e95488ebac72f98d37"
+  },
+  "ci_diagnostic_review": "q06_targeted_recheck/review.safe.md targeted2propertyrecheckAPPROVE_SOURCE; no changedregex/enums/caps/UUIDoutput",
+  "actual4058_warning_reprojection": "0actualrawJSONrecords retainedinjoblogs; cannotrecover discardedDockerrecords; actual503causeUNKNOWN; newnormalCI hascorrectedobservation",
+  "root_merged_checks": {
+    "results": [
+      {
+        "phase": "actionlint",
+        "argv": [
+          "/workspace/rct-cloud-setup/golang-toolchain/go/bin/go",
+          "run",
+          "github.com/rhysd/actionlint/cmd/actionlint@v1.7.11",
+          "-shellcheck=",
+          "-pyflakes=",
+          ".github/workflows/ci.yml"
+        ],
+        "direct_pid": 695142,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 695142,
+            "start_ticks": 22872959
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "Root-privacy-format",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+          "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+          "tests/e2e/fixtures/artifact-privacy.ts",
+          ".github/workflows/ci.yml"
+        ],
+        "direct_pid": 695163,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 695163,
+            "start_ticks": 22873135
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "merged-real-mobile-TSC",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+          "--noEmit",
+          "--project",
+          "tests/e2e/tsconfig.real-mobile.json"
+        ],
+        "direct_pid": 695174,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 695174,
+            "start_ticks": 22873268
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "merged-private-controls",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "tests/e2e/check-artifact-privacy.mjs"
+        ],
+        "direct_pid": 695181,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 695181,
+            "start_ticks": 22873653
+          },
+          {
+            "pid": 695188,
+            "start_ticks": 22873659
+          },
+          {
+            "pid": 695204,
+            "start_ticks": 22873845
+          },
+          {
+            "pid": 695225,
+            "start_ticks": 22874063
+          },
+          {
+            "pid": 695238,
+            "start_ticks": 22874141
+          },
+          {
+            "pid": 695259,
+            "start_ticks": 22877209
+          },
+          {
+            "pid": 695272,
+            "start_ticks": 22877294
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "git-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "direct_pid": 695285,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 695285,
+            "start_ticks": 22877404
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "Angular-baseline-unchanged",
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "--",
+          "frontends/web-panel"
+        ],
+        "direct_pid": 695306,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 695306,
+            "start_ticks": 22877469
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "source_unchanged": true,
+    "tmp_removed": true,
+    "existing_dependency_directory_preserved": true,
+    "total_wall_seconds": 45.55,
+    "limits": "sampledprocessresources; no hardOSisolationclaim"
+  },
+  "fixture_runtime_clarification": "Historicalruntimefield inauthorpacketwaspreparationstate: actualsameclass17GREEN/native0 isproven inattempt01_output_guard; boundedphaseLOG_CAP_NOTPASS retained. No assertion/productchanges; nextordinaryCIpending.",
+  "root_merged_checking_status": "6/6PASS45.55wallSeconds/sourceunchanged/TMPgone/PWdirectorypreserved/allreaped"
+}

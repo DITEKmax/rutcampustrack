@@ -162,5 +162,206 @@
       "request": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99",
       "audit": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
     }
+  },
+  "N_accepted_source_resolution_4058": {
+    "context": "Readonly at40580c6b6b5dbda40d01fde48eb5d455cded9d61; selectedSol6.1/high actualUNKNOWN; Source unchanged; newQ08browser NOT_RUN. Appended refinement preserves older N_remaining/history.",
+    "verdict": "A: accepted headman-editable per-student semester manual-request limit increase with audit; concrete missing current carrier (Source GAP), not operational default/config-only nor unresolved Owner policy. No runtime failure asserted.",
+    "authority_resolution": [
+      "source-conflicts.md:6 closes all31 R owner decisions/no owner reapproval; backend-delta.yaml:4757 AT-11 source_status=revised/product_decision_status=closed/pending scoped code comparison; generated2026-09-06. This explicit closed policy resolves archive-candidate ambiguity.",
+      "backend-conflicts.md:93-110 R-2: automatic requests unlimited/nonexpiring; manual past-lesson petitions five per semester charged on submission/retry; \"Староста может увеличить лимит студенту на N\" on116 and operation audited; remaining shown before submission. :566 AT-11 replaces old3/block-reset; :575 AU-16 includes increase audit; :592 lists missing operation.",
+      "job-stories.yaml JS-HEADMAN-24 and registry:56/358 retain old3/reset, undated owner fields; closed R-2/AT-11 is the accepted revision, not a reason to restore old policy. JS-STUDENT-02/06 and JS-HEADMAN-05 concern request origination/decisions, not an alternative operator config.",
+      "manifest backend-conflicts exact copy-archive/ownerdate null and registry copy-canonical/ownerdate null describe transfer provenance; source-conflicts/backend-delta separately establish closed product status. Original individual R-2 owner-answer date UNKNOWN; do not invent one. D005 later supersedes manualABSENT geo overwrite only, preserving quotas/past-lesson appeal."
+    ],
+    "accepted_operation": {
+      "who": "Current HEADMAN for own-group student, screen116 row; no student self-edit or admin/operator config rule inferred. MANAGE_EXCUSES helper quota-increase grant is NOT established by R-2 (helper rights explicitly deferred in backend-conflicts:643-645); do not infer it from ticket-decision authority.",
+      "when_scope": "Manual late-checkin budget is per student and semester; five initial attempts/semester. Increase available through group management, including exhaustion. No source decision for editing historical archived semesters identified.",
+      "effect": "Add N to limit (not reset used); existing submission/retry charges remain and automatic requests remain uncharged. Current persisted limit reader already changes remaining/max(0,limit-used) and eligibility.",
+      "audit": "An audit fact for the increase is expressly required (R-2/AU-16); exact audit event schema/carrier not frozen. Existing request/lesson audit submit/cancel/decision is not proof of this distinct mutation.",
+      "finite_contract_unknowns": "Exact REST/gRPC operation, N validation ceiling and audit DTO/event form remain implementation contract details; absent details do not erase accepted HEADMAN operation or authorize helper grants."
+    },
+    "current_carriers": [
+      "StudentRequestService:121 MANUAL_LATE_LIMIT=5; :1295-1323 only production budget writer found in Attendance/Academic is consumeBudget inc used and setOnInsert limit5; no increase/reset runtime command. :1335-1336 persisted limit fallback5; :1508-1526 options expose current budget.",
+      "StudentLateCheckinBudgetDocument:17-35 stores student_id,semester_id,limit,used,updated_at; no actor/audit mutation. Other references are repository/readers/index/deletion helpers.",
+      "HeadmanRequestApi:17-48 exposes list/get/decision/attachment only; legacy LateCheckinApi/Service contain no budget increase/reset. proto AttendanceStudentGrpcService has options/submission/cancel, no budget mutation.",
+      "HeadmanGroupApi member shape has no budget and methods cover members/assistants/permissions/export; HeadmanGroupScreen has no limit action. Student LateCheckinRequestScreen:257 displays remaining and exhausted state only.",
+      "RequestActionRecorder:69-73 produces REQUEST_SUBMITTED/REQUEST_CANCELLED/REQUEST_DECIDED; no limit-change audit call. Existing durable lesson/admin audit receipts cover different transitions."
+    ],
+    "proof_reuse": "Existing current0648_finite_reconciliation B28 M184 methods PASSED: five-of-six, persistedLimitControlsOptionsAndSubmissionsUntilExhausted and no-refund. Persisted test:1200-1237 directly repository.save limit7/used5, observes2 and exhaustion: no actor/API/N-change/audit proof. Reuse quota proof without rerun.",
+    "next_one_action": "Root assign one coherent AT-11 HEADMAN-only own-group budget-increase + audited readback implementation package, freezing the minimal API/grant/audit carrier before writer work; retain existing quota/replay/no-refund/AUTO/D005 guards. No additional Owner product question needed for the established HEADMAN operation.",
+    "verification": "Bounded read/search/SHA only. Ten decisive policy/product files verified byte-equal git4058. No source/config/docs edits, native checks, runtime, network, SDK, browser, DB, credentials or B013/B014 work. Existing own outcome only appended.",
+    "source_pins": {
+      "closed_policy": {
+        "path": "docs/implementation/source-conflicts.md",
+        "sha256": "0009a54f724cb478c05e7ef25f9917fb2d19a7c8881bd21954cf502ab5b33d11"
+      },
+      "closed_AT11": {
+        "path": "docs/implementation/backend-delta.yaml",
+        "sha256": "b32d0cbf83da5ec8b478b132e08302e7f88379905052d7290ff38d95237b4e6a"
+      },
+      "R02_AT11_AU16": {
+        "path": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+        "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8"
+      },
+      "old_JS24": {
+        "path": "docs/product/job-stories.yaml",
+        "sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243"
+      },
+      "old_registry": {
+        "path": "docs/product/reference-rutcampustrack-design/COMPONENT_REGISTRY.md",
+        "sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a"
+      },
+      "manifest": {
+        "path": "docs/sources/manifest.yaml",
+        "sha256": "0e7895a226af1e61ac8429a6a94db829761fc702293332609e6bead8470aa01b"
+      },
+      "B27_B28": {
+        "path": "docs/validation/cloud-20261011/boundary-scenarios.csv",
+        "sha256": "47906e49e20e947986814940a9a0df0bbf01ded5c8ea5cb0c8e5a46eebf8f35e"
+      },
+      "finite_receipt": {
+        "path": "docs/validation/cloud-20261011/receipts/Q08-existing-geo-source-preparation.safe.json",
+        "sha256": "5592a03ae4369a813171dd545f4049d44d4e1990942c8f2e27dc35499b9affaa"
+      },
+      "budget_service": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "sha256": "b6c27a00373b37cbd3f167f997fed3e47e5f6a67101f5f5b7ac0d5e1665d5aaf"
+      },
+      "budget_document": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+        "sha256": "ebdc05f566dde43a40e47b8bf76d7254ac611fcfcc17256ac9050211dc386fef"
+      },
+      "headman_contract": {
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java",
+        "sha256": "777c2fedd19cf8c489e9a965312aeca0bad9d0013df4a6de76d83324131d391c"
+      },
+      "headman_client": {
+        "path": "frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+        "sha256": "d533d399910470d8e7823ea81e82c09cf5959dd63623ab74d82a72d68e517105"
+      },
+      "headman_UI": {
+        "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+        "sha256": "d9169877654900156f51cb1713c34416f7a22dcfdedaeef4ba64d090036b81e9"
+      },
+      "request_audit": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/audit/RequestActionRecorder.java",
+        "sha256": "66372115c4917c0633e7ceee2d04a9b1e11d1827951c6290df95ec77fcf74748"
+      },
+      "persisted_N_test": {
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+        "sha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+      }
+    }
+  },
+  "N_minimal_implementation_contract_4058": {
+    "status": "PROPOSED, awaiting Root minimal-contract freeze/explicit writer scope; READONLY only, no implementation/runtime/native checks. selectedSol6.1/high actualUNKNOWN.",
+    "basis": "q08_N_change_source_resolution accepted R-2/AT-11/AU-16 HEADMAN increase; helper increase grants not inferred. Technical bounds/API details below are one minimal proposal, not new product policy.",
+    "rest": {
+      "resource": "/attendance/requests/students/{studentId}/late-checkin-budget; external /api prefix existing Gateway attendance route, no Gateway/BFF config or new internal RPC required.",
+      "GET": "Current HEADMAN target-student current-semester budget, 200 {studentId,semesterId,limit,used,remaining}; absent budget projects default5/used0 without a write. Cache-Control:no-store.",
+      "POST": "Same resource. JSON {semesterId,increase,requestKey}; 200 same budget DTO for the committed operation snapshot. semesterId is a server-read echo, not an arbitrary historical selector. Cache-Control:no-store. No reset/decrease/delete endpoints.",
+      "validation": "studentId/semesterId positive int64; increase positive integer fitting existing int32 limit representation, reject fractions/null/0/negative/out-of-range input400. Checked long addition must fit int32; accumulated overflow409/no effect, no arbitrary new business maximum. requestKey existing16..128 printableASCII validation, generated once per UI intent.",
+      "errors": "400 invalid command/IDs/N/key/JSON; 401 invalid or absent signed session; 403 noncurrent headman/helper/student/admin/teacher/foreign or absent active roster member; 409 stale/no-current/archived or transitioning semester, numeric capacity overflow, key-payload mismatch; existing503 dependency outage/unresolved transient result, never empty/success fallback."
+    },
+    "authority": [
+      "Before GET/POST/replay and every transaction retry, use AcademicGrpcClient.getHeadmanGroupComposition(identity.groupId) (:304) with original signed internal token; verify echoed group and target membership. HeadmanGroupCompositionReadService:29-50 enforces ACTIVE writable HEADMAN token, own group, active group, exactly one current durable headman grant, active headman membership and current active students. Thus stale JWT headman flag alone cannot authorize.",
+      "Do NOT call StudentRequestService.requireHeadmanAuthority as sole gate (:2653-2671 permits MANAGE_EXCUSES helper). Reject identity not STUDENT/headman in Attendance and rely on signed live Academic HEADMAN admission, with no helper fallback.",
+      "Use uncached AcademicGrpcClient.getActiveSemester (:235) and getSemesterState (:52) for authoritative current ID and writable lifecycle; POST echo must match. Acquire existing local semester archive/deletion fence inside Mongo transaction before receipt/budget writes. Fresh RPC checks plus local fence follow current authority/participant architecture; no claim of a distributed SQL/Mongo lock or instantaneous cancellation of an already admitted in-flight request."
+    ],
+    "atomic_storage_and_replay": [
+      "Reuse StudentRequestService existing TransactionTemplate/executeDecisionWithRetry style and PairWriteCoordinator.lockSemesterForWrite; no fabricated lesson/pair ID. All effects: semester fence, receipt lookup, budget CAS increment, audit append and existing outbox save share one Mongo transaction.",
+      "Keep existing student_late_checkin_budgets unique(student_id,semester_id) and schema. Default missing/null limit5/used0; add increase to effective limit, leave used untouched; conditional update/retry protects concurrent increase/submission and overflow. No write to student request documents/receipts or request-kind enums.",
+      "Use existing permanent non-TTL lesson_actions row as audit AND durable idempotency receipt, leveraging its existing unique _id; no new collection/index/migration/ledger framework. Deterministic namespaced SHA256(actorUserId,requestKey) ID independent of target/semester. Action MANUAL_LATE_LIMIT_INCREASED, source attendance-service, lesson_id=null (already supported), actor HEADMAN, target STUDENT, group_id/semester_id, real security/wall Clock instant (retentionClock, not teaching-clock override), before/after limit/used/remaining, exact increase and key hash. No raw credentials/body/freeform personal data.",
+      "Persist command binding (actor,group,target,semester,increase,key hash) and result snapshot in that permanent audit row. Same key/actor with exact binding returns stored original200 snapshot and appends/increments nothing; any differing binding409. Recheck current actor/target/semester admission first: revoked403 or later-semester stale409 even replay, receipt retained permanently. New legitimate increment requires new key.",
+      "On UNKNOWN_TRANSACTION_COMMIT_RESULT perform exact matching permanent-audit recovery after fresh authorization before bounded transaction retry. If receipt absent, retry same key; if dependencies unavailable, fail503 with no invented outcome. Audit append failure must abort budget increment (never if(actions!=null) skip). LessonActionService.append:104-131 already requires active transaction, inserts permanent row and outbox atomically. No extra business notification or broadened external event-ingestion schema.",
+      "Local action is not ATTENDANCE_SET/HOMEWORK_CREATED, so existing AdminActivityReadRepository explicit aggregates ignore it; existing invalidation outbox remains. Existing deletion already preserves lesson_actions and deletes budgets; receipt must not resurrect a deleted/archived semester."
+    ],
+    "client": "Extend existing HeadmanGroupApi transport with get/increaseBudget(studentId), using its session generation/401-refresh guard and same key/body on retry. Fetch one selected student detail, not one request per roster row. Existing HeadmanGroupScreen row/detail shows budget+positiveN input/action for current headman online writable scope; no helper control, no optimistic count, busy protects duplication. Keep uncertain intent/key for explicit retry; after any POST success refresh GET because exact receipt snapshot can predate another charge. Student options/counter continue using existing persisted limit; no student API/proto change.",
+    "candidate_source_inventory": [
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java: add GET/POST same new resource",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetResponse.java (new five-field record)",
+      "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanLateCheckinBudgetIncreaseRequest.java (new three-field record)",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/{HeadmanRequestController.java,HeadmanRequestService.java,StudentRequestService.java}: existing identity/adapter/transaction owner, two methods plus narrow validation/replay helpers; actions setter already exists",
+      "frontends/mobile-core/src/features/headman-group/{headman-group-client.ts,HeadmanGroupScreen.vue,headman-group-screen.pcss}: existing accepted carrier; design skill before UI mutation",
+      "Existing StudentRequestDomainIT, StudentRequestServiceAuthorizationTest, HeadmanRequestControllerMvcTest, and tests/e2e/specs/mobile-attendance-requests.spec.ts for relevant new behavior; one targeted headman client/UI test in existing style only if uncovered risk.",
+      "Root alone integrates contract/OpenAPI snapshots/checks/configs/docs after freeze; no assumed ownership. No planned edits to proto, Academic, Gateway, MongoConfig, historical schema or security clocks."
+    ],
+    "sufficient_checks_after_assignment": [
+      "Real Mongo targeted StudentRequestDomainIT: absent default budget and exhausted5/5 +2 ->limit7/used5/remaining2, student options sees2; two submissions exhaust, existing no-refund/AUTO quota proofs reused. Audit row exact actor/group/student/semester/N/before/after is permanent and count1.",
+      "Exact retry after intervening charge returns same stored snapshot/no second change; different N/target/semester same key409. Concurrent same-key copies commit once; distinct keys sum without lost increment; increase versus existing manual submission keeps exact used/limit and audit.",
+      "Real Mongo rollback injection at audit/outbox and lost-commit-ack recovery: all-or-none budget+audit/outbox, unknown commit no double increment/audit. PREPARE/archive/delete fence denies, no-current/stale-semester RPC state denies; no post-delete resurrection.",
+      "New action authority tests: current headman succeeds; forged/stale flag and signed composition denied, helper with MANAGE_EXCUSES denied, foreign/nonmember target denied, revoked headman/target admission denied even replay; Academic outage503 changes nothing. Reuse existing signed composition implementation rather than new grants or role policy.",
+      "MVC input shape: zero/negative/fraction/oversized N, null/invalid key, invalid IDs ->400; int32 accumulated overflow409/no mutation; no-store. Avoid duplicating simple mapping tests.",
+      "Extend existing real Q08 browser case after ordinary synthetic setup: headman116 adds2 for exhausted student, headman displays2 and student options/UI shows2, one real manual submit consumes1; relevant foreign/helper/live-revocation HTTP negative kept. Existing AUTO/D005 and request approval assertions retained.",
+      "Sensitivity: freeze production4058 old-source route ->new black-box expected200 vs404 (do not use missing Java method/compile failure as RED), OR controlled one-effect omission (increment/audit) preserving compilable method/contract ->specific realMongo limit/audit-count assertion RED, restore ->targeted GREEN. Pick one minimal actual meaningful sensitivity later, no new runner/framework; native requires Root lease."
+    ],
+    "ambiguities": "No essential new Owner product decision for HEADMAN-only increase. Exact endpoint/DTO/audit form/idempotency are technical freeze choices; helper expansion remains outside accepted package. OriginalR2 exact answer date remains UNKNOWN. Proposal is not implementation/actualPASS.",
+    "source_pins": [
+      {
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/HeadmanRequestApi.java",
+        "sha256": "777c2fedd19cf8c489e9a965312aeca0bad9d0013df4a6de76d83324131d391c",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestController.java",
+        "sha256": "8a831f89229ea86582ba44345ef16ce757428ba931546382f8b56f7717feabed",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestService.java",
+        "sha256": "8bf6f1e0f347ff15df8a754224fe39ddc6b9de499d60289a0ba513d5170092e5",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "sha256": "b6c27a00373b37cbd3f167f997fed3e47e5f6a67101f5f5b7ac0d5e1665d5aaf",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+        "sha256": "de5280c787caa48245c2c882d303744006d4cf3735769154285de186aba1f741",
+        "exact4058": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanGroupCompositionReadService.java",
+        "sha256": "b2832b931f84de6dbdbeac5504a6c4d543bae2dc6b1f688cbb1d2a81ccc2d6e1",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/PairWriteCoordinator.java",
+        "sha256": "38f97c9ad2d6bf99d5cd2ebc03790b38cf0be4b0842ab9e7845b1555d94e9cdf",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/SemesterArchiveFence.java",
+        "sha256": "4f7383059e63fd80cfdfb4f567142aba50e2736f4a105fe70aac933b0bdab1da",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/audit/LessonActionService.java",
+        "sha256": "c04402ae0f6aa7a45625583a780e603fe25f3776e2dcbf441c08b6c1c3449fa0",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/audit/LessonActionDocument.java",
+        "sha256": "adeb1c16a05eb1f61d7c1b980e7e8e1e7f39db0a2f4dcdb16d8c61b4d43ef87e",
+        "exact4058": true
+      },
+      {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+        "sha256": "3f53f0ee6b79ad14680b30c6c8c419b8410f8eeee659bd95b5823837f67df2c2",
+        "exact4058": true
+      },
+      {
+        "path": "frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+        "sha256": "d533d399910470d8e7823ea81e82c09cf5959dd63623ab74d82a72d68e517105",
+        "exact4058": true
+      },
+      {
+        "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+        "sha256": "d9169877654900156f51cb1713c34416f7a22dcfdedaeef4ba64d090036b81e9",
+        "exact4058": true
+      }
+    ],
+    "verification": "Only bounded reads/searches/SHA and gitshow exact4058; no product/config/shared-doc mutation, native/backend/browser/DB/network/SDK/agents/B013/B014 work. Existing outcome appended only."
   }
 }

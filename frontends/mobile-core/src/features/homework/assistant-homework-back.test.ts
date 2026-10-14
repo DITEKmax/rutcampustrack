@@ -59,6 +59,7 @@ interface Node {
   options: Node[]
   addEventListener: () => void
   getRootNode: () => { activeElement: null }
+  close?: () => void
 }
 function node(tag = ''): Node {
   return {
@@ -75,6 +76,8 @@ function node(tag = ''): Node {
     },
     addEventListener: () => undefined,
     getRootNode: () => ({ activeElement: null }),
+    // These tests never open a dialog; native close() on a closed dialog is a no-op.
+    ...(tag === 'dialog' ? { close: () => undefined } : {}),
   }
 }
 function remove(node: Node): void {

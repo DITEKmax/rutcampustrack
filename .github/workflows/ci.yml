@@ -1028,9 +1028,9 @@ jobs:
                       continue
                   try:
                       record = json.loads(line)
-                      if record.get('logger_name') != 'ru.rutcampustrack.academic.assignment.AssignmentClosureService':
+                      if record.get('logger') != 'ru.rutcampustrack.academic.assignment.AssignmentClosureService':
                           continue
-                      message = record.get('message')
+                      message = record.get('msg')
                       match = pattern.fullmatch(message) if isinstance(message, str) else None
                       if not match or match[3] not in statuses:
                           continue

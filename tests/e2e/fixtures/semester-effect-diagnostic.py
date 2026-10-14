@@ -166,6 +166,138 @@ def _transport_flags(queues=None, bindings=None):
     return result
 
 
+def _consumer_failure_hint(logs=None):
+    # Spring AMQP 3.2.12 renders bodies over 50 bytes as byte-array labels.
+    # The sender sets only event_type, not an event/message/correlation ID.
+    # These untrusted queue/type hints NEVER identify the ledger candidate.
+    result = {
+        "observation": "UNAVAILABLE",
+        "bodyIdentityUnavailable": True,
+        "exactCandidateMatched": False,
+        "hintRecords": 0,
+        "sampleCapped": False,
+        "exceptionKinds": [],
+        "grpcCodes": [],
+        "sourceFrames": [],
+    }
+    if type(logs) is not bytes or len(logs) > 262144:
+        return result
+
+    def unique_object(pairs):
+        obj = {}
+        for key, value in pairs:
+            if key in obj:
+                raise ValueError("Duplicate private log key")
+            obj[key] = value
+        return obj
+
+    try:
+        lines = logs.decode("utf-8").splitlines()
+    except UnicodeError:
+        return result
+    if len(lines) > 200:
+        return result
+    result.update(observation="NO_QUEUE_TYPE_HINT", sampleCapped=len(lines) == 200)
+    exceptions = {
+        "ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException": "ACADEMIC_UNAVAILABLE",
+        "ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException": "SCHEDULE_UNAVAILABLE",
+        "ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException": "RESOURCE_NOT_FOUND",
+        "ru.rutcampustrack.attendance.event.SemesterArchiveEffectRejectedException": "EFFECT_REJECTED",
+        "java.lang.IllegalArgumentException": "INVALID_ARGUMENT",
+        "io.grpc.StatusRuntimeException": "GRPC_STATUS",
+        "org.springframework.transaction.UnexpectedRollbackException": "TRANSACTION_ROLLBACK",
+        "org.springframework.data.mongodb.MongoTransactionException": "MONGO_TRANSACTION",
+        "org.springframework.dao.DuplicateKeyException": "DUPLICATE_KEY",
+    }
+    frames = {
+        "ru.rutcampustrack.attendance.event.EventConsumer.handleLessonClosed": "CLOSE_HANDLER",
+        "ru.rutcampustrack.attendance.event.LessonEventService.prepareLessonClosed": "PREPARE_CLOSE",
+        "ru.rutcampustrack.attendance.event.LessonEventService.validateLessonSnapshot": "LESSON_SNAPSHOT",
+        "ru.rutcampustrack.attendance.event.LessonEventService.validateRosterEcho": "ROSTER_ECHO",
+        "ru.rutcampustrack.attendance.event.LessonEventService.preflightLessonClosed": "CLOSE_PREFLIGHT",
+        "ru.rutcampustrack.attendance.event.SemesterArchiveEffectService.parse": "EFFECT_ENVELOPE",
+        "ru.rutcampustrack.attendance.event.SemesterArchiveEffectService.applyInCurrentTransaction": "EFFECT_TRANSACTION",
+        "ru.rutcampustrack.attendance.grpc.AcademicGrpcClient.getGroupMembers": "ACADEMIC_ROSTER",
+        "ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient.getLessonById": "SCHEDULE_LESSON",
+        "ru.rutcampustrack.shared.events.IdempotencyGuard.tryClaim": "IDEMPOTENCY_CLAIM",
+    }
+    grpc_codes = (
+        "CANCELLED",
+        "UNKNOWN",
+        "INVALID_ARGUMENT",
+        "DEADLINE_EXCEEDED",
+        "NOT_FOUND",
+        "ALREADY_EXISTS",
+        "PERMISSION_DENIED",
+        "RESOURCE_EXHAUSTED",
+        "FAILED_PRECONDITION",
+        "ABORTED",
+        "OUT_OF_RANGE",
+        "UNIMPLEMENTED",
+        "INTERNAL",
+        "UNAVAILABLE",
+        "DATA_LOSS",
+        "UNAUTHENTICATED",
+    )
+    kinds, codes, locations = set(), set(), set()
+    for line in lines:
+        try:
+            row = json.loads(line, object_pairs_hook=unique_object)
+            if (
+                type(row) is not dict
+                or row.get("service") != "attendance-service"
+                or row.get("level") != "WARN"
+                or row.get("logger") != "org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"
+                or type(row.get("msg")) is not str
+                or type(row.get("stack")) is not str
+            ):
+                continue
+            message = re.fullmatch(
+                r"Retries exhausted for message \(Body:'\[B@[0-9a-f]+\(byte\[[0-9]+\]\)' MessageProperties \[(.*)\]\)",
+                row["msg"],
+            )
+            if not message:
+                continue
+            parts = message[1].split(", ")
+            if parts[0] != "headers={event_type=lesson.closed}":
+                continue
+            properties = {}
+            for part in parts[1:]:
+                key, separator, value = part.partition("=")
+                if not separator or key in properties or not re.fullmatch(r"[A-Za-z]+", key):
+                    raise ValueError("Ambiguous private message properties")
+                properties[key] = value
+            if (
+                properties.get("consumerQueue") != "attendance-service.events"
+                or properties.get("receivedExchange") != "rut-uit.events"
+                or properties.get("receivedRoutingKey") != ""
+            ):
+                continue
+            result["hintRecords"] += 1
+            for stack_line in row["stack"].splitlines():
+                cause = re.fullmatch(r"(?:Caused by: )?([A-Za-z0-9_.$]+)(?::(.*))?", stack_line)
+                if cause and cause[1] in exceptions:
+                    kinds.add(exceptions[cause[1]])
+                    # Only the known exception line is classified; descriptions
+                    # and unknown class names are never copied into the output.
+                    status = re.search(r"(?:Status\{code=|^\s*)([A-Z_]+)(?:,|:)", cause[2] or "")
+                    if status and status[1] in grpc_codes:
+                        codes.add(status[1])
+                frame = re.fullmatch(r"\s+at ([A-Za-z0-9_.$]+)\([A-Za-z0-9_.$]+\.java:[0-9]+\)", stack_line)
+                if frame and frame[1] in frames:
+                    locations.add(frames[frame[1]])
+        except (ValueError, TypeError, KeyError, AttributeError, RecursionError):
+            continue
+    if result["hintRecords"]:
+        result.update(
+            observation="UNMATCHED_QUEUE_EVENT_TYPE_HINT",
+            exceptionKinds=sorted(kinds),
+            grpcCodes=sorted(codes),
+            sourceFrames=sorted(locations),
+        )
+    return result
+
+
 def _project(
     ledger,
     producer,
@@ -177,6 +309,7 @@ def _project(
     consumer_claim="UNKNOWN",
     queues=None,
     bindings=None,
+    consumer_logs=None,
 ):
     def boolean(value):
         return value if type(value) is bool else "UNKNOWN"
@@ -185,7 +318,7 @@ def _project(
         return sorted({_closed(row.get("status"), ("pending", "sent", "failed")) for row in rows})
 
     return {
-        "schema": "semester-effect.v2",
+        "schema": "semester-effect.v3",
         "observationPhase": "AFTER_FIXTURE_CLEANUP_BEFORE_CONTAINER_TEARDOWN",
         "found": ledger is not None,
         "selection": "LEDGER_CANDIDATE"
@@ -234,6 +367,7 @@ def _project(
         "stableLedger": boolean(stable),
         "consumerClaimPresent": boolean(consumer_claim),
         "transport": _transport_flags(queues, bindings),
+        "consumerFailureHint": _consumer_failure_hint(consumer_logs),
     }
 
 
@@ -458,7 +592,7 @@ def main():
                 + ")),'null'::json)",
             )
             stable = current == ledger["state"]
-        queues, bindings = None, None
+        queues, bindings, consumer_logs = None, None, None
         if ledger is not None and ledger["target"] == "ATTENDANCE":
             try:
                 # All primary reads are already retained. A separate optional
@@ -476,6 +610,57 @@ def main():
                 subprocess.SubprocessError,
             ):
                 consumer_claim = "UNKNOWN"
+            try:
+                # Recovery retains original applications in rct-e2e. Admit only
+                # that Attendance service; fixed inspect excludes Config.Env.
+                attendance_ids = (
+                    r.run(
+                        [
+                            "docker",
+                            "ps",
+                            "-q",
+                            "--filter",
+                            "label=com.docker.compose.project=rct-e2e",
+                            "--filter",
+                            "label=com.docker.compose.service=attendance-service",
+                        ]
+                    )
+                    .decode()
+                    .split()
+                )
+                if len(attendance_ids) != 1 or not re.fullmatch(r"[0-9a-f]{12,64}", attendance_ids[0]):
+                    raise ValueError("Ambiguous source Attendance")
+                attendance = attendance_ids[0]
+                info = json.loads(
+                    r.run(
+                        [
+                            "docker",
+                            "inspect",
+                            "--format",
+                            '{"labels":{{json .Config.Labels}},"networks":{{json .NetworkSettings.Networks}}}',
+                            attendance,
+                        ]
+                    )
+                )
+                if (
+                    type(info) is not dict
+                    or info["labels"].get("com.docker.compose.project") != "rct-e2e"
+                    or info["labels"].get("com.docker.compose.service") != "attendance-service"
+                    or "rct-e2e_private_net" not in info["networks"]
+                ):
+                    raise ValueError("Unexpected source Attendance")
+                consumer_logs = r.run(["docker", "logs", "--tail", "200", "--since", "30m", attendance])
+            except (
+                OSError,
+                ValueError,
+                TypeError,
+                LookupError,
+                AttributeError,
+                RuntimeError,
+                subprocess.SubprocessError,
+            ):
+                # All primary reads survive optional log/deadline failures.
+                consumer_logs = None
             try:
                 # Recovery restarts the original rct-e2e broker; only its DBs
                 # are fresh recovery-project containers. Admit that exact source
@@ -588,6 +773,7 @@ def main():
             consumer_claim,
             queues,
             bindings,
+            consumer_logs,
         )
         encoded = json.dumps(result, separators=(",", ":")).encode()
         if len(encoded) > 4096:

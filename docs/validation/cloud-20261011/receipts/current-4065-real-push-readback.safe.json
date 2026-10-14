@@ -27632,6 +27632,229 @@
       },
       "firstMetadataFalsePositivePreserved": true,
       "noRuleOrExceptionChange": true
+    },
+    "01d69_actual_local_unpublished_checkpoint": {
+      "at": "2026-10-14T22:17:59.321780+00:00",
+      "localCommit": "01d69efdfe634c22d7cb95f1c43b16d2d6a8fadc",
+      "parent": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+      "paths": 13,
+      "scope": "6reviewedSource+7existingtaskdocs",
+      "native": 0,
+      "allReaped": true,
+      "remoteAndPR": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+      "published": false,
+      "next": "reviewed2Python diagnostic joins one finalordinarypush; no repeatedunchanged6Sourcechecks"
+    },
+    "01d69_semester_diagnostic_reviewed_Source": {
+      "at": "2026-10-14T22:17:59.321780+00:00",
+      "state": "TWO_FILE_SOURCE_APPROVED_HINT_ONLY_NOT_CAUSAL_ACCEPTANCE",
+      "sourcePlan": {
+        "state": "SOURCE_READY_PENDING_INDEPENDENT_TARGETED_REVIEW",
+        "base": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+        "files": {
+          "tests/e2e/fixtures/semester-effect-diagnostic.py": {
+            "rootBeforeSHA256": "0ca6a5f2c20cbac1942fdecbd05ea00e498accaa4c4ecb14e5ecad503c905446",
+            "authorSHA256": "5eb48b57ce4afebc71521fe6871ff0b1106b99f6ef333c020b342a54c78fa2f9",
+            "addedLines": 188,
+            "removedLines": 2
+          },
+          "tests/e2e/fixtures/semester-effect-diagnostic.control.py": {
+            "rootBeforeSHA256": "2e14c7b39bb2706b262f8e7c5dc4e2578926e9ea8dc5f189c5b97eebdcb01a59",
+            "authorSHA256": "5b2b9832d29d53f96023a177205ecab310bf64e67aa2bae170550f5fd872ad13",
+            "addedLines": 83,
+            "removedLines": 1
+          }
+        },
+        "currentProducerSHA256": "0ca6a5f2c20cbac1942fdecbd05ea00e498accaa4c4ecb14e5ecad503c905446",
+        "actualCauseEvidence": "current62df_semester_diagnosis: selected lesson.closed producer sent; Attendance claim/receipt/ACK absent; aggregate DLQ3, exact cause UNKNOWN",
+        "plan": "Optional owned Attendance docker logs after primary reads; tail200/since30m/captured256KiB/perchild5s/global50s. Strict structured recoverer WARN plus complete JSON Body envelope identity/version/source/semester/canonical-payload-hash match in RAM. Only finite exception/grpc/source-frame classification in explicit v3. Failure preserves primary projection and UNKNOWN. No message get/requeue/consume or product/testbarrier/timeouts/CI changes.",
+        "checks": {
+          "AST_PARSE": "PASS",
+          "existing_pure_controls": "PASS",
+          "canonical_ruff017_format_apply_and_check": "PASS",
+          "elapsedSeconds": 0.117,
+          "peakRSSKiB": 14268,
+          "memoryLimitMiB": 128,
+          "deadlineSeconds": 15,
+          "freeDiskFloorGiB": 4,
+          "subprocesses": "Only bounded Ruff formatter apply/check, terminal exits0; pure control import does not execute main/process/DB/network paths",
+          "positive": "Known unmatched GRPC PERMISSION_DENIED Academic-roster hint; identity alwaysfalse",
+          "negative": "Private-marker/identity/unknown class privacy; foreign queue/exchange/event/routing; spoofed service/logger/level; duplicate property/key; truncated/oversize/nonUTF8/201lines",
+          "original_status": "PENDING ledger / no ACK remain unchanged under hint",
+          "realRuntime": "NOT_RUN"
+        },
+        "filesRootUnchanged": true,
+        "representationCheck": {
+          "state": "STRONG_MATCH_SOURCE_BLOCKED",
+          "proof": {
+            "spring-amqp": {
+              "version": "3.2.12",
+              "jarSHA256": "3133b0892574eb76c546656f86eb37743929f3735ad5efbab4dd3ac49a4212e1",
+              "class": "org/springframework/amqp/core/Message.class",
+              "classSHA256": "572223b256282894e5500e94bb267e79bf93522f0e06921fa8500233cb8bc46a"
+            },
+            "spring-rabbit": {
+              "version": "3.2.12",
+              "jarSHA256": "889473b8aafe558e5c71a717ffde206bbfb0be9d432c5891f6c8033e39b5dc63",
+              "class": "org/springframework/amqp/rabbit/retry/RejectAndDontRequeueRecoverer.class",
+              "classSHA256": "c9fe71597e5cae87e0c2284dc4c22ca58c80b6da2dae541e0962aa63f2dd7458"
+            },
+            "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/RabbitOutboxEventSender.java": "f05fe388002b625457a21b29c27e713a2ab165272d1f45be175f4994d8f8c67c",
+            "services/shared/shared-events/src/main/java/ru/rutcampustrack/shared/events/AbstractEventConsumer.java": "e3526fd0f3ffd72d5f37b05eee36bcbb7c8b6a6cdbc97a067920a11bdc4a8dc2",
+            "services/shared/shared-logback/src/main/resources/shared/logback-base.xml": "a3d516e0cbd97ce2a12d238576c8fafde5b1b66c6f86195a96e242404134cc99"
+          },
+          "method": "Python stdlib ZIP/class constant-pool and Code attributes only; no Java execution/network",
+          "finding": "Message.getBodyContentAsString reads maxBodyLength; <clinit> initializes50; body length>50 branches to byte-array Object.toString + (byte[n]). Current LessonClosed envelope>50. No max-body override found. Sender sets event_type only, no messageId/correlationId/event_id header. Event trace MDC restored before recoverer log.",
+          "minimalOptions": [
+            "Unmatched queue/event-type finite exception hint explicitly lacking body identity; Root decision pending",
+            "Exact event-id matching requires separately scoped producer event-id header/log change outside assigned two files"
+          ],
+          "untestedDraft": "Discarded; root Source and control remain unchanged"
+        },
+        "at": "2026-10-14T22:13:58.951749+00:00",
+        "chosenScope": "Root explicitly selected smallest useful UNMATCHED_QUEUE_EVENT_TYPE_HINT; no candidate identity or cause assertion.",
+        "schema": {
+          "version": "semester-effect.v3",
+          "newField": "consumerFailureHint",
+          "closedKeys": [
+            "observation",
+            "bodyIdentityUnavailable",
+            "exactCandidateMatched",
+            "hintRecords",
+            "sampleCapped",
+            "exceptionKinds",
+            "grpcCodes",
+            "sourceFrames"
+          ],
+          "observationCodes": [
+            "UNAVAILABLE",
+            "NO_QUEUE_TYPE_HINT",
+            "UNMATCHED_QUEUE_EVENT_TYPE_HINT"
+          ],
+          "identityInvariant": "bodyIdentityUnavailable=true and exactCandidateMatched=false in every branch",
+          "qualification": "Only queue/type-correlated untrusted exception/source hypotheses, never causal proof/receipt/acceptance PASS. All previous receipt/ACK/ledger/transport fields and original test exit unchanged."
+        },
+        "collection": {
+          "serviceAdmission": "Unique running rct-e2e Attendance label selection then fixed labels/networks-only inspect requires original private network; Config.Env excluded",
+          "read": "docker logs --tail200 --since30m, perchild<=5s/global existing50s, postcapture stdout/stderr<=262144 each",
+          "match": "Structured WARN from exact Attendance service/RejectAndDontRequeueRecoverer; AMQP byte-array Body representation, exact sole event_type=lesson.closed header, consumerQueue/receivedExchange/empty receivedRoutingKey; duplicate properties/JSON keys rejected",
+          "privacy": "No log/body/identity/credential/string exception/source frame copied. Fixed code allowlists only. Optional errors retain primary observations. No queue operation."
+        },
+        "nextIndependentReview": {
+          "reviewer": "c66_schedule_current",
+          "scope": "Only assigned two-file delta, actual AMQP representation and unmatched qualification, fixed admission/deadlines/privacy/code allowlists + existing synthetic controls; no new campaign"
+        },
+        "registryWIP": {
+          "sha256": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+          "touched": false
+        },
+        "rootSourceUnchanged": true,
+        "commitPushCITrigger": "NOT_PERFORMED"
+      },
+      "independentReview": {
+        "recordedAt": "2026-10-14T22:16:32.812610+00:00",
+        "reviewer": "c66_schedule_current",
+        "role": "INDEPENDENT_TARGETED_REVIEW",
+        "selectedModel": "gpt-6.1-sol",
+        "selectedEffort": "high",
+        "actualRuntimeModelEffort": "UNKNOWN",
+        "decision": "APPROVE_SOURCE_ONLY",
+        "blockingFindings": [],
+        "author": "c65_operations_finite_join",
+        "authorWorktree": "/workspace/rct-worktrees/renderer-outage-874-20261014",
+        "admittedBase": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+        "sourcePins": {
+          "tests/e2e/fixtures/semester-effect-diagnostic.py": "5eb48b57ce4afebc71521fe6871ff0b1106b99f6ef333c020b342a54c78fa2f9",
+          "tests/e2e/fixtures/semester-effect-diagnostic.control.py": "5b2b9832d29d53f96023a177205ecab310bf64e67aa2bae170550f5fd872ad13"
+        },
+        "basePins": {
+          "tests/e2e/fixtures/semester-effect-diagnostic.py": "0ca6a5f2c20cbac1942fdecbd05ea00e498accaa4c4ecb14e5ecad503c905446",
+          "tests/e2e/fixtures/semester-effect-diagnostic.control.py": "2e14c7b39bb2706b262f8e7c5dc4e2578926e9ea8dc5f189c5b97eebdcb01a59"
+        },
+        "gitDiffSha256": {
+          "tests/e2e/fixtures/semester-effect-diagnostic.py": "20e3f760035663ee8eb3f479262b1612a326726f7df7bdd70eab0ddb574944b9",
+          "tests/e2e/fixtures/semester-effect-diagnostic.control.py": "ab45207a0ce9c19e5ae40f113680680e32e6ea66add1042478f61d84da7234bd"
+        },
+        "scope": "Only2Python diagnostic/control delta; no unrelated six-source review or product/server/queue execution.",
+        "reviewed": [
+          "Explicit schema upgrade semester-effect.v2 -> v3; new consumerFailureHint closed fields distinguish UNAVAILABLE, NO_QUEUE_TYPE_HINT and UNMATCHED_QUEUE_EVENT_TYPE_HINT.",
+          "bodyIdentityUnavailable is always true and exactCandidateMatched always false. No parsing/trace/log field can promote queue hint into candidate identity, ACK, causal proof or acceptance PASS.",
+          "Optional source Attendance read requires one running rct-e2e service container, exact compose project/service labels and original private network. Inspect reads labels/networks only, excludes Config.Env. No get/consume/requeue/write operation added.",
+          "Logs command is fixed tail200/since30m; existing5s child/global50s budgets and postcapture262144-byte bounds apply. Malformed/unavailable/deadline log reads map to unavailable hints; prior ledger/receipt/ACK/claim observations survive.",
+          "Strict JSON duplicate rejection; exact service Attendance, WARN, Recoverer logger, AMQP byte-array body representation and sole event_type=lesson.closed header; exact queue/exchange/empty routing; duplicate properties and foreign/truncated representations rejected.",
+          "Exception/grpc/frame output is exclusively finite code mapping. Private body, IDs, traceId, exception description, unknown classes, source filenames and raw log values are not emitted.",
+          "Shared JSON logback actually emits service/level/logger/msg/stack on stdout; sender and admitted AMQP representation evidence match the fixed parser shape.",
+          "Control positives assert unmatched-only GRPC/roster hint, unchanged PENDING/no ACK, v3 and output size. Countercontrols cover private-marker/identity omission; foreign queue/exchange/type/routing; duplicate properties/JSON; spoofed logger/service/level; truncated envelope/JSON; oversize/nonUTF8/201lines; unknown exception/frame strings."
+        ],
+        "checks": {
+          "independentASTParse": "PASS2files",
+          "independentScopedDiffWhitespace": "PASS",
+          "exactFilePins": "MATCH_AUTHOR_AND_ASSIGNED_SCOPE",
+          "authorReportedRuffAndPureControls": "PASS as recorded in renderer-outage.safe.json#semesterDiagnosticSourcePlan.checks; control assertions independently source-reviewed, not reexecuted",
+          "noDuplicateNativeRun": true
+        },
+        "limits": [
+          "Approval covers truthful optional next-run diagnostics only. Current selected semester event rejection cause remains UNKNOWN until adequate new evidence; hint never identifies exact DLQ/candidate event.",
+          "No Docker/services/AMQP/native process/control suite/CI rerun was executed by reviewer. Actual deployed parser match and operational outcome remain NOT_RUN.",
+          "Output/capture bounds after subprocess capture are inherited existing semantics, not a claim of streaming memory enforcement.",
+          "Author receipt original plan sentence retains earlier stronger envelope-match wording; chosenScope/schema/collection and actual reviewed code explicitly supersede it with unmatched-only qualification."
+        ],
+        "preservation": "Existing failure-only workflow, original test exit, participant barrier assertions, receipts, ACKs and finite identity requirements unchanged; no causal/PASS claims or ordinal fallback.",
+        "effects": {
+          "sourceWrites": 0,
+          "GitMutation": 0,
+          "sharedDocsWrites": 0,
+          "children": 0,
+          "newArtifacts": "Only this section in same schedule-current874.safe.json",
+          "B013_B014_B015": "FROZEN_UNTOUCHED"
+        },
+        "next": "May join already prepared substantive publication after Root integration/pin checks; no separate full CI solely to add optional diagnostics."
+      },
+      "author": "c65_operations_finite_join",
+      "reviewer": "c66_schedule_current",
+      "chosenMeaning": "UNMATCHED_QUEUE_EVENT_TYPE_HINT only; exactCandidateMatched=false/bodyIdentityUnavailable=true, originaltestFAIL/receipt/ACK preserved. PreliminarycompleteBodymatch plan superseded by actualAMQPdefault50 evidence.",
+      "runtimeAfterChange": "NOT_RUN",
+      "next": "Rootexactcopy/parsercontrols/normalconfiguredchecks then one coherentpush"
+    },
+    "01d69_semester_diagnostic_Root_controls": {
+      "at": "2026-10-14T22:23:23.417915+00:00",
+      "state": "PASS_PURE_CONTROLS_AND_AST_EXACT_REVIEWED_SOURCE",
+      "actual": {
+        "direct_pid": 832200,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 832200,
+            "start_ticks": 27037511
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsedSeconds": 0.28909998800372705,
+        "sourcePins": {
+          "tests/e2e/fixtures/semester-effect-diagnostic.py": "5eb48b57ce4afebc71521fe6871ff0b1106b99f6ef333c020b342a54c78fa2f9",
+          "tests/e2e/fixtures/semester-effect-diagnostic.control.py": "5b2b9832d29d53f96023a177205ecab310bf64e67aa2bae170550f5fd872ad13"
+        },
+        "AST": "PASS2FILES",
+        "logPath": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/semester-diagnostic-controls.log"
+      },
+      "formatter": "Reused canonical Ruff0.17 exact-source author PASS; unchanged after copy, no repeated PASS required",
+      "runtime": "No Docker/network/DB/browser/server operations; actual next CI diagnostic NOT_RUN"
+    },
+    "01d69_neutral1470_minimal_phase_plan": {
+      "at": "2026-10-14T22:23:23.417915+00:00",
+      "state": "READONLY_PLAN_ONLY",
+      "author": "c66_request_enum_boundary",
+      "sourceEdits": 0,
+      "scope": "Finite opt-in actual-bootstrap phase hint only if next clock-corrected real CI still fails; preserve original assertions/rethrow; no product cause verdict yet",
+      "evidence": "Existing author outcome neutral1470PhasePlan on completion",
+      "execution": "NOT_AUTHORIZED_OR_IMPLEMENTED_BY_PLAN; unnecessary if next ordinary CI passes"
     }
   }
 }

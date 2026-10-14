@@ -9,7 +9,16 @@ from pathlib import Path
 source_path = Path(__file__).with_name("semester-effect-diagnostic.py")
 source = source_path.read_text()
 tree = ast.parse(source)
-names = {"_closed", "_canonical_uuid", "_receipt_flags", "_ack_flags", "_ack_row", "_mongo_script", "_project"}
+names = {
+    "_closed",
+    "_canonical_uuid",
+    "_receipt_flags",
+    "_ack_flags",
+    "_ack_row",
+    "_mongo_script",
+    "_project",
+    "_consumer_failure_hint",
+}
 selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
 assert {node.name for node in selected} == names
 assert not any(isinstance(node, (ast.Import, ast.ImportFrom)) for function in selected for node in ast.walk(function))
@@ -114,6 +123,76 @@ assert "limit(1)" in script and "limit(3)" in script and "maxTimeMS(2000)" in sc
 assert '"source_event_id"' in script and r"\\s*:\\s*" in script and "$regex:pattern" in script
 assert not any(value in script for value in (".insert", ".update", ".delete", ".remove", ".save"))
 assert len(json.dumps(empty).encode()) <= 4096
+
+# Actual AMQP 3.2.12 representation for a body >50 bytes has no event identity.
+# Only queue/type hints may be produced, even in this positive fixture.
+log_row = {
+    "service": "attendance-service",
+    "level": "WARN",
+    "logger": "org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer",
+    "msg": "Retries exhausted for message (Body:'[B@123abc(byte[400])' MessageProperties [headers={event_type=lesson.closed}, contentType=application/json, receivedExchange=rut-uit.events, receivedRoutingKey=, consumerQueue=attendance-service.events])",
+    "stack": "org.springframework.amqp.rabbit.support.ListenerExecutionFailedException: "
+    + marker
+    + "\nCaused by: io.grpc.StatusRuntimeException: PERMISSION_DENIED: "
+    + marker
+    + "\n\tat ru.rutcampustrack.attendance.grpc.AcademicGrpcClient.getGroupMembers(AcademicGrpcClient.java:300)\nCaused by: "
+    + marker
+    + ": secret\n\tat private."
+    + marker
+    + "(Secret.java:1)",
+    "traceId": identity,
+    "private": marker,
+}
+
+
+def hint(row):
+    return scope["_consumer_failure_hint"](json.dumps(row).encode())
+
+
+known_hint = hint(log_row)
+assert known_hint == {
+    "observation": "UNMATCHED_QUEUE_EVENT_TYPE_HINT",
+    "bodyIdentityUnavailable": True,
+    "exactCandidateMatched": False,
+    "hintRecords": 1,
+    "sampleCapped": False,
+    "exceptionKinds": ["GRPC_STATUS"],
+    "grpcCodes": ["PERMISSION_DENIED"],
+    "sourceFrames": ["ACADEMIC_ROSTER"],
+}
+assert all(
+    value not in json.dumps(known_hint) for value in (marker, identity, "123abc", "400", "AcademicGrpcClient.java")
+)
+for old, new in (
+    ("consumerQueue=attendance-service.events", "consumerQueue=foreign.events"),
+    ("receivedExchange=rut-uit.events", "receivedExchange=foreign.events"),
+    ("event_type=lesson.closed", "event_type=lesson.cancelled"),
+    ("receivedRoutingKey=,", "receivedRoutingKey=foreign,"),
+    (
+        "consumerQueue=attendance-service.events",
+        "consumerQueue=foreign.events, consumerQueue=attendance-service.events",
+    ),
+):
+    changed = dict(log_row, msg=log_row["msg"].replace(old, new))
+    assert hint(changed)["hintRecords"] == 0
+for field, value in (("service", "schedule-service"), ("logger", "private." + marker), ("level", "ERROR")):
+    assert hint(dict(log_row, **{field: value}))["hintRecords"] == 0
+assert hint(dict(log_row, msg=log_row["msg"][:-4]))["hintRecords"] == 0
+assert scope["_consumer_failure_hint"](json.dumps(log_row).encode()[:-4])["hintRecords"] == 0
+duplicate = json.dumps(log_row)[:-1] + ',"logger":"private.' + marker + '"}'
+assert scope["_consumer_failure_hint"](duplicate.encode())["hintRecords"] == 0
+assert scope["_consumer_failure_hint"](b"x" * 262145)["observation"] == "UNAVAILABLE"
+assert scope["_consumer_failure_hint"](b"\xff")["observation"] == "UNAVAILABLE"
+assert scope["_consumer_failure_hint"](b"{}\n" * 201)["observation"] == "UNAVAILABLE"
+unknown_stack = hint(dict(log_row, stack="Caused by: private." + marker + ": UNKNOWN_SECRET_STATUS: " + identity))
+assert (
+    unknown_stack["exceptionKinds"] == [] and unknown_stack["grpcCodes"] == [] and unknown_stack["sourceFrames"] == []
+)
+projected_hint = scope["_project"](ledger, [], receipt, [], [], True, consumer_logs=json.dumps(log_row).encode())
+assert projected_hint["schema"] == "semester-effect.v3" and projected_hint["consumerFailureHint"] == known_hint
+assert projected_hint["ledgerState"] == "PENDING" and projected_hint["ackPresent"] is False
+assert len(json.dumps(projected_hint).encode()) <= 4096
+assert marker not in json.dumps(projected_hint) and identity not in json.dumps(projected_hint)
 print(
     json.dumps(
         {
@@ -124,6 +203,9 @@ print(
             "handled_error_and_missing_receipt_distinct": True,
             "academic_ack_mapping": True,
             "bounded_readonly_mongo_source": True,
+            "unmatched_queue_type_positive_hint_only": True,
+            "foreign_truncated_spoofed_and_duplicate_logs_rejected": True,
+            "raw_log_identity_unknown_class_and_private_marker_not_emitted": True,
             "qualification": "Actual pure projection functions only; no subprocess, DB, Docker, network, queue or real event recovery",
         }
     )

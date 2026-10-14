@@ -235,7 +235,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     await selectPwaRole(page, 'Администратор');
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
     await expect(
-      page.getByRole('textbox', { name: 'Найти пользователя', exact: true }),
+      page.getByRole('searchbox', { name: 'Найти пользователя', exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Создать пользователя', exact: true }),
@@ -264,14 +264,34 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       page.getByText('Новые задания появятся здесь после публикации.', { exact: true }),
     ).toBeVisible();
     await logoutPwa(page);
-    await loginPwa(page, dataset.student);
-    // Abort transport once; no fabricated successful API/role/domain response.
-    await page.route('**/api/v1/student/homework?**', (route) => route.abort('failed'), {
-      times: 1,
-    });
-    await page.getByRole('button', { name: 'Задания', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Повторить', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Повторить', exact: true }).click();
+    // The owner loads homework during login and retries failed reads automatically.
+    // Keep the real transport unavailable until its manual-retry state is visible.
+    const homeworkRoute = '**/api/v1/student/homework?**';
+    const abortHomework: Parameters<typeof page.route>[1] = (route) =>
+      route.request().method() === 'GET' ? route.abort('failed') : route.continue();
+    await page.route(homeworkRoute, abortHomework);
+    try {
+      const failed = page.waitForEvent(
+        'requestfailed',
+        (request) =>
+          new URL(request.url()).pathname === '/api/v1/student/homework' &&
+          request.method() === 'GET',
+      );
+      await Promise.all([failed, loginPwa(page, dataset.student)]);
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Повторить', exact: true })).toBeVisible();
+    } finally {
+      await page.unroute(homeworkRoute, abortHomework);
+    }
+    const [retried] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/v1/student/homework' &&
+          response.request().method() === 'GET',
+      ),
+      page.getByRole('button', { name: 'Повторить', exact: true }).click(),
+    ]);
+    expect(retried.status()).toBe(200);
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
   });
 

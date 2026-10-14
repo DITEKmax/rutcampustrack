@@ -321,13 +321,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      RCT_FILES_RECOVERY_DIR: ${{ runner.temp }}/rct-files-recovery-${{ github.run_id }}-${{ github.run_attempt }}
       RCT_FILES_RECOVERY_PROJECT: rct-recovery-files-${{ github.run_id }}-${{ github.run_attempt }}
       RCT_RECOVERY_PG_IMAGE: postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
       RCT_RECOVERY_MONGO_IMAGE: mongo@sha256:1f995ad6fdb93244a1addab1b58f934a0bc2f5643c38e02f5e9d7f0c7d227a7b
     steps:
       - uses: actions/checkout@v4
         timeout-minutes: 1
+      - name: Set the disposable recovery working path
+        timeout-minutes: 1
+        run: printf 'RCT_FILES_RECOVERY_DIR=%s\n' "$RUNNER_TEMP/rct-files-recovery-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         timeout-minutes: 1
         with:

@@ -1,0 +1,31 @@
+{
+  "producer": "d3a9bd9b3675183e21b434a002eacce068d5ea49",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_remote_PR_head_equal": true,
+  "git_transport_readback": "d3a9bd9b3675183e21b434a002eacce068d5ea49\trefs/heads/codex/server-validation-20261011\n3908fad9624f97aec8891fc79338ceb6b0616bf3\trefs/heads/main\n",
+  "pr": {
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+    "head": "d3a9bd9b3675183e21b434a002eacce068d5ea49",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "advertised_merge": "582ecfe492d0d53ef96139354301c3d9c06efe17",
+    "actual_checkout": "UNKNOWN_PENDING_NEW_CI_CLOSED_RECEIPT"
+  },
+  "push": {
+    "supervisor": 652449,
+    "session": 37430,
+    "native_exit": 0,
+    "reaped": true
+  },
+  "inventory": {
+    "paths": 36,
+    "source_paths": 14,
+    "product_config": "Academic existing issuer variable forwarded in E2E and production Compose; no production operation",
+    "client_checks": "Q09helperHW/Q12map new, Q06 diagnostic, existingfiles-modeCI resource correction",
+    "normal_hooks": "all6PASS",
+    "reviews": "substantive whole/targeted APPROVE_SOURCE"
+  },
+  "acceptance": "IN_PROGRESS; newafter/runtimegatespending, prior838d facts retained"
+}

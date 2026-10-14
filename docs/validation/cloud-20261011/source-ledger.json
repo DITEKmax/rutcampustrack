@@ -13654,6 +13654,20 @@
       "revision": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
       "kind": "coherent-checking-and-config-receipt",
       "revision_qualification": "prospectiveintegrationbase; exactauthor/review/runtimeproducers inside"
+    },
+    {
+      "id": "CURRENT-D3A9-CONTEXT-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "85944229d2792832146790103c39e240a2b4bd0cbae2ea7138642ff5e2d712df",
+      "status": "current checking configuration correction; semantic actionlint PASS; actualCI NOT_RUN",
+      "revision_base": "d3a9bd9b3675183e21b434a002eacce068d5ea49"
+    },
+    {
+      "id": "CURRENT-D3A9-CONTEXT-docs/validation/cloud-20261011/receipts/Q15-workflow-context-correction.safe.json",
+      "path": "docs/validation/cloud-20261011/receipts/Q15-workflow-context-correction.safe.json",
+      "sha256": "6293f6ed95db9a28a7d8466b90fd1cb8b7cc697b76330872c9e163d1c90cf744",
+      "status": "red-before/green-after current semantic checking evidence",
+      "revision_base": "d3a9bd9b3675183e21b434a002eacce068d5ea49"
     }
   ],
   "research_receipt": {

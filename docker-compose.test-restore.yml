@@ -14,7 +14,13 @@ services:
       - /var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U rct_user -d academic_db']
+      test:
+        - CMD-SHELL
+        - >-
+          [ "$$(cat /proc/1/comm)" = postgres ] &&
+          PGPASSWORD="$${POSTGRES_PASSWORD}" psql -X -h 127.0.0.1
+          -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+          -v ON_ERROR_STOP=1 -Atqc 'SELECT 1' >/dev/null 2>&1
       interval: 2s
       timeout: 3s
       retries: 40
@@ -32,7 +38,13 @@ services:
       - /var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U rct_user -d schedule_db']
+      test:
+        - CMD-SHELL
+        - >-
+          [ "$$(cat /proc/1/comm)" = postgres ] &&
+          PGPASSWORD="$${POSTGRES_PASSWORD}" psql -X -h 127.0.0.1
+          -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+          -v ON_ERROR_STOP=1 -Atqc 'SELECT 1' >/dev/null 2>&1
       interval: 2s
       timeout: 3s
       retries: 40
@@ -50,7 +62,18 @@ services:
     # The previous 512 MiB disposable MongoDB was OOM-killed before seeding.
     mem_limit: 1g
     healthcheck:
-      test: ['CMD', 'mongosh', '--quiet', '--eval', 'quit(db.adminCommand({ping:1}).ok ? 0 : 1)']
+      test:
+        - CMD-SHELL
+        - >-
+          [ "$$(cat /proc/1/comm)" = mongod ] &&
+          mongosh --quiet --host 127.0.0.1 --port 27017 --eval '
+          try {
+            const admin = db.getSiblingDB("admin");
+            const auth = admin.auth({user: process.env.MONGO_INITDB_ROOT_USERNAME,
+              pwd: process.env.MONGO_INITDB_ROOT_PASSWORD});
+            quit((auth === 1 || auth.ok === 1) && admin.runCommand({ping: 1}).ok === 1 ? 0 : 1);
+          } catch (error) { quit(1); }
+          ' >/dev/null 2>&1
       interval: 2s
       timeout: 5s
       retries: 40

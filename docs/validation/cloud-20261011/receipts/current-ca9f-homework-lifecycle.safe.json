@@ -1,0 +1,47 @@
+{
+  "artifact": 11877799278,
+  "producer": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "run": 38530338724,
+  "digest": "sha256:08ebc808d0fbf3438da29786a1e1e8c683f4614f2a85b3255b8bf837c10590fb",
+  "bytes": 422,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-homework-lifecycle.spec.ts",
+        "line": 16,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 9246,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-homework-lifecycle.spec.ts",
+            "line": 177
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "HELPER_HOMEWORK_COMPLETION",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

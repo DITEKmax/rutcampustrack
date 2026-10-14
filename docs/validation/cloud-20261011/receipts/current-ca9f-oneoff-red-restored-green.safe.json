@@ -1,0 +1,66 @@
+{
+  "artifact": 11878505653,
+  "run": 38530338724,
+  "digest": "sha256:5e70c94e0fc9a5624b6b95864167be381e033d71df9017b9564ae55587d986fc",
+  "producer": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "proof": {
+    "schemaVersion": 1,
+    "state": "EXPECTED_ONE_OFF_MOVEMENT_FAILURE",
+    "producerHeadSha": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+    "checkoutSha": "f3ecaac1463cc8a81cbc850c987f0e72cd2ec69b",
+    "previousRevision": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+    "previousSourceSha256": "f4ed91a3f41286a379325ee172acbbf0af24b37050f00307eb5b95938d1b3482",
+    "restoredSourceSha256": "3f70dd8ec1beba45375227d3ce094f2ee8b1c51ef9ea19a98565b936b15893fe",
+    "testMethod": "oneOffCloseAdoptThenNextDayReplacementPreservesHistoryAndReplay",
+    "expectedMovedCount": 1,
+    "observedMovedCount": 0,
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "qualification": "Exact old75cb moved-count1/0 named assertion RED; reviewed Source copy/cmp restore and same-job current exacttestmethods PASS after it. Positive/history/replay, negative guards and V30\u2192V31 realPG PASS. Fullsuite fails separate obsolete12/30 oracle; full client transfer and teacher-history boundary remain unproved.",
+  "raw_logs_XML_read": false,
+  "restored_same_job_green": {
+    "run": 38530338724,
+    "actual_checkout": "f3ecaac1463cc8a81cbc850c987f0e72cd2ec69b",
+    "artifact": 11878221787,
+    "source_restoration_bound": "current service SHA3f70dd8e, copy/cmp verified before red-proof publication; original full integration task then ran",
+    "selected": [
+      {
+        "xmlOrdinal": 15,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+        "method": "oneOffReplacementRejectsUnknownStaleForeignAndUnconsumedBindingReceipts",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+        "sourceSha256": "185b42ac7c9b9aacf3127dbd6cf9b3ff736f065552388fe2999b94212280f702"
+      },
+      {
+        "xmlOrdinal": 15,
+        "suiteOrdinal": 1,
+        "ordinal": 9,
+        "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+        "method": "oneOffCloseAdoptThenNextDayReplacementPreservesHistoryAndReplay",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+        "sourceSha256": "185b42ac7c9b9aacf3127dbd6cf9b3ff736f065552388fe2999b94212280f702"
+      },
+      {
+        "xmlOrdinal": 31,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+        "method": "v30ToV31RetainsExistingOneOffRowsAndPhysicalGuards",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+        "sourceSha256": "5f7925c8d1898ed3e2c8b30a2c5548449e25d66dfc39ecd43f96205a94087a23"
+      }
+    ],
+    "full_suite_status": "207PASS/one known obsolete historical migration count/latest-version assertion FAIL; not full PASS"
+  }
+}

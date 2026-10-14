@@ -145,6 +145,9 @@ test('CANCEL_LESSONS confirms a real cancellation and revoked restore cannot res
     .getByRole('button', { name: 'Отменить пару', exact: true })
     .click();
   expect((await cancelled).status()).toBe(200);
+  await expect(page.locator('.headman-journal__date-nav output')).toContainText('1 пара');
+  await page.getByRole('button', { name: 'Следующая пара или день', exact: true }).click();
+  await expect(page.locator('.headman-journal__date-nav output')).toContainText('8 пара');
   await page.getByRole('button', { name: 'Управление парой', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Восстановить пару', exact: true })).toBeVisible();
   const listPath = `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${dataset.today}&dateTo=${dataset.today}&status=CANCELLED&size=100`;

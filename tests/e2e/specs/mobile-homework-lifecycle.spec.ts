@@ -170,14 +170,14 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
     reopenedStudent.session,
   );
   await page.getByRole('button', { name: 'Задания', exact: true }).click();
-  const completedSlider = page.getByRole('slider', {
-    name: `Снять отметку: ${title}`,
-    exact: true,
-  });
-  await expect(completedSlider).toBeVisible();
   const card = page
     .locator('.homework-card')
     .filter({ has: page.getByText(title, { exact: true }) });
+  const completedSlider = card.getByRole('slider', {
+    name: `Снять отметку: ${dataset.subject.name}`,
+    exact: true,
+  });
+  await expect(completedSlider).toBeVisible();
   await expect(card).toHaveCount(1);
   await expect(card).toHaveAttribute('data-completion', 'completed');
   await expect(page.getByRole('button', { name: 'Изменить', exact: true })).toHaveCount(0);

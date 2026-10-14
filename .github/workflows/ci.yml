@@ -933,7 +933,7 @@ jobs:
           umask 077
           printf 'RCT_ASSIGNMENT_LIFECYCLE_RUN=%s\n' "$RCT_ASSIGNMENT_LIFECYCLE_RUN" >> "$GITHUB_ENV"
           python3 - <<'PY_ASSIGNMENT'
-          import json, os, subprocess
+          import datetime, json, os, re, selectors, subprocess, time
           from pathlib import Path
 
           root = Path.cwd()
@@ -967,6 +967,81 @@ jobs:
                    env={**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase},
                    seconds=330 if phase == 'prepare' else 150)
 
+          def close_failure_diagnostic(since):
+              academic = call([*compose, 'ps', '-q', 'academic-service'], seconds=15).decode().strip()
+              info = json.loads(call(['docker', 'inspect', academic], seconds=15))[0]
+              labels = info['Config']['Labels']
+              if (labels.get('com.docker.compose.project') != 'rct-e2e'
+                      or labels.get('com.docker.compose.service') != 'academic-service'):
+                  raise RuntimeError('Academic diagnostic ownership mismatch')
+              payload = bytearray()
+              deadline = time.monotonic() + 15
+              with subprocess.Popen(['docker', 'logs', '--since', since, '--tail', '200', academic],
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+                  try:
+                      with selectors.DefaultSelector() as ready:
+                          ready.register(process.stdout, selectors.EVENT_READ)
+                          while True:
+                              remaining = deadline - time.monotonic()
+                              if remaining <= 0 or not ready.select(remaining):
+                                  raise TimeoutError('Academic diagnostic deadline')
+                              chunk = os.read(process.stdout.fileno(), min(65536, 8388609 - len(payload)))
+                              if not chunk:
+                                  break
+                              payload.extend(chunk)
+                              if len(payload) > 8388608:
+                                  print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
+                                  return
+                      if process.wait(timeout=max(0.01, deadline - time.monotonic())):
+                          print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
+                          return
+                  finally:
+                      if process.poll() is None:
+                          process.kill()
+                      process.wait(timeout=5)
+              classes = {
+                  'io.grpc.StatusRuntimeException': 'GRPC_STATUS',
+                  'io.grpc.StatusException': 'GRPC_STATUS',
+                  'org.postgresql.util.PSQLException': 'POSTGRESQL',
+                  'javax.net.ssl.SSLHandshakeException': 'TLS_HANDSHAKE',
+                  'java.net.ConnectException': 'CONNECT',
+                  'java.lang.IllegalStateException': 'ILLEGAL_STATE',
+                  'java.lang.IllegalArgumentException': 'ILLEGAL_ARGUMENT',
+              }
+              sites = {'ScheduleGrpcClient.java': 'ACADEMIC_SCHEDULE_GRPC',
+                       'AssignmentClosureService.java': 'ASSIGNMENT_CLOSURE'}
+              statuses = {'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED',
+                          'NOT_FOUND', 'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED',
+                          'FAILED_PRECONDITION', 'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED',
+                          'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED'}
+              pattern = re.compile(r'Assignment lifecycle pending operationId=([0-9a-fA-F-]{36}) '
+                                   r'operationKind=CLOSE_UNASSIGN phase=RESUME_CLOSE '
+                                   r'failureClass=([A-Za-z0-9_.$]{1,256}) grpcStatus=([A-Z_]{1,32}) '
+                                   r'applicationFrame=(NONE|[A-Za-z0-9_.$-]{1,128}#[A-Za-z0-9_.$<>-]{1,128}:-?[0-9]{1,9})')
+              warnings, operations = [], set()
+              for line in payload.splitlines():
+                  if len(line) > 16384:
+                      continue
+                  try:
+                      record = json.loads(line)
+                      if record.get('logger_name') != 'ru.rutcampustrack.academic.assignment.AssignmentClosureService':
+                          continue
+                      message = record.get('message')
+                      match = pattern.fullmatch(message) if isinstance(message, str) else None
+                      if not match or match[3] not in statuses:
+                          continue
+                      operations.add(match[1])
+                      warnings.append({'operationKind': 'CLOSE_UNASSIGN', 'phase': 'RESUME_CLOSE',
+                                       'failureClass': classes.get(match[2], 'OTHER'),
+                                       'grpcStatus': match[3],
+                                       'applicationSite': ('NONE' if match[4] == 'NONE' else
+                                                           sites.get(match[4].split('#', 1)[0], 'OTHER'))})
+                  except (ValueError, TypeError, AttributeError):
+                      continue
+              print(json.dumps({'diagnostic': 'ASSIGNMENT_CLOSE', 'resumeWindow': True,
+                                'state': 'MATCHES' if warnings else 'NO_MATCH',
+                                'singleOperation': len(operations) == 1, 'warnings': warnings[-4:]}))
+
           cid = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
           if not cid:
               raise SystemExit('Owned Schedule is missing')
@@ -975,6 +1050,7 @@ jobs:
               raise SystemExit('Owned Schedule is not ready')
           restart_needed = False
           stage = 'prepare'
+          resume_since = None
 
           def restart():
               call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
@@ -998,9 +1074,15 @@ jobs:
               restart()
               restart_needed = False
               stage = 'resume'
+              resume_since = datetime.datetime.now(datetime.timezone.utc).isoformat()
               api('resume')
               print('PASS real assignment closure retry, retained history and next-day replacement')
           except Exception as error:
+              if stage == 'resume' and resume_since:
+                  try:
+                      close_failure_diagnostic(resume_since)
+                  except Exception:
+                      print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
               print('FAIL assignment lifecycle stage=' + stage + ' class=' + type(error).__name__)
               raise SystemExit(1)
           finally:

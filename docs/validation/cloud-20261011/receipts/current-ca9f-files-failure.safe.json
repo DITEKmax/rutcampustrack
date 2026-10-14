@@ -1,0 +1,57 @@
+{
+  "job": 115740447545,
+  "run": 38530338724,
+  "head": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "source": "official fixed job logs in RAM, only exact closed resource JSON and allowlisted exception class projection",
+  "transport_allocation": "SDK_UNMEASURED",
+  "post_response_char_bound": 33554432,
+  "resource_rows": [
+    {
+      "service": "postgres-academic",
+      "target": false,
+      "running": true,
+      "oomKilled": false,
+      "exitCode": 0,
+      "memoryLimit": 268435456
+    },
+    {
+      "service": "postgres-schedule",
+      "target": false,
+      "running": true,
+      "oomKilled": false,
+      "exitCode": 0,
+      "memoryLimit": 268435456
+    },
+    {
+      "service": "mongo-attendance",
+      "target": false,
+      "running": true,
+      "oomKilled": false,
+      "exitCode": 0,
+      "memoryLimit": 1073741824
+    }
+  ],
+  "reported_exception_classes": [],
+  "raw_logs_printed_or_saved": false,
+  "cause": "UNKNOWN_UNLESS_CLOSED_RESOURCE_FACTS_SUFFICIENT",
+  "safe_reported_command_failure": [
+    {
+      "command_family": "docker",
+      "exit": 1
+    }
+  ],
+  "closed_literal_flags": {
+    "SOURCE_FAILURE_LINE": true,
+    "MONGO_NODE_NOT_PRIMARY": false,
+    "MONGO_NOT_INITIALIZED": false,
+    "MONGO_AUTH_FAILED": false,
+    "CONNECTION_REFUSED": false,
+    "PG_STARTING": false,
+    "CONTAINER_NOT_RUNNING": false,
+    "DOCKER_HEALTH_UNHEALTHY": false,
+    "MISSING_ENV_VALUE": false,
+    "MONGO_COMMAND_IN_FAILURE": false,
+    "PG_COMMAND_IN_FAILURE": false,
+    "DOCKER_COMMAND_IN_FAILURE": true
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "artifact": 11877654632,
+  "producer": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "run": 38530338724,
+  "digest": "sha256:c6d885e038986bf5667852c754e65f7ae90e5119a48f6e9b17816fea38662f56",
+  "bytes": 367,
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-map-lifecycle.spec.ts",
+        "line": 95,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3183,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "MAP_ASSET_LIFECYCLE",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

@@ -752,7 +752,12 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       .fill(created.login);
     await users.getByRole('button', { name: 'Найти', exact: true }).click();
     await users.locator(`[data-user-id="${created.id}"]`).click();
-    await expect(users.getByText('Аккаунт в архиве', { exact: true })).toBeVisible();
+    const accountStatus = users
+      .locator('.admin-users-data > div')
+      .filter({ has: page.locator('dt', { hasText: /^Статус аккаунта$/ }) })
+      .locator('dd');
+    await expect(accountStatus).toBeVisible();
+    await expect(accountStatus).toHaveText(/^\s*●?\s*Аккаунт в архиве\s*$/);
     await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
     await users.getByRole('button', { name: 'Восстановить аккаунт', exact: true }).click();
     await expect(users.getByText(/Аккаунт восстановится без активных прав/)).toBeVisible();

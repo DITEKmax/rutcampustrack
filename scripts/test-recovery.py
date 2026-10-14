@@ -1,14 +1,12 @@
-#!/usr/bin/env python3
 """Exercise backup/restore on synthetic disposable PG/Mongo/files only."""
 
 import argparse
 import importlib.util
 import json
 import os
-from pathlib import Path
 import re
-import subprocess
 import sys
+from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("recovery", HERE / "recovery.py")
@@ -52,6 +50,7 @@ def exercise(args):
     r.require(re.fullmatch(r"rct-recovery-[a-z0-9-]+", args.project_base), "Project base must start rct-recovery-")
     projects = [args.project_base + "-src", args.project_base + "-dst"]
     if args.cleanup:
+        args.failure_stage = "CLEANUP_VALIDATE"
         r.require(not args.dry_run, "--cleanup and --dry-run cannot be combined")
         marker = json.loads((args.work_dir / "owned-projects.json").read_text())
         r.require(marker == projects, "Cleanup ownership marker mismatch")
@@ -79,6 +78,7 @@ def exercise(args):
                 )
             volumes = r.run(["docker", "volume", "ls", "-q", "--filter", "label=com.docker.compose.project=" + project])
             r.require(not volumes.strip(), "Cleanup refused unexpected persistent volumes")
+        args.failure_stage = "CLEANUP_DOWN"
         for project in projects:
             r.run(compose(args.work_dir, project, "down", "--timeout", "10"))
         print("PASS cleanup: only marked disposable projects removed; all artifacts retained")
@@ -108,19 +108,23 @@ def exercise(args):
             encoding="utf-8",
         )
     source_project, dest_project = projects
+    args.failure_stage = "SOURCE_START"
     r.run(compose(args.work_dir, source_project, "up", "-d", "--pull", "never", "--wait", "--wait-timeout", "120"))
+    args.failure_stage = "SOURCE_IDENTIFY"
     source = target(args.work_dir, source_project)
     secret = r.credentials(source.env_file)
-    for container, db, key in (
-        (source.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
-        (source.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
+    for container, db, key, stage in (
+        (source.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD", "SOURCE_SEED_ACADEMIC"),
+        (source.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "SOURCE_SEED_SCHEDULE"),
     ):
+        args.failure_stage = stage
         r.pg_query(
             container,
             secret[key],
             db,
             "CREATE TABLE recovery_probe(id bigserial PRIMARY KEY, payload text NOT NULL); INSERT INTO recovery_probe(payload) VALUES ('Привет — recovery'),('second row'); CREATE INDEX recovery_payload_idx ON recovery_probe(payload);",
         )
+    args.failure_stage = "SOURCE_SEED_MONGO"
     r.mongo_query(
         source.mongo_container,
         secret["MONGO_ROOT_PASSWORD"],
@@ -132,23 +136,30 @@ def exercise(args):
         } print(JSON.stringify(true));
     """,
     )
+    args.failure_stage = "SOURCE_SEED_FILES"
     source.files_dir.mkdir()
     (source.files_dir / "nested").mkdir()
     (source.files_dir / "empty-dir").mkdir()
     (source.files_dir / "nested" / "Привет.txt").write_text("attachment bytes\n", encoding="utf-8")
     (source.files_dir / "binary.bin").write_bytes(bytes(range(256)))
     source.output = args.work_dir / "bundle"
+    args.failure_stage = "BACKUP"
     r.backup(source)
+    args.failure_stage = "REFUSAL_OVERWRITE"
     expect_refusal(lambda: r.backup(source), "existing backup cannot be overwritten")
     # Stop only our source before target startup: never more than three active DBs.
+    args.failure_stage = "SOURCE_STOP"
     r.run(compose(args.work_dir, source_project, "stop", "--timeout", "10"))
+    args.failure_stage = "DESTINATION_START"
     r.run(compose(args.work_dir, dest_project, "up", "-d", "--pull", "never", "--wait", "--wait-timeout", "120"))
+    args.failure_stage = "DESTINATION_IDENTIFY"
     dest = target(args.work_dir, dest_project)
     dest.bundle = source.output
     # Corrupt an expendable copy without touching the real bundle. Integrity rejection
     # happens before any SQL/files write; full restore on the same fresh target proves it.
     import shutil
 
+    args.failure_stage = "REFUSAL_CORRUPT"
     damaged = args.work_dir / "damaged-copy"
     shutil.copytree(source.output, damaged)
     with (damaged / "academic.dump").open("ab") as stream:
@@ -156,14 +167,18 @@ def exercise(args):
     dest.bundle = damaged
     expect_refusal(lambda: r.restore(dest), "corrupt archive before any target write")
     dest.bundle = source.output
+    args.failure_stage = "REFUSAL_FOREIGN"
     original_project = dest.target_project
     dest.target_project = args.project_base + "-foreign"
     expect_refusal(lambda: r.restore(dest), "project label mismatch")
     dest.target_project = original_project
+    args.failure_stage = "RESTORE"
     r.restore(dest)
     # Remove files guard from this refusal check so it reaches the DB freshness guard.
+    args.failure_stage = "REFUSAL_NONEMPTY"
     dest.files_dir = args.work_dir / "never-created-repeat-files"
     expect_refusal(lambda: r.restore(dest), "nonempty database target")
+    args.failure_stage = "WRITE_PASS"
     r.write_json(
         args.work_dir / "PASS.json",
         {
@@ -190,11 +205,14 @@ def main():
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--cleanup", action="store_true")
     args = p.parse_args()
+    args.failure_stage = "PREFLIGHT"
     os.umask(0o077)
     try:
         exercise(args)
-    except (r.RecoveryError, OSError, ValueError, KeyError) as error:
-        print(f"FAIL synthetic recovery: {error}; owned resources/artifacts retained", file=sys.stderr)
+    except (r.RecoveryError, OSError, ValueError, KeyError):
+        print(
+            f"FAIL synthetic recovery: stage={args.failure_stage}; owned resources/artifacts retained", file=sys.stderr
+        )
         return 1
     return 0
 

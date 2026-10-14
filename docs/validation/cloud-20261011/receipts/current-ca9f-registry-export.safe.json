@@ -1,0 +1,83 @@
+{
+  "artifact": 11877874229,
+  "producer": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "run": 38530338724,
+  "digest": "sha256:0a1ba0d54145be2ee2df3a4ad598273687ff1604f7c1f1040f4f85d6f1335365",
+  "bytes": 470,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "cloud-accepted-registry-export.spec.ts",
+        "line": 18,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 1402,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_TYPE_ERROR",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 54
+          }
+        ]
+      },
+      {
+        "file": "cloud-accepted-registry-export.spec.ts",
+        "line": 18,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 1823,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_TYPE_ERROR",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "cloud-accepted-registry-export.spec.ts",
+            "line": 54
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "USER_EXPORT_PARAMETERIZED_MODE_ORDINAL_ONLY",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

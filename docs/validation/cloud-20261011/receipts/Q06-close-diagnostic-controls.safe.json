@@ -1,0 +1,44 @@
+{
+  "state": "SOURCE_CONTROLS_PASS_RUNTIME_NOT_RUN",
+  "parent": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "workflow_sha256": "39c866dbea41dd989c747bd9bbd7e25dc7aa341b930ce53298fd932faedeeda0",
+  "control_sha256": "61e3b4a99b9b9ff97df11c88dff84dc6fb0b749964bb04742e8614314e69006f",
+  "result": {
+    "result": "PASS",
+    "actual_workflow_function": true,
+    "closed_positive": true,
+    "unknown_fields_and_ids_absent": true,
+    "foreign_and_malformed_rejected": true,
+    "body_and_output_budgets": true,
+    "actual_native_capped_collector_reaped": true,
+    "actual_15_second_deadline_and_reap": true,
+    "original_failure_exit_preserved": true,
+    "native_docker_network_browser": false
+  },
+  "terminal": {
+    "direct_pid": 675631,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 675631,
+        "start_ticks": 22060191
+      },
+      {
+        "pid": 675638,
+        "start_ticks": 22060218
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "limits": "raw owned Academic log captured only in RAM; exact logger/static closed fields/window; only finite output; original exit1 retained; same-window warning not unique HTTP emitter proof",
+  "actual_ci_diagnostic": "NOT_RUN",
+  "review_R1": "postcapture bound was insufficient; corrected real cumulative pipe read with deadline and finallykill/wait",
+  "independent_review": "q07_finite_acceptance APPROVE_SOURCE after R1 targetedrecheck; receipts/Q06-oneoff-replacement-independent-review.safe.md"
+}

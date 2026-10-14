@@ -389,8 +389,8 @@ class StudentOccurrenceMigrationIT {
         MigrateResult upgrade = current.migrate();
 
         assertThat(upgrade.success).isTrue();
-        assertThat(upgrade.migrationsExecuted).isEqualTo(12);
-        assertThat(current.info().current().getVersion().getVersion()).isEqualTo("30");
+        assertThat(upgrade.migrationsExecuted).isEqualTo(13);
+        assertThat(current.info().current().getVersion().getVersion()).isEqualTo("31");
         assertThat(current.info().pending()).isEmpty();
         current.validate();
         assertThat(

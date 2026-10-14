@@ -13836,6 +13836,62 @@
       "sha256": "81719b9e808ebfb55db7c56ebcc2f2ff2e67afd33b2d4c7766c8aa244c9474eb",
       "revision_base": "e4e922add972586a342d49aeaafa93ff84715cac",
       "status": "6a9a19e3 actualPNG+SVGdownloadoracle Source-approved+cachedformatter/type/hooksPASS, actualbrowserNOT_RUN; oldCDPfailurecauseUNKNOWN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-.github/workflows/ci.yml",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "39c866dbea41dd989c747bd9bbd7e25dc7aa341b930ce53298fd932faedeeda0",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-docker-compose.test-restore.yml",
+      "path": "docker-compose.test-restore.yml",
+      "sha256": "ff5ed5a9be41a43f317fef3296ddebcd9ddf211fdcdb7c0cf11d346ae3ec19f7",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-scripts/test-recovery.py",
+      "path": "scripts/test-recovery.py",
+      "sha256": "21282af75f0ad3d79e34f7252ede417182ff61648ca15f00cd97f92c6578d323",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sha256": "b72f4633187df45b620bd6b2a45612a597891796f2e777e371259eec9a755d01",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "7b79defe6f2662cb216bbf7efb9354f166bb4f23508e615484a13340db5eace2",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "4443b666d9a7ece3f36d4ea5fc06ebaeac6cefdf254dd2585c07b9030306573d",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "e00c6cad49f922b1901c6dd6d2afa302ba08197e3abcb3155b909b96e0937805",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
+    },
+    {
+      "id": "CURRENT-CA9F-FOLLOWUP-tests/e2e/specs/mobile-real-server.spec.ts",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "c0ce037dff7ae9654894356238b4a5dae709b62de3970cb4c86c0dcb27ec317e",
+      "revision_base": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+      "status": "bounded coherent followup: f810 migration oracle, d49 recovery checking, 3f5c four Vue fixture corrections all independent Source-approved; Root closed diagnostic R1 actual native capped collector/deadline/reap controls PASS/independent targeted review APPROVE_SOURCE; actual after normalCI NOT_RUN"
     }
   ],
   "research_receipt": {

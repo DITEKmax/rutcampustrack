@@ -50,9 +50,13 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
     const formats = await catalogue;
     expect(formats.status()).toBe(200);
-    expect(
-      (await formats.json()).formats.map((value: { code: string }) => value.code).sort(),
-    ).toEqual(['docx', 'html', 'pdf', 'png', 'xlsx']);
+    expect((await formats.json()).map((value: { code: string }) => value.code).sort()).toEqual([
+      'docx',
+      'html',
+      'pdf',
+      'png',
+      'xlsx',
+    ]);
     await page.getByLabel(/^Формат выгрузки/).selectOption('html');
     const created = http(page, '/api/auth/export-jobs', 'POST');
     const capability = page.waitForResponse(

@@ -128,7 +128,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       await studentRow()
         .getByRole('button', { name: `${label}: ${dataset.student.displayName}`, exact: true })
         .click();
-      expect((await response).status()).toBe(200);
+      expect((await response).status()).toBe(method === 'DELETE' ? 204 : 200);
     };
     const openChoices = async () => {
       const before = await storedStudent();

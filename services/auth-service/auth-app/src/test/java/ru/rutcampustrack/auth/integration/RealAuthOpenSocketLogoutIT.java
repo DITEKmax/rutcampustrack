@@ -9,10 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,6 +217,135 @@ class RealAuthOpenSocketLogoutIT extends AbstractIntegrationTest {
         }
     }
 
+    @Test
+    void realTicketBindingIgnoresClaimedConnectIdentityAndDeniesForeignPrivateSubscription()
+            throws Exception {
+        Actor firstActor = null;
+        Actor controlActor = null;
+        StompSession firstSocket = null;
+        StompSession controlSocket = null;
+        var firstReceived = new CopyOnWriteArrayList<String>();
+        var controlReceived = new CopyOnWriteArrayList<String>();
+        WebSocketStompClient client = new WebSocketStompClient(new StandardWebSocketClient());
+        client.setMessageConverter(new StringMessageConverter());
+        Throwable primaryFailure = null;
+        AtomicBoolean subscriptionError = new AtomicBoolean();
+        try (var notification = notificationSocketContext()) {
+            firstActor = login("student");
+            controlActor = login("teacher");
+            assertThat(firstActor.userId()).isNotEqualTo(controlActor.userId());
+            StompHeaders claimedIdentity = new StompHeaders();
+            claimedIdentity.set("user_id", Long.toString(controlActor.userId()));
+            claimedIdentity.set("session_id", controlActor.sessionId().toString());
+            claimedIdentity.set("role", "ADMIN");
+            claimedIdentity.set("group_id", "999999");
+            claimedIdentity.set("is_headman", "true");
+            int port = notification.getWebServer().getPort();
+            firstSocket =
+                    connect(
+                            client,
+                            port,
+                            firstActor,
+                            claimedIdentity,
+                            new StompSessionHandlerAdapter() {
+                                @Override
+                                public Type getPayloadType(StompHeaders headers) {
+                                    return String.class;
+                                }
+
+                                @Override
+                                public void handleFrame(StompHeaders headers, Object payload) {
+                                    // This callback is for STOMP ERROR frames. Retain no error
+                                    // body.
+                                    subscriptionError.set(true);
+                                }
+                            });
+            controlSocket = connect(client, port, controlActor);
+            String firstTopic = "/topic/user/" + firstActor.userId();
+            String controlTopic = "/topic/user/" + controlActor.userId();
+            firstSocket.subscribe(firstTopic, recorder(firstReceived));
+            controlSocket.subscribe(controlTopic, recorder(controlReceived));
+            var messages = notification.getBean(SimpMessagingTemplate.class);
+
+            // Both actual tickets are live. Client CONNECT claims did not replace A's identity.
+            await().atMost(DELIVERY_BUDGET)
+                    .untilAsserted(
+                            () -> {
+                                messages.convertAndSend(firstTopic, "own-before-foreign-subscribe");
+                                messages.convertAndSend(
+                                        controlTopic, "control-before-foreign-subscribe");
+                                assertThat(firstReceived).contains("own-before-foreign-subscribe");
+                                assertThat(controlReceived)
+                                        .contains("control-before-foreign-subscribe");
+                            });
+            assertThat(firstReceived).doesNotContain("control-before-foreign-subscribe");
+            assertThat(controlReceived).doesNotContain("own-before-foreign-subscribe");
+            assertThat(firstSocket.isConnected()).isTrue();
+            assertThat(controlSocket.isConnected()).isTrue();
+            assertThat(subscriptionError.get()).isFalse();
+
+            firstSocket.subscribe(controlTopic, recorder(firstReceived));
+            StompSession deniedSocket = firstSocket;
+            await().atMost(DELIVERY_BUDGET)
+                    .until(() -> subscriptionError.get() || !deniedSocket.isConnected());
+            // An explicit ERROR/close establishes denial; the control proves delivery is still
+            // live.
+            String privateMarker = "control-after-foreign-subscribe-" + UUID.randomUUID();
+            await().atMost(DELIVERY_BUDGET)
+                    .untilAsserted(
+                            () -> {
+                                messages.convertAndSend(controlTopic, privateMarker);
+                                assertThat(controlReceived).contains(privateMarker);
+                            });
+            await().during(Duration.ofSeconds(1))
+                    .atMost(DELIVERY_BUDGET)
+                    .untilAsserted(() -> assertThat(firstReceived).doesNotContain(privateMarker));
+            assertThat(controlSocket.isConnected()).isTrue();
+            assertThat(sessionRevoked(firstActor)).isFalse();
+            assertThat(sessionRevoked(controlActor)).isFalse();
+        } catch (Exception | AssertionError failure) {
+            primaryFailure = failure;
+            throw failure;
+        } finally {
+            closeOwnedSocketScenario(
+                    firstSocket, controlSocket, client, firstActor, controlActor, primaryFailure);
+        }
+    }
+
+    private void closeOwnedSocketScenario(
+            StompSession firstSocket,
+            StompSession controlSocket,
+            WebSocketStompClient client,
+            Actor firstActor,
+            Actor controlActor,
+            Throwable primaryFailure) {
+        Throwable cleanupFailure = primaryFailure;
+        for (Runnable cleanup :
+                List.<Runnable>of(
+                        () -> {
+                            if (firstSocket != null && firstSocket.isConnected())
+                                firstSocket.disconnect();
+                        },
+                        () -> {
+                            if (controlSocket != null && controlSocket.isConnected())
+                                controlSocket.disconnect();
+                        },
+                        client::stop,
+                        () -> logoutIfAdmitted(firstActor),
+                        () -> logoutIfAdmitted(controlActor))) {
+            try {
+                cleanup.run();
+            } catch (RuntimeException | AssertionError failure) {
+                if (cleanupFailure == null) cleanupFailure = failure;
+                else cleanupFailure.addSuppressed(failure);
+            }
+        }
+        if (primaryFailure == null) {
+            if (cleanupFailure instanceof RuntimeException failure) throw failure;
+            if (cleanupFailure instanceof AssertionError failure) throw failure;
+        }
+    }
+
     private ServletWebServerApplicationContext notificationSocketContext() {
         return (ServletWebServerApplicationContext)
                 new SpringApplicationBuilder(NotificationSocketConfig.class)
@@ -259,6 +390,17 @@ class RealAuthOpenSocketLogoutIT extends AbstractIntegrationTest {
 
     private StompSession connect(WebSocketStompClient client, int port, Actor actor)
             throws Exception {
+        return connect(
+                client, port, actor, new StompHeaders(), new StompSessionHandlerAdapter() {});
+    }
+
+    private StompSession connect(
+            WebSocketStompClient client,
+            int port,
+            Actor actor,
+            StompHeaders connectHeaders,
+            StompSessionHandlerAdapter handler)
+            throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(actor.accessToken());
         var response =
@@ -275,8 +417,8 @@ class RealAuthOpenSocketLogoutIT extends AbstractIntegrationTest {
         return client.connectAsync(
                         "ws://127.0.0.1:" + port + "/ws/websocket",
                         socketHeaders,
-                        new StompHeaders(),
-                        new StompSessionHandlerAdapter() {})
+                        connectHeaders,
+                        handler)
                 .get(5, TimeUnit.SECONDS);
     }
 

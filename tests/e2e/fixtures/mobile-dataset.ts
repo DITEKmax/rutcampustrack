@@ -178,14 +178,15 @@ export class MobileDataset {
     if (!this.semester) {
       const month = Number(this.today.slice(5, 7));
       const teachingYesterday = shifted(this.today, -1);
-      const realToday = moscowDate();
+      const realYesterday = shifted(moscowDate(), -1);
       this.semester = await this.admin.call(
         'POST',
         '/api/academic/semesters',
         {
           name: this.marker,
-          // Notification audience events retain their real Moscow date.
-          dateFrom: teachingYesterday < realToday ? teachingYesterday : realToday,
+          // Historical fixtures must precede both educational jobs and real SQL/
+          // membership cutoffs. Notification audiences also retain their real date.
+          dateFrom: teachingYesterday < realYesterday ? teachingYesterday : realYesterday,
           dateTo: shifted(this.today, 30),
           semesterType: month >= 7 ? 'AUTUMN' : 'SPRING',
           academicYear: Number(this.today.slice(0, 4)) - (month >= 7 ? 0 : 1),
@@ -321,7 +322,10 @@ export async function selectPwaRole(page: Page, label: string) {
   await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
 }
 
-export const test = base.extend<{}, { dataset: MobileDataset; teachingInstant: Date | undefined }>({
+export const test = base.extend<
+  {},
+  { dataset: MobileDataset; activeHeadmanDataset: MobileDataset; teachingInstant: Date | undefined }
+>({
   teachingInstant: [undefined, { scope: 'worker', option: true }],
   page: async ({ page, teachingInstant }, use) => {
     // Account archive previews expire against real time, so their browser keeps that clock.
@@ -363,6 +367,32 @@ export const test = base.extend<{}, { dataset: MobileDataset; teachingInstant: D
         await request.dispose();
       }
       // Root owns disposal of this task-labelled stack. Never delete unrelated existing data.
+    },
+    { scope: 'worker', timeout: 180000 },
+  ],
+  activeHeadmanDataset: [
+    async ({ dataset }, use) => {
+      // The real 60s scheduler activates the new PLANNED lesson. Only the HEADMAN
+      // geo-block journey needs ACTIVE; keep this wait outside its 60s test body.
+      await expect
+        .poll(
+          async () => {
+            const lessons = items(
+              await dataset.headmanActor.call(
+                'GET',
+                `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${dataset.today}&dateTo=${dataset.today}&size=100`,
+              ),
+              'lessonResponseList',
+            );
+            const lesson = lessons.find(
+              (row) => Number(row.id) === Number(dataset.lesson.physicalLessonId),
+            );
+            return lesson?.status === 'ACTIVE' && lesson.current === true;
+          },
+          { timeout: 90000, intervals: [1000], message: 'Own HEADMAN lesson becomes active' },
+        )
+        .toBe(true);
+      await use(dataset);
     },
     { scope: 'worker', timeout: 180000 },
   ],

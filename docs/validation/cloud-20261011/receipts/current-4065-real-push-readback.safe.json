@@ -21225,6 +21225,2795 @@
       ],
       "newTestsOrRuns": 0,
       "notClaimed": "new callback runtime execution / sharedTLS blanket protection / wholeproduct PASS"
+    },
+    "874_actual_publication": {
+      "at": "2026-10-14T19:57:39.840829+00:00",
+      "parent": "493fc84f51ebf3cf6d563d55901ff755cd354178",
+      "localHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "realRemoteBranchHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "draft": true,
+      "base": "main",
+      "mainSha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "merged": false,
+      "trackedInventory": [
+        ".github/workflows/ci.yml",
+        "docs/validation/cloud-20261011/CURRENT.md",
+        "docs/validation/cloud-20261011/attempts.ndjson",
+        "docs/validation/cloud-20261011/decisions.md",
+        "docs/validation/cloud-20261011/questions.md",
+        "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/remaining-execution-queue.json",
+        "docs/validation/cloud-20261011/resources.md",
+        "docs/validation/cloud-20261011/verified-cases.csv",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConvertersConfig.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+        "tests/e2e/backend-clock/prepare-clock.mjs",
+        "tests/e2e/fixtures/mobile-dataset.ts",
+        "tests/e2e/fixtures/semester-effect-diagnostic.py",
+        "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+        "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+        "tests/e2e/specs/mobile-real-server.spec.ts"
+      ],
+      "terminal": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/493-next-publication/terminal.safe.json",
+      "all7PhasesNativeExit0AndReaped": true,
+      "normalCommit": true,
+      "realPush": true,
+      "untracked25Preserved": true,
+      "RootPWInode": 413591,
+      "AngularBaselineAnd493Untouched": true,
+      "PRDescriptionUpdated": true,
+      "currentRunsQueued": {
+        "CI": 38627888098,
+        "Coverage": 38627888000,
+        "Security": 38627888060,
+        "OpenAPI": 38627888073
+      },
+      "runtimeNewRevision": "PENDING_NO_493_GATE_REUSE",
+      "prHeadSha": "87443414c762f555d8c0e05726ce855ab94f779c"
+    },
+    "874_E14_UI_worker_fixture_choice": {
+      "at": "2026-10-14T20:01:07.331378+00:00",
+      "soleAuthor": "c65_client_final_browser",
+      "scope": "Source plan only until reviewed normalCI",
+      "technicalFixture": "Two exact built static files on admitted owned rct-e2e pwa-nginx: sw.js release marker + /app/version.json accepted update-policy to trigger actual PwaUpdateGate. Retain bounded originalbytes RAM, policy restored before gate click/reload, both finallybyte-exactrestore. No production/source UI/newassetbundle/auth/TLS/data change.",
+      "proofBoundary": "real productionworker lifecycle+actual updategate userclick/cache behavior, not two distinct complete appbuilds/nativeOSinstall",
+      "constraints": "knownexactpaths/no-follow/ownership+network/privatecapturedstdio/bounds/primaryfailure preserved/no localDocker/newframework; alloriginalgates retained"
+    },
+    "874_OpenAPI_actual_success": {
+      "id": 38627888073,
+      "event": "pull_request",
+      "head_sha": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-14T19:56:43Z",
+      "updated_at": "2026-10-14T19:58:23Z",
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38627888073",
+      "otherGates": "NOT_YET_COMPLETED",
+      "actualPRCheckout": "PENDING_CURRENT_ARTIFACT"
+    },
+    "874_E15_finite_existing_proof_join": {
+      "at": "2026-10-14T20:04:33.827263+00:00",
+      "author": "c65_operations_finite_join",
+      "state": "REUSE_EXACT_NAMED_CURRENT_SOURCE_COMPATIBLE_PROOFS",
+      "newRunsOrEdits": 0,
+      "657Actual": [
+        "HealthDegradationIT UP/RabbitDOWN",
+        "fourActuatorIT exposurepolicies",
+        "AuthSessionControllerTest.committedChangesKeep204AndClearCookieWhenRedisCleanupFails",
+        "InternalJwtIssuerClientTest.authorityUnavailableCode_isDependencyUnavailable",
+        "ExportJobWorkerTest safeDependencyFailure/noPartialBytes +activeClaim/shutdown",
+        "ExportJobsIT durableabandonedlease/recovery +thirdfailureterminal"
+      ],
+      "657ReceiptBase": "receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/",
+      "producer657": {
+        "head": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "checkout": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "CI": 38329143416
+      },
+      "realPGAdmissionOutage": {
+        "receipt": "receipts/current-ca3d-auth-Unicode-safe/safe-integration-outcomes-auth-service-1-integrationTest.json",
+        "method": "InternalSessionAdmissionIT.durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+        "checkout": "e3488c02a73d57b14cd22566c984e6a02fff2f2c",
+        "CI": 38443009381,
+        "proof": "PGpause authoritativeadmission503/refreshunavailable thenPGresume/live200,revoke401,durabletupleunchanged; notcombinedGatewayHTTPduringAuthshutdown"
+      },
+      "compatibility": "exacttesthashes and relevantapplication/security/worker/admission/JDBC source bytes unchanged current",
+      "applicabilityCorrections": "No runtimeAcademicRedis fail-open cache-read promise; no universalHTTPdrainSLA. Retain actual optionalAuthpostcommitcleanup/workerleasecancel+recovery/P20/RF04 effects. Private/public external routing remains source-qualified.",
+      "finiteRemaining": "actual accepted asyncPDF job throughGateway withownedrealrendererdependency unavailable→threeattemptssafeERROR/no partialdownload; restore→freshjobREADY/realbytes. No initiation503 oracle."
+    },
+    "874_renderer_outage_fixture_choice": {
+      "at": "2026-10-14T20:06:01.453283+00:00",
+      "author": "c65_operations_finite_join",
+      "fixture": "same owned rct-e2e renderer pause/unpause, exact labels/network/running/readiness identity; no kill/recreate/bootstrap/data mutation",
+      "budgets": "one NEW case240s covers3x30s existing realRPC deadlines plusrestore/freshPDF; existingregistry step3to7min solely foradditionalactualscenario, originalcase120s/assertions unchanged",
+      "commonCIwriter": "c65_client_final_browser",
+      "noNewProductSLA": true,
+      "SourceOnlyNow": true
+    },
+    "874_browser_Source_ready": {
+      "author": "c65_client_final_browser",
+      "state": "threefileSourceReadyPendingCanonicalFormattingTypeAndReview",
+      "scope": "WebKit3existingcases; realSW+PwaUpdateGate fixture; explicit synthetic installlogic2cases",
+      "currentRuntime": "NOT_RUN",
+      "nativeGrant": "onlycachedformatterapply/check+TSsyntax own3paths, nofullmaterialization/Docker/browser/network; RootmergedTSCafterreview"
+    },
+    "874_Attendance_counterexample_actual_FAIL": {
+      "at": "2026-10-14T20:06:53.865100+00:00",
+      "head": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "run": 38627888098,
+      "job": 116071619534,
+      "failedStep": "Verify persisted attendance enum HTTP refusal rejects the previous reader",
+      "ordinaryIT": "SKIPPED_AFTER_FAILED_COUNTEREXAMPLE",
+      "safeArtifact": 11924772812,
+      "artifactBytes": 795,
+      "digest": "sha256:e9ac74fbea15cdc2a5b86f6e6ee4e5fa6a946155d18b5a0b7bdd5e0b8791b0ef",
+      "cause": "UNKNOWN_PENDING_CLOSED_PROOF",
+      "noRerun": true
+    },
+    "874_Attendance_counterexample_closed_proof": {
+      "at": "2026-10-14T20:07:57.685569+00:00",
+      "safeProof": {
+        "state": "CLOSED_ENUM_COUNTEREXAMPLE_PROOF_READ",
+        "artifact": 11924772812,
+        "run": 38627888098,
+        "digest": "sha256:e9ac74fbea15cdc2a5b86f6e6ee4e5fa6a946155d18b5a0b7bdd5e0b8791b0ef",
+        "proof": {
+          "schemaVersion": 1,
+          "producerHeadSha": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "checkoutSha": "6cca34cd5e41c88ff35ca39b0bb9bca4734edc48",
+          "service": "attendance-service",
+          "counterexample": "PREVIOUS_ATTENDANCE_STATUS_READER",
+          "testMethod": "ru.rutcampustrack.attendance.integration.ReportIT.getLessonAttendance_unknownStoredStatusRefusesWithoutChangingKnownRows",
+          "state": "UNEXPECTED_RED_RESULT",
+          "phase": "XML_RULE",
+          "testSourceSha256": "69869f75828bc0354391295d719ee523e390c6430dca54a9bbd50e8eca120fbc",
+          "currentSourceSha256": "c07757430265c2763ff99840c9e3c2dd0b3fd7b4710b83c266d2774f7971063a",
+          "previousReaderSourceSha256": "7067741a29787dc585e47c70f86abb1c5bc6f0a1cb9f4a0e635eb1850b5f4775",
+          "protectedReaderSha256": "d05e4e2fd7cfcb0183da023a90ae73deeaf9d14b110646d006d0ebd058168860",
+          "previousReaderSha256": "f86227dea9f43f37c5c4fda4e1d22795ec7bad9ebfe4c73d95016e3c59b63219",
+          "nativeExit": 1,
+          "directGradleProcessReaped": true,
+          "restoredSourceSha256": "c07757430265c2763ff99840c9e3c2dd0b3fd7b4710b83c266d2774f7971063a"
+        },
+        "rawLogsOrXML": false
+      },
+      "readerTerminal": "/workspace/scratch/rct-validation/ci_874_enum/reader-fresh-terminal.safe.json",
+      "native0Reaped": true,
+      "cause": "XML_RULE mismatch; exactassertionunknown pendingofficialjobPythonframe. Rednative1/sourcebyteexactrestored confirmed; notclaimed expected409vs500 or GREEN.",
+      "noRerun": true
+    },
+    "874_E14_browser_stable_Source_ready": {
+      "at": "2026-10-14T20:08:23.560378+00:00",
+      "author": "c65_client_final_browser",
+      "worktree": "/workspace/rct-worktrees/client-final-browser-874-20261014",
+      "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "sourcePins": {
+        ".github/workflows/ci.yml": "a163e9d74cc540bd34bc0d9c207cda6d872922fc7256415a5fc86db44535bc3e",
+        "tests/e2e/playwright.real-mobile.config.ts": "8baab5acc15b41d4d30629e51dbb30765104aa0d7fee6da055b741ff3fdc9c70",
+        "tests/e2e/specs/mobile-real-server.spec.ts": "1b0181babe19e63810fe770eb7111ef748d74065f956c762839aee721798f79a"
+      },
+      "diff": "3files460insertions10deletions",
+      "checks": "cachedcanonicalPrettierexplicitestablishedsemi:true, RAMTSsyntax,YAML/shell,old7selectorpreserved PASS; allownedreaped158MBpeak",
+      "scope": "WebKit3oldcases; genuineSW/UI/cache lifecycle; explicit synthetic installlogic; onlyexistingregistrytimeout3to7 additionalE15case",
+      "actualRuntime": "NOT_RUN",
+      "next": "independent whole3fileSource review; RootmergedTSC/configdiscovery after acceptedintegration",
+      "outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-boundaries.safe.json"
+    },
+    "874_enum_known_positive_first_FAIL": {
+      "at": "2026-10-14T20:11:40.267435+00:00",
+      "counterexampleProof": "#next_reviewed_integrations.874_Attendance_counterexample_closed_proof",
+      "CI_joblog": {
+        "job": 116071619534,
+        "bytes": 64884,
+        "safeOnlyPythonFrame": 84,
+        "staticAssertion": "expected named409vs500 assertion description absent",
+        "errorType": "AssertionError"
+      },
+      "independentCoverage": {
+        "job": 116071618415,
+        "bytes": 64645,
+        "exactNewMethodMentions": 1,
+        "SourceFrame": "ReportIT.java:315 assertKnownLessonAttendance HTTP200",
+        "actualHTTPCode": "UNKNOWN_NOT_IN_JOB_LOG",
+        "type": "newfixture/control failure before rawunknown mapping"
+      },
+      "classification": "Confirmed new known-positive HTTP control FAIL; underlyingresponsecode/causeUNKNOWN. Neither relevant enumRED nor newmappingHTTPGREEN established. Red XML/private logfile removed byexistingfinally, so new minimal closed primarywitness needed if Source cannot resolve.",
+      "rawLogsPersistedOrPrinted": false,
+      "noRerun": true
+    },
+    "874_E15_renderer_Source_ready": {
+      "at": "2026-10-14T20:13:21.645739+00:00",
+      "author": "c65_operations_finite_join",
+      "worktree": "/workspace/rct-worktrees/renderer-outage-874-20261014",
+      "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "source": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sourceSha256": "3f0534de3b478c35585a9e9f020eb27f4ee0472aa3adef39d2c40b4266b4e4e0",
+      "diff": "onefile344appendedlines, entire874prefixbyteexact",
+      "checks": "gitdiffcheckPASS",
+      "native": "NOT_RUN",
+      "outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/renderer-outage.safe.json",
+      "next": "oneindependentSourcewholecase review; Root canonicalformat/mergedTSC/discovery"
+    },
+    "874_enum_positive_Source_cause_candidate": {
+      "at": "2026-10-14T20:13:21.645759+00:00",
+      "agent": "c65_enum_positive_diagnosis",
+      "source": "ReportIT signedtoken roleSTUDENT/isHeadmantrue violates currentInternalJwtValidator semantic identity requiringHEADMAN",
+      "sourceEffect": "DualModefilter sends401beforecontroller/Mongo",
+      "actualHTTPStatus": "UNKNOWN joblognotretainedvalue",
+      "next": "finish actualconsumerrole mapping Sourceverification before minimalonefieldfixture correction; no production auth change",
+      "ordinaryReproduction": "PENDING correctedfixture newCI"
+    },
+    "874_enum_positive_Source_cause_reconciliation": {
+      "at": "2026-10-14T20:14:14.877220+00:00",
+      "confirmedSourceCause": "STUDENT/isHeadmantrue rejectedbeforecontroller byrequireSemanticIdentity ->filter401",
+      "actualCIHTTPStatus": "UNKNOWN_NOT_DIRECTLY_RETAINED",
+      "agentRecommendationCorrection": "HEADMAN is supported through InternalJwtClaims.domainRole() explicit HEADMAN→STUDENT mapping (Rootopenedcurrentbody). Earlier agentclaimHEADMANbridgeinvalid rejected. Reconcilebeforewriterassignment.",
+      "preferredMinimalFixture": "originalHEADMAN_USER_ID100 with roleHEADMAN/isHeadmantrue; preserveTCP/signedidentity/currentVIEW_STATS/mockboundary/no prodvalidatorchange",
+      "runtimeMappingVerdict": "stillNOT_RUN"
+    },
+    "874_E14_reviewed_Root_Source_integration": {
+      "at": "2026-10-14T20:15:04.255462+00:00",
+      "sourcePins": {
+        ".github/workflows/ci.yml": "a163e9d74cc540bd34bc0d9c207cda6d872922fc7256415a5fc86db44535bc3e",
+        "tests/e2e/playwright.real-mobile.config.ts": "8baab5acc15b41d4d30629e51dbb30765104aa0d7fee6da055b741ff3fdc9c70",
+        "tests/e2e/specs/mobile-real-server.spec.ts": "1b0181babe19e63810fe770eb7111ef748d74065f956c762839aee721798f79a"
+      },
+      "independentReview": "APPROVE_SOURCE_ONLY/no findings",
+      "reviewPath": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json",
+      "status": "EXACT3FILE_ROOT_WIP_NOT_PUBLISHED",
+      "nativeFormatterSyntax": "authorPASS",
+      "RootMergedTSCDiscovery": "PENDING",
+      "actualRuntime": "NOT_RUN"
+    },
+    "874_E15_renderer_reviewed_Root_Source_integration": {
+      "at": "2026-10-14T20:16:19.411004+00:00",
+      "source": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sourceSha256": "3f0534de3b478c35585a9e9f020eb27f4ee0472aa3adef39d2c40b4266b4e4e0",
+      "review": "APPROVE_SOURCE_ONLY/no findings",
+      "reviewPath": "/workspace/scratch/rct-validation/q09_remaining_client_writer/renderer-outage-review.safe.json",
+      "status": "ONE_REVIEWED_FILE_ROOT_WIP_NOT_PUBLISHED",
+      "old874PrefixByteExact": true,
+      "canonicalFormatMergedTSCDiscovery": "PENDING",
+      "actualRuntime": "NOT_RUN"
+    },
+    "874_enum_known_positive_author_correction": {
+      "at": "2026-10-14T20:16:53.157103+00:00",
+      "author": "c65_enum_positive_diagnosis",
+      "scope": "ONLYReportIT onefixtureliteralSTUDENTtoHEADMAN preservingactor100/group10/isHeadmantrue/signedTCP",
+      "worktree": "/workspace/rct-worktrees/enum-http-493-20261014",
+      "beforeSha256": "69869f75828bc0354391295d719ee523e390c6430dca54a9bbd50e8eca120fbc",
+      "afterSha256": "b5b938294759e7997b228e6e91bb31a25389e86b67cd73c795e1b5a8f4eeae4d",
+      "checks": "exactoneliteralcompare+gitdiffcheckPASS no native",
+      "reconciliation": "authorwithdrawsHEADMANbridgeinvalidclaim; domainRoleexplicitmapsHEADMANtoSTUDENT",
+      "actualHTTP": "pendingnewCI, original401Source-derivedonly",
+      "next": "independenttargetedfixture recheck thenRootexactintegration",
+      "outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/enum-http-boundary.safe.json#knownPositiveFixtureCorrection20261014"
+    },
+    "874_enum_positive_fixture_correction_Source_ready": {
+      "at": "2026-10-14T20:20:48.486677+00:00",
+      "author": "c65_enum_positive_diagnosis",
+      "worktree": "/workspace/rct-worktrees/enum-http-493-20261014",
+      "scope": "ReportIT one literal STUDENT->HEADMAN only",
+      "preSha256": "69869f75828bc0354391295d719ee523e390c6430dca54a9bbd50e8eca120fbc",
+      "postSha256": "b5b938294759e7997b228e6e91bb31a25389e86b67cd73c795e1b5a8f4eeae4d",
+      "actorAndFlags": "same100/group10/isHeadmantrue/readOnlyfalse",
+      "bridge": "InternalJwtClaims.domainRole explicitly mapsHEADMAN->STUDENT; earlier agent claim unsupportedbridge withdrawn",
+      "checks": "exactoneLiteral/diffcheck PASS; no native",
+      "existingOutcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/enum-http-boundary.safe.json#knownPositiveFixtureCorrection20261014",
+      "actualHTTPStatusBeforeFix": "UNKNOWN_Source401derived",
+      "actualCorrectedHTTPandEnumREDGREEN": "NOT_RUN",
+      "next": "targetedindependentoneLiteral/bridge recheck"
+    },
+    "874_enum_positive_fixture_reviewed_Root_integration": {
+      "at": "2026-10-14T20:22:36.721324+00:00",
+      "scope": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "exactOneLiteral": true,
+      "postSha256": "b5b938294759e7997b228e6e91bb31a25389e86b67cd73c795e1b5a8f4eeae4d",
+      "review": "independenttargetedAPPROVE_SOURCE_ONLY/no findings",
+      "reviewPath": "/workspace/scratch/rct-validation/q09_remaining_client_writer/enum-http-review.safe.json",
+      "RootState": "UNCOMMITTED_NOT_RUN",
+      "unchanged": "alltestassertions/prodauthz/validator/TCP/otherfixturedata",
+      "next": "normalcurrentCIcausalRED->restore->GREEN withcorrectsignedidentity; no expectedstatusweakening"
+    },
+    "874_next_merged_Node_actual_partial": {
+      "at": "2026-10-14T20:23:10.029527+00:00",
+      "terminal": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/terminal.safe.json",
+      "prettierApplyCheck": "PASS_allreaped",
+      "mergedRealMobileTSC": "FAIL_exit2_allreaped",
+      "diagnostic": "cloud-accepted-registry-export.spec.ts983 TS2339 TestInfo.startTime notpublicAPI",
+      "discovery": "NOT_RUN_AFTER_TYPE_FAILURE",
+      "next": "same renderer author minimalelapsedbudgetSourcecorrection; no suite/assertionweakening"
+    },
+    "874_renderer_type_correction_Source_ready": {
+      "at": "2026-10-14T20:27:34.047715+00:00",
+      "sourceSha256": "f6e853ff974ddbe74ad14c2aec550488443e691d6486b38098d2840e73b8270d",
+      "change": "info.startTime.getTime() -> Date.now() ownbody-entrydeadline; publicAPI/external240stimeout unchanged, preserves5sreserve/finally/allassertions",
+      "author": "c65_operations_finite_join",
+      "targetedReview": "PENDING",
+      "RootIntegrated": "NO",
+      "RootNext": "tinyindependentrecheck then copyonefile/exactdelta/checkTSC and discovery, no unchangedformatrecheckother3files"
+    },
+    "874_current_browser_fail_metadata": {
+      "run": 38627888098,
+      "job": 116071619227,
+      "actualClosedBodies": "NOT_YET_READ",
+      "stepFailures": [
+        "remaining7",
+        "administrator-lifecycle",
+        "lesson-lifecycle",
+        "homework-lifecycle",
+        "registry-export"
+      ],
+      "knownSuccessSteps": [
+        "role-logout",
+        "student-geo",
+        "map",
+        "helper-capabilities"
+      ],
+      "first3": "notreadcurrentstepbody",
+      "next": "read5fixedclosedcurrentartifacts withoutnewtestrun; assigncause scopes inparallel",
+      "artifacts": {
+        "remaining5": {
+          "id": 11926127259,
+          "bytes": 576,
+          "digest": "sha256:0a2c42c589ca6385687a810973c678811635e532db4552810504daf3110107c7"
+        },
+        "admin": {
+          "id": 11926162269,
+          "bytes": 451,
+          "digest": "sha256:0afdf23c629061c718b62ddf53dbd6ea2d94043f488e514c8c2ec0beda1fb2e4"
+        },
+        "lesson": {
+          "id": 11925608306,
+          "bytes": 529,
+          "digest": "sha256:cf877ce7e82a90aa85f00d8ca5c45039b53ee75b3af91cb4588d2515b5d98e29"
+        },
+        "homework": {
+          "id": 11926226131,
+          "bytes": 525,
+          "digest": "sha256:570445ab19b3495c942ffe7d2b1a5b7c55fe78737c0b2767fee840c24c2ba5ce"
+        },
+        "registry": {
+          "id": 11926113743,
+          "bytes": 518,
+          "digest": "sha256:de1880f63617e15c6de0ef546d374fa6af0e1fbed52b90e5d82257a7aca2a9d1"
+        }
+      },
+      "AcademicITcurrentJob": "SUCCESS_116071619408_namedprojectionPENDING",
+      "AuthITcurrentJob": "SUCCESS_116071619357_namedWSprojectionPENDING"
+    },
+    "874_actual_five_browser_closed_read": {
+      "at": "2026-10-14T20:30:31.247014+00:00",
+      "readerTerminal": "/workspace/scratch/rct-validation/ci_874_browser5/reader-fresh-terminal.safe.json",
+      "childNativeExit": 0,
+      "allReaped": true,
+      "elapsedSeconds": 1.4903399660252035,
+      "results": [
+        {
+          "scope": "remaining",
+          "artifact": 11926127259,
+          "bytes": 576,
+          "digest": "sha256:0a2c42c589ca6385687a810973c678811635e532db4552810504daf3110107c7",
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 500,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 1171,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 527,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 2829,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 574,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 1007,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 592,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 11271,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_TIMEOUT_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-real-server.spec.ts",
+                    "line": 669
+                  }
+                ]
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 805,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 574,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 400
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-real-server.spec.ts",
+                    "line": 836
+                  }
+                ]
+              }
+            ]
+          },
+          "qualification": [
+            {
+              "caseCode": "LIMITED_ADMIN",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "RETRY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "REVOKED_SESSION",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "TMA_REUSE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "OFFLINE_SCHEDULE_HOMEWORK",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "noModeIdentityFromOrdinal": true,
+          "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "run": 38627888098
+        },
+        {
+          "scope": "admin",
+          "artifact": 11926162269,
+          "bytes": 451,
+          "digest": "sha256:0afdf23c629061c718b62ddf53dbd6ea2d94043f488e514c8c2ec0beda1fb2e4",
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 1328,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 4802,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_TYPE_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-real-server.spec.ts",
+                    "line": 1614
+                  }
+                ]
+              }
+            ]
+          },
+          "qualification": [
+            {
+              "caseCode": "ADMIN_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "noModeIdentityFromOrdinal": true,
+          "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "run": 38627888098
+        },
+        {
+          "scope": "lesson",
+          "artifact": 11925608306,
+          "bytes": 529,
+          "digest": "sha256:cf877ce7e82a90aa85f00d8ca5c45039b53ee75b3af91cb4588d2515b5d98e29",
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-attendance-requests.spec.ts",
+                "line": 8,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 61001,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-lesson-lifecycle.spec.ts",
+                "line": 20,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 60333,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 370,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 49156,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-schedule-lifecycle.spec.ts",
+                    "line": 187
+                  }
+                ]
+              },
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 785,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 56269,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "qualification": [
+            {
+              "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "LESSON_LIFECYCLE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "noModeIdentityFromOrdinal": true,
+          "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "run": 38627888098
+        },
+        {
+          "scope": "homework",
+          "artifact": 11926226131,
+          "bytes": 525,
+          "digest": "sha256:570445ab19b3495c942ffe7d2b1a5b7c55fe78737c0b2767fee840c24c2ba5ce",
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 26,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 14590,
+                "errorCount": 2,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_TIMEOUT_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-homework-lifecycle.spec.ts",
+                    "line": 316
+                  },
+                  {
+                    "file": "mobile-homework-lifecycle.spec.ts",
+                    "line": 303
+                  }
+                ]
+              },
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 560,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 21282,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 900,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 4260,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-homework-lifecycle.spec.ts",
+                "line": 1199,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 3939,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "qualification": [
+            {
+              "caseCode": "HOMEWORK_EDIT",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "TRANSFER_ARCHIVE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "MATERIALS",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "OWN_MANUAL_DELETE",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "noModeIdentityFromOrdinal": true,
+          "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "run": 38627888098
+        },
+        {
+          "scope": "registry",
+          "artifact": 11926113743,
+          "bytes": 518,
+          "digest": "sha256:de1880f63617e15c6de0ef546d374fa6af0e1fbed52b90e5d82257a7aca2a9d1",
+          "results": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "cloud-accepted-registry-export.spec.ts",
+                "line": 23,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 11210,
+                "errorCount": 2,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_TIMEOUT_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "cloud-accepted-registry-export.spec.ts",
+                    "line": 70
+                  },
+                  {
+                    "file": "cloud-accepted-registry-export.spec.ts",
+                    "line": 75
+                  }
+                ]
+              },
+              {
+                "file": "cloud-accepted-registry-export.spec.ts",
+                "line": 23,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 11500,
+                "errorCount": 2,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_TIMEOUT_ERROR",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "cloud-accepted-registry-export.spec.ts",
+                    "line": 70
+                  },
+                  {
+                    "file": "cloud-accepted-registry-export.spec.ts",
+                    "line": 75
+                  }
+                ]
+              },
+              {
+                "file": "cloud-accepted-registry-export.spec.ts",
+                "line": 692,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 7898,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-registry-export.spec.ts",
+                "line": 692,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 65341,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          },
+          "qualification": [
+            {
+              "caseCode": "USER_HTML_EXPORT_MODE_ORDINAL_ONLY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "USER_HTML_EXPORT_MODE_ORDINAL_ONLY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "USER_NATIVE_PDF_EXPORT_MODE_ORDINAL_ONLY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "USER_NATIVE_PDF_EXPORT_MODE_ORDINAL_ONLY",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "noModeIdentityFromOrdinal": true,
+          "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "run": 38627888098
+        }
+      ],
+      "important": "remainingstep hasonly5results notexpected7; newD0021033/1244notexecuted/evidencegap. Actuallesson20+room785PASS; ownHWDELETE1199PASS. No familyPASS/registrymodeidentity inference.",
+      "next": "assignsamebrowser/C+registry/sourceauthors, independentnew schedulecause; no newtestrun"
+    },
+    "874_renderer_type_correction_Root_integrated": {
+      "at": "2026-10-14T20:32:41.887108+00:00",
+      "sha256": "f6e853ff974ddbe74ad14c2aec550488443e691d6486b38098d2840e73b8270d",
+      "independentTargetRecheck": "APPROVE_SOURCE_ONLY",
+      "RootExactOneLineIntegration": true,
+      "next": "repeatonlyaffectedmergedTSC/discovery/newregistryformatcheck; unrelated3formatPASSretained"
+    },
+    "874_fixture_cause_coherent_corrections": {
+      "at": "2026-10-14T20:40:10.679615+00:00",
+      "state": "SOURCE_READY_NOT_RUNTIME_GREEN",
+      "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "classifications": {
+        "exports": "Next teaching-day browser Date makes real ten-minute export jobs look expired before ticket; local resync before date-insensitive export only. Actual job status not observed.",
+        "offlineLesson400": "Synthetic classroom72 characters violates existing64 limit; bounded replacement prepared.",
+        "builderAndArchivedRoster": "Semester starts realToday; historical SQL requires earlier date, and archive membership end is exclusive realToday. Choose semester/date strictly before both clocks; preserve SQL/history/marks.",
+        "missingD002": "Actual browser-free --list selects5 despite CLI7; config excludes two D002 cases. Config correction prepared.",
+        "homeworkRead": "Product cause UNKNOWN. Promise.all masks pending click/target timeout; same-operation allSettled fixed boolean diagnostics prepared, no assertion weakening."
+      },
+      "singleAuthorOutcomes": [
+        "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-boundaries.safe.json",
+        "/workspace/scratch/rct-validation/q09_remaining_client_writer/renderer-outage.safe.json",
+        "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json",
+        "/workspace/scratch/rct-validation/q09_remaining_client_writer/homework-inbox-current874.safe.json"
+      ],
+      "next": "One targeted independent correction review, exact Root integration, canonical format/type/discovery, coherent push/current normal CI. No extra timeout/product-security clock change."
+    },
+    "874_coherent_corrections_Root_copy": {
+      "at": "2026-10-14T20:41:18.777936+00:00",
+      "state": "EXACT_AUTHOR_BYTES_INTEGRATED_SOURCE_REVIEW_AND_CHECKS_PENDING",
+      "files": [
+        {
+          "path": "tests/e2e/playwright.real-mobile.config.ts",
+          "before": "8baab5acc15b41d4d30629e51dbb30765104aa0d7fee6da055b741ff3fdc9c70",
+          "after": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "before": "1b0181babe19e63810fe770eb7111ef748d74065f956c762839aee721798f79a",
+          "after": "c2e78645b133eb992b07238999c6433fba2e3c0c76352130bdf9e1b070d227e8"
+        },
+        {
+          "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+          "before": "f6e853ff974ddbe74ad14c2aec550488443e691d6486b38098d2840e73b8270d",
+          "after": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984"
+        },
+        {
+          "path": "tests/e2e/fixtures/mobile-dataset.ts",
+          "before": "02de61e71616a26526b8fee7c5a2411728bc75b1ae418d190731b27d16067a6d",
+          "after": "5bfd28dd2c108618caac645aa82407437f0ae788b8c80b6a334620b5b760274b"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+          "before": "cbe2b8278a9d5b77280073fd00602d82cb20ea8580909951b2f3e880372b0d9c",
+          "after": "104e53dee1b7f6ec270ba2b6c2caffe5f0206e3b16ea31facfcb24369ae14d0b"
+        }
+      ],
+      "noOtherCopies": true
+    },
+    "874_terminal_and_two_additional_failures": {
+      "at": "2026-10-14T20:44:14.577357+00:00",
+      "ci": {
+        "run": 38627888098,
+        "head": "87443414c762f555d8c0e05726ce855ab94f779c",
+        "event": "pull_request",
+        "attempt": 1,
+        "state": "completed",
+        "conclusion": "failure",
+        "finishedAt": "2026-10-14T20:25:36Z"
+      },
+      "coverage": {
+        "run": 38627888000,
+        "conclusion": "failure",
+        "finishedAt": "2026-10-14T20:11:42Z"
+      },
+      "browserJob": 116071619227,
+      "closedRead": {
+        "results": [
+          {
+            "scope": "first3",
+            "artifact": 11926127181,
+            "bytes": 3573,
+            "digest": "d331fa9d217d83e0d12a2be911b43ad9841a266810eef0d46f667540f2fbf9b7",
+            "results": {
+              "artifacts/safe-results.json": {
+                "status": "failed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "mobile-real-server.spec.ts",
+                    "line": 78,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 2730,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  },
+                  {
+                    "file": "mobile-real-server.spec.ts",
+                    "line": 127,
+                    "project": "chromium",
+                    "status": "failed",
+                    "expectedStatus": "passed",
+                    "durationMs": 15159,
+                    "errorCount": 1,
+                    "diagnostics": [
+                      {
+                        "stage": "UNKNOWN",
+                        "cause": "UNKNOWN",
+                        "httpStatus": 0
+                      }
+                    ],
+                    "errorLocations": [
+                      {
+                        "file": "mobile-real-server.spec.ts",
+                        "line": 216
+                      }
+                    ]
+                  },
+                  {
+                    "file": "mobile-real-server.spec.ts",
+                    "line": 430,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 2355,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              }
+            },
+            "qualification": {
+              "artifacts/safe-results.json": [
+                {
+                  "caseCode": "STUDENT",
+                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+                },
+                {
+                  "caseCode": "HEADMAN",
+                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+                },
+                {
+                  "caseCode": "HELPER",
+                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+                }
+              ]
+            },
+            "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+            "run": 38627888098,
+            "closedObservationsNotRead": true,
+            "wholeFamilyAcceptance": "NOT_ASSESSED"
+          },
+          {
+            "scope": "assignment",
+            "artifact": 11926321382,
+            "bytes": 1156,
+            "digest": "ff2b1211010679695950034c6f6568b905a4d805d317f628fee4cd1f02b92af9",
+            "results": {
+              "pending/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 695,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 293,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              },
+              "prepare/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 695,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 108982,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              },
+              "resume/safe-results.json": {
+                "status": "failed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 695,
+                    "project": "chromium",
+                    "status": "failed",
+                    "expectedStatus": "passed",
+                    "durationMs": 1747,
+                    "errorCount": 1,
+                    "diagnostics": [
+                      {
+                        "stage": "UNKNOWN",
+                        "cause": "UNKNOWN",
+                        "httpStatus": 0
+                      }
+                    ],
+                    "errorLocations": [
+                      {
+                        "file": "assignment-lifecycle.spec.ts",
+                        "line": 221
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "qualification": {
+              "pending/safe-results.json": [
+                {
+                  "caseCode": "ASSIGNMENT_LIFECYCLE",
+                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+                }
+              ],
+              "prepare/safe-results.json": [
+                {
+                  "caseCode": "ASSIGNMENT_LIFECYCLE",
+                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+                }
+              ],
+              "resume/safe-results.json": [
+                {
+                  "caseCode": "ASSIGNMENT_LIFECYCLE",
+                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+                }
+              ]
+            },
+            "sourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+            "run": 38627888098,
+            "closedObservationsNotRead": true,
+            "wholeFamilyAcceptance": "NOT_ASSESSED"
+          }
+        ],
+        "rawLogsHTMLXML": false
+      },
+      "terminal": {
+        "direct_pid": 820373,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 820373,
+            "start_ticks": 26440048
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsed_seconds": 0.9513776440289803,
+        "sampled_resources": true,
+        "SDK_allocation_unmeasured": true
+      },
+      "frames": {
+        "FIRST3_HEADMAN216": "blockTrigger.focus(), after earlier journal marks/clear; actual reason UNKNOWN, student/helper PASS retained",
+        "ASSIGNMENT_RESUME221": "teacher groupHistory HTTP expected200; actualHTTP UNKNOWN. Prepare/pendingPASS, resumeFAIL. Recovery/semester skipped due upstream assignmentfailure; neither executed nor corrected."
+      },
+      "nextAssignments": {
+        "c65_client_final_browser": "read-only FIRST3 precise cause/closed observations, currentSource frozen",
+        "c66_schedule_current": "read-only assignment resume HTTP Source cause, no guard/expectation change"
+      }
+    },
+    "874_coherent_correction_review_and_discovery": {
+      "at": "2026-10-14T20:44:14.577357+00:00",
+      "review": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json",
+      "verdict": "APPROVE_SOURCE_ONLY_NO_BLOCKING_FINDINGS",
+      "discovery": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-boundaries.safe.json#current874_corrections.discovery_after",
+      "actualCountBefore": 5,
+      "actualCountAfter": 7,
+      "sameCLISelector": true,
+      "nativeExit": 0,
+      "allOwnedReaped": true,
+      "runtimeBrowser": "NOT_RUN"
+    },
+    "874_current_named_finite_proof_join": {
+      "state": "FIVE_EXACT_CURRENT_SOURCE_METHODS_PASSED_CHECKOUT_JOINED",
+      "at": "2026-10-14T20:46:26.755406+00:00",
+      "producer": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "run": 38627888098,
+      "attempt": 1,
+      "event": "pull_request",
+      "checkout": {
+        "artifact": 11924806897,
+        "bytes": 293,
+        "digest": "sha256:541e0022becc12079740b57459bbae430db70f704fc5ca7b824f5fefb5593111",
+        "body": {
+          "checkout_sha": "6cca34cd5e41c88ff35ca39b0bb9bca4734edc48",
+          "tree_sha": "f929e3ad3942dc5a2dfdb62bbc160fec58062156",
+          "producer_head_sha": "87443414c762f555d8c0e05726ce855ab94f779c"
+        },
+        "officialGit": {
+          "sha": "6cca34cd5e41c88ff35ca39b0bb9bca4734edc48",
+          "tree": "f929e3ad3942dc5a2dfdb62bbc160fec58062156",
+          "parents": [
+            "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "87443414c762f555d8c0e05726ce855ab94f779c"
+          ]
+        },
+        "producerTree": "f929e3ad3942dc5a2dfdb62bbc160fec58062156",
+        "join": "OFFICIAL_PARENTS_EXACT_MAIN_AND_HEAD_AND_CHECKOUT_TREE_EQUALS_PRODUCER_TREE"
+      },
+      "reports": [
+        {
+          "artifact": 11925322930,
+          "bytes": 21663,
+          "digest": "sha256:21827b3af489c0cfe1c2ed609381e3dc83fce99520791137ecd8ad44e6546271",
+          "metadata": {
+            "checkoutSha": "6cca34cd5e41c88ff35ca39b0bb9bca4734edc48",
+            "prHeadSha": "87443414c762f555d8c0e05726ce855ab94f779c",
+            "service": "academic-service",
+            "task": "integrationTest",
+            "job": "java-integration-test",
+            "runId": "38627888098",
+            "runAttempt": "1",
+            "event": "pull_request",
+            "testStepOutcome": "success"
+          },
+          "selectedCount": 3,
+          "selected": [
+            {
+              "xmlOrdinal": 53,
+              "suiteOrdinal": 1,
+              "ordinal": 14,
+              "classname": "ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT",
+              "method": "v31BackfillsOnlyKnownLegacyProgramDurationsWithoutChangingExistingGroupData",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+              "sourceSha256": "c331a002ae0977df7d445df779ea5bc045034af83e51a7b485e69865b3c67d63",
+              "currentSourceEqualsProducer": true
+            },
+            {
+              "xmlOrdinal": 19,
+              "suiteOrdinal": 1,
+              "ordinal": 5,
+              "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+              "method": "registrySortsWholeResultWithStableTiesAndUnknownMetadataLastInBothDirections",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+              "sourceSha256": "cf996f33eb3e1de321b2e3f129c39b0ad28e36f516ce045e070e86f45b75eb9c",
+              "currentSourceEqualsProducer": true
+            },
+            {
+              "xmlOrdinal": 17,
+              "suiteOrdinal": 1,
+              "ordinal": 4,
+              "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+              "method": "legacyPatchRejectsStandaloneRemovalButAllowsReplacementAndNonHeadmanFalse",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+              "sourceSha256": "13e46e11777e58541c00e3dfd51393770277d6b8c1e867ba7bf33f03ecf556cb",
+              "currentSourceEqualsProducer": true
+            }
+          ],
+          "wholeSuiteAcceptance": "NOT_ASSESSED"
+        },
+        {
+          "artifact": 11925057212,
+          "bytes": 8630,
+          "digest": "sha256:543bf143fc68ae54a843da01b3684aac42182370f71af10bebc4bf6bd9a415ed",
+          "metadata": {
+            "checkoutSha": "6cca34cd5e41c88ff35ca39b0bb9bca4734edc48",
+            "prHeadSha": "87443414c762f555d8c0e05726ce855ab94f779c",
+            "service": "auth-service",
+            "task": "integrationTest",
+            "job": "java-integration-test",
+            "runId": "38627888098",
+            "runAttempt": "1",
+            "event": "pull_request",
+            "testStepOutcome": "success"
+          },
+          "selectedCount": 2,
+          "selected": [
+            {
+              "xmlOrdinal": 17,
+              "suiteOrdinal": 1,
+              "ordinal": 2,
+              "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+              "method": "realTicketBindingIgnoresClaimedConnectIdentityAndDeniesForeignPrivateSubscription",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+              "sourceSha256": "de0897fd2d69b175e17d23649defc37835ff6d0b5876936e0f5e9f897728cb22",
+              "currentSourceEqualsProducer": true
+            },
+            {
+              "xmlOrdinal": 17,
+              "suiteOrdinal": 1,
+              "ordinal": 1,
+              "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+              "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+              "sourceSha256": "de0897fd2d69b175e17d23649defc37835ff6d0b5876936e0f5e9f897728cb22",
+              "currentSourceEqualsProducer": true
+            }
+          ],
+          "wholeSuiteAcceptance": "NOT_ASSESSED"
+        }
+      ],
+      "selectedCount": 5,
+      "selectedPassed": 5,
+      "selectedSkipped": 0,
+      "rawXMLLogsHTMLPrivateBodiesRead": false,
+      "artifactBytesDiskCopies": 0,
+      "sourceMethodAssertions": "STRICT_SOURCE_METHOD_AND_EXACT_SOURCE_SHA_NO_ORDINAL_FALLBACK",
+      "scope": "E3 two named migration/defaultsort methods; D016/Q012 legacy removal/refusal/replacement method; two existing WS identity/logout private-delivery methods only",
+      "wholeFamilies": "NOT_ASSESSED",
+      "overallCI": "FAIL_OTHER_JOBS_NOT_PROMOTED",
+      "consumerBasis": "Adapted fixed874 metadata and exact selected list from existing ci_493_academic/read-selected.py; existing closed checkout consumer; no schema/identity loosening",
+      "B013_B014_B015": "FROZEN_UNTOUCHED_NO_S1_ORDINAL_JOIN",
+      "guard_terminal": {
+        "direct_pid": 820894,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 820894,
+            "start_ticks": 26457887
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true,
+        "elapsed_seconds": 1.047758225002326,
+        "sampled_resources": true,
+        "SDK_allocation_unmeasured": true,
+        "peaks": {
+          "ownRSS": 32235520,
+          "sharedMemory": 5654257664
+        }
+      }
+    },
+    "874_correction_merged_native_checks": {
+      "at": "2026-10-14T20:48:59.211290+00:00",
+      "state": "CANONICAL_FORMAT_AND_FULL_REAL_MOBILE_TYPES_PASS",
+      "terminal": {
+        "head": "87443414",
+        "results": [
+          {
+            "direct_pid": 820962,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 820962,
+                "start_ticks": 26459825
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "format-apply",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              ".github/workflows/ci.yml",
+              "tests/e2e/playwright.real-mobile.config.ts",
+              "tests/e2e/specs/mobile-real-server.spec.ts",
+              "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+              "tests/e2e/fixtures/mobile-dataset.ts",
+              "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+            ],
+            "elapsedSeconds": 2.4823482880019583
+          },
+          {
+            "direct_pid": 820973,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 820973,
+                "start_ticks": 26460075
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "format-check",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--check",
+              ".github/workflows/ci.yml",
+              "tests/e2e/playwright.real-mobile.config.ts",
+              "tests/e2e/specs/mobile-real-server.spec.ts",
+              "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+              "tests/e2e/fixtures/mobile-dataset.ts",
+              "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+            ],
+            "elapsedSeconds": 1.8625704170553945
+          },
+          {
+            "direct_pid": 820984,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 820984,
+                "start_ticks": 26460259
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "merged-tsc",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+              "--noEmit",
+              "--pretty",
+              "false",
+              "-p",
+              "tests/e2e/tsconfig.real-mobile.json"
+            ],
+            "elapsedSeconds": 3.6397058780421503
+          }
+        ],
+        "pins": {
+          ".github/workflows/ci.yml": "a163e9d74cc540bd34bc0d9c207cda6d872922fc7256415a5fc86db44535bc3e",
+          "tests/e2e/playwright.real-mobile.config.ts": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+          "tests/e2e/specs/mobile-real-server.spec.ts": "c2e78645b133eb992b07238999c6433fba2e3c0c76352130bdf9e1b070d227e8",
+          "tests/e2e/specs/cloud-accepted-registry-export.spec.ts": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+          "tests/e2e/fixtures/mobile-dataset.ts": "5bfd28dd2c108618caac645aa82407437f0ae788b8c80b6a334620b5b760274b",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "35769785f9b246f60c1f0f3b6dcd0c70f0724c1d39a722835c885de67dbdae67"
+        },
+        "elapsedSeconds": 7.986695469007827,
+        "oldFailure": "absolute_python_path_missing_before_any_child",
+        "rootPWInode": 413591
+      },
+      "initialFailure": {
+        "type": "FileNotFoundError",
+        "cause": "mistyped absolute Python executable",
+        "childStarted": false,
+        "sourceEffect": false,
+        "receipt": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/correction-checks-terminal.safe.json"
+      },
+      "browserDiscovery": "Actual same CLI5→7, sourcepins matched, allreaped; singleauthoroutcome retained",
+      "review": "APPROVE_SOURCE_ONLY exact frozenpins; /workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json"
+    },
+    "874_assignment_clock_scope_cause": {
+      "at": "2026-10-14T20:48:59.211290+00:00",
+      "state": "SOURCE_DERIVED_FIXTURE_CLOCK_MISMATCH_ACTUAL_HTTP_UNKNOWN",
+      "sourceOutcome": {
+        "recordedAt": "2026-10-14T20:48:08.557781+00:00",
+        "state": "SOURCE_CAUSE_ESTABLISHED_OBSERVED_HTTP_STATUS_UNKNOWN_NO_SOURCE_EDIT",
+        "exactSourceHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+        "sourceSha256": "0a533f4744ef11c4bc81daf48bd8f6941304375d609c0b40f3950e3907c50751",
+        "actualEvidence": {
+          "ciRun": 38627888098,
+          "artifactId": 11926321382,
+          "artifactBytes": 1156,
+          "artifactSha256": "ff2b1211010679695950034c6f6568b905a4d805d317f628fee4cd1f02b92af9",
+          "prepare": "PASS108982ms",
+          "pending": "PASS293ms",
+          "resume": "FAIL1747ms at groupHistory expected200 line221",
+          "actualHttpStatus": "UNKNOWN",
+          "dependentRecoverySemester": "SKIPPED_UPSTREAM_ONLY"
+        },
+        "classification": "FIXTURE_CLOCK_AUTHORITY_DATE_MISMATCH; no product grant or clock defect established",
+        "acceptedRules": [
+          "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md: active current group assignment permits all historical attendance, including before assignment; historical assignment alone is insufficient.",
+          "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md: closure preserves future unassigned lessons and prior history; new ACTIVE teacher reads whole group history."
+        ],
+        "sourceChain": [
+          {
+            "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+            "line": 496,
+            "fact": "New adopted teacher is freshly created in prepare; resume POST creates sole assignment with validFrom=checkpoint.today, the strict-future teaching date."
+          },
+          {
+            "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+            "line": 524,
+            "fact": "First resume groupHistory follows successful close204/replay, future unassignment, retained physical/marks/homework checks, former denial404, adoption201/publication and future reassignment checks."
+          },
+          {
+            "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java",
+            "line": 396,
+            "fact": "Journal denies404 OUT_OF_SCOPE when group absent from currentTeacherGroupIds, before requesting historical Attendance journal."
+          },
+          {
+            "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+            "line": 128,
+            "fact": "currentTeacherSubjects obtains active semester then existing Academic GetTeacherSubjects RPC."
+          },
+          {
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+            "line": 589,
+            "fact": "GetTeacherSubjects selects actual LocalDate.now(Europe/Moscow), not EducationalTime."
+          },
+          {
+            "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+            "line": 603,
+            "fact": "ACTIVE assignments with validFrom after actual day are excluded. Under strict-future fixture the new adopted teacher has no current group authority."
+          },
+          {
+            "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+            "line": 1540,
+            "fact": "Historical concrete-lesson read independently requires same current group authority through Academic getCurrentTeacherSubjects; relaxing BFF alone would not establish legitimate access."
+          }
+        ],
+        "qualification": "404 is source-derived when actual date remains before teaching day, not directly observed in current safe artifact. No body/log/DB read was used. The shared frame alone does not name the groupHistory call, but under that clock condition first adopted call is necessarily rejected.",
+        "boundedCorrectionEvaluation": {
+          "acceptedPrinciple": "Restore real-calendar alignment for ordinary authority/account/history acceptance. Do not modify production rights/time to admit a future-effective assignment or change expected200 to404.",
+          "globalOrdinaryWeekday": "Reverting only unconditional next-day addition in prepare-clock restores same actual Moscow weekday09 selection as prior493. Existing frozen dataset5bfd then starts yesterday under both clocks. Original assignment calls/assertions stay unchanged and adopted assignment is live-current on ordinary weekdays.",
+          "localizedFutureLesson": "Use strict-future09 only for existing lesson-lifecycle lane required by V29 real accepted_at NOW and room lesson8. Existing atomic write/chmod/rename fixture pattern is in application-recovery.spec.ts296-299; same read-only directory bind observes atomic replacement.",
+          "doNotImmediatelyRewindLiveStand": "Existing backend-clock/README warns against rewinding shared clock after durable lifecycle effects. Advancing time can irreversibly close previous groups lessons; restoring file bytes cannot undo them.",
+          "safestSmallCIShape": "Move existing lesson-lifecycle invocation plus its upload after assignment/recovery/semester and other actual-date consumers, advance clock monotonically there, preserve existing four cases/assertions; stop owned services then restore original file bytes during cleanup. CI owner must retain original step guard semantics and ensure no live dependent scenario follows clock rewind.",
+          "weekendLimit": "Old ordinary selector moves weekends to Monday, so this alone does not establish weekend live-authority acceptance. Do not claim all-calendar fix; future calendar alignment needs bounded case-specific handling if executed on weekend.",
+          "noImplementation": "Read-only task; no source/config/API/harness edit or alternate grant applied."
+        },
+        "minimalSafeDiagnosticIfNeeded": {
+          "caller": "groupHistory: before existing expect(response.status()).toBe(200), if status!=200 throw datasetHttpFailure with GET and fixed /api/v1/teacher/journal; retain assertion.",
+          "reporter": "Existing datasetHttpOperations lacks that GET path, so a helper call alone loses status. Add only exact GET fixed-path closed cause DATASET_TEACHER_JOURNAL_READ_HTTP; caller supplies constant path, excludes query identifiers and bypasses no length/controls/status guard.",
+          "data": "Fixed method/cause and bounded existing allowed numeric HTTP status only; no response body, query, teacher/group IDs, credentials, SQL or broad logger.",
+          "execution": "Not implemented or run; CI writer scope decision remains Root."
+        },
+        "checks": "Exact git-show SHA match; frozen dataset SHA preserved; source route and accepted decisions inspected. No runtime/tests/network/browser/DB/native calls.",
+        "sourceMutations": 0,
+        "children": 0,
+        "newArtifacts": "Only this section in the same existing receipt; no new reports, source copies, packets or archives."
+      },
+      "technicalDirection": "Evaluate isolating future teaching day to final existing lesson lane; restore ordinary effective-role day globally. No product authority/HTTP200/assertion relaxation; no populated-live clock rewind. CI solewriter c65 must check sequence/current final clock and cleanup before implementation."
+    },
+    "874_finite_matrix_reconciliation": {
+      "at": "2026-10-14T20:49:36.848201+00:00",
+      "newCases": [
+        "VC-REAL-HOMEWORK-OWN-DELETE-HISTORY-REPLAY-01",
+        "VC-ADMIN-REPLACE-ONLY-NO-PARTIAL-01",
+        "VC-ACADEMIC-LEGACY-DURATION-STABLE-SORT-01"
+      ],
+      "currentFinitePassCount": 137,
+      "existing134RowsBytePreserved": true,
+      "additionalBrowserPassesAlreadyRepresented": [
+        "VC-Q07-REAL-PWA-CANCEL-JOURNAL-RESTORE-01",
+        "VC-REAL-ROOM-PROVENANCE-ETAG-TODAY-01"
+      ],
+      "newSupportingCurrentEvidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.874_actual_five_browser_closed_read",
+      "families": "218 overlapping unchanged15PASS/198UNKNOWN/5EXCLUDED; no percentage"
+    },
+    "874_first3_active_precondition_cause": {
+      "at": "2026-10-14T20:51:03.913647+00:00",
+      "state": "ACTUAL_CLOSED_OBSERVATIONS_PLANNED_SOURCE_ASYNC_FIXTURE_PRECONDITION",
+      "facts": "Current HEADMAN lesson list/roster remained PLANNED; current admission/selection200, roster editable, clear/PUT200 and correctdate/target; exact874 HeadmanHomeScreen renders geo-block trigger only current=true/statusACTIVE; schedule job fixedDelay60000. Initial focus216 failure does not demonstrate product actionability defect.",
+      "sourceOutcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-boundaries.safe.json",
+      "next": "Same author Source-only minimal FIRST3-headman fixture readiness poll inside existing180s fixture; retain test60s/all mark/clear/block assertions, no SQL/job/clock forcing."
+    },
+    "874_coherent_clock_localization_plan": {
+      "at": "2026-10-14T20:53:28.437277+00:00",
+      "state": "SOURCE_IMPLEMENTATION_AUTHORIZED_NOT_RUNTIME_PASS",
+      "classification": "FIXTURE_DOMAIN_EFFECTIVE_DATE_AND_ASYNC_STATUS_PRECONDITIONS",
+      "writer": "c65_client_final_browser",
+      "files": [
+        ".github/workflows/ci.yml",
+        "tests/e2e/playwright.real-mobile.config.ts",
+        "tests/e2e/specs/mobile-real-server.spec.ts",
+        "tests/e2e/fixtures/mobile-dataset.ts",
+        "tests/e2e/backend-clock/prepare-clock.mjs"
+      ],
+      "choice": "Global teaching ordinary weekday no later than actualMoscowToday; weekend priorFriday after applicableguard check. Lazy FIRST3-headman worker readiness genuine ACTIVE/current within existing180s fixture; retain60s test. Move existing wholelesson-lifecycle lane last after recovery/semester. Atomically advance owned educationalclock monotonically to09nextweekday aftermax(currentday,actualday); no populated-live rewind, security/DB NOW clocks unchanged. Keep original4cases/artifacts/assertions/cleanup/gates.",
+      "causeEvidence": [
+        "874_first3_active_precondition_cause",
+        "874_assignment_clock_scope_cause"
+      ],
+      "next": "One bounded Sourcecorrection packet/review/affectedchecks, real push/current normalCI. No new stand/framework/productauthority change."
+    },
+    "874_clock_readiness_source_ready": {
+      "at": "2026-10-14T20:57:07.240369+00:00",
+      "singleAuthorOutcome": {
+        "light_checks": [
+          {
+            "direct_pid": 822002,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 822002,
+                "start_ticks": 26513835
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "TS_format_write",
+            "peak_observed_own_rss_bytes": 132157440
+          },
+          {
+            "direct_pid": 822013,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 822013,
+                "start_ticks": 26514033
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "CI_clock_format_write",
+            "peak_observed_own_rss_bytes": 77987840
+          },
+          {
+            "direct_pid": 822024,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 822024,
+                "start_ticks": 26514104
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "TS_format_check",
+            "peak_observed_own_rss_bytes": 127221760
+          },
+          {
+            "direct_pid": 822035,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 822035,
+                "start_ticks": 26514250
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "CI_clock_format_check",
+            "peak_observed_own_rss_bytes": 73256960
+          },
+          {
+            "direct_pid": 822062,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 822062,
+                "start_ticks": 26514314
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "TS_syntax",
+            "peak_observed_own_rss_bytes": 89554944
+          },
+          {
+            "direct_pid": 822081,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 822081,
+                "start_ticks": 26514406
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "clock_JS_syntax",
+            "peak_observed_own_rss_bytes": 0
+          }
+        ],
+        "status": "SOURCE_LIGHT_CHECKED_FROZEN_FOR_TARGETED_REVIEW",
+        "owned_files": [
+          "/workspace/rct-worktrees/client-final-browser-874-20261014/.github/workflows/ci.yml",
+          "/workspace/rct-worktrees/client-final-browser-874-20261014/tests/e2e/playwright.real-mobile.config.ts",
+          "/workspace/rct-worktrees/client-final-browser-874-20261014/tests/e2e/specs/mobile-real-server.spec.ts",
+          "/workspace/rct-worktrees/client-final-browser-874-20261014/tests/e2e/fixtures/mobile-dataset.ts",
+          "/workspace/rct-worktrees/client-final-browser-874-20261014/tests/e2e/backend-clock/prepare-clock.mjs"
+        ],
+        "first3_fix": "Lazy standard worker activeHeadmanDataset requested only by HEADMAN test; poll own current ACTIVE physical lesson via existing group GET within worker180s/poll90s, no SQL/job forcing or60s test timeout change",
+        "clock_fix": "Initial09 weekday date<=actualMoscow date, previousFriday weekends; only final unchanged4-case lesson lane advances atomically to09 weekday strictly after max(currentClockday,actualMoscowday); no following user lane/live rewind",
+        "proven_ordering_sources": [
+          "Recovery seed writes same-day12 Moscow",
+          "Semester unchangedClock validates original bytes and restores original active semester",
+          "MobileDataset active semester selection requires coverage; new semester dateTo=teachingToday+30 days",
+          "Academic getTeacherSubjects uses actualMoscow date and validFrom, so global future fake day is incompatible with this accepted route"
+        ],
+        "job_budget": "e2e-auth45→50 only for added required E14≤12min+renderer≤4min+HEADMAN readiness≤1.5min on measured874≈29min; existing case/step budgets unchanged",
+        "preserved": [
+          "Root dataset5bfd28dd realYesterday semester coverage",
+          "All prior E14/5→7/export-clock/offline-room/admin-asof fixes",
+          "Original four lesson cases/artifactname/step-if/17min budget and all other steps/jobs",
+          "Always cleanup and mandatory failing overall status",
+          "B013/B014/B015 untouched"
+        ],
+        "source_checks": [
+          "Formatter apply/check five owned paths0",
+          "RAM TS parser0/Node JS--check0",
+          "YAML, inline Python AST and shell parse0",
+          "Exact old steps/jobs preserved except authorized change, lesson lane last",
+          "Calendar Source logic boundary arithmetic (not runtime product acceptance)",
+          "git diff --check0"
+        ],
+        "limits": [
+          "No runtime after Source corrections",
+          "No complete product acceptance inferred from closed observations or Source checks",
+          "No local browser/Docker/server/native run",
+          "SDK allocation outside owned child unmeasured"
+        ],
+        "next": "Root targeted independent recheck; Root copy, merged formatter/TSC/discovery and actual ordinary CI",
+        "own_preparation_error": "git sparse-checkout add --no-cone rejected unsupported option; no effects. Reused existing non-cone mode with add exact2paths; admitted dataset exact5bfd28dd before edits."
+      },
+      "review": "PENDING_TARGETED_INDEPENDENT"
+    },
+    "874_E2_R3_current_compatibility_join": {
+      "utc": "2026-10-14T20:55:50.186493+00:00",
+      "scope": [
+        "E13-E2",
+        "dependent E15-R3"
+      ],
+      "role": "READ_ONLY_SOURCE_AND_EXISTING_EVIDENCE; selected Sol6.1/high; actual UNKNOWN",
+      "current_head": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "contract_sha256": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+      "rules_sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "disposition": "HOMEWORK_CURRENT_COMPATIBILITY_RECONCILED; SUPPORTED_CODE_SETS_COMPATIBLE; FINITE_REQUEST_AND_MAP_UNKNOWN_WIRE_ORACLES_REMAIN; NO_WHOLE_FAMILY_PASS",
+      "homework": {
+        "accepted_producer": "17fc01b7; integrated25efc61f per original SUMMARY; commit object unavailable but exact postimage blobs retained",
+        "input_receipts": [
+          {
+            "path": ".agent/evidence/bff-homework-date-20261002/SUMMARY.md",
+            "sha256": "ed7a8b76a0ddaad5507f814095ec38f99a047409e945c22081c1c850b9b7248c"
+          },
+          {
+            "path": ".agent/evidence/bff-homework-date-20261002/scoped.diff",
+            "sha256": "fb91d8317e9297f9ff73d2d9e0021bfe72e1e301b59d1145761a919df79d2f80"
+          },
+          {
+            "path": ".agent/evidence/bff-homework-date-20261002/StudentHomeworkHttpGrpcIT.xml",
+            "sha256": "be1d86e856d0029c5efa3f2bfbd02ed64b584a361ec092781ab6f6fc1ef12c0b"
+          }
+        ],
+        "original_actual": {
+          "timestamp": "2026-10-02T14:10:07",
+          "command": "SUMMARY.md R2: scoped compile + test *StudentQueryHomeworkTest + integrationTest *StudentHomeworkHttpGrpcIT; exit0",
+          "named_methods": [
+            "signedStudentJwtTraversesGetAndPutAndSpoofedHeadersAreIgnored()",
+            "academicStatusMappingsRemainTypedAtTheHttpBoundary()"
+          ],
+          "named_status": "PASS/no failure/error/skipped children in actual XML; suite22 not used as acceptance argument"
+        },
+        "accepted_prod_postimage": {
+          "git_blob": "df02e2463d6274d74c1af8df4309431bdeecaac0",
+          "sha256": "b3f417dfc820f9a03b38e21537af989ef8b97c3f8c74db396d1a88f93ad5254f"
+        },
+        "accepted_test_postimage": {
+          "git_blob": "05266146f84b1f86948a167073bf2042e61f1049",
+          "sha256": "9a192794dec3a1bf9668bd294a53c1e0a3b1b5485bc51e65f02a896b5f7560a8"
+        },
+        "method_join": "Accepted patch postimage -> current874/currentRoot: Java tokens identical (strings retained; whitespace/comments ignored) for StudentQueryService.homeworkItem/homeworkBindingMode/completionAt; both named test methods + assertProblem/resetRuntimeSeam. Also baseline->current identical for same methods. Critical changed bodies independently read.",
+        "oracles": "blank producer binding_mode => LESSON/number1; explicit LESSON/number2; DATE=>lessonNumber:null; incomplete=>completedAt:null; complete=>same timestamp; nonblank UNKNOWN=>real HTTP503 DEPENDENCY_UNAVAILABLE/problem+json/no-store. Proto HomeworkInfo.binding_mode tag16 is string, not numeric enum.",
+        "current_actual_producer": "AcademicGrpcServiceImpl#getHomeworksForWeek writes domain bindingMode.name; absent DATE number=>0 then BFF DATE=>null; sets completedAt only for completed record; stable tags8/10/15/16 preserved.",
+        "limit": "Synthetic loopback signed-gRPC boundary proof at original producer; no current runtime execution, Academic persistence/live-rights/full-browser claim."
+      },
+      "fixed_codes_and_supported_consumers": {
+        "proto_declaration_identity": "Baseline->874 exact text identical: HomeworkInfo; CampusMapFormat/State/Slot; StudentRequestKind/Status/Origin/AttachmentState/Summary/Attachment/Detail. No enum-number or storage migration in this reconciliation.",
+        "canonical_sets": {
+          "homework": [
+            "LESSON",
+            "DATE"
+          ],
+          "map_format": [
+            "png",
+            "svg"
+          ],
+          "map_state": [
+            "absent",
+            "processing",
+            "ready",
+            "failed"
+          ],
+          "request_status": [
+            "PENDING",
+            "APPROVED",
+            "REJECTED",
+            "CANCELLED"
+          ],
+          "request_origin": [
+            "MANUAL",
+            "AUTO_GEO_FAILURE"
+          ],
+          "attachment_state": [
+            "ACTIVE",
+            "EXPIRED"
+          ]
+        },
+        "producer_mapping": "AcademicGrpcServiceImpl#toProtoFormatSlot/toProtoFormat/toProtoFormatState explicit domain switch -> stable proto1/2 and1..4. StudentRequestGrpcMapper#summary/detail/attachment/origin/status uses canonical domain names/prefixes -> same explicit stable proto codes.",
+        "actual_consumer_source": "mobile-core/src/api/types.ts aliases generated StudentHomeworkItem and request DTOs; StudentClient GET feeds requests-controller#mapSummary/mapAttachment; feature types include unknown strings for presentation but cannot establish server refusal. CampusMapClient#getManifest/getFloorPlan/downloadAsset consumes handtyped map shape with same fixed format/state codes; missing plan=>null and optional slot fields preserved.",
+        "generated_join": "docs/openapi/mobile-bff.json SHA7813cd156add879da5f0babe259be7e55ca1037bfe254296ca896c2961cbf7a6 exactly matches generated/mobile-bff.ts header; inspected schema enum/null declarations match Java DTO and active consumer fixed codes. No new contract assertion run.",
+        "current_gate": {
+          "receipt": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.874_OpenAPI_actual_success",
+          "run": 38627888073,
+          "event": "pull_request",
+          "head_sha": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "scope": "workflow openapi-drift: generate:types:check, generate:auth-types:check, generate:academic-schedule-types:check; offline snapshots/generated identity only; runtime mapping not proved by gate",
+          "actual_checkout": "Not separately established by this OpenAPI receipt; do not borrow another workflow checkout"
+        },
+        "E3": "Already closed: current4065#874_current_named_finite_proof_join exact SOURCE_METHOD/currentSHA migration+sort. Reused pointer only; no E3 reread/rerun or new old/new deployment."
+      },
+      "finite_residuals": [
+        {
+          "id": "E2-request",
+          "classification": "MANDATORY_UNKNOWN_BOUNDARY_EVIDENCE_GAP_WITH_SOURCE_RISK; NOT_RUNTIME_DEFECT",
+          "routes": [
+            "GET /api/v1/student/requests -> StudentApiController#listRequests -> StudentRequestFacade#list/page/summary -> MobileAttendanceClient#listRequests -> Attendance.listStudentRequests",
+            "GET /api/v1/student/requests/{24hexid} -> StudentApiController#getRequest -> StudentRequestFacade#get/detail/summary/attachment -> MobileAttendanceClient#getRequest -> Attendance.getStudentRequest",
+            "GET /api/v1/student/requests/options -> StudentRequestFacade#options/pendingRef (same origin/kind conversions)"
+          ],
+          "source_risk": "summary uses Kind/Status/Origin.valueOf(strip(proto.name())); default UNSPECIFIED or numeric UNRECOGNIZED cannot match public enum and conversion happens after MobileAttendanceClient call guard. attachment maps every state except EXPIRED to ACTIVE. detail absent optional reason=>null preserved, present UNKNOWN/UNSPECIFIED reason also valueOf. No typed dependency guard exists at those conversion sites. No actual HTTP500 or authority bypass asserted.",
+          "existing_tests_limits": "Opened StudentRequestFacadeOptionsTest fully (two known-proto mapping tests); scoped BFF test-file/content search identified request JSON contract tests but no genuine HTTP/signed-gRPC unknown request-enum oracle. CASE-SB04 covers schedule status/eligibility only, not these methods. No assertion that every historical artifact was scanned.",
+          "minimal_next_scope": "Root assign developer only after scope: extend existing StudentEnumProjectionHttpGrpcIT AttendanceProducer signed real servlet/loopback Netty seam with listStudentRequests/getStudentRequest controlled fixtures. One known positive + finite numeric unknown status/origin/attachment-state table (and absent-vs-present unknown optional reason) using valid 24hex id; stable current identity/assertForwardedIdentity; assert HTTP503/DEPENDENCY_UNAVAILABLE/problem+json/no-store/no raw unknown or ACTIVE success projection, unchanged controlled state. Previous-source run must fail the same expected503 oracle at actual response; fix only relevant boundary; restored GREEN. Do not infer RED from this source read. No DB/grants/production-TLS claim."
+        },
+        {
+          "id": "E2-map",
+          "classification": "SOURCE_COMPATIBLE_TYPED_REFUSAL; EXACT_UNKNOWN_WIRE_ORACLE_NOT_JOINED",
+          "route": "GET /api/v1/map/manifest or /api/v1/map/buildings/{buildingId}/floors/{floorId}/plan -> MapQueryFacade#manifest/floorPlan -> MapAcademicClient#manifest/floorPlan/toPlan/toSlot",
+          "source": "toSlot explicit switches preserve known codes and default UNSPECIFIED/UNRECOGNIZED=>typed503 DEPENDENCY_UNAVAILABLE; floorPlan no plan=>PlanResponse(null); optional assetId/SHA/dimensions and empty viewBox=>null preserved. Existing MapQueryFacadeTest mocks whole MapAcademicClient; StudentMapModelsWireContractTest tests DTO serialization, not this gRPC conversion.",
+          "minimal_missing_oracle": "If an earlier exact map unknown-wire receipt exists, join it; none in examined finite evidence/test sources. Otherwise companion parameter rows in the SAME existing signed HTTP/gRPC seam for unknown numeric map format and state + one known/absent-plan control suffice; source already explicit typed503, no new abstraction/inventory. Existing native map positives retained; do not call missing oracle productFAIL."
+        }
+      ],
+      "E15_R3_disposition": "Current supported known producer/proto/API/generated/client codes and null semantics source-compatible; homework historical proof safely reusable; E3 already current strict-joined. Remains dependent only on the finite E2 unknown-wire witnesses above, not a general old/new release/deployment or migration exercise. Route/runtime family gates remain separate.",
+      "sources": [
+        {
+          "path": "proto/academic.proto",
+          "sha256": "5c6905b6137438ec80817fdcdc0901cc9f4d7a6a425b51037aa6384e6c7d847a",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "proto/attendance.proto",
+          "sha256": "04a29b6dc3fd3c23a47700b7ffc179d68e46c59f11710b78747386937c58016b",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "docs/openapi/mobile-bff.json",
+          "sha256": "7813cd156add879da5f0babe259be7e55ca1037bfe254296ca896c2961cbf7a6",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "sha256": "3d5a253daa8e3b27461625e7ef6657b3a0e8e14619e62f54208eca18cea7098e",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+          "sha256": "50aba0393ee2e43fcfc3c65e8adbda02d2bad7a5b47c18434be242a5adf9592f",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+          "sha256": "a53a71a7b1630faf58634237082c78fad7eca2864d531772d385ee2213aff551",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java",
+          "sha256": "f32e283d9b217c523262edb4d975e62f102cdb2eb7771b32f3a465643a9c086a",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MapAcademicClient.java",
+          "sha256": "27c90b361ea0f4cedeede50d45d3816275cbae82e516127e5224e2a7df36fe2f",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+          "sha256": "bacad7c984079b9ea524152f9189ecbb6f5ce499b7233bc9daa15d4424611a93",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+          "sha256": "250acf487ff8021694a7a522f45184d91a7f5d3e08920de0d94ccb2b6d03972e",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+          "sha256": "aaf3cccded02b6fbc0f2ad70cc82fff4ae118d1863463fdba471ff3fb09f4bec",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+          "sha256": "1cf7062cc0608efa02298a6288bfa94ac0cca64a86ca607eeec34bfb3c416be9",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentMapModels.java",
+          "sha256": "17cbe09e1ca294fde69a5c0fd813bb572c33c2559e38da21a6384a28223325cf",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+          "sha256": "0fa25b2084fc9db9ba29b5e37b94802b46d2046c832257291547d7e1d597f2a1",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java",
+          "sha256": "23f11bed5a79676fc3d46aae538f6b99b3fe5a05a4248ca3e7c0e2058bfb5d19",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java",
+          "sha256": "140b1ad81c8ead94ec17bdb90ae3b039375ea105898d25f2de75f14118fc959f",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "frontends/mobile-core/src/api/types.ts",
+          "sha256": "64d52d52365711bef313c90b53f6922c9ddaf8bfa79189dee4f0a76006da1aa0",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/types.ts",
+          "sha256": "a4a94632b909280da86c95d442dcb931c83f90d821adc488669528bdaf68935a",
+          "current_root_equals_874": true
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+          "sha256": "e6654628639c7a93a1b8336a347054b4ddd7d6ebee70146939cbd7c5ec090e98",
+          "current_root_equals_874": true
+        },
+        {
+          "path": ".github/workflows/openapi-drift.yml",
+          "sha256": "dc68ba82a595e64d8445344f19e295a6f9686b9c276cd9dfe3c3ce13e5fc93ad",
+          "current_root_equals_874": true
+        }
+      ],
+      "limits": "Read existing bytes/Git blobs/XML only. No tests/runtime/network/deps/browser/CI/new artifacts/copies/worktrees/product/Git/shared-doc changes. Only this assigned compact JSON written. New runtime PASS=0; product FAIL=0. B013/B014/B015 FROZEN untouched. Root sole writer/integrator; no blanket UNKNOWN/fullPASS."
+    },
+    "874_clock_readiness_Root_exact_copy": {
+      "at": "2026-10-14T20:57:52.186386+00:00",
+      "files": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "before": "a163e9d74cc540bd34bc0d9c207cda6d872922fc7256415a5fc86db44535bc3e",
+          "after": "55589c51802a9ab4dc2be6b21a45c2c1e2fb9768f4160fd4fe5dba159dfd39fe"
+        },
+        {
+          "path": "tests/e2e/playwright.real-mobile.config.ts",
+          "before": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+          "after": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "before": "c2e78645b133eb992b07238999c6433fba2e3c0c76352130bdf9e1b070d227e8",
+          "after": "ff135df184aedcb775778dd0acf0c06c2827fd726ea3a78a2b9131d3419a5659"
+        },
+        {
+          "path": "tests/e2e/fixtures/mobile-dataset.ts",
+          "before": "5bfd28dd2c108618caac645aa82407437f0ae788b8c80b6a334620b5b760274b",
+          "after": "4b654e2d61d8e61954b371370cc8b9450553486313184d42c3139ac5b1df4b5f"
+        },
+        {
+          "path": "tests/e2e/backend-clock/prepare-clock.mjs",
+          "before": "07cf80fc756ecd4004d1e42b0c98b9a3c439e4ad354a5372b3d1276d0522a2e3",
+          "after": "d0a22cdd60a07eff4db6c88343167d4eaa9fe90f41021ab16c4c49a541cc41ce"
+        }
+      ],
+      "review": "INDEPENDENT_TARGETED_IN_PROGRESS",
+      "checks": "AUTHOR_LIGHT_PASS_ROOT_FULL_TYPES_PENDING"
+    },
+    "874_clock_review_weekend_finding": {
+      "at": "2026-10-14T21:01:01.777940+00:00",
+      "verdict": "CHANGES_REQUESTED",
+      "finding": "CLOCK-874-R1",
+      "severity": "P2",
+      "cause": "Proposed weekend previousFriday conflicts with real Clock HomeworkPlacementService. Sundaytomorrow Saturday is past; offline/SW DATE Friday also past. Source-derived, not new runtime failure.",
+      "sourceReview": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json",
+      "scope": "only proposed initialclock calendar correction; readiness/forward/cleanup Source accepted",
+      "next": "Sameauthor evaluate actualcalendar day09 includingweekends if productoneoff/slot source permits; never weaken domain realClock guard. Potential narrow teaching-clock.ts fixture validation extension only after Source support, one targeted recheck."
+    },
+    "874_E2_request_source_ready": {
+      "at": "2026-10-14T21:01:01.777940+00:00",
+      "state": "SOURCE_READY_UNFORMATTED_NOT_RUN",
+      "worktree": "/workspace/rct-worktrees/request-enum-874-20261014",
+      "outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/request-enum-boundary874.safe.json",
+      "pins": {
+        "StudentRequestFacade.java": "1c41e80e5ca0d3464256d40781efe24ade5b272ac87882fef2e717cd804fb5cc",
+        "StudentEnumProjectionHttpGrpcIT.java": "68a68957d3a2b516f02505e5eac3bd5546337e255559c92e4b5cb7450f754c4a"
+      },
+      "next": "IndependentSource review then reuse Root existingbuildoutputs for genuineHTTP knownpositive/counterexampleRED/restoredGREEN after criticalclockpackagepush, no sparsefullcheckout/newbuildwrapper.",
+      "independentReview": {
+        "utc": "2026-10-14T21:02:47.713470+00:00",
+        "verdict": "APPROVE_SOURCE_ONLY",
+        "blocking_findings": [],
+        "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+        "worktree": "/workspace/rct-worktrees/request-enum-874-20261014",
+        "source_pins": {
+          "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java": "1c41e80e5ca0d3464256d40781efe24ade5b272ac87882fef2e717cd804fb5cc",
+          "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java": "68a68957d3a2b516f02505e5eac3bd5546337e255559c92e4b5cb7450f754c4a"
+        },
+        "original_test_pin_reviewed": "dc9cd67b53917e529ab417f8d51c4260341a1eb184c2b0e1d8841bb27f981810",
+        "author_outcome": "/workspace/scratch/rct-validation/q09_remaining_client_writer/request-enum-boundary874.safe.json",
+        "product_assessment": "Independently read complete changed enum conversion paths plus adjacent public entrypoints/input conversion/auth gates. Five explicit stable proto->public enum switches preserve all accepted kind/status/origin/reason/attachment codes. Default covers UNSPECIFIED and UNRECOGNIZED -> existing MobileBffException503 DEPENDENCY_UNAVAILABLE fixed nonsecret message; no broad catch or numeric/ordinal fallback. Optional absent reason still bypasses conversion ->null; present unknown rejected; unknown attachment never ACTIVE. Existing summary/options/pendingRef/detail conversions share the same boundary guards. No public API/proto/storage/TS/generated/auth input semantics changed.",
+        "test_quality": "Actual random-port servlet SpringBootTest uses TestRestTemplate and real loopback Netty Academic/Attendance producers; existing signed JWT interceptor validates forwarded token, preserves known user701/group41/STUDENT despite spoofed ADMIN header, and original schedule/eligibility tests remain. No controller/facade mock introduced. Independent fixed wire expectations check known list/detail/options, explicit null optional reason/decision and both attachment states; unknown/default numeric codes require actual HTTP503/problem+json/no-store/no raw code/ACTIVE projection. Request recovery GET200 and immutable fixture equality are observed; equality is seam-state only, not DB proof. Map companion actual route covers ready/absent slots, explicit id/SHA null, omitted dimensions/viewBox, no-plan204; unknown format/state typed503. Production map unchanged.",
+        "final_targeted_hunk": "Rechecked final unique @Test requestUnknownStatusAndAttachmentStateAreTypedFailures. Original status8675309/attachment8675309 rows moved from new parameter table into JUnit assertAll; all original tests and other new rows retained. Helper builds from fresh knownRequest for each call, so previous-source status failure cannot contaminate/suppress independent attachment witness. assertAll retains both failed HTTP assertions; no swallowed failure. Suitable existing strict SOURCE_METHOD result identity without ordinal/declaration loosening.",
+        "limits_and_next": "Unformatted Source only; no compile/formatter/Java/Gradle/runtime/network/CI executed by reviewer. Author native0. Root must run meaningful previous874 prod+new test RED and final restored GREEN in approved existing build context after critical push, retaining individual named method/XML and exact restored source pins. Test count/metadata/Source cannot promote E2 or E15-R3 runtime acceptance. Controlled upstream fixture proves mapping invariant, not producerDB/live-rights/productionTLS/browser/native delivery/full family. Parameterized rows need genuine exact result identity; no ordinal fallback/B015 projection. B013/B014/B015 FROZEN untouched.",
+        "mutations": "Only appended this one targeted review section to existing assigned outcome; product/test/shared-doc/Git unchanged by reviewer."
+      },
+      "nativeQualification": "RootBFF build outputs absent; reuse existingconfig/dependencycache would require bounded coldcompile. Native after criticalpush; do not claim reusedcompiledoutputs."
+    },
+    "874_clock_weekend_and_BFF_gate_corrections_ready": {
+      "at": "2026-10-14T21:10:40.333752+00:00",
+      "state": "SOURCE_FROZEN_LIGHTCHECKS_PASS_RECHECK_PENDING",
+      "clockR1": {
+        "status": "P2_CLOCK_874_R1_SOURCE_LIGHT_CHECKED_FROZEN_FOR_RECHECK",
+        "accepted_calendar_days": 7,
+        "rejected_existing_guard_cases": 8,
+        "browser_database_network": false,
+        "source_transpiled_in_RAM": true,
+        "temporary_inputs_removed": true,
+        "light_checks": [
+          {
+            "direct_pid": 823356,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823356,
+                "start_ticks": 26581120
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_reader_format_write",
+            "peak_observed_own_rss_bytes": 45256704
+          },
+          {
+            "direct_pid": 823367,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823367,
+                "start_ticks": 26581166
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_prepare_format_write",
+            "peak_observed_own_rss_bytes": 37793792
+          },
+          {
+            "direct_pid": 823378,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823378,
+                "start_ticks": 26581208
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_reader_format_check",
+            "peak_observed_own_rss_bytes": 37335040
+          },
+          {
+            "direct_pid": 823389,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823389,
+                "start_ticks": 26581244
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_prepare_format_check",
+            "peak_observed_own_rss_bytes": 37998592
+          },
+          {
+            "direct_pid": 823400,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823400,
+                "start_ticks": 26581281
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_TS_syntax",
+            "peak_observed_own_rss_bytes": 60162048
+          },
+          {
+            "direct_pid": 823407,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823407,
+                "start_ticks": 26581339
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_JS_syntax",
+            "peak_observed_own_rss_bytes": 0
+          },
+          {
+            "direct_pid": 823414,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823414,
+                "start_ticks": 26581376
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "R1_reader_controls",
+            "peak_observed_own_rss_bytes": 74854400
+          }
+        ],
+        "source_proof": [
+          "OneOffLessonCoordinator.java33–87/152–169 validates assignment/semester dates and LessonSlot, no weekday exclusion",
+          "OneOffLessonWriter.java391–476 preserves request date and writes DayOfWeek1..7; V18 lessons_day_of_week_chk permits1..7",
+          "LessonSlot.java defines fixed1..8/time without calendar restriction",
+          "HomeworkPlacementService.java46–63/684–685 uses ordinary Clock and non-past DATE guard",
+          "Actual initial calendar day<=Academic actual today and DATE today/tomorrow>=HomeworkPlacement actual today within fixed-day window"
+        ],
+        "correction": "Prepare actual Moscow calendar day09 including Sat/Sun; remove artificial reader weekday predicate only. Existing09/ISO/disposable/bounded guards and closed diagnostic key retained. Final future lesson lane stillnextweekday09.",
+        "correction_files": {
+          "tests/e2e/backend-clock/prepare-clock.mjs": "4b99be1d261d8c21d72ca1e2659464a8f851542987009604cb57afd33ed53486",
+          "tests/e2e/fixtures/teaching-clock.ts": "0658e4ac89163601def2bc4ca6af19e59fc7cb6b9a59c261b1ebc1589d2e9f14"
+        },
+        "preservation": "Other4owned files byte-identical to prior reviewed coherent pins; dataset retains realYesterday+lazyHEADMAN readiness; no production/domain/API/SQL/status guards touched",
+        "controls": "Actual new reader transpiled only inRAM: all7calendar days09 accepted;8existing wrongtime/format/bound/marker/env/path cases rejected; temporary own runtime inputs removed. No permanent duplicate tests/framework.",
+        "explicit_limit": "Fixed-day fixture may become stale across real Moscow midnight; owner Root accepts finite weekend correction and records upcoming CI actual calendar window after midnight. No claim of all wall-clock scheduling combinations; no rolling-clock policy added.",
+        "next": "One targeted independent P2 recheck; Root copies exact2files then final merged type/format/hooks/push and ordinaryCI. Runtime after full correction NOT_RUN."
+      },
+      "BffMatrices": {
+        "existing_control_tests_run": 20,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": true,
+        "collector_source_tested": "/workspace/rct-worktrees/client-final-browser-874-20261014/scripts/collect-ci-test-outcomes.py",
+        "test_source": "existing tests/harness/test_ci_test_outcomes.py loaded unchanged inRAM; logical __file__ locates actual owned collector",
+        "light_checks": [
+          {
+            "direct_pid": 823545,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823545,
+                "start_ticks": 26598728
+              },
+              {
+                "pid": 823550,
+                "start_ticks": 26598750
+              },
+              {
+                "pid": 823579,
+                "start_ticks": 26598761
+              },
+              {
+                "pid": 823565,
+                "start_ticks": 26598756
+              },
+              {
+                "pid": 823558,
+                "start_ticks": 26598754
+              },
+              {
+                "pid": 823584,
+                "start_ticks": 26598763
+              },
+              {
+                "pid": 823604,
+                "start_ticks": 26598772
+              },
+              {
+                "pid": 823609,
+                "start_ticks": 26598773
+              },
+              {
+                "pid": 823617,
+                "start_ticks": 26598778
+              },
+              {
+                "pid": 823624,
+                "start_ticks": 26598780
+              },
+              {
+                "pid": 823649,
+                "start_ticks": 26598789
+              },
+              {
+                "pid": 823658,
+                "start_ticks": 26598792
+              },
+              {
+                "pid": 823631,
+                "start_ticks": 26598783
+              },
+              {
+                "pid": 823638,
+                "start_ticks": 26598786
+              },
+              {
+                "pid": 823680,
+                "start_ticks": 26598800
+              },
+              {
+                "pid": 823669,
+                "start_ticks": 26598797
+              },
+              {
+                "pid": 823687,
+                "start_ticks": 26598802
+              },
+              {
+                "pid": 823696,
+                "start_ticks": 26598805
+              },
+              {
+                "pid": 823711,
+                "start_ticks": 26598811
+              },
+              {
+                "pid": 823703,
+                "start_ticks": 26598809
+              },
+              {
+                "pid": 823718,
+                "start_ticks": 26598814
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 823550,
+                "start_ticks": 26598750,
+                "native_exit": 0
+              },
+              {
+                "pid": 823579,
+                "start_ticks": 26598761,
+                "native_exit": 0
+              },
+              {
+                "pid": 823565,
+                "start_ticks": 26598756,
+                "native_exit": 0
+              },
+              {
+                "pid": 823558,
+                "start_ticks": 26598754,
+                "native_exit": 0
+              },
+              {
+                "pid": 823584,
+                "start_ticks": 26598763,
+                "native_exit": 0
+              },
+              {
+                "pid": 823604,
+                "start_ticks": 26598772,
+                "native_exit": 0
+              },
+              {
+                "pid": 823609,
+                "start_ticks": 26598773,
+                "native_exit": 0
+              },
+              {
+                "pid": 823617,
+                "start_ticks": 26598778,
+                "native_exit": 0
+              },
+              {
+                "pid": 823624,
+                "start_ticks": 26598780,
+                "native_exit": 0
+              },
+              {
+                "pid": 823649,
+                "start_ticks": 26598789,
+                "native_exit": 0
+              },
+              {
+                "pid": 823658,
+                "start_ticks": 26598792,
+                "native_exit": 0
+              },
+              {
+                "pid": 823631,
+                "start_ticks": 26598783,
+                "native_exit": 0
+              },
+              {
+                "pid": 823638,
+                "start_ticks": 26598786,
+                "native_exit": 0
+              },
+              {
+                "pid": 823680,
+                "start_ticks": 26598800,
+                "native_exit": 0
+              },
+              {
+                "pid": 823669,
+                "start_ticks": 26598797,
+                "native_exit": 0
+              },
+              {
+                "pid": 823687,
+                "start_ticks": 26598802,
+                "native_exit": 0
+              },
+              {
+                "pid": 823696,
+                "start_ticks": 26598805,
+                "native_exit": 0
+              },
+              {
+                "pid": 823711,
+                "start_ticks": 26598811,
+                "native_exit": 0
+              },
+              {
+                "pid": 823703,
+                "start_ticks": 26598809,
+                "native_exit": 0
+              },
+              {
+                "pid": 823718,
+                "start_ticks": 26598814,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "existing_collector_controls",
+            "peak_observed_own_rss_bytes": 20660224
+          },
+          {
+            "direct_pid": 823723,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 823723,
+                "start_ticks": 26598842
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "two_workflow_formatter_check",
+            "peak_observed_own_rss_bytes": 75239424
+          }
+        ],
+        "status": "FOUR_STATIC_ROWS_SOURCE_LIGHT_CHECKED_FROZEN_FOR_REVIEW",
+        "change": "Add mobile-bff existing Gradle module to CI unit/IT, diagnosticCoverage matrix and collector MODULES only",
+        "ci_path": ":services:mobile-bff:mobile-bff-app",
+        "report": "services/mobile-bff/mobile-bff-app/build/reports/jacoco/test/jacocoTestReport.xml",
+        "preserved": [
+          "All existing triggers/thresholds/job steps/collector schema/identity/parser/displayname/privacy code unchanged",
+          "B013/B014/B015 untouched; no ordinal projection/reclassification",
+          "All earlier E14/clockR1/corrections preserved"
+        ],
+        "runtime_BFF_unit_IT_coverage": "NOT_RUN_PENDING_ORDINARY_CI",
+        "next": "Root one coherent targeted review then copy3row-files and clockR1twofiles, merged checks/hooks/push"
+      },
+      "modifiedFiles": {
+        ".github/workflows/ci.yml": "3b4dfbf78f06ee8ff029f32de7751abe2e7b5f8eea98373f4fc90853f9ed4143",
+        ".github/workflows/coverage.yml": "b11130510129ed24a6aef769cd889d4cdeb565185a0fa6e8e862c4049558ab81",
+        "scripts/collect-ci-test-outcomes.py": "9521b2c315067a0503f2e15c7254f34d759bdbfc40667979eea3f780051f7dca",
+        "tests/e2e/playwright.real-mobile.config.ts": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+        "tests/e2e/specs/mobile-real-server.spec.ts": "ff135df184aedcb775778dd0acf0c06c2827fd726ea3a78a2b9131d3419a5659",
+        "tests/e2e/fixtures/mobile-dataset.ts": "4b654e2d61d8e61954b371370cc8b9450553486313184d42c3139ac5b1df4b5f",
+        "tests/e2e/backend-clock/prepare-clock.mjs": "4b99be1d261d8c21d72ca1e2659464a8f851542987009604cb57afd33ed53486",
+        "tests/e2e/fixtures/teaching-clock.ts": "0658e4ac89163601def2bc4ca6af19e59fc7cb6b9a59c261b1ebc1589d2e9f14"
+      },
+      "scopeQualification": "BFF now actual ordinaryunit/IT/diagnosticcoverage target; no existingcollector identity/schema/parser/trigger/threshold change. Currentold874 gate success never claimed BFFsuite executed."
+    },
+    "874_final_clock_R1_BFF_rows_Root_copy": {
+      "at": "2026-10-14T21:11:09.161579+00:00",
+      "files": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "before": "55589c51802a9ab4dc2be6b21a45c2c1e2fb9768f4160fd4fe5dba159dfd39fe",
+          "after": "3b4dfbf78f06ee8ff029f32de7751abe2e7b5f8eea98373f4fc90853f9ed4143"
+        },
+        {
+          "path": "tests/e2e/backend-clock/prepare-clock.mjs",
+          "before": "d0a22cdd60a07eff4db6c88343167d4eaa9fe90f41021ab16c4c49a541cc41ce",
+          "after": "4b99be1d261d8c21d72ca1e2659464a8f851542987009604cb57afd33ed53486"
+        },
+        {
+          "path": "tests/e2e/fixtures/teaching-clock.ts",
+          "before": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+          "after": "0658e4ac89163601def2bc4ca6af19e59fc7cb6b9a59c261b1ebc1589d2e9f14"
+        },
+        {
+          "path": ".github/workflows/coverage.yml",
+          "before": "561c6906c5a80725c638d4951e007aa54e7644d8e7a6b60c154d4b3a8e9db68b",
+          "after": "b11130510129ed24a6aef769cd889d4cdeb565185a0fa6e8e862c4049558ab81"
+        },
+        {
+          "path": "scripts/collect-ci-test-outcomes.py",
+          "before": "238a5a9fb3f7d1a62b138c51bffd9037636645e970d74bf21467afcde4488bd9",
+          "after": "9521b2c315067a0503f2e15c7254f34d759bdbfc40667979eea3f780051f7dca"
+        }
+      ],
+      "unchangedPreviouslyCopied": "mobileSpecff135/dataset4b654/config6dabb",
+      "review": "IN_PROGRESS_TARGETED",
+      "RootNativeChecks": "PENDING"
+    },
+    "874_final_clock_packet_acceptance": {
+      "at": "2026-10-14T21:12:50.522919+00:00",
+      "state": "SOURCE_REVIEW_AND_LOCAL_FORMAT_TYPES_PASS_REMOTE_PENDING",
+      "review": {
+        "schema": "browser-final-review.v1",
+        "result": "APPROVE_SOURCE_ONLY",
+        "scope": "ONE_INDEPENDENT_WHOLE_THREE_FILE_E14_PACKAGE_SOURCE_REVIEW",
+        "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+        "worktree": "/workspace/rct-worktrees/client-final-browser-874-20261014",
+        "sourceSha256": {
+          ".github/workflows/ci.yml": "a163e9d74cc540bd34bc0d9c207cda6d872922fc7256415a5fc86db44535bc3e",
+          "tests/e2e/playwright.real-mobile.config.ts": "8baab5acc15b41d4d30629e51dbb30765104aa0d7fee6da055b741ff3fdc9c70",
+          "tests/e2e/specs/mobile-real-server.spec.ts": "1b0181babe19e63810fe770eb7111ef748d74065f956c762839aee721798f79a"
+        },
+        "actualModel": "UNKNOWN",
+        "findings": [],
+        "accepted": [
+          "Three existing accepted admission/offline/reconnect cases run under actual Playwright WebKit with the same private safe reporter, serial dataset resources and teaching-clock fixture. Original seven CLI selectors, prior modes and default project behavior are retained.",
+          "Genuine built production worker install/waiting/activation uses the existing UpdateGate UI, SKIP_WAITING/controller-change path and worker cache retirement behavior. Assertions require new-version cache, retired own caches absent, other-application caches retained, app-shell assets present, no API cache paths and warm offline read-only homework.",
+          "The exact Vite build release marker, static version policy path, edge proxy routing, worker cache names and UpdateGate/install-controller semantics agree with the fixture. Policy restoration before UI reload is explicit and avoids claiming a second complete JS release bundle.",
+          "Static mutation is limited to two fixed files in the exact running CI Compose pwa-nginx writable layer, with working-directory/project/service/network identity, no mounts, nonsymlink regular-file checks, finite sizes, exclusive temporary creation, rename and byte-verified restoration of both originals. Main test and restoration errors are preserved together.",
+          "Docker stdio stays bounded/captured; subprocess errors are replaced by fixed messages. Existing private-artifact fixture/sanitizer/reporter and closed uploads remain active; no logs, payloads, credentials or full inspect environment are added to artifacts.",
+          "Install events and iOS user agent checks are named/commented SYNTHETIC and assert controller/rendering behavior only. Native OS/Safari/Telegram/WebPush remain D015 OWNER_MANUAL_PENDING.",
+          "New CI lanes are sequential and fail normally; no continue-on-error, retry, assertion weakening or gate removal. Registry step 3-to-7 minute budget accommodates the separately assigned new renderer-outage case; its source is outside this review."
+        ],
+        "verification": {
+          "method": "Read exact three-file diff and independently inspect existing production SW, Vite emission, Dockerfile/Compose/edge paths, PwaUpdateGate/version policy, InstallOffer/controller, teaching-clock/dataset and privacy/reporter sources. Source hashes match the stable author packet.",
+          "authorLightChecks": "REPORTED_PASS_NOT_REPEATED",
+          "newTests": "NONE",
+          "nativeDockerBrowserDatabaseNetwork": "NOT_RUN",
+          "productSourceEdits": "NONE",
+          "children": "NONE"
+        },
+        "remaining": "Root merged full real-mobile typecheck/config discovery and final ordinary CI actual browser execution remain required. Source approval does not establish browser/native PASS or whole-task DONE.",
+        "next": "Root may integrate these exact three pins, preserving the independent registry spec and current CI corrections, then perform the already planned coherent merged checks/ordinary CI.",
+        "current874CorrectionPacket": {
+          "result": "APPROVE_SOURCE_ONLY",
+          "findings": [],
+          "scope": "One coherent targeted recheck of five frozen correction files from four authors; prior E14/E15 whole reviews not repeated.",
+          "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "sourceSha256": {
+            "/workspace/rct-worktrees/client-final-browser-874-20261014/tests/e2e/playwright.real-mobile.config.ts": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+            "/workspace/rct-worktrees/client-final-browser-874-20261014/tests/e2e/specs/mobile-real-server.spec.ts": "c2e78645b133eb992b07238999c6433fba2e3c0c76352130bdf9e1b070d227e8",
+            "/workspace/rct-worktrees/renderer-outage-874-20261014/tests/e2e/specs/cloud-accepted-registry-export.spec.ts": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+            "/workspace/rct-worktrees/schedule-current-874-20261014/tests/e2e/fixtures/mobile-dataset.ts": "5bfd28dd2c108618caac645aa82407437f0ae788b8c80b6a334620b5b760274b",
+            "/workspace/rct-worktrees/homework-inbox-current-874-20261014/tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "104e53dee1b7f6ec270ba2b6c2caffe5f0206e3b16ea31facfcb24369ae14d0b"
+          },
+          "priorReviews": [
+            "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json#accepted",
+            "/workspace/scratch/rct-validation/q09_remaining_client_writer/renderer-outage-review.safe.json"
+          ],
+          "checks": [
+            "ReportDownloadClient checks queued job and ticket expiry against browser Date.now; Auth jobs use real Instant.now+10minutes and ticket issuance uses ordinary Clock. Narrow browser Date resync before each real HTML export removes the synthetic next-weekday mismatch while retaining all actual202/job/ticket/file/handoff, expiry/rights and download assertions. setFixedTime samples ordinary time; it is not claimed to provide continuously advancing Date or a server-clock override.",
+            "Offline one-off classroom now uses group-unique offline-next-day-${group.id}, within the existing64-character request/domain/DB limit. The original tomorrow-room identity, rollover, roster/attachment/read-only/completion assertions are unchanged.",
+            "Synthetic semester dateFrom=min(teachingYesterday,actualMoscowYesterday) remains within prior accepted covered history while preceding both clocks. Builder recurring first historical lesson can satisfy the unchanged PostgreSQL lesson.date<actualMoscowDate gate. Admin report uses actual Moscow yesterday, covered by the coordinated semester start, consistent with UserService.archiveUser real-Moscow closure and HistoricalMembershipService joined-inclusive/left-exclusive filter. Existing coverage/rights/archive/history/restore assertions remain, with explicit retained-row presence assertions added before dereference.",
+            "Default remaining lane now includes the exact two existing D002 titles alongside all original five, with the same end anchor. Explicit CLI7 and isolated WebKit3/SW3/admin/role selectors, serial/privacy/teaching configuration and CI gates remain unchanged; actual merged discovery remains pending.",
+            "HW diagnostics await settlement of the same read response, dated target response and click with existing finite Playwright default/action timeouts; no extra action/request/retry or timeout increase. Observer removal is in finally. Fixed soft booleans add bounded evidence; rejection selection retains read then target then click priority. Real read200/revision/durable-read, target200/feed/completion/focus and recipient-isolation assertions and other passing case bodies remain unchanged."
+          ],
+          "sourcePreservation": {
+            "allFivePins": "MATCH",
+            "CI": "BYTE_IDENTICAL_PRIOR_APPROVED_a163e9d74cc540bd34bc0d9c207cda6d872922fc7256415a5fc86db44535bc3e",
+            "registryInverseThreeLineDelta": "EXACT_PRIOR_APPROVED_f6e853ff974ddbe74ad14c2aec550488443e691d6486b38098d2840e73b8270d",
+            "productGuardsDataHistory": "UNCHANGED",
+            "E14E15WholeReview": "REFERENCED_NOT_REPEATED"
+          },
+          "verification": {
+            "method": "Independent correction diffs and critical current source reads: job/ticket/client expiry, teaching-clock/dataset, past SQL guard, archive/historical membership, classroom request/domain bounds, selectors and original HW assertion block. Existing author source/light reports read.",
+            "nativeBrowserDatabaseNetworkTests": "NOT_RUN",
+            "sourceEdits": "NONE",
+            "children": "NONE"
+          },
+          "actualModel": "UNKNOWN",
+          "remaining": "Root merged formatter/TypeScript/discovery/hooks and next ordinary CI remain required. Current observed failures and HW click cause are not promoted to corrected runtime PASS. B013/B014/B015 frozen and D015 native owner acceptance remain unchanged.",
+          "next": "Root may integrate the exact five frozen source pins and perform the already planned coherent merged validation/publication."
+        },
+        "clockReadinessTargetedRecheck": {
+          "result": "CHANGES_REQUESTED",
+          "scope": "New coherent initial-clock, HEADMAN readiness and final forward-only lesson phase delta only. Prior immutable E14/E15 approvals retained.",
+          "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "sourceSha256": {
+            ".github/workflows/ci.yml": "55589c51802a9ab4dc2be6b21a45c2c1e2fb9768f4160fd4fe5dba159dfd39fe",
+            "tests/e2e/playwright.real-mobile.config.ts": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+            "tests/e2e/specs/mobile-real-server.spec.ts": "ff135df184aedcb775778dd0acf0c06c2827fd726ea3a78a2b9131d3419a5659",
+            "tests/e2e/fixtures/mobile-dataset.ts": "4b654e2d61d8e61954b371370cc8b9450553486313184d42c3139ac5b1df4b5f",
+            "tests/e2e/backend-clock/prepare-clock.mjs": "d0a22cdd60a07eff4db6c88343167d4eaa9fe90f41021ab16c4c49a541cc41ce"
+          },
+          "actualModel": "UNKNOWN",
+          "findings": [
+            {
+              "id": "CLOCK-874-R1",
+              "priority": "P2",
+              "file": "tests/e2e/backend-clock/prepare-clock.mjs",
+              "line": 31,
+              "title": "Do not turn ordinary DATE homework into real-past dates on weekends",
+              "observation": "The new initial-clock loop rewinds Saturday/Sunday to Friday. MobileDataset.today follows that file and tomorrow is today+1. HomeworkPlacementService.reserveDate rejects date<today(), where today() uses the ordinary injected Clock.system(Europe/Moscow). ClockInitializer replaces only EducationalTime, so this guard remains on the actual Moscow date.",
+              "sourceCounterexample": "On an actual Sunday, initial teaching Today=Friday and dataset.tomorrow=Saturday. The existing dataset.initialize DATE homework publication therefore passes a past date to reserveDate and fails before the test body. On both Saturday and Sunday, existing offline/SW helpers publishing DATE homework for dataset.today=Friday are past-date requests too. A run crossing real midnight has the same class of stale-day risk.",
+              "impact": "The new global rollback creates deterministic ordinary seeded-lane failures on supported calendar days; the later final-lane advance cannot repair earlier failed dataset/offline setup.",
+              "correction": "Keep ordinary homework fixture dates compatible with the unchanged real-Moscow non-past guard on supported days while retaining actual teacher current-date admission and the genuine weekday geo case. Isolate the educational phase/date choice as necessary; do not weaken the production guard or replace security/ordinary Clock."
+            }
+          ],
+          "acceptedDeltaProperties": [
+            "New lazy worker fixture polls the exact own current ACTIVE lesson through existing GET, outside the unchanged60s HEADMAN test. The real job uses EducationalTime and fixedDelay60s; FIRST3 wrapper starts its observer after worker fixture setup. No direct lifecycle/SQL forcing.",
+            "Academic getTeacherSubjects checks real Moscow today against semester/assignment ranges, confirming why a future global educational date can invalidate adopted current teacher history.",
+            "Final lesson lane keeps all original four cases, condition/artifact/17min budget and moves after recovery/semester. Recovery seed advances the same day to noon; semester verifies clock byte identity and restores previous active authority. New file publication advances strictly beyond max(current day,real day) to weekday09, with exact path/marker/UID/mode/no-follow/bounds/exclusive temp/atomic rename/readback, and no later user lane or live rewind.",
+            "Previously accepted config/selector/privacy/cleanup/gates remain, and50min whole-job cap accounts for added scenarios rather than changing original case assertions/timeouts."
+          ],
+          "verification": {
+            "method": "Independent current source/delta reads including HomeworkPlacementService, ClockConfig, ClockInitializer, Academic current teacher RPC, MobileDataset, FIRST3 wrapper, LessonStatusTransitionJob, readTeachingInstant, recovery noon write, semester unchangedClock/restoration and final CI order/always cleanup. Calendar counterexample is static Source reasoning.",
+            "runtimeNativeBrowserDatabaseNetworkTests": "NOT_RUN",
+            "sourceEdits": "NONE",
+            "children": "NONE"
+          },
+          "next": "Same author corrects CLOCK-874-R1, then targeted recheck of its calendar/date effect and affected prior findings only. Root may preserve ready independent packages. No standalone rerun."
+        },
+        "clockR1AndBffFinalRecheck": {
+          "result": "APPROVE_SOURCE_ONLY",
+          "findings": [],
+          "scope": "CLOCK-874-R1 correction and four static mobile-bff gate/collector entries only; prior coherent delta/E14/E15 review retained.",
+          "base": "87443414c762f555d8c0e05726ce855ab94f779c",
+          "sourceSha256": {
+            ".github/workflows/ci.yml": "3b4dfbf78f06ee8ff029f32de7751abe2e7b5f8eea98373f4fc90853f9ed4143",
+            ".github/workflows/coverage.yml": "b11130510129ed24a6aef769cd889d4cdeb565185a0fa6e8e862c4049558ab81",
+            "scripts/collect-ci-test-outcomes.py": "9521b2c315067a0503f2e15c7254f34d759bdbfc40667979eea3f780051f7dca",
+            "tests/e2e/playwright.real-mobile.config.ts": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+            "tests/e2e/specs/mobile-real-server.spec.ts": "ff135df184aedcb775778dd0acf0c06c2827fd726ea3a78a2b9131d3419a5659",
+            "tests/e2e/fixtures/mobile-dataset.ts": "4b654e2d61d8e61954b371370cc8b9450553486313184d42c3139ac5b1df4b5f",
+            "tests/e2e/backend-clock/prepare-clock.mjs": "4b99be1d261d8c21d72ca1e2659464a8f851542987009604cb57afd33ed53486",
+            "tests/e2e/fixtures/teaching-clock.ts": "0658e4ac89163601def2bc4ca6af19e59fc7cb6b9a59c261b1ebc1589d2e9f14"
+          },
+          "actualModel": "UNKNOWN",
+          "resolved": {
+            "CLOCK-874-R1": "Initial teaching instant now uses the actual Moscow calendar date09 with no weekend rollback. Existing DATE homework today/tomorrow no longer becomes prior-Friday/Saturday on weekend runs within the fixed-day fixture window. Reader removes only weekday restriction, preserving ISO/finite09:00/disposable/path/bounds checks and reporter classification key. OneOffLessonCoordinator accepts covered date+valid slot; Writer preserves request date and day1..7; V18 allows day1..7 and LessonSlot1..8 has no weekday ban. Ordinary Clock, HomeworkPlacement non-past guard and Academic current-date teacher checks remain unchanged."
+          },
+          "BffRows": "Exact existing Gradle :services:mobile-bff:mobile-bff-app path added once to each CI unit/IT matrix, once to diagnostic coverage with the matching standard JaCoCo path, and once to collector MODULES. BFF exists in settings/build and uses root unit/IT/JaCoCo configuration. Coverage and collector diffs are solely3lines/1line. Removing the two CI rows reproduces the previous55589c5 SHA exactly. Collector identity/source-method/parser/schema/privacy code, triggers, thresholds and original gates are unchanged; no ordinal/security projection loosening.",
+          "preservation": "Other config/spec/dataset pins match the prior reviewed clock/readiness package. HEADMAN lazy ACTIVE wait, final lesson-only monotonic next-weekday advance after recovery/semester, original assertions and always cleanup are unaffected.",
+          "qualification": "Initial fixture is fixed to its sampled real Moscow day and can become stale across real midnight; this explicitly retained finite fixture limit is not an all-scheduling proof or rolling-clock policy. Current after-midnight CI window and ordinary actual results remain Root verification. No production/native PASS inferred.",
+          "verification": {
+            "method": "Independent narrow diffs and source reads for weekend one-off date/slot/database acceptance, teaching reader and initial sampler, BFF module/root Gradle registration, both workflow matrices and collector mapping. Eight pins and inverse CI-row SHA checked.",
+            "authorPureControls": "REPORTED_7_DAY_AND_8_REJECTION_READER_CONTROLS_AND_20_COLLECTOR_CONTROLS_PASS_NOT_REPEATED",
+            "runtimeNativeBrowserDatabaseNetworkTests": "NOT_RUN",
+            "sourceEdits": "NONE",
+            "children": "NONE"
+          },
+          "next": "Root may copy the exact eight pins, complete planned full merged types/format/hooks and ordinary substantive publication/CI. B013/B014/B015 remain frozen."
+        }
+      },
+      "nativeChecks": {
+        "head": "87443414",
+        "results": [
+          {
+            "direct_pid": 824011,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 824011,
+                "start_ticks": 26611745
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "final-clock-format-apply",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              ".github/workflows/ci.yml",
+              ".github/workflows/coverage.yml",
+              "tests/e2e/playwright.real-mobile.config.ts",
+              "tests/e2e/specs/mobile-real-server.spec.ts",
+              "tests/e2e/fixtures/mobile-dataset.ts",
+              "tests/e2e/backend-clock/prepare-clock.mjs",
+              "tests/e2e/fixtures/teaching-clock.ts",
+              "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+              "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+            ],
+            "elapsedSeconds": 2.2127166260033846
+          },
+          {
+            "direct_pid": 824022,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 824022,
+                "start_ticks": 26611967
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "final-clock-format-check",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--check",
+              ".github/workflows/ci.yml",
+              ".github/workflows/coverage.yml",
+              "tests/e2e/playwright.real-mobile.config.ts",
+              "tests/e2e/specs/mobile-real-server.spec.ts",
+              "tests/e2e/fixtures/mobile-dataset.ts",
+              "tests/e2e/backend-clock/prepare-clock.mjs",
+              "tests/e2e/fixtures/teaching-clock.ts",
+              "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+              "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+            ],
+            "elapsedSeconds": 2.0969766480266117
+          },
+          {
+            "direct_pid": 824033,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 824033,
+                "start_ticks": 26612176
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "phase": "final-clock-merged-tsc",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+              "--noEmit",
+              "--pretty",
+              "false",
+              "-p",
+              "tests/e2e/tsconfig.real-mobile.json"
+            ],
+            "elapsedSeconds": 3.0277944449917413
+          }
+        ],
+        "pins": {
+          ".github/workflows/ci.yml": "3b4dfbf78f06ee8ff029f32de7751abe2e7b5f8eea98373f4fc90853f9ed4143",
+          ".github/workflows/coverage.yml": "b11130510129ed24a6aef769cd889d4cdeb565185a0fa6e8e862c4049558ab81",
+          "tests/e2e/playwright.real-mobile.config.ts": "6dabb0c626d2dff27feb499cd68c60203eb0ce5ee04be6b7f503ffda71ca4264",
+          "tests/e2e/specs/mobile-real-server.spec.ts": "ff135df184aedcb775778dd0acf0c06c2827fd726ea3a78a2b9131d3419a5659",
+          "tests/e2e/fixtures/mobile-dataset.ts": "4b654e2d61d8e61954b371370cc8b9450553486313184d42c3139ac5b1df4b5f",
+          "tests/e2e/backend-clock/prepare-clock.mjs": "4b99be1d261d8c21d72ca1e2659464a8f851542987009604cb57afd33ed53486",
+          "tests/e2e/fixtures/teaching-clock.ts": "0658e4ac89163601def2bc4ca6af19e59fc7cb6b9a59c261b1ebc1589d2e9f14",
+          "tests/e2e/specs/cloud-accepted-registry-export.spec.ts": "6d25c53c42a554227dca298b7f8e213ecc7dbc503d017405332e2eaacaaa7984",
+          "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "35769785f9b246f60c1f0f3b6dcd0c70f0724c1d39a722835c885de67dbdae67"
+        },
+        "elapsedSeconds": 7.338618946028873,
+        "rootPWInode": 413591,
+        "actualBrowserBackend": false
+      },
+      "actualBrowserAfterFix": "NOT_RUN",
+      "exactPushedHead": "87443414c762f555d8c0e05726ce855ab94f779c",
+      "next": "ordinary scopedcommit/push/currentCI; BFF productmapper remains reviewedunpublished ownWIP"
+    },
+    "2765_unpublished_scanner_metadata_false_positive": {
+      "at": "2026-10-14T21:19:09.277564+00:00",
+      "candidate": "2765eaa010b3e980b02bc8f92b4d1ffeb1083934",
+      "rule": "generic-api-key",
+      "path": "receipts/current-4065-real-push-readback.safe.json",
+      "line": 21234,
+      "classification": "COMMIT_IDENTITY_FALSE_POSITIVE_NO_CREDENTIAL",
+      "beforeField": "authenticatedPRHead",
+      "afterField": "prHeadSha",
+      "valueVerifiedEqualsKnownPublishedCommit": true,
+      "sameEvidenceValue": true,
+      "scannerRulesExceptionsChanged": false,
+      "next": "amend own unpublished checkpoint then rescan range and run configuredchecks beforepush"
     }
   }
 }

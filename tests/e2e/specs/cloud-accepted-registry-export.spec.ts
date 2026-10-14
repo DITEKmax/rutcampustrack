@@ -54,6 +54,9 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     await page.getByRole('button', { name: 'Найти', exact: true }).click();
     await expect(page.locator(`[data-user-id="${target.id}"]`)).toBeVisible();
     await expect(page.locator('.admin-users-card')).toHaveCount(1);
+    // Job/ticket expiry uses ordinary server time. This registry flow has no
+    // educational-date selector, so the synthetic next-weekday clock must end.
+    await page.clock.setFixedTime(new Date());
     const catalogue = http(page, '/api/academic/registry-exports/users/formats', 'GET');
     await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
     const formats = await catalogue;
@@ -864,3 +867,347 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     }
   });
 }
+
+// E15-R2: one owned renderer outage across the existing durable PDF job route.
+// Keep the successful HTML/PDF/PNG cases and their original budgets unchanged.
+function registryOutageRenderer(until: number, id: string, networkId?: string) {
+  registryRequire(/^[0-9a-f]{64}$/.test(id), 'OUTAGE_CONTAINER_ID');
+  const output = registryDocker(until, [
+    'inspect',
+    '--type',
+    'container',
+    '--format',
+    '{"id":{{json .Id}},"project":{{json (index .Config.Labels "com.docker.compose.project")}},"service":{{json (index .Config.Labels "com.docker.compose.service")}},"running":{{json .State.Running}},"paused":{{json .State.Paused}},"networkCount":{{len .NetworkSettings.Networks}},"network":{{with index .NetworkSettings.Networks "rct-e2e_private_net"}}{{json .NetworkID}}{{else}}null{{end}}}',
+    id,
+  ]);
+  let state: Record<string, unknown>;
+  try {
+    state = JSON.parse(output.toString('utf8'));
+  } catch {
+    throw new Error('Registry PDF check: OUTAGE_IDENTITY_JSON');
+  }
+  registryRequire(
+    state?.id === id &&
+      state.project === 'rct-e2e' &&
+      state.service === 'document-renderer-service' &&
+      state.running === true &&
+      typeof state.paused === 'boolean' &&
+      state.networkCount === 1 &&
+      typeof state.network === 'string' &&
+      /^[0-9a-f]{64}$/.test(state.network) &&
+      (networkId === undefined || state.network === networkId),
+    'OUTAGE_OWN_RENDERER',
+  );
+  return { paused: state.paused as boolean, network: state.network as string };
+}
+
+async function registryOutageReady(until: number, id: string, network: string) {
+  await expect
+    .poll(
+      () => {
+        try {
+          if (registryOutageRenderer(until, id, network).paused) return false;
+          const output = registryDocker(until, [
+            'exec',
+            id,
+            'wget',
+            '-T',
+            '2',
+            '-qO-',
+            'http://localhost:9095/actuator/health/readiness',
+          ]);
+          return JSON.parse(output.toString('utf8'))?.status === 'UP';
+        } catch {
+          return false;
+        }
+      },
+      {
+        timeout: Math.max(1, until - Date.now()),
+        intervals: [500, 1000],
+        message: 'The same owned renderer is running, unpaused and ready',
+      },
+    )
+    .toBe(true);
+}
+
+function registryOutageFailedFacts(until: number, jobId: string) {
+  registryRequire(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(jobId), 'OUTAGE_JOB');
+  const container = registryContainer(until, 'postgres-academic');
+  // Read only this fixture's job and successful export facts. Failure, request
+  // and security audit entries are allowed; no global audit-count invariant.
+  const sql = `BEGIN TRANSACTION READ ONLY;
+SET LOCAL statement_timeout = '3s';
+SET LOCAL lock_timeout = '1s';
+SELECT json_build_object(
+  'failedWithoutFile', coalesce((SELECT state = 'error' AND error_code = 'GENERATION_FAILED' AND attempts = 3 AND content IS NULL FROM auth_export_jobs WHERE job_id = '${jobId}'), false),
+  'noSuccessfulExport', NOT EXISTS (SELECT 1 FROM audit_log WHERE action = 'registry.export' AND extras->>'jobId' = '${jobId}' AND succeeded));
+ROLLBACK;`;
+  const output = registryDocker(
+    until,
+    [
+      'exec',
+      '-i',
+      container,
+      '/usr/bin/timeout',
+      '-s',
+      'KILL',
+      '8',
+      'psql',
+      '-X',
+      '--no-password',
+      '-U',
+      'rct_user',
+      '-d',
+      'academic_db',
+      '-v',
+      'ON_ERROR_STOP=1',
+      '-qAt',
+    ],
+    Buffer.from(sql),
+  );
+  let fact: Record<string, unknown>;
+  try {
+    fact = JSON.parse(output.toString('utf8'));
+  } catch {
+    throw new Error('Registry PDF check: OUTAGE_FACT_JSON');
+  }
+  registryRequire(
+    fact?.failedWithoutFile === true && fact.noSuccessfulExport === true,
+    'OUTAGE_FAILED_WITHOUT_SUCCESS',
+  );
+}
+
+test('renderer outage terminates its PDF job safely and a fresh job downloads after recovery @cloud-accepted', async ({
+  dataset,
+}, info) => {
+  // Three existing 30s generation deadlines plus restoration and a fresh PDF.
+  // This is a local fixture budget, not a new product deadline or drain SLA.
+  test.setTimeout(240000);
+  const until = Date.now() + info.timeout - 5000;
+  const owner = await dataset.user('ADMIN');
+  const actor = await admit(dataset.request, owner, 'ADMIN');
+  const prefix = `Эк${randomUUID().replace(/-/g, '').slice(0, 8)}`;
+  const targets = [
+    await registryPdfUser(dataset, prefix, 'А'),
+    await registryPdfUser(dataset, prefix, 'Я'),
+  ].sort((left, right) => (left.login < right.login ? 1 : -1));
+  const report = {
+    kind: 'ADMIN_USERS',
+    adminUsers: { search: prefix, sorts: [{ field: 'login', descending: true }], format: 'pdf' },
+  };
+  const call = async (
+    method: 'GET' | 'POST',
+    path: string,
+    data?: unknown,
+    status = 200,
+    deadline = until,
+  ): Promise<Record<string, unknown>> => {
+    registryRequire(deadline > Date.now(), 'OUTAGE_HTTP_DEADLINE');
+    const response = await dataset.request
+      .fetch(path, {
+        method,
+        data,
+        headers: actor.headers(),
+        timeout: Math.min(5000, deadline - Date.now()),
+      })
+      .catch(() => {
+        throw new Error('Registry PDF check: OUTAGE_HTTP_TRANSPORT');
+      });
+    try {
+      registryRequire(response.status() === status, 'OUTAGE_HTTP_STATUS');
+      registryRequire(response.headers()['cache-control']?.includes('no-store'), 'OUTAGE_NO_STORE');
+      return await response.json().catch(() => {
+        throw new Error('Registry PDF check: OUTAGE_HTTP_JSON');
+      });
+    } finally {
+      await response.dispose();
+    }
+  };
+  const renderer = registryContainer(until, 'document-renderer-service');
+  const initial = registryOutageRenderer(until, renderer);
+  registryRequire(!initial.paused, 'OUTAGE_INITIAL_UNPAUSED');
+  const network = registryDocker(until, [
+    'network',
+    'inspect',
+    '--format',
+    '{{index .Labels "com.docker.compose.project"}} {{index .Labels "com.docker.compose.network"}}',
+    initial.network,
+  ])
+    .toString('utf8')
+    .trim();
+  registryRequire(network === 'rct-e2e private_net', 'OUTAGE_OWN_NETWORK');
+  await registryOutageReady(Math.min(until, Date.now() + 10000), renderer, initial.network);
+  registryRequire(until - Date.now() >= 190000, 'OUTAGE_RESTORATION_RESERVE');
+  let failedJob = '';
+  let pauseAttempted = false;
+  let primaryFailed = false;
+  let primaryFailure: unknown;
+  try {
+    // Capture the exact identity before mutation. Pause leaves the existing
+    // process/network/data intact while genuine RPC deadlines remain active.
+    pauseAttempted = true;
+    registryDocker(until, ['pause', renderer]);
+    registryRequire(
+      registryOutageRenderer(until, renderer, initial.network).paused,
+      'OUTAGE_PAUSED',
+    );
+    const faultUntil = Date.now() + 110000;
+    const created = await call(
+      'POST',
+      '/api/auth/export-jobs',
+      { requestId: randomUUID(), report },
+      202,
+      faultUntil,
+    );
+    registryRequire(
+      typeof created.jobId === 'string' &&
+        /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(created.jobId),
+      'OUTAGE_CREATED_JOB',
+    );
+    failedJob = created.jobId;
+    await expect
+      .poll(
+        async () => {
+          const status = await call(
+            'GET',
+            `/api/auth/export-jobs/${failedJob}`,
+            undefined,
+            200,
+            faultUntil,
+          );
+          registryRequire(
+            status.jobId === failedJob &&
+              ['queued', 'preparing', 'error'].includes(String(status.state)),
+            'OUTAGE_STATUS',
+          );
+          if (status.state === 'error')
+            registryRequire(status.errorCode === 'GENERATION_FAILED', 'OUTAGE_SAFE_ERROR');
+          return status.state;
+        },
+        {
+          timeout: Math.max(1, faultUntil - Date.now()),
+          intervals: [500, 1000],
+          message: 'The owned PDF job exhausts existing renderer-failure retries',
+        },
+      )
+      .toBe('error');
+    await call('GET', `/api/auth/export-jobs/${failedJob}/file`, undefined, 409, faultUntil);
+    await call('POST', `/api/auth/export-jobs/${failedJob}/ticket`, undefined, 409, faultUntil);
+    registryOutageFailedFacts(faultUntil, failedJob);
+  } catch (failure) {
+    primaryFailed = true;
+    primaryFailure = failure;
+    throw failure;
+  } finally {
+    if (pauseAttempted) {
+      const restoreUntil = Date.now() + 35000;
+      try {
+        // Attempt release even if pause succeeded but its reply was lost. An
+        // ambiguous unpause reply is accepted only after exact live readback.
+        try {
+          registryDocker(restoreUntil, ['unpause', renderer]);
+        } catch {
+          // The following identity, unpaused state and readiness are mandatory.
+        }
+        await registryOutageReady(restoreUntil, renderer, initial.network);
+      } catch {
+        const cleanupFailure = new Error('Registry PDF check: OUTAGE_RESTORATION_FAILED');
+        if (primaryFailed)
+          throw new AggregateError(
+            [primaryFailure, cleanupFailure],
+            'Registry PDF outage and restoration both failed',
+          );
+        throw cleanupFailure;
+      }
+    }
+  }
+  // Recovery must create a different job. A late old job becoming ready is
+  // neither a successful retry nor permission to download a partial result.
+  const startedAt = Date.now();
+  const created = await call(
+    'POST',
+    '/api/auth/export-jobs',
+    { requestId: randomUUID(), report },
+    202,
+  );
+  registryRequire(
+    typeof created.jobId === 'string' &&
+      created.jobId !== failedJob &&
+      /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(created.jobId),
+    'OUTAGE_FRESH_JOB',
+  );
+  const readyJob = created.jobId;
+  await expect
+    .poll(
+      async () => {
+        const status = await call('GET', `/api/auth/export-jobs/${readyJob}`);
+        registryRequire(
+          status.jobId === readyJob &&
+            ['queued', 'preparing', 'ready'].includes(String(status.state)),
+          'OUTAGE_RECOVERED_STATUS',
+        );
+        return status.state;
+      },
+      {
+        timeout: Math.min(35000, Math.max(1, until - Date.now() - 10000)),
+        intervals: [500, 1000],
+        message: 'A fresh PDF job completes through the recovered renderer',
+      },
+    )
+    .toBe('ready');
+  const ticket = await call('POST', `/api/auth/export-jobs/${readyJob}/ticket`);
+  registryRequire(
+    typeof ticket.downloadPath === 'string' &&
+      /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(ticket.downloadPath),
+    'OUTAGE_FRESH_TICKET',
+  );
+  registryRequire(until > Date.now(), 'OUTAGE_DOWNLOAD_DEADLINE');
+  const response = await dataset.request
+    .get(ticket.downloadPath, { timeout: Math.min(5000, until - Date.now()) })
+    .catch(() => {
+      throw new Error('Registry PDF check: OUTAGE_DOWNLOAD_TRANSPORT');
+    });
+  try {
+    registryRequire(
+      response.status() === 200 &&
+        response.headers()['content-type']?.split(';')[0] === 'application/pdf',
+      'OUTAGE_RECOVERED_PDF',
+    );
+    const content = await response.body().catch(() => {
+      throw new Error('Registry PDF check: OUTAGE_DOWNLOAD_BODY');
+    });
+    registryRequire(
+      content.length > 0 &&
+        content.length <= registryByteLimit &&
+        content.subarray(0, 5).toString('ascii') === '%PDF-',
+      'OUTAGE_PDF_BYTES',
+    );
+    const document = registryPoppler(until, content, 'pdftotext');
+    registryRequire(
+      registryPdfCells(
+        document,
+        targets.map((user) => [
+          user.displayName,
+          user.login,
+          'STUDENT: ACTIVE; TEACHER: ACTIVE',
+          dataset.group.name as string,
+          user.staffNumber,
+          'Привязан',
+          String(user.telegramId),
+        ]),
+        true,
+      ),
+      'OUTAGE_RECOVERED_ROWS',
+    );
+    registryAudit(until, readyJob, owner.id, startedAt);
+  } finally {
+    await response.dispose();
+  }
+  const stillFailed = await call('GET', `/api/auth/export-jobs/${failedJob}`);
+  registryRequire(
+    stillFailed.state === 'error' && stillFailed.errorCode === 'GENERATION_FAILED',
+    'OUTAGE_OLD_JOB_TERMINAL',
+  );
+  await call('GET', `/api/auth/export-jobs/${failedJob}/file`, undefined, 409);
+  registryOutageFailedFacts(until, failedJob);
+});

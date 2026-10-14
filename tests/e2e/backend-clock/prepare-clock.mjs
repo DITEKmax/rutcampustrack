@@ -25,11 +25,9 @@ const day = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 }).formatToParts(new Date())
 const part = (name) => day.find((item) => item.type === name).value
-let date = new Date(`${part('year')}-${part('month')}-${part('day')}T06:00:00Z`)
-// Keep synthetic Today lessons ahead of real PostgreSQL receipt timestamps,
-// including evening runs; educational clocks alone are fixed at 09:00 Moscow.
-date = new Date(date.getTime() + 86400000)
-while ([0, 6].includes(date.getUTCDay())) date = new Date(date.getTime() + 86400000)
+// Keep DATE homework non-past and teacher authority current on every calendar day.
+const date = new Date(`${part('year')}-${part('month')}-${part('day')}T06:00:00Z`)
+// The final room/lifecycle lane advances its own phase only after recovery/semester.
 mkdirSync(directory, { mode: 0o755 })
 copyFileSync(jar, join(directory, 'clock-fixture.jar'))
 chmodSync(join(directory, 'clock-fixture.jar'), 0o644)

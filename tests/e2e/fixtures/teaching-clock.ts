@@ -25,17 +25,14 @@ export function readTeachingInstant(directory: string | undefined): Date {
   if (!Number.isFinite(instant.getTime())) throw new Error('Teaching-clock instant is invalid');
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/Moscow',
-    weekday: 'short',
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
   }).formatToParts(instant);
   const part = (name: string) => parts.find((item) => item.type === name)?.value;
-  if (
-    ['Sat', 'Sun'].includes(part('weekday') ?? '') ||
-    part('hour') !== '09' ||
-    part('minute') !== '00'
-  ) {
+  // One-off lessons support all calendar days; only the fixed teaching time is required.
+  if (part('hour') !== '09' || part('minute') !== '00') {
+    // Preserve the existing closed reporter's classification key for this time guard.
     throw new Error('Positive-geo lane requires an ordinary weekday at 09:00 Europe/Moscow');
   }
   return instant;

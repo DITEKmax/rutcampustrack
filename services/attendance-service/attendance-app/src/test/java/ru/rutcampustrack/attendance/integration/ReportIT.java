@@ -234,7 +234,7 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                         UUID.randomUUID(),
                         1L,
                         1L,
-                        "STUDENT",
+                        "HEADMAN",
                         "ACTIVE",
                         GROUP_ID,
                         true,

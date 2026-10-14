@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import type { Page, Request, Route } from '@playwright/test';
 import { test, expect, admit, selectPwaRole, type MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
@@ -74,6 +75,149 @@ async function requireProductionWorker(page: Page): Promise<void> {
     .toBe(true);
 }
 
+// Only the CI-owned static container participates; no backend, source tree or volume is changed.
+function productionWorkerFixture() {
+  if (
+    process.env.RCT_E2E_SW_LIFECYCLE !== 'true' ||
+    process.env.RCT_E2E_REMAINING5 !== 'true' ||
+    process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
+    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+    process.env.CI !== 'true' ||
+    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+    !process.env.GITHUB_WORKSPACE
+  ) {
+    throw new Error('Production worker fixture requires the owned disposable CI stack');
+  }
+  function docker(args: string[], input?: Buffer): Buffer {
+    try {
+      return execFileSync('docker', args, {
+        input,
+        timeout: 10000,
+        maxBuffer: 65536,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+    } catch {
+      // Child-process errors include captured arguments/stdout; never forward them to reporters.
+      throw new Error('Owned production worker fixture operation failed');
+    }
+  }
+  const target = JSON.parse(
+    docker([
+      'inspect',
+      '--format',
+      '{"id":{{json .Id}},"labels":{{json .Config.Labels}},"networks":{{json .NetworkSettings.Networks}},"mounts":{{json .Mounts}},"readonly":{{json .HostConfig.ReadonlyRootfs}},"running":{{json .State.Running}}}',
+      'rct-e2e-pwa-nginx-1',
+    ]).toString('utf8'),
+  );
+  const network = JSON.parse(
+    docker([
+      'network',
+      'inspect',
+      '--format',
+      '{"id":{{json .Id}},"labels":{{json .Labels}}}',
+      'rct-e2e_private_net',
+    ]).toString('utf8'),
+  );
+  if (
+    !/^[a-f0-9]{64}$/.test(target.id) ||
+    target.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    target.labels?.['com.docker.compose.service'] !== 'pwa-nginx' ||
+    target.labels?.['com.docker.compose.project.working_dir'] !== process.env.GITHUB_WORKSPACE ||
+    target.running !== true ||
+    target.readonly !== false ||
+    !Array.isArray(target.mounts) ||
+    target.mounts.length !== 0 ||
+    Object.keys(target.networks).join() !== 'rct-e2e_private_net' ||
+    target.networks['rct-e2e_private_net'].NetworkID !== network.id ||
+    network.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    network.labels?.['com.docker.compose.network'] !== 'private_net'
+  ) {
+    throw new Error('Production worker fixture ownership or writable-layer mismatch');
+  }
+  const regularFiles = `
+    for directory in /usr /usr/share /usr/share/nginx /usr/share/nginx/html; do
+      test -d "$directory" && test ! -L "$directory"
+    done
+    path="/usr/share/nginx/html/$1"
+    test -f "$path" && test ! -L "$path"
+    test "$(stat -c %a "$path")" = 644
+    test "$(wc -c < "$path")" -le 32768
+  `;
+  function read(name: 'sw.js' | 'version.json'): Buffer {
+    return docker([
+      'exec',
+      target.id,
+      'sh',
+      '-eu',
+      '-c',
+      `${regularFiles}\ncat "$path"`,
+      'sh',
+      name,
+    ]);
+  }
+  function write(name: 'sw.js' | 'version.json', bytes: Buffer): void {
+    if (bytes.length === 0 || bytes.length > 32768)
+      throw new Error('Invalid bounded static fixture');
+    docker(
+      [
+        'exec',
+        '-i',
+        target.id,
+        'sh',
+        '-eu',
+        '-c',
+        `${regularFiles}
+          temporary="$path.rct-e2e-fixture"
+          # Exclusive creation and rename avoid following a destination link when writing.
+          (set -C; cat > "$temporary")
+          trap 'rm -f -- "$temporary"' EXIT
+          chmod 644 "$temporary"
+          mv -f -- "$temporary" "$path"
+        `,
+        'sh',
+        name,
+      ],
+      bytes,
+    );
+    if (!read(name).equals(bytes)) throw new Error('Static fixture byte verification failed');
+  }
+  const worker = read('sw.js');
+  const policy = read('version.json');
+  const marker = 'const releaseVersion = "0.0.0"';
+  const source = worker.toString('utf8');
+  const version = JSON.parse(policy.toString('utf8'));
+  if (source.split(marker).length !== 2 || version.latest !== '0.0.0') {
+    throw new Error('Unexpected production worker or policy release');
+  }
+  return {
+    update() {
+      write('sw.js', Buffer.from(source.replace(marker, 'const releaseVersion = "0.0.1"')));
+      write(
+        'version.json',
+        Buffer.from(JSON.stringify({ ...version, latest: '0.0.1', force: true })),
+      );
+    },
+    restorePolicy() {
+      write('version.json', policy);
+    },
+    restore() {
+      const errors: unknown[] = [];
+      for (const [name, bytes] of [
+        ['sw.js', worker],
+        ['version.json', policy],
+      ] as const) {
+        try {
+          write(name, bytes);
+        } catch (error) {
+          errors.push(error);
+        }
+      }
+      if (errors.length)
+        throw new AggregateError(errors, 'Production static fixture restoration failed');
+    },
+  };
+}
+
 test.describe('Current Vue roles with real synthetic domain @real-mobile', () => {
   test('STUDENT completion persists and another group cannot mutate the homework', async ({
     page,
@@ -126,7 +270,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 
   test('HEADMAN marks the real roster and TEACHER reads without acquiring write permission', async ({
     page,
-    dataset,
+    activeHeadmanDataset: dataset,
     ignoreHTTPSErrors,
   }, info) => {
     await loginPwa(page, dataset.headman);
@@ -660,6 +804,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     // D015/H1: the host is synthetic; admission, target authorization and the
     // selected HTML job/ticket/file are genuine. Observe only the native API
     // handoff in RAM, never claim that Telegram or the OS saved a file.
+    // Job/ticket expiry follows real security time, independently of teaching dates.
+    await page.clock.setFixedTime(new Date());
     await page.getByRole('button', { name: 'Скачать посещаемость этой пары', exact: true }).click();
     const created = page.waitForResponse(
       (response) =>
@@ -802,6 +948,227 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 
 test.describe('Production PWA service worker D002 @real-mobile', () => {
   test.use({ serviceWorkers: 'allow' });
+  test('production worker update activates through the update gate and retains a warm launch', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    test.skip(process.env.RCT_E2E_SW_LIFECYCLE !== 'true', 'Requires the owned CI static fixture');
+    test.setTimeout(120000);
+    const fixture = productionWorkerFixture();
+    const failures: unknown[] = [];
+    try {
+      await publishOfflineHomework(dataset, dataset.marker);
+      await loginPwa(page, dataset.student);
+      await requireProductionWorker(page);
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+      const original = await page.evaluate(async () => {
+        const registration = await navigator.serviceWorker.ready;
+        return {
+          scope: registration.scope,
+          script: registration.active?.scriptURL,
+          active: registration.active?.state,
+          waiting: registration.waiting !== null,
+          caches: await caches.keys(),
+        };
+      });
+      expect(original.scope).toBe(new URL('/app/', page.url()).href);
+      expect(original.script).toBe(new URL('/app/sw.js', page.url()).href);
+      expect(original.active).toBe('activated');
+      expect(original.waiting).toBe(false);
+      expect(original.caches).toContain('rct-student-pwa-v3-0.0.0');
+      const preserved = await page.evaluate(async () => {
+        const names = [
+          'rct-e2e-other-application',
+          `workbox-precache-v2-${new URL('/another-app/', location.origin).href}`,
+        ];
+        for (const name of [
+          ...names,
+          'rct-student-pwa-retired-fixture',
+          'headman-api-cache-v1',
+          `workbox-precache-v2-${new URL('/app/', location.origin).href}`,
+        ]) {
+          const cache = await caches.open(name);
+          await cache.put('/app/lifecycle-fixture', new Response('synthetic cache ownership'));
+        }
+        return names;
+      });
+
+      fixture.update();
+      await page.evaluate(async () => {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.update();
+      });
+      await expect
+        .poll(() =>
+          page.evaluate(async () => {
+            const registration = await navigator.serviceWorker.ready;
+            return registration.waiting?.state;
+          }),
+        )
+        .toBe('installed');
+      expect(await page.evaluate(() => navigator.serviceWorker.controller?.state)).toBe(
+        'activated',
+      );
+      expect(await page.evaluate(() => caches.keys())).toContain('rct-student-pwa-v3-0.0.0');
+      const policyRead = page.waitForResponse(
+        (response) => new URL(response.url()).pathname === '/app/version.json',
+      );
+      // Genuine network transitions invoke the existing production policy reader.
+      await context.setOffline(true);
+      await context.setOffline(false);
+      expect((await (await policyRead).json()).latest).toBe('0.0.1');
+      const gate = page.getByRole('dialog', { name: 'Нужно обновить RutTrack', exact: true });
+      await expect(gate).toBeVisible();
+      await expect(gate).toContainText('0.0.1');
+      // No second JS bundle is claimed: restore its compatible policy before the real UI reload.
+      // The existing gate retains required.value until it unmounts on reload.
+      fixture.restorePolicy();
+      const reloaded = page.waitForEvent('load');
+      await gate.getByRole('button', { name: 'Обновить приложение', exact: true }).click();
+      await reloaded;
+      await expect(gate).toHaveCount(0);
+      await requireProductionWorker(page);
+      await expect
+        .poll(() =>
+          page.evaluate(async () => {
+            const registration = await navigator.serviceWorker.ready;
+            const names = await caches.keys();
+            return (
+              registration.active?.state === 'activated' &&
+              registration.waiting === null &&
+              names.includes('rct-student-pwa-v3-0.0.1') &&
+              !names.some(
+                (name) =>
+                  name.startsWith('rct-student-pwa-') && name !== 'rct-student-pwa-v3-0.0.1',
+              )
+            );
+          }),
+        )
+        .toBe(true);
+      const updated = await page.evaluate(async () => {
+        const names = await caches.keys();
+        const cache = await caches.open('rct-student-pwa-v3-0.0.1');
+        return {
+          names,
+          assets: (await cache.keys()).map((request) => new URL(request.url).pathname),
+          controller: navigator.serviceWorker.controller?.scriptURL,
+        };
+      });
+      expect(updated.controller).toBe(original.script);
+      expect(updated.names).toEqual(expect.arrayContaining(preserved));
+      expect(updated.names).not.toContain('headman-api-cache-v1');
+      expect(updated.names).not.toContain(`workbox-precache-v2-${original.scope}`);
+      expect(updated.assets).toEqual(
+        expect.arrayContaining(['/app/', '/app/manifest.webmanifest']),
+      );
+      expect(
+        updated.assets.some((path) => path.startsWith('/app/assets/') && path.endsWith('.js')),
+      ).toBe(true);
+      expect(updated.assets.every((path) => !path.includes('/api/'))).toBe(true);
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+      await context.setOffline(true);
+      try {
+        await page.reload();
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+        await expect(page.getByRole('slider', { name: new RegExp(dataset.marker) })).toBeDisabled();
+      } finally {
+        await context.setOffline(false);
+      }
+    } catch (error) {
+      failures.push(error);
+    } finally {
+      try {
+        fixture.restore();
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+    if (failures.length === 1) throw failures[0];
+    if (failures.length)
+      throw new AggregateError(failures, 'Worker lifecycle and restoration failed');
+  });
+
+  test('synthetic installation prompt handles dismissed unavailable and accepted outcomes', async ({
+    page,
+    dataset,
+  }) => {
+    test.skip(process.env.RCT_E2E_SW_LIFECYCLE !== 'true', 'Explicit synthetic install logic lane');
+    await loginPwa(page, dataset.student);
+    const offer = page.getByRole('complementary', {
+      name: 'Установка RutCampusTrack',
+      exact: true,
+    });
+    for (const outcome of ['dismissed', 'unavailable', 'accepted'] as const) {
+      // These events exercise controller logic only; they are never OS installation evidence.
+      await page.evaluate((choice) => {
+        const event = new Event('beforeinstallprompt', { cancelable: true });
+        Object.assign(event, {
+          prompt: async () => {
+            if (choice === 'unavailable') throw new Error('Synthetic install API unavailable');
+          },
+          userChoice: Promise.resolve({
+            outcome: choice === 'accepted' ? 'accepted' : 'dismissed',
+          }),
+        });
+        window.dispatchEvent(event);
+      }, outcome);
+      await expect(offer).toHaveAttribute('data-install-mode', 'native');
+      await offer.getByRole('button', { name: 'Установить', exact: true }).click();
+      await expect(offer).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+    }
+    // A repeated prompt cannot re-offer installation after the accepted controller outcome.
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt', { cancelable: true });
+      Object.assign(event, {
+        prompt: async () => undefined,
+        userChoice: Promise.resolve({ outcome: 'dismissed' }),
+      });
+      window.dispatchEvent(event);
+    });
+    await expect(offer).toHaveCount(0);
+  });
+
+  test('synthetic iOS installation instructions dismiss persistently without a native prompt', async ({
+    browser,
+    dataset,
+  }) => {
+    test.skip(process.env.RCT_E2E_SW_LIFECYCLE !== 'true', 'Explicit synthetic install logic lane');
+    const ios = await browser.newContext({
+      baseURL: process.env.E2E_BASE_URL,
+      ignoreHTTPSErrors: true,
+      serviceWorkers: 'block',
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
+    });
+    try {
+      const page = await ios.newPage();
+      await loginPwa(page, dataset.student);
+      const offer = page.getByRole('complementary', {
+        name: 'Установка RutCampusTrack',
+        exact: true,
+      });
+      await expect(offer).toHaveAttribute('data-install-mode', 'ios');
+      await expect(offer).toContainText('Открой эту страницу в Safari');
+      await expect(offer).toContainText('Поделиться');
+      await expect(offer.getByRole('button', { name: 'Установить', exact: true })).toHaveCount(0);
+      await offer
+        .getByRole('button', { name: 'Скрыть предложение установки навсегда', exact: true })
+        .click();
+      await expect(offer).toHaveCount(0);
+      await page.reload();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+      await expect(offer).toHaveCount(0);
+    } finally {
+      await ios.close();
+    }
+  });
+
   test('warm offline reload remains read-only; revoked session reconnect clears the cached user', async ({
     page,
     context,
@@ -832,7 +1199,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         return published.state !== 'PENDING' && published.id != null;
       })
       .toBe(true);
-    const tomorrowRoom = `${dataset.marker}-offline-next-day`;
+    const tomorrowRoom = `offline-next-day-${dataset.group.id}`;
     const tomorrowLesson = await dataset.headmanActor.call(
       'POST',
       '/api/schedule/one-off-lessons',
@@ -1359,10 +1726,18 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     expect(currentHelpers[0].permissions).toContain('MARK_ATTENDANCE');
     const helper = await admit(dataset.request, dataset.assistant, 'STUDENT');
     const teacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
-    const yesterday = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+    const archiveDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Moscow',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const part = (name: string) => archiveDate.find((value) => value.type === name)!.value;
+    const realToday = `${part('year')}-${part('month')}-${part('day')}`;
+    const yesterday = new Date(Date.parse(`${realToday}T12:00:00Z`) - 86400000)
       .toISOString()
       .slice(0, 10);
-    // A past covered date survives the archive's exclusive membership end today.
+    // Account archival closes membership at real Moscow today, not synthetic teaching Today.
     expect(yesterday >= dataset.semester.dateFrom).toBe(true);
     await loginPwa(page, administrator);
     await selectPwaRole(page, 'Администратор');
@@ -1535,6 +1910,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     const afterReplacement = (await teacher.call('GET', reportPath)).entries.find(
       (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
     );
+    expect(afterReplacement !== undefined).toBe(true);
     expect(
       afterReplacement.status === before.status &&
         afterReplacement.markRevision === before.markRevision,
@@ -1610,6 +1986,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     const afterArchive = (await teacher.call('GET', reportPath)).entries.find(
       (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
     );
+    expect(afterArchive !== undefined).toBe(true);
     expect(
       afterArchive.status === before.status && afterArchive.markRevision === before.markRevision,
     ).toBe(true);
@@ -1675,6 +2052,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     const afterRestore = (await teacher.call('GET', reportPath)).entries.find(
       (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
     );
+    expect(afterRestore !== undefined).toBe(true);
     expect(
       afterRestore.userId === before.userId &&
         afterRestore.status === before.status &&

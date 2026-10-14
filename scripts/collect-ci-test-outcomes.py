@@ -16,6 +16,7 @@ MODULES = {
     "schedule-service": "services/schedule-service/schedule-app",
     "attendance-service": "services/attendance-service/attendance-app",
     "notification-service": "services/notification-service/notification-app",
+    "mobile-bff": "services/mobile-bff/mobile-bff-app",
 }
 TEST_ANNOTATIONS = {"Test", "ParameterizedTest", "RepeatedTest", "TestFactory", "TestTemplate"}
 IDENTIFIER = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*\Z")

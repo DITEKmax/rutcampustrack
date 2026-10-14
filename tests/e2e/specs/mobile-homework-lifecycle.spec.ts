@@ -297,9 +297,14 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
       readRequestObserved = true;
   };
   page.on('request', observeReadRequest);
-  let responses: [Response, Response, void];
+  let responses: [
+    PromiseSettledResult<Response>,
+    PromiseSettledResult<Response>,
+    PromiseSettledResult<void>,
+  ];
   try {
-    responses = await Promise.all([
+    // Keep a simultaneous click timeout from being hidden by the response timeout.
+    responses = await Promise.allSettled([
       http(page, readPath, 'PUT'),
       page.waitForResponse((response) => {
         const url = new URL(response.url());
@@ -312,13 +317,24 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
       }),
       notificationAction.click(),
     ]);
-  } catch (error) {
-    expect.soft(readRequestObserved, 'Notification read-state PUT was emitted').toBe(true);
-    throw error;
   } finally {
     page.off('request', observeReadRequest);
   }
-  const [readResponse, targetResponse] = responses;
+  const [readResult, targetResult, clickResult] = responses;
+  if (responses.some((response) => response.status === 'rejected')) {
+    expect
+      .soft(clickResult.status === 'fulfilled', 'Notification action click completed')
+      .toBe(true);
+    expect.soft(readRequestObserved, 'Notification read-state PUT was emitted').toBe(true);
+    expect
+      .soft(targetResult.status === 'fulfilled', 'Notification target response arrived')
+      .toBe(true);
+  }
+  if (readResult.status === 'rejected') throw readResult.reason;
+  if (targetResult.status === 'rejected') throw targetResult.reason;
+  if (clickResult.status === 'rejected') throw clickResult.reason;
+  const readResponse = readResult.value;
+  const targetResponse = targetResult.value;
   expect(readResponse.status()).toBe(200);
   const readCommand = readResponse.request().postDataJSON();
   expect(

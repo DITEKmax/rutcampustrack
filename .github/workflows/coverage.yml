@@ -50,6 +50,9 @@ jobs:
           - name: notification-service
             path: ':services:notification-service:notification-app'
             report: 'services/notification-service/notification-app/build/reports/jacoco/test/jacocoTestReport.xml'
+          - name: mobile-bff
+            path: ':services:mobile-bff:mobile-bff-app'
+            report: 'services/mobile-bff/mobile-bff-app/build/reports/jacoco/test/jacocoTestReport.xml'
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 

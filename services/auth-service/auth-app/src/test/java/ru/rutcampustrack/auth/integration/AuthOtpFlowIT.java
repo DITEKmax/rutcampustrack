@@ -1328,6 +1328,12 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                     userId);
                             assertThat(
                                             jdbc.update(
+                                                    "INSERT INTO admin_access_profiles (user_id, assigned, mode, permissions, version) "
+                                                            + "VALUES (?, TRUE, 'FULL', '{}', 1)",
+                                                    userId))
+                                    .isEqualTo(1);
+                            assertThat(
+                                            jdbc.update(
                                                     "UPDATE user_role_grants SET role = 'admin', updated_at = NOW() WHERE user_id = ?",
                                                     userId))
                                     .isEqualTo(1);
@@ -1544,6 +1550,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     private void cleanUnicodePasswordActors(Long... userIds) {
         // Audit is append-only and keeps user/session foreign keys. Retain those rows
         // for these unique actors until the fresh, non-reused PostgreSQL fixture is disposed.
+        // Their active ADMIN grants keep the explicitly assigned admin access profiles as well.
         // Only mutable actor-owned intents are cleared here, including the global outbox count.
         RuntimeException cleanupFailure = null;
         for (Long userId : userIds) {

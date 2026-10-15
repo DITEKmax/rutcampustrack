@@ -37,9 +37,7 @@ public final class AdminGroupStatsGrpcService
             boolean conflict = false;
             Throwable cause = failure;
             for (int depth = 0; cause != null && depth < 8; depth++) {
-                if (cause
-                        instanceof
-                        ru.rutcampustrack.attendance.contract.exception.ConflictException) {
+                if (cause instanceof ru.rutcampustrack.attendance.exception.ConflictException) {
                     conflict = true;
                     break;
                 }

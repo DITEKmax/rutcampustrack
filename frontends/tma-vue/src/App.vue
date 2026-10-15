@@ -1538,7 +1538,7 @@ onBeforeUnmount(() => {
       :client="adminAttendanceApi"
       :authority="adminAuthority"
       :report-download="reportDownload"
-      :show-back="host.backOwner === 'product'"
+      :show-back="false"
       @back="navigateAdmin('home')"
       @owner-error="onOwnerError"
     />

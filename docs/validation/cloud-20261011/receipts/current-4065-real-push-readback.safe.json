@@ -76068,17 +76068,21 @@
       "oldAdmin": "Alloverlappreimagesexact/frozenAdminauditanddispatchpreserved"
     },
     "b460bc2_current_Root_feature_Source_checkpoint": {
-      "utc": "2026-10-15T15:04:47.998251+00:00",
-      "state": "COMMITTED_PUSHED_EXACT_READBACK_VERIFIED",
-      "count": 97,
+      "utc": "2026-10-15T15:46:34.453543+00:00",
+      "state": "READY_CAUSAL_PACKAGE_LOCAL_NOT_PUSHED",
+      "count": 99,
       "currentPins": [
         {
           "sourceRef": ".github/workflows/ci.yml",
-          "sha256": "ae5ccb9ab66901c7f000b195dee27ede9547c5e2d39e13eef45a1f15f62662ea"
+          "sha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f"
         },
         {
           "sourceRef": "docker-compose.e2e.yml",
           "sha256": "a48904046749633f831fddeaf936d2bcd0ff387fd112122d047a4ae128169813"
+        },
+        {
+          "sourceRef": "docs/openapi/academic.json",
+          "sha256": "f30bee0733da8c1772a87657fd238e8a62d4e153f4911360b3de7b28cb3e1784"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/admin-attendance/AdminAttendanceScreen.test.ts",
@@ -76206,7 +76210,7 @@
         },
         {
           "sourceRef": "frontends/tma-vue/src/App.vue",
-          "sha256": "1766725999cde3cbb2b3316e7c0860b4e84b68878f52e3339bf39f5421d88fc3"
+          "sha256": "7c8c0cab151600b4e2e9b6f7e81bc3c0c26e3fa9f4785ba390fb07b10d837330"
         },
         {
           "sourceRef": "frontends/tma-vue/src/tma-auth.test.ts",
@@ -76270,7 +76274,7 @@
         },
         {
           "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
-          "sha256": "0f517796a0cc3e308d842a82c91a8b971fe925da62ac0a63ccd5541699e1833a"
+          "sha256": "05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e"
         },
         {
           "sourceRef": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
@@ -76286,7 +76290,7 @@
         },
         {
           "sourceRef": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
-          "sha256": "e29385ceffbccd451f83fa12533482f623d6677e9d8009073787693d7d95bb9f"
+          "sha256": "005bac5fbc035eab7437f515a627c3d27b2da7c1300ec5427fad71ec77bd6136"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/Dockerfile",
@@ -76302,7 +76306,7 @@
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcService.java",
-          "sha256": "aad7d1772497c2d8bea2969432cb5ec423cada7a0b48f2d9153a013454275b6c"
+          "sha256": "0acf2644dcbd1d77f4c24c1bfb498ece9dc078f4f043aea1f57c7e9666bc17b2"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/AdminGroupStatsReadService.java",
@@ -76390,7 +76394,7 @@
         },
         {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
-          "sha256": "e7d9f964bf2ce61299cd6bafb13e82b7a5ac254a3e43e21952feb10b6de643ef"
+          "sha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b"
         },
         {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
@@ -76430,7 +76434,7 @@
         },
         {
           "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
-          "sha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4"
+          "sha256": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8"
         },
         {
           "sourceRef": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/teacher/TeacherReportScope.java",
@@ -76443,6 +76447,10 @@
         {
           "sourceRef": "tests/e2e/infra/scripts/generate-test-certs.sh",
           "sha256": "f3a5714d95d0408669fb63c0eabc2bde07727cee4c72aabc52e06aa54d9f0b16"
+        },
+        {
+          "sourceRef": "tests/e2e/playwright.real-mobile.config.ts",
+          "sha256": "831fdde574a459a895e4c0b90bb53672025d1c3499dcf9da4987a7e9512ece9a"
         },
         {
           "sourceRef": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
@@ -77354,6 +77362,428 @@
       "sha256": "831fdde574a459a895e4c0b90bb53672025d1c3499dcf9da4987a7e9512ece9a",
       "review": "Root exactonealternative inverse verified; allold6 unchanged. c80 actualpublishedtitles7/foreignnegative/formatter/parser/scopedTSC0/2.990s/allreaped. No product/auth/assertion/timecap change.",
       "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current8410845Primary.adminSevenCaseSelectionSourceReady"
+    },
+    "8410845_first_native_failures": {
+      "utc": "2026-10-15T15:15:13.181982+00:00",
+      "classification": "PRIMARY_CAUSE_DIAGNOSIS_PENDING_NOT_ASSUMED_PRODUCT",
+      "producer": "8410845182c93055eabc31e14f28a929c693aad2",
+      "reportedBy": "c80 officialstepmetadata",
+      "failedJobs": {
+        "Python": [
+          116499241115,
+          6
+        ],
+        "Vue": [
+          116499241390,
+          4
+        ],
+        "BFFunit": [
+          116499241454,
+          9
+        ],
+        "BFFIT": [
+          116499241782,
+          15
+        ],
+        "Gatewayunit": [
+          116499241631,
+          9
+        ],
+        "AttendanceIT": [
+          116499241633,
+          11,
+          14
+        ],
+        "Attendanceunit": [
+          116499241977,
+          7
+        ],
+        "Browser": [
+          116499241387,
+          11
+        ]
+      },
+      "AuthIT": "116499241582 quality11RUNNING",
+      "AcademicIT": "116499241583 ordinary15RUNNING",
+      "next": "c80 actualcheckout-safe11984051882 first, preciseprimary compilation/formatter diagnostics only; assign originalauthors/minimumfix/no blanket rerun",
+      "scope": "no failurecause inferred fromartifactsize; test/product/environment distinguished onactualdetail"
+    },
+    "8410845_STUDENT_statistics_bounded_independent_residual": {
+      "utc": "2026-10-15T15:16:32.245712+00:00",
+      "reviewer": "c88 independent read-only, no Source/runtime/transport",
+      "producerSource": "8410845182c93055eabc31e14f28a929c693aad2",
+      "ids": [
+        "JS-STUDENT-07",
+        "JS-STUDENT-WEB-05",
+        "JS-STUDENT-13",
+        "JS-STUDENT-14",
+        "JS-STUDENT-17",
+        "JS-STUDENT-18",
+        "JS-STUDENT-19",
+        "CLIENT-FE-STUDENT-04"
+      ],
+      "decision": "No parentPASS from Source; mandatory only accepted semantics, no desktopredesign; personal export is EXCLUDED JS16/R03 and not mandatoryFE04",
+      "acceptedSource": {
+        "id": "design:knowledge/job-stories.md",
+        "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "fragments": "736–769/946–951"
+      },
+      "mobilePresentation": {
+        "sourceRef": "docs/design/COMPONENT_REGISTRY.md",
+        "sha256": "9bd46cf132d72ad0c8ee8ea40ead38f3fa7eda3f44c2f094c6567acaf1b0aede",
+        "line": 1322,
+        "scope": "compactS08 doesnotexplicitlyrepealproductsemantics; Sep2archivemobile3statusrows is presentationreceipt not ownerrepeal"
+      },
+      "rows": {
+        "JS-STUDENT-07_WEB05": "Implementedoverview/subject/weekgraph; missing genuineUI metrics/onepoint vs sameAPI and semester summary unchanged afterpointselection. Existing math reused.",
+        "JS-STUDENT-13": "Implementedview/week/typefilters; missing UI view/week/multitype witness. Source weekparity/number notrendered, requires source-scope resolution only.",
+        "JS-STUDENT-14": "Source accepted fourthpresentOrExcused suppliedbyAPI butnotrendered; 3statusrows currently. Needacceptedfourmetriccarrier +known/null/zero actualUI oracle, no mathrerun.",
+        "JS-STUDENT-17": "Source clientno rankingAPIconsumer/peerpage despite existingserver GET statistics/ranking owncohort names/isSelf/ownpage size1–100/default20; productUI GAP afteracceptedSource confirm, no newprivacyrule needed.",
+        "JS-STUDENT-18": "Existingbd16selectedtail LECTUREonly/nativepending; missing one ownsubjectwith2availabletypes and2cardcounts.",
+        "JS-STUDENT-19": "Source DTO/mapper/chart lackgroupaverage; formula/cohort unresolved-sourcefork, firstreuseexistingacceptedgroupstats formula ifdefined; no newformula invented."
+      },
+      "existingNativeMath": {
+        "receipt": "receipts/current18451-all-gates-SAFE/safe-unit-outcomes-attendance-service-1-test.json",
+        "run": 38313867449,
+        "producer": "18451",
+        "checkout": "db57",
+        "methods": [
+          242,
+          245,
+          249,
+          253,
+          261,
+          263
+        ],
+        "status": "PASSED",
+        "currentSource": "c88 independent actualtest+calculator/OwnRank/projection byteequality to18451 verified",
+        "qualification": "unit/projection doubles, not browser/liveHTTP/privacy native proof"
+      },
+      "existingClientCarrier": {
+        "sourceRef": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+        "sha256": "bd1618df13277de9c52e37009ed34339ab8f84c3711e6b98876f686a574a1616",
+        "caseLine": 388,
+        "tailLines": "974–1089",
+        "native": "841 pending/dependentonsemesterrestoration; noPASScount"
+      },
+      "next": "CriticalcurrentCIcausefixfirst; then bounded acceptedSTUDENTstats implementation/proof; ask only specific formula fork ifcurrentacceptedsource insufficient."
+    },
+    "4bd885d_ROLE7_local_checkpoint": {
+      "utc": "2026-10-15T15:16:32.245712+00:00",
+      "state": "COMMITTED_LOCAL_NOT_PUSHED_HOLD_FOR_841_CAUSAL_FIXES",
+      "head": "4bd885d04b602d1b4652371f7cb8d248cc74fc6c",
+      "parent": "8410845182c93055eabc31e14f28a929c693aad2",
+      "sourceCount": 1,
+      "docsCount": 4,
+      "checks": "diff/configured6/commit0/allreaped",
+      "receipt": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/841-role7-publish-01.safe.json",
+      "reason": "newactual841 nativefails; avoidselection-only replayofunchangedcompilefailure",
+      "process": "15948completed/noactiveRootpublisher"
+    },
+    "8410845_lesson_before_semester_source_feasibility": {
+      "utc": "2026-10-15T15:17:29.057253+00:00",
+      "author": "c84 read-only",
+      "state": "SOURCE_FEASIBLE_NOT_IMPLEMENTED_NATIVE_PENDING",
+      "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current8410845Primary.lessonPreArchiveSourceReady",
+      "carrier": "tests/e2e/playwright.lesson-lifecycle.config.ts SHA902b72, actual3specs lesson/schedule/attendance-requests, not nonexistent fixtures/lesson-requests-lifecycle",
+      "proposal": "c80 minimal move existing run+upload before currentsemester41; body/env/17min/240s/clock/assertions exact",
+      "requiredPredicates": "same e2eready + homework-target skipped|restorationSucceeded predicate currentlyadmitting41; add lessonwholeoutcomesuccess to unchanged41predicate. Keep44/47/49restorationSucceeded and41quiescence/inventory/ledger/dueguards. No baremove/ifloosening.",
+      "dependency": "no41/44/47/49 artifactdependency; historicalHWseed owns originalPGfallback when recoveryabsent, sourcechecked. Clockmonotonic futureweekday09,41capturesowninitialclock/coverage. Failureownstate retained, no independentcleanup => wholelessonPASS before41mandatory",
+      "next": "after current841 primarycause, minimumcoherentCI ordering fix ifRootc80confirmexactpredicates; no newstand/reset/waits/framework/runtimeclaims",
+      "sourceReadyUtc": "2026-10-15T15:28:44.621660+00:00",
+      "candidateSha256": "c74bc561883cd08fd18c2a7302e8a5b9cf197f33fc24f31255c122a09b2e4258",
+      "preimageSha256": "ae5ccb9ab66901c7f000b195dee27ede9547c5e2d39e13eef45a1f15f62662ea",
+      "checks": "wholebyteinverse/YAMLallothersteps/384predicatecontrols/64Bash19Python/diff0/allreaped",
+      "review": "independentc86 inprogress; expectedAuthSHApins08cfparameterupdate sameauthor beforeintegration"
+    },
+    "8410845_concrete_compile_primary_corrections": {
+      "utc": "2026-10-15T15:20:38.018313+00:00",
+      "state": "ACTUAL_PRIMARY_CAUSES_CONFIRMED_CORRECTIONS_ASSIGNED",
+      "head": "8410845182c93055eabc31e14f28a929c693aad2",
+      "actualCheckout": "12b489985212140ca4364edc59da1cd5d63d7960",
+      "actualTree": "1b7a192829c4c0cdc472c094b01d879e43a7488f",
+      "checkoutParents": "official main+841 verified c80 strictartifact11984051882",
+      "causeJava": {
+        "job": 116499241454,
+        "category": "CANNOT_FIND_SYMBOL",
+        "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcService.java",
+        "sha256": "aad7d1772497c2d8bea2969432cb5ec423cada7a0b48f2d9153a013454275b6c",
+        "line": 42,
+        "symbol": "ConflictException",
+        "cause": "references nonexistent attendance.contract.exception package; actualexisting typedclass attendance.exception.ConflictException",
+        "assigned": "c84 solewriteronefile/lesson493 WT, preservetypederrorwalk/status/currentauth; originalc85notlive",
+        "native": "newcompileFIXpending, no runtimeproductclaim"
+      },
+      "causeVue": {
+        "job": 116499241390,
+        "category": "TS2367",
+        "sourceRef": "frontends/tma-vue/src/App.vue",
+        "sha256": "1766725999cde3cbb2b3316e7c0860b4e84b68878f52e3339bf39f5421d88fc3",
+        "line": 1541,
+        "cause": "newAdminAttendance show-back product comparison incompatiblewith TMAhostnativebackOwner narrowedtype",
+        "assigned": "c87 sameauthoronefile exact176/tmpWT preserveowner/backhandler/otherUI",
+        "native": "newtypeFIXpending"
+      },
+      "Python": {
+        "job": 116499241115,
+        "category": "RUFF_FORMAT_REQUIRED",
+        "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
+        "preimageSha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4",
+        "actual": "unique wouldreformatfile fromsame retainedRAMlog window exit1; notactualTLSfailure",
+        "correctionSha256": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8"
+      },
+      "qualification": "otherJava/browserfails may shareJava butnotinferreduntilactualdetails; assertions/gatesnotweakened;4bdlocalheld untilcausalfixes"
+    },
+    "8410845_Admin_nine_bounded_existing_proof_reconciliation": {
+      "utc": "2026-10-15T15:20:38.018313+00:00",
+      "author": "c87 read-only",
+      "ids": [
+        "JS-ADMIN-08",
+        "JS-ADMIN-09",
+        "JS-ADMIN-10",
+        "JS-ADMIN-16",
+        "JS-ADMIN-17",
+        "JS-ADMIN-18",
+        "CLIENT-FE-ADMIN-02",
+        "CLIENT-FE-ADMIN-04",
+        "CLIENT-FE-ADMIN-05"
+      ],
+      "result": "NO_NEW_PARENT_PASS; retain exact657namedPGpromotion/stateproofs andaa37genuine callback currentSourceequivalent",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#admin08_09_10_16_17_18Client02_04_05ExistingJoin841",
+      "remaining": {
+        "09_16_17": "existingapprovedA+Bfirstcasetail blocked by9a initialRPC,841pending",
+        "08": "genuineVue semestercreate",
+        "10": "visiblepreview/password finalpopulatedsemesterdelete/cascade",
+        "18": "group/semester numericpreview; userpreviewretained",
+        "CLIENT02": "actualreadytransfer/status action, API45/SUSPENDEDsetup notthatUIwitness",
+        "CLIENT04": "sameB/group archiveAPIcleanup notactualUI",
+        "CLIENT05": "same08/09/10/18, prior61dfHTTP notwholeVue"
+      },
+      "native": "no newruntime/artifacttransport/Source/Rootmatrixchanges"
+    },
+    "8410845_HEADMAN_web05_subject36_scope_resolution": {
+      "utc": "2026-10-15T15:20:38.018313+00:00",
+      "author": "c79 read-only",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.headmanWeb05AndSubject36Scope8410845",
+      "WEB05": {
+        "source": "canonical87af1001–1009/wire112f56e3fragment14 explicitdesktop, registryweb; latermobile544198450–466 perlessoninline/Today",
+        "decision": "No established mobileinheritance forwholeweek/subject-lens UI; preservequalifiedmobilejournalPASS/sharedservercriteria; no unsupporteddesktopport/wholeWEB05runtimePASS"
+      },
+      "JSHEADMAN36": {
+        "source": "canonical87af556/558 retains irreversible subject+attendance+HW delete,password+botcode; wire116.1SHA6040 fragment13 says PWA/TMAseparate/notdesigned; dangerous_action/previewfields559–560 proposals",
+        "current": "SubjectApi df857DELETEid/force; SubjectService064b264–280 rejectsassignments/anyScheduleref anddeletesonlyempty subject/types",
+        "remaining": "No acceptedmobiledestructivescreen; serverintentconcreteprotocolGAP, notequivalentguardedemptyDELETE/resetOTP. Needboundedacceptedservercontract/sourceplan andexplicitunresolvedbehaviors; no destructiveimplementationinferredfromproposedfields. CriticalcurrentCIrepairfirst."
+      },
+      "native": "no runtime/Source/Git/shareddocs mutation, no wholeparentPASS"
+    },
+    "8410845_three_native_cause_corrections_Root_integration": {
+      "utc": "2026-10-15T15:27:01.247562+00:00",
+      "state": "ROOT_FOCUSED_APPROVED_INTEGRATED_UNCOMMITTED_NATIVE_PENDING",
+      "local": "4bd885d",
+      "published": "8410845",
+      "inventory": [
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcService.java",
+          "from": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcService.java",
+          "preimageSha256": "aad7d1772497c2d8bea2969432cb5ec423cada7a0b48f2d9153a013454275b6c",
+          "sha256": "0acf2644dcbd1d77f4c24c1bfb498ece9dc078f4f043aea1f57c7e9666bc17b2"
+        },
+        {
+          "sourceRef": "frontends/tma-vue/src/App.vue",
+          "from": "/tmp/rct-auth-f545-20261015/frontends/tma-vue/src/App.vue",
+          "preimageSha256": "1766725999cde3cbb2b3316e7c0860b4e84b68878f52e3339bf39f5421d88fc3",
+          "sha256": "7c8c0cab151600b4e2e9b6f7e81bc3c0c26e3fa9f4785ba390fb07b10d837330"
+        },
+        {
+          "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/services/notification-bot/tests/test_bot_service_credentials.py",
+          "preimageSha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4",
+          "sha256": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8"
+        }
+      ],
+      "review": "Root verifiedexacttypedexceptionidentity/singleattributeinverse/PythonfullASTidentity; originalfunctional/securityreviewsretained, no policy/oracle/cap/gateweakening",
+      "checks": {
+        "Java": "GJFfinal0/zerochanges/parserPASS; narrowjavacabsentgeneratedtypesNOT_RUN",
+        "Vue": "canonicalformat/parser/templateLint0; actualSource TS2367oldRED/newGREENtypeprobe; fullAppbuildpending",
+        "Python": "canonicalRuff0.17formatcheck+lint0/fullASTincltypecommentsunchanged/allreaped"
+      },
+      "next": "nativeordinaryCI fullcompiler/build/grpcio/TLS; Authfixturevalidprofile andCIordering/pins correction stillbeingfinished"
+    },
+    "8410845_Auth_ADMIN14_valid_profile_fixture_counterexample": {
+      "utc": "2026-10-15T15:27:01.247562+00:00",
+      "actual": {
+        "artifact": 11984427235,
+        "status": "UNEXPECTED_RED_RESULT_XML_RULE",
+        "failureCategory": "OTHER",
+        "methodFrame": 417,
+        "expectedRule432": false,
+        "nativeExit": 1,
+        "exactProductionRestoration": true
+      },
+      "source": "V51__admin_access_permissions.sql39–43 requiresassignedprofile beforeactiveADMINgrant; helper1321 currentlyomitsit. SpecificactualSQLexceptiontypeUNKNOWN, no newrawlogcampaign.",
+      "assigned": "c79 sameauthor exactoneAuthOtpFlowIT helpersetup + truthfulretainedactorcleanupcomment only; no profiledelete becausecurrentcleanupretainsownusers/grants/sessions forappend-onlyauditFK",
+      "required": "sameTxuserlock→ownassignedFULLprofile→activegrant; bool432/oracles unchanged, no trigger/schema/guard/policyweakening; c80 update2Authpins finalSHA; independentc86targetedSource thennativequalityREDrestoreGREEN",
+      "sourceReadyUtc": "2026-10-15T15:28:44.621660+00:00",
+      "candidateSha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b",
+      "candidateRef": "/workspace/rct-worktrees/request-enum-874-20261014/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.admin14OrdinaryResetSourcePlanDbf9642.explicitAdminProfileFixtureCorrection",
+      "sourceChecks": "GJF/parser/cachedoneclassjavac0;V51owner/orderSourcecontrols, alltestbodiesbyteexact/bool432;8.329s/allreaped; notPGtriggerexecution",
+      "review": "independentc86 assigned narrowfixture+CIordering wholeboundedcheckingpacket; pending"
+    },
+    "8410845_STUDENT19_existing_group_trend_source_resolution": {
+      "utc": "2026-10-15T15:28:44.621660+00:00",
+      "reviewer": "c88 read-only",
+      "status": "EXISTING_ACCEPTED_FORMULA_REUSE_NO_NEW_PRODUCT_RULE",
+      "sourceRefs": [
+        {
+          "id": "owner:2026-09-20-retrospective-attendance",
+          "sourceRef": "docs/product/decisions/2026-09-20-retrospective-attendance.md",
+          "sha256": "951e833291cdae03874b36d3128a5cce46826f974953005ddf53b857f8564be4",
+          "lines": "19/27 historicalmembershipperlessondates/transferintervals"
+        },
+        {
+          "id": "design:knowledge/job-stories.md",
+          "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+          "lines": "766–769 samepointkeys/comparisonpercent/textalternative"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
+          "sha256": "bf18fe9c5cc313cb7e22eb8be18d0a7da358c259c86c36e157c7d4c233e77d9c",
+          "lines": "621–724"
+        }
+      ],
+      "formula": "sameweeklykeys, pooled100*sumPRESENT/sumhistoricaleligibleStudentLessonCells; future/cancelledexcluded; unmarkedCLOSED=ABSENTexistingrule; emptydenominatornull. Notaverageofroundedindividualpercentages.",
+      "scope": "only group fromexisting authoritativeSTUDENTscope/historyagreement, no clientgroupinjection/formergroupenumeration. Retainexistingselectedsemester/historyauthorization; no new broadcomparisonscope inferred. Ranking currentcohort isdistinct and mustnotreplaceshistoricalgrouptrend.",
+      "compatibleTechnicalProposal": "Additive existingstudentseriespoint optionalgroupPresent{numerator,denominator,percent|null} using SAME snapshot/clock/id/dateFrom/dateTo; groupaggregatesonly/no names/studentroster exposed. Author mustconfirmactual existing publicguards/archivedsemesters; unresolvedformergroupcomparison onlyifacceptedcurrentrule requiresone.",
+      "next": "aftercurrentCIrepair, boundedmissingacceptedSTUDENTstats14/17/19 sourceimplementation/nativeproof; no mathrerun or newdesktopdesign"
+    },
+    "8410845_Auth_CI_causal_twofile_Root_integration": {
+      "utc": "2026-10-15T15:32:56.713954+00:00",
+      "state": "INDEPENDENT_C86_APPROVED_INTEGRATED_UNCOMMITTED_NATIVE_PENDING",
+      "localParent": "1d96650e872e2b04265dabc2f4a5caa720fbc62a",
+      "published": "8410845",
+      "inventory": [
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "preimageSha256": "e7d9f964bf2ce61299cd6bafb13e82b7a5ac254a3e43e21952feb10b6de643ef",
+          "sha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b"
+        },
+        {
+          "sourceRef": ".github/workflows/ci.yml",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/.github/workflows/ci.yml",
+          "preimageSha256": "ae5ccb9ab66901c7f000b195dee27ede9547c5e2d39e13eef45a1f15f62662ea",
+          "sha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f"
+        }
+      ],
+      "review": "c86 freshtargeted coherentCI/Auth APPROVE noP1P2. Entirelessonbody/order gates/41guards/allrestorationgates unchanged; failurelessonneveradmits41. ActualV51fixturevalidownFULLprofilebeforeactivegrant, nooracle/production/security/trigger/cleanup weakening. Final2Authhashliteralinverse exactreviewedc74.",
+      "checks": "384predicate/YAML64Bash19Python/sourceinverse0; AuthGJF/parser/cachedoneclasscompile/V51Sourcecontrols0/allownedreaped. PG/nativequality and realbrowser NOT_RUN onnewSource.",
+      "actual841Auth": "OTHER417/unexpectedXMLrule/redExit1/prodrestoredExacttrue/semanticREDnotproved; notspecificSQLsubclass."
+    },
+    "8410845_reason_enum_quality_primary": {
+      "utc": "2026-10-15T15:32:56.713954+00:00",
+      "artifact": 11984422062,
+      "state": "UNEXPECTED_RULE_RESULT_RED_XML_RULE",
+      "redExit": 1,
+      "failureClass": "AssertionError",
+      "sourceRestoredExact": true,
+      "semanticRed": "NOT_PROVED",
+      "countsNamedFrameGreen": "NOT_PRESENT_IN_CLOSED_PROOF",
+      "qualification": "sharedConflict42compileproveninotherjob, notassumedactualqualityphase. Minimumcommoncompilefix changescondition fornextnativegate, no blanketrerun/loosening."
+    },
+    "8410845_scoped_matrix_source_classification": {
+      "utc": "2026-10-15T15:32:56.713954+00:00",
+      "changes": [
+        "JS-ADMIN-12",
+        "JS-HEADMAN-36",
+        "JS-STUDENT-14",
+        "JS-STUDENT-17",
+        "JS-STUDENT-19",
+        "JS-SYSTEM-13"
+      ],
+      "counts": {
+        "PASS": 122,
+        "UNKNOWN": 83,
+        "GAP": 4,
+        "EXCLUDED": 5,
+        "OWNER_MANUAL_PENDING": 4
+      },
+      "meaning": "No newPASS. Two implemented reviewedfunctions nowUNKNOWNpendingnative; fouraccepted missingSourcecapabilities explicitlyGAP. Same218overlappingdenominator; no unsupporteddesktopUI/personalexport requirement.",
+      "unacceptedCriterionCorrection": "CLIENT-FE-STUDENT04 personalexport removed asJSSTUDENT16/R03alreadyEXCLUDED; ownstatistics criterion keptUNKNOWN, no acceptedscenarioexcluded."
+    },
+    "8410845_two_additional_testfixture_causes_Root_integration": {
+      "utc": "2026-10-15T15:45:13.211800+00:00",
+      "state": "C86_TARGETED_APPROVED_INTEGRATED_UNCOMMITTED_NATIVE_PENDING",
+      "inventory": [
+        {
+          "sourceRef": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+          "from": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+          "preimageSha256": "e29385ceffbccd451f83fa12533482f623d6677e9d8009073787693d7d95bb9f",
+          "sha256": "005bac5fbc035eab7437f515a627c3d27b2da7c1300ec5427fad71ec77bd6136"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+          "from": "/tmp/rct-auth-f545-20261015/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+          "preimageSha256": "0f517796a0cc3e308d842a82c91a8b971fe925da62ac0a63ccd5541699e1833a",
+          "sha256": "05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e"
+        }
+      ],
+      "Gateway": {
+        "actual": "168PASS/1FAIL SOURCE_METHODe293 exactlynamednewTeacherhash case; sameboundedjoblog WIREMOCK_INVALID_INPUT source897 beforepolicycall",
+        "cause": "sameWireMock3.9.1 mappingBuilder ownsstableUUID, secondregistrationcollides; isolatedexactoldAPIcontrolconfirms firstPASS/secondInvalidInput, fresh3allregisterPASS",
+        "correction": "twofreshmappingUUIDonly, queryabsence/nohash/badhash/validhash/bytes oracles unchanged, productionfilterunchanged",
+        "checks": "ownedJDKcached128MiB/port0/25s finalprobe3.108s+GJF/parser/targetjavac9.161s allreaped; twoinitialsetupfailuresretainedinownreceipt, no approvaldenial/bypass",
+        "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#teacherReadyGatewayWireMock841Correction"
+      },
+      "Academic": {
+        "actual": "456PASS/2FAIL oneAdminPGmethodplusOpenApiSnapshot; sameboundednamedlog fixedNULL_POINTER108 in beforeEachanswer",
+        "cause": "when(mock.read(any,..)).thenAnswer executesoldanswerwithmatcher-null duringrestub; no actualrevocationcallreached",
+        "correction": "doAnswer samecallback deferred untilactualread, allSQL/revoke/rows/finaldenialassertions exact",
+        "checks": "cachedMockito/JDK actualoldNPE/newdeferredrevokecontrolGREEN/GJFparser/inverse0/allreaped; notrealPGproof",
+        "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#adminAttendancePgMockitoRestubCorrection841"
+      },
+      "review": "c86 independenttargetedbothAPPROVE no findings. No changedpolicy, erasedFAIL, nativePASScount or new fullreviewcampaign; nextordinarycorrectednativechecksrequired."
+    },
+    "8410845_final_gates": {
+      "utc": "2026-10-15T15:45:13.211800+00:00",
+      "CI": {
+        "run": 38757370582,
+        "conclusion": "FAILURE"
+      },
+      "Coverage": {
+        "run": 38757370588,
+        "conclusion": "FAILURE"
+      },
+      "Security": {
+        "run": 38757370710,
+        "conclusion": "SUCCESS"
+      },
+      "OpenAPI": {
+        "run": 38757370517,
+        "conclusion": "SUCCESS"
+      },
+      "head": "8410845182c93055eabc31e14f28a929c693aad2",
+      "checkout": "12b489985212140ca4364edc59da1cd5d63d7960",
+      "tree": "1b7a192829c4c0cdc472c094b01d879e43a7488f",
+      "qualification": "browserBOOT11 failed so ALL841userflows/archive13bc/TLShandshake NOT_RUN, no borrowedoldPASS. Precisecompiler/formatter/fixture/Snapshot causes retainedcentral; nextrevisionneedsnewgates."
+    },
+    "8410845_canonical_Academic_OpenAPI_Root_integration": {
+      "utc": "2026-10-15T15:46:34.453543+00:00",
+      "state": "GENERATED_OFFICIAL_CANONICAL_BYTE_EXACT_INTEGRATED_NATIVE_GATE_PENDING",
+      "sourceRef": "docs/openapi/academic.json",
+      "preimageSha256": "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287",
+      "sha256": "f30bee0733da8c1772a87657fd238e8a62d4e153f4911360b3de7b28cb3e1784",
+      "bytes": 466515,
+      "from": "/workspace/rct-worktrees/lesson-493-fixture-20261014/docs/openapi/academic.json",
+      "producer": "8410845182c93055eabc31e14f28a929c693aad2",
+      "run": 38757370582,
+      "artifact": 11985241324,
+      "artifactDigest": "421c151bdb0d7fb52956a1f6b44d705c7f178f3ed4243149ef5c4b80090fea6c",
+      "actualCheckout": "12b489985212140ca4364edc59da1cd5d63d7960",
+      "actualTree": "1b7a192829c4c0cdc472c094b01d879e43a7488f",
+      "schemaDiff": "ONLY4newadminattendancepaths/5newSchemas; alloldpaths/schemas/topsemantics unchanged,1012internalrefsresolve,noServers/strictduplicate-nonfiniteparse",
+      "sourceCompatibility": "c84independentlycurrentAdminApi0f4fcc/DTOa88bb/Controller3eb8 equalactualproducer841publishedpins; normalizer3d862 matchesstockproof",
+      "review": "c80 stockpublicreader provenance/privacy/CRC/digest +c84 canonicaloutput/sourcejoin +Root independent semanticdiff/exactcopy. No handwrittenJSON/generatorrerun/formatterrewrite. PriorAcademicFAIL retained."
     }
   }
 }

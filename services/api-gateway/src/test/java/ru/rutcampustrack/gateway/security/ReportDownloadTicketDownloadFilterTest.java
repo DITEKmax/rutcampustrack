@@ -894,7 +894,7 @@ class ReportDownloadTicketDownloadFilterTest {
                                 .withHeader(HttpHeaders.CONTENT_TYPE, "text/html")
                                 .withBody("owned");
                 if (hash != null) response.withHeader("X-Export-Teacher-Scope-Hash", hash);
-                bff.stubFor(route.willReturn(response));
+                bff.stubFor(route.withId(UUID.randomUUID()).willReturn(response));
                 StepVerifier.create(
                                 filter.generate(
                                         redemption(report), UUID.randomUUID(), UUID.randomUUID()))
@@ -907,12 +907,14 @@ class ReportDownloadTicketDownloadFilterTest {
                         .verify();
             }
             bff.stubFor(
-                    route.willReturn(
-                            aResponse()
-                                    .withStatus(200)
-                                    .withHeader(HttpHeaders.CONTENT_TYPE, "text/html")
-                                    .withHeader("X-Export-Teacher-Scope-Hash", "a".repeat(64))
-                                    .withBody("owned")));
+                    route.withId(UUID.randomUUID())
+                            .willReturn(
+                                    aResponse()
+                                            .withStatus(200)
+                                            .withHeader(HttpHeaders.CONTENT_TYPE, "text/html")
+                                            .withHeader(
+                                                    "X-Export-Teacher-Scope-Hash", "a".repeat(64))
+                                            .withBody("owned")));
             var generated =
                     filter.generate(redemption(report), UUID.randomUUID(), UUID.randomUUID())
                             .block();

@@ -204,14 +204,15 @@ class AdminAttendanceReportIT {
         assertThatThrownBy(() -> exports.formats()).isInstanceOf(AdminAccessException.class);
         verifyNoInteractions(attendance);
         jdbc.update("UPDATE admin_access_profiles SET permissions=ARRAY['DASHBOARD_VIEW']");
-        when(attendance.read(any(), anyString()))
-                .thenAnswer(
+        doAnswer(
                         call -> {
                             jdbc.update(
                                     "UPDATE admin_access_profiles SET"
                                             + " permissions=ARRAY['GROUPS_VIEW']");
                             return List.of(totals(10), totals(20), totals(30), totals(40));
-                        });
+                        })
+                .when(attendance)
+                .read(any(), anyString());
         assertThatThrownBy(() -> reports.read("7", "", Sort.GROUP_NAME, Direction.ASC, 0, 25))
                 .isInstanceOf(AdminAccessException.class);
     }

@@ -7354,10 +7354,11 @@
           "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01"
         ],
         "rootReceiptKeys": [
-          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review"
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review",
+          "current4065#20b90_headman_finite_acceptance"
         ],
         "sufficientOrPartial": "Chooser/manual clear/ABSENT are adequate; read-action history and live counters are not asserted by those results.",
-        "missingAction": "Bind existing real journal audit/counter readback to the accepted read action; if absent, observe the existing action and its exact durable history/count delta once.",
+        "missingAction": "ONE real readyPWA summary→counter read tied ongoinglesson (independent selectedmanualpanel/groupdenominator)→scoped action-log read percanonicalJSHEADMAN25/26. GETneedNOTcreateaudit/countdelta. CurrentselectedLessonreportcounterSource mismatchCANDIDATE only, notruntimeFAIL.",
         "recommendedWholeResidualStatus": "UNKNOWN",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },
@@ -7369,17 +7370,18 @@
         ],
         "package": "Q01/Q02",
         "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[2]",
-        "classification": "PARTIAL_EXISTING_PROOF",
+        "classification": "EXACT_EXISTING_SERVER_SEAMS_SUFFICIENT",
         "existingCaseIds": [
           "VC-JOURNAL-SEMESTER-LIVE-SQL-03-01",
           "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01"
         ],
         "rootReceiptKeys": [
-          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review"
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review",
+          "current4065#20b90_headman_finite_acceptance"
         ],
         "sufficientOrPartial": "Current SQL capability/foreign/revoke/archive/writeBlocked seams and future-readonly browser remain reused; neither proves every combined stale mark/CAS branch.",
-        "missingAction": "Join already saved exact archived/terminal/foreign/revoked mark and revision-conflict outcomes; retain only any exact absent refusal/no-effect branch, no repeat positive mark.",
-        "recommendedWholeResidualStatus": "UNKNOWN",
+        "missingAction": "NONE for exact stalePUT/clear/noeffect/archivefence/foreign-revoke residual: savedcurrentLessonActionAuditIT6bbb SOURCE_METHOD18451 realMongo/mockedexternalauthority +liveSQL3/actualmark-helperrevoke Sourcequalifiedproofs. Do notrerunCAScrossproduct; parentjournalread/counterUIstillseparateUNKNOWN.",
+        "recommendedWholeResidualStatus": "PASS",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },
       {
@@ -7400,10 +7402,11 @@
         "rootReceiptKeys": [
           "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_partial_revocation_remaining",
           "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_independent_review",
-          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_Root_integration"
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_Root_integration",
+          "current4065#20b90_headman_finite_acceptance"
         ],
         "sufficientOrPartial": "Existing singleton/full DELETE cases do not prove partial removal. Reviewed source016f now carries the exact partial phase; current actual is not read here. UPDATE94 actual: case182wholePASS2667ms validates exactnewpartialphase; cases21/127alsoPASS. ExactSource016f/checkout6ea6423 joined.",
-        "missingAction": "Do notrerun/joinnewpartialphase again: actual94PASS nowstored. Retain onlyaccepted capability-choice UI/self/foreign/stale/retry branch withno adequateexistingproof; selective newpartialrule sensitivity remains SourcePLAN_ONLY. No capabilitycrossproduct.",
+        "missingAction": "ONE genuine HEADMAN member-row human-readablecapability subset editor confirm→save→APIreadback; existing94partial/full/singletonhelperbehaviorPASS reused. No genericUIself/foreign/stale/retrycrossproduct orinventedselfassignmentban; qualityselectiveSourcePLAN separate.",
         "recommendedWholeResidualStatus": "UNKNOWN",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },

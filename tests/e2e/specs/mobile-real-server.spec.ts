@@ -980,7 +980,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     const teacherFile = await teacherFileRead;
     expect(teacherFile.status()).toBe(200);
     expect(teacherFile.headers()['content-type']).toContain('image/png');
-    expect((await teacherFile.body()).equals(journalSeed.png)).toBe(true);
+    const teacherFileBytes = await teacherFile.body();
+    expect(teacherFileBytes.equals(journalSeed.png)).toBe(true);
     const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
     await expect(preview).toBeVisible();
     await expect
@@ -1621,12 +1622,123 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         'activated',
       );
       expect(await page.evaluate(() => caches.keys())).toContain('rct-student-pwa-v3-0.0.0');
-      const policyRead = page.waitForResponse(
-        (response) => new URL(response.url()).pathname === '/app/version.json',
-      );
-      // Genuine network transitions invoke the existing production policy reader.
-      await context.setOffline(true);
-      await context.setOffline(false);
+      const policyObserver = await page.evaluateHandle(() => {
+        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable) {
+          return { read: () => null, restore: () => {} };
+        }
+        const originalFetch = descriptor.value as typeof fetch;
+        let offlineSeen = false;
+        let onlineSeen = false;
+        let visibleAtOnline = false;
+        let outcome: 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED' = 'NOT_CALLED';
+        const offline = () => {
+          offlineSeen = true;
+        };
+        const online = () => {
+          if (!onlineSeen) visibleAtOnline = document.visibilityState === 'visible';
+          onlineSeen = true;
+        };
+        const observed: typeof fetch = function (this: unknown, ...args) {
+          let firstMatch = false;
+          try {
+            const [input, init] = args;
+            const request = input instanceof globalThis.Request ? input : null;
+            const method = init?.method ?? request?.method ?? 'GET';
+            const address =
+              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+            if (
+              outcome === 'NOT_CALLED' &&
+              method.toUpperCase() === 'GET' &&
+              typeof address === 'string'
+            ) {
+              const url = new URL(address, location.href);
+              if (url.origin === location.origin && url.pathname === '/app/version.json') {
+                firstMatch = true;
+                outcome = 'PENDING';
+              }
+            }
+          } catch {
+            // Only observation may fail; native fetch retains its own result or error.
+          }
+          const promise = Reflect.apply(originalFetch, this, args) as ReturnType<typeof fetch>;
+          if (firstMatch) {
+            try {
+              void promise
+                .then(
+                  () => {
+                    outcome = 'FULFILLED';
+                  },
+                  () => {
+                    outcome = 'REJECTED';
+                  },
+                )
+                .catch(() => {});
+            } catch {
+              // Side-observation failure must not replace the original promise.
+            }
+          }
+          return promise;
+        };
+        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: observed });
+        addEventListener('offline', offline);
+        addEventListener('online', online);
+        return {
+          read: () => ({ offlineSeen, onlineSeen, visibleAtOnline, outcome }),
+          restore: () => {
+            removeEventListener('offline', offline);
+            removeEventListener('online', online);
+            Object.defineProperty(globalThis, 'fetch', descriptor);
+          },
+        };
+      });
+      let policyObserverRestored = false;
+      let policyRead!: ReturnType<Page['waitForResponse']>;
+      try {
+        policyRead = page.waitForResponse(
+          (response) => new URL(response.url()).pathname === '/app/version.json',
+        );
+        // Genuine network transitions invoke the existing production policy reader.
+        await context.setOffline(true);
+        await context.setOffline(false);
+        try {
+          await policyRead;
+        } catch (error) {
+          const observed = await policyObserver.evaluate((value) => value.read()).catch(() => null);
+          if (observed === null) expect.soft(false, 'PWA policy observer UNAVAILABLE').toBe(true);
+          else {
+            if (!observed.onlineSeen && !observed.offlineSeen)
+              expect.soft(false, 'PWA policy NO_OFFLINE_NO_ONLINE').toBe(true);
+            else if (!observed.onlineSeen)
+              expect.soft(false, 'PWA policy OFFLINE_SEEN_NO_ONLINE').toBe(true);
+            else if (!observed.offlineSeen && observed.visibleAtOnline)
+              expect.soft(false, 'PWA policy NO_OFFLINE_ONLINE_VISIBLE').toBe(true);
+            else if (!observed.offlineSeen)
+              expect.soft(false, 'PWA policy NO_OFFLINE_ONLINE_HIDDEN').toBe(true);
+            else if (observed.visibleAtOnline)
+              expect.soft(false, 'PWA policy OFFLINE_SEEN_ONLINE_VISIBLE').toBe(true);
+            else expect.soft(false, 'PWA policy OFFLINE_SEEN_ONLINE_HIDDEN').toBe(true);
+            if (observed.outcome === 'NOT_CALLED')
+              expect.soft(false, 'PWA policy FETCH_NOT_CALLED').toBe(true);
+            else if (observed.outcome === 'PENDING')
+              expect.soft(false, 'PWA policy FETCH_PENDING').toBe(true);
+            else if (observed.outcome === 'FULFILLED')
+              expect.soft(false, 'PWA policy FETCH_FULFILLED').toBe(true);
+            else expect.soft(false, 'PWA policy FETCH_REJECTED').toBe(true);
+          }
+          throw error;
+        }
+      } finally {
+        try {
+          await policyObserver.evaluate((value) => value.restore());
+          policyObserverRestored = true;
+        } catch {
+          expect.soft(false, 'PWA policy observer RESTORE_UNAVAILABLE').toBe(true);
+        } finally {
+          await policyObserver.dispose().catch(() => {});
+        }
+      }
+      expect(policyObserverRestored, 'PWA policy observer NOT_RESTORED').toBe(true);
       expect((await (await policyRead).json()).latest).toBe('0.0.1');
       const gate = page.getByRole('dialog', { name: 'Нужно обновить RutTrack', exact: true });
       await expect(gate).toBeVisible();
@@ -2208,15 +2320,75 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     };
     await page.route(path, holdOldFeed);
     try {
-      await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
+      const fetchObserver = await page.evaluateHandle((tomorrow) => {
+        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable) {
+          return { read: () => null, restore: () => {} };
+        }
+        const original = descriptor.value as typeof fetch;
+        let homeworkGetSeen = false;
+        let tomorrowGetSeen = false;
+        const observed: typeof fetch = function (this: unknown, ...args) {
+          try {
+            const [input, init] = args;
+            const request = input instanceof globalThis.Request ? input : null;
+            const method = init?.method ?? request?.method ?? 'GET';
+            const address =
+              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+            if (method.toUpperCase() === 'GET' && typeof address === 'string') {
+              const url = new URL(address, location.href);
+              if (url.origin === location.origin && url.pathname === '/api/v1/student/homework') {
+                homeworkGetSeen = true;
+                if (
+                  url.searchParams.get('from') === tomorrow &&
+                  url.searchParams.get('to') === tomorrow
+                )
+                  tomorrowGetSeen = true;
+              }
+            }
+          } catch {
+            // Observation cannot change the native call's arguments, result or error.
+          }
+          return Reflect.apply(original, this, args);
+        };
+        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: observed });
+        return {
+          read: () => ({ homeworkGetSeen, tomorrowGetSeen }),
+          restore: () => {
+            Object.defineProperty(globalThis, 'fetch', descriptor);
+          },
+        };
+      }, dataset.tomorrow);
+      let fetchRestored = false;
       try {
-        await expect.poll(() => fetchedOwnResponse).toBe(true);
-      } catch (error) {
-        if (!held) expect.soft(false, 'D002 old feed NOT_INTERCEPTED').toBe(true);
-        else if (routeFailed) expect.soft(false, 'D002 old feed FETCH_FAILED').toBe(true);
-        else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
-        throw error;
+        await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
+        try {
+          await expect.poll(() => fetchedOwnResponse).toBe(true);
+        } catch (error) {
+          if (!held) expect.soft(false, 'D002 old feed NOT_INTERCEPTED').toBe(true);
+          else if (routeFailed) expect.soft(false, 'D002 old feed FETCH_FAILED').toBe(true);
+          else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
+          const observed = await fetchObserver.evaluate((value) => value.read()).catch(() => null);
+          if (observed === null)
+            expect.soft(false, 'D002 old feed FETCH_OBSERVER_UNAVAILABLE').toBe(true);
+          else if (observed.tomorrowGetSeen)
+            expect.soft(false, 'D002 old feed FETCH_EXACT_TOMORROW_SEEN').toBe(true);
+          else if (observed.homeworkGetSeen)
+            expect.soft(false, 'D002 old feed FETCH_OTHER_HOMEWORK_RANGE_SEEN').toBe(true);
+          else expect.soft(false, 'D002 old feed FETCH_HOMEWORK_NOT_SEEN').toBe(true);
+          throw error;
+        }
+      } finally {
+        try {
+          await fetchObserver.evaluate((value) => value.restore());
+          fetchRestored = true;
+        } catch {
+          expect.soft(false, 'D002 old feed FETCH_OBSERVER_RESTORE_UNAVAILABLE').toBe(true);
+        } finally {
+          await fetchObserver.dispose().catch(() => {});
+        }
       }
+      expect(fetchRestored, 'D002 old feed FETCH_OBSERVER_NOT_RESTORED').toBe(true);
       await logoutPwa(page);
       // Keep this document alive: loginPwa.goto would destroy the delayed callback.
       await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);

@@ -378,6 +378,22 @@ jobs:
                   assert case.get('classname') == package
                   message = message.removeprefix(failure.get('type') + ': ')
                   assert re.fullmatch(r'\s*Expecting value to be true but was false\s*', message)
+                  named_frame = re.escape(package + '.' + method)
+                  named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + named_frame
+                      + r'\(UserArchiveLifecycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$',
+                      failure.text or '')
+                  proof['namedMethodFrameCount'] = len(named_lines)
+                  proof['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^\s*at ' + re.escape(proof['ruleFrame']) + r'\s*$', failure.text or ''))
+                  if len(named_lines) == 1:
+                      (observed_line,) = named_lines
+                      proof['observedNamedMethodLine'] = int(observed_line)
+                      proof['uniqueNamedMethodPlainLayout'] = bool(
+                          re.search(r'(?m)^[ \t]*at[ \t]+' + named_frame
+                                    + r'\(UserArchiveLifecycleIT\.java:' + observed_line + r'\)[ \t]*$',
+                                    failure.text or ''))
                   assert re.search(r'(?m)^\s*at ' + re.escape(proof['ruleFrame']) + r'\s*$', failure.text or '')
                   proof.update(affectedRows=1, expectedRetentionEqual=True, observedRetentionEqual=False)
               else:

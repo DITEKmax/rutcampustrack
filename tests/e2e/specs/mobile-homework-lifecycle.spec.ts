@@ -719,7 +719,9 @@ isolated(
     await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
     await logoutPwa(page);
 
-    const admitted = await loginPwa(page, dataset.student);
+    const admitted = await loginPwa(page, dataset.student, {
+      retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+    });
     const student = new Actor(dataset.request, admitted.accessToken, admitted.session);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     // Preserve the original real completion; view its actual lesson day explicitly.
@@ -930,8 +932,10 @@ isolated(
 // and an external material document are controlled at the dependency boundary.
 isolated(
   'STUDENT multi-item feed keeps focus and rolls back a failed completion with safe external materials @real-mobile',
-  async ({ page, context, scenario: dataset }) => {
+  async ({ page, context, scenario: dataset }, info) => {
     test.setTimeout(120000);
+    const retryUntilMs =
+      (retryStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
     await oneOff(dataset, dataset.today, 3);
     await oneOff(dataset, dataset.today, 5);
     // Publish in reverse lesson order so insertion order cannot satisfy the oracle.
@@ -955,7 +959,9 @@ isolated(
       description,
       'javascript:window.__rctHomeworkUnsafe=1',
     );
-    const admitted = await loginPwa(page, dataset.student);
+    const admitted = await loginPwa(page, dataset.student, {
+      retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+    });
     const student = new Actor(dataset.request, admitted.accessToken, admitted.session);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(

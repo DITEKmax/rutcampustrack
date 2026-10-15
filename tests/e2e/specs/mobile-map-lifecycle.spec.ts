@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { lstatSync } from 'node:fs';
-import { type Page, type Route } from '@playwright/test';
+import { type Page, type Route, type TestInfo } from '@playwright/test';
 import { test, expect, admit, type Actor } from '../fixtures/mobile-dataset';
 import { loginPwa } from '../fixtures/pwa-auth';
 import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
@@ -8,6 +8,13 @@ import { TEST_USERS } from '../fixtures/users';
 
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
+
+// Charge requested fixtures and the body to one monotonic login budget.
+// Earlier runner/auto-fixture overhead is unmeasured; the original timeout still applies.
+const retryStartedAt = new WeakMap<TestInfo, number>();
+test.beforeEach(async ({}, info) => {
+  retryStartedAt.set(info, performance.now());
+});
 
 interface Slot {
   state: string;
@@ -99,6 +106,9 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
   teachingInstant,
 }, info) => {
   test.setTimeout(180000);
+  const retryCutoffMs =
+    (retryStartedAt.get(info) ?? Number.NEGATIVE_INFINITY) +
+    Math.max(0, Math.min(info.timeout, 180000) - 30000);
   requirePrivateArtifacts(info);
   requireValue(teachingInstant, 'Map lifecycle requires the current teaching-clock lane');
   const output = lstatSync(info.project.outputDir);
@@ -179,7 +189,11 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
     expect(identity(current.floor.currentPlan) === identity(first)).toBe(true);
   }
 
-  await loginPwa(page, dataset.student);
+  const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
+  requireValue(retryRemainingMs > 0, 'Map login retry budget expired');
+  await loginPwa(page, dataset.student, {
+    retryUntilMs: Date.now() + Math.min(65000, retryRemainingMs),
+  });
   const viewAndDownload = async (plan: Plan, png: Buffer, exerciseViewer = false) => {
     const response = page.waitForResponse(
       (value) =>

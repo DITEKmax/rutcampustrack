@@ -5,6 +5,7 @@ import {
   admit,
   http,
   singleCapability,
+  selectRole,
   openAssistant,
   deniedMark,
   oneOff,
@@ -282,4 +283,91 @@ test('MANAGE_EXCUSES decides a real request and revoked decision preserves the p
   expect(retained.summary.status).toBe('PENDING');
   expect(retained.summary.decisionBy).toBeNull();
   expect(retained.decisionRevision).toBe(pending.decisionRevision);
+});
+
+// CLIENT-FE-HEADMAN-06 / JS-HEADMAN-14,15: the HEADMAN chooses a readable
+// subset through the member row; the existing helper cases prove its effects.
+test('HEADMAN edits helper capabilities through member row and retains VIEW_STATS @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  const retryUntilMs = Date.now() + Math.max(0, Math.min(info.timeout, 120000) - 30000);
+  const user = await dataset.user('STUDENT', dataset.group.id);
+  const grant = await dataset.headmanActor.call(
+    'POST',
+    '/api/academic/assistants',
+    {
+      groupId: dataset.group.id,
+      studentId: user.id,
+      permissions: ['MANAGE_EXCUSES', 'VIEW_STATS'],
+    },
+    [201],
+  );
+  try {
+    await loginPwa(page, dataset.headman, { retryUntilMs });
+    const headman = await selectRole(page, 'Староста');
+    expect(headman.session.activeRole).toBe('HEADMAN');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Группа', exact: true }).click();
+    const group = page.locator('.headman-group');
+    await group.locator(`[data-member-id="${user.id}"]`).click();
+    await expect(group.getByRole('heading', { name: user.displayName, exact: true })).toBeVisible();
+    await group.getByRole('button', { name: 'Настроить права', exact: true }).click();
+    const choices = [
+      ['Отмечать посещаемость', false],
+      ['Обрабатывать уважительные причины', true],
+      ['Управлять домашними заданиями', false],
+      ['Отменять занятия', false],
+      ['Просматривать статистику', true],
+    ] as const;
+    await expect(group.getByRole('switch')).toHaveCount(choices.length);
+    for (const [label, enabled] of choices) {
+      await expect(group.getByRole('switch', { name: label, exact: true })).toHaveAttribute(
+        'aria-checked',
+        String(enabled),
+      );
+    }
+    await group
+      .getByRole('switch', { name: 'Обрабатывать уважительные причины', exact: true })
+      .click();
+    await group.getByRole('button', { name: 'Сохранить изменения: 1', exact: true }).click();
+    const confirmation = page.getByRole('dialog', { name: 'Отозвать права?', exact: true });
+    await expect(
+      confirmation.getByText('Обрабатывать уважительные причины', { exact: true }),
+    ).toBeVisible();
+    await expect(confirmation.getByText('Разрешено → Запрещено', { exact: true })).toBeVisible();
+    const saved = http(page, `/api/academic/assistants/${grant.id}/permissions`, 'PATCH');
+    await confirmation.getByRole('button', { name: 'Отозвать права', exact: true }).click();
+    const response = await saved;
+    expect(response.status()).toBe(200);
+    expect(response.request().postDataJSON()).toEqual({ permissions: ['VIEW_STATS'] });
+    await expect(
+      group.getByText('Изменения подтверждены сервером.', { exact: true }),
+    ).toBeVisible();
+    const catalog = await dataset.headmanActor.call(
+      'GET',
+      `/api/academic/assistants?groupId=${dataset.group.id}&size=100`,
+    );
+    const assistants = catalog._embedded?.assistantResponseList ?? catalog.content ?? [];
+    const actual = assistants.find((row: { id: number }) => row.id === grant.id);
+    expect(actual).toMatchObject({
+      id: grant.id,
+      studentId: user.id,
+      groupId: dataset.group.id,
+      active: true,
+    });
+    expect(actual.permissions).toEqual(['VIEW_STATS']);
+    await group.getByRole('button', { name: 'Назад', exact: true }).click();
+    await group.getByRole('button', { name: 'Настроить права', exact: true }).click();
+    for (const [label] of choices) {
+      await expect(group.getByRole('switch', { name: label, exact: true })).toHaveAttribute(
+        'aria-checked',
+        String(label === 'Просматривать статистику'),
+      );
+    }
+  } finally {
+    await dataset.headmanActor.call('DELETE', `/api/academic/assistants/${grant.id}`, undefined, [
+      204,
+    ]);
+  }
 });

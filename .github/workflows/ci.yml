@@ -2795,10 +2795,12 @@ jobs:
                   matches.append((match[1], match[2]))
               if unusable:
                   return output('UNAVAILABLE_LOG_FORMAT', stage)
-              if len(matches) > 1:
-                  return output('AMBIGUOUS', stage)
-              return (output('UNIQUE', stage + '_' + matches[0][1], 'REPORTED_' + matches[0][0])
-                      if matches else output('ABSENT', stage))
+              distinct = sorted(set(matches))
+              if len(distinct) > 1:
+                  pairs = '|'.join(kind + '@' + source for kind, source in distinct)
+                  return output('AMBIGUOUS', stage, 'REPORTED_PAIRS:' + pairs)
+              return (output('UNIQUE', stage + '_' + distinct[0][1], 'REPORTED_' + distinct[0][0])
+                      if distinct else output('ABSENT', stage))
 
           def classify(payload, config):
               stage = config[6]

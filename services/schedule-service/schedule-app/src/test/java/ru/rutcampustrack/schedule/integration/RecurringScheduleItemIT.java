@@ -3,6 +3,8 @@ package ru.rutcampustrack.schedule.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.grpc.stub.StreamObserver;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
@@ -27,8 +30,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.dao.DataAccessException;
@@ -48,6 +53,10 @@ import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.RecurringProtocolConflictException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
+import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
 import ru.rutcampustrack.schedule.recurring.RecurringCreateResult;
@@ -101,6 +110,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     @Autowired ObjectMapper objectMapper;
 
     @Autowired JdbcTemplate jdbcTemplate;
+
+    @Autowired ScheduleGrpcServiceImpl scheduleGrpcService;
 
     @Autowired PlatformTransactionManager transactionManager;
 
@@ -1262,6 +1273,26 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     @Test
     void parityRemovalArchivesFutureHomeworkAndRestoresAsNewPhysicalGeneration() throws Exception {
         long item = createLifecycleItem(), future = lessonOn("2026-02-16");
+        // The real RPC must expose canonical occurrences, not superseded physical generations.
+        Supplier<List<LessonResponse>> readGroupLessons =
+                () -> {
+                    @SuppressWarnings("unchecked")
+                    StreamObserver<LessonsResponse> observer = mock(StreamObserver.class);
+                    scheduleGrpcService.getLessonsByGroup(
+                            LessonsByGroupRequest.newBuilder()
+                                    .setGroupId(GROUP_ID)
+                                    .setSemesterId(SEMESTER_ID)
+                                    .setDateFrom(SEMESTER_FROM.toString())
+                                    .setDateTo(SEMESTER_TO.toString())
+                                    .build(),
+                            observer);
+                    ArgumentCaptor<LessonsResponse> response =
+                            ArgumentCaptor.forClass(LessonsResponse.class);
+                    verify(observer).onNext(response.capture());
+                    verify(observer).onCompleted();
+                    return response.getValue().getLessonsList();
+                };
+        // End canonical RPC fixture.
         insertBinding(future, 902L);
         JsonNode removal = preview(item, updateRequest("A-101", WeekType.EVEN, null), false);
         assertThat(removal.get("removedCount").asLong()).isEqualTo(1);
@@ -1320,6 +1351,12 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                                 }))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("exact template current-generation authority");
+        // A currently cancelled occurrence remains visible before restoration.
+        assertThat(readGroupLessons.get())
+                .filteredOn(lesson -> lesson.getId() == future)
+                .singleElement()
+                .satisfies(lesson -> assertThat(lesson.getStatus()).isEqualTo("cancelled"));
+        // End current cancellation RPC assertion.
         JsonNode returning = preview(item, updateRequest("A-101", WeekType.ALL, null), false);
         assertThat(returning.get("restoredCount").asLong()).isEqualTo(1);
         UUID restoreKey = UUID.randomUUID();
@@ -1338,6 +1375,22 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
                         Long.class);
         assertThat(current).isNotEqualTo(future);
+        // The retained cancelled row is history; only its real pointer successor is canonical.
+        List<LessonResponse> restoredGroupLessons = readGroupLessons.get();
+        assertThat(restoredGroupLessons).hasSize(3);
+        assertThat(restoredGroupLessons)
+                .extracting(LessonResponse::getOccurrenceId)
+                .doesNotHaveDuplicates();
+        assertThat(restoredGroupLessons).extracting(LessonResponse::getId).doesNotContain(future);
+        assertThat(restoredGroupLessons)
+                .filteredOn(lesson -> lesson.getId() == current)
+                .singleElement()
+                .satisfies(
+                        lesson -> {
+                            assertThat(lesson.getStatus()).isEqualTo("planned");
+                            assertThat(lesson.getGeneration()).isEqualTo(2);
+                        });
+        // End restored generation RPC assertions.
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT generation FROM lessons WHERE id = ?", Long.class, current))

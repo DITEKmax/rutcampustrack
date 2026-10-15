@@ -204,8 +204,11 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
     @Query(
             value =
-                    "SELECT * FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
-                            + "AND date BETWEEN :from AND :to AND status::text IN :statuses ORDER BY date ASC, id ASC",
+                    "SELECT l.* FROM lessons l WHERE l.group_id = :groupId AND l.semester_id = :semesterId "
+                            + "AND l.date BETWEEN :from AND :to AND l.status::text IN :statuses "
+                            + "AND (l.occurrence_id IS NULL OR EXISTS (SELECT 1 FROM lesson_occurrences lo "
+                            + "WHERE lo.id = l.occurrence_id AND lo.current_lesson_id = l.id)) "
+                            + "ORDER BY l.date ASC, l.id ASC",
             nativeQuery = true)
     List<Lesson> findByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
             @Param("groupId") Long groupId,

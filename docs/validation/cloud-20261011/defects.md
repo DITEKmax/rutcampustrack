@@ -446,3 +446,13 @@ DF-ADMIN-ORDINARY-RESET-001 FIXED_CURRENT_NATIVE: exact013 controlled previous-a
 ## GAP-SYSTEM16 — server-owned journal metrics
 
 2026-10-15T19:47:02.159904+00:00; severity P2; JS-SYSTEM-16, Teacher journal Table/Chart; published189798f. Canonical87af:894–898 requires server percentages with counts and shared denominators. Source counterexample: teacher-journal-model.ts adc072 counts/divides cells; Table5fb9/Chart19e809 consume these while TeacherApiModels07b757 journal rows contain cells only. This is a missing accepted contract, not an observed runtime 5xx. Existing actual server statistics math/null/zero/history proofs remain sufficient for their scope. Before: client-owned journal calculation; after: Source implementation assigned c79 with additive server full-context metrics, paging/selection/scope/null controls and independent review still required. Separate canonical899 stored incremental aggregation awaits Q027; no implicit architecture or scope waiver. Evidence central#189798f_L06_P21_SYSTEM16_finite_independent_join and#SYSTEM16_server_journal_metrics_bounded_contract.
+
+
+## DEFECT-STUDENT-STATS-RECURRING-GENERATION — current pointer catalogue
+
+2026-10-15T20:20:46.478172+00:00; severity P2; Student14/17/19 statistics; published189798f. Confirmed Source counterexample matching genuinely executed recurring390 prefix: remove/restore retains old CANCELLED and new PLANNED physical rows with one occurrenceId. The gRPC-only Schedule query omits the durable pointer and returns both; transient current defaults true, and correct Student duplicate guard rejects the conflicting catalogue as503. Actual189 closed log remains AMBIGUOUS, so native category is not claimed. Before: genuine recurring overview503 plus deterministic Source dataflow; after: minimal pointer query and existing realPG parity test assigned c84, native verification pending. Preserve current CANCELLED/legacy null and all Student rights/duplicate guards; no guessed max generation. Evidence central#189798f_Student503_recurring_physical_generation_source_defect.
+
+
+## GAP-STUDENT-OPEN-REQUEST-COUNTER — accepted pending-tab count missing
+
+2026-10-15T20:34:45.134060+00:00; severity P3; JS-STUDENT-26/CLIENT-FE-STUDENT-03; published189798f. Canonical87af802 +wire10761 require pending count in tab accessible name. RequestsScreen721b8cd6:188–206 renders static Открытые/Архив, no count binding; existing controller totalElements available. Source-confirmed missing presentation, not inferred nativeFAIL. Actual189request9d08f66b4 WHOLEPASS41409ms closes lifecycle/reason/cancel/re-submit/history andD019cardinality clauses. Remaining counter correction/witness pending; no new endpoint/authority rule. Evidence central#189798f_request9_finite_join_in_progress.

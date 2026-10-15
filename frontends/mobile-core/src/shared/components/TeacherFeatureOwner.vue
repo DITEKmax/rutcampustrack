@@ -25,6 +25,7 @@ import type {
   TeacherSemester,
   TeacherStatsSubjectOption,
 } from '../../features/teacher/teacher-client';
+import { teacherJournalTypes } from '../../features/teacher/teacher-client';
 import type { HeadmanLessonSlot } from '../../features/schedule/headman-schedule-client';
 import TeacherManualExcuseScreen from '../../features/teacher/TeacherManualExcuseScreen.vue';
 import TeacherGroupSubjectsScreen from '../../features/teacher/TeacherGroupSubjectsScreen.vue';
@@ -419,7 +420,7 @@ function openJournal(
     semesterId: query.semesterId,
     groupId: query.groupId,
     subjectId: query.subjectId,
-    lessonTypes: [],
+    lessonTypes: query.lessonType ? teacherJournalTypes(query) : [],
     pastOnly: true,
   };
   lessonId.value = null;

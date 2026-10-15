@@ -133,6 +133,7 @@ function harness(
     assignedOnly?: boolean
     noData?: boolean
     multipleSubjects?: boolean
+    multipleGroups?: boolean
   } = {},
 ) {
   const location = {
@@ -176,7 +177,14 @@ function harness(
           { ...subjectOptions[0]!, subjectId: '5', subjectName: 'Алгоритмы' },
         ],
       }
-    : catalog
+    : { ...catalog }
+  if (options.multipleGroups) {
+    currentCatalog.groups = [...catalog.groups, { id: '6', name: 'ИКБО-02-24' }]
+    currentCatalog.subjectOptions = [
+      ...currentCatalog.subjectOptions,
+      { ...subjectOptions[0]!, groupId: '6', subjectId: '7' },
+    ]
+  }
   const api = new TeacherApi({
     accessToken: () => null,
     fetcher: async (input) => {
@@ -388,7 +396,7 @@ describe('teacher statistics selectors and races', () => {
     expect(fixture.queries.at(-1)?.getAll('lessonType')).toEqual(['lecture'])
   })
   it('preserves catalog retry with an open filter while all/apply/reset events are attempted', async () => {
-    const fixture = harness()
+    const fixture = harness({ multipleGroups: true })
     await settle()
     await chooseContext(fixture.root, false)
     click(fixture.root, 'Фильтры')
@@ -492,8 +500,30 @@ describe('teacher statistics selectors and races', () => {
     await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
   })
+  it('explains a single authorized group and opens its students with an explicit subject choice', async () => {
+    const fixture = harness()
+    await settle()
+    expect(text(fixture.root)).toContain('У тебя одна группа — сравнивать не с чем.')
+    expect(find(fixture.root, (node) => node.props.class === 'teacher-stats__card')).toBeUndefined()
+    expect(fixture.queries).toHaveLength(0)
+    click(fixture.root, 'Перейти к студентам')
+    await settle()
+    expect(text(fixture.root)).not.toContain('сравнивать не с чем')
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Предмет')).toBeDefined()
+    expect(fixture.queries).toHaveLength(0)
+    click(fixture.root, 'Предмет')
+    await settle()
+    click(fixture.root, 'Программирование')
+    await settle()
+    click(fixture.root, 'Лекция')
+    await settle()
+    expect(fixture.queries.at(-1)?.get('scope')).toBe('students')
+    expect(fixture.queries.at(-1)?.get('groupId')).toBe('2')
+    expect(fixture.queries.at(-1)?.get('subjectId')).toBe('3')
+    expect(text(fixture.root)).toContain('Анна Белова')
+  })
   it('loads the authorized groups hub without selecting a pair and requires explicit subject drilldown', async () => {
-    const fixture = harness({ multipleSubjects: true })
+    const fixture = harness({ multipleSubjects: true, multipleGroups: true })
     await settle()
     expect(fixture.queries).toHaveLength(0)
     expect(find(fixture.root, (node) => node.props['aria-label'] === 'Группа')).toBeUndefined()
@@ -504,6 +534,7 @@ describe('teacher statistics selectors and races', () => {
     expect(fixture.queries[0]?.has('groupId')).toBe(false)
     expect(fixture.queries[0]?.has('subjectId')).toBe(false)
     expect(fixture.queries[0]?.getAll('sort')).toEqual(['present'])
+    expect(text(fixture.root)).not.toContain('сравнивать не с чем')
     const group = find(
       fixture.root,
       (node) =>
@@ -737,7 +768,8 @@ describe('teacher statistics selectors and races', () => {
       expect(fixture.queries[0]?.get('subjectId')).toBe(scope === 'students' ? '3' : null)
       expect(fixture.queries[0]?.getAll('lessonType')).toEqual(['lecture'])
       expect(text(fixture.root)).not.toContain('Статистика недоступна')
-      if (scope === 'groups') expect(text(fixture.root)).toContain('0 пар')
+      if (scope === 'groups')
+        expect(text(fixture.root)).toContain('У тебя одна группа — сравнивать не с чем.')
       else
         expect(
           find(fixture.root, (node) => node.props.class === 'teacher-stats__card'),

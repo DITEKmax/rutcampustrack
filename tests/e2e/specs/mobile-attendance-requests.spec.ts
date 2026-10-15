@@ -424,28 +424,22 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   })();
   expect(multipleReply.status()).toBe(200);
   expect(multipleSubmissions).toBe(1);
-  const multipartBytes = multipleReply.request().postDataBuffer();
-  expect(Boolean(multipartBytes)).toBe(true);
-  const multipart = await new globalThis.Response(new Uint8Array(multipartBytes!), {
-    headers: { 'Content-Type': multipleReply.request().headers()['content-type']! },
-  }).formData();
-  const requestPart = multipart.get('request');
-  expect(requestPart instanceof Blob).toBe(true);
-  const multipleCommand = JSON.parse(await (requestPart as Blob).text());
+  expect(
+    /^multipart\/form-data;\s*boundary=/i.test(
+      multipleReply.request().headers()['content-type'] ?? '',
+    ),
+  ).toBe(true);
   const samePair = (ids: unknown[]) =>
     JSON.stringify(ids.map(String).sort()) === JSON.stringify([...multipleExcuseLessonIds].sort());
-  expect(
-    samePair(multipleCommand.lessonIds) &&
-      multipleCommand.reason === 'OTHER' &&
-      multipleCommand.comment === multipleComment,
-  ).toBe(true);
   const multipleCreated = await multipleReply.json();
   const multipleExcuseId: string = multipleCreated.summary.id;
   expect(
     /^[a-f0-9]{24}$/.test(multipleExcuseId) &&
       multipleCreated.summary.kind === 'EXCUSE' &&
       multipleCreated.summary.status === 'PENDING' &&
-      samePair(multipleCreated.summary.lessons.map((row: { id: string }) => row.id)),
+      samePair(multipleCreated.summary.lessons.map((row: { id: string }) => row.id)) &&
+      multipleCreated.reason === 'OTHER' &&
+      multipleCreated.comment === multipleComment,
   ).toBe(true);
   const multipleCard = page.getByRole('article').filter({
     has: page.locator(`[id="request-title-${multipleExcuseId}"]`),
@@ -457,7 +451,9 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   expect(
     multiplePending.summary.id === multipleExcuseId &&
       multiplePending.summary.status === 'PENDING' &&
-      samePair(multiplePending.summary.lessons.map((row: { id: string }) => row.id)),
+      samePair(multiplePending.summary.lessons.map((row: { id: string }) => row.id)) &&
+      multiplePending.reason === 'OTHER' &&
+      multiplePending.comment === multipleComment,
   ).toBe(true);
   const multipleOpen = await student.call(
     'GET',

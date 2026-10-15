@@ -1,6 +1,11 @@
 import { createRenderer, h, markRaw, nextTick, shallowReactive, type App } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import HeadmanHomeScreen from './HeadmanHomeScreen.vue'
+import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import type {
+  HeadmanHomeworkApi,
+  HeadmanManagedHomework,
+} from '../homework/headman-homework-client'
 import type {
   HeadmanJournalApi,
   HeadmanJournalLesson,
@@ -120,10 +125,14 @@ function report(id: number, marked: boolean, groupId = 7): HeadmanJournalReport 
     })),
   }
 }
-function mount(api: HeadmanJournalApi, live = false) {
+function mount(
+  api: HeadmanJournalApi,
+  live = false,
+  extra: Partial<InstanceType<typeof HeadmanHomeScreen>['$props']> = {},
+) {
   vi.useFakeTimers({ toFake: live ? ['Date', 'setInterval', 'clearInterval'] : ['Date'] })
   vi.setSystemTime(new Date('2026-10-15T06:00:00Z'))
-  const props = shallowReactive({ api, groupId: 7, selectedDate: today, offline: false })
+  const props = shallowReactive({ api, groupId: 7, selectedDate: today, offline: false, ...extra })
   const root = new Element('root')
   const app = renderer.createApp({ render: () => h(HeadmanHomeScreen, props) })
   app.mount(root)
@@ -297,5 +306,148 @@ describe('Headman ongoing summary authority', () => {
     document.dispatchEvent(new Event('visibilitychange'))
     await flush()
     expect(text(byClass(root, 'headman-home__ongoing-present'))).toContain('1 из 4')
+  })
+})
+
+function homeApi(): HeadmanJournalApi {
+  return {
+    listLessons: vi.fn(async () => [lesson(1, 'ACTIVE')]),
+    getLessonAttendance: vi.fn(async () => report(1, true)),
+    writable: false,
+  } as unknown as HeadmanJournalApi
+}
+function requestPage(totalElements: number) {
+  return { content: [], totalElements, totalPages: totalElements ? 1 : 0, page: 0, size: 1 }
+}
+
+describe('Home request bindings', () => {
+  it('renders authoritative typed totals with Today homework read-only and emits each existing filter', async () => {
+    const list = vi.fn(async (query: { type: string }) =>
+      requestPage(query.type === 'EXCUSE' ? 7 : 0),
+    )
+    const requestsApi = { list } as unknown as HeadmanRequestsApi
+    const homework: HeadmanManagedHomework = {
+      id: 17,
+      bindingId: null,
+      requestKey: null,
+      title: 'Синтетическое ДЗ на сегодня',
+      description: 'Описание принятого задания',
+      link: null,
+      subjectId: 11,
+      groupId: 7,
+      semesterId: 1,
+      publishedBy: 9,
+      lessonDate: today,
+      lessonNumber: null,
+      bindingMode: 'DATE',
+      revision: 1,
+      archived: false,
+    }
+    const homeworkApi = {
+      listHomeworks: vi.fn(async (_group: number, _semester: number, archived: boolean) =>
+        archived
+          ? []
+          : [homework, { ...homework, id: 18, lessonDate: '2026-10-16', title: 'Завтра' }],
+      ),
+    } as unknown as HeadmanHomeworkApi
+    const opened = vi.fn()
+    const { root } = mount(homeApi(), false, { requestsApi, homeworkApi, onOpenRequests: opened })
+    await flush()
+    const region = byClass(root, 'headman-home__requests')!
+    expect(region).toBeDefined()
+    expect(region.props['data-state']).toBe('ready')
+    for (const [kind, count] of [
+      ['EXCUSE', '7'],
+      ['LATE_CHECKIN', '0'],
+    ] as const) {
+      const button = all(region, (node) => node.props['data-request-kind'] === kind)[0]!
+      expect(text(button)).toContain(count)
+      ;(button.props.onClick as () => void)()
+      expect(opened).toHaveBeenCalledWith(kind)
+      expect(list).toHaveBeenCalledWith({ bucket: 'OPEN', type: kind, page: 0, size: 1 })
+    }
+    const section = byClass(root, 'headman-home__homework')!
+    expect(text(section)).toContain(homework.title)
+    expect(text(section)).not.toContain('Завтра')
+    ;(all(section, (node) => node.tag === 'button')[0]!.props.onClick as () => void)()
+    await flush()
+    expect(text(section)).toContain(homework.description)
+    expect(
+      all(section, (node) => node.tag === 'input' || node.props.role === 'slider'),
+    ).toHaveLength(0)
+  })
+
+  it('never queries without MANAGE_EXCUSES and clears known counts offline or after failure', async () => {
+    const list = vi.fn(async () => requestPage(3))
+    const { root, props } = mount(homeApi(), false, {
+      requestsApi: { list } as unknown as HeadmanRequestsApi,
+      assistantPermissions: ['VIEW_STATS'],
+    })
+    await flush()
+    expect(byClass(root, 'headman-home__requests')).toBeUndefined()
+    expect(list).not.toHaveBeenCalled()
+    props.assistantPermissions = ['MANAGE_EXCUSES']
+    await flush()
+    expect(byClass(root, 'headman-home__requests')?.props['data-state']).toBe('ready')
+    props.offline = true
+    await flush()
+    const offline = byClass(root, 'headman-home__requests')!
+    expect(text(offline)).toContain('Число заявок неизвестно')
+    expect(all(offline, (node) => node.tag === 'strong').map(text)).toEqual(['—', '—'])
+    list.mockRejectedValue(new Error('Synthetic denied read'))
+    props.offline = false
+    await flush()
+    expect(byClass(root, 'headman-home__requests')?.props['data-state']).toBe('unavailable')
+    expect(
+      all(byClass(root, 'headman-home__requests')!, (node) => node.tag === 'strong').map(text),
+    ).toEqual(['—', '—'])
+  })
+
+  it('discards a slow old-owner result and refreshes only the current visible online owner', async () => {
+    const document = Object.assign(new EventTarget(), { visibilityState: 'visible' })
+    vi.stubGlobal('document', document)
+    vi.stubGlobal('window', new EventTarget())
+    vi.stubGlobal('navigator', { onLine: true })
+    let resolve!: (value: ReturnType<typeof requestPage>) => void
+    const pending = new Promise<ReturnType<typeof requestPage>>((done) => {
+      resolve = done
+    })
+    const oldList = vi.fn(() => pending)
+    const { root, props } = mount(homeApi(), true, {
+      requestsApi: { list: oldList } as unknown as HeadmanRequestsApi,
+    })
+    await flush()
+    let total = 4
+    const list = vi.fn(async () => requestPage(total))
+    props.requestsApi = { list } as unknown as HeadmanRequestsApi
+    props.groupId = 8
+    resolve(requestPage(99))
+    await flush()
+    expect(text(byClass(root, 'headman-home__requests'))).not.toContain('99')
+    expect(list).toHaveBeenCalledTimes(2)
+    expect(
+      all(byClass(root, 'headman-home__requests')!, (node) => node.tag === 'strong').map(text),
+    ).toEqual(['4', '4'])
+    total = 5
+    await vi.advanceTimersByTimeAsync(30000)
+    await flush()
+    expect(
+      all(byClass(root, 'headman-home__requests')!, (node) => node.tag === 'strong').map(text),
+    ).toEqual(['5', '5'])
+    document.visibilityState = 'hidden'
+    document.dispatchEvent(new Event('visibilitychange'))
+    const before = list.mock.calls.length
+    await vi.advanceTimersByTimeAsync(60000)
+    expect(list).toHaveBeenCalledTimes(before)
+    expect(
+      all(byClass(root, 'headman-home__requests')!, (node) => node.tag === 'strong').map(text),
+    ).toEqual(['—', '—'])
+    total = 6
+    document.visibilityState = 'visible'
+    document.dispatchEvent(new Event('visibilitychange'))
+    await flush()
+    expect(
+      all(byClass(root, 'headman-home__requests')!, (node) => node.tag === 'strong').map(text),
+    ).toEqual(['6', '6'])
   })
 })

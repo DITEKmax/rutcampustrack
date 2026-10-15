@@ -443,12 +443,7 @@ public final class StudentApiModels {
             name = "StudentAttendanceGroupPresent",
             requiredProperties = {"numerator", "denominator", "percent"})
     public record StudentAttendanceGroupPresent(
-            int numerator,
-            int denominator,
-            @Schema(
-                            types = {"number", "null"},
-                            format = "double")
-                    Double percent) {}
+            int numerator, int denominator, @Schema(nullable = true) Double percent) {}
 
     @Schema(
             name = "StudentAttendanceGraph",

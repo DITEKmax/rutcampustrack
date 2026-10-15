@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
-import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.grpc.AdminGroupStatsQuery;
@@ -32,7 +31,7 @@ class AdminGroupStatsDataIT extends AbstractAttendanceIntegrationTest {
     @BeforeEach
     void fixture() {
         reset(scheduleGrpcClient, academicGrpcClient);
-        mongoTemplate.remove(new Query(), AttendanceDocument.class);
+        mongoTemplate.remove(new Query(), "attendances");
         service = new AdminGroupStatsReadService(scheduleGrpcClient, reports);
     }
 
@@ -194,17 +193,28 @@ class AdminGroupStatsDataIT extends AbstractAttendanceIntegrationTest {
     }
 
     private void mark(long lesson, long user, AttendanceStatus status) {
-        mongoTemplate.save(
-                AttendanceDocument.builder()
-                        .lessonId(lesson)
-                        .userId(user)
-                        .groupId(10L)
-                        .subjectId(lesson == 2 || lesson == 4 ? 200L : 100L)
-                        .semesterId(1L)
-                        .lessonNumber(1)
-                        .lessonDate(LocalDate.of(2026, 4, (int) lesson))
-                        .status(status)
-                        .source(AttendanceSource.HEADMAN)
-                        .build());
+        mongoTemplate
+                .getCollection("attendances")
+                .insertOne(
+                        new org.bson.Document("lesson_id", lesson)
+                                .append("user_id", user)
+                                .append("group_id", 10L)
+                                .append("subject_id", lesson == 2 || lesson == 4 ? 200L : 100L)
+                                .append("semester_id", 1L)
+                                .append("lesson_number", 1)
+                                .append(
+                                        "lesson_date",
+                                        mongoTemplate
+                                                .getConverter()
+                                                .convertToMongoType(
+                                                        LocalDate.of(2026, 4, (int) lesson)))
+                                .append(
+                                        "status",
+                                        mongoTemplate.getConverter().convertToMongoType(status))
+                                .append(
+                                        "source",
+                                        mongoTemplate
+                                                .getConverter()
+                                                .convertToMongoType(AttendanceSource.HEADMAN)));
     }
 }

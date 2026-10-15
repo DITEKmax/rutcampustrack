@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: d438812a43a332dbc11bd5fab92848b61e6cd7a3a722d512191875d59e32a139
+// Contract: JS-STUDENT-01-r1; SHA-256: c1cb0bb9503b5902a517c00401ff70256ce1790cb41a5ad3ebdfe89c0fb01e95
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -804,6 +804,14 @@ export interface components {
             days: components["schemas"]["StudentAttendanceSeriesPoint"][];
             weeks: components["schemas"]["StudentAttendanceSeriesPoint"][];
         };
+        StudentAttendanceGroupPresent: {
+            /** Format: int32 */
+            denominator: number;
+            /** Format: int32 */
+            numerator: number;
+            /** Format: double */
+            percent: number;
+        };
         StudentAttendanceHistorySegment: {
             id: string;
             /** @enum {string} */
@@ -862,6 +870,7 @@ export interface components {
             dateFrom: string;
             /** Format: date */
             dateTo: string;
+            groupPresent?: components["schemas"]["StudentAttendanceGroupPresent"];
             id: string;
             label: string;
             metrics: components["schemas"]["StudentAttendanceMetricSet"];

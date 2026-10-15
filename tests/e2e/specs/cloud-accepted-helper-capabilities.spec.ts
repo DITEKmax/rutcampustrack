@@ -525,6 +525,11 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
   };
   const seeded: { userId: number; status: string; revision: string }[] = [];
   let otherLessonId: number | undefined;
+  let homeRequestId: string | undefined;
+  let homeHomeworkId: number | undefined;
+  let homeStudent: Awaited<ReturnType<typeof admit>> | undefined;
+  const homeHomeworkTitle = `${dataset.marker} Home Today`;
+  let homeExpectedCounts: readonly number[] = [];
   try {
     const before = await dataset.headmanActor.call('GET', reportPath);
     for (const [user, status] of [
@@ -568,6 +573,80 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
       current: true,
     });
     expect(lessonTime(otherLesson, 'startTime')).toBeGreaterThan(teachingNow);
+    // WEB02: own new fixtures, with existing worker tickets retained in the baseline.
+    const countOpen = async (type: 'EXCUSE' | 'LATE_CHECKIN') => {
+      const reply = await dataset.headmanActor.call(
+        'GET',
+        `/api/attendance/requests?bucket=OPEN&type=${type}&page=0&size=1`,
+      );
+      expect(Number.isSafeInteger(reply.totalElements) && reply.totalElements >= 0).toBe(true);
+      return reply.totalElements as number;
+    };
+    const baseline = await Promise.all([countOpen('EXCUSE'), countOpen('LATE_CHECKIN')]);
+    homeStudent = await admit(dataset.request, dataset.student, 'STUDENT');
+    const submission = await dataset.request.post('/api/v1/student/requests/excuse', {
+      headers: { ...homeStudent.headers(), 'Idempotency-Key': randomUUID() },
+      multipart: {
+        request: {
+          name: 'request.json',
+          mimeType: 'application/json',
+          buffer: Buffer.from(
+            JSON.stringify({
+              lessonIds: [String(otherLessonId)],
+              reason: 'ILLNESS',
+              comment: dataset.marker,
+            }),
+          ),
+        },
+      },
+    });
+    expect(submission.status()).toBe(200);
+    const ownTicket = await submission.json();
+    homeRequestId = ownTicket.summary.id;
+    expect(
+      ownTicket.summary.status === 'PENDING' &&
+        ownTicket.summary.kind === 'EXCUSE' &&
+        ownTicket.summary.lessons.length === 1 &&
+        String(ownTicket.summary.lessons[0].id) === String(otherLessonId),
+    ).toBe(true);
+    homeExpectedCounts = [baseline[0]! + 1, baseline[1]!];
+    expect(await Promise.all([countOpen('EXCUSE'), countOpen('LATE_CHECKIN')])).toEqual(
+      homeExpectedCounts,
+    );
+    const homeworkInput = {
+      title: homeHomeworkTitle,
+      description: 'Синтетическое ДЗ главной на сегодня',
+      link: null,
+      groupId: dataset.group.id,
+      subjectId: dataset.subject.id,
+      semesterId: dataset.semester.id,
+      lessonDate: dataset.today,
+      lessonNumber: null,
+      bindingMode: 'DATE',
+      lessonType: 'LECTURE',
+      requestKey: randomUUID(),
+    };
+    await expect
+      .poll(
+        async () => {
+          const created = await dataset.headmanActor.call(
+            'POST',
+            '/api/academic/homeworks',
+            homeworkInput,
+            [200, 201, 202],
+          );
+          const id = Number(created.id ?? created.homeworkId);
+          if (Number.isSafeInteger(id) && id > 0) homeHomeworkId = id;
+          return created.state !== 'PENDING' && Number.isSafeInteger(created.id);
+        },
+        {
+          timeout: 15000,
+          message: 'Owned Today homework becomes published with the same request key',
+        },
+      )
+      .toBe(true);
+    // End WEB02 fixture preparation.
+
     const members = await dataset.headmanActor.call(
       'GET',
       '/api/academic/groups/my/members?size=100',
@@ -601,6 +680,40 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     expect((await selectRole(page, 'Староста')).session.activeRole).toBe('HEADMAN');
     const home = page.locator('.headman-home');
     await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
+    // WEB02: a genuine Home read, separate from notification unread counts.
+    const todayHomework = home.getByRole('region', { name: 'Домашнее задание пары', exact: true });
+    await expect(todayHomework).toContainText(homeHomeworkTitle);
+    await todayHomework.getByRole('button').click();
+    await expect(todayHomework).toContainText('Синтетическое ДЗ главной на сегодня');
+    await expect(todayHomework.locator('input, [role="slider"]')).toHaveCount(0);
+    const pendingCounts = home.getByRole('region', { name: 'Открытые заявки', exact: true });
+    await expect(pendingCounts).toHaveAttribute('data-state', 'ready');
+    for (const [index, kind] of ['EXCUSE', 'LATE_CHECKIN'].entries())
+      await expect(pendingCounts.locator(`[data-request-kind="${kind}"] strong`)).toHaveText(
+        String(homeExpectedCounts[index]),
+      );
+    const queueRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === '/api/attendance/requests' &&
+        url.searchParams.get('bucket') === 'OPEN' &&
+        url.searchParams.get('type') === 'EXCUSE' &&
+        url.searchParams.get('size') === '20'
+      );
+    });
+    await pendingCounts.locator('[data-request-kind="EXCUSE"]').click();
+    expect((await queueRead).status()).toBe(200);
+    const queue = page.locator('.headman-requests');
+    await expect(queue.getByRole('button', { name: /Уважительные причины/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(queue.locator(`[data-request-id="${homeRequestId}"]`)).toBeVisible();
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
+    // End WEB02 Home witness; retain every existing history and live-counter oracle.
+
     const historyRead = http(page, actionsPath, 'GET');
     await home.getByRole('button', { name: 'Журнал', exact: true }).click();
     const history = await historyRead;
@@ -703,6 +816,31 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     );
   } finally {
     let cleanupFailed = false;
+    if (homeRequestId !== undefined && homeStudent) {
+      try {
+        const cancelled = await homeStudent.call(
+          'POST',
+          `/api/v1/student/requests/${homeRequestId}/cancel`,
+        );
+        if (cancelled.summary.status !== 'CANCELLED') throw new Error('Owned ticket cleanup state');
+      } catch {
+        cleanupFailed = true;
+        expect.soft(false, 'Owned Home request cleanup failed').toBe(true);
+      }
+    }
+    if (homeHomeworkId !== undefined) {
+      try {
+        await dataset.headmanActor.call(
+          'DELETE',
+          `/api/academic/homeworks/${homeHomeworkId}`,
+          undefined,
+          [204],
+        );
+      } catch {
+        cleanupFailed = true;
+        expect.soft(false, 'Owned Home homework cleanup failed').toBe(true);
+      }
+    }
     for (const mark of seeded) {
       try {
         const query = new URLSearchParams({

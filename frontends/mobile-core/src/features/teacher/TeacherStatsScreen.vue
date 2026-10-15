@@ -178,6 +178,11 @@ const canReset = computed(
 let disposed = false;
 
 const groups = computed(() => authorizedGroups.value);
+const singleAuthorizedGroup = computed(() =>
+  contextReady.value && scope.value === 'groups' && groups.value.length === 1
+    ? groups.value[0]
+    : null,
+);
 const subjects = computed(() => subjectsForGroup(selectedGroupId.value));
 const types = computed(() =>
   scope.value === 'groups'
@@ -1022,6 +1027,22 @@ function isCurrent(requestRevision: number): boolean {
     >
       Нет доступных групп.
     </p>
+    <section
+      v-else-if="singleAuthorizedGroup"
+      class="teacher-stats__state"
+    >
+      <p role="status">
+        У тебя одна группа — сравнивать не с чем.
+      </p>
+      <div class="teacher-stats__journal">
+        <button
+          type="button"
+          @click="openGroup(singleAuthorizedGroup.id)"
+        >
+          Перейти к студентам
+        </button>
+      </div>
+    </section>
     <p
       v-else-if="!currentStatsQuery()"
       class="teacher-stats__state"

@@ -25,6 +25,11 @@ import type {
   HeadmanHomeworkApi,
   HeadmanManagedHomework,
 } from '../homework/headman-homework-client';
+import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client';
+import type {
+  HeadmanRequestKind,
+  HeadmanRequestsApi,
+} from '../headman-requests/headman-requests-client';
 import './headman-home-screen.pcss';
 
 const props = withDefaults(
@@ -32,6 +37,8 @@ const props = withDefaults(
     unreadCount?: number | null | undefined;
     onNotifications?: (() => void) | undefined;
     api: HeadmanJournalApi | null;
+    requestsApi?: HeadmanRequestsApi | null;
+    assistantPermissions?: readonly HeadmanAssistantPermission[] | null;
     weekPolicyApi?: HeadmanScheduleApi | null;
     groupId: number | null;
     groupLabel?: string | null;
@@ -46,6 +53,8 @@ const props = withDefaults(
   }>(),
   {
     unreadCount: null,
+    requestsApi: null,
+    assistantPermissions: null,
     onNotifications: undefined,
     weekPolicyApi: null,
     groupLabel: null,
@@ -62,6 +71,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson];
   openHomework: [];
+  openRequests: [kind: HeadmanRequestKind];
   openLog: [lesson: HeadmanJournalLesson];
   selectDate: [date: string];
   error: [cause: unknown];
@@ -123,7 +133,10 @@ function startOngoingTimer(): void {
     props.groupId === null
   )
     return;
-  ongoingTimer = setInterval(requestOngoing, ONGOING_REFRESH_INTERVAL_MS);
+  ongoingTimer = setInterval(() => {
+    requestOngoing();
+    requestCounts();
+  }, ONGOING_REFRESH_INTERVAL_MS);
 }
 function restartOngoing(): void {
   stopOngoingTimer();
@@ -134,6 +147,81 @@ function restartOngoing(): void {
   ongoingState.value = ongoingOnline() ? 'loading' : 'offline';
   requestOngoing();
   startOngoingTimer();
+}
+const requestsAllowed = computed(
+  () =>
+    props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES'),
+);
+const openCounts = shallowRef<Readonly<Record<HeadmanRequestKind, number>> | null>(null);
+const countState = ref<'loading' | 'ready' | 'unavailable' | 'offline'>('loading');
+let countRevision = 0;
+let countFlight: Promise<void> | null = null;
+let countQueued = false;
+async function loadCounts(): Promise<void> {
+  const revision = countRevision,
+    api = props.requestsApi,
+    groupId = props.groupId;
+  const current = () =>
+    !disposed &&
+    revision === countRevision &&
+    api === props.requestsApi &&
+    groupId === props.groupId &&
+    requestsAllowed.value &&
+    ongoingOnline() &&
+    ongoingVisible();
+  if (!api || groupId === null || !requestsAllowed.value) {
+    openCounts.value = null;
+    countState.value = 'unavailable';
+    return;
+  }
+  const results = await Promise.allSettled(
+    (['EXCUSE', 'LATE_CHECKIN'] as const).map(async (type) => {
+      const page = await api.list({ bucket: 'OPEN', type, page: 0, size: 1 });
+      if (!Number.isSafeInteger(page.totalElements) || page.totalElements < 0)
+        throw new Error('Сервер не подтвердил число открытых заявок.');
+      return [type, page.totalElements] as const;
+    }),
+  );
+  if (!current()) return;
+  const failed = results.find((result) => result.status === 'rejected');
+  if (failed?.status === 'rejected') {
+    openCounts.value = null;
+    countState.value = 'unavailable';
+    if (!(failed.reason instanceof StaleSessionGenerationError)) emit('error', failed.reason);
+    return;
+  }
+  openCounts.value = Object.fromEntries(
+    results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : [])),
+  ) as Record<HeadmanRequestKind, number>;
+  countState.value = 'ready';
+}
+function requestCounts(): void {
+  if (disposed || !ongoingOnline() || !ongoingVisible() || !requestsAllowed.value) return;
+  if (countFlight) {
+    countQueued = true;
+    return;
+  }
+  const pending = loadCounts();
+  countFlight = pending;
+  const settled = () => {
+    if (countFlight === pending) countFlight = null;
+    if (countQueued) {
+      countQueued = false;
+      requestCounts();
+    }
+  };
+  void pending.then(settled, settled);
+}
+function restartCounts(): void {
+  countRevision += 1;
+  countQueued = false;
+  openCounts.value = null;
+  countState.value = ongoingOnline() ? 'loading' : 'offline';
+  requestCounts();
+}
+function restartHomeLiveReads(): void {
+  restartOngoing();
+  restartCounts();
 }
 const ongoingCounts = computed(() => {
   const entries = ongoingReport.value?.entries;
@@ -557,6 +645,11 @@ async function loadDetails(): Promise<void> {
     if (current()) detailLoading.value = false;
   }
 }
+watch(
+  () => [props.requestsApi, props.groupId, props.offline, requestsAllowed.value] as const,
+  restartCounts,
+  { immediate: true, flush: 'sync' },
+);
 watch(() => [props.api, props.groupId, props.offline] as const, restartOngoing, {
   immediate: true,
   flush: 'sync',
@@ -591,23 +684,25 @@ watch(
 onMounted(() => {
   ongoingMounted = true;
   if (typeof document !== 'undefined')
-    document.addEventListener('visibilitychange', restartOngoing);
+    document.addEventListener('visibilitychange', restartHomeLiveReads);
   if (typeof window !== 'undefined') {
-    window.addEventListener('online', restartOngoing);
-    window.addEventListener('offline', restartOngoing);
+    window.addEventListener('online', restartHomeLiveReads);
+    window.addEventListener('offline', restartHomeLiveReads);
   }
   startOngoingTimer();
 });
 onBeforeUnmount(() => {
   disposed = true;
+  countRevision += 1;
+  countQueued = false;
   ongoingRevision += 1;
   ongoingRefreshQueued = false;
   stopOngoingTimer();
   if (typeof document !== 'undefined')
-    document.removeEventListener('visibilitychange', restartOngoing);
+    document.removeEventListener('visibilitychange', restartHomeLiveReads);
   if (typeof window !== 'undefined') {
-    window.removeEventListener('online', restartOngoing);
-    window.removeEventListener('offline', restartOngoing);
+    window.removeEventListener('online', restartHomeLiveReads);
+    window.removeEventListener('offline', restartHomeLiveReads);
   }
   blockRevision += 1;
   weekRevision += 1;
@@ -646,6 +741,52 @@ onBeforeUnmount(() => {
         @click="onNotifications"
       />
     </header>
+    <section
+      v-if="requestsAllowed"
+      class="headman-home__requests headman-home__state"
+      aria-label="Открытые заявки"
+      :data-state="countState"
+      :aria-busy="countState === 'loading'"
+    >
+      <h2>Открытые заявки</h2>
+      <div class="headman-home__actions">
+        <button
+          type="button"
+          data-request-kind="EXCUSE"
+          :disabled="offline || countState !== 'ready'"
+          @click="emit('openRequests', 'EXCUSE')"
+        >
+          <span
+            class="headman-home__circle"
+            data-status="excused"
+          >у</span> Уважительные причины <strong>{{ openCounts?.EXCUSE ?? '—' }}</strong>
+        </button>
+        <button
+          type="button"
+          data-request-kind="LATE_CHECKIN"
+          :disabled="offline || countState !== 'ready'"
+          @click="emit('openRequests', 'LATE_CHECKIN')"
+        >
+          <span
+            class="headman-home__circle"
+            data-status="absent"
+          >н</span> Забыл отметиться <strong>{{ openCounts?.LATE_CHECKIN ?? '—' }}</strong>
+        </button>
+      </div>
+      <p
+        v-if="countState !== 'ready'"
+        role="status"
+      >
+        {{ countState === 'offline' ? 'Число заявок неизвестно: нет подключения.' : countState === 'loading' ? 'Загружаем заявки…' : 'Число заявок недоступно.' }}
+      </p>
+      <button
+        v-if="countState === 'unavailable' && requestsApi && !offline"
+        type="button"
+        @click="restartCounts"
+      >
+        Повторить заявки
+      </button>
+    </section>
     <nav
       class="headman-home__week-pager"
       aria-label="Выбор недели"

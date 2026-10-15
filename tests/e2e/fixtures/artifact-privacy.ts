@@ -96,6 +96,7 @@ const publicSpecs = [
   resolve(__dirname, '../specs/cloud-accepted-helper-capabilities.spec.ts'),
   resolve(__dirname, '../specs/cloud-accepted-auth-security.spec.ts'),
   resolve(__dirname, '../specs/cloud-accepted-role-authority.spec.ts'),
+  resolve(__dirname, '../specs/cloud-accepted-admin-grants.spec.ts'),
   resolve(__dirname, '../clock-specs/teaching-clock-geo.spec.ts'),
 ];
 

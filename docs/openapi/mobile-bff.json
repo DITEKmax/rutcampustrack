@@ -3787,6 +3787,24 @@
           }
         }
       },
+      "StudentAttendanceGroupPresent" : {
+        "required" : [ "denominator", "numerator", "percent" ],
+        "type" : "object",
+        "properties" : {
+          "numerator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "denominator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "percent" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
       "StudentAttendanceMetricSet" : {
         "required" : [ "absent", "excused", "held", "planned", "present", "presentOrExcused" ],
         "type" : "object",
@@ -3870,6 +3888,9 @@
           },
           "metrics" : {
             "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "groupPresent" : {
+            "$ref" : "#/components/schemas/StudentAttendanceGroupPresent"
           }
         }
       },

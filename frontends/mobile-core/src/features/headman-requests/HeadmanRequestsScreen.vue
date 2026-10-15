@@ -28,12 +28,19 @@ import './headman-requests-screen.pcss';
 const props = withDefaults(
   defineProps<{
     api: HeadmanRequestsApi | null;
+    initialKind?: HeadmanRequestKind | null;
     assistantPermissions?: readonly HeadmanAssistantPermission[] | null;
     offline?: boolean;
     readOnly?: boolean;
     showBack?: boolean;
   }>(),
-  { assistantPermissions: null, offline: false, readOnly: false, showBack: true },
+  {
+    initialKind: null,
+    assistantPermissions: null,
+    offline: false,
+    readOnly: false,
+    showBack: true,
+  },
 );
 export type HeadmanRequestsView = 'queue' | 'archive' | 'detail' | 'approve' | 'reject';
 const emit = defineEmits<{
@@ -43,7 +50,7 @@ const emit = defineEmits<{
 }>();
 const view = ref<HeadmanRequestsView>('queue'),
   bucket = ref<'OPEN' | 'ARCHIVE'>('OPEN'),
-  kind = ref<HeadmanRequestKind | ''>('');
+  kind = ref<HeadmanRequestKind | ''>(props.initialKind ?? '');
 const studentName = ref(''),
   dateFrom = ref(''),
   dateTo = ref(''),

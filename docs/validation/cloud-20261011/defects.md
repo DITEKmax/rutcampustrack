@@ -409,3 +409,23 @@ JS-STUDENT-14/17/19 source gaps implemented and coherently reviewed: supplied co
 ## 2026-10-15T16:50:43.896120+00:00 — ADMIN ordinary reset current native closure
 
 DF-ADMIN-ORDINARY-RESET-001 FIXED_CURRENT_NATIVE: exact013 controlled previous-authority failure at432, byte-exact production restoration, and both409/487 named PostgreSQL/HTTP tests PASS. Independentc88 source/matrix mapping accepts JS-ADMIN-14 product boundary; external operator recovery is outside product and was not executed. Other Auth export/snapshot failures remain separate. Evidence central0132225_Auth_ADMIN14_relevant_native_chain_complete /0132225_ADMIN14_independent_family_acceptance.
+
+## DF-TEACHER-SINGLE-GROUP-001 — accepted explanatory state missing
+
+2026-10-15T17:07:09.848386+00:00; severity P3; JS-TEACHER-14; revision2f975ae. Independent c88 Source review: TeacherStatsScreen.vue maps every nonempty group result to comparison cards, while canonical87af:413 and wire123:175 require explanation for exactly one authorized group. User sees a meaningless one-group comparison. FIXED_SOURCE_REVIEWED_NATIVE_PENDING: authoritative catalogue cardinality, never filtered row count;16focusedrendererPASS/c88APPROVE, Sourceaa67. Root central#2f975ae_Teacher_single_group_review_Root_integration; genuine newbrowser assertion pending.
+
+## DF-TEACHER-JOURNAL-SHORTCUT-TYPE-001 — FIXED_SOURCE / actual verification pending
+
+2026-10-15T17:40:07.488791+00:00; severity P2; JS-TEACHER-09. Home sent lessonType but Owner reset lessonTypes[], so shortcut did not preserve accepted type. Exact oldOwner0b behavioral controlRED atselectedLecture; new2cec samefile3GREEN/currentquery/typepressed. c88 SourceAPPROVE. Existinggenuinebrowser shortcut+cleanup Source5131 pendingnewproducer. No privilegeexpansion (D023currentgroup+subject stillserver-owned). Evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.2f975ae_Teacher09_filter_and_recovery_checks_Root_integration.
+
+## DF-HEADMAN-QR-APPROVAL-PORT-001 — FIXED_SOURCE / actual verification pending
+
+2026-10-15T17:40:07.488791+00:00; severity P2; D024 / TMA HEADMAN profile. Actual2fremainingdecl2318 fails2412: missing Вход в браузере button. ProfilePort exists atTMAApp but HeadmanSchedule innerProfile omitted approvalprop, defaultnull hidesbutton. Oneprop c167 withoffline/readOnly/currentowner/ready andexistinggeneration/serverguards; Root independentreviewAPPROVE. Native correctedTMAapprovaltail pending. Evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.2f975ae_HEADMAN_Profile_browser_login_port_Root_integration.
+
+## DF-BFF-GROUP-PERCENT-NULL-SCHEMA-001 — FIXED_SOURCE / actual verification pending
+
+2026-10-15T17:40:07.488791+00:00; severity P2; JS-STUDENT-19 / BFF generated contract. Actualstock2f OpenAPI3.0.1 c1cb declaresnewGroupPresent.percent nonnullable though0/0/null accepted andserialized. DTO used OAS3.1 types array ignoredby3.0producer. c84 Sourcefix uses existing nullable=true pattern; review/nativegeneratedcorrectedartifact pending. Raw2fstockJSON/TS remains exactproducertruth, explicitly notfinalnullcontract. No manualgeneratedoutput correction. Evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.2f975ae_stock_BFF_public_contract_Root_integration.
+
+## GAP-HEADMAN-HOME-OPEN-COUNTS-001 — FIXED_SOURCE_REVIEWED_NATIVE_PENDING
+
+2026-10-15T17:51:07.161230+00:00; severity P2; JS-HEADMAN-WEB02. AcceptedHome lackedopen-ticket countbinding; notificationunreadcountisdistinct. Now existingauthenticated OPEN totalspertype withcurrentMANAGE_EXCUSES/no unauthorizedquery, unknown≠0/staleowner/offline guards andqueuefilterlinks; sameTodayHWbinding hasnativewitness ready. c86sixSourceAPPROVE/rendereroldRED→3GREEN, nativeexistinghelper5thnewassertions pending. Evidence: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.b417_HeadmanHome_counts_TodayHW_coherent_review_Root_integration.

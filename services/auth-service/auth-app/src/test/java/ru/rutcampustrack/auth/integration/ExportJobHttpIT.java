@@ -581,7 +581,7 @@ VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,'PREPARED','CLOSE_UNASSIGN',?)
                 assertThat(
                                 jdbc.queryForObject(
                                         "SELECT state='preparing' AND content IS NULL AND"
-                                                + " NOT(identity ? 'teacherScope' AND"
+                                                + " NOT(identity ?? 'teacherScope' AND"
                                                 + " identity->'teacherScope'<>'null'::jsonb) FROM"
                                                 + " auth_export_jobs WHERE job_id=?",
                                         Boolean.class,

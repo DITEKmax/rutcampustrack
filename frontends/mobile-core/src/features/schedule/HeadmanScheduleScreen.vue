@@ -54,7 +54,10 @@ import type {
   HeadmanJournalLesson,
 } from '../headman-journal/headman-journal-client';
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue';
-import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client';
+import type {
+  HeadmanRequestsApi,
+  HeadmanRequestKind,
+} from '../headman-requests/headman-requests-client';
 import HeadmanGroupScreen from '../headman-group/HeadmanGroupScreen.vue';
 import type { HeadmanGroupApi } from '../headman-group/headman-group-client';
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client';
@@ -237,6 +240,7 @@ const selectedDay = ref(1);
 const formOpen = ref(false);
 const journalOpen = ref(false);
 const requestsOpen = ref(false);
+const homeRequestKind = ref<HeadmanRequestKind | null>(null);
 const groupScreen = ref<InstanceType<typeof HeadmanGroupScreen> | null>(null);
 const groupOpen = ref(false);
 const subjectsScreen = ref<InstanceType<typeof HeadmanSubjectsScreen> | null>(null);
@@ -421,6 +425,7 @@ watch(statsOpen, (open) => {
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current;
   route.value = next;
+  if (next.id !== requestsRouteId) homeRequestKind.value = null;
   journalOpen.value = next.root === 'headman-attendance';
   requestsOpen.value = next.id === requestsRouteId;
   groupOpen.value = next.id === groupRouteId;
@@ -656,7 +661,10 @@ function handleTaskBack(): void {
   navigation.back();
 }
 
-function navigateRoot(routeName: MobileRootRouteId): void {
+function navigateRoot(
+  routeName: MobileRootRouteId,
+  requestKind: HeadmanRequestKind | null = null,
+): void {
   if (
     routeName !== 'headman-today' &&
     routeName !== 'headman-attendance' &&
@@ -666,6 +674,7 @@ function navigateRoot(routeName: MobileRootRouteId): void {
     routeName !== 'profile'
   )
     return;
+  if (routeName === 'headman-requests') homeRequestKind.value = requestKind;
   if (routeName !== 'headman-attendance') selectedLessonId.value = null;
   navigation.goRoot(routeName);
 }
@@ -1838,6 +1847,8 @@ defineExpose({ openNotificationAction });
       :on-notifications="onNotifications"
       :unread-count="unreadCount"
       :api="journalApi"
+      :requests-api="requestsApi"
+      :assistant-permissions="assistantPermissions"
       :week-policy-api="api"
       :group-id="groupId"
       :selected-date="selectedDate"
@@ -1853,6 +1864,7 @@ defineExpose({ openNotificationAction });
       @role-switch="openHomeRoleSwitch"
       @open-lesson="openHomeLesson"
       @open-homework="openHomework(true)"
+      @open-requests="navigateRoot('headman-requests', $event)"
       @open-log="openHomeLog"
       @error="forwardError"
     />
@@ -1860,6 +1872,7 @@ defineExpose({ openNotificationAction });
       v-else-if="requestsOpen"
       ref="requestsScreen"
       :api="requestsApi"
+      :initial-kind="homeRequestKind"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
@@ -1982,6 +1995,11 @@ defineExpose({ openNotificationAction });
       <ProfileScreen
         v-if="route.id === 'profile'"
         :snapshot="profileView.snapshot ?? profile"
+        :browser-login-approval="
+          !offline && !readOnly && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
+            ? profilePort?.browserLoginApproval ?? null
+            : null
+        "
         :loading="profileView.snapshotStatus === 'loading' && profile === null"
         :error="profileView.snapshotError"
         :theme="resolvedTheme"

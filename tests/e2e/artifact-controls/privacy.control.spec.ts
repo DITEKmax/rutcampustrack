@@ -392,6 +392,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     'cloud-accepted-helper-capabilities.spec.ts',
     'cloud-accepted-auth-security.spec.ts',
     'cloud-accepted-role-authority.spec.ts',
+    'cloud-accepted-admin-grants.spec.ts',
     '../clock-specs/teaching-clock-geo.spec.ts',
   ]) {
     const publicSpec = resolve(__dirname, '../specs', filename);

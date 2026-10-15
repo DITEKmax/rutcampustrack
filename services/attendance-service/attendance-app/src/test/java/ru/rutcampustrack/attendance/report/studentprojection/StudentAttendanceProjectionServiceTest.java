@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -452,8 +453,9 @@ class StudentAttendanceProjectionServiceTest {
                         LessonsResponse.newBuilder()
                                 .addLessons(lesson(11, 111, "2026-09-15", "closed"))
                                 .build());
-        when(academicGrpcClient.getGroupMembers(any(), any(), any()))
-                .thenReturn(roster(LocalDate.parse("2026-09-15")));
+        doReturn(roster(LocalDate.parse("2026-09-15")))
+                .when(academicGrpcClient)
+                .getGroupMembers(any(), any(), any());
         var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
         var comparison = result.graph().weeks().getFirst().groupPresent();
         assertThat(comparison.numerator()).isZero();
@@ -499,8 +501,9 @@ class StudentAttendanceProjectionServiceTest {
                 .isInstanceOf(StudentProjectionException.class);
         verify(attendanceReadPort, never()).findByLessonIds(any());
         when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
-        when(academicGrpcClient.getGroupMembers(any(), any(), any()))
-                .thenReturn(roster(LocalDate.parse("2026-09-14"), OWN_ID));
+        doReturn(roster(LocalDate.parse("2026-09-14"), OWN_ID))
+                .when(academicGrpcClient)
+                .getGroupMembers(any(), any(), any());
         assertThatThrownBy(() -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
                 .isInstanceOf(StudentProjectionException.class);
     }

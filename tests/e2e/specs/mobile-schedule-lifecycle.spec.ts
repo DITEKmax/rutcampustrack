@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import type { Page } from '@playwright/test';
+import type { Page, Response, TestInfo } from '@playwright/test';
 import { Actor, admit, expect, test as base, MobileDataset } from '../fixtures/mobile-dataset';
 import { http, registerPrivateSuite, selectRole } from '../fixtures/cloud-accepted-support';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
@@ -10,8 +10,10 @@ registerPrivateSuite();
 // The existing lesson-lifecycle spec uses a worker-scoped dataset and restores
 // its physical lesson as a new generation. Each scenario here owns a fresh
 // dataset: template/headman mutations never change that worker or the other case.
+const scenarioStartedAt = new WeakMap<TestInfo, number>();
 const test = base.extend<{ scenario: MobileDataset }>({
-  scenario: async ({ dataset, teachingInstant }, use) => {
+  scenario: async ({ dataset, teachingInstant }, use, info) => {
+    scenarioStartedAt.set(info, performance.now());
     const own = new MobileDataset(dataset.request, dataset.admin, teachingInstant);
     await own.initialize();
     await use(own);
@@ -1043,6 +1045,20 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     });
     await studentPage.getByRole('button', { name: 'Статистика', exact: true }).click();
     const overviewResponse = await overviewLoaded;
+    // Closed public status frames only; response contents and scope remain private RAM.
+    if (overviewResponse.status() === 400) throw new Error('Student statistics HTTP 400');
+    if (overviewResponse.status() === 401) throw new Error('Student statistics HTTP 401');
+    if (overviewResponse.status() === 403) throw new Error('Student statistics HTTP 403');
+    if (overviewResponse.status() === 404) throw new Error('Student statistics HTTP 404');
+    if (overviewResponse.status() === 409) throw new Error('Student statistics HTTP 409');
+    if (overviewResponse.status() === 410) throw new Error('Student statistics HTTP 410');
+    if (overviewResponse.status() === 422) throw new Error('Student statistics HTTP 422');
+    if (overviewResponse.status() === 423) throw new Error('Student statistics HTTP 423');
+    if (overviewResponse.status() === 429) throw new Error('Student statistics HTTP 429');
+    if (overviewResponse.status() === 500) throw new Error('Student statistics HTTP 500');
+    if (overviewResponse.status() === 502) throw new Error('Student statistics HTTP 502');
+    if (overviewResponse.status() === 503) throw new Error('Student statistics HTTP 503');
+    if (overviewResponse.status() === 504) throw new Error('Student statistics HTTP 504');
     expect(overviewResponse.status()).toBe(200);
     const overview = await overviewResponse.json();
     const metricText = (value: { percent: number | null }) =>
@@ -1341,16 +1357,43 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
 test('STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile', async ({
   page,
   scenario: dataset,
-}) => {
+}, info) => {
   // This existing student's otherGroup is its own genuinely empty scope.
   // The two response faults exercise the unchanged Today retry:1 client path,
   // not a Schedule outage; the manual retry below returns to the real server.
   const todayPath = '/api/v1/student/today';
-  const [emptyTodayResponse, emptyScopeResponse, emptyAdmission] = await Promise.all([
-    http(page, todayPath, 'GET'),
-    http(page, '/api/v1/student/session', 'GET'),
-    loginPwa(page, dataset.foreignStudent),
-  ]);
+  const admissionCutoff =
+    (scenarioStartedAt.get(info) ?? performance.now()) +
+    Math.max(0, Math.min(info.timeout, 240000) - 30000);
+  const [emptyTodayResponse, emptyScopeResponse, emptyAdmission] = await (async () => {
+    let observedToday: Response | undefined;
+    let observedScope: Response | undefined;
+    const todayMatch = (response: Response) =>
+      response.request().method() === 'GET' && new URL(response.url()).pathname === todayPath;
+    const scopeMatch = (response: Response) =>
+      response.request().method() === 'GET' &&
+      new URL(response.url()).pathname === '/api/v1/student/session';
+    const observe = (response: Response) => {
+      if (todayMatch(response)) observedToday ??= response;
+      if (scopeMatch(response)) observedScope ??= response;
+    };
+    // Observe without response timers while the existing helper obeys Retry-After.
+    page.on('response', observe);
+    try {
+      const remaining = Math.floor(admissionCutoff - performance.now());
+      expect(remaining, 'Positive empty-scope login retry budget remains').toBeGreaterThan(0);
+      const admission = await loginPwa(page, dataset.foreignStudent, {
+        retryUntilMs: Date.now() + Math.min(65000, remaining),
+      });
+      return [
+        observedToday ?? (await page.waitForResponse(todayMatch)),
+        observedScope ?? (await page.waitForResponse(scopeMatch)),
+        admission,
+      ] as const;
+    } finally {
+      page.off('response', observe);
+    }
+  })();
   expect(
     emptyAdmission.session.activeRole === 'STUDENT' &&
       String(emptyAdmission.session.userId) === String(dataset.foreignStudent.id),

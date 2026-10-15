@@ -1393,6 +1393,18 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     let contrastLessonId: number | undefined;
     let originalCancelAttempted = false;
     let pastCancelAttempted = false;
+    let shortcutSubjectId: number | undefined;
+    const shortcutCloseKey = randomUUID();
+    const currentSubjectScope = (value: {
+      taughtSubjectOptions: { groupId: string; subjectId: string; lessonTypes: string[] }[];
+    }) =>
+      value.taughtSubjectOptions
+        .flatMap((option) =>
+          option.lessonTypes.map(
+            (type) => `${option.groupId}:${option.subjectId}:${type.toUpperCase()}`,
+          ),
+        )
+        .sort();
     try {
       const submitted = await dataset.request.post('/api/v1/student/requests/excuse', {
         headers: { ...journalSeed.assistantActor.headers(), 'Idempotency-Key': pendingKey },
@@ -1418,6 +1430,11 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 
       await page.getByRole('button', { name: 'Назад', exact: true }).click();
       await page.getByRole('button', { name: 'Итоги', exact: true }).click();
+      await expect(
+        page.getByRole('status').filter({ hasText: 'У тебя одна группа — сравнивать не с чем.' }),
+      ).toBeVisible();
+      await expect(page.locator('.teacher-stats__card')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Перейти к студентам', exact: true }).click();
       await page.getByRole('button', { name: 'По студентам', exact: true }).click();
       await page.getByRole('button', { name: 'Группа', exact: true }).click();
       await page.getByRole('option', { name: groupName, exact: true }).click();
@@ -1690,8 +1707,157 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         (await yesterdayResponse.json()).lessons.map((lesson: { id: string }) => lesson.id),
       ).toEqual([String(journalSeed.lessonId)]);
       await expect(home.locator(`[data-lesson-id="${journalSeed.lessonId}"]`)).toBeVisible();
+
+      // An owned unscheduled subject exposes the accepted subject/type shortcut without changing dates.
+      const shortcutName = `Teacher shortcut ${randomUUID()}`;
+      const shortcutSubject = await dataset.headmanActor.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: shortcutName,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [
+            {
+              teacherId: dataset.teacher.id,
+              semesterId: dataset.semester.id,
+              lessonType: 'LECTURE',
+              validFrom: dataset.semester.dateFrom,
+              validUntilExclusive: null,
+            },
+          ],
+        },
+        [201],
+      );
+      shortcutSubjectId = Number(shortcutSubject.id);
+      expect(Number.isSafeInteger(shortcutSubjectId) && shortcutSubjectId > 0).toBe(true);
+      await expect
+        .poll(
+          async () => {
+            const response = await page.request.get(
+              `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`,
+              { headers },
+            );
+            try {
+              if (response.status() !== 200)
+                throw datasetHttpFailure('GET', '/api/v1/teacher/catalog', response.status());
+              const current = await response.json();
+              return current.taughtSubjectOptions.some(
+                (option: { groupId: string; subjectId: string; lessonTypes: string[] }) =>
+                  option.groupId === String(dataset.group.id) &&
+                  option.subjectId === String(shortcutSubjectId) &&
+                  option.lessonTypes.some((type) => type.toUpperCase() === 'LECTURE'),
+              );
+            } finally {
+              await response.dispose();
+            }
+          },
+          { timeout: 5000, message: 'Owned shortcut assignment becomes authoritative' },
+        )
+        .toBe(true);
+      const [freshCatalog] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/catalog' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id)
+          );
+        }),
+        page.reload(),
+      ]);
+      expect(freshCatalog.status()).toBe(200);
+      const shortcut = page
+        .locator('[data-teacher-action="journal-open"]')
+        .filter({ hasText: shortcutName });
+      await expect(shortcut).toHaveCount(1);
+      await expect(shortcut).toContainText(groupName);
+      await expect(shortcut).toContainText('Лекция');
+      const [shortcutResponse] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/journal' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(dataset.group.id) &&
+            url.searchParams.get('subjectId') === String(shortcutSubjectId) &&
+            url.searchParams
+              .getAll('lessonType')
+              .map((type) => type.toUpperCase())
+              .join() === 'LECTURE' &&
+            url.searchParams.get('pastOnly') === 'true' &&
+            url.searchParams.get('page') === '0' &&
+            url.searchParams.get('pageSize') === '100'
+          );
+        }),
+        shortcut.click(),
+      ]);
+      expect(shortcutResponse.status()).toBe(200);
+      const shortcutJournal = await shortcutResponse.json();
+      expect(shortcutJournal.lessons).toEqual([]);
+      expect(shortcutJournal.students).toEqual([]);
+      await expect(page.locator('.teacher-journal')).toBeVisible();
+      await expect(
+        page.locator('.teacher-journal').getByRole('button', { name: 'Лекция', exact: true }),
+      ).toHaveAttribute('aria-pressed', 'true');
     } finally {
       const cleanup = await Promise.allSettled([
+        ...(shortcutSubjectId
+          ? [
+              (async () => {
+                const subject = await dataset.headmanActor.call(
+                  'GET',
+                  `/api/academic/subjects/${shortcutSubjectId}`,
+                );
+                const assignment = subject.assignments.find(
+                  (row: { teacherId: number; semesterId: number; lessonType: string }) =>
+                    Number(row.teacherId) === dataset.teacher.id &&
+                    Number(row.semesterId) === dataset.semester.id &&
+                    row.lessonType.toUpperCase() === 'LECTURE',
+                );
+                expect(
+                  Number.isSafeInteger(Number(assignment?.id)) && Number(assignment.id) > 0,
+                ).toBe(true);
+                const closePath = `/api/academic/subjects/${shortcutSubjectId}/teachers/${dataset.teacher.id}?assignmentId=${assignment.id}&validUntilExclusive=${dataset.today}`;
+                await expect
+                  .poll(
+                    async () => {
+                      const closed = await dataset.request.delete(closePath, {
+                        headers: {
+                          ...dataset.headmanActor.headers(),
+                          'Idempotency-Key': shortcutCloseKey,
+                        },
+                      });
+                      try {
+                        if (![204, 503].includes(closed.status()))
+                          throw datasetHttpFailure('DELETE', closePath, closed.status());
+                        return closed.status();
+                      } finally {
+                        await closed.dispose();
+                      }
+                    },
+                    { timeout: 5000, message: 'Owned shortcut assignment closure completes' },
+                  )
+                  .toBe(204);
+                const restoredScope = await page.request.get(
+                  `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`,
+                  { headers },
+                );
+                try {
+                  expect(restoredScope.status()).toBe(200);
+                  const current = await restoredScope.json();
+                  expect(currentSubjectScope(current)).toEqual(currentSubjectScope(catalog));
+                  expect(current.groups.map((row: { id: string }) => row.id)).toEqual(
+                    catalog.groups.map((row: { id: string }) => row.id),
+                  );
+                } finally {
+                  await restoredScope.dispose();
+                }
+                // Retain the closed assignment and empty synthetic subject with their immutable history.
+              })(),
+            ]
+          : []),
         ...(pendingId
           ? [
               journalSeed.assistantActor.call(

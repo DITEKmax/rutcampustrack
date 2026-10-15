@@ -56,6 +56,81 @@ class StudentSessionProjectionTest {
     }
 
     @Test
+    void statisticsMapsKnownEmptyAndLegacyGroupComparisonWithoutChangingWeeklyKeys() {
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                STUDENT_ID,
+                                SESSION_ID,
+                                1L,
+                                1L,
+                                "STUDENT",
+                                "ACTIVE",
+                                GROUP_ID,
+                                false,
+                                false));
+        when(academic.activeSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("Осень")
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .build());
+        var point =
+                ru.rutcampustrack.attendance.grpc.StudentAttendanceSeriesPoint.newBuilder()
+                        .setId("week:2026-09-07")
+                        .setLabel("Неделя")
+                        .setDateFrom("2026-09-07")
+                        .setDateTo("2026-09-13")
+                        .setState("DATA");
+        var response =
+                ru.rutcampustrack.attendance.grpc.StudentAttendanceProjectionResponse.newBuilder()
+                        .setGraph(
+                                ru.rutcampustrack.attendance.grpc.StudentAttendanceGraph
+                                        .newBuilder()
+                                        .addWeeks(
+                                                point.clone()
+                                                        .setGroupPresent(
+                                                                ru.rutcampustrack.attendance.grpc
+                                                                        .StudentAttendanceGroupPresent
+                                                                        .newBuilder()
+                                                                        .setNumerator(2)
+                                                                        .setDenominator(3)
+                                                                        .setPercent(66.67)))
+                                        .addWeeks(
+                                                point.clone()
+                                                        .setId("empty")
+                                                        .setGroupPresent(
+                                                                ru.rutcampustrack.attendance.grpc
+                                                                        .StudentAttendanceGroupPresent
+                                                                        .newBuilder()))
+                                        .addWeeks(point.clone().setId("legacy")))
+                        .build();
+        when(attendance.projection(SEMESTER_ID, null, "weeks", java.util.List.of()))
+                .thenReturn(response);
+        var result = service.statistics(SEMESTER_ID).semesterSeries();
+        assertThat(result)
+                .extracting(
+                        ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                        .StudentAttendanceSeriesPoint
+                                ::id)
+                .containsExactly("week:2026-09-07", "empty", "legacy");
+        assertThat(result.getFirst().dateFrom()).isEqualTo(java.time.LocalDate.parse("2026-09-07"));
+        assertThat(result.getFirst().dateTo()).isEqualTo(java.time.LocalDate.parse("2026-09-13"));
+        assertThat(result.getFirst().groupPresent().numerator()).isEqualTo(2);
+        assertThat(result.getFirst().groupPresent().denominator()).isEqualTo(3);
+        assertThat(result.getFirst().groupPresent().percent()).isEqualTo(66.67);
+        assertThat(result.get(1).groupPresent().denominator()).isZero();
+        assertThat(result.get(1).groupPresent().percent()).isNull();
+        assertThat(result.getLast().groupPresent()).isNull();
+        var json = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
+        assertThat(json.valueToTree(result.getLast()).has("groupPresent")).isFalse();
+        assertThat(json.valueToTree(result.get(1)).path("groupPresent").path("percent").isNull())
+                .isTrue();
+    }
+
+    @Test
     void sessionProjectsCompleteValidatedIdentityAndPreservesExistingFields() {
         when(requestContext.claims())
                 .thenReturn(

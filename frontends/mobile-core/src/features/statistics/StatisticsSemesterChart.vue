@@ -209,6 +209,8 @@ function description(point: StatisticsSeriesPoint): string {
     dateLabel(point),
     statisticsPointState(point),
     `Проведено ${point.metrics.held} из ${point.metrics.planned}`,
+    `Был или уважительная причина: ${displayPercent(point.metrics.presentOrExcused.percent)}, ${point.metrics.presentOrExcused.count}`,
+    `Средняя своей группы: ${displayPercent(point.groupPresent?.percent ?? null)}`,
     ...bands.map((band) => `${labels[band]}: ${displayPercent(point.metrics[band].percent)}`),
   ]
     .filter(Boolean)
@@ -300,6 +302,18 @@ function description(point: StatisticsSeriesPoint): string {
               :height="STATISTICS_PLOT_HEIGHT"
             />
             <path
+              v-for="(path,index) in geometry.presentPaths"
+              :key="`own-${index}`"
+              class="statistics-chart__own-line"
+              :d="path"
+            />
+            <path
+              v-for="(path,index) in geometry.groupPaths"
+              :key="`group-${index}`"
+              class="statistics-chart__group-line"
+              :d="path"
+            />
+            <path
               v-if="readoutVisible && selected"
               class="statistics-chart__selection"
               :d="`M${geometry.cells[selectedIndex]?.center ?? 0} 0V${STATISTICS_PLOT_HEIGHT}`"
@@ -307,6 +321,10 @@ function description(point: StatisticsSeriesPoint): string {
           </svg>
         </div>
       </div>
+      <p class="statistics-chart__legend">
+        Моя посещаемость — сплошная линия. Средняя своей группы — пунктир.
+        <span v-if="!geometry.groupPaths.length">Для сравнения с группой нет данных.</span>
+      </p>
       <div
         ref="tickContainer"
         class="statistics-chart__ticks"
@@ -365,6 +383,14 @@ function description(point: StatisticsSeriesPoint): string {
         {{ statisticsPointState(selected) }}
       </p>
       <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
+      <p class="statistics-chart__primary-metrics">
+        Был: {{ displayPercent(selected.metrics.present.percent) }}, {{ selected.metrics.present.count }};
+        был или уважительная причина: {{ displayPercent(selected.metrics.presentOrExcused.percent) }}, {{ selected.metrics.presentOrExcused.count }}
+      </p>
+      <p class="statistics-chart__group-metric">
+        Средняя своей группы: {{ displayPercent(selected.groupPresent?.percent ?? null) }}
+        <span v-if="selected.groupPresent"> ({{ selected.groupPresent.numerator }}/{{ selected.groupPresent.denominator }})</span>
+      </p>
       <template v-if="hasStatisticsMarks(selected)">
         <div
           ref="detailMetrics"

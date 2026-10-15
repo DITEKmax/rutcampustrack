@@ -237,8 +237,17 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                     jdbc.queryForObject(
                             "INSERT INTO groups(name,is_active) VALUES(?,TRUE) RETURNING id",
                             Long.class,
-                            "Teacher export group " + UUID.randomUUID());
-            long subjectA = teacherSubject(group), subjectB = teacherSubject(group);
+                            "Teacher export "
+                                    + UUID.randomUUID()
+                                            .toString()
+                                            .replace("-", "")
+                                            .substring(0, 16));
+            List<Long> subjects =
+                    Objects.requireNonNull(
+                            transactions.execute(
+                                    status ->
+                                            List.of(teacherSubject(group), teacherSubject(group))));
+            long subjectA = subjects.get(0), subjectB = subjects.get(1);
             long assignmentA =
                     teacherAssignment(teacher, group, subjectA, ownSemester, today.minusDays(1));
             long assignmentB =

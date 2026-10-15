@@ -17,6 +17,7 @@ import type {
   StudentAttendanceResponse,
   StudentStatisticsOverviewResponse,
   StudentStatisticsSubjectDetailResponse,
+  StudentStatisticsRankingResponse,
 } from './types'
 
 export class StudentApiError extends Error {
@@ -36,6 +37,68 @@ export interface StudentApiOptions {
   accessToken: () => string | null
   onUnauthorized?: () => Promise<void>
   fetcher?: typeof fetch
+}
+
+/** Decode only the existing own-cohort projection; never resolve peer profiles. */
+export function decodeStatisticsRanking(value: unknown): StudentStatisticsRankingResponse {
+  const invalid = (): never => {
+    throw new TypeError('Некорректный ответ рейтинга группы')
+  }
+  const integer = (v: unknown, minimum: number): v is number =>
+    typeof v === 'number' && Number.isSafeInteger(v) && v >= minimum
+  const position = (v: unknown) => v === null || integer(v, 1)
+  if (!value || typeof value !== 'object') return invalid()
+  const page = value as Record<string, unknown>
+  if (
+    typeof page.available !== 'boolean' ||
+    !integer(page.page, 0) ||
+    !integer(page.size, 1) ||
+    page.size > 100 ||
+    !integer(page.total, 0) ||
+    !position(page.ownPosition) ||
+    !Array.isArray(page.rows) ||
+    page.rows.length > page.size ||
+    page.rows.length > page.total
+  )
+    return invalid()
+  const ids = new Set<string>()
+  let selfCount = 0
+  const rows = page.rows.map((value: unknown) => {
+    if (!value || typeof value !== 'object') return invalid()
+    const row = value as Record<string, unknown>
+    if (
+      typeof row.id !== 'string' ||
+      !/^[1-9][0-9]*$/.test(row.id) ||
+      ids.has(row.id) ||
+      typeof row.name !== 'string' ||
+      !row.name.trim() ||
+      !position(row.position) ||
+      (row.percentage !== null &&
+        (typeof row.percentage !== 'number' ||
+          !Number.isFinite(row.percentage) ||
+          row.percentage < 0 ||
+          row.percentage > 100)) ||
+      typeof row.isSelf !== 'boolean'
+    )
+      return invalid()
+    ids.add(row.id)
+    if (row.isSelf && ++selfCount > 1) return invalid()
+    return {
+      id: row.id,
+      name: row.name,
+      position: row.position as number | null,
+      percentage: row.percentage as number | null,
+      isSelf: row.isSelf,
+    }
+  })
+  return {
+    available: page.available,
+    page: page.page,
+    size: page.size,
+    total: page.total,
+    ownPosition: page.ownPosition as number | null,
+    rows,
+  }
 }
 
 /** The BFF accepts visible ASCII keys only; keeping this guard at the client
@@ -113,6 +176,30 @@ export class StudentApi {
     return this.request(
       `/api/v1/student/statistics/subjects/${encodeURIComponent(subjectId)}?${params.toString()}`,
       signal ? { signal } : undefined,
+    )
+  }
+
+  async getStatisticsRanking(
+    semesterId: string,
+    page: number | null = null,
+    size = 20,
+    signal?: AbortSignal,
+  ): Promise<StudentStatisticsRankingResponse> {
+    if (
+      (page !== null && (!Number.isSafeInteger(page) || page < 0)) ||
+      !Number.isSafeInteger(size) ||
+      size < 1 ||
+      size > 100
+    )
+      throw new RangeError('Некорректная страница рейтинга')
+    const params = new URLSearchParams({ semesterId, size: String(size) })
+    // Omission asks the server for the page containing the current student.
+    if (page !== null) params.set('page', String(page))
+    return decodeStatisticsRanking(
+      await this.request<unknown>(
+        `/api/v1/student/statistics/ranking?${params.toString()}`,
+        signal ? { signal } : undefined,
+      ),
     )
   }
 

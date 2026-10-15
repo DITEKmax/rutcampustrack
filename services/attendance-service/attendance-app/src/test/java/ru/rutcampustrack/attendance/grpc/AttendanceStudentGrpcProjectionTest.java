@@ -82,6 +82,12 @@ class AttendanceStudentGrpcProjectionTest {
         assertThat(control.responses).hasSize(1);
         StudentAttendanceProjectionResponse expected = control.responses.getFirst();
         assertThat(expected.getMetrics().getAbsent().getCount()).isEqualTo(1);
+        assertThat(expected.getGraph().getWeeks(0).getGroupPresent().getNumerator()).isEqualTo(2);
+        assertThat(expected.getGraph().getWeeks(0).getGroupPresent().getDenominator()).isEqualTo(3);
+        assertThat(expected.getGraph().getWeeks(0).getGroupPresent().getPercent()).isEqualTo(66.67);
+        assertThat(expected.getGraph().getWeeks(1).hasGroupPresent()).isTrue();
+        assertThat(expected.getGraph().getWeeks(1).getGroupPresent().hasPercent()).isFalse();
+        assertThat(expected.getGraph().getWeeks(2).hasGroupPresent()).isFalse();
         assertThat(expected.getDays(0).getLessons(0).getStatus()).isEqualTo("ABSENT");
         assertThat(expected.getSubjects(0).getTypeCards(0).getHistory(0).getStatus())
                 .isEqualTo("ABSENT");
@@ -158,7 +164,29 @@ class AttendanceStudentGrpcProjectionTest {
                 metrics,
                 List.of(day),
                 List.of(subject),
-                new StudentAttendanceProjectionService.Graph(List.of(), List.of()),
+                new StudentAttendanceProjectionService.Graph(
+                        List.of(),
+                        List.of(
+                                new StudentAttendanceProjectionService.SeriesPoint(
+                                        "week:2026-10-05",
+                                        "week",
+                                        DATE,
+                                        DATE,
+                                        "DATA",
+                                        metrics,
+                                        new StudentAttendanceProjectionService.GroupPresent(
+                                                2, 3, new java.math.BigDecimal("66.67"))),
+                                new StudentAttendanceProjectionService.SeriesPoint(
+                                        "empty",
+                                        "empty",
+                                        DATE,
+                                        DATE,
+                                        "NO_DATA",
+                                        metrics,
+                                        new StudentAttendanceProjectionService.GroupPresent(
+                                                0, 0, null)),
+                                new StudentAttendanceProjectionService.SeriesPoint(
+                                        "legacy", "legacy", DATE, DATE, "DATA", metrics))),
                 new StudentAttendanceProjectionService.Rank(null, 0, false));
     }
 

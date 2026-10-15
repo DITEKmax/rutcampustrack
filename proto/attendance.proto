@@ -272,6 +272,14 @@ message StudentAttendanceSeriesPoint {
   string date_to = 4;
   string state = 5; // DATA, NO_DATA, FUTURE
   StudentAttendanceMetricSet metrics = 6;
+  StudentAttendanceGroupPresent group_present = 7;
+}
+
+// Aggregate historical student/lesson cells only; no roster identities.
+message StudentAttendanceGroupPresent {
+  int32 numerator = 1;
+  int32 denominator = 2;
+  optional double percent = 3;
 }
 
 message StudentAttendanceOwnRank {

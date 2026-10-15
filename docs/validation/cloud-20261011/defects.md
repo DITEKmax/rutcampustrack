@@ -399,3 +399,13 @@ JS-ADMIN-12 / JS-SYSTEM-13 implementation is now published and independently Sou
 HARNESS-552-CAUSAL-001: canonical Academic JSON had not been followed by its stock generated TypeScript consumer; Python lint depended on canonical package inference; TeacherREADY fixture omitted V24 NOT NULL timestamps. Minimal exact output/style/fixture corrections integrated with targeted independent review; production constraints and test assertions retained. Actual Academic Admin HTTP/PG three named cases now PASS at552, while its client/files/Mongo/sensitivity requirements remain separate.
 
 HARNESS-552-LOGIN-LOCATOR-001: Source counterexample exact password label matches both new D024 tabpanel and input under installed Playwright1.59.1. The helper now intersects that same label with the actual password input. All three actual552 initial-login failures are preserved; their runtime cause remains UNKNOWN until corrected genuine browser execution. No role/authentication/assertion/cap change. Evidence central552b033_initial_PWA_password_locator_Root_integration.
+
+
+## 2026-10-15T16:26:35.389183+00:00 — accepted STUDENT statistics Source integration
+
+JS-STUDENT-14/17/19 source gaps implemented and coherently reviewed: supplied combined metric, current own-group ranking and same-grid pooled historical group comparison. F1 group-line suppression by personal FUTURE state corrected with actual old-code RED and12geometry GREEN, independently rechecked. Exact24 Created/Modified inventory and source pins in central0132225_STUDENT_statistics_Root_integration. Matrix now UNKNOWN, not GAP or nativePASS; real current browser/backend/DB and critical sensitivity still required. No personal export or unsupported desktop controls added.
+
+
+## 2026-10-15T16:50:43.896120+00:00 — ADMIN ordinary reset current native closure
+
+DF-ADMIN-ORDINARY-RESET-001 FIXED_CURRENT_NATIVE: exact013 controlled previous-authority failure at432, byte-exact production restoration, and both409/487 named PostgreSQL/HTTP tests PASS. Independentc88 source/matrix mapping accepts JS-ADMIN-14 product boundary; external operator recovery is outside product and was not executed. Other Auth export/snapshot failures remain separate. Evidence central0132225_Auth_ADMIN14_relevant_native_chain_complete /0132225_ADMIN14_independent_family_acceptance.

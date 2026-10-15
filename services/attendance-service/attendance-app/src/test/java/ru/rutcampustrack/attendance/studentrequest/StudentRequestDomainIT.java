@@ -449,6 +449,152 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {
+        var subject =
+                ru.rutcampustrack.academic.grpc.AcademicSubjectInfo.newBuilder()
+                        .setSubjectId(1071L)
+                        .setSubjectName("Synthetic subject")
+                        .setSubjectType("discipline")
+                        .setGroupId(GROUP_ID)
+                        .addLessonTypes("LECTURE")
+                        .build();
+        var scope =
+                ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse.newBuilder()
+                        .setStudentId(STUDENT_ID)
+                        .setSemesterId(SEMESTER_ID)
+                        .setDateFrom("2026-09-01")
+                        .setDateTo("2026-09-30")
+                        .setServerDate("2026-09-10")
+                        .addSubjects(subject)
+                        .addRankSubjects(subject)
+                        .setRankGroupId(GROUP_ID)
+                        .setRankEligible(true)
+                        .setRankVisibility(
+                                ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
+                        .addActiveRosterUserIds(STUDENT_ID)
+                        .addOwnMembershipSegments(
+                                ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment
+                                        .newBuilder()
+                                        .setGroupId(GROUP_ID)
+                                        .setDateFrom("2026-09-08")
+                                        .setDateUntilExclusive("2026-10-01")
+                                        .addSubjectIds(1071L))
+                        .build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope);
+        var beforeJoin =
+                canonicalLesson(70L, 170L).toBuilder()
+                        .setSubjectId(1071L)
+                        .setDate("2026-09-07")
+                        .build();
+        var first = canonicalLesson(71L, 171L).toBuilder().setDate("2026-09-08").build();
+        var second =
+                canonicalLesson(72L, 172L).toBuilder()
+                        .setSubjectId(1071L)
+                        .setDate("2026-09-09")
+                        .build();
+        when(scheduleGrpcClient.getLessonsByGroup(anyLong(), anyLong(), anyString(), anyString()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(beforeJoin)
+                                .addLessons(first)
+                                .addLessons(second)
+                                .build());
+        when(academicGrpcClient.getGroupMembers(
+                        eq(GROUP_ID),
+                        org.mockito.ArgumentMatchers.any(LocalDate.class),
+                        eq(SEMESTER_ID)))
+                .thenAnswer(
+                        invocation -> {
+                            LocalDate date = invocation.getArgument(1);
+                            var roster =
+                                    GroupMembersResponse.newBuilder()
+                                            .setAsOfDate(date.toString())
+                                            .setSemesterId(SEMESTER_ID);
+                            List<Long> ids =
+                                    date.getDayOfMonth() == 7
+                                            ? List.of(200L)
+                                            : date.getDayOfMonth() == 8
+                                                    ? List.of(STUDENT_ID, 200L)
+                                                    : List.of(STUDENT_ID, 300L);
+                            ids.forEach(
+                                    id ->
+                                            roster.addStudents(
+                                                    StudentInfo.newBuilder().setUserId(id)));
+                            return roster.build();
+                        });
+        for (var cell :
+                List.of(
+                        new long[] {70, 200, 7, 0},
+                        new long[] {71, STUDENT_ID, 8, 0},
+                        new long[] {71, 200, 8, 1},
+                        new long[] {72, STUDENT_ID, 9, 2},
+                        new long[] {72, 999, 9, 0})) {
+            AttendanceStatus status =
+                    cell[3] == 0
+                            ? AttendanceStatus.PRESENT
+                            : cell[3] == 1
+                                    ? AttendanceStatus.FREE_ATTENDANCE
+                                    : AttendanceStatus.EXCUSED;
+            attendanceRepository.save(
+                    AttendanceDocument.builder()
+                            .lessonId(cell[0])
+                            .userId(cell[1])
+                            .groupId(GROUP_ID)
+                            .subjectId(1071L)
+                            .semesterId(SEMESTER_ID)
+                            .lessonDate(LocalDate.of(2026, 9, (int) cell[2]))
+                            .status(status)
+                            .source(AttendanceSource.HEADMAN)
+                            .createdAt(START)
+                            .updatedAt(START)
+                            .build());
+        }
+        var claims =
+                new ru.rutcampustrack.shared.security.InternalJwtClaims(
+                        STUDENT_ID,
+                        UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        GROUP_ID,
+                        false,
+                        false);
+        var projection =
+                new ru.rutcampustrack.attendance.report.studentprojection
+                        .StudentAttendanceProjectionService(
+                        new AttendanceReadPortImpl(mongoTemplate),
+                        academicGrpcClient,
+                        scheduleGrpcClient,
+                        clock);
+        var point =
+                projection
+                        .project(claims, SEMESTER_ID, null, "weeks", List.of())
+                        .graph()
+                        .weeks()
+                        .getFirst();
+        assertThat(point.id()).isEqualTo("week:2026-09-07");
+        assertThat(point.metrics().presentPercent()).isEqualByComparingTo("50.00");
+        assertThat(point.groupPresent().numerator()).isEqualTo(2);
+        assertThat(point.groupPresent().denominator()).isEqualTo(5);
+        assertThat(point.groupPresent().percent()).isEqualByComparingTo("40.00");
+        assertThat(attendanceRepository.count()).isEqualTo(5);
+        var foreign =
+                scope.toBuilder()
+                        .setRankGroupId(GROUP_ID + 1)
+                        .clearRankSubjects()
+                        .addRankSubjects(subject.toBuilder().setGroupId(GROUP_ID + 1))
+                        .build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(foreign);
+        assertThatThrownBy(() -> projection.project(claims, SEMESTER_ID, null, "weeks", List.of()))
+                .isInstanceOf(
+                        ru.rutcampustrack.attendance.report.studentprojection
+                                .StudentProjectionException.class);
+        assertThat(attendanceRepository.count()).isEqualTo(5);
+    }
+
+    @Test
     void closedMissingMarksOfferSubmitAndApproveBothRequestKinds() {
         var available = service.options(STUDENT, List.of(snapshot(71L), snapshot(72L)));
         assertThat(available.lessons())

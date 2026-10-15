@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { StudentApi } from './student-client'
+import { decodeStatisticsRanking, StudentApi } from './student-client'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -112,5 +112,58 @@ describe('StudentApi Requests transport', () => {
     expect(calls).toBe(0)
     await expect(api.downloadRequestAttachment('request-1', 'file-1')).resolves.toBeInstanceOf(Blob)
     expect(accept).toBe('application/octet-stream')
+  })
+})
+
+describe('StudentApi current own-group ranking boundary', () => {
+  const page = {
+    available: true,
+    page: 1,
+    size: 20,
+    total: 42,
+    ownPosition: 22,
+    rows: [{ id: '1', name: '<Своё имя>', position: 22, percentage: 0, isSelf: true }],
+  }
+  it('requests the own anchored page by omission and preserves true zero/null without coercion', async () => {
+    const requests: Array<{ url: URL; signal: AbortSignal | null | undefined }> = []
+    const api = new StudentApi({
+      accessToken: () => 'synthetic',
+      fetcher: async (input, init) => {
+        requests.push({ url: new URL(String(input), 'https://fixture'), signal: init?.signal })
+        return Response.json(page)
+      },
+    })
+    const controller = new AbortController()
+    expect(await api.getStatisticsRanking('7', null, 20, controller.signal)).toEqual(page)
+    expect(requests[0]?.url.pathname).toBe('/api/v1/student/statistics/ranking')
+    expect(requests[0]?.url.searchParams.has('page')).toBe(false)
+    expect(requests[0]?.signal).toBe(controller.signal)
+    await api.getStatisticsRanking('7', 0, 100)
+    expect(requests[1]?.url.searchParams.get('page')).toBe('0')
+    expect(requests[1]?.url.searchParams.get('size')).toBe('100')
+    expect(
+      decodeStatisticsRanking({
+        ...page,
+        rows: [{ ...page.rows[0], percentage: null, position: null }],
+      }).rows[0]?.percentage,
+    ).toBeNull()
+  })
+  it.each([
+    { ...page, page: -1 },
+    { ...page, size: 101 },
+    { ...page, total: '42' },
+    { ...page, rows: [{ ...page.rows[0], percentage: '0' }] },
+    { ...page, rows: [{ ...page.rows[0], percentage: Number.NaN }] },
+    { ...page, rows: [{ ...page.rows[0], isSelf: 'true' }] },
+    { ...page, rows: [page.rows[0], page.rows[0]] },
+  ])('rejects malformed ranking instead of constructing a usable peer list', (value) => {
+    expect(() => decodeStatisticsRanking(value)).toThrow(TypeError)
+  })
+  it('rejects invalid page/size before a request', async () => {
+    const fetcher = vi.fn()
+    const api = new StudentApi({ accessToken: () => null, fetcher })
+    await expect(api.getStatisticsRanking('7', -1)).rejects.toThrow(RangeError)
+    await expect(api.getStatisticsRanking('7', 0, 0)).rejects.toThrow(RangeError)
+    expect(fetcher).not.toHaveBeenCalled()
   })
 })

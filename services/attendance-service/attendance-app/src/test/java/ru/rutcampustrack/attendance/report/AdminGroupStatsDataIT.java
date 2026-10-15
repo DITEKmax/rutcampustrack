@@ -126,8 +126,7 @@ class AdminGroupStatsDataIT extends AbstractAttendanceIntegrationTest {
                             for (int depth = 0; cause != null && depth < 8; depth++) {
                                 if (cause
                                         instanceof
-                                        ru.rutcampustrack.attendance.contract.exception
-                                                .ConflictException) {
+                                        ru.rutcampustrack.attendance.exception.ConflictException) {
                                     conflict = true;
                                     break;
                                 }

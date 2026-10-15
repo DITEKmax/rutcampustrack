@@ -603,7 +603,9 @@ test('own profile security changes password and replacement login rejects old au
         page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
       ).toBeVisible();
       await expect(page.getByLabel('Логин', { exact: true })).toBeDisabled();
-      await expect(page.getByLabel('Пароль', { exact: true })).toBeDisabled();
+      await expect(
+        page.getByLabel('Пароль', { exact: true }).and(page.locator('input[name="password"]')),
+      ).toBeDisabled();
       await expect(page.locator('.login-card__submit')).toHaveAttribute('aria-busy', 'true');
       await expect(
         page.getByRole('navigation', { name: 'Основная навигация', exact: true }),

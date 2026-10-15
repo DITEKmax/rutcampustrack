@@ -1,13 +1,17 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +61,9 @@ class StudentAttendanceProjectionServiceTest {
                         academicGrpcClient,
                         scheduleGrpcClient,
                         Clock.fixed(Instant.parse("2026-09-20T10:00:00Z"), ZoneOffset.UTC));
+        lenient()
+                .when(academicGrpcClient.getGroupMembers(any(), any(), any()))
+                .thenAnswer(invocation -> roster(invocation.getArgument(1), OWN_ID, 200L, 300L));
     }
 
     @Test
@@ -372,6 +379,152 @@ class StudentAttendanceProjectionServiceTest {
                         new StudentAttendanceProjectionService.RankingPage(
                                 false, 0, 20, 0, null, List.of()));
         verifyNoInteractions(attendanceReadPort, scheduleGrpcClient);
+    }
+
+    @Test
+    void weeklyComparisonPoolsHistoricalCellsIncludingLessonsBeforeLateJoinAndNoData() {
+        var scope =
+                scope().toBuilder()
+                        .clearActiveRosterUserIds()
+                        .addActiveRosterUserIds(OWN_ID)
+                        .setOwnMembershipSegments(
+                                0,
+                                scope().getOwnMembershipSegments(0).toBuilder()
+                                        .setDateFrom("2026-09-15"))
+                        .build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope);
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(20, 120, "2026-09-14", "closed"))
+                                .addLessons(lesson(21, 121, "2026-09-15", "closed"))
+                                .addLessons(lesson(22, 122, "2026-09-16", "closed"))
+                                .addLessons(lesson(23, 123, "2026-09-17", "cancelled"))
+                                .addLessons(lesson(24, 124, "2026-09-18", "transferred"))
+                                .addLessons(lesson(25, 125, "2026-09-21", "planned"))
+                                .addLessons(lesson(26, 126, "2026-09-22", "closed"))
+                                .build());
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
+                                mark(21, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(22, OWN_ID, AttendanceStatus.EXCUSED, "2026-09-16")));
+        when(academicGrpcClient.getGroupMembers(
+                        RANK_GROUP_ID, LocalDate.parse("2026-09-14"), SEMESTER_ID))
+                .thenReturn(roster(LocalDate.parse("2026-09-14"), 200L));
+        when(academicGrpcClient.getGroupMembers(
+                        RANK_GROUP_ID, LocalDate.parse("2026-09-16"), SEMESTER_ID))
+                .thenReturn(roster(LocalDate.parse("2026-09-16"), OWN_ID, 400L));
+        when(attendanceReadPort.findByLessonIds(List.of(20L, 21L, 22L)))
+                .thenReturn(
+                        List.of(
+                                mark(20, 200, AttendanceStatus.PRESENT, "2026-09-14"),
+                                mark(21, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(21, 200, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(21, 999, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(22, OWN_ID, AttendanceStatus.EXCUSED, "2026-09-16"),
+                                mark(22, 400, AttendanceStatus.PRESENT, "2026-09-16"),
+                                mark(22, 300, AttendanceStatus.PRESENT, "2026-09-16")));
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        var points = result.graph().weeks();
+        assertThat(points)
+                .extracting(StudentAttendanceProjectionService.SeriesPoint::id)
+                .containsExactly("week:2026-09-14", "week:2026-09-21");
+        var group = points.getFirst().groupPresent();
+        assertThat(group.numerator()).isEqualTo(4);
+        assertThat(group.denominator()).isEqualTo(6);
+        assertThat(group.percent()).isEqualByComparingTo("66.67");
+        assertThat(points.getFirst().metrics().presentPercent()).isEqualByComparingTo("50.00");
+        assertThat(points.getLast().groupPresent().numerator()).isZero();
+        assertThat(points.getLast().groupPresent().denominator()).isZero();
+        assertThat(points.getLast().groupPresent().percent()).isNull();
+        assertThat(result.graph().days())
+                .allSatisfy(point -> assertThat(point.groupPresent()).isNull());
+        verify(academicGrpcClient, never())
+                .getGroupMembers(RANK_GROUP_ID, LocalDate.parse("2026-09-22"), SEMESTER_ID);
+    }
+
+    @Test
+    void knownEmptyHistoricalRosterHasNullRatherThanZeroPercent() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 111, "2026-09-15", "closed"))
+                                .build());
+        when(academicGrpcClient.getGroupMembers(any(), any(), any()))
+                .thenReturn(roster(LocalDate.parse("2026-09-15")));
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        var comparison = result.graph().weeks().getFirst().groupPresent();
+        assertThat(comparison.numerator()).isZero();
+        assertThat(comparison.denominator()).isZero();
+        assertThat(comparison.percent()).isNull();
+    }
+
+    @Test
+    void legitimateHiddenCatalogueStaysUnknownWithoutReadingOtherStudents() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .clearRankGroupId()
+                                .clearRankSubjects()
+                                .setRankEligible(false)
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 111, "2026-09-15", "closed"))
+                                .build());
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        assertThat(result.graph().weeks())
+                .singleElement()
+                .satisfies(point -> assertThat(point.groupPresent()).isNull());
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+        verify(academicGrpcClient, never()).getGroupMembers(any(), any(), any());
+    }
+
+    @Test
+    void foreignCurrentGroupAndInvalidHistoricalSnapshotFailClosed() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(scope().toBuilder().setRankGroupId(RANK_GROUP_ID + 1).build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 111, "2026-09-15", "closed"))
+                                .build());
+        assertThatThrownBy(() -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                .isInstanceOf(StudentProjectionException.class);
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        when(academicGrpcClient.getGroupMembers(any(), any(), any()))
+                .thenReturn(roster(LocalDate.parse("2026-09-14"), OWN_ID));
+        assertThatThrownBy(() -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                .isInstanceOf(StudentProjectionException.class);
+    }
+
+    private static InternalJwtClaims claims() {
+        return new InternalJwtClaims(
+                OWN_ID,
+                UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                RANK_GROUP_ID,
+                false,
+                false);
+    }
+
+    private static GroupMembersResponse roster(LocalDate date, long... ids) {
+        var result =
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate(date.toString())
+                        .setSemesterId(SEMESTER_ID);
+        for (long id : ids) result.addStudents(StudentInfo.newBuilder().setUserId(id));
+        return result.build();
     }
 
     private static StudentProjectionScopeResponse scope() {

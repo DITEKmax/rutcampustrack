@@ -677,14 +677,24 @@ public class AttendanceStudentGrpcServiceImpl
 
     private static StudentAttendanceSeriesPoint toProto(
             StudentAttendanceProjectionService.SeriesPoint point) {
-        return StudentAttendanceSeriesPoint.newBuilder()
-                .setId(point.id())
-                .setLabel(point.label())
-                .setDateFrom(point.dateFrom().toString())
-                .setDateTo(point.dateTo().toString())
-                .setState(point.state())
-                .setMetrics(toProto(point.metrics()))
-                .build();
+        StudentAttendanceSeriesPoint.Builder result =
+                StudentAttendanceSeriesPoint.newBuilder()
+                        .setId(point.id())
+                        .setLabel(point.label())
+                        .setDateFrom(point.dateFrom().toString())
+                        .setDateTo(point.dateTo().toString())
+                        .setState(point.state())
+                        .setMetrics(toProto(point.metrics()));
+        if (point.groupPresent() != null) {
+            var metric = point.groupPresent();
+            var group =
+                    StudentAttendanceGroupPresent.newBuilder()
+                            .setNumerator(metric.numerator())
+                            .setDenominator(metric.denominator());
+            if (metric.percent() != null) group.setPercent(metric.percent().doubleValue());
+            result.setGroupPresent(group);
+        }
+        return result.build();
     }
 
     private static StudentAttendanceOwnRank toProto(StudentAttendanceProjectionService.Rank rank) {

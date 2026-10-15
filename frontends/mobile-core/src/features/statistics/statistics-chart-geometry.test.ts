@@ -175,3 +175,47 @@ describe('statistics adaptive measured calendar axis', () => {
     })
   })
 })
+
+describe('same-bucket server group comparison', () => {
+  it('draws true zero, separates explicit unknown gaps and never replaces null by zero', () => {
+    const a = {
+      ...point('a', '2026-09-01'),
+      groupPresent: { numerator: 0, denominator: 4, percent: 0 },
+    }
+    const absent = { ...point('b', '2026-09-02'), groupPresent: null }
+    const c = {
+      ...point('c', '2026-09-03'),
+      groupPresent: { numerator: 3, denominator: 4, percent: 75 },
+    }
+    const geometry = statisticsGeometry([a, absent, c])
+    expect(geometry.groupPaths).toHaveLength(2)
+    expect(geometry.groupPaths[0]).toContain('144.00')
+    expect(geometry.groupPaths[1]).toContain('36.00')
+    expect(
+      statisticsGeometry([{ ...a, groupPresent: { numerator: 0, denominator: 0, percent: null } }])
+        .groupPaths,
+    ).toEqual([])
+    expect(statisticsGeometry([point('legacy', '2026-09-01')]).groupPaths).toEqual([])
+  })
+})
+
+it('keeps a known group line when the personal week is future and uncounted', () => {
+  const future = {
+    ...point('late-join-week', '2026-09-14', '2026-09-20', 'FUTURE'),
+    metrics: {
+      present: { count: 0, percent: null },
+      presentOrExcused: { count: 0, percent: null },
+      absent: { count: 0, percent: null },
+      excused: { count: 0, percent: null },
+      held: 0,
+      planned: 1,
+    },
+    groupPresent: { numerator: 1, denominator: 4, percent: 25 },
+  }
+  const geometry = statisticsGeometry([future], { range: 'weeks' })
+  expect(geometry.presentPaths).toEqual([])
+  expect(geometry.groupPaths).toEqual(['M 0.00,108.00 L 142.00,108.00 L 284.00,108.00'])
+  expect(future.state).toBe('FUTURE')
+  expect(future.metrics.held).toBe(0)
+  expect(future.groupPresent).toEqual({ numerator: 1, denominator: 4, percent: 25 })
+})

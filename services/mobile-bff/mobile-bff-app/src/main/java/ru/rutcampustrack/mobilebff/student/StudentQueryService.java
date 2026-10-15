@@ -696,7 +696,15 @@ public class StudentQueryService {
                 LocalDate.parse(source.getDateFrom()),
                 LocalDate.parse(source.getDateTo()),
                 upstreamEnum(StudentAttendanceGraphState.class, source.getState()),
-                metricSet(source.getMetrics()));
+                metricSet(source.getMetrics()),
+                source.hasGroupPresent()
+                        ? new StudentAttendanceGroupPresent(
+                                source.getGroupPresent().getNumerator(),
+                                source.getGroupPresent().getDenominator(),
+                                source.getGroupPresent().hasPercent()
+                                        ? source.getGroupPresent().getPercent()
+                                        : null)
+                        : null);
     }
 
     private static StudentAttendanceOwnRank rank(

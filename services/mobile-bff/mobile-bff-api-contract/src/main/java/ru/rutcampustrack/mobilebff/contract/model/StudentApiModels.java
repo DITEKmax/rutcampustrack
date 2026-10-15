@@ -426,7 +426,29 @@ public final class StudentApiModels {
             LocalDate dateFrom,
             LocalDate dateTo,
             StudentAttendanceGraphState state,
-            StudentAttendanceMetricSet metrics) {}
+            StudentAttendanceMetricSet metrics,
+            @JsonInclude(JsonInclude.Include.NON_NULL) StudentAttendanceGroupPresent groupPresent) {
+        public StudentAttendanceSeriesPoint(
+                String id,
+                String label,
+                LocalDate dateFrom,
+                LocalDate dateTo,
+                StudentAttendanceGraphState state,
+                StudentAttendanceMetricSet metrics) {
+            this(id, label, dateFrom, dateTo, state, metrics, null);
+        }
+    }
+
+    @Schema(
+            name = "StudentAttendanceGroupPresent",
+            requiredProperties = {"numerator", "denominator", "percent"})
+    public record StudentAttendanceGroupPresent(
+            int numerator,
+            int denominator,
+            @Schema(
+                            types = {"number", "null"},
+                            format = "double")
+                    Double percent) {}
 
     @Schema(
             name = "StudentAttendanceGraph",

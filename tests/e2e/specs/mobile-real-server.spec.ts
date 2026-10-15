@@ -2240,7 +2240,9 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       } else if (journal.lessons.length === 0) {
         expect(journal.students).toEqual([]);
         await expect(
-          page.getByRole('status').filter({ hasText: 'В выбранных занятиях нет студентов.' }),
+          page
+            .getByRole('status')
+            .filter({ hasText: 'В выбранном периоде прошедших занятий нет.' }),
         ).toBeVisible();
       } else {
         expect(journal.students.map((row: { studentId: string }) => row.studentId).sort()).toEqual(
@@ -2406,7 +2408,6 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
     expect(knownMarks(after.entries)).toEqual(knownMarks(before.entries));
 
     // D024: the same signed mobile owner explicitly rejects a browser LOGIN proof.
-    await page.getByRole('button', { name: 'Назад', exact: true }).click();
     await page.getByRole('button', { name: 'Профиль', exact: true }).click();
     await page.getByRole('button', { name: 'Вход в браузере', exact: true }).click();
     try {
@@ -3509,7 +3510,10 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await logoutPwa(page);
       // Keep this document alive: loginPwa.goto would destroy the delayed callback.
       await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
-      await page.getByLabel('Пароль', { exact: true }).fill(dataset.foreignStudent.password);
+      await page
+        .getByLabel('Пароль', { exact: true })
+        .and(page.locator('input[name="password"]'))
+        .fill(dataset.foreignStudent.password);
       const [login, current] = await Promise.all([
         page.waitForResponse(
           (item) =>

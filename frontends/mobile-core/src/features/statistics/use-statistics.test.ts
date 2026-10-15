@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { StudentApi } from '../../api/student-client'
 import type { StudentStatisticsSubjectDetailResponse } from '../../api/types'
 import type { StudentFeatureScope } from '../../shared/session-owner'
-import { useStatistics } from './use-statistics'
+import { toStatisticsOverview, useStatistics } from './use-statistics'
 
 const metrics = {
   present: { count: 2, percent: 50 },
@@ -66,6 +66,7 @@ const renderer = createRenderer<object, object>({
 const apps: App[] = []
 const clients: QueryClient[] = []
 function mount(fetcher: typeof fetch, gcTime = 0) {
+  const offline = ref(false)
   const scope = ref<StudentFeatureScope>({
     userId: 'student',
     activeRole: 'STUDENT',
@@ -86,7 +87,7 @@ function mount(fetcher: typeof fetch, gcTime = 0) {
       controller = useStatistics(
         new StudentApi({ fetcher, accessToken: () => 'test' }),
         scope,
-        false,
+        offline,
       )
       return () => null
     },
@@ -94,7 +95,7 @@ function mount(fetcher: typeof fetch, gcTime = 0) {
   app.use(VueQueryPlugin, { queryClient: client }).mount({})
   apps.push(app)
   clients.push(client)
-  return { controller, scope }
+  return { controller, scope, offline, app, client }
 }
 afterEach(() => {
   apps.splice(0).forEach((app) => app.unmount())
@@ -241,4 +242,144 @@ describe('statistics query owner and independent cards', () => {
     await nextTick()
     expect(controller.detailData.value?.name).toBe('new-owner')
   })
+})
+
+const ranking = (page = 1, self = true) => ({
+  available: true,
+  page,
+  size: 20,
+  total: 42,
+  ownPosition: 22,
+  rows: [
+    {
+      id: self ? '1' : '2',
+      name: self ? 'Свой студент' : 'Сосед',
+      position: page * 20 + 2,
+      percentage: 50,
+      isSelf: self,
+    },
+  ],
+})
+describe('own-cohort ranking stays within the current query owner', () => {
+  it('is opt-in, anchors at self, hides previous rows during paging and clears on deny', async () => {
+    const next = deferred<Response>()
+    const seen: URL[] = []
+    const { controller, scope } = mount(async (input) => {
+      const url = new URL(String(input), 'https://fixture')
+      if (!url.pathname.endsWith('/ranking')) return reply(overview)
+      seen.push(url)
+      if (!url.searchParams.has('page')) return reply(ranking())
+      if (url.searchParams.get('page') === '2') return next.promise
+      return reply({}, 403)
+    }, 300000)
+    scope.value = { ...scope.value, userId: '1' }
+    await nextTick()
+    expect(seen).toHaveLength(0)
+    controller.openRanking()
+    await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('ready'))
+    expect(seen[0]?.searchParams.has('page')).toBe(false)
+    controller.setRankingPage(2)
+    expect(controller.rankingState.value.status).toBe('loading')
+    next.resolve(reply(ranking(2, false)))
+    await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('ready'))
+    const state = controller.rankingState.value
+    expect(state.status === 'ready' && state.data.rows[0]?.id).toBe('2')
+    controller.setRankingPage(0)
+    await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('forbidden'))
+    expect('data' in controller.rankingState.value).toBe(false)
+  })
+  it('aborts old owner requests and never displays their late rows after UID/SID change', async () => {
+    const old = deferred<Response>()
+    let signal: AbortSignal | null | undefined
+    const { controller, scope, client } = mount(async (input, init) => {
+      if (!String(input).includes('/ranking')) return reply(overview)
+      signal = init?.signal
+      return old.promise
+    }, 300000)
+    scope.value = { ...scope.value, userId: '1' }
+    controller.openRanking()
+    await vi.waitFor(() => expect(signal).toBeDefined())
+    scope.value = { ...scope.value, userId: '3', sessionId: 'new-session', resetGeneration: 1 }
+    expect(signal?.aborted).toBe(true)
+    expect(controller.rankingVisible.value).toBe(false)
+    old.resolve(reply(ranking()))
+    await nextTick()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(controller.rankingState.value.status).not.toBe('ready')
+    expect(
+      client
+        .getQueryCache()
+        .findAll()
+        .some((q) => q.queryKey[11] === 'ranking' && q.queryKey[2] === '1'),
+    ).toBe(false)
+  })
+  it('clears on offline and refuses a mismatched self marker rather than showing peers', async () => {
+    const { controller, scope, offline } = mount(async (input) =>
+      String(input).includes('/ranking') ? reply(ranking()) : reply(overview),
+    )
+    scope.value = { ...scope.value, userId: '1' }
+    controller.openRanking()
+    await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('ready'))
+    offline.value = true
+    expect(controller.rankingState.value.status).toBe('offline')
+    scope.value = { ...scope.value, userId: '3' }
+    offline.value = false
+    controller.openRanking()
+    await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('error'), {
+      timeout: 2500,
+    })
+    expect('data' in controller.rankingState.value).toBe(false)
+  })
+})
+
+describe('optional group projection is validated without recomputing rates', () => {
+  it('preserves absent/null/zero and rejects malformed cells as an error state', async () => {
+    const { controller } = mount(async () =>
+      reply({
+        ...overview,
+        semesterSeries: [
+          {
+            id: 'week',
+            label: 'week',
+            dateFrom: '2026-09-01',
+            dateTo: '2026-09-07',
+            state: 'DATA',
+            metrics,
+            groupPresent: { numerator: 5, denominator: 4, percent: 125 },
+          },
+        ],
+      }),
+    )
+    await vi.waitFor(() => expect(controller.overviewState.value.status).toBe('error'), {
+      timeout: 2500,
+    })
+    expect('data' in controller.overviewState.value).toBe(false)
+  })
+})
+
+it('keeps optional group zero/no-data distinct without changing own semester metrics', () => {
+  const bucket = {
+    id: 'week',
+    label: 'week',
+    dateFrom: '2026-09-01',
+    dateTo: '2026-09-07',
+    state: 'DATA' as const,
+    metrics,
+  }
+  const value = toStatisticsOverview({
+    ...overview,
+    semesterSeries: [
+      bucket,
+      { ...bucket, id: 'known-zero', groupPresent: { numerator: 0, denominator: 4, percent: 0 } },
+      { ...bucket, id: 'no-data', groupPresent: { numerator: 0, denominator: 0, percent: null } },
+      { ...bucket, id: 'unknown', groupPresent: null },
+    ],
+  })
+  expect(value.metrics).toEqual(metrics)
+  expect(value.semesterSeries.map((point) => point.groupPresent)).toEqual([
+    undefined,
+    { numerator: 0, denominator: 4, percent: 0 },
+    { numerator: 0, denominator: 0, percent: null },
+    null,
+  ])
 })

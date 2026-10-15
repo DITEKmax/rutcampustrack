@@ -970,6 +970,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
   );
 
   // HEADMAN13: ordinary STUDENT sees only genuine available lecture cards.
+  const statisticsLessonIds: number[] = [];
   const studentBrowser = page.context().browser();
   expect(studentBrowser !== null, 'Student statistics requires the existing browser').toBe(true);
   const studentViewport = page.viewportSize();
@@ -981,6 +982,40 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     serviceWorkers: 'block',
   });
   try {
+    // The separately created own subject supplies two real FUTURE types. It
+    // never changes the original lecture-only fixture or its retained history.
+    expect(dataset.tomorrow <= dataset.semester.dateTo).toBe(true);
+    for (const [type, lessonNumber] of [
+      ['LECTURE', 2],
+      ['LAB', 3],
+    ] as const) {
+      const assignment = authoritativeSubject.assignments.find(
+        (row: { lessonType: string; teacherId: number }) =>
+          row.lessonType === type && row.teacherId === dataset.teacher.id,
+      );
+      expect(assignment !== undefined, 'Complementary type has its genuine own assignment').toBe(
+        true,
+      );
+      const created = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: savedSubjectId,
+          assignmentId: assignment.id,
+          date: dataset.tomorrow,
+          lessonNumber,
+          classroom: 'Синтетическая статистика',
+        },
+        [200, 201],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      expect(
+        Number.isSafeInteger(created.physicalLessonId) && created.physicalLessonId > 0,
+        'Complementary lesson has an owned physical identity',
+      ).toBe(true);
+      statisticsLessonIds.push(created.physicalLessonId);
+    }
     const studentPage = await studentContext.newPage();
     if (
       process.env.RCT_E2E_REMAINING5 === 'true' &&
@@ -1010,6 +1045,117 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     const overviewResponse = await overviewLoaded;
     expect(overviewResponse.status()).toBe(200);
     const overview = await overviewResponse.json();
+    const metricText = (value: { percent: number | null }) =>
+      value.percent === null ? '—' : `${Math.round(value.percent)}%`;
+    const semesterMetrics = studentPage.locator('.statistics-metrics');
+    for (const [kind, label] of [
+      ['present', 'был'],
+      ['presentOrExcused', 'был или уважительная причина'],
+    ] as const) {
+      const css = kind === 'present' ? 'present' : 'combined';
+      const rendered = (await semesterMetrics.locator(`.statistics-metric--${css}`).textContent())
+        ?.replace(/\s+/g, ' ')
+        .trim();
+      const metric = overview.metrics[kind];
+      expect(
+        rendered?.includes(metricText(metric)) && rendered.endsWith(`${label}, ${metric.count}`),
+        'Overview primary percentages and counts use the same real response',
+      ).toBe(true);
+    }
+    const stableSemesterMetrics = await semesterMetrics.textContent();
+    expect(overview.semesterSeries.length > 0, 'Own real overview contains a calendar point').toBe(
+      true,
+    );
+    const comparisonIndex = overview.semesterSeries.findIndex(
+      (point: {
+        state: string;
+        metrics: { held: number };
+        groupPresent?: { denominator: number; percent: number | null } | null;
+      }) =>
+        point.state === 'DATA' &&
+        point.metrics.held > 0 &&
+        point.groupPresent !== null &&
+        point.groupPresent !== undefined &&
+        point.groupPresent.denominator > 0 &&
+        point.groupPresent.percent !== null,
+    );
+    expect(
+      comparisonIndex >= 0,
+      'Own real closed lessons have a current-group comparison bucket',
+    ).toBe(true);
+    const graphSlider = studentPage.getByRole('slider', {
+      name: 'Выбери период графика',
+      exact: true,
+    });
+    await graphSlider.press('Home');
+    for (let index = 0; index < comparisonIndex; index++) await graphSlider.press('ArrowRight');
+    const firstPoint = overview.semesterSeries[comparisonIndex];
+    const readout = (await studentPage.locator('.statistics-chart__primary-metrics').textContent())
+      ?.replace(/\s+/g, ' ')
+      .trim();
+    expect(
+      readout ===
+        `Был: ${metricText(firstPoint.metrics.present)}, ${firstPoint.metrics.present.count}; был или уважительная причина: ${metricText(firstPoint.metrics.presentOrExcused)}, ${firstPoint.metrics.presentOrExcused.count}`,
+      'Selected graph point matches its actual API bucket',
+    ).toBe(true);
+    const groupReadout = (
+      await studentPage.locator('.statistics-chart__group-metric').textContent()
+    )
+      ?.replace(/\s+/g, ' ')
+      .trim();
+    expect(
+      groupReadout ===
+        `Средняя своей группы: ${metricText(firstPoint.groupPresent)} (${firstPoint.groupPresent.numerator}/${firstPoint.groupPresent.denominator})`,
+      'Group trend uses the same authoritative server bucket without client averaging',
+    ).toBe(true);
+    expect(
+      (await studentPage.locator('.statistics-chart__group-line').count()) > 0,
+      'Known group comparison is rendered as a distinct line',
+    ).toBe(true);
+    expect(
+      (await semesterMetrics.textContent()) === stableSemesterMetrics,
+      'Selecting a graph point does not replace semester totals',
+    ).toBe(true);
+    const rankingLoaded = studentPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === '/api/v1/student/statistics/ranking' &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        !url.searchParams.has('page')
+      );
+    });
+    await studentPage.getByRole('button', { name: 'Рейтинг группы', exact: true }).click();
+    const rankingResponse = await rankingLoaded;
+    expect(rankingResponse.status()).toBe(200);
+    const ranking = await rankingResponse.json();
+    expect(
+      ranking.available &&
+        ranking.rows.filter(
+          (row: { id: string; isSelf: boolean }) =>
+            row.isSelf && row.id === String(dataset.student.id),
+        ).length === 1,
+      'Own anchored ranking page contains this current student',
+    ).toBe(true);
+    const rankingRows = studentPage.locator('.statistics-ranking__row');
+    await expect(rankingRows).toHaveCount(ranking.rows.length);
+    for (let index = 0; index < ranking.rows.length; index++) {
+      const row = ranking.rows[index];
+      const cells = (await rankingRows.nth(index).locator(':scope > span').allTextContents()).map(
+        (value) => value.replace(/\s+/g, '').trim(),
+      );
+      const expected = [
+        String(row.position ?? '—'),
+        `${row.name}${row.isSelf ? 'Это я' : ''}`,
+        metricText({ percent: row.percentage }),
+      ].map((value) => value.replace(/\s+/g, ''));
+      expect(
+        JSON.stringify(cells) === JSON.stringify(expected),
+        'Ranking page uses the authoritative own-group names, positions and percentages',
+      ).toBe(true);
+    }
+    await expect(rankingRows.locator('button,a,input')).toHaveCount(0);
+
     expect(
       overview.subjects.filter(
         (subject: { id: string; name: string }) =>
@@ -1080,7 +1226,86 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     }
     await studentPage.getByRole('button', { name: 'Назад к статистике', exact: true }).click();
     await expect(subjectSummary).toBeVisible();
+    const complementary = studentPage
+      .locator('.statistics-subject-summary')
+      .filter({ hasText: subjectName });
+    const complementaryLoaded = studentPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === `/api/v1/student/statistics/subjects/${savedSubjectId}` &&
+        url.searchParams.get('range') === 'weeks'
+      );
+    });
+    await complementary.click();
+    const complementaryResponse = await complementaryLoaded;
+    expect(complementaryResponse.status()).toBe(200);
+    const twoTypes = await complementaryResponse.json();
+    expect(
+      JSON.stringify([...twoTypes.availableTypes].sort()) === JSON.stringify(['LAB', 'LECTURE']) &&
+        twoTypes.typeCards.length === 2,
+      'Complementary subject has exactly the two real available types',
+    ).toBe(true);
+    await expect(studentPage.locator('.statistics-type-card')).toHaveCount(2);
+    for (const type of ['LECTURE', 'LAB']) {
+      const card = twoTypes.typeCards.find((row: { type: string }) => row.type === type);
+      expect(
+        card &&
+          card.metrics.held === 0 &&
+          card.metrics.planned === 1 &&
+          card.metrics.presentOrExcused.percent === null &&
+          card.metrics.presentOrExcused.count === 0,
+        'Future lessons have no counted attendance or invented zero percentage',
+      ).toBe(true);
+      const visible = studentPage.locator(`.statistics-type-card[data-type="${type}"]`);
+      await expect(visible.getByRole('heading')).toHaveText('Пар 0/1');
+      expect(
+        (await visible.locator('.statistics-type-card__metric--combined').textContent())?.includes(
+          '—',
+        ),
+        'Future combined card displays no data rather than zero',
+      ).toBe(true);
+    }
+    const lectureOnlyLoaded = studentPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === `/api/v1/student/statistics/subjects/${savedSubjectId}` &&
+        url.searchParams.get('range') === 'weeks' &&
+        url.searchParams.getAll('types').join(',') === 'LECTURE'
+      );
+    });
+    await studentPage
+      .getByRole('group', { name: 'Типы пар', exact: true })
+      .getByRole('button', { name: 'Лабораторная', exact: true })
+      .click();
+    expect((await lectureOnlyLoaded).status()).toBe(200);
+    await expect(studentPage.locator('.statistics-type-card')).toHaveCount(2);
+    const dailyLoaded = studentPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === `/api/v1/student/statistics/subjects/${savedSubjectId}` &&
+        url.searchParams.get('range') === 'days'
+      );
+    });
+    await studentPage.getByRole('button', { name: 'Дни', exact: true }).click();
+    expect((await dailyLoaded).status()).toBe(200);
+    await studentPage.getByRole('button', { name: 'Назад к статистике', exact: true }).click();
+    expect(
+      (await semesterMetrics.textContent()) === stableSemesterMetrics,
+      'Subject/type/day selection leaves original semester totals stable',
+    ).toBe(true);
   } finally {
+    for (const id of statisticsLessonIds) {
+      await dataset.headmanActor
+        .call('PATCH', `/api/schedule/lessons/${id}/cancel`, {
+          reason: 'Синтетическая уборка дополнительных пар статистики',
+        })
+        .catch(() => {
+          expect.soft(false, 'Own complementary statistics lesson cleanup failed').toBe(true);
+        });
+    }
     await studentContext.close().catch(() => {
       expect.soft(false, 'Own student statistics context cleanup failed').toBe(true);
     });

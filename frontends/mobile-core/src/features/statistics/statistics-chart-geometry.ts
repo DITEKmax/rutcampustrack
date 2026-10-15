@@ -107,7 +107,36 @@ export function statisticsGeometry(
       return `M ${[...top, ...bottom].map((coord) => coord.map((value) => value!.toFixed(2)).join(',')).join(' L ')} Z`
     }),
   }))
-  return { cells, bands }
+  function linePaths(value: (point: StatisticsSeriesPoint) => number | null) {
+    const lineRuns: { cell: (typeof cells)[number]; percent: number }[][] = []
+    for (const cell of cells) {
+      const percent = value(cell.point)
+      if (!cell.validDate || percent === null || !Number.isFinite(percent)) continue
+      const item = { cell, percent }
+      const run = lineRuns.at(-1)
+      if (run?.at(-1)?.cell.index === cell.index - 1) run.push(item)
+      else lineRuns.push([item])
+    }
+    return lineRuns.map((run) => {
+      const first = run[0]!,
+        last = run.at(-1)!
+      const y = (percent: number) => height * (1 - percent / 100)
+      return `M ${[
+        [first.cell.left, y(first.percent)],
+        ...run.map((item) => [item.cell.center, y(item.percent)]),
+        [last.cell.right, y(last.percent)],
+      ]
+        .map((pair) => pair.map((n) => n.toFixed(2)).join(','))
+        .join(' L ')}`
+    })
+  }
+  const presentPaths = linePaths((point) =>
+    hasStatisticsMarks(point) ? point.metrics.present.percent : null,
+  )
+  const groupPaths = linePaths((point) =>
+    point.groupPresent && point.groupPresent.denominator > 0 ? point.groupPresent.percent : null,
+  )
+  return { cells, bands, presentPaths, groupPaths }
 }
 
 export interface StatisticsAxisTick {

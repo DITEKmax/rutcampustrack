@@ -1470,6 +1470,7 @@ watch(
       statistics.query.error.value,
       statistics.detailQuery.error.value,
       statistics.allDetailQuery.error.value,
+      statistics.rankingQuery.error.value,
       semesterQuery.error.value,
     ] as const,
   (errors) => {
@@ -2464,6 +2465,8 @@ defineExpose({ openNotificationAction });
     <StatisticsScreen
       v-else-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject'"
       :state="statistics.overviewState.value"
+      :ranking-state="statistics.rankingState.value"
+      :ranking-visible="statistics.rankingVisible.value"
       :selected-subject-id="statistics.selectedSubjectId.value"
       :detail-state="statistics.detailState.value"
       :range="statistics.range.value"
@@ -2477,6 +2480,9 @@ defineExpose({ openNotificationAction });
       @back="backStatistics"
       @retry="retryStatistics"
       @detail-retry="retryStatisticsDetail"
+      @open-ranking="statistics.openRanking"
+      @ranking-page="statistics.setRankingPage"
+      @ranking-retry="statistics.retryRanking"
     />
     <MapScreen
       v-else-if="route.id === 'more/map' && props.mapClient"

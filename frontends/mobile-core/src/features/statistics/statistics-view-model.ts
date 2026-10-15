@@ -1,3 +1,9 @@
+import type {
+  StudentStatisticsRankingResponse,
+  StudentStatisticsSeriesPoint,
+} from '../../api/types'
+
+export type StatisticsRankingData = StudentStatisticsRankingResponse
 export type StatisticsTheme = 'dark' | 'light'
 
 export type StatisticsReadState<T> =
@@ -48,6 +54,7 @@ export interface StatisticsSeriesPoint {
   readonly dateTo: string
   readonly state: 'DATA' | 'NO_DATA' | 'FUTURE'
   readonly metrics: StatisticsMetricSet
+  readonly groupPresent?: StudentStatisticsSeriesPoint['groupPresent']
 }
 
 export type StatisticsHistoryStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'FUTURE' | 'NO_DATA'

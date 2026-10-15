@@ -117,10 +117,18 @@ public class StudentAttendanceProjectionService {
                         .toList();
         MetricsBundle overall = metrics(selectedLessons);
         List<Day> days = days(selectedLessons, serverDate);
+        List<Lesson> groupLessons = currentGroupLessons(scope, claims, semesterId);
         Graph graph =
                 new Graph(
                         series(selectedLessons, BucketUnit.DAY, serverDate),
-                        series(selectedLessons, BucketUnit.WEEK, serverDate));
+                        groupSeries(
+                                series(selectedLessons, BucketUnit.WEEK, serverDate),
+                                scope,
+                                groupLessons,
+                                semesterId,
+                                subjectId,
+                                normalizedTypes,
+                                serverDate));
         List<Subject> subjectViews =
                 subjectViews(
                         materializedAll,
@@ -130,7 +138,15 @@ public class StudentAttendanceProjectionService {
                         normalizedTypes,
                         normalizedRange,
                         serverDate);
-        Rank rank = rank(scope, claims.userId(), materializedAll, subjects, semesterId);
+        Rank rank =
+                rankedCohort(
+                                scope,
+                                claims.userId(),
+                                materializedAll,
+                                subjects,
+                                semesterId,
+                                groupLessons)
+                        .ownRank();
 
         return new Projection(
                 claims.userId(),
@@ -571,6 +587,139 @@ public class StudentAttendanceProjectionService {
                 .toList();
     }
 
+    private List<Lesson> currentGroupLessons(
+            StudentProjectionScopeResponse scope, InternalJwtClaims claims, long semesterId) {
+        // Historical personal membership is not authority to compare a former group.
+        // A legitimate hidden/terminal scope has no complete current-group catalogue.
+        if (!scope.hasRankGroupId()) {
+            if (scope.getRankEligible() || scope.getRankSubjectsCount() != 0) {
+                throw StudentProjectionException.invalidRoster("incomplete group catalogue");
+            }
+            return null;
+        }
+        long groupId = scope.getRankGroupId();
+        if (claims.groupId() == null
+                || claims.groupId() <= 0
+                || groupId != claims.groupId()
+                || !rankingVisible(scope)) {
+            throw StudentProjectionException.invalidRoster("current group authority mismatch");
+        }
+        Map<Long, AcademicSubjectInfo> catalogue = rankSubjectMap(scope, semesterId, groupId);
+        if (scope.getSubjectsList().stream()
+                .anyMatch(
+                        subject ->
+                                subject.getGroupId() == groupId
+                                        && !catalogue.containsKey(subject.getSubjectId()))) {
+            throw StudentProjectionException.invalidRoster("incomplete current group catalogue");
+        }
+        return canonicalRankLessons(scope, catalogue, semesterId, groupId);
+    }
+
+    /** Adds only aggregate cells from the freshly authorized current group's full catalogue. */
+    private List<SeriesPoint> groupSeries(
+            List<SeriesPoint> points,
+            StudentProjectionScopeResponse scope,
+            List<Lesson> groupLessons,
+            long semesterId,
+            Long subjectId,
+            Set<String> types,
+            LocalDate serverDate) {
+        if (groupLessons == null) return points;
+        long groupId = scope.getRankGroupId();
+        List<Lesson> lessons =
+                groupLessons.stream()
+                        .filter(lesson -> lesson.scheduleState() == ScheduleState.CLOSED)
+                        .filter(lesson -> !lesson.date().isAfter(serverDate))
+                        .filter(lesson -> subjectId == null || lesson.subjectId() == subjectId)
+                        .filter(lesson -> types.isEmpty() || types.contains(lesson.lessonType()))
+                        .toList();
+        Map<Long, Lesson> byId =
+                lessons.stream().collect(Collectors.toMap(Lesson::lessonId, x -> x));
+        Map<Long, Map<Long, AttendanceRecord>> marks = new HashMap<>();
+        List<AttendanceRecord> records =
+                attendanceReadPort.findByLessonIds(lessons.stream().map(Lesson::lessonId).toList());
+        if (records == null)
+            throw StudentProjectionException.invalidOccurrence("missing group marks");
+        for (AttendanceRecord record : records) {
+            Lesson lesson = record == null ? null : byId.get(record.lessonId());
+            if (lesson == null
+                    || record.userId() == null
+                    || record.userId() <= 0
+                    || record.groupId() == null
+                    || record.groupId() != groupId
+                    || record.subjectId() == null
+                    || record.subjectId() != lesson.subjectId()
+                    || !lesson.date().equals(record.lessonDate())) {
+                throw StudentProjectionException.invalidOccurrence("group mark scope mismatch");
+            }
+            AttendanceRecord previous =
+                    marks.computeIfAbsent(lesson.lessonId(), x -> new HashMap<>())
+                            .putIfAbsent(record.userId(), record);
+            if (previous != null && previous.status() != record.status()) {
+                throw StudentProjectionException.duplicateOccurrence(lesson.lessonId());
+            }
+        }
+        Map<LocalDate, Set<Long>> rosterByDate = new HashMap<>();
+        Map<LocalDate, int[]> totals = new HashMap<>();
+        for (Lesson lesson : lessons) {
+            Set<Long> roster =
+                    rosterByDate.computeIfAbsent(
+                            lesson.date(),
+                            date -> {
+                                GroupMembersResponse response =
+                                        academicGrpcClient.getGroupMembers(
+                                                groupId, date, semesterId);
+                                if (response == null
+                                        || !response.hasAsOfDate()
+                                        || !response.hasSemesterId()
+                                        || !date.toString().equals(response.getAsOfDate())
+                                        || response.getSemesterId() != semesterId) {
+                                    throw StudentProjectionException.invalidRoster(
+                                            "historical snapshot mismatch");
+                                }
+                                Set<Long> ids = new HashSet<>();
+                                for (StudentInfo student : response.getStudentsList()) {
+                                    if (student.getUserId() <= 0 || !ids.add(student.getUserId())) {
+                                        throw StudentProjectionException.invalidRoster(
+                                                "invalid historical member");
+                                    }
+                                }
+                                return Set.copyOf(ids);
+                            });
+            LocalDate week = lesson.date().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            int[] total = totals.computeIfAbsent(week, x -> new int[2]);
+            for (long member : roster) {
+                AttendanceRecord record =
+                        marks.getOrDefault(lesson.lessonId(), Map.of()).get(member);
+                AttendanceStatus status =
+                        record == null || record.status() == null
+                                ? AttendanceStatus.ABSENT
+                                : record.status();
+                if (status == AttendanceStatus.CANCELLED) continue;
+                total[1] = Math.addExact(total[1], 1);
+                if (status == AttendanceStatus.PRESENT) total[0] = Math.addExact(total[0], 1);
+            }
+        }
+        return points.stream()
+                .map(
+                        point -> {
+                            int[] total = totals.getOrDefault(point.dateFrom(), new int[2]);
+                            BigDecimal percent =
+                                    AttendanceMetricCalculator.Metrics.forRanking(
+                                                    total[1], total[0])
+                                            .presentPercent();
+                            return new SeriesPoint(
+                                    point.id(),
+                                    point.label(),
+                                    point.dateFrom(),
+                                    point.dateTo(),
+                                    point.state(),
+                                    point.metrics(),
+                                    new GroupPresent(total[0], total[1], percent));
+                        })
+                .toList();
+    }
+
     private Rank rank(
             StudentProjectionScopeResponse scope,
             long ownId,
@@ -586,13 +735,26 @@ public class StudentAttendanceProjectionService {
             List<Lesson> ownLessons,
             Map<Long, AcademicSubjectInfo> subjects,
             long semesterId) {
+        return rankedCohort(scope, ownId, ownLessons, subjects, semesterId, null);
+    }
+
+    private RankedCohort rankedCohort(
+            StudentProjectionScopeResponse scope,
+            long ownId,
+            List<Lesson> ownLessons,
+            Map<Long, AcademicSubjectInfo> subjects,
+            long semesterId,
+            List<Lesson> capturedGroupLessons) {
         List<Long> roster = scope.getActiveRosterUserIdsList();
         if (!rankingVisible(scope)) {
             return new RankedCohort(new Rank(null, roster.size(), false), List.of());
         }
         long rankGroup = scope.getRankGroupId();
         Map<Long, AcademicSubjectInfo> rankSubjects = rankSubjectMap(scope, semesterId, rankGroup);
-        List<Lesson> rankLessons = canonicalRankLessons(scope, rankSubjects, semesterId, rankGroup);
+        List<Lesson> rankLessons =
+                capturedGroupLessons == null
+                        ? canonicalRankLessons(scope, rankSubjects, semesterId, rankGroup)
+                        : capturedGroupLessons;
         Set<Long> ownAuthorizedLessonIds =
                 ownLessons.stream()
                         .filter(lesson -> lesson.groupId() == rankGroup)
@@ -1015,7 +1177,20 @@ public class StudentAttendanceProjectionService {
             LocalDate dateFrom,
             LocalDate dateTo,
             String state,
-            AttendanceMetricCalculator.Metrics metrics) {}
+            AttendanceMetricCalculator.Metrics metrics,
+            GroupPresent groupPresent) {
+        public SeriesPoint(
+                String id,
+                String label,
+                LocalDate dateFrom,
+                LocalDate dateTo,
+                String state,
+                AttendanceMetricCalculator.Metrics metrics) {
+            this(id, label, dateFrom, dateTo, state, metrics, null);
+        }
+    }
+
+    public record GroupPresent(int numerator, int denominator, BigDecimal percent) {}
 
     public record Rank(Integer position, int participantCount, boolean available) {}
 

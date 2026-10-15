@@ -286,6 +286,23 @@ export interface StudentStatisticsOwnRank {
   readonly available: boolean
 }
 
+export interface StudentStatisticsRankingRow {
+  readonly id: string
+  readonly name: string
+  readonly position: number | null
+  readonly percentage: number | null
+  readonly isSelf: boolean
+}
+
+export interface StudentStatisticsRankingResponse {
+  readonly available: boolean
+  readonly page: number
+  readonly size: number
+  readonly total: number
+  readonly ownPosition: number | null
+  readonly rows: readonly StudentStatisticsRankingRow[]
+}
+
 export interface StudentStatisticsSeriesPoint {
   readonly id: string
   readonly label: string
@@ -293,6 +310,11 @@ export interface StudentStatisticsSeriesPoint {
   readonly dateTo: string
   readonly state: StudentSeriesState
   readonly metrics: StudentAttendanceMetricSet
+  readonly groupPresent?: {
+    readonly numerator: number
+    readonly denominator: number
+    readonly percent: number | null
+  } | null
 }
 
 export interface StudentStatisticsSubjectSummary {

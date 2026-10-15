@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a
+// Contract: Auth session/role; SHA-256: 0a9552f046fc69bed499a3a76a60c78ba7f3a6585e27938ce567084133d0d1d2
 
 export interface paths {
     "/auth/account-history": {
@@ -550,6 +550,14 @@ export interface components {
             items: components["schemas"]["AccountHistoryEvent"][];
             nextCursor?: string;
         };
+        AdminGroupAttendanceParameters: {
+            direction: string;
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+            search: string;
+            semesterId: string;
+            sort: string;
+        };
         AdminGroupsParameters: {
             /** Format: int32 */
             course?: number;
@@ -752,6 +760,7 @@ export interface components {
         };
         /** @description One allowlisted report and its bounded export parameters */
         IssueReportDownloadTicketRequest: {
+            adminGroupAttendance?: components["schemas"]["AdminGroupAttendanceParameters"];
             adminGroups?: components["schemas"]["AdminGroupsParameters"];
             adminUsers?: components["schemas"]["AdminUsersParameters"];
             headmanGroupComposition?: components["schemas"]["HeadmanGroupCompositionParameters"];
@@ -761,7 +770,7 @@ export interface components {
             headmanWeeklyCurrent?: components["schemas"]["HeadmanWeeklyCurrentParameters"];
             headmanWeeklySelected?: components["schemas"]["HeadmanWeeklySelectedParameters"];
             /** @enum {string} */
-            kind: "TEACHER_JOURNAL" | "TEACHER_STATS" | "HEADMAN_WEEKLY_CURRENT" | "HEADMAN_WEEKLY_SELECTED" | "HEADMAN_STATS" | "HEADMAN_STATS_TREND" | "HEADMAN_GROUP_COMPOSITION" | "HEADMAN_SUBJECT_JOURNAL" | "ADMIN_USERS" | "ADMIN_GROUPS";
+            kind: "TEACHER_JOURNAL" | "TEACHER_STATS" | "HEADMAN_WEEKLY_CURRENT" | "HEADMAN_WEEKLY_SELECTED" | "HEADMAN_STATS" | "HEADMAN_STATS_TREND" | "HEADMAN_GROUP_COMPOSITION" | "HEADMAN_SUBJECT_JOURNAL" | "ADMIN_USERS" | "ADMIN_GROUPS" | "ADMIN_GROUP_ATTENDANCE";
             teacherJournal?: components["schemas"]["TeacherJournalParameters"];
             teacherStats?: components["schemas"]["TeacherStatsParameters"];
         };

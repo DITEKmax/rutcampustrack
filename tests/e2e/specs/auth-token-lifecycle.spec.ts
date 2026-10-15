@@ -10,7 +10,10 @@ test.describe('Vue PWA auth lifecycle @smoke', () => {
   test('wrong password does not establish a session', async ({ page, context }) => {
     await page.goto('/app/');
     await page.getByLabel('Логин', { exact: true }).fill(TEST_USERS.student.login);
-    await page.getByLabel('Пароль', { exact: true }).fill('WRONG_PASSWORD');
+    await page
+      .getByLabel('Пароль', { exact: true })
+      .and(page.locator('input[name="password"]'))
+      .fill('WRONG_PASSWORD');
     const response = page.waitForResponse(
       (response) => new URL(response.url()).pathname === '/api/auth/login',
     );

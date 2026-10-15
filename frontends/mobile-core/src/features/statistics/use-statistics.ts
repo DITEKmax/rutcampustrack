@@ -1,4 +1,4 @@
-import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { computed, onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type {
@@ -7,6 +7,7 @@ import type {
   StudentStatisticsSubjectDetailResponse,
   StudentStatisticsSubjectSummary,
   StudentStatisticsTypeCard,
+  StudentStatisticsRankingResponse,
 } from '../../api/types'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../../shared/session-owner'
 import type {
@@ -127,6 +128,38 @@ function mapSeriesPoint(
     dateTo: point.dateTo,
     state: point.state,
     metrics: { ...point.metrics },
+    ...(point.groupPresent !== undefined
+      ? { groupPresent: decodeGroupPresent(point.groupPresent) }
+      : {}),
+  }
+}
+
+function decodeGroupPresent(
+  value: unknown,
+): NonNullable<StudentStatisticsSeriesPoint['groupPresent']> | null {
+  if (value === null) return null
+  if (!value || typeof value !== 'object') throw new TypeError('Некорректное сравнение с группой')
+  const metric = value as Record<string, unknown>
+  if (
+    typeof metric.numerator !== 'number' ||
+    !Number.isSafeInteger(metric.numerator) ||
+    metric.numerator < 0 ||
+    typeof metric.denominator !== 'number' ||
+    !Number.isSafeInteger(metric.denominator) ||
+    metric.denominator < metric.numerator ||
+    metric.denominator < 0 ||
+    (metric.percent !== null &&
+      (typeof metric.percent !== 'number' ||
+        !Number.isFinite(metric.percent) ||
+        metric.percent < 0 ||
+        metric.percent > 100 ||
+        metric.denominator === 0))
+  )
+    throw new TypeError('Некорректное сравнение с группой')
+  return {
+    numerator: metric.numerator,
+    denominator: metric.denominator,
+    percent: metric.percent as number | null,
   }
 }
 
@@ -254,12 +287,16 @@ export function useStatistics(
   const range = ref<StatisticsGraphRange>('weeks')
   // null is the initial ALL choice; [] is an explicit local NONE choice.
   const selectedTypes = ref<readonly StatisticsLessonType[] | null>(null)
+  const rankingVisible = ref(false)
+  const rankingPage = ref<number | null>(null)
   watch(
     () => studentFeatureScopeIdentity(scope.value),
     () => {
       selectedSubjectId.value = null
       selectedTypes.value = null
       range.value = 'weeks'
+      rankingVisible.value = false
+      rankingPage.value = null
     },
     { flush: 'sync' },
   )
@@ -289,11 +326,95 @@ export function useStatistics(
       if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) {
         throw new StatisticsStaleResponseError()
       }
+      toStatisticsOverview(response)
       return response
     },
     enabled: computed(() => scopeReady.value && !offline.value),
     retry: shouldRetry,
   })
+
+  const rankingQueryKey = computed(
+    () => [...statisticsQueryKey(scope.value), 'ranking', rankingPage.value] as const,
+  )
+  const rankingQuery = useQuery<StudentStatisticsRankingResponse>({
+    queryKey: rankingQueryKey,
+    enabled: computed(
+      () =>
+        rankingVisible.value && scopeReady.value && Boolean(scope.value.groupId) && !offline.value,
+    ),
+    queryFn: async ({ signal, queryKey: key }) => {
+      const requestScope = scope.value
+      if (!isStatisticsScopeReady(requestScope) || !requestScope.groupId)
+        throw new StatisticsScopeError()
+      const requestedPage = (key as typeof rankingQueryKey.value)[12]
+      const response = await api.getStatisticsRanking(
+        requestScope.semesterId!,
+        requestedPage,
+        20,
+        signal,
+      )
+      if (
+        signal.aborted ||
+        offline.value ||
+        JSON.stringify(rankingQueryKey.value) !== JSON.stringify(key) ||
+        studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
+      )
+        throw new StatisticsStaleResponseError()
+      if (response.rows.some((row) => row.isSelf !== (row.id === requestScope.userId)))
+        throw new TypeError('Некорректный текущий участник рейтинга')
+      return response
+    },
+    retry: shouldRetry,
+  })
+  watch(
+    [queryKey, offline],
+    (_, previous) => {
+      if (previous) {
+        const previousRanking = [...previous[0], 'ranking']
+        void queryClient.cancelQueries({ queryKey: previousRanking })
+        queryClient.removeQueries({ queryKey: previousRanking })
+      }
+    },
+    { flush: 'sync' },
+  )
+  onScopeDispose(() => {
+    const currentRanking = [...queryKey.value, 'ranking']
+    void queryClient.cancelQueries({ queryKey: currentRanking })
+    queryClient.removeQueries({ queryKey: currentRanking })
+  })
+  const rankingState = computed<StatisticsReadState<StudentStatisticsRankingResponse>>(() => {
+    if (offline.value) return { status: 'offline' }
+    if (!scopeReady.value || !scope.value.groupId)
+      return { status: 'forbidden', reason: 'Рейтинг доступен только для своей текущей группы.' }
+    void rankingQuery.data.value
+    void rankingQuery.error.value
+    void rankingQuery.fetchStatus.value
+    const current = queryClient.getQueryState<StudentStatisticsRankingResponse>(
+      rankingQueryKey.value,
+    )
+    if (current?.error) return errorState(current.error)
+    if (!current?.data || current.fetchStatus === 'fetching') return { status: 'loading' }
+    if (!current.data.available || !current.data.rows.length) return { status: 'empty' }
+    return { status: 'ready', data: current.data }
+  })
+
+  function openRanking(): void {
+    rankingVisible.value = true
+  }
+  function setRankingPage(page: number): void {
+    const state = rankingState.value
+    if (
+      state.status !== 'ready' ||
+      !Number.isSafeInteger(page) ||
+      page < 0 ||
+      page * state.data.size >= state.data.total
+    )
+      return
+    rankingPage.value = page
+  }
+  function retryRanking(): void {
+    void rankingQuery.refetch()
+  }
 
   async function fetchDetail(signal: AbortSignal, key: StatisticsDetailQueryKey) {
     const requestScope = scope.value
@@ -313,6 +434,7 @@ export function useStatistics(
       selectedSubjectId.value !== subjectId
     )
       throw new StatisticsStaleResponseError()
+    toStatisticsSubjectDetail(response)
     return response
   }
   // The authoritative ALL projection and graph projection share the same cache
@@ -446,6 +568,12 @@ export function useStatistics(
   }
 
   return {
+    rankingQuery,
+    rankingState,
+    rankingVisible,
+    openRanking,
+    setRankingPage,
+    retryRanking,
     query,
     allDetailQuery,
     retryDetail,

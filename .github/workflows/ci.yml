@@ -428,6 +428,7 @@ jobs:
           current = {}
           additional = None
           audit = None
+          admin_rights = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -537,6 +538,38 @@ jobs:
                       'counterexampleSourceSha256': hashlib.sha256(audit_negative).hexdigest(),
                       'ruleFrame': audit['package'] + '.' + audit['method'] + '(HomeworkEditLifecycleIT.java:' + str(audit_line) + ')'}
 
+                  admin_source = app / 'src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java'
+                  admin_test = admin_source.read_bytes()
+                  assert hashlib.sha256(admin_test).hexdigest() == '05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e'
+                  assert admin_test == subprocess.check_output(['git', 'show', 'HEAD:' + admin_source.as_posix()])
+                  admin_oracle = (b'        assertThatThrownBy(() -> reports.read("7", "", Sort.GROUP_NAME, Direction.ASC, 0, 25))\n'
+                                  b'                .isInstanceOf(AdminAccessException.class);\n')
+                  assert admin_test.count(admin_oracle) == 1
+                  admin_line = admin_test[:admin_test.index(admin_oracle)].count(b'\n') + 1
+                  assert admin_line == 216
+                  admin_production = app / 'src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportService.java'
+                  admin_current = admin_production.read_bytes()
+                  assert hashlib.sha256(admin_current).hexdigest() == '6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36'
+                  admin_anchor = (b'            rows.sort(comparator(sort, direction));\n'
+                                  b'            access.require("DASHBOARD_VIEW");\n'
+                                  b'            return new FullReport(')
+                  admin_changed = admin_anchor.replace(b'            access.require("DASHBOARD_VIEW");\n', b'')
+                  assert admin_current.count(admin_anchor) == 1
+                  admin_negative = admin_current.replace(admin_anchor, admin_changed)
+                  assert hashlib.sha256(admin_negative).hexdigest() == '417d2f84d145f70a128272424abe0d8fe3b63d79973f23b13d648c6968ca27f8'
+                  assert admin_negative.replace(admin_changed, admin_anchor) == admin_current
+                  admin_rights = {'package': 'ru.rutcampustrack.academic.adminattendance.AdminAttendanceReportIT',
+                                  'method': 'otherRegistryGrantsCannotReadAndRevocationDuringRemoteReadReturnsNoRows',
+                                  'source': admin_source, 'production': admin_production}
+                  replacements[admin_production] = admin_negative
+                  proof['adminRightsRule'] = {
+                      'counterexample': 'OMITTED_FINAL_DASHBOARD_VIEW_REAUTHORIZATION',
+                      'testMethod': admin_rights['package'] + '.' + admin_rights['method'],
+                      'testSourceSha256': hashlib.sha256(admin_test).hexdigest(),
+                      'productionSourceSha256': hashlib.sha256(admin_current).hexdigest(),
+                      'counterexampleSourceSha256': hashlib.sha256(admin_negative).hexdigest(),
+                      'ruleFrame': admin_rights['package'] + '.' + admin_rights['method'] + '(AdminAttendanceReportIT.java:' + str(admin_line) + ')'}
+
               elif service == 'auth-service':
                   package = 'ru.rutcampustrack.auth.integration.AuthOtpFlowIT'
                   method = 'ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin'
@@ -614,6 +647,8 @@ jobs:
                   selectors += ['--tests', additional['package'] + '.' + additional['method']]
               if audit is not None:
                   selectors += ['--tests', audit['package'] + '.' + audit['method']]
+              if admin_rights is not None:
+                  selectors += ['--tests', admin_rights['package'] + '.' + admin_rights['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
                                         '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' else []), *selectors],
@@ -817,6 +852,38 @@ jobs:
                   audit_rule.update(state='EXPECTED_RULE_FAILURE', expectedActorDiffersFromObservedCreator=True,
                                     tests=1, failures=1, errors=0, skipped=0,
                                     restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+              if admin_rights is not None:
+                  assert run.returncode == 1
+                  admin_result = results / ('TEST-' + admin_rights['package'] + '.xml')
+                  assert admin_result.is_file() and 0 < admin_result.stat().st_size <= 33554432
+                  admin_data = admin_result.read_bytes()
+                  assert b'<!DOCTYPE' not in admin_data.upper() and b'<!ENTITY' not in admin_data.upper()
+                  admin_suite = ET.fromstring(admin_data)
+                  assert admin_suite.tag == 'testsuite' and admin_suite.get('name') == admin_rights['package']
+                  assert {key: admin_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  admin_cases = admin_suite.findall('testcase')
+                  assert len(admin_cases) == 1
+                  admin_case = admin_cases[0]
+                  assert admin_case.get('classname') == admin_rights['package'] and admin_case.get('name') == admin_rights['method'] + '()'
+                  assert not admin_case.findall('error') and not admin_case.findall('skipped') and len(admin_case.findall('failure')) == 1
+                  admin_failure = admin_case.find('failure')
+                  assert admin_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  admin_message = admin_failure.get('message', '').removeprefix(admin_failure.get('type') + ': ')
+                  assert re.fullmatch(r'\s*Expecting code to raise a throwable\.\s*', admin_message)
+                  admin_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(admin_rights['package'] + '.' + admin_rights['method'])
+                      + r'\(AdminAttendanceReportIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', admin_failure.text or '')
+                  admin_rule = proof['adminRightsRule']
+                  admin_rule['namedMethodFrameCount'] = len(admin_named_lines)
+                  admin_rule['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(admin_rule['ruleFrame']) + r'[ \t]*$', admin_failure.text or ''))
+                  assert admin_rule['namedMethodFrameCount'] == 1 and admin_rule['expectedRuleFrameMatched']
+                  admin_rule.update(state='EXPECTED_RULE_FAILURE', expectedThrowableMissing=True,
+                                    tests=1, failures=1, errors=0, skipped=0,
+                                    restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
               proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
                            restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
           finally:
@@ -831,6 +898,11 @@ jobs:
                   assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
                   proof['auditRule']['sourceRestoredExact'] = True
+              if admin_rights is not None and current:
+                  assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == '05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e'
+                  assert hashlib.sha256(admin_rights['production'].read_bytes()).hexdigest() == '6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36'
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(admin_rights['source'])]) == b''
+                  proof['adminRightsRule']['sourceRestoredExact'] = True
               if service == 'auth-service' and current:
                   assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b'
                   assert hashlib.sha256(auth_repository.read_bytes()).hexdigest() == 'b67e309784a8d5d3fe581246f703c811d9294acb602566e67f2aa842317deb9d'

@@ -158,9 +158,23 @@ class ExportJobsIT {
                         new IssueReportDownloadTicketRequest.AdminGroupAttendanceParameters(
                                 "1", "", "GROUP_NAME", "ASC", ReportDownloadFormat.HTML));
         jdbc.update(
-                "UPDATE admin_access_profiles SET mode='LIMITED',permissions=ARRAY['GROUPS_VIEW']"
+                "UPDATE admin_access_profiles SET version=version+1,mode='LIMITED',permissions=ARRAY['GROUPS_VIEW']"
                         + " WHERE user_id=?",
                 actor.userId());
+        actor =
+                new SessionPrincipal(
+                        actor.userId(),
+                        actor.sessionId(),
+                        actor.sessionVersion(),
+                        jdbc.queryForObject(
+                                "SELECT roles_version FROM users WHERE id=?",
+                                Long.class,
+                                actor.userId()),
+                        actor.selectedRole(),
+                        actor.selectedStatus(),
+                        actor.groupId(),
+                        actor.headman(),
+                        actor.readOnly());
         assertThatThrownBy(
                         () ->
                                 tx.execute(
@@ -173,9 +187,23 @@ class ExportJobsIT {
                         error -> assertThat(error.getStatusCode().value()).isEqualTo(403));
         assertThat(count("SELECT count(*) FROM auth_export_jobs")).isZero();
         jdbc.update(
-                "UPDATE admin_access_profiles SET permissions=ARRAY['DASHBOARD_VIEW'] WHERE"
+                "UPDATE admin_access_profiles SET version=version+1,permissions=ARRAY['DASHBOARD_VIEW'] WHERE"
                         + " user_id=?",
                 actor.userId());
+        actor =
+                new SessionPrincipal(
+                        actor.userId(),
+                        actor.sessionId(),
+                        actor.sessionVersion(),
+                        jdbc.queryForObject(
+                                "SELECT roles_version FROM users WHERE id=?",
+                                Long.class,
+                                actor.userId()),
+                        actor.selectedRole(),
+                        actor.selectedStatus(),
+                        actor.groupId(),
+                        actor.headman(),
+                        actor.readOnly());
         UUID request = UUID.randomUUID();
         Status queued = tx.execute(ignored -> jobs.enqueue(actor, new Create(request, report)));
         assertThat(tx.execute(ignored -> jobs.enqueue(actor, new Create(request, report))).jobId())
@@ -200,7 +228,7 @@ class ExportJobsIT {
                                         + " target_type='ADMIN_GROUP_ATTENDANCE'"))
                 .isEqualTo(1);
         jdbc.update(
-                "UPDATE admin_access_profiles SET permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
+                "UPDATE admin_access_profiles SET version=version+1,permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
                 actor.userId());
         for (Runnable operation :
                 List.<Runnable>of(

@@ -70,6 +70,161 @@ jobs:
           done
           ./gradlew --version --no-daemon
 
+      - name: Verify the admitted reason wire mapping rejects one valid counterexample
+        if: matrix.service.name == 'attendance-service'
+        timeout-minutes: 8
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_REASON_ENUM'
+          import hashlib, json, os, pathlib, re, shutil, subprocess, tempfile, time
+          import xml.etree.ElementTree as ET
+
+          app = pathlib.Path('services/attendance-service/attendance-app')
+          source = app / 'src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java'
+          test_source = app / 'src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java'
+          source_sha = '21c29e14a84fa54dfea8d9762b11c230d89b3ed8cfab158ee1185fcd8b6a857e'
+          test_sha = '634d96cfefafc74800bdeed29b55445992db45e4fdd278291a9ee17304bd0fe1'
+          negative_sha = '98a95e309edc13bfa0d3def34db03143ef3c179cb2f46015f8c5164af8f1486a'
+          package = 'ru.rutcampustrack.attendance.grpc.StudentRequestGrpcMapperTest'
+          method = 'studentReasonCodesRoundtripWithoutChangingPublishedNumbers'
+          results, reports = app / 'build/test-results/test', app / 'build/reports/tests/test'
+          private = pathlib.Path(tempfile.mkdtemp(prefix='reason-enum-red-', dir=os.environ['RUNNER_TEMP']))
+          deadline = time.monotonic() + 360
+          current = None
+          proof = {'schemaVersion': 1, 'state': 'UNEXPECTED_RULE_RESULT', 'phase': 'SOURCE_ADMISSION',
+                   'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
+                   'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                   'runId': os.environ['GITHUB_RUN_ID'], 'runAttempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                   'event': os.environ['GITHUB_EVENT_NAME'], 'service': 'attendance-service', 'task': 'test',
+                   'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
+                   'restoredSourceSha256': source_sha, 'counterexampleSourceSha256': negative_sha,
+                   'counterexample': 'UNIVERSITY_ORDER_MAPPED_TO_SUMMONS',
+                   'expectedWireCode': 6, 'observedWireCode': 7, 'sourceRestoredExact': False,
+                   'restoredCompileCacheDisabled': True}
+          def run_target(label):
+              remaining = deadline - time.monotonic()
+              assert remaining > 0
+              with (private / (label + '.private.log')).open('wb') as log:
+                  return subprocess.run(
+                      ['./gradlew', ':services:attendance-service:attendance-app:test', '--no-daemon',
+                       '--no-build-cache', '--tests', package + '.' + method],
+                      stdout=log, stderr=subprocess.STDOUT, timeout=remaining).returncode
+
+          def native_case(failed):
+              result = results / ('TEST-' + package + '.xml')
+              assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
+              raw = result.read_bytes()
+              assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+              suite = ET.fromstring(raw)
+              expected = {'tests': '1', 'failures': '1' if failed else '0', 'errors': '0', 'skipped': '0'}
+              assert suite.tag == 'testsuite' and suite.get('name') == package
+              assert {key: suite.get(key) for key in expected} == expected
+              cases = suite.findall('testcase')
+              assert len(cases) == 1 and cases[0].get('classname') == package and cases[0].get('name') == method + '()'
+              case = cases[0]
+              assert not case.findall('error') and not case.findall('skipped')
+              assert len(case.findall('failure')) == int(failed)
+              return case
+
+          try:
+              assert all(re.fullmatch('[0-9a-f]{40}', proof[key]) for key in ('producerHeadSha', 'checkoutSha'))
+              assert all(re.fullmatch('[0-9]{1,20}', proof[key]) for key in ('runId', 'runAttempt'))
+              assert proof['event'] in {'push', 'pull_request'}
+              current = source.read_bytes()
+              assert 0 < len(current) <= 1048576 and hashlib.sha256(current).hexdigest() == source_sha
+              assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(source)]) == b''
+              assert current == subprocess.check_output(['git', 'show', 'HEAD:' + source.as_posix()])
+              test_bytes = test_source.read_bytes()
+              assert hashlib.sha256(test_bytes).hexdigest() == test_sha
+              assert test_bytes == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
+              target = '                .containsExactly(1, 2, 3, 4, 5, 6, 7);'
+              lines = test_bytes.decode().splitlines()
+              assert lines.count(target) == 1
+              rule_line = lines.index(target) + 1
+              assert rule_line == 152
+              original = b'case UNIVERSITY_ORDER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER;'
+              changed = b'case UNIVERSITY_ORDER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_SUMMONS;'
+              assert current.count(original) == 1
+              negative = current.replace(original, changed)
+              assert hashlib.sha256(negative).hexdigest() == negative_sha
+              assert negative.replace(changed, original) == current
+              for path, label in ((results, 'previous-results'), (reports, 'previous-reports')):
+                  if path.exists():
+                      shutil.move(path, private / label)
+              source.write_bytes(negative)
+              proof['phase'] = 'RED_RUN'
+              red_exit = run_target('red')
+              proof['red'] = {'nativeExit': red_exit}
+              assert red_exit != 0
+              proof['phase'] = 'RED_XML_RULE'
+              failure = native_case(True).find('failure')
+              assert failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+              message = failure.get('message', '').removeprefix(failure.get('type') + ': ')
+              assert re.fullmatch(
+                  r'\s*Expecting actual:\s*\[1,\s*2,\s*3,\s*4,\s*5,\s*7,\s*7\]\s*'
+                  r'to contain exactly \(and in same order\):\s*\[1,\s*2,\s*3,\s*4,\s*5,\s*6,\s*7\]\s*'
+                  r'but some elements were not found:\s*\[6\]\s*'
+                  r'and others were not expected:\s*\[7\]\s*', message)
+              named_lines = re.findall(
+                  r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?' + re.escape(package + '.' + method)
+                  + r'\(StudentRequestGrpcMapperTest\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+              assert named_lines == [str(rule_line)]
+              proof['red'].update(tests=1, failures=1, errors=0, skipped=0,
+                                  namedMethodFrameCount=1, expectedRuleFrameMatched=True, ruleFrameLine=rule_line)
+              proof['phase'] = 'RESTORE'
+              source.write_bytes(current)
+              assert source.read_bytes() == current
+              assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(source)]) == b''
+              proof['sourceRestoredExact'] = True
+              for path, label in ((results, 'red-results'), (reports, 'red-reports')):
+                  if path.exists():
+                      shutil.move(path, private / label)
+              proof['phase'] = 'RESTORED_GREEN_RUN'
+              green_exit = run_target('green')
+              proof['green'] = {'nativeExit': green_exit}
+              assert green_exit == 0
+              proof['phase'] = 'RESTORED_GREEN_XML'
+              native_case(False)
+              proof['green'].update(tests=1, failures=0, errors=0, skipped=0)
+              proof.update(state='EXPECTED_RULE_FAILURE_RESTORED_GREEN', phase='COMPLETE')
+          except Exception as error:
+              proof['failureClass'] = type(error).__name__ if type(error).__name__ in {
+                  'AssertionError', 'TimeoutExpired', 'CalledProcessError', 'FileNotFoundError',
+                  'ParseError', 'UnicodeDecodeError', 'ValueError', 'OSError'} else 'UNKNOWN'
+          finally:
+              try:
+                  if current is not None:
+                      source.write_bytes(current)
+                      assert source.read_bytes() == current
+                      assert hashlib.sha256(source.read_bytes()).hexdigest() == source_sha
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(source)]) == b''
+                      proof['sourceRestoredExact'] = True
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == test_sha
+                  for path, label in ((results, 'final-results'), (reports, 'final-reports')):
+                      if path.exists():
+                          shutil.move(path, private / label)
+              except Exception:
+                  proof.update(state='SOURCE_RESTORE_OR_PRIVATE_CLEANUP_FAILED', sourceRestoredExact=False)
+              output = pathlib.Path('build/ci-test-outcomes/attendance-service')
+              output.mkdir(mode=0o700, parents=True, exist_ok=True)
+              encoded = json.dumps(proof, indent=2) + '\n'
+              assert len(encoded.encode()) <= 32768
+              (output / 'reason-enum-regression-safe.json').write_text(encoded)
+              shutil.rmtree(private)
+          raise SystemExit(0 if proof['state'] == 'EXPECTED_RULE_FAILURE_RESTORED_GREEN' else 1)
+          PY_REASON_ENUM
+
+      - name: Upload the closed reason wire mapping sensitivity proof
+        if: always() && matrix.service.name == 'attendance-service'
+        uses: actions/upload-artifact@v4
+        with:
+          name: reason-enum-regression-safe-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/attendance-service/reason-enum-regression-safe.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Unit tests ${{ matrix.service.name }}
         id: java-tests
         run: ./gradlew ${{ matrix.service.path }}:test --no-daemon
@@ -711,7 +866,7 @@ jobs:
           method = 'apiDocsMatchesSnapshot'
           app = pathlib.Path('services/academic-service/academic-app')
           test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java'
-          test_sha = '833b5aa459e826ebd9976bd8b12d9f08d5e790dc8f664c4307554351fb4ea514'
+          test_sha = '3d862567c6fb0b44e5bc0003515070e56ac7fa77a2654a13c5f9f81cf71c99bc'
           source = test_source.read_bytes()
           assert hashlib.sha256(source).hexdigest() == test_sha
           assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
@@ -807,6 +962,139 @@ jobs:
           path: |
             build/ci-test-outcomes/academic-service/openapi-generated/academic.json
             build/ci-test-outcomes/academic-service/openapi-generated/generation.safe.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Generate the official mobile BFF OpenAPI candidate after an exact snapshot drift
+        id: mobile-bff-openapi-candidate
+        if: ${{ !cancelled() && matrix.service.name == 'mobile-bff' && steps.java-tests.outcome == 'failure' }}
+        timeout-minutes: 8
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_MOBILE_BFF_OPENAPI'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          import xml.etree.ElementTree as ET
+
+          def decode(raw):
+              def pairs(items):
+                  value = {}
+                  for key, item in items:
+                      assert key not in value
+                      value[key] = item
+                  return value
+              return json.loads(raw, object_pairs_hook=pairs,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+
+          package = 'ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT'
+          method = 'apiDocsMatchCanonicalSnapshot'
+          app = pathlib.Path('services/mobile-bff/mobile-bff-app')
+          test_source = app / 'src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java'
+          test_sha = '70887932a75569486459de8017d553de18da5339d2c632247a7e4aefdb80a963'
+          source = test_source.read_bytes()
+          assert hashlib.sha256(source).hexdigest() == test_sha
+          assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
+          lines = source.decode().splitlines()
+          target = '                .isEqualTo('
+          assert lines.count(target) == 1
+          expected_line = lines.index(target) + 1
+          report = pathlib.Path('build/ci-test-outcomes/mobile-bff/integrationTest/safe-outcomes.json')
+          if not report.is_file() or not 0 < report.stat().st_size <= 33554432:
+              raise SystemExit(0)
+          value = decode(report.read_bytes())
+          if value.get('collection') != 'RESULTS':
+              raise SystemExit(0)
+          meta = value['metadata']
+          checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert (meta['checkoutSha'] == checkout
+                  and meta['prHeadSha'] == os.environ['RCT_CI_PR_HEAD_SHA']
+                  and meta['service'] == 'mobile-bff' and meta['task'] == 'integrationTest'
+                  and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'failure'
+                  and meta['runId'] == os.environ['GITHUB_RUN_ID']
+                  and meta['runAttempt'] == os.environ['GITHUB_RUN_ATTEMPT'])
+          selected = [case for case in value['cases']
+                      if case.get('classname') == package and case.get('method') == method]
+          if not selected:
+              raise SystemExit(0)
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == test_source.as_posix()
+                  and case['sourceSha256'] == test_sha)
+          if case['status'] != 'FAILED':
+              raise SystemExit(0)
+          result = app / ('build/test-results/integrationTest/TEST-' + package + '.xml')
+          assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
+          raw = result.read_bytes()
+          assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+          suite = ET.fromstring(raw)
+          cases = suite.findall('testcase')
+          expected_names = {name + '()' for name in (
+              method, 'bothValidGeoKindsReachTheContractSeam',
+              'missingOrNullCoordinateIsRejectedBeforeTheSeam', 'clientInputFailuresUseTypedProblemDetails')}
+          if (suite.tag != 'testsuite' or suite.get('name') != package or len(cases) != 4
+                  or any(case.get('classname') != package for case in cases)
+                  or {case.get('name') for case in cases} != expected_names
+                  or {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  != {'tests': '4', 'failures': '1', 'errors': '0', 'skipped': '0'}):
+              raise SystemExit(0)
+          native_case = next(case for case in cases if case.get('name') == method + '()')
+          if (native_case.findall('error') or native_case.findall('skipped')
+                  or len(native_case.findall('failure')) != 1
+                  or any(case.findall(tag) for case in cases if case is not native_case
+                         for tag in ('failure', 'error', 'skipped'))):
+              raise SystemExit(0)
+          failure = native_case.find('failure')
+          if failure.get('type') not in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}:
+              raise SystemExit(0)
+          named_lines = re.findall(
+              r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+              + re.escape(package + '.' + method)
+              + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+          if named_lines != [str(expected_line)]:
+              raise SystemExit(0)
+          assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']) == b''
+          subprocess.run(
+              ['./gradlew', ':services:mobile-bff:mobile-bff-app:integrationTest', '--no-daemon',
+               '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
+              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, timeout=360, check=True)
+          snapshot = pathlib.Path('docs/openapi/mobile-bff.json')
+          assert not snapshot.is_symlink() and snapshot.is_file() and 0 < snapshot.stat().st_size <= 2097152
+          payload = snapshot.read_bytes()
+          generated = decode(payload)
+          assert (type(generated) is dict and set(generated) == {'openapi', 'info', 'tags', 'paths', 'components'}
+                  and generated['openapi'] == '3.0.1' and type(generated['info']) is dict
+                  and all(type(generated['info'].get(key)) is str for key in ('title', 'version'))
+                  and generated['info']['version'] == 'JS-STUDENT-01-r1'
+                  and type(generated['tags']) is list and all(type(tag) is dict for tag in generated['tags'])
+                  and type(generated['paths']) is dict and generated['paths']
+                  and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
+                  and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
+          changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
+          assert {path for path in changed if path} == {b'docs/openapi/mobile-bff.json'}
+          output = pathlib.Path('build/ci-test-outcomes/mobile-bff/openapi-generated')
+          output.mkdir(mode=0o700, parents=True, exist_ok=False)
+          shutil.copyfile(snapshot, output / 'mobile-bff.json')
+          proof = {'schemaVersion': 1, 'state': 'OFFICIAL_MOBILE_BFF_OPENAPI_GENERATED',
+                   'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'], 'checkoutSha': checkout,
+                   'runId': os.environ['GITHUB_RUN_ID'], 'runAttempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                   'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
+                   'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
+                   'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
+                   'trackedChanges': ['docs/openapi/mobile-bff.json'], 'ordinaryFailurePreserved': True}
+          (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
+              target_output.write('generated=true\n')
+          PY_MOBILE_BFF_OPENAPI
+
+      - name: Upload the official mobile BFF OpenAPI candidate
+        if: ${{ !cancelled() && steps.mobile-bff-openapi-candidate.outputs.generated == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-bff-openapi-generated-${{ github.run_attempt }}
+          path: |
+            build/ci-test-outcomes/mobile-bff/openapi-generated/mobile-bff.json
+            build/ci-test-outcomes/mobile-bff/openapi-generated/generation.safe.json
           if-no-files-found: error
           retention-days: 7
 

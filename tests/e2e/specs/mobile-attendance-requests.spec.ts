@@ -126,6 +126,207 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
 
   await loginPwa(page, dataset.student);
   await openStudentRequests();
+
+  // Exercise the implemented excuse form without changing the manual/AUTO setup below.
+  const excuseLessonId = manualLessons[4];
+  const availableBeforeExcuse = await options();
+  const expectedReasonCodes = ['ILLNESS', 'UNIVERSITY_ORDER', 'SUMMONS', 'OTHER'];
+  const expectedReasonLabels = [
+    'Болезнь',
+    'По приказу вуза или иному документу',
+    'Повестка от военкомата',
+    'Другое',
+  ];
+  expect(availableBeforeExcuse.reasons.map((reason: { code: string }) => reason.code)).toEqual(
+    expectedReasonCodes,
+  );
+  expect(availableBeforeExcuse.reasons.map((reason: { label: string }) => reason.label)).toEqual(
+    expectedReasonLabels,
+  );
+  const otherReason = availableBeforeExcuse.reasons.find(
+    (reason: { code: string; label: string; commentRequired: boolean }) => reason.code === 'OTHER',
+  );
+  expect(Boolean(otherReason?.commentRequired && otherReason.label)).toBe(true);
+  const assertExcuseLessonFree = (available: typeof availableBeforeExcuse) => {
+    const option = available.lessons.find(
+      (row: { lesson: { id: string } }) => row.lesson.id === excuseLessonId,
+    );
+    expect(
+      option?.lesson.status === 'closed' &&
+        option.excuseEligible === true &&
+        option.lateCheckinEligible === true &&
+        option.pendingRequests.length === 0,
+    ).toBe(true);
+  };
+  expect(new Set(manualLessons).size).toBe(5);
+  assertExcuseLessonFree(availableBeforeExcuse);
+  const openBeforeExcuse = await student.call(
+    'GET',
+    '/api/v1/student/requests?bucket=OPEN&page=0&size=50',
+  );
+  const originalOpenIds = openBeforeExcuse.content.map((row: { id: string }) => row.id).sort();
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+    'base64',
+  );
+  const file = { name: 'request-form.png', mimeType: 'image/png', buffer: png };
+  const excuseForm = page.locator('main.requests-excuse-screen form');
+  const fileInput = page.locator('#request-attachments-input');
+  const preview = page.getByRole('img', {
+    name: 'Предварительный просмотр изображения: request-form.png',
+    exact: true,
+  });
+  const openExcuseForm = async (comment: string) => {
+    await page.getByRole('button', { name: 'Подать', exact: true }).click();
+    await page.getByRole('button', { name: 'Уважительная причина', exact: true }).click();
+    await page.locator(`input[type="checkbox"][value="${excuseLessonId}"]`).check();
+    await page.getByRole('button', { name: 'Продолжить', exact: true }).click();
+    await page.locator('#request-excuse-reason').click();
+    await expect(
+      page.getByRole('listbox', { name: 'Причина', exact: true }).getByRole('option'),
+    ).toHaveText(expectedReasonLabels);
+    await page.getByRole('option', { name: otherReason.label, exact: true }).click();
+    await expect(page.getByLabel('Комментарий', { exact: true })).toHaveValue('');
+    await expect(
+      page.getByRole('button', { name: 'Отправить заявку', exact: true }),
+    ).toBeDisabled();
+    await page.getByLabel('Комментарий', { exact: true }).fill(comment);
+  };
+  const submitOwnExcuse = async (comment: string): Promise<string> => {
+    const [reply] = await Promise.all([
+      page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === '/api/v1/student/requests/excuse' &&
+          item.request().method() === 'POST',
+      ),
+      page.getByRole('button', { name: 'Отправить заявку', exact: true }).click(),
+    ]);
+    expect(reply.status()).toBe(200);
+    const detail = await reply.json();
+    expect(
+      typeof detail.summary.id === 'string' &&
+        /^[a-f0-9]{24}$/.test(detail.summary.id) &&
+        detail.summary.kind === 'EXCUSE' &&
+        detail.summary.status === 'PENDING' &&
+        detail.summary.lessons.length === 1 &&
+        detail.summary.lessons[0].id === excuseLessonId &&
+        detail.reason === 'OTHER' &&
+        detail.comment === comment &&
+        detail.attachments.length === 1 &&
+        detail.attachments[0].name === file.name &&
+        detail.attachments[0].state === 'ACTIVE',
+    ).toBe(true);
+    const card = page
+      .getByRole('article')
+      .filter({ has: page.locator(`[id="request-title-${detail.summary.id}"]`) });
+    await expect(card.getByText('На рассмотрении', { exact: true })).toBeVisible();
+    return detail.summary.id;
+  };
+
+  const cancelledComment = 'Синтетическая причина для отменяемой заявки';
+  await openExcuseForm(cancelledComment);
+  await fileInput.setInputFiles({
+    name: 'unsupported.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('synthetic unsupported format'),
+  });
+  await expect(excuseForm.getByRole('alert')).toContainText('формат не поддерживается');
+  await expect(excuseForm.getByRole('list', { name: 'Выбранные вложения' })).toHaveCount(0);
+  await fileInput.setInputFiles(file);
+  await expect(excuseForm.getByRole('alert')).toHaveCount(0);
+  await expect(preview).toBeVisible();
+  expect(
+    await preview.evaluate(async (image) => {
+      if (!(image instanceof HTMLImageElement)) return false;
+      await image.decode();
+      return image.naturalWidth === 1 && image.naturalHeight === 1;
+    }),
+  ).toBe(true);
+  await page
+    .getByRole('button', { name: 'Удалить вложение request-form.png', exact: true })
+    .click();
+  await expect(preview).toHaveCount(0);
+  await expect(excuseForm.getByRole('list', { name: 'Выбранные вложения' })).toHaveCount(0);
+  await fileInput.setInputFiles(file);
+  await expect(preview).toBeVisible();
+  const submitting = await excuseForm.evaluateHandle((form) => {
+    let seen = false;
+    const observer = new MutationObserver(() => {
+      if (
+        form.getAttribute('aria-busy') === 'true' &&
+        form.querySelector('button[type="submit"]')?.textContent?.trim() === 'Отправляем…'
+      )
+        seen = true;
+    });
+    observer.observe(form, { attributes: true, attributeFilter: ['aria-busy'] });
+    return { read: () => seen, stop: () => observer.disconnect() };
+  });
+  let cancelledExcuseId: string;
+  try {
+    cancelledExcuseId = await submitOwnExcuse(cancelledComment);
+    expect(await submitting.evaluate((value) => value.read())).toBe(true);
+  } finally {
+    await submitting
+      .evaluate((value) => value.stop())
+      .catch(() => {
+        expect.soft(false, 'Request form submitting observer was not disconnected').toBe(true);
+      });
+    await submitting.dispose().catch(() => {});
+  }
+  const cancelledCard = page
+    .getByRole('article')
+    .filter({ has: page.locator(`[id="request-title-${cancelledExcuseId}"]`) });
+  const [cancelledReply] = await Promise.all([
+    page.waitForResponse(
+      (item) =>
+        new URL(item.url()).pathname === `/api/v1/student/requests/${cancelledExcuseId}/cancel` &&
+        item.request().method() === 'POST',
+    ),
+    cancelledCard.getByRole('button', { name: 'Отменить заявку', exact: true }).click(),
+  ]);
+  expect(cancelledReply.status()).toBe(200);
+  expect((await cancelledReply.json()).summary.status).toBe('CANCELLED');
+  await expect(cancelledCard).toHaveCount(0);
+  assertExcuseLessonFree(await options());
+  await page.getByRole('tab', { name: 'Архив', exact: true }).click();
+  await expect(cancelledCard.getByText('Отменена', { exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: 'Открытые', exact: true }).click();
+
+  const rejectedComment = 'Синтетическая причина для отклоняемой заявки';
+  await openExcuseForm(rejectedComment);
+  await fileInput.setInputFiles(file);
+  const rejectedExcuseId = await submitOwnExcuse(rejectedComment);
+  const rejectionReason = 'Синтетическое основание отказа';
+  const excuseDecisionPath = `/api/attendance/requests/${rejectedExcuseId}`;
+  const pendingExcuse = await dataset.headmanActor.call('GET', excuseDecisionPath);
+  const rejected = await dataset.headmanActor.call('POST', `${excuseDecisionPath}/decision`, {
+    decision: 'REJECTED',
+    reason: rejectionReason,
+    expectedRevision: pendingExcuse.decisionRevision,
+    excludedOccurrenceIds: [],
+    requestKey: randomUUID(),
+  });
+  expect(rejected.summary.status).toBe('REJECTED');
+  await page.getByRole('tab', { name: 'Архив', exact: true }).click();
+  const rejectedCard = page
+    .getByRole('article')
+    .filter({ has: page.locator(`[id="request-title-${rejectedExcuseId}"]`) });
+  await expect(rejectedCard.getByText('Отклонена', { exact: true })).toBeVisible();
+  await expect(rejectedCard).toContainText(rejectionReason);
+  await expect(
+    rejectedCard.getByRole('button', { name: 'Отменить заявку', exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Открытые', exact: true }).click();
+  assertExcuseLessonFree(await options());
+  const openAfterExcuse = await student.call(
+    'GET',
+    '/api/v1/student/requests?bucket=OPEN&page=0&size=50',
+  );
+  expect(
+    JSON.stringify(openAfterExcuse.content.map((row: { id: string }) => row.id).sort()) ===
+      JSON.stringify(originalOpenIds),
+  ).toBe(true);
+
   await page.getByRole('button', { name: 'Подать', exact: true }).click();
   await page.getByRole('button', { name: 'Забыл отметиться', exact: true }).click();
   await page.locator(`input[type="checkbox"][value="${manualLessons[4]}"]`).check();

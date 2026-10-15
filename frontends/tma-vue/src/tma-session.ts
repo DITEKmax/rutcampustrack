@@ -53,6 +53,7 @@ import type {
   authComponents,
 } from '@rct/mobile-core'
 import { authenticateTma, TmaAuthError } from './tma-auth'
+import { ownProfileTelegramId } from '../../mobile-core/src/features/profile/profile-types'
 
 type TmaCurrentSession = authComponents['schemas']['CurrentSessionResponse']
 type TmaSelectActiveRoleResponse = authComponents['schemas']['SelectActiveRoleResponse']
@@ -458,6 +459,20 @@ export function useTmaSession(options: TmaSessionOptions) {
         assertCurrent(generation)
         const profile = adaptProfile(value)
         rememberProfile(profile, generation)
+        if (profile.activeRole !== null) {
+          const ownResponse = await profileResponse(
+            '/api/academic/users/me',
+            generation,
+            { cache: 'no-store' },
+            'own-profile',
+          )
+          const ownProfile = await generationResult(generation, () =>
+            profileJson<unknown>(ownResponse, 'own-profile'),
+          )
+          const telegramId = ownProfileTelegramId(ownProfile, profile.userId)
+          if (telegramId !== undefined) profile.telegramId = telegramId
+        }
+        assertCurrent(generation)
         return profile
       },
       selectRole: async (input) => {

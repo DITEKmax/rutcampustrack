@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +30,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.service.JwtService;
+import ru.rutcampustrack.auth.session.SessionLifecycleService;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 
 /**
  * Real Boot/Spring Security proof for the session-bound public auth flow.
@@ -47,6 +53,12 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
     @Autowired private JdbcTemplate jdbc;
 
     @Autowired private ObjectMapper objectMapper;
+
+    @Autowired private SessionLifecycleService sessionLifecycle;
+
+    @Autowired private AuthSessionQueryPort sessionQueries;
+
+    @Autowired private JwtService jwtService;
 
     @Test
     void bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword()
@@ -201,6 +213,118 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
         assertThat(oldReplay.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(oldReplay.getHeaders().getCacheControl()).isEqualTo("no-store");
         assertThat(problemCode(oldReplay)).isEqualTo("REFRESH_REJECTED");
+    }
+
+    @Test
+    void naturallyExpiredRefreshCookieIsRejectedWithoutRevokingOrMutatingItsSession()
+            throws Exception {
+        String login = seedStudentUser();
+        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login=?", Long.class, login);
+        var authority = sessionQueries.findLoginAuthority(userId).orElseThrow();
+        Instant createdAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant expiresAt = createdAt.plusSeconds(15);
+        UUID sessionId = UUID.randomUUID();
+        UUID refreshJti = UUID.randomUUID();
+        var created =
+                sessionLifecycle.createSession(
+                        new SessionLifecycleService.CreateSessionRequest(
+                                userId,
+                                sessionId,
+                                refreshJti,
+                                createdAt,
+                                expiresAt,
+                                AuthMethod.PASSWORD,
+                                authority.rolesVersion(),
+                                authority.grants(),
+                                PASSWORD_HASH,
+                                "natural-expiry-it",
+                                "natural-expiry-it"));
+        assertThat(created.succeeded()).as("own short-lived durable session is created").isTrue();
+        String originalRefresh =
+                jwtService.generateSessionRefreshToken(
+                        created.snapshot(), refreshJti, createdAt, expiresAt);
+        ResponseEntity<String> live = refresh(originalRefresh);
+        assertThat(live.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(live.getHeaders().getCacheControl()).isEqualTo("no-store");
+        JsonNode liveBody = objectMapper.readTree(live.getBody());
+        String currentRefresh = liveBody.path("refreshToken").asText();
+        assertThat(!currentRefresh.isBlank() && !currentRefresh.equals(originalRefresh))
+                .as("pre-expiry refresh issues a new current cookie")
+                .isTrue();
+        assertThat(
+                        cookieValue(live.getHeaders().get(HttpHeaders.SET_COOKIE))
+                                .equals(currentRefresh))
+                .as("the actual HTTP cookie is the current refresh token")
+                .isTrue();
+        assertThat(tokenExpiration(currentRefresh) == expiresAt.getEpochSecond())
+                .as("rotation retains the fixture's real absolute deadline")
+                .isTrue();
+        LoginSession liveSession =
+                new LoginSession(
+                        liveBody.path("accessToken").asText(), currentRefresh, currentRefresh, "");
+        ResponseEntity<String> current = bearer(liveSession, "/auth/session", HttpMethod.GET, null);
+        assertThat(current.getStatusCode()).isEqualTo(HttpStatus.OK);
+        JsonNode currentBody = objectMapper.readTree(current.getBody());
+        assertThat(
+                        currentBody.path("userId").asText().equals(Long.toString(userId))
+                                && currentBody
+                                        .path("sessionId")
+                                        .asText()
+                                        .equals(sessionId.toString()))
+                .as("the live HTTP control reaches the exact owned session")
+                .isTrue();
+        var before =
+                jdbc.queryForMap(
+                        "SELECT current_refresh_jti, previous_refresh_jti, refresh_expires_at,"
+                                + " revoked_at, revoke_reason FROM auth_sessions WHERE sid=? AND"
+                                + " user_id=?",
+                        sessionId,
+                        userId);
+        Long eventsBefore =
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM account_security_events WHERE user_id=?",
+                        Long.class,
+                        userId);
+        long waitMillis =
+                Math.max(0, Duration.between(Instant.now(), expiresAt.plusMillis(100)).toMillis());
+        assertThat(waitMillis <= 16000)
+                .as("the natural-expiry wait stays within the short owned fixture")
+                .isTrue();
+        TimeUnit.MILLISECONDS.sleep(waitMillis);
+        assertThat(!Instant.now().isBefore(expiresAt))
+                .as("real server wall time reaches the original deadline")
+                .isTrue();
+
+        ResponseEntity<String> expired = refresh(currentRefresh);
+        assertThat(expired.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(expired.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(problemCode(expired)).isEqualTo("REFRESH_REJECTED");
+        assertThat(expired.getHeaders().get(HttpHeaders.SET_COOKIE) == null)
+                .as("expired refresh issues no cookie")
+                .isTrue();
+        JsonNode rejectedBody = objectMapper.readTree(expired.getBody());
+        assertThat(!rejectedBody.has("accessToken") && !rejectedBody.has("refreshToken"))
+                .as("expired refresh issues no token payload")
+                .isTrue();
+        var after =
+                jdbc.queryForMap(
+                        "SELECT current_refresh_jti, previous_refresh_jti, refresh_expires_at,"
+                                + " revoked_at, revoke_reason FROM auth_sessions WHERE sid=? AND"
+                                + " user_id=?",
+                        sessionId,
+                        userId);
+        assertThat(before.equals(after) && after.get("revoked_at") == null)
+                .as("natural expiry neither rotates nor revokes the durable session")
+                .isTrue();
+        assertThat(
+                        eventsBefore.equals(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM account_security_events WHERE"
+                                                + " user_id=?",
+                                        Long.class,
+                                        userId)))
+                .as("expired refresh appends no security event")
+                .isTrue();
     }
 
     @Test

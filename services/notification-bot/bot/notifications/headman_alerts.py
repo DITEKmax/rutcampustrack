@@ -27,6 +27,8 @@ _EXCUSE_REASON_LABELS = {
     attendance_pb2.STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION: "Участие в соревнованиях",
     attendance_pb2.STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES: "Семейные обстоятельства",
     attendance_pb2.STUDENT_EXCUSE_REASON_OTHER: "Другое",
+    attendance_pb2.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER: "По приказу вуза или иному документу",
+    attendance_pb2.STUDENT_EXCUSE_REASON_SUMMONS: "Повестка от военкомата",
 }
 _ACTIVE_ATTACHMENT_STATE = attendance_pb2.STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE
 _PENDING_STATUS = attendance_pb2.STUDENT_REQUEST_STATUS_PENDING

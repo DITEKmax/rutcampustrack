@@ -47,6 +47,14 @@ function response(body: unknown, status = 200): Response {
   })
 }
 
+// Existing mutation tests keep their queued Auth exchanges independent of the new own-profile read.
+function withOwnProfile(fetcher: typeof fetch): typeof fetch {
+  return (input, init) =>
+    input === '/api/academic/users/me'
+      ? Promise.resolve(response({ id: 42, telegramId: null }))
+      : fetcher(input, init)
+}
+
 type DurableMutation = 'changePassword' | 'logoutAll'
 
 function invokeDurableMutation(state: ProfileState, mutation: DurableMutation): Promise<void> {
@@ -641,7 +649,7 @@ describe('PWA memory session', () => {
         .mockResolvedValueOnce(
           response({ ...profile, userId: '43', sessionId: '00000000-0000-4000-8000-000000000002' }),
         )
-      const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+      const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher), logoutMarkerStorage: null })
       auth.setToken('old-account-token')
       const state = new ProfileState(
         auth.createProfilePort(0, {
@@ -677,7 +685,7 @@ describe('PWA memory session', () => {
       .fn<typeof fetch>()
       .mockResolvedValueOnce(response(profile))
       .mockResolvedValueOnce(unauthorized)
-    const auth = usePwaAuth({ fetcher })
+    const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher) })
     auth.setToken('owner-token')
     const onInvalidated = vi.fn()
     const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
@@ -706,7 +714,7 @@ describe('PWA memory session', () => {
         { status: 409 },
       ),
     )
-    const auth = usePwaAuth({ fetcher })
+    const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher) })
     await expect(auth.refresh()).rejects.toBeInstanceOf(AuthRequestError)
   })
 
@@ -723,7 +731,7 @@ describe('PWA memory session', () => {
           .fn<typeof fetch>()
           .mockResolvedValueOnce(response(profile))
           .mockResolvedValueOnce(makeResponse())
-        const auth = usePwaAuth({ fetcher })
+        const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher) })
         auth.setToken('owner-token')
         const onInvalidated = vi.fn()
         const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
@@ -763,7 +771,7 @@ describe('PWA memory session', () => {
           .fn<typeof fetch>()
           .mockResolvedValueOnce(response(profile))
           .mockResolvedValueOnce(makeResponse())
-        const auth = usePwaAuth({ fetcher })
+        const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher) })
         auth.setToken('owner-token')
         const onInvalidated = vi.fn()
         const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
@@ -790,7 +798,7 @@ describe('PWA memory session', () => {
         .fn<typeof fetch>()
         .mockResolvedValueOnce(response(profile))
         .mockResolvedValueOnce(readable.response)
-      const auth = usePwaAuth({ fetcher })
+      const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher) })
       auth.setToken('owner-token')
       const onInvalidated = vi.fn(
         (
@@ -821,7 +829,7 @@ describe('PWA memory session', () => {
       .fn<typeof fetch>()
       .mockResolvedValueOnce(response(profile))
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    const auth = usePwaAuth({ fetcher })
+    const auth = usePwaAuth({ fetcher: withOwnProfile(fetcher) })
     auth.setToken('owner-token')
     const onInvalidated = vi.fn(
       (
@@ -923,5 +931,80 @@ describe('PWA memory session', () => {
     expect(auth.currentGeneration()).toBe(1)
     expect(auth.accessToken.value).toBe('changed-token')
     expect(reasons).toEqual(['authority-changed'])
+  })
+})
+
+describe('PWA own-profile Telegram ID', () => {
+  it('enriches only the selected profile port from own/me, ignoring session extras', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      if (input === '/api/academic/users/me') return response({ id: 42, telegramId: 880000042 })
+      return response({ ...profile, telegramId: 999 })
+    })
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+    auth.setToken('own-profile-token')
+    await expect(auth.getSessionFor(0)).resolves.not.toHaveProperty('telegramId')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    await expect(auth.createProfilePort(0).getSnapshot()).resolves.toMatchObject({
+      userId: '42',
+      telegramId: '880000042',
+    })
+    expect(fetcher.mock.calls.map(([input]) => input)).toEqual([
+      '/api/auth/session',
+      '/api/auth/session',
+      '/api/academic/users/me',
+    ])
+    auth.dispose()
+  })
+
+  it('keeps bootstrap data unknown without calling a selected-role Academic API', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(response({ ...profile, activeRole: null }))
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+    auth.setToken('bootstrap-token')
+    await expect(auth.createProfilePort(0).getSnapshot()).resolves.not.toHaveProperty('telegramId')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    auth.dispose()
+  })
+
+  it('uses the existing profile failure and retry instead of claiming an absent binding', async () => {
+    let unavailable = true
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      if (input === '/api/academic/users/me')
+        return unavailable ? response({ status: 503 }, 503) : response({ id: 42, telegramId: null })
+      return response(profile)
+    })
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+    auth.setToken('own-profile-token')
+    const state = new ProfileState(auth.createProfilePort(0))
+    await expect(state.loadSnapshot()).rejects.toMatchObject({ status: 503 })
+    expect(state.view.snapshotStatus).toBe('error')
+    expect(state.view.snapshot).toBeNull()
+    unavailable = false
+    await expect(state.loadSnapshot()).resolves.toMatchObject({ telegramId: null })
+    expect(state.view.snapshotStatus).toBe('ready')
+    auth.dispose()
+  })
+
+  it('rejects an own binding body that completes after the current owner is cleared', async () => {
+    let resolveBinding!: (value: unknown) => void
+    const binding = response({})
+    binding.json = () =>
+      new Promise((resolve) => {
+        resolveBinding = resolve
+      })
+    const fetcher = vi.fn<typeof fetch>(async (input) =>
+      input === '/api/academic/users/me' ? binding : response(profile),
+    )
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+    auth.setToken('own-profile-token')
+    const pending = auth.createProfilePort(0).getSnapshot()
+    const rejected = expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    await vi.waitFor(() => expect(resolveBinding).toBeTypeOf('function'))
+    auth.clear({ broadcast: false })
+    resolveBinding({ id: 42, telegramId: 880000042 })
+    await rejected
+    expect(auth.accessToken.value).toBeNull()
+    auth.dispose()
   })
 })

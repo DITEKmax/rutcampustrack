@@ -42,7 +42,9 @@ public final class StudentRequestApiModels {
         MEDICAL_EXAMINATION,
         COMPETITION_PARTICIPATION,
         FAMILY_CIRCUMSTANCES,
-        OTHER
+        OTHER,
+        UNIVERSITY_ORDER,
+        SUMMONS
     }
 
     public enum AttachmentState {

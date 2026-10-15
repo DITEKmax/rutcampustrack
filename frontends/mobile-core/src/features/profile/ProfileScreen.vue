@@ -124,6 +124,16 @@ function logout(): void {
                 }}
               </template><span v-if="snapshot.groupLabel">{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span>
             </p>
+            <p class="profile-card__meta">
+              Telegram ID:
+              {{
+                snapshot.telegramId === undefined
+                  ? 'нет данных'
+                  : snapshot.telegramId === null
+                    ? 'не привязан'
+                    : snapshot.telegramId
+              }}
+            </p>
           </div>
         </section>
 

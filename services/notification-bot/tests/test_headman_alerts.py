@@ -368,3 +368,51 @@ async def test_headman_alert_no_headman_with_telegram_skips_send():
 
     assert len(captured_tasks) == 0
     bot.send_message.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("reason", "label"),
+    [
+        (pb.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER, "По приказу вуза или иному документу"),
+        (pb.STUDENT_EXCUSE_REASON_SUMMONS, "Повестка от военкомата"),
+    ],
+)
+async def test_accepted_reason_from_canonical_rpc_reaches_headman_queue(reason, label):
+    event = _make_excuse_event(user_id=1)
+    detail = pb.StudentRequestDetail(
+        summary=pb.StudentRequestSummary(
+            id=event["payload"]["ticket_id"],
+            kind=pb.STUDENT_REQUEST_KIND_EXCUSE,
+            status=pb.STUDENT_REQUEST_STATUS_PENDING,
+            lessons=[pb.StudentRequestLesson(id=101, date="2026-09-07", lesson_number=1)],
+        ),
+        reason=reason,
+    )
+    attendance = MagicMock()
+    attendance.resolve_request_notification = AsyncMock(
+        return_value=pb.ResolveRequestNotificationResponse(
+            group_id=5, student_id=1, student_name="Синтетический студент", detail=detail
+        )
+    )
+    academic = MagicMock()
+    academic.get_current_group_members = AsyncMock(
+        return_value=[_make_member(2, 222, is_headman=True, display_name="Староста")]
+    )
+    bot = MagicMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    tasks = []
+    queue = MagicMock()
+
+    async def capture(task):
+        tasks.append(task)
+
+    queue.put = capture
+    await _handle_headman_alert(
+        event, bot=bot, attendance_client=attendance, academic_client=academic, send_queue=queue
+    )
+
+    assert len(tasks) == 1
+    assert await tasks[0].audience_check() is True
+    await tasks[0].coroutine_factory()
+    assert label in bot.send_message.call_args.kwargs["text"]

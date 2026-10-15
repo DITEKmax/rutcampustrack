@@ -504,7 +504,12 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
 
     return {
       getSnapshot: async () => {
-        const profile = await guarded(() => client.getSnapshot())
+        const snapshot = await guarded(() => client.getSnapshot())
+        const telegramId =
+          snapshot.activeRole === null
+            ? undefined
+            : await guarded(() => client.getOwnTelegramId(snapshot.userId))
+        const profile = telegramId === undefined ? snapshot : { ...snapshot, telegramId }
         rememberProfile(profile, generation)
         return profile
       },

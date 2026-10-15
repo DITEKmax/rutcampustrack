@@ -204,8 +204,18 @@ public class StudentRequestFacade {
                     StudentApiModels.ProblemCode.INVALID_REQUEST,
                     "Причина обязательна");
         }
-        return ru.rutcampustrack.attendance.grpc.StudentExcuseReason.valueOf(
-                "STUDENT_EXCUSE_REASON_" + reason.name());
+        return switch (reason) {
+            case ILLNESS -> StudentExcuseReason.STUDENT_EXCUSE_REASON_ILLNESS;
+            case MEDICAL_EXAMINATION ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION;
+            case COMPETITION_PARTICIPATION ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION;
+            case FAMILY_CIRCUMSTANCES ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES;
+            case OTHER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_OTHER;
+            case UNIVERSITY_ORDER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER;
+            case SUMMONS -> StudentExcuseReason.STUDENT_EXCUSE_REASON_SUMMONS;
+        };
     }
 
     private static Page page(StudentRequestPage page) {
@@ -371,6 +381,8 @@ public class StudentRequestFacade {
                     ExcuseReason.COMPETITION_PARTICIPATION;
             case STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES -> ExcuseReason.FAMILY_CIRCUMSTANCES;
             case STUDENT_EXCUSE_REASON_OTHER -> ExcuseReason.OTHER;
+            case STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER -> ExcuseReason.UNIVERSITY_ORDER;
+            case STUDENT_EXCUSE_REASON_SUMMONS -> ExcuseReason.SUMMONS;
             default -> throw unknownUpstreamEnum();
         };
     }

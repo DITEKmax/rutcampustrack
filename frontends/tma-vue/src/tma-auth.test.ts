@@ -34,6 +34,14 @@ function currentSession(sessionVersion: string, activeRole: 'ADMIN' | 'STUDENT' 
   }
 }
 
+// Preserve existing queued Auth exchanges while supplying the new independent own-profile read.
+function withOwnProfile(fetcher: typeof fetch): typeof fetch {
+  return (input, init) =>
+    input === '/api/academic/users/me'
+      ? Promise.resolve(Response.json({ id: 77, telegramId: null }))
+      : fetcher(input, init)
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
 })
@@ -317,7 +325,10 @@ describe('generation-bound report ticket session', () => {
         .mockResolvedValueOnce(Response.json({ accessToken: 'current-owner-token' }))
         .mockResolvedValueOnce(Response.json(currentSession('3', 'STUDENT')))
         .mockResolvedValueOnce(new Response(null, { status: 204 }))
-      const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+      const session = useTmaSession({
+        fetcher: withOwnProfile(fetcher),
+        getInitData: () => INIT_DATA,
+      })
       await session.authenticate()
       let signedOutReason: string | null = null
       const state = new ProfileState(
@@ -358,7 +369,10 @@ describe('generation-bound report ticket session', () => {
       .mockResolvedValueOnce(Response.json({ accessToken: 'retained-owner-token' }))
       .mockResolvedValueOnce(Response.json(currentSession('3', 'STUDENT')))
       .mockResolvedValueOnce(Response.json({ extras: { code } }, { status }))
-    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    const session = useTmaSession({
+      fetcher: withOwnProfile(fetcher),
+      getInitData: () => INIT_DATA,
+    })
     await session.authenticate()
     const state = new ProfileState(session.createProfilePort())
     await state.loadSnapshot()
@@ -382,7 +396,10 @@ describe('generation-bound report ticket session', () => {
       .mockReturnValueOnce(mutation)
       .mockResolvedValueOnce(Response.json({ accessToken: 'new-account-token' }))
       .mockResolvedValueOnce(Response.json({ ...currentSession('1', 'STUDENT'), userId: '88' }))
-    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    const session = useTmaSession({
+      fetcher: withOwnProfile(fetcher),
+      getInitData: () => INIT_DATA,
+    })
     await session.authenticate()
     const state = new ProfileState(
       session.createProfilePort(session.currentGeneration(), {
@@ -639,5 +656,99 @@ describe('Telegram host boundary', () => {
     resolve(new Response(null, { status: 204 }))
     await expect(old).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(owner.accessToken.value).toBeNull()
+  })
+})
+
+describe('TMA own-profile Telegram ID', () => {
+  function ownSession(fetcher: typeof fetch) {
+    return useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+  }
+
+  it('uses the authoritative own profile rather than Telegram host or session extras', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      if (input === '/api/auth/tma') return Response.json({ accessToken: 'own-profile-token' })
+      if (input === '/api/academic/users/me')
+        return Response.json({ id: 77, telegramId: 880000077 })
+      return Response.json({ ...currentSession('3', 'STUDENT'), telegramId: 999 })
+    })
+    const session = ownSession(fetcher)
+    await session.authenticate()
+    await expect(session.getProfileFor(session.currentGeneration())).resolves.not.toHaveProperty(
+      'telegramId',
+    )
+    const result = await session.createProfilePort().getSnapshot()
+    expect(result.telegramId).toBe('880000077')
+    expect(fetcher.mock.calls[3]?.[1]?.cache).toBe('no-store')
+    expect(fetcher.mock.calls.map(([input]) => input)).toEqual([
+      '/api/auth/tma',
+      '/api/auth/session',
+      '/api/auth/session',
+      '/api/academic/users/me',
+    ])
+    expect(new Headers(fetcher.mock.calls[3]?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer own-profile-token',
+    )
+    session.clear()
+  })
+
+  it('keeps bootstrap binding unknown without an Academic own-profile request', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) =>
+      input === '/api/auth/tma'
+        ? Response.json({ accessToken: 'bootstrap-token' })
+        : Response.json({ ...currentSession('3'), activeRole: null }),
+    )
+    const session = ownSession(fetcher)
+    await session.authenticate()
+    await expect(session.createProfilePort().getSnapshot()).resolves.not.toHaveProperty(
+      'telegramId',
+    )
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    session.clear()
+  })
+
+  it('does not turn a denied own profile into an unbound Telegram state and can retry', async () => {
+    let denied = true
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      if (input === '/api/auth/tma') return Response.json({ accessToken: 'own-profile-token' })
+      if (input === '/api/academic/users/me')
+        return denied
+          ? Response.json({}, { status: 403 })
+          : Response.json({ id: 77, telegramId: null })
+      return Response.json(currentSession('3', 'STUDENT'))
+    })
+    const session = ownSession(fetcher)
+    await session.authenticate()
+    const state = new ProfileState(session.createProfilePort())
+    await expect(state.loadSnapshot()).rejects.toMatchObject({ status: 403 })
+    expect(state.view.snapshotStatus).toBe('error')
+    expect(state.view.snapshot).toBeNull()
+    denied = false
+    await expect(state.loadSnapshot()).resolves.toMatchObject({ telegramId: null })
+    expect(state.view.snapshotStatus).toBe('ready')
+    session.clear()
+  })
+
+  it('rejects a late own binding after the TMA owner was cleared', async () => {
+    let resolveBinding!: (value: unknown) => void
+    const binding = Response.json({})
+    binding.json = () =>
+      new Promise((resolve) => {
+        resolveBinding = resolve
+      })
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      if (input === '/api/auth/tma') return Response.json({ accessToken: 'own-profile-token' })
+      return input === '/api/academic/users/me'
+        ? binding
+        : Response.json(currentSession('3', 'STUDENT'))
+    })
+    const session = ownSession(fetcher)
+    await session.authenticate()
+    const pending = session.createProfilePort().getSnapshot()
+    const rejected = expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    await vi.waitFor(() => expect(resolveBinding).toBeTypeOf('function'))
+    session.clear()
+    resolveBinding({ id: 77, telegramId: 880000077 })
+    await rejected
+    expect(session.accessToken.value).toBeNull()
   })
 })

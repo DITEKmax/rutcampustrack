@@ -116,4 +116,49 @@ class StudentRequestGrpcMapperTest {
         assertThat(result.getReasons(0).getCommentRequired()).isTrue();
         assertThat(result.getReasons(1).getCommentRequired()).isFalse();
     }
+
+    @Test
+    void studentReasonCodesRoundtripWithoutChangingPublishedNumbers() throws Exception {
+        var reasons =
+                List.of(
+                        ExcuseType.ILLNESS,
+                        ExcuseType.MEDICAL_EXAMINATION,
+                        ExcuseType.COMPETITION_PARTICIPATION,
+                        ExcuseType.FAMILY_CIRCUMSTANCES,
+                        ExcuseType.OTHER,
+                        ExcuseType.UNIVERSITY_ORDER,
+                        ExcuseType.SUMMONS);
+        var domain =
+                new StudentRequestModels.RequestOptions(
+                        reasons.stream()
+                                .map(
+                                        reason ->
+                                                new StudentRequestModels.ReasonOption(
+                                                        reason,
+                                                        "reason",
+                                                        reason == ExcuseType.OTHER))
+                                .toList(),
+                        new StudentRequestModels.FileLimits(2, 10L, 20L, List.of(), List.of()),
+                        new StudentRequestModels.Budget(30L, 5, 0, 5),
+                        List.of());
+
+        var wire =
+                StudentRequestOptions.parseFrom(
+                        StudentRequestGrpcMapper.options(domain).toByteArray());
+
+        assertThat(StudentExcuseReason.STUDENT_EXCUSE_REASON_UNSPECIFIED.getNumber()).isZero();
+        assertThat(wire.getReasonsList())
+                .extracting(StudentRequestReasonOption::getCodeValue)
+                .containsExactly(1, 2, 3, 4, 5, 6, 7);
+        assertThat(wire.getReasonsList())
+                .extracting(option -> option.getCode().name())
+                .containsExactly(
+                        "STUDENT_EXCUSE_REASON_ILLNESS",
+                        "STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION",
+                        "STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION",
+                        "STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES",
+                        "STUDENT_EXCUSE_REASON_OTHER",
+                        "STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER",
+                        "STUDENT_EXCUSE_REASON_SUMMONS");
+    }
 }

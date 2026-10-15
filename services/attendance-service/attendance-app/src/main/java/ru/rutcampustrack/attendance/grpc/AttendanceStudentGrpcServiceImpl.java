@@ -410,11 +410,17 @@ public class AttendanceStudentGrpcServiceImpl
                 || reason == StudentExcuseReason.UNRECOGNIZED) {
             throw new BadRequestException("Excuse reason is required");
         }
-        try {
-            return ExcuseType.valueOf(reason.name().replace("STUDENT_EXCUSE_REASON_", ""));
-        } catch (IllegalArgumentException error) {
-            throw new BadRequestException("Excuse reason is not supported");
-        }
+        return switch (reason) {
+            case STUDENT_EXCUSE_REASON_ILLNESS -> ExcuseType.ILLNESS;
+            case STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION -> ExcuseType.MEDICAL_EXAMINATION;
+            case STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION ->
+                    ExcuseType.COMPETITION_PARTICIPATION;
+            case STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES -> ExcuseType.FAMILY_CIRCUMSTANCES;
+            case STUDENT_EXCUSE_REASON_OTHER -> ExcuseType.OTHER;
+            case STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER -> ExcuseType.UNIVERSITY_ORDER;
+            case STUDENT_EXCUSE_REASON_SUMMONS -> ExcuseType.SUMMONS;
+            default -> throw new BadRequestException("Excuse reason is not supported");
+        };
     }
 
     private static void validateObjectId(String value, String field) {

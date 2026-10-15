@@ -40,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.util.LinkedMultiValueMap;
 import ru.rutcampustrack.academic.grpc.*;
 import ru.rutcampustrack.attendance.grpc.*;
 import ru.rutcampustrack.mobilebff.MobileBffApplication;
@@ -61,6 +62,8 @@ class StudentEnumProjectionHttpGrpcIT {
     private static final String REQUEST_PATH = "/api/v1/student/requests";
     private static final String PLAN_PATH = "/api/v1/map/buildings/1/floors/2/plan";
     private static final AtomicReference<StudentRequestDetail> REQUEST = new AtomicReference<>();
+    private static final AtomicReference<SubmitStudentExcuseCommand> EXCUSE_COMMAND =
+            new AtomicReference<>();
     private static final AtomicReference<StudentRequestOptions> REQUEST_OPTIONS =
             new AtomicReference<>();
     private static final AtomicReference<CampusMapPlanResponse> PLAN = new AtomicReference<>();
@@ -90,6 +93,7 @@ class StudentEnumProjectionHttpGrpcIT {
         ELIGIBILITY.set(1);
         FORWARDED.set(null);
         REQUEST.set(knownRequest());
+        EXCUSE_COMMAND.set(null);
         REQUEST_OPTIONS.set(knownRequestOptions());
         PLAN.set(knownPlan());
         when(publicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
@@ -172,6 +176,107 @@ class StudentEnumProjectionHttpGrpcIT {
         assertThat(withReason.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(withReason.getBody()).contains("\"reason\":\"OTHER\"");
         assertForwardedIdentity();
+    }
+
+    @Test
+    void acceptedReasonOptionsAndAllSupportedSubmissionsCrossSignedHttpAndGrpc() throws Exception {
+        var catalog = StudentRequestOptions.newBuilder();
+        catalog.addReasons(
+                StudentRequestReasonOption.newBuilder()
+                        .setCode(StudentExcuseReason.STUDENT_EXCUSE_REASON_ILLNESS)
+                        .setLabel("Болезнь"));
+        catalog.addReasons(
+                StudentRequestReasonOption.newBuilder()
+                        .setCode(StudentExcuseReason.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER)
+                        .setLabel("По приказу вуза или иному документу"));
+        catalog.addReasons(
+                StudentRequestReasonOption.newBuilder()
+                        .setCode(StudentExcuseReason.STUDENT_EXCUSE_REASON_SUMMONS)
+                        .setLabel("Повестка от военкомата"));
+        catalog.addReasons(
+                StudentRequestReasonOption.newBuilder()
+                        .setCode(StudentExcuseReason.STUDENT_EXCUSE_REASON_OTHER)
+                        .setLabel("Другое")
+                        .setCommentRequired(true));
+        REQUEST_OPTIONS.set(catalog.build());
+        var options = get(REQUEST_PATH + "/options");
+        assertThat(options.getStatusCode()).isEqualTo(HttpStatus.OK);
+        var wireOptions = json.readTree(options.getBody()).path("reasons");
+        assertThat(wireOptions.findValuesAsText("code"))
+                .containsExactly("ILLNESS", "UNIVERSITY_ORDER", "SUMMONS", "OTHER");
+        assertThat(wireOptions.findValuesAsText("label"))
+                .containsExactly(
+                        "Болезнь",
+                        "По приказу вуза или иному документу",
+                        "Повестка от военкомата",
+                        "Другое");
+        assertThat(wireOptions.get(0).path("commentRequired").asBoolean()).isFalse();
+        assertThat(wireOptions.get(1).path("commentRequired").asBoolean()).isFalse();
+        assertThat(wireOptions.get(2).path("commentRequired").asBoolean()).isFalse();
+        assertThat(wireOptions.get(3).path("commentRequired").asBoolean()).isTrue();
+
+        var reasons =
+                java.util.List.of(
+                        "ILLNESS",
+                        "MEDICAL_EXAMINATION",
+                        "COMPETITION_PARTICIPATION",
+                        "FAMILY_CIRCUMSTANCES",
+                        "OTHER",
+                        "UNIVERSITY_ORDER",
+                        "SUMMONS");
+        for (int index = 0; index < reasons.size(); index++) {
+            String reason = reasons.get(index);
+            var headers = new HttpHeaders();
+            headers.set(
+                    "X-Internal-Token",
+                    JWT.validToken(
+                            701L,
+                            UUID.fromString("77777777-7777-4777-8777-777777777777"),
+                            1L,
+                            1L,
+                            "STUDENT",
+                            "ACTIVE",
+                            41L,
+                            false,
+                            false));
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.set("Idempotency-Key", "reason-boundary-" + reason);
+            var partHeaders = new HttpHeaders();
+            partHeaders.setContentType(MediaType.APPLICATION_JSON);
+            var parts = new LinkedMultiValueMap<String, Object>();
+            parts.add(
+                    "request",
+                    new HttpEntity<>(
+                            json.writeValueAsString(
+                                    java.util.Map.of(
+                                            "lessonIds",
+                                            java.util.List.of("1001"),
+                                            "reason",
+                                            reason,
+                                            "comment",
+                                            "retained reason")),
+                            partHeaders));
+
+            var submitted =
+                    http.postForEntity(
+                            REQUEST_PATH + "/excuse",
+                            new HttpEntity<>(parts, headers),
+                            String.class);
+
+            assertThat(submitted.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(json.readTree(submitted.getBody()).path("reason").asText())
+                    .isEqualTo(reason);
+            var command = EXCUSE_COMMAND.get();
+            assertThat(command).isNotNull();
+            assertThat(command.getReasonValue()).isEqualTo(index + 1);
+            assertThat(command.getLessonIdsList()).containsExactly(1001L);
+            assertThat(command.getComment()).isEqualTo("retained reason");
+            assertThat(command.getIdempotencyKey()).isEqualTo("reason-boundary-" + reason);
+            var detail = get(REQUEST_PATH + "/" + REQUEST_ID);
+            assertThat(detail.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(json.readTree(detail.getBody()).path("reason").asText()).isEqualTo(reason);
+            assertForwardedIdentity();
+        }
     }
 
     @ParameterizedTest
@@ -563,6 +668,20 @@ class StudentEnumProjectionHttpGrpcIT {
                 StudentRequestOptionsQuery request,
                 StreamObserver<StudentRequestOptions> response) {
             response.onNext(REQUEST_OPTIONS.get());
+            response.onCompleted();
+        }
+
+        @Override
+        public void submitStudentExcuse(
+                SubmitStudentExcuseCommand request, StreamObserver<StudentRequestDetail> response) {
+            EXCUSE_COMMAND.set(request);
+            var detail =
+                    knownRequest().toBuilder()
+                            .setReason(request.getReason())
+                            .setComment(request.getComment())
+                            .build();
+            REQUEST.set(detail);
+            response.onNext(detail);
             response.onCompleted();
         }
 

@@ -338,3 +338,41 @@ describe('generated Auth client adapter', () => {
     expect(fetcher).toHaveBeenCalledTimes(2)
   })
 })
+
+describe('own-profile Telegram binding projection', () => {
+  it.each([
+    [880000042, '880000042'],
+    [null, null],
+    [undefined, undefined],
+  ])('reads only the authoritative own binding %s', async (telegramId, expected) => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response({ id: 42, telegramId }))
+    const client = createAuthClient({ fetcher, accessToken: () => 'own-profile-token' })
+    await expect(client.getOwnTelegramId('42')).resolves.toBe(expected)
+    expect(fetcher.mock.calls[0]?.[0]).toBe('/api/academic/users/me')
+    expect(fetcher.mock.calls[0]?.[1]?.method).toBe('GET')
+    expect(fetcher.mock.calls[0]?.[1]?.credentials).toBe('include')
+    expect(fetcher.mock.calls[0]?.[1]?.cache).toBe('no-store')
+    expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer own-profile-token',
+    )
+  })
+
+  it.each([
+    { id: 43, telegramId: 880000043 },
+    { id: 42, telegramId: Number.MAX_SAFE_INTEGER + 1 },
+    { id: 42, telegramId: '880000042' },
+    { id: 42, telegramId: -1 },
+  ])(
+    'rejects foreign or malformed own-profile identity without retaining the payload',
+    async (body) => {
+      const client = createAuthClient({
+        fetcher: vi.fn<typeof fetch>().mockResolvedValue(response(body)),
+      })
+      await expect(client.getOwnTelegramId('42')).rejects.toMatchObject({
+        code: 'UNKNOWN',
+        details: undefined,
+        message: 'Сервер вернул некорректные данные собственного профиля',
+      })
+    },
+  )
+})

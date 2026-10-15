@@ -138,13 +138,24 @@ public class StudentRequestService {
     private static final List<ExcuseType> STUDENT_REASONS =
             List.of(
                     ExcuseType.ILLNESS,
+                    ExcuseType.UNIVERSITY_ORDER,
+                    ExcuseType.SUMMONS,
+                    ExcuseType.OTHER);
+    // Older published clients may still submit these stable reason codes.
+    private static final Set<ExcuseType> SUPPORTED_STUDENT_REASONS =
+            Set.of(
+                    ExcuseType.ILLNESS,
+                    ExcuseType.UNIVERSITY_ORDER,
+                    ExcuseType.SUMMONS,
+                    ExcuseType.OTHER,
                     ExcuseType.MEDICAL_EXAMINATION,
                     ExcuseType.COMPETITION_PARTICIPATION,
-                    ExcuseType.FAMILY_CIRCUMSTANCES,
-                    ExcuseType.OTHER);
+                    ExcuseType.FAMILY_CIRCUMSTANCES);
     private static final Map<ExcuseType, String> REASON_LABELS =
             Map.of(
                     ExcuseType.ILLNESS, "Болезнь",
+                    ExcuseType.UNIVERSITY_ORDER, "По приказу вуза или иному документу",
+                    ExcuseType.SUMMONS, "Повестка от военкомата",
                     ExcuseType.MEDICAL_EXAMINATION, "Медицинское обследование",
                     ExcuseType.COMPETITION_PARTICIPATION, "Участие в соревнованиях",
                     ExcuseType.FAMILY_CIRCUMSTANCES, "Семейные обстоятельства",
@@ -3008,7 +3019,7 @@ public class StudentRequestService {
             throw new BadRequestException("Команда обязательна");
         }
         validateKey(command.idempotencyKey());
-        if (command.reason() == null || !STUDENT_REASONS.contains(command.reason())) {
+        if (command.reason() == null || !SUPPORTED_STUDENT_REASONS.contains(command.reason())) {
             throw new BadRequestException("Причина не поддерживается student contract");
         }
         List<Long> ids = normalizeLessonIds(command.lessonIds());

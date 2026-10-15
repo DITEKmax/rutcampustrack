@@ -52,6 +52,8 @@ export interface ProfileSnapshot {
   userId: string
   displayName: string
   groupLabel?: string | null
+  /** undefined: unavailable/legacy; null: authoritative own profile has no binding. */
+  telegramId?: string | null
   sessionVersion: string
   rolesVersion: string
   activeRole: ProfileRole | null
@@ -133,6 +135,29 @@ export class ProfileRequestError extends Error {
     this.status = status
     this.details = details
   }
+}
+
+/** Projects only the current account's Telegram binding from the existing own-profile API. */
+export function ownProfileTelegramId(
+  value: unknown,
+  expectedUserId: string,
+): string | null | undefined {
+  const invalid = () =>
+    new ProfileRequestError('UNKNOWN', 'Сервер вернул некорректные данные собственного профиля')
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw invalid()
+  const profile = value as Record<string, unknown>
+  if (
+    typeof profile.id !== 'number' ||
+    !Number.isSafeInteger(profile.id) ||
+    profile.id <= 0 ||
+    String(profile.id) !== expectedUserId
+  )
+    throw invalid()
+  const telegramId = profile.telegramId
+  if (telegramId === null || telegramId === undefined) return telegramId
+  if (typeof telegramId !== 'number' || !Number.isSafeInteger(telegramId) || telegramId <= 0)
+    throw invalid()
+  return String(telegramId)
 }
 
 export interface ProfilePort {

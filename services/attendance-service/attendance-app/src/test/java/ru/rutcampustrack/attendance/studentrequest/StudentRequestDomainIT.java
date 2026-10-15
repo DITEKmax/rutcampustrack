@@ -1255,6 +1255,20 @@ class StudentRequestDomainIT {
     @Test
     void commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict() {
         var options = service.options(STUDENT, List.of(snapshot(90L)));
+        assertThat(options.reasons())
+                .extracting(StudentRequestModels.ReasonOption::code)
+                .containsExactly(
+                        ExcuseType.ILLNESS,
+                        ExcuseType.UNIVERSITY_ORDER,
+                        ExcuseType.SUMMONS,
+                        ExcuseType.OTHER);
+        assertThat(options.reasons())
+                .extracting(StudentRequestModels.ReasonOption::label)
+                .containsExactly(
+                        "Болезнь",
+                        "По приказу вуза или иному документу",
+                        "Повестка от военкомата",
+                        "Другое");
 
         var other =
                 options.reasons().stream()
@@ -1294,6 +1308,54 @@ class StudentRequestDomainIT {
                                 "other-nonblank-accepted-key"));
         assertThat(accepted.reason()).isEqualTo(ExcuseType.OTHER);
         assertThat(accepted.comment()).isEqualTo("custom reason");
+
+        long lessonId = 92L;
+        for (ExcuseType reason :
+                List.of(
+                        ExcuseType.ILLNESS,
+                        ExcuseType.UNIVERSITY_ORDER,
+                        ExcuseType.SUMMONS,
+                        ExcuseType.OTHER,
+                        ExcuseType.MEDICAL_EXAMINATION,
+                        ExcuseType.COMPETITION_PARTICIPATION,
+                        ExcuseType.FAMILY_CIRCUMSTANCES)) {
+            seedAbsent(lessonId);
+            var submitted =
+                    service.submitExcuse(
+                            STUDENT,
+                            new ExcuseSubmission(
+                                    List.of(lessonId),
+                                    reason,
+                                    "retained reason",
+                                    List.of(),
+                                    "reason-roundtrip-" + reason.name()));
+            String requestId = submitted.summary().id();
+            assertThat(submitted.reason()).isEqualTo(reason);
+            assertThat(excuseRepository.findById(requestId).orElseThrow().getExcuseType())
+                    .isEqualTo(reason);
+            assertThat(service.get(STUDENT, requestId).reason()).isEqualTo(reason);
+            assertThat(service.cancel(STUDENT, requestId).summary().status())
+                    .isEqualTo(StudentRequestStatus.CANCELLED);
+            var historical = service.get(STUDENT, requestId);
+            assertThat(historical.reason()).isEqualTo(reason);
+            assertThat(historical.summary().status()).isEqualTo(StudentRequestStatus.CANCELLED);
+            lessonId++;
+        }
+        long retainedCount = excuseRepository.count();
+        for (ExcuseType unsupported : List.of(ExcuseType.FREE_ATTENDANCE, ExcuseType.EXEMPTION)) {
+            assertThatThrownBy(
+                            () ->
+                                    service.submitExcuse(
+                                            STUDENT,
+                                            new ExcuseSubmission(
+                                                    List.of(99L),
+                                                    unsupported,
+                                                    "unsupported reason",
+                                                    List.of(),
+                                                    "unsupported-reason-" + unsupported.name())))
+                    .isInstanceOf(BadRequestException.class);
+        }
+        assertThat(excuseRepository.count()).isEqualTo(retainedCount);
     }
 
     @Test

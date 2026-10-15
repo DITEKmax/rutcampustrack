@@ -222,6 +222,13 @@ onBeforeUnmount(() => {
         </dd>
       </div>
     </dl>
+    <p
+      v-if="stats"
+      class="admin-dashboard-screen__note"
+    >
+      Студенты и преподаватели считаются по ролям. Один аккаунт может иметь несколько ролей,
+      поэтому сумма этих показателей не является числом уникальных аккаунтов.
+    </p>
     <section
       class="admin-dashboard-screen__activity"
       aria-labelledby="admin-dashboard-activity-title"

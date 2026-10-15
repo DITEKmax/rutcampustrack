@@ -236,7 +236,11 @@ function fields(row: Row, names: string[]) {
 }
 
 function equal(left: unknown, right: unknown, message: string) {
-  requireValue(JSON.stringify(left) === JSON.stringify(right), message);
+  if (JSON.stringify(left) !== JSON.stringify(right)) {
+    const error = new Error(message);
+    Error.captureStackTrace(error, equal);
+    throw error;
+  }
 }
 
 function history(response: Row) {
@@ -1117,6 +1121,19 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       ]),
     );
   const pins: Record<string, Row> = {};
+  const canonicalObjectOrder = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(canonicalObjectOrder);
+    if (value === null || typeof value !== 'object') return value;
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+        .map(([key, item]) => [key, canonicalObjectOrder(item)]),
+    );
+  };
+  const mountRecords = (value: unknown): unknown =>
+    Array.isArray(value)
+      ? value.map((record) => JSON.stringify(canonicalObjectOrder(record))).sort()
+      : canonicalObjectOrder(value);
   const identity = (service: string) => {
     const pin = pins[service];
     requireValue(pin, 'Pinned owned service is required');
@@ -1128,8 +1145,12 @@ test('FULL admin reconciles one exact stranded close before archive completion',
         current.labels['com.docker.compose.service'] === service,
       'Owned container identity changed',
     );
-    equal(current.mounts, pin.mounts, 'Owned container mounts changed');
-    equal(current.labels, pin.labels, 'Owned container labels changed');
+    equal(mountRecords(current.mounts), mountRecords(pin.mounts), 'Owned container mounts changed');
+    equal(
+      canonicalObjectOrder(current.labels),
+      canonicalObjectOrder(pin.labels),
+      'Owned container labels changed',
+    );
     return current;
   };
   const pg = (sql: string): any => {

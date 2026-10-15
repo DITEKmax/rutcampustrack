@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue';
-import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../domain/academic-week';
@@ -74,6 +74,77 @@ const selectedDate = ref(props.selectedDate || todayIso());
 const lessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
 const subjects = shallowRef<readonly HeadmanSubject[]>([]);
 const report = shallowRef<HeadmanJournalReport | null>(null);
+// The ongoing summary is independent of the date/lesson selected in the panels.
+const ongoingLesson = shallowRef<HeadmanJournalLesson | null>(null);
+const ongoingReport = shallowRef<HeadmanJournalReport | null>(null);
+const ongoingState = ref<'loading' | 'ready' | 'none' | 'error' | 'offline'>('loading');
+let ongoingRevision = 0;
+// Matches the existing headman lesson-management foreground cadence; no SLA.
+const ONGOING_REFRESH_INTERVAL_MS = 30_000;
+let ongoingTimer: ReturnType<typeof setInterval> | null = null;
+let ongoingMounted = false;
+let ongoingFlight: Promise<void> | null = null;
+let ongoingRefreshQueued = false;
+function ongoingOnline(): boolean {
+  return !props.offline && (typeof navigator === 'undefined' || navigator.onLine !== false);
+}
+function ongoingVisible(): boolean {
+  return typeof document === 'undefined' || document.visibilityState === 'visible';
+}
+function stopOngoingTimer(): void {
+  if (ongoingTimer !== null) clearInterval(ongoingTimer);
+  ongoingTimer = null;
+}
+function requestOngoing(): void {
+  if (disposed || !ongoingOnline() || !ongoingVisible()) return;
+  if (ongoingFlight) {
+    ongoingRefreshQueued = true;
+    return;
+  }
+  const pending = loadOngoing();
+  ongoingFlight = pending;
+  const settled = () => {
+    if (ongoingFlight === pending) ongoingFlight = null;
+    if (ongoingRefreshQueued && !disposed && ongoingOnline() && ongoingVisible()) {
+      ongoingRefreshQueued = false;
+      requestOngoing();
+    }
+  };
+  void pending.then(settled, settled);
+}
+function startOngoingTimer(): void {
+  if (
+    !ongoingMounted ||
+    typeof document === 'undefined' ||
+    typeof window === 'undefined' ||
+    !ongoingOnline() ||
+    !ongoingVisible() ||
+    !props.api ||
+    props.groupId === null
+  )
+    return;
+  ongoingTimer = setInterval(requestOngoing, ONGOING_REFRESH_INTERVAL_MS);
+}
+function restartOngoing(): void {
+  stopOngoingTimer();
+  ongoingRevision += 1;
+  ongoingRefreshQueued = false;
+  ongoingLesson.value = null;
+  ongoingReport.value = null;
+  ongoingState.value = ongoingOnline() ? 'loading' : 'offline';
+  requestOngoing();
+  startOngoingTimer();
+}
+const ongoingCounts = computed(() => {
+  const entries = ongoingReport.value?.entries;
+  return entries
+    ? {
+        present: entries.filter((entry) => entry.status === 'PRESENT').length,
+        excused: entries.filter((entry) => entry.status === 'EXCUSED').length,
+        total: entries.length,
+      }
+    : null;
+});
 const homeworks = shallowRef<readonly HeadmanManagedHomework[]>([]);
 const selectedLessonId = ref<number | null>(null);
 const loading = ref(false);
@@ -330,6 +401,64 @@ function safeHomeworkLink(value: string | null): string | null {
     return null;
   }
 }
+async function loadOngoing(): Promise<void> {
+  const revision = ++ongoingRevision;
+  const api = props.api;
+  const groupId = props.groupId;
+  const date = todayIso();
+  ongoingLesson.value = null;
+  ongoingReport.value = null;
+  ongoingState.value = ongoingOnline() ? 'loading' : 'offline';
+  if (!ongoingOnline() || !ongoingVisible()) return;
+  if (!api || groupId === null) {
+    ongoingState.value = 'error';
+    return;
+  }
+  const current = () =>
+    !disposed &&
+    revision === ongoingRevision &&
+    api === props.api &&
+    groupId === props.groupId &&
+    date === todayIso() &&
+    ongoingOnline() &&
+    ongoingVisible();
+  try {
+    const dayLessons = await api.listLessons(groupId, date, date);
+    if (!current()) return;
+    if (dayLessons.some((lesson) => lesson.groupId !== groupId || lesson.date !== date))
+      throw new Error('Unexpected ongoing lesson scope');
+    if (dayLessons.some((lesson) => lesson.current && lesson.status === 'UNSUPPORTED'))
+      throw new Error('Unknown current lesson status');
+    const active = dayLessons.filter((lesson) => lesson.current && lesson.status === 'ACTIVE');
+    if (active.length === 0) {
+      ongoingState.value = 'none';
+      return;
+    }
+    if (active.length !== 1) throw new Error('Ambiguous ongoing lesson');
+    const lesson = active[0]!;
+    const next = await api.getLessonAttendance(lesson.id);
+    if (!current()) return;
+    if (
+      next.lessonId !== lesson.id ||
+      next.groupId !== groupId ||
+      next.lessonDate !== date ||
+      next.lessonStatus !== 'ACTIVE' ||
+      !next.entries.length ||
+      new Set(next.entries.map((entry) => entry.userId)).size !== next.entries.length ||
+      next.entries.some(
+        (entry) => !['PRESENT', 'EXCUSED', 'ABSENT', 'EMPTY'].includes(entry.status),
+      )
+    )
+      throw new Error('Unexpected ongoing attendance scope');
+    ongoingLesson.value = lesson;
+    ongoingReport.value = next;
+    ongoingState.value = 'ready';
+  } catch (cause) {
+    if (!current()) return;
+    ongoingState.value = 'error';
+    if (!(cause instanceof StaleSessionGenerationError)) emit('error', cause);
+  }
+}
 async function load(): Promise<void> {
   const revision = ++loadRevision;
   detailRevision += 1;
@@ -428,6 +557,10 @@ async function loadDetails(): Promise<void> {
     if (current()) detailLoading.value = false;
   }
 }
+watch(() => [props.api, props.groupId, props.offline] as const, restartOngoing, {
+  immediate: true,
+  flush: 'sync',
+});
 watch(
   () => [props.api, props.subjectsApi, props.groupId, props.offline, selectedDate.value] as const,
   () => {
@@ -455,8 +588,27 @@ watch(
   },
   { immediate: true, flush: 'sync' },
 );
+onMounted(() => {
+  ongoingMounted = true;
+  if (typeof document !== 'undefined')
+    document.addEventListener('visibilitychange', restartOngoing);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', restartOngoing);
+    window.addEventListener('offline', restartOngoing);
+  }
+  startOngoingTimer();
+});
 onBeforeUnmount(() => {
   disposed = true;
+  ongoingRevision += 1;
+  ongoingRefreshQueued = false;
+  stopOngoingTimer();
+  if (typeof document !== 'undefined')
+    document.removeEventListener('visibilitychange', restartOngoing);
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('online', restartOngoing);
+    window.removeEventListener('offline', restartOngoing);
+  }
   blockRevision += 1;
   weekRevision += 1;
   loadRevision += 1;
@@ -559,6 +711,46 @@ onBeforeUnmount(() => {
         <span>{{ day.name }}</span><strong>{{ day.number }}</strong>
       </button>
     </nav>
+
+    <section
+      class="headman-home__ongoing"
+      aria-label="Отметки текущей пары"
+      :aria-busy="ongoingState === 'loading'"
+      :data-lesson-id="ongoingLesson?.id"
+    >
+      <template v-if="ongoingState === 'ready' && ongoingCounts && ongoingLesson">
+        <p>Сейчас: {{ ongoingLesson.lessonNumber ?? '—' }} пара · {{ timeRange(ongoingLesson) }}</p>
+        <p class="headman-home__ongoing-counts">
+          <span class="headman-home__ongoing-present">Присутствуют +: <strong>{{ ongoingCounts.present }} из {{ ongoingCounts.total }}</strong></span>
+          <span class="headman-home__ongoing-excused">Уважительная причина у: <strong>{{ ongoingCounts.excused }} из {{ ongoingCounts.total }}</strong></span>
+        </p>
+      </template>
+      <p v-else-if="ongoingState === 'none'">
+        Сейчас пары нет.
+      </p>
+      <p v-else-if="ongoingState === 'offline'">
+        Нет подключения. Сводка текущей пары недоступна.
+      </p>
+      <p
+        v-else-if="ongoingState === 'loading'"
+        role="status"
+      >
+        Загружаем сводку текущей пары…
+      </p>
+      <p
+        v-else
+        class="headman-home__state"
+        role="alert"
+      >
+        Сводка недоступна.
+        <button
+          type="button"
+          @click="restartOngoing"
+        >
+          Повторить сводку
+        </button>
+      </p>
+    </section>
 
     <StudentWarningBlock
       v-if="offline"

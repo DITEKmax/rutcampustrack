@@ -1,4 +1,7 @@
-import { ProfileRequestError } from '../../mobile-core/src/features/profile/profile-types'
+import {
+  ProfileRequestError,
+  ownProfileTelegramId,
+} from '../../mobile-core/src/features/profile/profile-types'
 import type {
   ProfilePasswordPolicy,
   ProfileRole,
@@ -111,6 +114,7 @@ export interface AuthClient {
   login(input: AuthLoginInput): Promise<AuthToken>
   refresh(): Promise<AuthToken>
   getSnapshot(): Promise<ProfileSnapshot>
+  getOwnTelegramId(userId: string): Promise<string | null | undefined>
   selectRole(input: AuthSelectRoleInput): Promise<ProfileRoleSelection>
   listSessions(input?: ProfilePageRequest): Promise<ProfileSessionsPage>
   listHistory(input?: ProfilePageRequest): Promise<ProfileHistoryPage>
@@ -149,6 +153,17 @@ export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
         accessToken,
       )
       return adaptSession(value, 'current-session')
+    },
+    getOwnTelegramId: async (userId) => {
+      const value = await requestJson<unknown>(
+        'own-profile',
+        '/api/academic/users/me',
+        'GET',
+        undefined,
+        (input, init) => fetcher(input, { ...init, cache: 'no-store' }),
+        accessToken,
+      )
+      return ownProfileTelegramId(value, userId)
     },
     selectRole: async (input) => {
       if (!isProfileRole(input.role) || !isDecimalVersion(input.expectedSessionVersion)) {

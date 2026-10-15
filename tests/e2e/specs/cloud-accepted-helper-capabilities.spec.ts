@@ -627,8 +627,47 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     expect(readback.entries).toHaveLength(denominator);
     // The accepted ongoing summary must retain both full-group fractions even
     // though the selected panel now reads the other lesson's empty report.
-    await expect(home.locator('.headman-home__metrics')).toContainText(`1 из ${denominator}`);
-    await expect(home.locator('.headman-home__excused')).toContainText(`1 из ${denominator}`);
+    await expect(
+      home.locator(
+        '.headman-home__ongoing[aria-label="Отметки текущей пары"] .headman-home__ongoing-present',
+      ),
+    ).toContainText(`1 из ${denominator}`);
+    await expect(
+      home.locator(
+        '.headman-home__ongoing[aria-label="Отметки текущей пары"] .headman-home__ongoing-excused',
+      ),
+    ).toContainText(`1 из ${denominator}`);
+    // One owned, revisioned fixture change must become visible through the normal
+    // foreground poll, without reloading or moving the selected other lesson.
+    const liveMark = seeded.find((mark) => mark.userId === dataset.student.id)!;
+    await dataset.headmanActor.call(
+      'PUT',
+      `/api/attendance/lessons/${lessonId}/students/${liveMark.userId}`,
+      { status: 'ABSENT', expectedStatus: liveMark.status, expectedRevision: liveMark.revision },
+    );
+    liveMark.status = 'ABSENT';
+    const changed = await dataset.headmanActor.call('GET', reportPath);
+    const changedEntry = (changed.entries as Entry[]).find(
+      (entry) => entry.userId === liveMark.userId,
+    )!;
+    expect(changedEntry.status).toBe('ABSENT');
+    expect(typeof changedEntry.markRevision).toBe('string');
+    liveMark.revision = changedEntry.markRevision!;
+    expect(counts(changed.entries)).toEqual([0, 1]);
+    await expect(
+      home.locator(
+        '.headman-home__ongoing[aria-label="Отметки текущей пары"] .headman-home__ongoing-present',
+      ),
+    ).toContainText(`0 из ${denominator}`, { timeout: 40000 });
+    await expect(
+      home.locator(
+        '.headman-home__ongoing[aria-label="Отметки текущей пары"] .headman-home__ongoing-excused',
+      ),
+    ).toContainText(`1 из ${denominator}`);
+    await expect(home).toHaveAttribute('data-lesson-id', String(otherLessonId));
+    await expect(home.locator('.headman-home__metrics > div').first().locator('strong')).toHaveText(
+      '0',
+    );
   } finally {
     let cleanupFailed = false;
     for (const mark of seeded) {

@@ -206,7 +206,19 @@ final class StudentRequestGrpcMapper {
 
     private static StudentExcuseReason reason(ExcuseType reason) {
         if (reason == null) return StudentExcuseReason.STUDENT_EXCUSE_REASON_UNSPECIFIED;
-        return StudentExcuseReason.valueOf("STUDENT_EXCUSE_REASON_" + reason.name());
+        return switch (reason) {
+            case ILLNESS -> StudentExcuseReason.STUDENT_EXCUSE_REASON_ILLNESS;
+            case MEDICAL_EXAMINATION ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION;
+            case COMPETITION_PARTICIPATION ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION;
+            case FAMILY_CIRCUMSTANCES ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES;
+            case OTHER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_OTHER;
+            case UNIVERSITY_ORDER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER;
+            case SUMMONS -> StudentExcuseReason.STUDENT_EXCUSE_REASON_SUMMONS;
+            default -> throw new IllegalArgumentException("Excuse reason is not supported");
+        };
     }
 
     private static String value(String value) {

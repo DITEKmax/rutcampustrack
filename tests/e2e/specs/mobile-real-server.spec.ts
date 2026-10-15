@@ -989,6 +989,19 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(teacherFile.headers()['content-type']).toContain('image/png');
     const teacherFileBytes = await teacherFile.body();
     expect.soft(teacherFileBytes.equals(journalSeed.png)).toBe(true);
+    expect.soft(teacherFileBytes.length === 0, 'TEACHER_PNG_CAPTURE_EMPTY').toBe(false);
+    expect
+      .soft(
+        teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('latin1'), 'utf8')),
+        'TEACHER_PNG_CAPTURE_LATIN1_AS_UTF8',
+      )
+      .toBe(false);
+    expect
+      .soft(
+        teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('base64'), 'utf8')),
+        'TEACHER_PNG_CAPTURE_BASE64_AS_UTF8_TEXT',
+      )
+      .toBe(false);
     expect
       .soft(
         teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('utf8'), 'utf8')),
@@ -1587,6 +1600,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
       await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
       const original = await page.evaluate(async () => {
+        Object.defineProperty(window, '__rctWorkerUpdateOldWindow', { value: true });
         const registration = await navigator.serviceWorker.ready;
         return {
           scope: registration.scope,
@@ -1759,9 +1773,44 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       // No second JS bundle is claimed: restore its compatible policy before the real UI reload.
       // The existing gate retains required.value until it unmounts on reload.
       fixture.restorePolicy();
-      const reloaded = page.waitForEvent('load');
+      const reloaded = page.waitForEvent('load').then(
+        () => true,
+        () => false,
+      );
       await gate.getByRole('button', { name: 'Обновить приложение', exact: true }).click();
-      await reloaded;
+      if (!(await reloaded)) {
+        expect.soft(false, 'PWA update LOAD_NOT_OBSERVED').toBe(true);
+        const observed = await page
+          .evaluate(async () => {
+            const registration = await navigator.serviceWorker.getRegistration();
+            return {
+              oldDocument:
+                Object.getOwnPropertyDescriptor(window, '__rctWorkerUpdateOldWindow')?.value ===
+                true,
+              readyState: document.readyState,
+              active: registration?.active?.state === 'activated',
+              waiting: registration?.waiting?.state === 'installed',
+              updating: Boolean(registration?.installing),
+            };
+          })
+          .catch(() => null);
+        if (observed === null) expect.soft(false, 'PWA update OBSERVATION_UNAVAILABLE').toBe(true);
+        else {
+          if (observed.oldDocument) expect.soft(false, 'PWA update OLD_DOCUMENT').toBe(true);
+          else expect.soft(false, 'PWA update NEW_DOCUMENT').toBe(true);
+          if (observed.readyState === 'loading')
+            expect.soft(false, 'PWA update DOCUMENT_LOADING').toBe(true);
+          else if (observed.readyState === 'interactive')
+            expect.soft(false, 'PWA update DOCUMENT_INTERACTIVE').toBe(true);
+          else expect.soft(false, 'PWA update DOCUMENT_COMPLETE').toBe(true);
+          if (observed.active) expect.soft(false, 'PWA update ACTIVE_ACTIVATED').toBe(true);
+          else expect.soft(false, 'PWA update ACTIVE_NOT_ACTIVATED').toBe(true);
+          if (observed.waiting) expect.soft(false, 'PWA update WAITING_INSTALLED').toBe(true);
+          else expect.soft(false, 'PWA update WAITING_NOT_INSTALLED').toBe(true);
+          if (observed.updating) expect.soft(false, 'PWA update INSTALLING_PRESENT').toBe(true);
+          else expect.soft(false, 'PWA update INSTALLING_ABSENT').toBe(true);
+        }
+      }
       await expect(gate).toHaveCount(0);
       await requireProductionWorker(page);
       await expect

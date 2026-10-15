@@ -166,7 +166,28 @@ def _transport_flags(queues=None, bindings=None):
     return result
 
 
-def _consumer_failure_hint(logs=None):
+def _unique_candidate_trace(ledger, event_ids):
+    if (
+        type(ledger) is not dict
+        or ledger.get("target") != "ATTENDANCE"
+        or ledger.get("event_type") != "lesson.closed"
+        or any(
+            ledger.get(key) is not True
+            for key in ("source_matches", "version_matches", "scope_matches", "type_matches", "event_matches")
+        )
+        or type(event_ids) is not list
+        or not 1 <= len(event_ids) <= 2
+    ):
+        return None
+    try:
+        identity = _canonical_uuid(ledger.get("event_id"))
+        trace = _canonical_uuid(ledger.get("trace_id"))
+        return trace if {_canonical_uuid(value) for value in event_ids} == {identity} else None
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
+def _consumer_failure_hint(logs=None, candidate_trace=None):
     # Spring AMQP 3.2.12 renders bodies over 50 bytes as byte-array labels.
     # The sender sets only event_type, not an event/message/correlation ID.
     # These untrusted queue/type hints NEVER identify the ledger candidate.
@@ -197,6 +218,10 @@ def _consumer_failure_hint(logs=None):
         return result
     if len(lines) > 200:
         return result
+    try:
+        candidate_trace = _canonical_uuid(candidate_trace)
+    except (ValueError, TypeError, AttributeError):
+        candidate_trace = None
     result.update(observation="NO_QUEUE_TYPE_HINT", sampleCapped=len(lines) == 200)
     exceptions = {
         "ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException": "ACADEMIC_UNAVAILABLE",
@@ -240,9 +265,36 @@ def _consumer_failure_hint(logs=None):
         "UNAUTHENTICATED",
     )
     kinds, codes, locations = set(), set(), set()
+    stage_records, stage_kinds, stage_locations = 0, set(), set()
+    stages = {
+        "RECEIPT": "CLOSE_HANDLER",
+        "PAYLOAD": "CLOSE_HANDLER",
+        "PREPARE": "PREPARE_CLOSE",
+        "TRANSACTION": "EFFECT_TRANSACTION",
+    }
     for line in lines:
         try:
             row = json.loads(line, object_pairs_hook=unique_object)
+            if (
+                candidate_trace is not None
+                and type(row) is dict
+                and row.get("service") == "attendance-service"
+                and row.get("level") == "WARN"
+                and row.get("logger") == "ru.rutcampustrack.attendance.event.EventConsumer"
+                and row.get("traceId") == candidate_trace
+                and type(row.get("msg")) is str
+                and not row.get("stack")
+            ):
+                stage = re.fullmatch(
+                    r"lesson\.closed failure stage=(RECEIPT|PAYLOAD|PREPARE|TRANSACTION) category=(ACADEMIC_UNAVAILABLE|SCHEDULE_UNAVAILABLE|RESOURCE_NOT_FOUND|INVALID_ARGUMENT|TRANSACTION_ROLLBACK|MONGO_TRANSACTION|DUPLICATE_KEY|EFFECT_REJECTED|OTHER)",
+                    row["msg"],
+                )
+                if stage:
+                    stage_records += 1
+                    stage_locations.add(stages[stage[1]])
+                    if stage[2] != "OTHER":
+                        stage_kinds.add(stage[2])
+                    continue
             if (
                 type(row) is not dict
                 or row.get("service") != "attendance-service"
@@ -288,7 +340,14 @@ def _consumer_failure_hint(logs=None):
                     locations.add(frames[frame[1]])
         except (ValueError, TypeError, KeyError, AttributeError, RecursionError):
             continue
-    if result["hintRecords"]:
+    if stage_records:
+        result.update(
+            observation="UNIQUE_CANDIDATE_TRACE_STAGE_HINT",
+            hintRecords=stage_records,
+            exceptionKinds=sorted(stage_kinds),
+            sourceFrames=sorted(stage_locations),
+        )
+    elif result["hintRecords"]:
         result.update(
             observation="UNMATCHED_QUEUE_EVENT_TYPE_HINT",
             exceptionKinds=sorted(kinds),
@@ -310,6 +369,7 @@ def _project(
     queues=None,
     bindings=None,
     consumer_logs=None,
+    candidate_trace=None,
 ):
     def boolean(value):
         return value if type(value) is bool else "UNKNOWN"
@@ -367,7 +427,7 @@ def _project(
         "stableLedger": boolean(stable),
         "consumerClaimPresent": boolean(consumer_claim),
         "transport": _transport_flags(queues, bindings),
-        "consumerFailureHint": _consumer_failure_hint(consumer_logs),
+        "consumerFailureHint": _consumer_failure_hint(consumer_logs, candidate_trace),
     }
 
 
@@ -506,7 +566,7 @@ def main():
         # Legacy outbox UNION rows are not inspected: report that limitation explicitly.
         ledger = pg(
             "schedule",
-            "SELECT coalesce((SELECT row_to_json(e) FROM (SELECT event_id,target,event_type,semester_id,scope_id,encode(payload_hash,'hex') AS payload_hash,state,(event_payload->>'source'='schedule-service') AS source_matches,(event_payload->'event_version'='1'::jsonb) AS version_matches,(event_payload#>'{payload,semester_id}'=to_jsonb(semester_id) AND scope_id=semester_id) AS scope_matches,(event_payload->>'event_type'=event_type) AS type_matches,(event_payload->>'event_id'=event_id::text) AS event_matches FROM schedule_semester_archive_effect_ledger WHERE (semester_id="
+            "SELECT coalesce((SELECT row_to_json(e) FROM (SELECT event_id,target,event_type,semester_id,scope_id,encode(payload_hash,'hex') AS payload_hash,state,event_payload->>'trace_id' AS trace_id,(event_payload->>'source'='schedule-service') AS source_matches,(event_payload->'event_version'='1'::jsonb) AS version_matches,(event_payload#>'{payload,semester_id}'=to_jsonb(semester_id) AND scope_id=semester_id) AS scope_matches,(event_payload->>'event_type'=event_type) AS type_matches,(event_payload->>'event_id'=event_id::text) AS event_matches FROM schedule_semester_archive_effect_ledger WHERE (semester_id="
             + str(semester)
             + " OR semester_id IS NULL) AND state<>'APPLIED' ORDER BY created_at,event_id,target,event_type,scope_id LIMIT 1) e),'null'::json)",
         )
@@ -592,7 +652,7 @@ def main():
                 + ")),'null'::json)",
             )
             stable = current == ledger["state"]
-        queues, bindings, consumer_logs = None, None, None
+        queues, bindings, consumer_logs, candidate_trace = None, None, None, None
         if ledger is not None and ledger["target"] == "ATTENDANCE":
             try:
                 # All primary reads are already retained. A separate optional
@@ -649,7 +709,47 @@ def main():
                     or "rct-e2e_private_net" not in info["networks"]
                 ):
                     raise ValueError("Unexpected source Attendance")
+                trace_query = None
+                try:
+                    if stable is True and ledger["event_type"] == "lesson.closed":
+                        trace = _canonical_uuid(ledger.get("trace_id"))
+                        # UNION treats the ledger/outbox copies as one source event. Two
+                        # distinct events sharing a trace cannot identify this candidate.
+                        trace_query = (
+                            "SELECT coalesce(json_agg(t.event_id),'[]'::json) FROM (SELECT event_id::text AS event_id "
+                            "FROM schedule_semester_archive_effect_ledger WHERE event_type='lesson.closed' "
+                            "AND event_payload->>'source'='schedule-service' AND event_payload->>'trace_id'='"
+                            + trace
+                            + "' UNION SELECT payload->>'event_id' AS event_id FROM schedule_outbox "
+                            "WHERE event_type='lesson.closed' AND payload->>'source'='schedule-service' "
+                            "AND payload->>'trace_id'='" + trace + "' LIMIT 2) t"
+                        )
+                        candidate_trace = _unique_candidate_trace(ledger, pg("schedule", trace_query))
+                except (
+                    OSError,
+                    ValueError,
+                    TypeError,
+                    LookupError,
+                    AttributeError,
+                    RuntimeError,
+                    subprocess.SubprocessError,
+                ):
+                    candidate_trace = None
                 consumer_logs = r.run(["docker", "logs", "--tail", "200", "--since", "30m", attendance])
+                if candidate_trace is not None:
+                    try:
+                        # Fail closed if another source event acquired this trace during capture.
+                        candidate_trace = _unique_candidate_trace(ledger, pg("schedule", trace_query))
+                    except (
+                        OSError,
+                        ValueError,
+                        TypeError,
+                        LookupError,
+                        AttributeError,
+                        RuntimeError,
+                        subprocess.SubprocessError,
+                    ):
+                        candidate_trace = None
             except (
                 OSError,
                 ValueError,
@@ -661,6 +761,7 @@ def main():
             ):
                 # All primary reads survive optional log/deadline failures.
                 consumer_logs = None
+                candidate_trace = None
             try:
                 # Recovery restarts the original rct-e2e broker; only its DBs
                 # are fresh recovery-project containers. Admit that exact source
@@ -774,6 +875,7 @@ def main():
             queues,
             bindings,
             consumer_logs,
+            candidate_trace,
         )
         encoded = json.dumps(result, separators=(",", ":")).encode()
         if len(encoded) > 4096:

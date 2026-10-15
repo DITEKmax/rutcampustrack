@@ -250,7 +250,7 @@ jobs:
           retention-days: 7
 
       - name: Verify changed data regressions reject their counterexamples
-        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service'
+        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service' || matrix.service.name == 'notification-service'
         timeout-minutes: 8
         env:
           RCT_CI_SERVICE: ${{ matrix.service.name }}
@@ -262,12 +262,13 @@ jobs:
           import xml.etree.ElementTree as ET
 
           service = os.environ['RCT_CI_SERVICE']
-          assert service in {'schedule-service', 'attendance-service', 'academic-service'}
+          assert service in {'schedule-service', 'attendance-service', 'academic-service', 'notification-service'}
           app = pathlib.Path('services') / service / (service.removesuffix('-service') + '-app')
           private = pathlib.Path(tempfile.mkdtemp(prefix='changed-domain-red-', dir=os.environ['RUNNER_TEMP']))
           results = app / 'build/test-results/integrationTest'
           reports = app / 'build/reports/integrationTest'
           current = {}
+          additional = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -321,6 +322,43 @@ jobs:
                   replacements = {test_source: negative}
                   proof.update(counterexample='CHANGED_RETAINED_COMPLETION_TIMESTAMP',
                                ruleFrame=package + '.' + method + '(UserArchiveLifecycleIT.java:' + str(rule_line) + ')')
+                  identity_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java'
+                  identity_current = identity_source.read_bytes()
+                  assert hashlib.sha256(identity_current).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
+                  identity_oracle = "        assertThat(studentIdentity.equals(jdbcTemplate.queryForMap(preservedFields, studentId)))\n                .as(\"Adding a role must preserve the existing account identity and credentials\")\n                .isTrue();\n".encode()
+                  identity_update = "        assertThat(\n                        jdbcTemplate.update(\n                                \"UPDATE users SET first_name=first_name || '-rct-identity-red' WHERE id=?\",\n                                studentId))\n                .isEqualTo(1);\n".encode()
+                  assert identity_current.count(identity_oracle) == 1
+                  identity_negative = identity_current.replace(identity_oracle, identity_update + identity_oracle)
+                  assert hashlib.sha256(identity_negative).hexdigest() == 'ffd0703bf83c28a004b78c693698b1d2aff2f8da478fcb35756a2c9fc1493997'
+                  identity_line = (identity_negative[:identity_negative.index(identity_update + identity_oracle)].count(b'\n')
+                                   + len((identity_update + identity_oracle).splitlines()))
+                  identity_package = 'ru.rutcampustrack.academic.integration.RestApiIT'
+                  identity_method = 'duplicateIdentityResolvesToExistingAccountAndRoleFailuresLeaveCommittedStateUnchanged'
+                  additional = {'package': identity_package, 'method': identity_method, 'source': identity_source}
+                  replacements[identity_source] = identity_negative
+                  proof['additionalRule'] = {
+                      'counterexample': 'CHANGED_EXISTING_ACCOUNT_IDENTITY_AFTER_ROLE_ADD',
+                      'testMethod': identity_package + '.' + identity_method,
+                      'testSourceSha256': hashlib.sha256(identity_current).hexdigest(),
+                      'counterexampleSourceSha256': hashlib.sha256(identity_negative).hexdigest(),
+                      'ruleFrame': identity_package + '.' + identity_method + '(RestApiIT.java:' + str(identity_line) + ')'}
+
+              elif service == 'notification-service':
+                  package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
+                  method = 'webPush503LeavesInboxReadableAndRetriesOnceWithoutDuplicatingHistoryOrDelivery'
+                  test_source = app / 'src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java'
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '5a5795f0a4c5d0e056528768a4dd9ffadd9dbd669a8659124e3137b845c6b17d'
+                  path = app / 'src/main/java/ru/rutcampustrack/notification/push/NotificationPushIntentDispatcher.java'
+                  source = path.read_bytes()
+                  assert hashlib.sha256(source).hexdigest() == '823fe917918bf2159a9e60df333112032df34f9973a878ecfdbbe89461c38618'
+                  original = "if ((status >= 200 && status < 300) || status == 404 || status == 410) {".encode()
+                  assert source.count(original) == 1
+                  negative = source.replace(original, "if ((status >= 200 && status < 300) || status == 404 || status == 410 || status == 503) {".encode())
+                  assert hashlib.sha256(negative).hexdigest() == '1ff6450367d82407546f24e132c05ebc446b4f472ade763dbcfa32d5724d5356'
+                  replacements = {path: negative}
+                  assert test_source.read_text().splitlines()[924].strip() == 'assertThat(pending.getString("state")).isEqualTo("PENDING");'
+                  proof.update(counterexample='HTTP503_ACKNOWLEDGED_AS_SUCCESS',
+                               ruleFrame=package + '.' + method + '(NotificationStateV2IT.java:925)')
               else:
                   package = 'ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT'
                   method = 'headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt'
@@ -344,9 +382,12 @@ jobs:
               for path, content in replacements.items():
                   path.write_bytes(content)
               proof['phase'] = 'RED_RUN'
+              selectors = ['--tests', package + '.' + method]
+              if additional is not None:
+                  selectors += ['--tests', additional['package'] + '.' + additional['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
-                                        '--no-daemon', '--tests', package + '.' + method],
+                                        '--no-daemon', *selectors],
                                        stdout=log, stderr=subprocess.STDOUT, timeout=360)
               proof['nativeExit'] = run.returncode
               assert run.returncode != 0
@@ -397,16 +438,72 @@ jobs:
                                     failure.text or ''))
                   assert proof['namedMethodFrameCount'] == 1 and proof['expectedRuleFrameMatched']
                   proof.update(affectedRows=1, expectedRetentionEqual=True, observedRetentionEqual=False)
+              elif service == 'notification-service':
+                  assert suite.tag == 'testsuite' and suite.get('name') == package
+                  assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  assert case.get('classname') == package
+                  message = message.removeprefix(failure.get('type') + ': ')
+                  assert re.fullmatch(r'\s*expected:\s*"PENDING"\s+but was:\s*"COMPLETED"\s*', message)
+                  named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(package + '.' + method)
+                      + r'\(NotificationStateV2IT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+                  proof['namedMethodFrameCount'] = len(named_lines)
+                  proof['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(proof['ruleFrame']) + r'[ \t]*$', failure.text or ''))
+                  assert proof['namedMethodFrameCount'] == 1 and proof['expectedRuleFrameMatched']
+                  proof.update(expectedIntentState='PENDING', observedIntentState='COMPLETED')
               else:
                   assert '[headman budget increased limit]' in message
                   assert re.search(r'expected:\s*7\s+but was:\s*5(?:\s|$)', message)
                   proof.update(expectedLimit=7, observedLimit=5)
+              if additional is not None:
+                  identity_result = results / ('TEST-' + additional['package'] + '.xml')
+                  assert identity_result.is_file() and 0 < identity_result.stat().st_size <= 33554432
+                  identity_data = identity_result.read_bytes()
+                  assert b'<!DOCTYPE' not in identity_data.upper() and b'<!ENTITY' not in identity_data.upper()
+                  identity_suite = ET.fromstring(identity_data)
+                  assert identity_suite.tag == 'testsuite' and identity_suite.get('name') == additional['package']
+                  assert {key: identity_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  identity_cases = identity_suite.findall('testcase')
+                  assert len(identity_cases) == 1
+                  identity_case = identity_cases[0]
+                  assert identity_case.get('classname') == additional['package'] and identity_case.get('name') == additional['method'] + '()'
+                  assert not identity_case.findall('error') and not identity_case.findall('skipped') and len(identity_case.findall('failure')) == 1
+                  identity_failure = identity_case.find('failure')
+                  assert identity_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  identity_message = identity_failure.get('message', '').removeprefix(identity_failure.get('type') + ': ')
+                  label = 'Adding a role must preserve the existing account identity and credentials'
+                  assert re.fullmatch(r'\s*\[' + re.escape(label) + r'\]\s*Expecting value to be true but was false\s*', identity_message)
+                  identity_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(additional['package'] + '.' + additional['method'])
+                      + r'\(RestApiIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', identity_failure.text or '')
+                  identity_rule = proof['additionalRule']
+                  identity_rule['namedMethodFrameCount'] = len(identity_named_lines)
+                  identity_rule['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(identity_rule['ruleFrame']) + r'[ \t]*$', identity_failure.text or ''))
+                  assert identity_rule['namedMethodFrameCount'] == 1 and identity_rule['expectedRuleFrameMatched']
+                  identity_rule.update(state='EXPECTED_RULE_FAILURE', affectedRows=1,
+                                       expectedIdentityEqual=True, observedIdentityEqual=False,
+                                       tests=1, failures=1, errors=0, skipped=0,
+                                       restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
               proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
                            restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
           finally:
               for path, content in current.items():
                   path.write_bytes(content)
                   assert path.read_bytes() == content
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+              if additional is not None and current:
+                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
+                  proof['additionalRule']['sourceRestoredExact'] = True
+              if service == 'notification-service' and current:
+                  proof['sourceRestoredExact'] = True
               if service == 'academic-service' and current:
                   assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '209a71d2411132ba4cfaf46e03e595f1e027f1ff1da0723e48a82db3e47e4d8a'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(test_source)]) == b''
@@ -421,7 +518,7 @@ jobs:
           PY_DOMAIN_RED
 
       - name: Upload safe changed-domain regression proof
-        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service')
+        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service' || matrix.service.name == 'notification-service')
         uses: actions/upload-artifact@v4
         with:
           name: changed-domain-regression-safe-${{ matrix.service.name }}-${{ github.run_attempt }}
@@ -585,6 +682,131 @@ jobs:
         with:
           name: safe-integration-outcomes-${{ matrix.service.name }}-${{ github.run_attempt }}
           path: build/ci-test-outcomes/${{ matrix.service.name }}/integrationTest/safe-outcomes.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Generate the official Academic OpenAPI candidate after an exact snapshot drift
+        id: academic-openapi-candidate
+        if: ${{ !cancelled() && matrix.service.name == 'academic-service' && steps.java-tests.outcome == 'failure' }}
+        timeout-minutes: 8
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_ACADEMIC_OPENAPI'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          import xml.etree.ElementTree as ET
+
+          def decode(raw):
+              def pairs(items):
+                  value = {}
+                  for key, item in items:
+                      assert key not in value
+                      value[key] = item
+                  return value
+              return json.loads(raw, object_pairs_hook=pairs,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+
+          package = 'ru.rutcampustrack.academic.integration.OpenApiSnapshotIT'
+          method = 'apiDocsMatchesSnapshot'
+          app = pathlib.Path('services/academic-service/academic-app')
+          test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java'
+          test_sha = '833b5aa459e826ebd9976bd8b12d9f08d5e790dc8f664c4307554351fb4ea514'
+          source = test_source.read_bytes()
+          assert hashlib.sha256(source).hexdigest() == test_sha
+          assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
+          lines = source.decode().splitlines()
+          target = '                .isEqualTo(mapper.readTree(expected));'
+          assert lines.count(target) == 1
+          expected_line = lines.index(target) + 1
+          report = pathlib.Path('build/ci-test-outcomes/academic-service/integrationTest/safe-outcomes.json')
+          if not report.is_file() or not 0 < report.stat().st_size <= 33554432:
+              raise SystemExit(0)
+          value = decode(report.read_bytes())
+          if value.get('collection') != 'RESULTS':
+              raise SystemExit(0)
+          meta = value['metadata']
+          checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert (meta['checkoutSha'] == checkout
+                  and meta['prHeadSha'] == os.environ['RCT_CI_PR_HEAD_SHA']
+                  and meta['service'] == 'academic-service' and meta['task'] == 'integrationTest'
+                  and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'failure'
+                  and meta['runId'] == os.environ['GITHUB_RUN_ID']
+                  and meta['runAttempt'] == os.environ['GITHUB_RUN_ATTEMPT'])
+          selected = [case for case in value['cases']
+                      if case.get('classname') == package and case.get('method') == method]
+          if not selected:
+              raise SystemExit(0)
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == test_source.as_posix()
+                  and case['sourceSha256'] == test_sha)
+          if case['status'] != 'FAILED':
+              raise SystemExit(0)
+          result = app / ('build/test-results/integrationTest/TEST-' + package + '.xml')
+          assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
+          raw = result.read_bytes()
+          assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+          suite = ET.fromstring(raw)
+          cases = suite.findall('testcase')
+          if (suite.tag != 'testsuite' or suite.get('name') != package or len(cases) != 1
+                  or cases[0].get('classname') != package or cases[0].get('name') != method + '()'
+                  or {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  != {'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}):
+              raise SystemExit(0)
+          native_case = cases[0]
+          if native_case.findall('error') or native_case.findall('skipped') or len(native_case.findall('failure')) != 1:
+              raise SystemExit(0)
+          failure = native_case.find('failure')
+          if failure.get('type') not in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}:
+              raise SystemExit(0)
+          named_lines = re.findall(
+              r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+              + re.escape(package + '.' + method)
+              + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+          if named_lines != [str(expected_line)]:
+              raise SystemExit(0)
+          assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']) == b''
+          subprocess.run(
+              ['./gradlew', ':services:academic-service:academic-app:integrationTest', '--no-daemon',
+               '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
+              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, timeout=360, check=True)
+          snapshot = pathlib.Path('docs/openapi/academic.json')
+          assert not snapshot.is_symlink() and snapshot.is_file() and 0 < snapshot.stat().st_size <= 2097152
+          payload = snapshot.read_bytes()
+          generated = decode(payload)
+          assert (type(generated) is dict and set(generated) == {'openapi', 'info', 'tags', 'paths', 'components'}
+                  and generated['openapi'] == '3.1.0' and type(generated['info']) is dict
+                  and all(type(generated['info'].get(key)) is str for key in ('title', 'version'))
+                  and type(generated['tags']) is list and all(type(tag) is dict for tag in generated['tags'])
+                  and type(generated['paths']) is dict and generated['paths']
+                  and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
+                  and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
+          changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
+          assert {path for path in changed if path} == {b'docs/openapi/academic.json'}
+          output = pathlib.Path('build/ci-test-outcomes/academic-service/openapi-generated')
+          output.mkdir(mode=0o700, parents=True, exist_ok=False)
+          shutil.copyfile(snapshot, output / 'academic.json')
+          proof = {'schemaVersion': 1, 'state': 'OFFICIAL_ACADEMIC_OPENAPI_GENERATED',
+                   'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'], 'checkoutSha': checkout,
+                   'runId': os.environ['GITHUB_RUN_ID'], 'runAttempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                   'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
+                   'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
+                   'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
+                   'trackedChanges': ['docs/openapi/academic.json'], 'ordinaryFailurePreserved': True}
+          (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
+              target_output.write('generated=true\n')
+          PY_ACADEMIC_OPENAPI
+
+      - name: Upload the official Academic OpenAPI candidate
+        if: ${{ !cancelled() && steps.academic-openapi-candidate.outputs.generated == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: academic-openapi-generated-${{ github.run_attempt }}
+          path: |
+            build/ci-test-outcomes/academic-service/openapi-generated/academic.json
+            build/ci-test-outcomes/academic-service/openapi-generated/generation.safe.json
           if-no-files-found: error
           retention-days: 7
 

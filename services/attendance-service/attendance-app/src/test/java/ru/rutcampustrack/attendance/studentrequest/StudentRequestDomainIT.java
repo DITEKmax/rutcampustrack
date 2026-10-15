@@ -1022,7 +1022,7 @@ class StudentRequestDomainIT {
     }
 
     @Test
-    void autoPendingRequestRemainsApprovableDaysLaterWithoutManualCharge() {
+    void autoPendingRequestRemainsApprovableDaysLaterWithoutManualCharge() throws Exception {
         long lessonId = 51L;
         seedBudget(5, 5);
         LateCheckinRequest autoLate =

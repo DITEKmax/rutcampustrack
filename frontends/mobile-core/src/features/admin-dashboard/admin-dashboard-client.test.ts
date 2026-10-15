@@ -9,6 +9,71 @@ import {
 } from './admin-dashboard-activity-view'
 import { createAdminActivityFixture } from '../../dev/admin-dashboard-fixtures'
 
+describe('Dashboard scale daily growth', () => {
+  const current = {
+    totalStudents: 17,
+    totalTeachers: 4,
+    totalGroups: 2,
+    activeGroups: 2,
+    activeSemesterName: null,
+  }
+  const client = (body: unknown) =>
+    new AdminDashboardClient({
+      accessToken: () => null,
+      fetcher: async () => Response.json(body),
+    })
+
+  it('preserves signed server deltas and known zero independently from current totals', async () => {
+    const growth = {
+      status: 'AVAILABLE',
+      baselineDate: '2026-09-30',
+      studentsDelta: 2,
+      teachersDelta: -1,
+      groupsDelta: 0,
+    }
+    const result = await client({ ...current, dailyGrowth: growth }).getStats()
+    expect(result.dailyGrowth).toEqual(growth)
+    expect(result.totalStudents).toBe(17)
+    expect(result.totalTeachers).toBe(4)
+  })
+
+  it('normalizes older missing history to unknown without inventing a zero', async () => {
+    for (const body of [current, { ...current, dailyGrowth: null }]) {
+      const result = await client(body).getStats()
+      expect(result.dailyGrowth).toEqual({
+        status: 'UNKNOWN_HISTORY',
+        baselineDate: null,
+        studentsDelta: null,
+        teachersDelta: null,
+        groupsDelta: null,
+      })
+    }
+    const unknown = {
+      status: 'UNKNOWN_HISTORY',
+      baselineDate: '2026-09-30',
+      studentsDelta: null,
+      teachersDelta: null,
+      groupsDelta: null,
+    }
+    expect((await client({ ...current, dailyGrowth: unknown }).getStats()).dailyGrowth).toEqual(
+      unknown,
+    )
+    await expect(
+      client({ ...current, dailyGrowth: { ...unknown, studentsDelta: 0 } }).getStats(),
+    ).rejects.toThrow()
+    await expect(
+      client({
+        ...current,
+        dailyGrowth: {
+          ...unknown,
+          status: 'AVAILABLE',
+          studentsDelta: Number.MAX_SAFE_INTEGER + 1,
+        },
+      }).getStats(),
+    ).rejects.toThrow()
+  })
+})
+
 describe('Admin activity frozen wire and observation semantics', () => {
   it('requests the exact period/bucket and preserves known zero versus missing retained history', async () => {
     const seen: string[] = []

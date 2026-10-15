@@ -7,12 +7,21 @@ import {
 export type * from './admin-dashboard-activity'
 import type { MobileProblemDetails } from '../../api/types'
 
+export interface AdminDashboardDailyGrowth {
+  readonly status: 'AVAILABLE' | 'UNKNOWN_HISTORY'
+  readonly baselineDate: string | null
+  readonly studentsDelta: number | null
+  readonly teachersDelta: number | null
+  readonly groupsDelta: number | null
+}
+
 export interface AdminDashboardStats {
   readonly totalStudents: number
   readonly totalTeachers: number
   readonly totalGroups: number
   readonly activeGroups: number
   readonly activeSemesterName: string | null
+  readonly dailyGrowth?: AdminDashboardDailyGrowth
 }
 
 export interface AdminDashboardApiOptions {
@@ -121,6 +130,50 @@ function normalizeDashboardStats(value: unknown): AdminDashboardStats {
       typeof activeSemesterName === 'string' && activeSemesterName.trim() !== ''
         ? activeSemesterName
         : null,
+    dailyGrowth: normalizeDailyGrowth(record.dailyGrowth),
+  }
+}
+
+function normalizeDailyGrowth(value: unknown): AdminDashboardDailyGrowth {
+  if (value === undefined || value === null) {
+    // Older servers/constructor-based fixtures have no prospective history extension.
+    return {
+      status: 'UNKNOWN_HISTORY',
+      baselineDate: null,
+      studentsDelta: null,
+      teachersDelta: null,
+      groupsDelta: null,
+    }
+  }
+  const record = requiredRecord(value, 'dailyGrowth')
+  const status = record.status
+  const date = record.baselineDate
+  if (
+    (status !== 'AVAILABLE' && status !== 'UNKNOWN_HISTORY') ||
+    typeof date !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    !Number.isFinite(Date.parse(`${date}T00:00:00Z`)) ||
+    new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date
+  ) {
+    throw new Error('Сервер вернул некорректную базу суточного прироста.')
+  }
+  const delta = (field: 'studentsDelta' | 'teachersDelta' | 'groupsDelta'): number | null => {
+    const result = record[field]
+    if (
+      status === 'UNKNOWN_HISTORY'
+        ? result !== null
+        : typeof result !== 'number' || !Number.isSafeInteger(result)
+    ) {
+      throw new Error('Сервер вернул некорректный суточный прирост.')
+    }
+    return result as number | null
+  }
+  return {
+    status,
+    baselineDate: date,
+    studentsDelta: delta('studentsDelta'),
+    teachersDelta: delta('teachersDelta'),
+    groupsDelta: delta('groupsDelta'),
   }
 }
 

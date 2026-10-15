@@ -50,6 +50,7 @@ public final class AcademicFixtureResetListener extends AbstractTestExecutionLis
                     "campus_map_plan_format",
                     "campus_map_plan_version",
                     "campus_settings",
+                    "dashboard_scale_observations",
                     "event_consumer_processed",
                     "group_history_coverage",
                     "group_promotion_cycle_record",

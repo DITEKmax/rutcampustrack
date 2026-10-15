@@ -18,6 +18,7 @@ names = {
     "_mongo_script",
     "_project",
     "_consumer_failure_hint",
+    "_unique_candidate_trace",
 }
 selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
 assert {node.name for node in selected} == names
@@ -193,6 +194,85 @@ assert projected_hint["schema"] == "semester-effect.v3" and projected_hint["cons
 assert projected_hint["ledgerState"] == "PENDING" and projected_hint["ackPresent"] is False
 assert len(json.dumps(projected_hint).encode()) <= 4096
 assert marker not in json.dumps(projected_hint) and identity not in json.dumps(projected_hint)
+
+# A unique trace is only a reported stage hint, never exact message/body identity.
+trace = "00000000-0000-4000-8000-000000000003"
+traced = dict(ledger, trace_id=trace)
+assert scope["_unique_candidate_trace"](traced, [identity]) == trace
+assert scope["_unique_candidate_trace"](traced, [identity, identity]) == trace
+for events in ([], [ack_id], [identity, ack_id], [identity, identity, identity], [marker], [None]):
+    assert scope["_unique_candidate_trace"](traced, events) is None
+for field, value in (
+    ("source_matches", False),
+    ("version_matches", "true"),
+    ("scope_matches", False),
+    ("event_matches", False),
+    ("type_matches", False),
+    ("trace_id", marker),
+    ("event_id", marker),
+    ("event_type", "lesson.cancelled"),
+    ("target", "ACADEMIC"),
+):
+    assert scope["_unique_candidate_trace"](dict(traced, **{field: value}), [identity]) is None
+
+stage_row = {
+    "service": "attendance-service",
+    "level": "WARN",
+    "logger": "ru.rutcampustrack.attendance.event.EventConsumer",
+    "traceId": trace,
+    "msg": "lesson.closed failure stage=PREPARE category=SCHEDULE_UNAVAILABLE",
+}
+
+
+def stage_hint(row, candidate=trace):
+    return scope["_consumer_failure_hint"](json.dumps(row).encode(), candidate)
+
+
+expected_stage_hint = {
+    "observation": "UNIQUE_CANDIDATE_TRACE_STAGE_HINT",
+    "bodyIdentityUnavailable": True,
+    "exactCandidateMatched": False,
+    "hintRecords": 1,
+    "sampleCapped": False,
+    "exceptionKinds": ["SCHEDULE_UNAVAILABLE"],
+    "grpcCodes": [],
+    "sourceFrames": ["PREPARE_CLOSE"],
+}
+assert stage_hint(stage_row) == expected_stage_hint
+for stage, frame in (
+    ("RECEIPT", "CLOSE_HANDLER"),
+    ("PAYLOAD", "CLOSE_HANDLER"),
+    ("PREPARE", "PREPARE_CLOSE"),
+    ("TRANSACTION", "EFFECT_TRANSACTION"),
+):
+    value = stage_hint(dict(stage_row, msg=f"lesson.closed failure stage={stage} category=MONGO_TRANSACTION"))
+    assert value["exceptionKinds"] == ["MONGO_TRANSACTION"] and value["sourceFrames"] == [frame]
+    assert value["exactCandidateMatched"] is False and value["bodyIdentityUnavailable"] is True
+assert stage_hint(dict(stage_row, msg="lesson.closed failure stage=TRANSACTION category=OTHER"))["exceptionKinds"] == []
+for field, value in (
+    ("service", "schedule-service"),
+    ("level", "ERROR"),
+    ("logger", "private." + marker),
+    ("traceId", ack_id),
+    ("traceId", None),
+    ("stack", marker),
+    ("msg", stage_row["msg"] + " " + marker),
+    ("msg", "lesson.closed failure stage=" + marker + " category=SCHEDULE_UNAVAILABLE"),
+    ("msg", "lesson.closed failure stage=PREPARE category=" + marker),
+):
+    assert stage_hint(dict(stage_row, **{field: value}))["hintRecords"] == 0
+for candidate in (None, marker, ack_id):
+    assert stage_hint(stage_row, candidate)["hintRecords"] == 0
+duplicate_stage = json.dumps(stage_row)[:-1] + ',"traceId":"' + trace + '"}'
+assert scope["_consumer_failure_hint"](duplicate_stage.encode(), trace)["hintRecords"] == 0
+assert scope["_consumer_failure_hint"](json.dumps(stage_row).encode()[:-2], trace)["hintRecords"] == 0
+# Unrelated retry stacks must not contaminate the uniquely trace-correlated stage/category.
+mixed = (json.dumps(log_row) + "\n" + json.dumps(stage_row)).encode()
+assert scope["_consumer_failure_hint"](mixed, trace) == expected_stage_hint
+stage_projection = scope["_project"](traced, [], receipt, [], [], True, consumer_logs=mixed, candidate_trace=trace)
+assert stage_projection["consumerFailureHint"] == expected_stage_hint
+assert len(json.dumps(stage_projection).encode()) <= 4096
+assert all(value not in json.dumps(stage_projection) for value in (marker, identity, ack_id, trace))
 print(
     json.dumps(
         {
@@ -205,6 +285,9 @@ print(
             "bounded_readonly_mongo_source": True,
             "unmatched_queue_type_positive_hint_only": True,
             "foreign_truncated_spoofed_and_duplicate_logs_rejected": True,
+            "unique_trace_stage_hint_only_not_message_identity": True,
+            "duplicate_source_copies_allowed_distinct_shared_trace_rejected": True,
+            "preparation_and_transaction_reported_stages_distinct": True,
             "raw_log_identity_unknown_class_and_private_marker_not_emitted": True,
             "qualification": "Actual pure projection functions only; no subprocess, DB, Docker, network, queue or real event recovery",
         }

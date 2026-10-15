@@ -90,6 +90,42 @@ test.describe('Vue PWA auth lifecycle @smoke', () => {
     const after = (await context.cookies()).find((cookie) => cookie.name === REFRESH_COOKIE)!;
     expect(after.value === before.value).toBe(false);
     expect(after.httpOnly).toBe(true);
+
+    // CI .env.ci configures this exact origin; the HTTPS edge forwards /api/ to Gateway.
+    // APIRequestContext checks Gateway's HTTP CORS boundary, not browser enforcement.
+    const allowedOrigin = 'https://localhost:8443';
+    const denied = await page.request.post('/api/auth/refresh', {
+      headers: { Origin: 'https://cors-denied.example.invalid' },
+    });
+    expect(denied.status(), 'Gateway rejects an unlisted refresh origin').toBe(403);
+    const deniedHeaders = denied.headers();
+    expect(
+      deniedHeaders['access-control-allow-origin'] === undefined,
+      'Denied origin receives no CORS admission',
+    ).toBe(true);
+    expect(deniedHeaders['set-cookie'] === undefined, 'Denied origin issues no cookie').toBe(true);
+    const unchanged = (await context.cookies()).find((cookie) => cookie.name === REFRESH_COOKIE);
+    expect(unchanged?.value === after.value, 'Denied origin preserves the owned cookie').toBe(true);
+
+    // Success with the same cookie proves the refused request neither rotated nor revoked it.
+    const admitted = await page.request.post('/api/auth/refresh', {
+      headers: { Origin: allowedOrigin },
+    });
+    expect(admitted.status(), 'Configured origin retains refresh admission').toBe(200);
+    const admittedHeaders = admitted.headers();
+    expect(
+      admittedHeaders['access-control-allow-origin'] === allowedOrigin,
+      'Gateway admits only the configured origin',
+    ).toBe(true);
+    expect(
+      admittedHeaders['access-control-allow-credentials'] === 'true',
+      'Configured origin permits credentials',
+    ).toBe(true);
+    const rotated = (await context.cookies()).find((cookie) => cookie.name === REFRESH_COOKIE);
+    expect(
+      Boolean(rotated?.value) && rotated?.value !== after.value,
+      'Admitted refresh rotates the same owned cookie',
+    ).toBe(true);
     const recovered = page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname === '/api/auth/session' &&

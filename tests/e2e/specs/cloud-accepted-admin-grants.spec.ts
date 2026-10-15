@@ -200,9 +200,66 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
   page.on('response', observeAdmission);
   page.on('request', observeFeatureStart);
   try {
+    const statsLoaded = http(page, '/api/academic/dashboard/stats', 'GET');
     const selected = await selectRole(page, 'Администратор');
     expect(selected.session.activeRole).toBe('ADMIN');
     expect(adminAdmitted).toBe(true);
+    // JS-ADMIN-11: bind the real server summary to the three visible scale cards.
+    const statsResponse = await statsLoaded;
+    expect(statsResponse.status()).toBe(200);
+    const summary = (await statsResponse.json()) as {
+      totalStudents: number;
+      totalTeachers: number;
+      totalGroups: number;
+      activeGroups: number;
+      dailyGrowth: {
+        status: 'AVAILABLE' | 'UNKNOWN_HISTORY';
+        baselineDate: string;
+        studentsDelta: number | null;
+        teachersDelta: number | null;
+        groupsDelta: number | null;
+      };
+    };
+    for (const value of [summary.totalStudents, summary.totalTeachers, summary.activeGroups]) {
+      expect(Number.isSafeInteger(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(0);
+    }
+    expect(summary.totalGroups).toBe(summary.activeGroups);
+    const growth = summary.dailyGrowth;
+    expect(growth).toBeTruthy();
+    expect(['AVAILABLE', 'UNKNOWN_HISTORY']).toContain(growth.status);
+    expect(growth.baselineDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(new Date(`${growth.baselineDate}T00:00:00Z`).toISOString().slice(0, 10)).toBe(
+      growth.baselineDate,
+    );
+    const scaleCards = page.locator('dl[aria-label="Активные аккаунты и группы"]');
+    await expect(scaleCards).toBeVisible();
+    const rows = scaleCards.locator(':scope > .admin-dashboard-screen__stat');
+    await expect(rows).toHaveCount(3);
+    const formatCount = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
+    for (const { label, count, delta } of [
+      { label: 'Студенты', count: summary.totalStudents, delta: growth.studentsDelta },
+      { label: 'Преподаватели', count: summary.totalTeachers, delta: growth.teachersDelta },
+      { label: 'Группы', count: summary.activeGroups, delta: growth.groupsDelta },
+    ]) {
+      let expectedGrowth = 'нет данных за вчера';
+      if (growth.status === 'AVAILABLE') {
+        expect(Number.isSafeInteger(delta)).toBe(true);
+        const value = delta as number;
+        expectedGrowth =
+          value === 0
+            ? 'без изменений за сутки'
+            : value > 0
+              ? `прирост +${formatCount(value)} за сутки`
+              : `снижение −${formatCount(-value)} за сутки`;
+      } else {
+        expect(delta).toBeNull();
+      }
+      const row = rows.filter({ has: page.getByText(label, { exact: true }) });
+      await expect(row.locator('dt')).toHaveText(label);
+      await expect(row.locator('dd > span')).toHaveText(formatCount(count));
+      await expect(row.locator('.admin-dashboard-screen__delta')).toHaveText(expectedGrowth);
+    }
     const foreignScreens = page.locator(
       '.today-shell, .semester-screen, .attendance-screen, .headman-home, .headman-journal, .headman-group, .headman-actions, .teacher-feature-owner',
     );

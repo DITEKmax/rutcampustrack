@@ -14,6 +14,7 @@ public class DashboardStatsResponse extends RepresentationModel<DashboardStatsRe
     private long totalGroups;
     private long activeGroups;
     private String activeSemesterName;
+    private DashboardDailyGrowthResponse dailyGrowth;
 
     public DashboardStatsResponse() {}
 
@@ -68,5 +69,13 @@ public class DashboardStatsResponse extends RepresentationModel<DashboardStatsRe
 
     public void setActiveSemesterName(String activeSemesterName) {
         this.activeSemesterName = activeSemesterName;
+    }
+
+    public DashboardDailyGrowthResponse getDailyGrowth() {
+        return dailyGrowth;
+    }
+
+    public void setDailyGrowth(DashboardDailyGrowthResponse dailyGrowth) {
+        this.dailyGrowth = dailyGrowth;
     }
 }

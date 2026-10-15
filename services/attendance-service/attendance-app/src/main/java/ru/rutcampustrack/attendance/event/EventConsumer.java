@@ -177,32 +177,93 @@ public class EventConsumer extends AbstractEventConsumer {
     }
 
     private void handleLessonClosed(Map<String, Object> envelope) {
-        if (semesterArchiveEffectService.hasReceipt(envelope)) {
-            // Do not call Schedule or attempt a duplicate claim after an exact
-            // receipt has already committed. apply() re-acks that receipt.
-            semesterArchiveEffectService.apply(envelope, () -> {});
-            return;
-        }
+        LessonClosedStage stage = LessonClosedStage.RECEIPT;
+        try {
+            if (semesterArchiveEffectService.hasReceipt(envelope)) {
+                // Do not call Schedule or attempt a duplicate claim after an exact
+                // receipt has already committed. apply() re-acks that receipt.
+                semesterArchiveEffectService.apply(envelope, () -> {});
+                return;
+            }
 
-        Map<String, Object> payload = extractRequiredPayload(envelope);
-        Long lessonId = extractPositiveInteger(payload, "lesson_id");
-        Long groupId = extractPositiveInteger(payload, "group_id");
-        Long semesterId = extractPositiveInteger(payload, "semester_id");
-        LessonEventService.LessonClosedSnapshot effectSnapshot =
-                lessonEventService.prepareLessonClosed(lessonId, groupId, semesterId);
-        transactionTemplate.executeWithoutResult(
-                status -> {
-                    if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
-                        // A concurrent delivery may have committed after the preflight
-                        // receipt read. Leave this delivery unacknowledged; Rabbit
-                        // redelivery will observe and replay the committed receipt.
-                        return;
-                    }
-                    semesterArchiveEffectService.apply(
-                            envelope,
-                            () -> lessonEventService.preflightLessonClosed(effectSnapshot),
-                            () -> lessonEventService.applyLessonClosed(effectSnapshot));
-                });
+            stage = LessonClosedStage.PAYLOAD;
+            Map<String, Object> payload = extractRequiredPayload(envelope);
+            Long lessonId = extractPositiveInteger(payload, "lesson_id");
+            Long groupId = extractPositiveInteger(payload, "group_id");
+            Long semesterId = extractPositiveInteger(payload, "semester_id");
+            stage = LessonClosedStage.PREPARE;
+            LessonEventService.LessonClosedSnapshot effectSnapshot =
+                    lessonEventService.prepareLessonClosed(lessonId, groupId, semesterId);
+            stage = LessonClosedStage.TRANSACTION;
+            transactionTemplate.executeWithoutResult(
+                    status -> {
+                        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
+                            // A concurrent delivery may have committed after the preflight
+                            // receipt read. Leave this delivery unacknowledged; Rabbit
+                            // redelivery will observe and replay the committed receipt.
+                            return;
+                        }
+                        semesterArchiveEffectService.apply(
+                                envelope,
+                                () -> lessonEventService.preflightLessonClosed(effectSnapshot),
+                                () -> lessonEventService.applyLessonClosed(effectSnapshot));
+                    });
+        } catch (RuntimeException failure) {
+            try {
+                // Existing MDC supplies correlation; never attach the exception or envelope.
+                log.warn(
+                        "lesson.closed failure stage={} category={}",
+                        stage,
+                        lessonClosedFailure(failure));
+            } finally {
+                throw failure;
+            }
+        }
+    }
+
+    private enum LessonClosedStage {
+        RECEIPT,
+        PAYLOAD,
+        PREPARE,
+        TRANSACTION
+    }
+
+    private enum LessonClosedFailure {
+        ACADEMIC_UNAVAILABLE,
+        SCHEDULE_UNAVAILABLE,
+        RESOURCE_NOT_FOUND,
+        INVALID_ARGUMENT,
+        TRANSACTION_ROLLBACK,
+        MONGO_TRANSACTION,
+        DUPLICATE_KEY,
+        EFFECT_REJECTED,
+        OTHER
+    }
+
+    private static LessonClosedFailure lessonClosedFailure(RuntimeException failure) {
+        if (failure
+                instanceof
+                ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException)
+            return LessonClosedFailure.ACADEMIC_UNAVAILABLE;
+        if (failure
+                instanceof
+                ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException)
+            return LessonClosedFailure.SCHEDULE_UNAVAILABLE;
+        if (failure
+                instanceof
+                ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException)
+            return LessonClosedFailure.RESOURCE_NOT_FOUND;
+        if (failure instanceof IllegalArgumentException)
+            return LessonClosedFailure.INVALID_ARGUMENT;
+        if (failure instanceof org.springframework.transaction.UnexpectedRollbackException)
+            return LessonClosedFailure.TRANSACTION_ROLLBACK;
+        if (failure instanceof org.springframework.data.mongodb.MongoTransactionException)
+            return LessonClosedFailure.MONGO_TRANSACTION;
+        if (failure instanceof org.springframework.dao.DuplicateKeyException)
+            return LessonClosedFailure.DUPLICATE_KEY;
+        if (failure instanceof SemesterArchiveEffectRejectedException)
+            return LessonClosedFailure.EFFECT_REJECTED;
+        return LessonClosedFailure.OTHER;
     }
 
     private void preflightLessonCancelled(Map<String, Object> envelope) {

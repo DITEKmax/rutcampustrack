@@ -68,6 +68,81 @@ test('VIEW_STATS renders own group but grants neither marking, roster export nor
   const targetAfter = await dataset.admin.call('GET', `/api/academic/users/${dataset.student.id}`);
   // Compare a boolean, never put a generated credential into an assertion value.
   expect(targetAfter.initialPassword === targetBefore.initialPassword).toBe(true);
+
+  // JS-HEADMAN-32: the current headman downloads the real own-group roster file.
+  expect(dataset.headmanActor.session.activeRole).toBe('HEADMAN');
+  const realMoscowDate = new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  const exportDateBefore = realMoscowDate.format(new Date());
+  const rosterFile = await dataset.request.get(
+    '/api/attendance/reports/headman/group-composition/export?format=html',
+    { headers: dataset.headmanActor.headers() },
+  );
+  const exportDateAfter = realMoscowDate.format(new Date());
+  expect(rosterFile.status()).toBe(200);
+  const rosterHeaders = rosterFile.headers();
+  expect(rosterHeaders['content-type']?.split(';')[0] === 'text/html').toBe(true);
+  expect(/^attachment(?:;|$)/i.test(rosterHeaders['content-disposition'] ?? '')).toBe(true);
+  expect(
+    rosterHeaders['cache-control']?.split(',').some((value) => value.trim() === 'no-store'),
+  ).toBe(true);
+  const rosterHtml = (await rosterFile.body()).toString('utf8');
+  const downloadedRoster = await page.evaluate((markup) => {
+    const document = new DOMParser().parseFromString(markup, 'text/html');
+    return {
+      heading: document.querySelector('h1')?.textContent,
+      context: Array.from(document.querySelectorAll('body > p'), (row) => row.textContent),
+      headers: Array.from(document.querySelectorAll('thead th'), (cell) => cell.textContent),
+      rows: Array.from(document.querySelectorAll('tbody tr'), (row) =>
+        Array.from(row.querySelectorAll('td'), (cell) => cell.textContent),
+      ),
+    };
+  }, rosterHtml);
+  const expectedRoster = [
+    [dataset.student, 'Студент'],
+    [dataset.headman, 'Староста'],
+    [dataset.assistant, 'Помощник'],
+    [user, 'Помощник'],
+  ] as const;
+  const expectedRows = [...expectedRoster]
+    .sort(([left], [right]) => left.displayName.localeCompare(right.displayName, 'ru'))
+    .map(([member, role], index) => [String(index + 1), member.displayName, member.login, role]);
+  // Assert booleans only: downloaded data and private fixture values never enter failure output.
+  expect(
+    downloadedRoster.heading === 'Состав группы',
+    'Own roster file has its accepted title',
+  ).toBe(true);
+  expect(
+    [exportDateBefore, exportDateAfter].some(
+      (date) =>
+        JSON.stringify(downloadedRoster.context) ===
+        JSON.stringify([`Группа: ${dataset.group.name}`, `Дата выгрузки: ${date}`]),
+    ),
+    'Own roster context identifies exactly this group and a real Moscow date during its request',
+  ).toBe(true);
+  expect(
+    JSON.stringify(downloadedRoster.headers) ===
+      JSON.stringify(['№', 'ФИО', 'Логин', 'Роль в группе']),
+    'Own roster exposes exactly the four accepted minimal columns',
+  ).toBe(true);
+  expect(
+    JSON.stringify(downloadedRoster.rows) === JSON.stringify(expectedRows),
+    'Own roster contains exactly four alphabetically numbered members with their current group roles',
+  ).toBe(true);
+  expect(
+    expectedRoster.every(
+      ([member]) =>
+        !rosterHtml.includes(member.password) && !rosterHtml.includes(String(member.telegramId)),
+    ) &&
+      !rosterHtml.includes(dataset.foreignStudent.login) &&
+      !/telegram|password|recovery/i.test(rosterHtml),
+    'Own roster excludes credentials, Telegram identifiers, recovery fields and foreign members',
+  ).toBe(true);
+
   await dataset.headmanActor.call('DELETE', `/api/academic/assistants/${grant.id}`, undefined, [
     204,
   ]);
@@ -518,7 +593,7 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
       await expect(transition.getByText(afterSymbol, { exact: true })).toBeVisible();
     }
     // Browse another history through existing Home controls, without a manual mark.
-    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
     await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
     await home.getByRole('button', { name: 'Следующая пара', exact: true }).click();
     await expect(home).toHaveAttribute('data-lesson-id', String(otherLessonId));
@@ -533,7 +608,7 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     for (const event of events) {
       await expect(log.locator(`[data-event-id="${event.id}"]`)).toHaveCount(0);
     }
-    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
     await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
     const selectedReportRead = http(page, `/api/attendance/reports/lesson/${otherLessonId}`, 'GET');
     await home.getByRole('button', { name: 'Следующая пара', exact: true }).click();

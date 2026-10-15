@@ -3,13 +3,11 @@ package ru.rutcampustrack.academic.dashboard;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.Locale;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
-import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
@@ -24,35 +22,45 @@ public class DashboardService {
     private final UserRoleGrantRepository userRoleGrantRepository;
     private final GroupRegistryReadRepository groupRegistryReadRepository;
     private final SemesterRepository semesterRepository;
+    private final DashboardScaleObservationService observations;
 
     public DashboardService(
             UserRoleGrantRepository userRoleGrantRepository,
             GroupRegistryReadRepository groupRegistryReadRepository,
             SemesterRepository semesterRepository) {
+        this(userRoleGrantRepository, groupRegistryReadRepository, semesterRepository, null);
+    }
+
+    @Autowired
+    public DashboardService(
+            UserRoleGrantRepository userRoleGrantRepository,
+            GroupRegistryReadRepository groupRegistryReadRepository,
+            SemesterRepository semesterRepository,
+            DashboardScaleObservationService observations) {
         this.userRoleGrantRepository = userRoleGrantRepository;
         this.groupRegistryReadRepository = groupRegistryReadRepository;
         this.semesterRepository = semesterRepository;
+        this.observations = observations;
     }
 
     @Transactional(readOnly = true)
     public EntityModel<DashboardStatsResponse> getStats() {
-        String activeStatus = RoleGrantStatus.ACTIVE.name().toLowerCase(Locale.ROOT);
-        long totalStudents =
-                userRoleGrantRepository.countDistinctUsersByRoleAndStatus(
-                        UserRole.STUDENT.name().toLowerCase(Locale.ROOT), activeStatus);
-        long totalTeachers =
-                userRoleGrantRepository.countDistinctUsersByRoleAndStatus(
-                        UserRole.TEACHER.name().toLowerCase(Locale.ROOT), activeStatus);
-        long activeGroups = groupRegistryReadRepository.countAll(null).activeCount();
+        var snapshot = observations == null ? null : observations.capture();
+        DashboardScaleCounts counts =
+                snapshot == null
+                        ? DashboardScaleCounts.read(
+                                userRoleGrantRepository, groupRegistryReadRepository)
+                        : snapshot.counts();
         String activeSemesterName =
                 semesterRepository.findByIsActiveTrue().map(s -> s.getName()).orElse(null);
 
         DashboardStatsResponse response = new DashboardStatsResponse();
-        response.setTotalStudents(totalStudents);
-        response.setTotalTeachers(totalTeachers);
-        response.setTotalGroups(activeGroups);
-        response.setActiveGroups(activeGroups);
+        response.setTotalStudents(counts.students());
+        response.setTotalTeachers(counts.teachers());
+        response.setTotalGroups(counts.groups());
+        response.setActiveGroups(counts.groups());
         response.setActiveSemesterName(activeSemesterName);
+        if (snapshot != null) response.setDailyGrowth(snapshot.dailyGrowth());
 
         response.add(linkTo(methodOn(DashboardController.class).getStats()).withSelfRel());
 

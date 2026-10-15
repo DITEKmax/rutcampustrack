@@ -6950,7 +6950,17 @@
         "tests/e2e/REAL-MOBILE.md",
         "tests/e2e/specs/auth-token-lifecycle.spec.ts",
         "tests/e2e/specs/mini-app.spec.ts"
-      ]
+      ],
+      "finite_remaining_actions": {
+        "AUTH03": "actualonline refresh atnaturalJWT/sessionexpiry boundary; rotation/CAS/replay/absoluteexpiry existingproofs countbutnotexpiredRefreshJWTHTTP",
+        "AUTH05/STUDENT25/SYSTEM04": "genuineprofile/security journey ownimmutabledata/history/sessions+theme+passwordform→change→login/oldauthoritydenied; backendcommit/clear/revoke/NP01alreadycount",
+        "AUTH06/SYSTEM03": "genuine resetform request→verify→complete→replacementlogin; backendrealPG/Redis purpose120sexpiry/attempts/singleuse/atomicrevoke alreadycount; CloudsyntheticOTPdelivery sufficient",
+        "SYSTEM13": "successfulOTPclientadmission notjoined; password+backendQR count, QRUIexplicit2026-10-02deferred",
+        "PWA01": "workerupdate nativecasefailed; new06d0diagnosticsSourceonly",
+        "SYSTEM14/BOUNDARY01": "BLOCKED_Q016 responseassemblyonly",
+        "E13-S2": "cookieattrs/clear/no-requiredCSRF closed; CORS07b actualnewwitnesspending"
+      },
+      "existing_proof_qualification": "ExistingretainedCloudauth/role/TMA/offline clauses accepted; no reset/profile/OTP clientrun inferred frombackendtests"
     },
     {
       "id": "CLIENT-STUDENT-GEO-REQUESTS",
@@ -6974,7 +6984,19 @@
         "tests/e2e/REAL-MOBILE.md",
         "tests/e2e/specs/auth-token-lifecycle.spec.ts",
         "tests/e2e/specs/mini-app.spec.ts"
-      ]
+      ],
+      "finite_remaining_actions": {
+        "JS-STUDENT-02/JS-HEADMAN-05": "onlyAUTO+dayslater/noexpiry/manualcharge finite23; new2bacrealpending, immediate/retry/cooldown/approval existingactualsufficient",
+        "JS-STUDENT-03": "genuine excuseform reason/comment→submitted; backendvalidation/decision alreadyproven",
+        "JS-STUDENT-06": "mainpagequick manualrequest+confirmation clientroute; existingpaid single submit/cancel/resubmit sufficientforotherparts",
+        "JS-STUDENT-23": "selecteddaterange/multiplelessons→ONEindivisiblemanualticket +ineligiblereasons inlineUI; existing singles/multiexcuse notsameaction",
+        "JS-STUDENT-26": "ownpendingcancel→freedlesson +rejectedarchive reasonUI; APIslices retained",
+        "JS-STUDENT-27": "uploadprogress/preview/remove-before-submit/clearrejectedstate; protectedbytes/bounds/refusals retained",
+        "CLIENT-FE-STUDENT-03": "exact03/06/23/26/27clientactions; notgenericnorun/lease",
+        "JS-HEADMAN-24": "threeforbiddenmanualn appeals→block +authorizedreset; distinctD005/fivemanualbudget/N+2; sourcepriority/implementation stillmustverify",
+        "JS-HEADMAN-04": "exactexcuseeventaudience→headmantypedentry/target evidencejoin; genericQ10maycompose, notnewtransport/nativeexperiment"
+      },
+      "existing_proof_qualification": "Immediategeo/AUTO/quota/retry/backenddecision andstoredbytes actualsufficient; onlynamedremainingclientactions/sourcepriority plusdayslater notgenericruntime"
     },
     {
       "id": "CLIENT-HOMEWORK",
@@ -7257,7 +7279,7 @@
         "already_proved": "Actual cookie/login/refresh/logout checkpoint232; current4058 role-transition/two-session logoutall denied access+refresh; SB01/SB05 redaction, SB06 actual password commit/clear; narrow P07 real public-key provision; P11 realTCP4097deny→4096forward with causal buffer-fix RED→GREEN.",
         "finite_missing_action": "Current cookie attributes + applicable Origin/CORS/CSRF issuance/clear and invalid denied UI where not source-joined; server expiry/refresh-singlewinner/password-reset or binding transition still go Q03 existing auth methods. P11 proof uses real HTTP controlled upstream401: do not infer genuineAuth/directAuth4096 protection. DirectAuth reachability needs current deployment-route disposition; **не вводить новое прямое4096 quota**, если она не accepted. Ни login-rate probing, ни workaround B014. Minimum existing SessionAuthFlowIT/SameSiteCookieContractIT named-source result + applicable browser flow assertion, not broad pentest.",
         "resource_classification": "Auth normal CI PG+Redis / browser current E2E; no external bot needed for synthetic reset adapter. Native provider part E14-H2. Existing partial PASS retain original revision; public secret/no-store mismatch newly observed would be product defect, presently UNKNOWN.",
-        "current_disposition": "15exactSOURCE_METHODPUSHedb AuthPASS/sourceSHAjoined; Authsubtreeidentical493. Covers refreshCAS/absoluteexpiry/roles/cookieauthority/logout/passwordatomicclear-reset-singleuse/currentgrantsTMA. FivecookieDisplayName identities unresolved; DBexpiredpassworddenial notrealHTTPnaturalexpiry; no blanketS2PASS. No ordinalaggregate/readerretry afterB015."
+        "current_disposition": "Cookieissue/rotate/clear attributes/no-required-CSRFheader finite clauses sufficient independentc87 by namededb SessionAuthFlowIT +actual232browser+sameAuthCookiesfactory/currentpins. No ambiguousfiveidentity retry/B015bypass. RemainingONEactualGateway Origin allowlist403/no-cookieeffect→allowed200 proof, c87assigned existingcarrier; naturalexpiry separate acceptedQ03. Rootf6b2_S2_cookie_policy_independent_join."
       },
       {
         "alias_existing_scope": "**E14-O1** CLIENT-FE-OFFLINE01–04 / B47 / D002",
@@ -7284,7 +7306,8 @@
         "alias_existing_scope": "**E14-H1** CLIENT-FE-TMA01/02/03 / B49 / D003",
         "already_proved": "CASE-SD01 malformed/future/window86400/reuse/fresh binding authority; real teacher synthetic host+Back checkpoint232 and currentD003 reuse/suspend slice.",
         "finite_missing_action": "Current exact consumer join for tampered/duplicates/expiry state/no proof-token persistence/profile+hostBack; same shared operations with signed synthetic STUDENT/HEADMAN proof; accepted target/download adapter result. Minimal existing mini-app.spec + current mobile-real-server D003 exact selected methods, extend only missing target/download assertions.",
-        "resource_classification": "Normal CI synthetic host+real auth/server, no provider credential access. Native Telegram launch/deeplink/download still H2. Test-only synthetic initData does not close native host."
+        "resource_classification": "Normal CI synthetic host+real auth/server, no provider credential access. Native Telegram launch/deeplink/download still H2. Test-only synthetic initData does not close native host.",
+        "current_disposition": "CLOUD_H1 sufficient independentc79 f6b2 12of13pins+unrelated reviewed specinverse; retained actual232/6172/D003/server freshbinding/grants/tamper. No newtarget/downloadcarrier needed. H2native OWNER_MANUAL_PENDING D015; Q016responseassembly separate. Rootf6b2_TMA_retained_Cloud_logic_independent_join."
       },
       {
         "alias_existing_scope": "**E14-H2** CLIENT-TMA-PROVIDER / CLIENT-INSTALL-PUSH / BOT-DELIVERY",
@@ -7318,7 +7341,7 @@
     "optional": "L05SQL/L06RPC performance, DBsplit/Saga/framework remainoptional; offsiteRPO/RTOdecisiondeferred. B013/B014FROZEN; Q012onlystandalone removal; no owneranswersinferred"
   },
   "current_finite_Q01_Q12_refinement": {
-    "utc": "2026-10-15T04:23:28.838331+00:00",
+    "utc": "2026-10-15T04:47:13.893553+00:00",
     "source_revision": "6172eeab6651f8fab94b9bcd4a3c525933d422e6",
     "meaning": "Existing50acceptedclauses compressed32residual entries; wholefamilyUNKNOWN retained, no newrequirements; useexistingproofandexactmissingaction",
     "rows": [
@@ -7590,16 +7613,17 @@
         ],
         "package": "Q04",
         "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[12]",
-        "classification": "PARTIAL_EXISTING_PROOF",
+        "classification": "ACTUAL_HTTP_PG_PASS",
         "existingCaseIds": [
           "VC-REAL-ADMIN-CREATE-REPLACE-ARCHIVE-RESTORE-01"
         ],
         "rootReceiptKeys": [
-          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.874_finite_matrix_reconciliation"
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.874_finite_matrix_reconciliation",
+          "f6b2_academic_existing_identity_role_actual_named_PASS"
         ],
-        "sufficientOrPartial": "Same ID successful create/add-role is adequate; duplicate identity/collision/invalid role fields are separate.",
-        "missingAction": "Bind exact existing duplicate-identity existing-account/add-role result with one durable account and no partial mutation on collision/invalid role input; source-only method names alone are insufficient.",
-        "recommendedWholeResidualStatus": "UNKNOWN",
+        "sufficientOrPartial": "Current exact1224 named RestApiIT genuine committedHTTP/PG duplicateidentity→sameID/explicitrole addition/no partialcollision-invalid mutation; originalaccount/credentials/history preserved.",
+        "missingAction": "None for finite duplicateidentity/account-role criterion. Critical test sensitivity and mandatorycurrentgates remain separate quality/release criteria.",
+        "recommendedWholeResidualStatus": "PASS",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },
       {
@@ -7846,15 +7870,16 @@
         ],
         "package": "Q08",
         "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[24]",
-        "classification": "COMPOSED_SOURCE_QUALIFIED_PROOF_ONE_OPERATIONAL_GAP",
+        "classification": "ACTUAL_NONEMPTY_TEACHER_STATS_OUTAGE_RECOVERY_PASS",
         "existingCaseIds": [],
         "rootReceiptKeys": [
           "current4065#f545_current_named_teacher_proof",
-          "current4065#3647_B31_B33_primary_sufficiency"
+          "current4065#3647_B31_B33_primary_sufficiency",
+          "f6b2_assignment_stats_actual_and_helper_partial"
         ],
-        "sufficientOrPartial": "Independentc85primaryreview: no accepted singlehistoricalteacher×mutation×stats×export×outagechain. Currentf545exactSOURCE_METHODPASS historicalteacher own-ticket/bytes vsformerdeny and ReportIT cancelled/transferredexclusion sourcejoinedb184/b5b9; retainedcompatiblemetric/unavailable/exportproofs compose onlytheirrules. VueQ06teacher441journal/ticket separate.",
-        "missingAction": "Onlygenuine nonempty TEACHER statsAPI→Scheduleunavailable explicit503/notzeros→samebaselineafterrecovery. c79minimumplan reuses existingassignmentprepare/pending/resumestop/start, zero newdependencyfaults. Currentmappingmockproofnotcreditedactualpath. No new ticket/mutation/exportmegachain.",
-        "recommendedWholeResidualStatus": "UNKNOWN",
+        "sufficientOrPartial": "Currentf6b2 exactassignmenta265 actualprepare/pending/resume all3wholePASS; nonemptyTEACHERbaseline→strictSchedule503/notzero→samebaselineafterrecovery allunconditional. Existinghistoricalticket/stats/exclusion/export clauses remain composed at own producers.",
+        "missingAction": "None for finiteB31/B33 stats operational gap. Source-sequencing/publicAPI actualflow, not mock/count-only; wholelargerstatsticket UI families separate.",
+        "recommendedWholeResidualStatus": "PASS",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },
       {
@@ -7929,17 +7954,18 @@
         ],
         "package": "Q10",
         "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[28]",
-        "classification": "PROOF_GAP",
+        "classification": "ACTUAL_LOOPBACK_MONGO_AND_PRIOR_CHANNEL_COMPOSITION_PASS",
         "existingCaseIds": [
           "VC-NOTIFICATION-ACK-REDELIVERY-READSTATE-01"
         ],
         "rootReceiptKeys": [
           "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.493_current_selected_read",
-          "current4065#3647_Q10_finite_reuse_assessment"
+          "current4065#3647_Q10_finite_reuse_assessment",
+          "f6b2_notification_new_loopback_actual_named_PASS"
         ],
-        "sufficientOrPartial": "Real consumer preACK loss proof adequate for durable dedup/read state; not a client channel failing while another delivers.",
-        "missingAction": "ONEordinaryevent/recipient, oneexistingdeliveryadaptercontrolledFAIL whilesiblingcompletes, retryfailedadapter withonehistory/event+retainedreadstate/no loss; existingloopbackseams sufficient/no native/newtransport/browser. ACK-lossdrillalreadyPASS notrerun.",
-        "recommendedWholeResidualStatus": "UNKNOWN",
+        "sufficientOrPartial": "Current exact5a579 named realMongo actualPushService503→201 +readableinbox/readstate +durablepending/retry/history/oneevent/no thirdHTTP; prioractualQ10PWAinbox/eventaudience/ACKloss proof and separateconsumer/channelSource composition retained. No nativeTelegram/Pushdelivery inferred.",
+        "missingAction": "None for this finite dependencyfailure/inbox/retry rule; selectivecriticaltest sensitivity/finalgates remain separate quality criteria.",
+        "recommendedWholeResidualStatus": "PASS",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },
       {

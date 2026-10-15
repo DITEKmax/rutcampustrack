@@ -121,7 +121,11 @@ function observeSemester(progress: ReturnType<typeof semesterProgress>, status: 
 }
 
 function requireValue(condition: unknown, message: string): asserts condition {
-  if (!condition) throw new Error(message);
+  if (!condition) {
+    const error = new Error(message);
+    Error.captureStackTrace(error, requireValue);
+    throw error;
+  }
 }
 
 function validDate(value: unknown): value is string {

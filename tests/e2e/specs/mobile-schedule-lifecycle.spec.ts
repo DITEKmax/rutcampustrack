@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import type { Page } from '@playwright/test';
 import { Actor, admit, expect, test as base, MobileDataset } from '../fixtures/mobile-dataset';
 import { http, registerPrivateSuite, selectRole } from '../fixtures/cloud-accepted-support';
-import { loginPwa } from '../fixtures/pwa-auth';
+import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 
 registerPrivateSuite();
 
@@ -804,6 +804,99 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
   page,
   scenario: dataset,
 }) => {
+  // This existing student's otherGroup is its own genuinely empty scope.
+  // The two response faults exercise the unchanged Today retry:1 client path,
+  // not a Schedule outage; the manual retry below returns to the real server.
+  const todayPath = '/api/v1/student/today';
+  const [emptyTodayResponse, emptyScopeResponse, emptyAdmission] = await Promise.all([
+    http(page, todayPath, 'GET'),
+    http(page, '/api/v1/student/session', 'GET'),
+    loginPwa(page, dataset.foreignStudent),
+  ]);
+  expect(
+    emptyAdmission.session.activeRole === 'STUDENT' &&
+      String(emptyAdmission.session.userId) === String(dataset.foreignStudent.id),
+  ).toBe(true);
+  expect(emptyScopeResponse.status()).toBe(200);
+  const emptyScope = await emptyScopeResponse.json();
+  expect(
+    String(emptyScope.user.id) === String(dataset.foreignStudent.id) &&
+      String(emptyScope.group.id) === String(dataset.otherGroup.id) &&
+      String(emptyScope.semester.id) === String(dataset.semester.id),
+  ).toBe(true);
+  expect(emptyTodayResponse.status()).toBe(200);
+  const emptyToday = await emptyTodayResponse.json();
+  expect(
+    emptyToday.date === dataset.today &&
+      emptyToday.timeZone === 'Europe/Moscow' &&
+      emptyToday.lessons.length === 0,
+  ).toBe(true);
+  await expect(
+    page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
+  const todayUrl = new URL(todayPath, page.url()).href;
+  let rejectedTodayReads = 0;
+  const failToday: Parameters<typeof page.route>[1] = async (route) => {
+    if (route.request().method() !== 'GET' || rejectedTodayReads >= 2) {
+      await route.continue();
+      return;
+    }
+    rejectedTodayReads += 1;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/problem+json',
+      headers: { 'cache-control': 'no-store' },
+      json: {
+        type: 'urn:rct:problem:dependency-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        code: 'DEPENDENCY_UNAVAILABLE',
+        detail: 'Синтетическая ошибка чтения расписания.',
+      },
+    });
+  };
+  await page.route(todayUrl, failToday);
+  try {
+    const [failed] = await Promise.all([
+      http(page, todayPath, 'GET'),
+      page.getByRole('button', { name: 'Обновить', exact: true }).click(),
+    ]);
+    expect(failed.status()).toBe(503);
+    const error = page.getByRole('alert').filter({
+      has: page.getByRole('heading', { name: 'Не удалось получить данные', exact: true }),
+    });
+    await expect(error).toBeVisible();
+    await expect(error.getByRole('button', { name: 'Повторить', exact: true })).toBeEnabled();
+    expect(rejectedTodayReads).toBe(2);
+    await expect(
+      page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
+    ).toHaveCount(0);
+  } finally {
+    await page.unroute(todayUrl, failToday);
+  }
+  const [recoveredTodayResponse] = await Promise.all([
+    http(page, todayPath, 'GET'),
+    page.getByRole('alert').getByRole('button', { name: 'Повторить', exact: true }).click(),
+  ]);
+  expect(recoveredTodayResponse.status()).toBe(200);
+  const recoveredToday = await recoveredTodayResponse.json();
+  expect(
+    recoveredToday.date === dataset.today &&
+      recoveredToday.timeZone === 'Europe/Moscow' &&
+      recoveredToday.lessons.length === 0,
+  ).toBe(true);
+  expect(rejectedTodayReads).toBe(2);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(
+    page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
+  await logoutPwa(page);
+  expect((await page.context().cookies()).some((cookie) => cookie.name === 'rct_refresh')).toBe(
+    false,
+  );
+
   const oldRoom = 'Синтетическая кэш-аудитория А';
   const newRoom = 'Синтетическая кэш-аудитория Б';
   const physical = await dataset.headmanActor.call(

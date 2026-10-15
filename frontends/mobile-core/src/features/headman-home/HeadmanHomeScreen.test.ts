@@ -1,7 +1,11 @@
 import { createRenderer, h, markRaw, nextTick, shallowReactive, type App } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import HeadmanHomeScreen from './HeadmanHomeScreen.vue'
-import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import type {
+  HeadmanRequestKind,
+  HeadmanRequestsApi,
+} from '../headman-requests/headman-requests-client'
+import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import type {
   HeadmanHomeworkApi,
   HeadmanManagedHomework,
@@ -128,7 +132,12 @@ function report(id: number, marked: boolean, groupId = 7): HeadmanJournalReport 
 function mount(
   api: HeadmanJournalApi,
   live = false,
-  extra: Partial<InstanceType<typeof HeadmanHomeScreen>['$props']> = {},
+  extra: {
+    requestsApi?: HeadmanRequestsApi
+    homeworkApi?: HeadmanHomeworkApi
+    assistantPermissions?: readonly HeadmanAssistantPermission[]
+    onOpenRequests?: (kind: HeadmanRequestKind) => void
+  } = {},
 ) {
   vi.useFakeTimers({ toFake: live ? ['Date', 'setInterval', 'clearInterval'] : ['Date'] })
   vi.setSystemTime(new Date('2026-10-15T06:00:00Z'))

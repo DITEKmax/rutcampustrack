@@ -243,8 +243,17 @@ describe('teacher journal context and navigation', () => {
     expect(text(view.root)).toContain('Выбери один или несколько типов занятий.')
     click(view.root, 'Лекция')
     await settle()
+    const lessonHeading = () =>
+      find(
+        view.root,
+        (node) => node.tag === 'th' && node.children.some((child) => child.tag === 'time'),
+      )
+    expect(lessonHeading()).toBeDefined()
+    expect(text(lessonHeading()!)).not.toContain('Лекция')
     click(view.root, 'Практика')
     await settle()
+    // The response still contains only lecture lessons: selected types own this label.
+    expect(text(lessonHeading()!)).toContain('Лекция')
     expect(view.state.query.lessonTypes).toEqual(['lecture', 'practice'])
     expect(view.calls.at(-1)?.lessonTypes).toEqual(['lecture', 'practice'])
     expect(view.calls.every((query) => query.pastOnly && query.page === 0)).toBe(true)

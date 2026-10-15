@@ -76068,8 +76068,8 @@
       "oldAdmin": "Alloverlappreimagesexact/frozenAdminauditanddispatchpreserved"
     },
     "b460bc2_current_Root_feature_Source_checkpoint": {
-      "utc": "2026-10-15T17:52:48.831769+00:00",
-      "state": "REVIEWED_21_SOURCE_PACKAGE_READY_FOR_CONFIGURED_CHECKS",
+      "utc": "2026-10-15T17:56:10.226099+00:00",
+      "state": "COMMITTED_PUSHED_REVIEWED_21_SOURCE_PACKAGE_NATIVE_PENDING",
       "count": 136,
       "currentPins": [
         {
@@ -76618,8 +76618,9 @@
         }
       ],
       "pendingIntegration": [],
-      "rootActiveProcess": "Root publication checks next",
-      "published": "2f975ae6dc53a5ff8a3d6b151929e12168f57625"
+      "rootActiveProcess": null,
+      "published": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "localHead": "209e10627d25492e0dd698da515bd5f8231fed5d"
     },
     "Admin_directed_TLS_Bot_fourteen_Root_integration": {
       "utc": "2026-10-15T14:49:34.116547+00:00",
@@ -86237,8 +86238,8 @@
       "qualification": "AcceptedmissingHomebinding implemented, no nativeHome display/count/filter result yet. JS-HEADMAN-WEB02 remainsUNKNOWN pendingexistinggenuinehelperlane. No newAPI/grants/notificationcountsubstitution."
     },
     "b417_reviewed_mobile_and_native_causal_publication_package": {
-      "utc": "2026-10-15T17:54:00.722553+00:00",
-      "state": "LOCAL_CHECKS_COMMIT_IN_PROGRESS",
+      "utc": "2026-10-15T17:56:10.226099+00:00",
+      "state": "PUSHED_EXACT_LOCAL_GITREMOTE_OFFICIAL_PR_VERIFIED",
       "parentLocal": "b417a054a131836f21c1551d235bcfb8339ba9f2",
       "parentRemote": "2f975ae6dc53a5ff8a3d6b151929e12168f57625",
       "inventory": [
@@ -86609,10 +86610,1597 @@
             "supervision_error_type": null,
             "phase_success": true
           }
+        },
+        {
+          "phase": "stage-exact-inventory",
+          "command": [
+            "git",
+            "add",
+            "--",
+            "docs/openapi/mobile-bff.json",
+            "docs/validation/cloud-20261011/CURRENT.md",
+            "docs/validation/cloud-20261011/attempts.ndjson",
+            "docs/validation/cloud-20261011/defects.md",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+            "docs/validation/cloud-20261011/resources.md",
+            "docs/validation/cloud-20261011/scenarios.csv",
+            "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+            "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.test.ts",
+            "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.vue",
+            "frontends/mobile-core/src/features/headman-home/headman-home-screen.pcss",
+            "frontends/mobile-core/src/features/headman-requests/HeadmanRequestsScreen.vue",
+            "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+            "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+            "frontends/mobile-core/src/features/teacher/teacher-stats-screen.test.ts",
+            "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+            "frontends/mobile-core/src/shared/components/teacher-context-retry.test.ts",
+            "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+            "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+            "tests/e2e/artifact-controls/privacy.control.spec.ts",
+            "tests/e2e/fixtures/artifact-privacy.ts",
+            "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+            "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+            "tests/e2e/specs/mobile-real-server.spec.ts",
+            "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts"
+          ],
+          "result": {
+            "direct_pid": 966876,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 966876,
+                "start_ticks": 34063383
+              },
+              {
+                "pid": 966877,
+                "start_ticks": 34063384
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "semantic-commit",
+          "command": [
+            "git",
+            "commit",
+            "-m",
+            "fix: complete mobile journal and profile flows"
+          ],
+          "result": {
+            "direct_pid": 966899,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 966899,
+                "start_ticks": 34063454
+              },
+              {
+                "pid": 966900,
+                "start_ticks": 34063455
+              },
+              {
+                "pid": 966942,
+                "start_ticks": 34063471
+              }
+            ],
+            "adopted_waitpid_receipts": [
+              {
+                "pid": 966942,
+                "start_ticks": 34063471,
+                "native_exit": 0
+              }
+            ],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "range-security",
+          "command": [
+            "/workspace/.cache/pre-commit/repotn63tv2a/golangenv-system/bin/gitleaks",
+            "git",
+            "--redact",
+            "--no-banner",
+            "--log-opts=2f975ae6dc53a5ff8a3d6b151929e12168f57625..HEAD"
+          ],
+          "result": {
+            "direct_pid": 966943,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 966943,
+                "start_ticks": 34063525
+              },
+              {
+                "pid": 966944,
+                "start_ticks": 34063525
+              },
+              {
+                "pid": 966950,
+                "start_ticks": 34063588
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
         }
       ],
       "localFailure": null,
-      "privateLog": "/tmp/rct-root-b417-semantic-check-commit.private.log"
+      "privateLog": "/tmp/rct-root-b417-semantic-check-commit.private.log",
+      "localHeadAfter": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "actualPushedHead": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "actualGitRemote": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "pushPhases": [
+        {
+          "phase": "actual-push",
+          "command": [
+            "git",
+            "push",
+            "origin",
+            "HEAD:refs/heads/codex/server-validation-20261011"
+          ],
+          "result": {
+            "direct_pid": 966990,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 966990,
+                "start_ticks": 34071075
+              },
+              {
+                "pid": 966992,
+                "start_ticks": 34071076
+              },
+              {
+                "pid": 966993,
+                "start_ticks": 34071077
+              },
+              {
+                "pid": 966991,
+                "start_ticks": 34071076
+              },
+              {
+                "pid": 966995,
+                "start_ticks": 34071123
+              },
+              {
+                "pid": 966997,
+                "start_ticks": 34071124
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "actual-Git-readback",
+          "command": [
+            "git",
+            "ls-remote",
+            "--heads",
+            "origin",
+            "refs/heads/codex/server-validation-20261011"
+          ],
+          "result": {
+            "direct_pid": 967003,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 967003,
+                "start_ticks": 34071515
+              },
+              {
+                "pid": 967004,
+                "start_ticks": 34071515
+              },
+              {
+                "pid": 967005,
+                "start_ticks": 34071516
+              },
+              {
+                "pid": 967006,
+                "start_ticks": 34071516
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        }
+      ],
+      "pushPrivateLog": "/tmp/rct-root-209e-real-push-readback.private.log",
+      "officialPRReadback": {
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "head": "209e10627d25492e0dd698da515bd5f8231fed5d",
+        "headRef": "codex/server-validation-20261011",
+        "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "baseRef": "main",
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "advertisedMerge": "876511b7ac4c6d3337098f70e90ca4736e0d5be0"
+      },
+      "localHead": "209e10627d25492e0dd698da515bd5f8231fed5d"
+    },
+    "209e106_initial_exact_gates_and_Source_readiness": {
+      "utc": "2026-10-15T18:01:44.323850+00:00",
+      "producer": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "gates": [
+        {
+          "id": 38781356463,
+          "name": "CI",
+          "event": "pull_request",
+          "head_sha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "status": "queued",
+          "conclusion": null,
+          "run_attempt": 1,
+          "created_at": "2026-10-15T17:55:31Z",
+          "updated_at": "2026-10-15T17:55:31Z"
+        },
+        {
+          "id": 38781356368,
+          "name": "Coverage",
+          "event": "pull_request",
+          "head_sha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "status": "queued",
+          "conclusion": null,
+          "run_attempt": 1,
+          "created_at": "2026-10-15T17:55:31Z",
+          "updated_at": "2026-10-15T17:55:31Z"
+        },
+        {
+          "id": 38781356741,
+          "name": "Security",
+          "event": "pull_request",
+          "head_sha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "created_at": "2026-10-15T17:55:31Z",
+          "updated_at": "2026-10-15T17:57:05Z"
+        },
+        {
+          "id": 38781356809,
+          "name": "OpenAPI Drift Guard",
+          "event": "pull_request",
+          "head_sha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "created_at": "2026-10-15T17:55:31Z",
+          "updated_at": "2026-10-15T17:56:40Z"
+        }
+      ],
+      "actualCheckout": {
+        "state": "UNKNOWN_NOT_YET_PRODUCED",
+        "advertisedCandidateOnly": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "candidateIsNotActualCheckoutProof": true
+      },
+      "sourceFrozen": true,
+      "qualification": "Initialofficialcurrent CI38781356463/Coverage38781356368 QUEUED; Security38781356741/OpenAPI38781356809SUCCESS. No artifacts/nativecheckout yet; advertised876511 notactualproof. c80exact Sourceplans ready Auth4/AttendancePG4/unit9/Academic6 andfull3/8/7/4browser sets. Source06d1 branch1049-1061 maps13publicHTTPstatuses; original200assert1062 remains. No nativePASS inherited."
+    },
+    "209e106_independent_Teacher02_03_Headman04_existing_proof_join": {
+      "utc": "2026-10-15T18:06:25.930785+00:00",
+      "state": "ROOT_ACCEPTED_TWO_COMPOSED_PASS_TEACHER03_FINITE_LABEL_RESIDUAL",
+      "RootHead": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "reviewers": [
+        "c86_teacher_png_cause independent readonly",
+        "c88_mobile_auth_review independent readonly"
+      ],
+      "JS-TEACHER-02": {
+        "recommendation": "PASS_COMPOSED",
+        "actual": "2f remaining8 artifact11994525240/run38773135066 declaration1939 WHOLEPASS5371ms/error0; Source4285d125a4356d836b1761684498e81af830ffa7019b3a6d8ae7111ea96427cf lines2092-2255 opens two allowed group cards with exact selected group+subject stats200/journal200, foreign excluded2118-2125; complementary wholeFIRST3case734/current revoke/foreign/write prohibitions; D023 current group AND subject, historical physical teacher may differ."
+      },
+      "JS-TEACHER-03": {
+        "state": "UNKNOWN_FINITE_HEADER_LABEL_RESIDUAL",
+        "actual": "2f FIRST3 artifact11993452030/run38773135066 declaration734 WHOLEPASS15566ms/error0; Source4285... historicaljournal1152-1209 own lesson/sorted roster/date/status; auto1382-1389; pending1522-1534; cancelled1587-1605 allcells/no buttons/0of0. No repeated runtime needed for these clauses.",
+        "residual": "canonical87af:352 and wire122/dea55c:19/42 say header type only when multiple selected types; current TeacherJournalTable3693ef...:108 unconditional. Bounded applicability/source correction pending; no new runtime FAIL claimed."
+      },
+      "JS-HEADMAN-04": {
+        "recommendation": "PASS_COMPOSED",
+        "actual": "657 named Attendance ExcuseEventContractIT.createExcuse_publishesRequestedEvent_matchingBotContract current b5f152fa1386663d781c53157316eab9d611ee9c236945b46b40b516d056f845:128-161 saved id→outbox/Rabbit excuse.requested ticket_id; Academic NotificationAudienceIT.helperPermissionIsDerivedFromEventAndRevocationIsLive current cb13b85dac3ae485f28174cec220feaaf726b82d9411a0840266e60ff3a9043f:272-299 actual returned owner/headman/helper audience + revocation; named mapsExcuseRequested and requestOwnerHistoryIsRetainedWithoutExternalSubmissionEchoOrRawBroadcast plus existingQ10 real storage/Inbox/read/typed target/decision.",
+        "currentSourceJoin": "657→209e unchanged Processor c33a/EventConsumer b76b/AudienceResolver4f9c/PayloadSnapshot5e39/Catalogaf473; Catalog624-638 requestId/requestKind EXCUSE; clientv2:223-226 and Headman1695-1745 fresh-authorized/stale-fenced GET exact id+kind; Requests498-510 live access/busy/offline."
+      },
+      "qualification": "No newruntime/fetch/copies/reports; no full observer absence claims (dropped40/41). Native Telegram/OS D015 OWNER_MANUAL_PENDING. ORDINAL_ONLY requestedHistoryRetriesLookup... not credited/B015 untouched. Record outcome before dependent packets/matrix.",
+      "RootTargetedBinding": {
+        "utc": "2026-10-15T18:08:20.131769+00:00",
+        "opened": "canonical87af345/349/352; actual4285E2E2092-2255 two exact allowedcontextGET200/foreignexcluded/journalIDs; unchanged actualeventProducerb5f128-161 and returned-audiencecb13:272-299; Catalog624-638 exact opaque ticket+EXCUSE target",
+        "qualification": "Existing independentnamed producer/audience/consumer + genuine common transport/client/decision accepted composition, not one literal fullEXCUSE eventclick or nativeproviderPASS. Teacher02 group isolation only; Teacher03 current runtime completed but labelsource correction c79 assigned."
+      },
+      "boundedNextOwners": {
+        "c80": "sole current209e official CI/native/stockproducer observer",
+        "c79": "sole3existingTeacherSources writer headerselected-cardinality",
+        "c86": "readonlyHeadmanstatsfamilyjoin",
+        "c88": "readonlyHeadman20/23/34/35familyjoin",
+        "c87": "readonlyHeadmanSchedule/HWfamilyjoin",
+        "c84": "readonlyStudentToday/schedule/installfamilyjoin",
+        "Root": "soleGit/sharedDocs/matrix/canonicalgenerator"
+      }
+    },
+    "209e106_native_first_partial": {
+      "utc": "2026-10-15T18:08:20.131769+00:00",
+      "source": "c80 official18:07snapshot, strictartifactcontents pending",
+      "AttendanceUnitJob": 116582076842,
+      "AttendanceITJob": 116582076848,
+      "AttendanceJobs": "completedSUCCESS_NOT_NAMED_RESULT_YET",
+      "BFFIT": {
+        "job": 116582076342,
+        "state": "FAIL_CAUSE_PENDING",
+        "stockArtifact": 11995862487,
+        "bytes": 11249,
+        "digest": "433b475c94056513de7deba33a240bd7b817a17cf701dacbd490701a3eeb9bdf",
+        "stockProof": {
+          "state": "OFFICIAL_PUBLIC_SCHEMA_VALIDATED",
+          "artifactId": 11995862487,
+          "runId": 38781356463,
+          "producerHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+          "artifactDigest": "sha256:433b475c94056513de7deba33a240bd7b817a17cf701dacbd490701a3eeb9bdf",
+          "zipBytes": 11249,
+          "publicSchemaPath": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/mobile-bff-generated-209e106.json",
+          "publicSchemaSha256": "c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503",
+          "publicSchemaBytes": 133003,
+          "proof": {
+            "schemaVersion": 1,
+            "state": "OFFICIAL_MOBILE_BFF_OPENAPI_GENERATED",
+            "producerHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+            "runId": "38781356463",
+            "runAttempt": "1",
+            "testMethod": "ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT.apiDocsMatchCanonicalSnapshot",
+            "testSourceSha256": "70887932a75569486459de8017d553de18da5339d2c632247a7e4aefdb80a963",
+            "originalDriftFrameLine": 132,
+            "originalIntegrationOutcome": "failure",
+            "generatedSnapshotSha256": "c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503",
+            "generatedSnapshotBytes": 133003,
+            "trackedChanges": [
+              "docs/openapi/mobile-bff.json",
+              "gradlew"
+            ],
+            "preexistingWrapperModeChange": true,
+            "wrapperSourceSha256": "c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0",
+            "ordinaryFailurePreserved": true
+          },
+          "sourcePins": [
+            {
+              "path": ".github/workflows/ci.yml",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "ba84a1e378f25b86663f6960343c90bbdfc50ae52e2e499a63bdb0c796426753"
+            },
+            {
+              "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "70887932a75569486459de8017d553de18da5339d2c632247a7e4aefdb80a963"
+            },
+            {
+              "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "7e0bd6be45eff9b6b98a43916009d2a7c7598862dccb09fdbb933d31df194d54"
+            },
+            {
+              "path": "build.gradle.kts",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "7fa3f6eee0be78380348f74c68f1ab7e76f537b30ca982d5e315fec2b9332c19"
+            },
+            {
+              "path": "gradlew",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0"
+            },
+            {
+              "path": "services/mobile-bff/mobile-bff-app/src/main/resources/application.yml",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "6171a16c7b1fa747ac8fb1897da59e5c363d1c3d1fe02d04db7b7dee3a279cdf"
+            },
+            {
+              "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffApplication.java",
+              "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+              "sha256": "d49bd36f455d56c3123332c8e89d4c69b1c7265f79bd2926ddb69ec845237f21"
+            }
+          ],
+          "wholeOrdinaryBffJob": "FAILURE_PRESERVED",
+          "rawXMLLogsOrRuntimeBodies": false
+        }
+      },
+      "VueWorkspace": {
+        "job": 116582076380,
+        "state": "FAIL_CAUSE_PENDING",
+        "cause": "Closed tracked compiler cause HeadmanHomeScreen.test.ts TS2322 131:3; TS2698 135:89; TS2345 354:46/382:53/416:52",
+        "classification": "TEST_FIXTURE_TYPING_NOT_PRODUCT_RUNTIME",
+        "author": "c84 sameauthor minimalcorrection"
+      },
+      "actualCheckoutArtifact": {
+        "id": 11995658062,
+        "bytes": 293,
+        "digest": "00397ee20b5eba34b717fc3656636ff9bb22a334673444e097291c9941ec3d51"
+      },
+      "next": "c80 strictactualcheckout/BFF/Attendance exact named, targetedVuecausal; nojobgreenfamilyclaim",
+      "actualCheckout": {
+        "sha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "tree": "d427cea13ddd06dbdb016d822f94cfb6e4899f02",
+        "state": "STRICT_ACTUAL_ARTIFACT_AND_GIT_PARENTS_JOINED",
+        "parents": "baseline/main3908+published209e"
+      },
+      "AttendanceNamedOrdinary": {
+        "existingFailedSourceMethodProjection": [],
+        "existingCaseSummary": {
+          "PASSED": 231,
+          "FAILED": 0,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        },
+        "state": "EXACT_CURRENT_NAMED_SOURCE_METHODS",
+        "producer": "209e10627d25492e0dd698da515bd5f8231fed5d",
+        "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "runId": 38781356463,
+        "jobId": 116582076848,
+        "artifactId": 11996856340,
+        "artifactBytes": 12962,
+        "artifactDigest": "sha256:1b52deecb21ac7cd1d9f56c1764328a852f9c1c35f744798798b87d58b2634cd",
+        "metadata": {
+          "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+          "prHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "service": "attendance-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38781356463",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "targets": [
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c",
+            "classname": "ru.rutcampustrack.attendance.report.AdminGroupStatsDataIT",
+            "method": "weightedHistoricalOpportunitiesExcludeCancelledAndKeepZeroDistinctFromNoData",
+            "declarationLine": 39,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c",
+            "classname": "ru.rutcampustrack.attendance.report.AdminGroupStatsDataIT",
+            "method": "unknownStoredStatusCannotBecomeAnAbsentMarkOrChangeTheStoredDocument",
+            "declarationLine": 101,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c",
+            "classname": "ru.rutcampustrack.attendance.report.AdminGroupStatsDataIT",
+            "method": "incompleteOrUnknownScheduleAuthorityCannotBecomeAnEmptyReport",
+            "declarationLine": 140,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079",
+            "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+            "method": "studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue",
+            "declarationLine": 452,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          }
+        ],
+        "xmlCaseSummaryConsistent": true,
+        "allDeclaredCountsConsistent": true,
+        "sourceMethodProof": "FQN_METHOD_SOURCE_HASH_UNIQUE_NO_ORDINAL_FALLBACK",
+        "rawXmlOrLogsRead": false,
+        "artifactOrPayloadWrittenToDisk": false,
+        "acceptance": "ONLY_EXACT_NAMED_NATIVE_RESULTS_NO_PRODUCT_FAMILY_PROMOTION"
+      },
+      "currentSafePublishPoint": {
+        "utc": "2026-10-15T18:38:17.306218+00:00",
+        "state": "TERMINAL_CLEANUP_CONFIRMED_SAFE",
+        "CI": {
+          "id": 38781356463,
+          "state": "COMPLETED_FAILURE"
+        },
+        "Coverage": {
+          "id": 38781356368,
+          "state": "COMPLETED_FAILURE"
+        },
+        "Security": "SUCCESS",
+        "OpenAPI": "SUCCESS",
+        "browserCleanup": "55/56/57SUCCESS pluspostactions/CompletejobSUCCESS official18:36:24",
+        "dependentSkipped": "recon43/assignment46/recovery49/semester51+closed500hints skippedbecausewholelessonFAIL",
+        "next": "c80 strict4browser/Academic6 results; Rootready6Source publishwillnotcancelusefulrun"
+      },
+      "attendanceAdminAndStudentOrdinaryNamed": {
+        "existingFailedSourceMethodProjection": [],
+        "existingCaseSummary": {
+          "PASSED": 231,
+          "FAILED": 0,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        },
+        "state": "EXACT_CURRENT_NAMED_SOURCE_METHODS",
+        "producer": "209e10627d25492e0dd698da515bd5f8231fed5d",
+        "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "runId": 38781356463,
+        "jobId": 116582076848,
+        "artifactId": 11996856340,
+        "artifactBytes": 12962,
+        "artifactDigest": "sha256:1b52deecb21ac7cd1d9f56c1764328a852f9c1c35f744798798b87d58b2634cd",
+        "metadata": {
+          "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+          "prHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "service": "attendance-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38781356463",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "targets": [
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c",
+            "classname": "ru.rutcampustrack.attendance.report.AdminGroupStatsDataIT",
+            "method": "weightedHistoricalOpportunitiesExcludeCancelledAndKeepZeroDistinctFromNoData",
+            "declarationLine": 39,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c",
+            "classname": "ru.rutcampustrack.attendance.report.AdminGroupStatsDataIT",
+            "method": "unknownStoredStatusCannotBecomeAnAbsentMarkOrChangeTheStoredDocument",
+            "declarationLine": 101,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c",
+            "classname": "ru.rutcampustrack.attendance.report.AdminGroupStatsDataIT",
+            "method": "incompleteOrUnknownScheduleAuthorityCannotBecomeAnEmptyReport",
+            "declarationLine": 140,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079",
+            "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+            "method": "studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue",
+            "declarationLine": 452,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          }
+        ],
+        "xmlCaseSummaryConsistent": true,
+        "allDeclaredCountsConsistent": true,
+        "sourceMethodProof": "FQN_METHOD_SOURCE_HASH_UNIQUE_NO_ORDINAL_FALLBACK",
+        "rawXmlOrLogsRead": false,
+        "artifactOrPayloadWrittenToDisk": false,
+        "acceptance": "ONLY_EXACT_NAMED_NATIVE_RESULTS_NO_PRODUCT_FAMILY_PROMOTION"
+      },
+      "attendanceStudentStatsUnitNamed": {
+        "existingFailedSourceMethodProjection": [],
+        "existingCaseSummary": {
+          "PASSED": 329,
+          "FAILED": 0,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        },
+        "state": "EXACT_CURRENT_NAMED_SOURCE_METHODS",
+        "producer": "209e10627d25492e0dd698da515bd5f8231fed5d",
+        "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "runId": 38781356463,
+        "jobId": 116582076842,
+        "artifactId": 11996298027,
+        "artifactBytes": 16166,
+        "artifactDigest": "sha256:d2fc4511f1f1781cdd6292e8951e9733801bee85053be4b9769f89dd3f20480a",
+        "metadata": {
+          "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+          "prHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "service": "attendance-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38781356463",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "targets": [
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "joinsOwnMembershipAndUsesFullSemesterCohortForRank",
+            "declarationLine": 71,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "lateJoinerRankUsesCanonicalSemesterDenominator",
+            "declarationLine": 182,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "rankingDefaultsToPageContainingOwnRowAndOnlyReturnsAuthorizedCohortNames",
+            "declarationLine": 248,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "hiddenRankingReturnsEmptyUnavailablePageWithoutReadingPeers",
+            "declarationLine": 355,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "weeklyComparisonPoolsHistoricalCellsIncludingLessonsBeforeLateJoinAndNoData",
+            "declarationLine": 386,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "knownEmptyHistoricalRosterHasNullRatherThanZeroPercent",
+            "declarationLine": 449,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "legitimateHiddenCatalogueStaysUnknownWithoutReadingOtherStudents",
+            "declarationLine": 467,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+            "method": "foreignCurrentGroupAndInvalidHistoricalSnapshotFailClosed",
+            "declarationLine": 492,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "1472a4a6e8e21640d2a83a3cab4ed78f152434de419bd8feef274fdc7e3afe90",
+            "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest",
+            "method": "semesterOutageAfterProjectionPreservesReadWithoutRequestActions",
+            "declarationLine": 49,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          }
+        ],
+        "xmlCaseSummaryConsistent": true,
+        "allDeclaredCountsConsistent": true,
+        "sourceMethodProof": "FQN_METHOD_SOURCE_HASH_UNIQUE_NO_ORDINAL_FALLBACK",
+        "rawXmlOrLogsRead": false,
+        "artifactOrPayloadWrittenToDisk": false,
+        "acceptance": "ONLY_EXACT_NAMED_NATIVE_RESULTS_NO_PRODUCT_FAMILY_PROMOTION"
+      },
+      "authCriticalOrdinaryNamed": {
+        "existingFailedSourceMethodProjection": [],
+        "existingCaseSummary": {
+          "PASSED": 178,
+          "FAILED": 0,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        },
+        "state": "EXACT_CURRENT_NAMED_SOURCE_METHODS",
+        "producer": "209e10627d25492e0dd698da515bd5f8231fed5d",
+        "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "runId": 38781356463,
+        "jobId": 116582076828,
+        "artifactId": 11996807013,
+        "artifactBytes": 8870,
+        "artifactDigest": "sha256:bda9e218a869004d4a8f9307c0819508df85ba497d14942b31ca70cf0a66bb7e",
+        "metadata": {
+          "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+          "prHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38781356463",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "targets": [
+          {
+            "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b",
+            "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+            "method": "ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin",
+            "declarationLine": 409,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b",
+            "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+            "method": "adminActivationInvalidatesPendingOtpAndResetTicketWithoutEffects",
+            "declarationLine": 487,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "c3dd908b07ecadae50569cac484bb3fdc15d8b93c997a1c7a13ab91e6a264929",
+            "classname": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+            "method": "readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable",
+            "declarationLine": 205,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sourceSha256": "691dab0f41d3e1c106a6eb5f8bfa225293cd152cb35a371d5b9b3efc1fe3cdc9",
+            "classname": "ru.rutcampustrack.auth.export.ExportJobsIT",
+            "method": "groupAttendanceRequiresOnlyLiveDashboardAndRevocationProtectsEveryStoredSurface",
+            "declarationLine": 144,
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          }
+        ],
+        "xmlCaseSummaryConsistent": true,
+        "allDeclaredCountsConsistent": true,
+        "sourceMethodProof": "FQN_METHOD_SOURCE_HASH_UNIQUE_NO_ORDINAL_FALLBACK",
+        "rawXmlOrLogsRead": false,
+        "artifactOrPayloadWrittenToDisk": false,
+        "acceptance": "ONLY_EXACT_NAMED_NATIVE_RESULTS_NO_PRODUCT_FAMILY_PROMOTION"
+      },
+      "qualityPreconditions": {
+        "Student19": "ORDINARY_EXACT_NAMED_REAL_MONGO_452_GREEN",
+        "TeacherReady": "ORDINARY_EXACT_NAMED_AUTH_HTTP_PG_205_GREEN",
+        "sensitivity": "STILL_NOT_RUN"
+      },
+      "updatedAt": "2026-10-15T18:18:35.263278+00:00",
+      "actualPreconditions": {
+        "utc": "2026-10-15T18:32:21.414790+00:00",
+        "StudentCurrentGroupNewRule": "ordinary exact452 realMongo SOURCE_METHOD GREEN; quality meaningfulRED→restore→GREEN NOT_RUN",
+        "TeacherREADYFullCapturedScope": "ordinary exactc3dd205 Auth SOURCE_METHOD GREEN full178/0F/E/S; quality meaningfulRED→restore→GREEN NOT_RUN",
+        "BFF": "actualstocknullabletrue generatedpassed; ordinarysnapshot drift needsnextcommit/gate",
+        "browser": "usefulcurrent209e stillrunning step18, no publicationcancel"
+      },
+      "RootCurrentJobsMetadata": {
+        "utc": "2026-10-15T18:34:58.563513+00:00",
+        "run": 38781356463,
+        "jobs": [
+          {
+            "id": 116582075993,
+            "name": "Grafana dashboards structure",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076184,
+            "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076342,
+            "name": "Java IT — mobile-bff",
+            "status": "completed",
+            "conclusion": "failure",
+            "steps": [
+              {
+                "number": 15,
+                "name": "Integration tests mobile-bff",
+                "status": "completed",
+                "conclusion": "failure"
+              }
+            ]
+          },
+          {
+            "id": 116582076380,
+            "name": "Mobile Vue workspace",
+            "status": "completed",
+            "conclusion": "failure",
+            "steps": [
+              {
+                "number": 4,
+                "name": "Install, contract checks, type checks, worker checks, build",
+                "status": "completed",
+                "conclusion": "failure"
+              }
+            ]
+          },
+          {
+            "id": 116582076504,
+            "name": "Java unit — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076523,
+            "name": "Java unit — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076555,
+            "name": "Synthetic database and file recovery",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076585,
+            "name": "Java IT — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076589,
+            "name": "Java unit — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076609,
+            "name": "Java IT — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076621,
+            "name": "Java unit — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076626,
+            "name": "Playwright E2E auth flow",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 18,
+                "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                "status": "completed",
+                "conclusion": "failure"
+              },
+              {
+                "number": 27,
+                "name": "Run real Vue role transition and logout-all",
+                "status": "completed",
+                "conclusion": "failure"
+              },
+              {
+                "number": 41,
+                "name": "Verify real Vue schedule lifecycle and attendance requests",
+                "status": "completed",
+                "conclusion": "failure"
+              },
+              {
+                "number": 57,
+                "name": "Stop isolated e2e containers",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 110,
+                "name": "Post Set up Docker Buildx",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 111,
+                "name": "Post Setup Gradle",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 112,
+                "name": "Post Run actions/setup-java@v4",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 113,
+                "name": "Post Run actions/setup-node@v4",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 114,
+                "name": "Post Run actions/checkout@v4",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 116582076639,
+            "name": "Java unit — mobile-bff",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076660,
+            "name": "Java IT — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076681,
+            "name": "ShellCheck scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076700,
+            "name": "Java unit — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076828,
+            "name": "Java IT — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076842,
+            "name": "Java unit — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076845,
+            "name": "Java IT — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076848,
+            "name": "Java IT — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          },
+          {
+            "id": 116582076890,
+            "name": "Python Lint & Test",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": []
+          }
+        ]
+      },
+      "RootObserverTransfer": "Root onecurrent metadata GET completed; c80 nextartifact/logobserver sole again; no rawartifactbody read byRoot"
+    },
+    "209e106_Headman_mobile_credentials_and_stats_finite_independent_join": {
+      "utc": "2026-10-15T18:13:25.337912+00:00",
+      "RootHead": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "reviewers": [
+        "c88 independent HEADMAN20/23/34/35",
+        "c86 independent HEADMAN18/30/31/33/37/WEB08"
+      ],
+      "accepted": {
+        "JS-HEADMAN-20": "PASS_COMPOSED four listed mobile operations only: currentownjournal/manualmark/clear/future readonly acceptededb/20b90+wholeFIRST3; exactgenuineEXCUSE MANAGE_EXCUSES191 run38675714650/art11947331728; d106requests8/run38575174178/art11900338054 genuine AUTO-origin late_checkin approval (MANUAL submission/charge separate). No allrole×operation repeat.",
+        "JS-HEADMAN-35": "PASS_COMPOSED ownGroupScreen/actions/HeadmanGroupApi132 existingmembers only/noadd/create; UserController54-60 selectedADMIN+USERS_MANAGE createUser plus existingauth/roster proofs. No test for absentbutton needed."
+      },
+      "confirmedAcceptedFunctionGaps": {
+        "JS-HEADMAN-23": "Generated own-member password reset→allowed initial/headman_reset origin display until studentchange→changedmarker/audit. Acceptedcanonical87af656-664/wire116142-143,295. Current HeadmanGroupMember34-43/API/UI no credentialstate/reset/show. ExistingAdmin/current ownAuthA/B do not establish this capability. SOURCE gap, not runtimeFAIL.",
+        "JS-HEADMAN-34": "HEADMAN own-member reset-link issuer missing in API/client/UI. Existing AdminPasswordResetService50-58 requires activeADMIN+USER_CREDENTIALS_MANAGE; publicresetconsumer exists/reused butnotissuer. SOURCE gap, not runtimeFAIL."
+      },
+      "specificProofResiduals": {
+        "JS-HEADMAN-18": "Existing initial helper30 wholePASS1815ms (not501) + named report math/filter/authority unit support, but real semesterreason/decision/origin/student/dynamics fields unbound. Currentclient134-159 lacks reason distribution; inspect acceptedreason semantics before implementation.",
+        "JS-HEADMAN-30": "One genuine advertised sort/filter→order or FILTERED_EMPTY output missing; existing server sorting beforepagination adequate, no allcolumn×role crossproduct.",
+        "JS-HEADMAN-31": "One genuine semester/week/subject dynamics switch→two-series/table output missing; existing shared-grid/summed/null math and renderer queryscoping sufficient for those levels.",
+        "JS-HEADMAN-33": "Real ownstudent drill metrics/subjecttype/requesthistory userpath missing; rankposition absentcurrent detailcontract/render; acceptedcanonical680 notexpresslyrepealedSep25decision.",
+        "JS-HEADMAN-37": "Accepted subject pertype held/total semester quantities absentcurrent subjectlist1637-1680; existingcreate prefix onlytypes/teacherIDs.",
+        "JS-HEADMAN-WEB-08": "Genuine selected subject/type→group output binding missing; initialquery andnamedfilteredmetrics enoughsupport, no desktopsecondtable/newwebport."
+      },
+      "sourceProofs": "Root reopened canonical656-694/619-627; currentAdmin issuer andUserController actualservergates; HeadmanGroupAPI/Screen no credentialoperation; Subjectlist currente919 name/teachers only. Existing657 named report service tests use repository/Academic/Schedule doubles, not Mongo/browser per-feature proof. NativeD015 separate.",
+      "next": "CurrentCIcompiler/schema correction first; assign coherent accepted credential/stats Sourceplans, preserve all adequateproofs and newnative gaps.",
+      "boundedSourcePlanConstraints": {
+        "utc": "2026-10-15T18:36:15.971098+00:00",
+        "c79_stats": "All3acceptedclauses apply; reason currentloadExcuseTickets1624 only noncancelled+completed-intersection cannot unchangedrepresent allsubmitted-semester reasons. Rank must reusecanonical OwnRankCalculator exact %+ competitionties/authoritativeactivecohort; notsortedHeadmanrowindex or impersonatedStudentprojection. CurrentHeadmanScopeproto132-155 lacks targetrankdecision/cohort. Separate minimaltrusted authority seam needed; no finalcontract/sourcewrites yet.",
+        "c87_credentials": "Operations shoulduseAuth sharedDB/JdbcSessionAuthority credential/session/outboxtransaction; do notwiden existingADMIN issuer or genericUserAssembler. Proposedmetadataonly audit+credentials_version distinguishinitial/headman_reset; existingUserchange/reset clearsplaintext +V57 credentialgeneration/oldbotcardinvalidations preserved. Existingissue/reset forbids activeADMIN targets; retain evenmultiroleStudentownmember. FinalSourcecontractpending/no Sourcewrites."
+      }
+    },
+    "209e106_reviewed_compiler_header_and_stock_nullable_correction": {
+      "utc": "2026-10-15T18:14:46.666702+00:00",
+      "state": "REVIEWED_SIX_SOURCE_CORRECTION_READY_FOR_EXACT_COMMIT_PUSH",
+      "parent": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "preimagePins": [
+        {
+          "sourceRef": "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.test.ts",
+          "sha256": "c04e81a62a706efedc841f8004cce56a04645fc2a6209d9c4050ba979f54f314"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+          "sha256": "3693ef6801d8abe64bd9ff60d8b4726948ebb19b8ee08f7f20e29b5ba2e40a81"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+          "sha256": "9d5d676aafb46fcce41323a5b10cf9bb2e3e5037acac188e2d1db5b7b7d99641"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+          "sha256": "c8f46cca59e400c6bc2b16e82c10ed1cb9c64ab095eaa33d20d0ecd556ef9a91"
+        },
+        {
+          "sourceRef": "docs/openapi/mobile-bff.json",
+          "sha256": "c1cb0bb9503b5902a517c00401ff70256ce1790cb41a5ad3ebdfe89c0fb01e95"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "sha256": "d2f70f5faa26cda9aeaaf1edcc514eef886bb6a9e22d420f66d74b8b54d99bfe"
+        }
+      ],
+      "sourcePins": [
+        {
+          "sourceRef": "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.test.ts",
+          "sha256": "62ba582493886ec50260d6962c6540bb6627b6d35e59db8f3bc60712c1b6351e"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+          "sha256": "5fb9f1a9a639af3c82a3ffdf0e8ab62f7e42e2ef94bc14a54f0778821ca6bd77"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+          "sha256": "d139c7b66f3aab6ff37e5a6bb90be61c8a5999f04ce3e6d01dd0407153f3a3b7"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+          "sha256": "814c370e357c57aea74166ae86be9bd33755ce3e5e8819e5a5c15ade4fb2a949"
+        },
+        {
+          "sourceRef": "docs/openapi/mobile-bff.json",
+          "sha256": "c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "sha256": "0730572931638f5bb30e4b9ed916316ce6c4518b54a2f0fa37ee8342e21dd072"
+        }
+      ],
+      "stockProducerProof": {
+        "state": "OFFICIAL_PUBLIC_SCHEMA_VALIDATED",
+        "artifactId": 11995862487,
+        "runId": 38781356463,
+        "producerHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+        "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+        "artifactDigest": "sha256:433b475c94056513de7deba33a240bd7b817a17cf701dacbd490701a3eeb9bdf",
+        "zipBytes": 11249,
+        "publicSchemaPath": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/mobile-bff-generated-209e106.json",
+        "publicSchemaSha256": "c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503",
+        "publicSchemaBytes": 133003,
+        "proof": {
+          "schemaVersion": 1,
+          "state": "OFFICIAL_MOBILE_BFF_OPENAPI_GENERATED",
+          "producerHeadSha": "209e10627d25492e0dd698da515bd5f8231fed5d",
+          "checkoutSha": "876511b7ac4c6d3337098f70e90ca4736e0d5be0",
+          "runId": "38781356463",
+          "runAttempt": "1",
+          "testMethod": "ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT.apiDocsMatchCanonicalSnapshot",
+          "testSourceSha256": "70887932a75569486459de8017d553de18da5339d2c632247a7e4aefdb80a963",
+          "originalDriftFrameLine": 132,
+          "originalIntegrationOutcome": "failure",
+          "generatedSnapshotSha256": "c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503",
+          "generatedSnapshotBytes": 133003,
+          "trackedChanges": [
+            "docs/openapi/mobile-bff.json",
+            "gradlew"
+          ],
+          "preexistingWrapperModeChange": true,
+          "wrapperSourceSha256": "c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0",
+          "ordinaryFailurePreserved": true
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "ba84a1e378f25b86663f6960343c90bbdfc50ae52e2e499a63bdb0c796426753"
+          },
+          {
+            "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "70887932a75569486459de8017d553de18da5339d2c632247a7e4aefdb80a963"
+          },
+          {
+            "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "7e0bd6be45eff9b6b98a43916009d2a7c7598862dccb09fdbb933d31df194d54"
+          },
+          {
+            "path": "build.gradle.kts",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "7fa3f6eee0be78380348f74c68f1ab7e76f537b30ca982d5e315fec2b9332c19"
+          },
+          {
+            "path": "gradlew",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0"
+          },
+          {
+            "path": "services/mobile-bff/mobile-bff-app/src/main/resources/application.yml",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "6171a16c7b1fa747ac8fb1897da59e5c363d1c3d1fe02d04db7b7dee3a279cdf"
+          },
+          {
+            "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffApplication.java",
+            "sourceRef": "209e10627d25492e0dd698da515bd5f8231fed5d",
+            "sha256": "d49bd36f455d56c3123332c8e89d4c69b1c7265f79bd2926ddb69ec845237f21"
+          }
+        ],
+        "wholeOrdinaryBffJob": "FAILURE_PRESERVED",
+        "rawXMLLogsOrRuntimeBodies": false
+      },
+      "review": "Root independent tinyfixturetype-import+4optionalinputs inverse(alltestbodiesexact), Teacher accepted352 explicitSELECTEDtypes.length>1 andsoleparentprop/tinyexistingtestextension; no status/data/authority/API change. StockBFFsemanticdelta exactly one nullabletrue; no handeditgenerated. Prior author meaningful checks retained; configured integrationchecks next.",
+      "checks": "c84 actual plain-tsc oldfiveerrors→newfoundation/core/test0+8Home renderer; c79 existing7renderer/scopedVue/parser/lint/format0; allownedprocessesreaped",
+      "created": [],
+      "deleted": [],
+      "generatorResult": {
+        "direct_pid": 969402,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 969402,
+            "start_ticks": 34187981
+          },
+          {
+            "pid": 969403,
+            "start_ticks": 34187981
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "generatorPrivateLog": "/tmp/rct-root-209e-stock-types.private.log",
+      "generatorCommand": "node frontends/mobile-core/scripts/generate-types.mjs && node frontends/mobile-core/scripts/generate-types.mjs --check",
+      "integrationFiles": [
+        "docs/openapi/mobile-bff.json",
+        "docs/validation/cloud-20261011/CURRENT.md",
+        "docs/validation/cloud-20261011/attempts.ndjson",
+        "docs/validation/cloud-20261011/defects.md",
+        "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+        "docs/validation/cloud-20261011/resources.md",
+        "docs/validation/cloud-20261011/scenarios.csv",
+        "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.test.ts",
+        "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+        "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+        "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts"
+      ],
+      "localCheckPhases": [
+        {
+          "phase": "configured-hooks",
+          "command": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+            "--offline",
+            "tool",
+            "run",
+            "--from",
+            "pre-commit==4.6.2",
+            "pre-commit",
+            "run",
+            "--files",
+            "docs/openapi/mobile-bff.json",
+            "docs/validation/cloud-20261011/CURRENT.md",
+            "docs/validation/cloud-20261011/attempts.ndjson",
+            "docs/validation/cloud-20261011/defects.md",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+            "docs/validation/cloud-20261011/resources.md",
+            "docs/validation/cloud-20261011/scenarios.csv",
+            "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+            "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.test.ts",
+            "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+            "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+            "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts"
+          ],
+          "result": {
+            "direct_pid": 970097,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 970097,
+                "start_ticks": 34208153
+              },
+              {
+                "pid": 970109,
+                "start_ticks": 34208159
+              },
+              {
+                "pid": 970116,
+                "start_ticks": 34208187
+              },
+              {
+                "pid": 970137,
+                "start_ticks": 34208211
+              },
+              {
+                "pid": 970144,
+                "start_ticks": 34208284
+              },
+              {
+                "pid": 970165,
+                "start_ticks": 34208309
+              },
+              {
+                "pid": 970166,
+                "start_ticks": 34208329
+              },
+              {
+                "pid": 970199,
+                "start_ticks": 34208353
+              },
+              {
+                "pid": 970226,
+                "start_ticks": 34208376
+              },
+              {
+                "pid": 970253,
+                "start_ticks": 34208398
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "diff-check",
+          "command": [
+            "git",
+            "-c",
+            "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+            "diff",
+            "--check"
+          ],
+          "result": {
+            "direct_pid": 970274,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 970274,
+                "start_ticks": 34208450
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        }
+      ],
+      "integrationPrivateLog": "/tmp/rct-root-209e-six-source-checks.private.log",
+      "RootSessionState": {
+        "generator": "completed/allreaped direct969402",
+        "configuredChecks": "completed/allreaped direct970097/970274; adapter57740 nowUnknownProcess butdurable0/allreaped provescomplete; do notrerun",
+        "RootActiveNative": "NONE",
+        "networkRuntimeObservation": "current147 connected/running/enforced unrestricted; no new capability/configuration changes"
+      },
+      "safePublish": "c80 officialcurrent209e terminal/ownedcleanupSUCCESS18:36:24, no usefulruntimecancel"
+    },
+    "209e106_Headman_calendar_generation_and_cancel_restore_existing_join": {
+      "utc": "2026-10-15T18:16:34.037725+00:00",
+      "independentReader": "c87 bounded existingactualSourcejoin",
+      "ownOriginalReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#headmanLifecycleNineRowExistingJoin209e",
+      "RootHead": "209e10627d25492e0dd698da515bd5f8231fed5d",
+      "accepted": {
+        "CLIENT-FE-HEADMAN-04": "PASS_COMPOSED genuine2f lesson20 WHOLEPASS62145ms Source176763 +013helperCANCEL244PASS1577ms +named currentstats/audience/history guards. No unavailabledependentsemester/recoveryclaim.",
+        "JS-HEADMAN-39": "PASS_COMPOSED recurring388 completed603-986 actualVuecreate201/group+semester/ALL/fullgeneratedCount/physicalIDs thenremove-return/parity/history/readback before unrelated1046non200StudentstatsFAIL; exact calculator5890/test8702/weekc08c/RecurringIT1ca4 retainednamedU65/S1aa supportcalendar+parity. No whole388PASS/desktopgridport/everyparitybrowsermatrix.",
+        "JS-SYSTEM-05": "PASS_COMPOSED same realcreate→actualgeneratedoccurrences/readback andnamed calculator/parity/generation/history invariants asJS39, samefunction countedonce."
+      },
+      "specificResiduals": {
+        "CLIENT-FE-HEADMAN-03": "Actual own readyHEADMAN transfer/room/oneoff formcommands remain; existingAPI+Studentmarker/ETag proofs retained. No genericadditionalnon-roomparameterwishlist.",
+        "JS-HEADMAN-21": "Actual readyone-action transfer/new-position marker→correctreadback missing; existingAPI/interrupted/adopt/history proof sufficient for those layers.",
+        "JS-HEADMAN-22": "Actual own readyroom updateform→sameidentity/readback missing; existing in-placeAPI/StudentTodayETag proves domainresult. No broad extra onedayfields inferred.",
+        "JS-HEADMAN-41": "Actual concrete free-date/slot ownone-off form→authoritativecreatedlesson missing; existinggenuinefixturecreate/domain guards retained.",
+        "CLIENT-FE-HEADMAN-07": "OnlyJS27 Add/current/archive intententry applicability residual remains; HW4fullPASS sufficient publish/edit/delete/revoke/transfer/archive/history. Removeobsolete >14d/binding genericblockers.",
+        "JS-HEADMAN-27": "Currentmobile Source calendar+immediateload vsoldthree-mode launcher: resolveacceptedmobile applicability, no blindtest/newdesktopport."
+      },
+      "qualification": "No newruntime/fetch/Sourceedits/reports; not everyservernamedtest isrealMongo/client; actualproducer+revisions kept distinct."
+    },
+    "209e106_Student_Today_calendar_install_existing_proof_join": {
+      "utc": "2026-10-15T18:17:35.907100+00:00",
+      "independentReader": "c84 readonly acceptedSource+existingactualjoin (notHome/Studentstats selfreview)",
+      "sourceRef": "Root published209e10627d25492e0dd698da515bd5f8231fed5d",
+      "acceptedScope": "Canonical job-stories927-969 identifies outdated Angular routes as obsolete. Current mobile guide sections6.3-6.6 makes Today hero/day ridge and separate attendance/homework roots; no mandatory desktop chart/weekly grid/monthly-calendar port. Functions across accepted existing mobile routes compose; no whole-story exclusion or new mobile feature inferred. Current Student14/17/19 new stats/nativequality remain separate pending and are not credited by this join.",
+      "rows": [
+        {
+          "id": "JS-STUDENT-WEB-01",
+          "recommendation": "PASS_COMPOSED_SOURCE_QUALIFIED_MOBILE_EQUIVALENT",
+          "proof": "Retained mobile Today action/data context + genuine own/student attendance and homework paths + day scope/Moscow rollover supported by existing real browser/server proofs. No claim of literal desktop percentage/chart panel or legacy layout on Today; accepted mobile anatomy is hero/day ridge with separate Stats/Assignments. No new parent blocker invented from desktop-only port.",
+          "refs": [
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f6b2_three_client_family_independent_binding.CLIENT-FE-STUDENT-02",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.a8c_PWA_offline_family_independent_acceptance",
+            "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentFirst3",
+            "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentRemaining8"
+          ],
+          "limit": "Only current accepted mobile equivalent; pending Student14/17/19 additive statistics and FE-STUDENT-01 outage recovery are not inferred PASS."
+        },
+        {
+          "id": "JS-STUDENT-WEB-02",
+          "recommendation": "PASS_COMPOSED_SOURCE_QUALIFIED_MOBILE_EQUIVALENT",
+          "proof": "Real own Today lesson/room changed-room provenance, scoped semester 200/304 and foreign scope boundaries; actual semester date combobox selects tomorrow, then Today changes at Moscow midnight with UTC day unchanged. Current SemesterScheduleScreen selects arbitrary dates from complete semester lesson keyset; date selection is generic across weeks. No second week-widget/month-grid requirement is added to accepted mobile date selector. Subject/time/type/cancelled context rendered by current existing screen; room/changed-room belongs already-proven Today consumer.",
+          "refs": [
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f6b2_three_client_family_independent_binding.CLIENT-FE-STUDENT-01",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.a8c_PWA_offline_family_independent_acceptance",
+            "docs/validation/cloud-20261011/verified-cases.csv#VC-REAL-ROOM-PROVENANCE-ETAG-TODAY-01",
+            "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentRemaining8"
+          ],
+          "limit": "No whole later recurring/statistics case PASS claimed: actual2f recurring fails statisticsGET1046 with statusUNKNOWN, after distinct schedule proofs; warmcase429 is no Today product failure."
+        },
+        {
+          "id": "JS-STUDENT-WEB-10",
+          "recommendation": "PASS_COMPOSED_CLOUD_INSTALL_OFFER_LOGIC",
+          "proof": "Actual browser mounts production Vue offer, dispatches admitted synthetic native install API events for dismissed/unavailable/accepted, keeps navigation/no forced redirect. Actual iOS instruction offer explicitly hides persistently, reload retains nav and offer stays absent. Same controller persists only dismissed=true in localStorage; current install-prompt SHA b0c2 equals independently accepted source. Native and iOS share same dismiss control/controller; no native×dismiss repeated experiment needed.",
+          "refs": [
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f545_D015_install_Cloud_finite_adoption",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f2a258_actual_browser_checkpoint.actual.currentWorker",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f2a258_four_family_independent_join.PWA01",
+            "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#D015CloudLogicSource.sourcePins"
+          ],
+          "limit": "Synthetic user-agent/install events are browser logic, not real OS install; D015 actual icon/install/standalone owner manual pending, D017 icons accepted separately. Missing native prompt legitimately has no offer per accepted progressive enhancement."
+        },
+        {
+          "id": "CLIENT-FE-STUDENT-01",
+          "recommendation": "UNKNOWN_ONE_ALREADY_AUTHORED_READY_RECOVERY_OPERATION",
+          "sufficient": "Own scoped Today/room/semester/foreign denial/date selection/Moscow rollover and D002 cached read-only/reconnect are already sufficient. Genuine homework error→manualretry PASS is a different query and cannot establish Today query recovery.",
+          "refs": [
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f6b2_three_client_family_independent_binding.CLIENT-FE-STUDENT-01",
+            "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentRemaining8",
+            "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentLesson"
+          ],
+          "missing": "Only genuine Today known-empty own scope→two bounded503 reads exhausting existing retry1→visible error, not false empty→manual Повторить after removing fault→same authoritative scope/date empty feed200 and no stale/error UI. Already authored in existing warm schedule case; no implementation/newcase needed.",
+          "existingCarrier": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts current06d1 warm declaration1357 (2f source declaration1341). Source1357-1481 implements exact missing operation; normal existing lesson CI carrier.",
+          "actualLimit": "Actual2f artifact11993409481/digest5fcf warmcase failed1.329s ACTOR_LOGIN_HTTP429 at1349, before Today body. Current209e native result for corrected06d1 not read/claimed. No inference of product failure or native recovery PASS; await already-running ordinary lane."
+        }
+      ],
+      "exactPrimaryPointers": {
+        "first3": {
+          "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentFirst3",
+          "producer": "2f975ae6dc53a5ff8a3d6b151929e12168f57625",
+          "run": 38773135066,
+          "artifact": 11993452030,
+          "digest": "sha256:9e30afd66a72602f37ca2f151c5dc8de9520f276327ecfc6d9b8efb39caceb3a",
+          "wholePassDeclarations": [
+            685,
+            734,
+            1777
+          ],
+          "specSha256": "4285d125a4356d836b1761684498e81af830ffa7019b3a6d8ae7111ea96427cf",
+          "limits": "HEADMAN observerdrop40 preserved; no fullobserver/gate claim"
+        },
+        "remaining8": {
+          "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current2f975aePrimary.reports.currentRemaining8",
+          "producer": "2f975ae6dc53a5ff8a3d6b151929e12168f57625",
+          "run": 38773135066,
+          "artifact": 11994525240,
+          "digest": "sha256:2dbc7a5e6814c89cb348e8d63c731d39e157a347f19a104cfe8ec0750b304330",
+          "relevantWholePassDeclarations": [
+            1874,
+            2856,
+            3304,
+            3590
+          ],
+          "specSha256": "4285d125a4356d836b1761684498e81af830ffa7019b3a6d8ae7111ea96427cf"
+        },
+        "worker": {
+          "receipt": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.f2a258_actual_browser_checkpoint.actual.currentWorker",
+          "producer": "f2a258b2efaf4850a0572e8ca70c31d290d9ced8",
+          "run": 38688112417,
+          "artifact": 11951987585,
+          "digest": "sha256:c20bbf78d532eaca0bbbe8ac6ca60ffc0e16bbdb0843e021dfed54400b31290f",
+          "wholePassDeclarations": [
+            1587,
+            1879,
+            1920
+          ]
+        },
+        "olderRoom": {
+          "receipt": "docs/validation/cloud-20261011/verified-cases.csv#VC-REAL-ROOM-PROVENANCE-ETAG-TODAY-01",
+          "producer": "c3ff56facb5d76d6aad337ea6e03b47e251ad7bd",
+          "artifact": 11892709621,
+          "wholeCaseDeclaration": 413,
+          "durationMs": 59163
+        },
+        "offline": {
+          "receipt": "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.a8c_PWA_offline_family_independent_acceptance",
+          "producer": "a8c307416a91e52292ec48855440a130e3416932",
+          "run": 38659817757,
+          "artifact": 11939595616,
+          "sha256": "11e25241348102e24d6c9d12a716c596ca84619176604298967c67aded04a43d",
+          "wholePassDeclarations": [
+            1266,
+            1565
+          ]
+        }
+      },
+      "sourcePins": [
+        {
+          "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+        },
+        {
+          "path": "docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.md",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "a5c85841a86539d433e314cb2cafaccf1f9b708dd822c64a6df48677b8a43d05"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "805b134ae5061c34c2ed14ea1fc077a4719de8073058dea43ca7d09929265e3d"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/today/SemesterScheduleScreen.vue",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "e1617338783f130f73d4215ddc8096df91ddde1540cb33957677566084e7d6ac"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/today/use-today.ts",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "96c53d99ae691c135a0df55245c8a1a678d8d9ca19027a18afbad29a9f42ae9b"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "90c11e16fabe4a347a95658764cef98abf46443bfebe75439044381c593c9b9d"
+        },
+        {
+          "path": "frontends/pwa-vue/src/features/install/install-prompt.ts",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "b0c2f5e0384e8474352e600b20e493373128b5ec31e9ded02adfb15ef9e0a9e7"
+        },
+        {
+          "path": "frontends/pwa-vue/src/features/install/InstallOffer.vue",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "271b9d78ec6d5f449c6657dc72f53f10c924dffdb92f1d9fa133de0516a8954d"
+        },
+        {
+          "path": "frontends/pwa-vue/src/App.vue",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "4575aa197f7f082b37d10556cd004cb038bdb3469a0038427db019c44fd500fb"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "5131fea79688721fe105a676c8519f29b8461a9749841cf5f006fa55bea930b5"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+          "sourceRef": "Root published209e/current unchanged accepted source",
+          "sha256": "06d1742d4ce4b7040ce950bd8945d966331a3877a340d36509c7a5f70c00ad83"
+        }
+      ],
+      "boundaries": "No self-review of current HeadmanHome6 or Student14/17/19; no Source-only nativePASS, no extra engine/provider/OS claims, no runtime/fetch/new test/new doc/config/Git mutations. D015/D017/D021 retain separate acceptance and B013-15 frozen.",
+      "state": "ROOT_ACCEPTED_3PASS_ONE_FINITE_REAL_RECOVERY_PENDING"
     }
   }
 }

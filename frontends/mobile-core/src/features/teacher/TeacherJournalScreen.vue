@@ -516,6 +516,7 @@ function changeStudent(value: string): void {
       <TeacherJournalTable
         v-else
         :journal="completedJournal"
+        :show-lesson-types="selectedTypes.length > 1"
         @open-excuse="emit('open-excuse', $event)"
         @open-manual-excuse="(lessonId, student) => emit('open-manual-excuse', lessonId, student)"
       />

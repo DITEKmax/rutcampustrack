@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: c1cb0bb9503b5902a517c00401ff70256ce1790cb41a5ad3ebdfe89c0fb01e95
+// Contract: JS-STUDENT-01-r1; SHA-256: c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -810,7 +810,7 @@ export interface components {
             /** Format: int32 */
             numerator: number;
             /** Format: double */
-            percent: number;
+            percent: number | null;
         };
         StudentAttendanceHistorySegment: {
             id: string;

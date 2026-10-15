@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import type { TeacherJournalCell, TeacherJournalResponse } from './teacher-client';
 import { journalCounts, journalMark, journalPercent } from './teacher-journal-model';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
-const props = defineProps<{ journal: TeacherJournalResponse }>();
+const props = defineProps<{ journal: TeacherJournalResponse; showLessonTypes: boolean }>();
 const emit = defineEmits<{
   'open-excuse': [requestId: string];
   'open-manual-excuse': [lessonId: number, studentId: number];
@@ -92,7 +92,7 @@ function date(value: string): string {
             :data-cancelled="lesson.cancelled"
             :title="lesson.cancellationReason ?? undefined"
           >
-            <time :datetime="lesson.date">{{ date(lesson.date) }}</time><span>{{ teacherLessonTypeLabel(lesson.lessonType) }}</span><span class="teacher-journal__sr">{{ lesson.lessonNumber }}-я пара</span><span
+            <time :datetime="lesson.date">{{ date(lesson.date) }}</time><span v-if="showLessonTypes">{{ teacherLessonTypeLabel(lesson.lessonType) }}</span><span class="teacher-journal__sr">{{ lesson.lessonNumber }}-я пара</span><span
               v-if="lesson.cancelled"
               class="teacher-journal__cancelled-label"
             >Отменена</span>

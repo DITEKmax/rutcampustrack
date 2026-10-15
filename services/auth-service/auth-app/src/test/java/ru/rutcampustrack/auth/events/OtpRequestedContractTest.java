@@ -6,11 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.networknt.schema.ValidationMessage;
+
+import org.junit.jupiter.api.Test;
+
+import ru.rutcampustrack.auth.event.OtpRequestedEvent;
+
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.auth.event.OtpRequestedEvent;
 
 /**
  * M09 G2 (08 P0-2) — contract-тест publisher-стороны для {@link OtpRequestedEvent}: сериализуем

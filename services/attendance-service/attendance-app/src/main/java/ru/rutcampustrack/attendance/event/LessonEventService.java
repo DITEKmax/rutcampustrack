@@ -2,13 +2,9 @@ package ru.rutcampustrack.attendance.event;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.dao.DuplicateKeyException;
@@ -19,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -32,6 +29,13 @@ import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Business logic for lesson lifecycle event processing.
@@ -680,7 +684,8 @@ public class LessonEventService {
                 .anyMatch(row -> !java.util.Objects.equals(row.getSemesterId(), semesterId))) {
             throw new SemesterArchiveEffectRejectedException(
                     "ATTENDANCE_SCOPE_MISMATCH",
-                    "One-off cancellation matched an attendance row without the exact semester scope");
+                    "One-off cancellation matched an attendance row without the exact semester"
+                            + " scope");
         }
     }
 

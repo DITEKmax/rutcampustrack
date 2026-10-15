@@ -1,11 +1,5 @@
 package ru.rutcampustrack.academic.subject;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -13,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.assignment.AssignmentAuthority;
 import ru.rutcampustrack.academic.contract.dto.subject.AddSubjectTeacherRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
@@ -38,6 +33,13 @@ import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class SubjectService {

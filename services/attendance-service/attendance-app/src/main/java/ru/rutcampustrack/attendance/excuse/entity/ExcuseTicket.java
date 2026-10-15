@@ -1,18 +1,21 @@
 package ru.rutcampustrack.attendance.excuse.entity;
 
-import java.time.Instant;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
+
+import java.time.Instant;
+import java.util.List;
 
 /**
  * MongoDB document for excuse tickets (Phase 59, D-01, D-02). Collection: excuse_tickets. Lombok

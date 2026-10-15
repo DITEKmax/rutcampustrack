@@ -1,9 +1,8 @@
 package ru.rutcampustrack.academic.assignment;
 
-import java.time.LocalDate;
-import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Assignment;
@@ -19,6 +18,9 @@ import ru.rutcampustrack.academic.repository.SubjectLessonTypeRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
+
+import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * The single V25 write authority for immutable assignment rows.

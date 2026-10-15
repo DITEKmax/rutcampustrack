@@ -1,27 +1,7 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
 import com.mongodb.MongoException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
+
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
@@ -40,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
 import ru.rutcampustrack.attendance.audit.LessonActionDocument;
 import ru.rutcampustrack.attendance.audit.LessonActionService;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -102,6 +83,28 @@ import ru.rutcampustrack.attendance.studentrequest.entity.StudentRequestReceiptD
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Student request domain boundary for EXCUSE and manual LATE_CHECKIN.
@@ -929,7 +932,9 @@ public class StudentRequestService {
                                 .orElseThrow(
                                         () ->
                                                 new IllegalStateException(
-                                                        "Expired journal attachment semester cannot be resolved from its exact attendance row"));
+                                                        "Expired journal attachment semester cannot"
+                                                                + " be resolved from its exact"
+                                                                + " attendance row"));
                 if (!Objects.equals(mark.getGroupId(), attachment.getGroupId())
                         || mark.getSemesterId() == null
                         || mark.getSemesterId() <= 0) {
@@ -1002,7 +1007,8 @@ public class StudentRequestService {
                                             .orElseThrow(
                                                     () ->
                                                             new IllegalStateException(
-                                                                    "Expired attachment owner disappeared"));
+                                                                    "Expired attachment owner"
+                                                                            + " disappeared"));
                             if (requireAttachmentSemester(ticket) != semesterId
                                     || !Objects.equals(
                                             ticket.getStudentId(), current.getOwnerStudentId())
@@ -1022,7 +1028,8 @@ public class StudentRequestService {
                                     || ticket.getStudentId() <= 0
                                     || lessonIds.isEmpty()) {
                                 throw new IllegalStateException(
-                                        "Expired attachment owner has no authoritative lesson scope");
+                                        "Expired attachment owner has no authoritative lesson"
+                                                + " scope");
                             }
                             Instant updateAt = retentionClock.instant();
                             // Retention clears only this request's bytes, not attendance.
@@ -2361,7 +2368,8 @@ public class StudentRequestService {
                                                         identity, terminal.getGroupId());
                                         if (Objects.equals(terminal.getStudentId(), currentActor))
                                             throw new AccessDeniedException(
-                                                    "Нельзя принимать решение по собственной заявке");
+                                                    "Нельзя принимать решение по собственной"
+                                                            + " заявке");
                                         if (matchesSelectedExcuseDecision(
                                                 terminal,
                                                 currentActor,
@@ -2369,7 +2377,8 @@ public class StudentRequestService {
                                                 normalizedComment,
                                                 intent)) return toDetail(terminal);
                                         throw new ConflictException(
-                                                "Решение по тикету уже принято с другим составом или intent");
+                                                "Решение по тикету уже принято с другим составом"
+                                                        + " или intent");
                                     }
                                     Map<Long, LessonResponse> writeLessons =
                                             lockPairs(

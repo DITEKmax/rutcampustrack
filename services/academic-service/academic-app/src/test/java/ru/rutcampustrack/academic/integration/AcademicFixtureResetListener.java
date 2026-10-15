@@ -1,9 +1,5 @@
 package ru.rutcampustrack.academic.integration;
 
-import java.sql.Connection;
-import java.util.List;
-import java.util.UUID;
-import javax.sql.DataSource;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,10 +10,17 @@ import org.springframework.test.context.support.AbstractTestExecutionListener;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+
+import java.sql.Connection;
+import java.util.List;
+import java.util.UUID;
+
+import javax.sql.DataSource;
 
 /** Resets only the fresh database owned by these integration-test bases. */
 public final class AcademicFixtureResetListener extends AbstractTestExecutionListener {
@@ -111,8 +114,8 @@ public final class AcademicFixtureResetListener extends AbstractTestExecutionLis
             List<String> actual =
                     new JdbcTemplate(source)
                             .queryForList(
-                                    "SELECT tablename FROM pg_tables WHERE schemaname='public' "
-                                            + "AND tablename<>'flyway_schema_history' ORDER BY tablename",
+                                    "SELECT tablename FROM pg_tables WHERE schemaname='public' AND"
+                                        + " tablename<>'flyway_schema_history' ORDER BY tablename",
                                     String.class);
             if (!TABLES.containsAll(actual) || actual.size() != TABLES.size()) {
                 throw new IllegalStateException(

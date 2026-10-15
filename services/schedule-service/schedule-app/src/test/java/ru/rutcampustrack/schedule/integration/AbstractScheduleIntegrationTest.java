@@ -1,8 +1,5 @@
 package ru.rutcampustrack.schedule.integration;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
@@ -22,6 +20,10 @@ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Abstract base class for Schedule Service integration tests.
@@ -73,12 +75,12 @@ public abstract class AbstractScheduleIntegrationTest {
         ScheduleItem item = fixtureItems.findById(lesson.getScheduleItemId()).orElseThrow();
         jdbcTemplate.update(
                 """
-                INSERT INTO schedule_assignment_fences
-                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
-                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
-                VALUES (?, ?, ?, ?, 700, 'lecture', DATE '2000-01-01', DATE '2200-01-01', DATE '2200-01-01')
-                ON CONFLICT (assignment_id) DO NOTHING
-                """,
+INSERT INTO schedule_assignment_fences
+    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+VALUES (?, ?, ?, ?, 700, 'lecture', DATE '2000-01-01', DATE '2200-01-01', DATE '2200-01-01')
+ON CONFLICT (assignment_id) DO NOTHING
+""",
                 item.getAssignmentId(),
                 item.getGroupId(),
                 item.getSubjectId(),
@@ -86,11 +88,11 @@ public abstract class AbstractScheduleIntegrationTest {
         Long occurrenceId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO lesson_occurrences
-                    (schedule_item_id, occurrence_date, assignment_id, group_id,
-                     subject_id, semester_id, assigned_teacher_id, lesson_type)
-                VALUES (?, ?, ?, ?, ?, ?, 700, 'lecture') RETURNING id
-                """,
+                        INSERT INTO lesson_occurrences
+                            (schedule_item_id, occurrence_date, assignment_id, group_id,
+                             subject_id, semester_id, assigned_teacher_id, lesson_type)
+                        VALUES (?, ?, ?, ?, ?, ?, 700, 'lecture') RETURNING id
+                        """,
                         Long.class,
                         item.getId(),
                         lesson.getDate(),

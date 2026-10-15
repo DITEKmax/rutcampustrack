@@ -3,9 +3,6 @@ package ru.rutcampustrack.schedule.migration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -19,6 +16,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.sql.DataSource;
 
 /** Flyway V1-V21 migration and source-preservation checks for schedule_db. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -79,39 +81,39 @@ class FlywayMigrationIT {
         flyway(schema, "30").migrate();
         jdbc.update(
                 """
-                INSERT INTO schedule_assignment_fences
-                    (assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,
-                     lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive)
-                VALUES (501,10,20,30,700,'lecture',DATE '2026-01-01',DATE '2200-01-01',DATE '2200-01-01')
-                """);
+INSERT INTO schedule_assignment_fences
+    (assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,
+     lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive)
+VALUES (501,10,20,30,700,'lecture',DATE '2026-01-01',DATE '2200-01-01',DATE '2200-01-01')
+""");
         long origin =
                 jdbc.queryForObject(
                         """
-                INSERT INTO schedule_one_off_lessons
-                    (group_id,subject_id,semester_id,date,lesson_number,classroom,created_by)
-                VALUES (10,20,30,DATE '2026-10-15',1,'retained room',42) RETURNING id
-                """,
+INSERT INTO schedule_one_off_lessons
+    (group_id,subject_id,semester_id,date,lesson_number,classroom,created_by)
+VALUES (10,20,30,DATE '2026-10-15',1,'retained room',42) RETURNING id
+""",
                         Long.class);
         long occurrence =
                 jdbc.queryForObject(
                         """
-                INSERT INTO lesson_occurrences
-                    (one_off_lesson_id,occurrence_date,assignment_id,group_id,subject_id,semester_id,
-                     assigned_teacher_id,lesson_type,generation,revision)
-                VALUES (?,DATE '2026-10-15',501,10,20,30,700,'lecture',1,1) RETURNING id
-                """,
+INSERT INTO lesson_occurrences
+    (one_off_lesson_id,occurrence_date,assignment_id,group_id,subject_id,semester_id,
+     assigned_teacher_id,lesson_type,generation,revision)
+VALUES (?,DATE '2026-10-15',501,10,20,30,700,'lecture',1,1) RETURNING id
+""",
                         Long.class,
                         origin);
         long lesson =
                 jdbc.queryForObject(
                         """
-                INSERT INTO lessons
-                    (one_off_lesson_id,occurrence_id,assignment_id,group_id,subject_id,semester_id,
-                     assigned_teacher_id,lesson_type,lesson_number,day_of_week,start_time,end_time,
-                     room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked)
-                VALUES (?,?,501,10,20,30,700,'lecture',1,4,TIME '08:30',TIME '10:00',
-                        'retained room','all',1,1,DATE '2026-10-15','planned',FALSE) RETURNING id
-                """,
+INSERT INTO lessons
+    (one_off_lesson_id,occurrence_id,assignment_id,group_id,subject_id,semester_id,
+     assigned_teacher_id,lesson_type,lesson_number,day_of_week,start_time,end_time,
+     room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked)
+VALUES (?,?,501,10,20,30,700,'lecture',1,4,TIME '08:30',TIME '10:00',
+        'retained room','all',1,1,DATE '2026-10-15','planned',FALSE) RETURNING id
+""",
                         Long.class,
                         origin,
                         occurrence);
@@ -131,14 +133,14 @@ class FlywayMigrationIT {
                 lesson);
         String snapshotSql =
                 """
-                SELECT jsonb_build_object('origin',to_jsonb(origin),'occurrence',to_jsonb(occurrence),
-                    'lesson',to_jsonb(lesson),'history',to_jsonb(history))::text
-                  FROM schedule_one_off_lessons origin
-                  JOIN lesson_occurrences occurrence ON occurrence.one_off_lesson_id=origin.id
-                  JOIN lessons lesson ON lesson.id=occurrence.current_lesson_id
-                  JOIN lesson_lifecycle_entries history ON history.occurrence_id=occurrence.id
-                 WHERE occurrence.id=?
-                """;
+SELECT jsonb_build_object('origin',to_jsonb(origin),'occurrence',to_jsonb(occurrence),
+    'lesson',to_jsonb(lesson),'history',to_jsonb(history))::text
+  FROM schedule_one_off_lessons origin
+  JOIN lesson_occurrences occurrence ON occurrence.one_off_lesson_id=origin.id
+  JOIN lessons lesson ON lesson.id=occurrence.current_lesson_id
+  JOIN lesson_lifecycle_entries history ON history.occurrence_id=occurrence.id
+ WHERE occurrence.id=?
+""";
         String before = jdbc.queryForObject(snapshotSql, String.class, occurrence);
         Flyway upgraded = flyway(schema, "31");
         assertThat(upgraded.migrate().migrationsExecuted).isEqualTo(1);
@@ -150,13 +152,16 @@ class FlywayMigrationIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE lessons SET assignment_id=502,assigned_teacher_id=701,revision=revision+1 WHERE id=?",
+                                        "UPDATE lessons SET"
+                                            + " assignment_id=502,assigned_teacher_id=701,revision=revision+1"
+                                            + " WHERE id=?",
                                         lesson))
                 .isInstanceOf(DataAccessException.class)
                 .rootCause()
                 .isInstanceOf(SQLException.class)
                 .hasMessageContaining(
-                        "physical lesson provenance changes require an exact replacement ledger row")
+                        "physical lesson provenance changes require an exact replacement ledger"
+                                + " row")
                 .satisfies(
                         cause ->
                                 assertThat(((SQLException) cause).getSQLState())
@@ -164,7 +169,8 @@ class FlywayMigrationIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE lessons SET room_snapshot='unreceipted room',revision=revision+1 WHERE id=?",
+                                        "UPDATE lessons SET room_snapshot='unreceipted"
+                                                + " room',revision=revision+1 WHERE id=?",
                                         lesson))
                 .isInstanceOf(DataAccessException.class)
                 .rootCause()
@@ -196,10 +202,10 @@ class FlywayMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "schedule_items")
-                                + " (group_id, subject_id, teacher_id, semester_id, day_of_week, lesson_number,"
-                                + " start_time, end_time, week_type, room)"
-                                + " VALUES (100, 200, 300, 1, 1, 1, '09:00'::time, '10:30'::time, 'all'::week_type, 'A101')"
-                                + " RETURNING id",
+                                + " (group_id, subject_id, teacher_id, semester_id, day_of_week,"
+                                + " lesson_number, start_time, end_time, week_type, room) VALUES"
+                                + " (100, 200, 300, 1, 1, 1, '09:00'::time, '10:30'::time,"
+                                + " 'all'::week_type, 'A101') RETURNING id",
                         Long.class);
         flyway(schema, "16").migrate();
 

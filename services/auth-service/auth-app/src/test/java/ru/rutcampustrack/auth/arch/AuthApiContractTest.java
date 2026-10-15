@@ -8,6 +8,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,7 +40,8 @@ class AuthApiContractTest {
                     .should()
                     .beAnnotatedWith(RequestMapping.class)
                     .because(
-                            "M12: @RequestMapping принадлежит интерфейсу из auth-api-contract, не контроллеру");
+                            "M12: @RequestMapping принадлежит интерфейсу из auth-api-contract, не"
+                                    + " контроллеру");
 
     @ArchTest
     static final ArchRule controllerMethodsMustNotCarryMappings =
@@ -99,5 +101,6 @@ class AuthApiContractTest {
                     .orShould()
                     .implement(ru.rutcampustrack.auth.api.AdminPasswordResetApi.class)
                     .because(
-                            "M12 01 P0-1: каждый @RestController реализует interface из auth-api-contract");
+                            "M12 01 P0-1: каждый @RestController реализует interface из"
+                                    + " auth-api-contract");
 }

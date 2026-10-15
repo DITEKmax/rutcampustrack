@@ -59601,5 +59601,16 @@
     "supersedes": [
       "Q024 dependent product fork; details in canonical"
     ]
+  },
+  "delivery_attendance_aggregate_storage_deferral_20261015": {
+    "source_id": "owner:cloud-validation-Q027-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-attendance-aggregate-storage-deferral.md",
+    "status": "accepted owner decision D028",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T19:59:41.591452+00:00",
+    "sha256": "c94a0e898dfe4c9d7e1ef0bb2c94d3e197a7082810289c2704d6a0794a745be6",
+    "supersedes": [
+      "Canonical JS-SYSTEM-16:899 stored incremental aggregate strategy only; correctness/authorization/server metrics retained"
+    ]
   }
 }

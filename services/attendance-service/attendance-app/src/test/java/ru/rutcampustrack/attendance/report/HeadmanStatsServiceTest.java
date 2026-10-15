@@ -90,6 +90,72 @@ class HeadmanStatsServiceTest {
     }
 
     @Test
+    void noSelectedSemesterHasUnavailableReasonsAndKnownEmptySemesterHasEmptyReasons() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.getGroupMembers(10L))
+                .thenReturn(GroupMembersResponse.getDefaultInstance());
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse.newBuilder()
+                                .setGroupId(10L)
+                                .setGroupName("Own group")
+                                .build());
+        var query = new HeadmanStatsQueryRequest(null, List.of(), 0, 50, List.of(), List.of());
+        var unavailable = service.query(query);
+        assertThat(unavailable.emptyState()).isEqualTo(EmptyState.NO_ACTIVE_SEMESTER);
+        assertThat(unavailable.reasonCounts()).isNull();
+        org.mockito.Mockito.verifyNoInteractions(excuseRepository);
+
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null)).thenReturn(scope(TO));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), TO.toString()))
+                .thenReturn(LessonsResponse.getDefaultInstance());
+        when(excuseRepository.submittedReasonCounts(10L, 1L)).thenReturn(List.of());
+        assertThat(service.query(query).reasonCounts()).isEmpty();
+        verify(excuseRepository).submittedReasonCounts(10L, 1L);
+    }
+
+    @Test
+    void submittedReasonDistributionIsSemesterScopedUnpagedAndRejectsUnknownCodes() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        stubStatisticsData();
+        when(excuseRepository.submittedReasonCounts(10L, 1L))
+                .thenReturn(
+                        List.of(
+                                reasonCount("OTHER", 2L),
+                                reasonCount("SUMMONS", 2L),
+                                reasonCount("ILLNESS", 4L)));
+        var query = new HeadmanStatsQueryRequest(null, List.of(), 8, 1, List.of(), List.of());
+        var result = service.query(query);
+        assertThat(result.rows()).isEmpty();
+        assertThat(result.reasonCounts())
+                .extracting(value -> value.code())
+                .containsExactly("ILLNESS", "OTHER", "SUMMONS");
+        assertThat(result.reasonCounts())
+                .extracting(value -> value.count())
+                .containsExactly(4L, 2L, 2L);
+        when(excuseRepository.submittedReasonCounts(10L, 1L))
+                .thenReturn(List.of(reasonCount("FUTURE_REASON", 1L)));
+        assertThatThrownBy(() -> service.query(query))
+                .isInstanceOf(
+                        ru.rutcampustrack.attendance.exception.ReportExportUnavailableException
+                                .class);
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(false);
+        assertThatThrownBy(() -> service.query(query)).isInstanceOf(AccessDeniedException.class);
+    }
+
+    private static ExcuseRepository.SubmittedReasonCount reasonCount(String code, Long count) {
+        return new ExcuseRepository.SubmittedReasonCount() {
+            public String getCode() {
+                return code;
+            }
+
+            public Long getCount() {
+                return count;
+            }
+        };
+    }
+
+    @Test
     void currentViewStatsAssistantGetsFilteredCanonicalMetricsAndUnpagedExportUntilRevoked() {
         when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS"))
                 .thenReturn(true, true, true, true, true, false, false);

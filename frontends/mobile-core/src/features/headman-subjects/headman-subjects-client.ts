@@ -65,6 +65,17 @@ export interface HeadmanSemester {
   readonly active: boolean
 }
 
+export interface HeadmanSemesterProgress {
+  readonly semesterId: number
+  readonly generatedAt: string
+  readonly items: readonly {
+    readonly subjectId: number
+    readonly lessonType: HeadmanSubjectType
+    readonly done: number
+    readonly total: number
+  }[]
+}
+
 export interface AssignmentReplacementInput {
   readonly replacementTeacherId: string
   readonly effectiveFrom: string
@@ -159,6 +170,48 @@ export class HeadmanSubjectsApi {
       'semesterResponseList',
       normalizeSemester,
     )
+  }
+
+  async semesterProgress(
+    groupId: number,
+    semester: HeadmanSemester,
+  ): Promise<HeadmanSemesterProgress | null> {
+    assertPositiveInteger(groupId, 'groupId')
+    assertPositiveInteger(semester.id, 'semesterId')
+    const params = new URLSearchParams({
+      semesterId: String(semester.id),
+      dateFrom: semester.dateFrom,
+      dateTo: semester.dateTo,
+      size: '1',
+    })
+    const page = requiredRecord(
+      await this.request<unknown>(`/api/schedule/groups/${groupId}/lessons?${params}`, {
+        cache: 'no-store',
+      }),
+      'lesson page',
+    )
+    if (page.semesterProgress == null) return null
+    const source = requiredRecord(page.semesterProgress, 'semesterProgress')
+    const semesterId = positiveInteger(source.semesterId, 'semesterId')
+    if (semesterId !== semester.id || !Array.isArray(source.items))
+      throw new Error('Сервер вернул чужой прогресс семестра.')
+    const keys = new Set<string>()
+    const items = source.items.map((value) => {
+      const row = requiredRecord(value, 'progress')
+      const subjectId = positiveInteger(row.subjectId, 'subjectId')
+      const lessonType = subjectType(row.lessonType, 'lessonType')
+      const done = nonNegativeInteger(row.done, 'done'),
+        total = nonNegativeInteger(row.total, 'total')
+      const key = `${subjectId}:${lessonType}`
+      if (done > total || keys.has(key))
+        throw new Error('Сервер вернул некорректный прогресс предмета.')
+      keys.add(key)
+      return { subjectId, lessonType, done, total }
+    })
+    const generatedAt = requiredText(source.generatedAt, 'generatedAt')
+    if (!Number.isFinite(Date.parse(generatedAt)))
+      throw new Error('Сервер вернул некорректное время прогресса.')
+    return { semesterId, generatedAt, items }
   }
 
   async searchTeachers(search: string, page = 0): Promise<HeadmanTeacherPage> {

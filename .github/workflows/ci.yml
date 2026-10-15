@@ -429,6 +429,7 @@ jobs:
           additional = None
           audit = None
           admin_rights = None
+          scoped_read = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -603,6 +604,33 @@ jobs:
                   proof.update(counterexample='PREVIOUS_ACTIVE_ADMIN_PASSWORD_RESET_AUTHORITY',
                                previousRevision=previous,
                                ruleFrame=package + '.' + method + '(AuthOtpFlowIT.java:' + str(rule_line) + ')')
+                  teacher_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java'
+                  teacher_test = teacher_source.read_bytes()
+                  assert hashlib.sha256(teacher_test).hexdigest() == 'c3dd908b07ecadae50569cac484bb3fdc15d8b93c997a1c7a13ab91e6a264929'
+                  teacher_production = app / 'src/main/java/ru/rutcampustrack/auth/export/TeacherReportAuthorityJdbc.java'
+                  teacher_current = teacher_production.read_bytes()
+                  assert hashlib.sha256(teacher_current).hexdigest() == '7dbf890d1ea4ba58eab89b26bd1090f29105e66d10e15d987d9b38685ae90027'
+                  teacher_anchor = (b'        if (identity.teacherScope() == null\n'
+                                    b'                || !current(identity.principal()).containsAll(identity.teacherScope()))\n'
+                                    b'            throw denied();\n')
+                  teacher_changed = b'        if (identity.teacherScope() == null)\n            throw denied();\n'
+                  assert teacher_current.count(teacher_anchor) == 1
+                  teacher_negative = teacher_current.replace(teacher_anchor, teacher_changed)
+                  assert hashlib.sha256(teacher_negative).hexdigest() == 'f0b9933928ccb406b7df86d14673f71c35c039a0e6414d1eeb5e40dc472243ee'
+                  assert teacher_negative.replace(teacher_changed, teacher_anchor) == teacher_current
+                  teacher_lines = teacher_test.decode().splitlines()
+                  assert teacher_lines[204].strip() == 'void readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable()'
+                  assert teacher_lines[405].strip() == 'for (var denied : List.of(a, ab)) {'
+                  assert teacher_lines[406].strip() == 'teacherScopeDenied('
+                  assert teacher_lines[617].strip() == 'assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);'
+                  scoped_read = {'package': 'ru.rutcampustrack.auth.integration.ExportJobHttpIT',
+                                 'method': 'readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable',
+                                 'source': teacher_source, 'production': teacher_production, 'file': 'ExportJobHttpIT.java',
+                                 'proofKey': 'teacherReadyRule', 'ruleLine': 407,
+                                 'testSha': hashlib.sha256(teacher_test).hexdigest(),
+                                 'productionSha': hashlib.sha256(teacher_current).hexdigest(),
+                                 'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
+
               elif service == 'notification-service':
                   package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
                   method = 'webPush503LeavesInboxReadableAndRetriesOnceWithoutDuplicatingHistoryOrDelivery'
@@ -629,6 +657,45 @@ jobs:
                   assert source.count(original) == 1
                   replacements = {path: source.replace(original, b'long increased = (long) before.limit();')}
                   proof['counterexample'] = 'OMITTED_BUDGET_INCREMENT'
+                  student_source = test_source
+                  student_test = student_source.read_bytes()
+                  assert hashlib.sha256(student_test).hexdigest() == '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'
+                  student_production = app / 'src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java'
+                  student_current = student_production.read_bytes()
+                  assert hashlib.sha256(student_current).hexdigest() == 'ec64e55e50dcc099663c63d24aeac7fccef37bd8ad807e13101dedc9f69b9866'
+                  student_anchor = (b'        long groupId = scope.getRankGroupId();\n'
+                                    b'        if (claims.groupId() == null\n'
+                                    b'                || claims.groupId() <= 0\n'
+                                    b'                || groupId != claims.groupId()\n'
+                                    b'                || !rankingVisible(scope)) {\n')
+                  student_changed = student_anchor.replace(b'                || groupId != claims.groupId()\n', b'')
+                  assert student_current.count(student_anchor) == 1
+                  student_negative = student_current.replace(student_anchor, student_changed)
+                  assert hashlib.sha256(student_negative).hexdigest() == '154a566d1887cb241c7542a3893bcf6afefc61ad3bd0824c9b87884b90b4f7d3'
+                  assert student_negative.replace(student_changed, student_anchor) == student_current
+                  student_lines = student_test.decode().splitlines()
+                  assert student_lines[451].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
+                  assert student_lines[589].strip() == 'assertThatThrownBy(() -> projection.project(claims, SEMESTER_ID, null, "weeks", List.of()))'
+                  scoped_read = {'package': package,
+                                 'method': 'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
+                                 'source': student_source, 'production': student_production, 'file': 'StudentRequestDomainIT.java',
+                                 'proofKey': 'studentGroupRule', 'ruleLine': 590,
+                                 'testSha': hashlib.sha256(student_test).hexdigest(),
+                                 'productionSha': hashlib.sha256(student_current).hexdigest(),
+                                 'negative': student_negative, 'counterexample': 'OMITTED_CURRENT_GROUP_CATALOGUE_MISMATCH'}
+
+              if scoped_read is not None:
+                  assert scoped_read['source'].read_bytes() == subprocess.check_output(['git', 'show', 'HEAD:' + scoped_read['source'].as_posix()])
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(scoped_read['source'])]) == b''
+                  replacements[scoped_read['production']] = scoped_read['negative']
+                  proof[scoped_read['proofKey']] = {
+                      'counterexample': scoped_read['counterexample'],
+                      'testMethod': scoped_read['package'] + '.' + scoped_read['method'],
+                      'testSourceSha256': scoped_read['testSha'],
+                      'productionSourceSha256': scoped_read['productionSha'],
+                      'counterexampleSourceSha256': hashlib.sha256(scoped_read['negative']).hexdigest(),
+                      'ruleFrame': scoped_read['package'] + '.' + scoped_read['method'] + '(' + scoped_read['file'] + ':' + str(scoped_read['ruleLine']) + ')'}
+
               for path in replacements:
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   current[path] = path.read_bytes()
@@ -649,9 +716,11 @@ jobs:
                   selectors += ['--tests', audit['package'] + '.' + audit['method']]
               if admin_rights is not None:
                   selectors += ['--tests', admin_rights['package'] + '.' + admin_rights['method']]
+              if scoped_read is not None:
+                  selectors += ['--tests', scoped_read['package'] + '.' + scoped_read['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
-                                        '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' else []), *selectors],
+                                        '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' or scoped_read is not None else []), *selectors],
                                        stdout=log, stderr=subprocess.STDOUT, timeout=360)
               proof['nativeExit'] = run.returncode
               assert run.returncode != 0
@@ -662,8 +731,19 @@ jobs:
               assert b'<!DOCTYPE' not in data.upper() and b'<!ENTITY' not in data.upper()
               suite = ET.fromstring(data)
               cases = suite.findall('testcase')
-              assert len(cases) == 1 and cases[0].get('name') == method + '()'
-              case = cases[0]
+              if service == 'attendance-service':
+                  assert suite.tag == 'testsuite' and suite.get('name') == package
+                  assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '2', 'failures': '2', 'errors': '0', 'skipped': '0'}
+                  assert len(cases) == 2
+                  assert {case.get('name') for case in cases} == {method + '()', scoped_read['method'] + '()'}
+                  assert all(case.get('classname') == package for case in cases)
+                  selected = [case for case in cases if case.get('name') == method + '()']
+                  assert len(selected) == 1
+                  case = selected[0]
+              else:
+                  assert len(cases) == 1 and cases[0].get('name') == method + '()'
+                  case = cases[0]
               assert not case.findall('error') and not case.findall('skipped') and len(case.findall('failure')) == 1
               failure = case.find('failure')
               if service == 'auth-service':
@@ -884,6 +964,52 @@ jobs:
                   admin_rule.update(state='EXPECTED_RULE_FAILURE', expectedThrowableMissing=True,
                                     tests=1, failures=1, errors=0, skipped=0,
                                     restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+              if scoped_read is not None:
+                  assert run.returncode == 1
+                  scoped_result = results / ('TEST-' + scoped_read['package'] + '.xml')
+                  assert scoped_result.is_file() and 0 < scoped_result.stat().st_size <= 33554432
+                  scoped_data = scoped_result.read_bytes()
+                  assert b'<!DOCTYPE' not in scoped_data.upper() and b'<!ENTITY' not in scoped_data.upper()
+                  scoped_suite = ET.fromstring(scoped_data)
+                  total = '2' if service == 'attendance-service' else '1'
+                  assert scoped_suite.tag == 'testsuite' and scoped_suite.get('name') == scoped_read['package']
+                  assert {key: scoped_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': total, 'failures': total, 'errors': '0', 'skipped': '0'}
+                  scoped_cases = scoped_suite.findall('testcase')
+                  expected_names = {scoped_read['method'] + '()'}
+                  if service == 'attendance-service':
+                      expected_names.add(method + '()')
+                  assert len(scoped_cases) == int(total)
+                  assert {case.get('name') for case in scoped_cases} == expected_names
+                  assert all(case.get('classname') == scoped_read['package'] for case in scoped_cases)
+                  selected = [case for case in scoped_cases if case.get('name') == scoped_read['method'] + '()']
+                  assert len(selected) == 1
+                  scoped_case = selected[0]
+                  assert not scoped_case.findall('error') and not scoped_case.findall('skipped') and len(scoped_case.findall('failure')) == 1
+                  scoped_failure = scoped_case.find('failure')
+                  assert scoped_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  scoped_message = scoped_failure.get('message', '').removeprefix(scoped_failure.get('type') + ': ')
+                  if service == 'attendance-service':
+                      assert re.fullmatch(r'\s*Expecting code to raise a throwable\.\s*', scoped_message)
+                  else:
+                      assert re.fullmatch(r'\s*expected:\s*403 FORBIDDEN\s+but was:\s*200 OK\s*', scoped_message)
+                      assert len(re.findall(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                            + re.escape(scoped_read['package'] + '.teacherScopeDenied(ExportJobHttpIT.java:618)')
+                                            + r'[ \t]*$', scoped_failure.text or '')) == 1
+                  scoped_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(scoped_read['package'] + '.' + scoped_read['method'])
+                      + r'\(' + re.escape(scoped_read['file']) + r':([1-9][0-9]{0,5})\)[ \t]*$', scoped_failure.text or '')
+                  scoped_rule = proof[scoped_read['proofKey']]
+                  scoped_rule['namedMethodFrameCount'] = len(scoped_named_lines)
+                  scoped_rule['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(scoped_rule['ruleFrame']) + r'[ \t]*$', scoped_failure.text or ''))
+                  assert scoped_rule['namedMethodFrameCount'] == 1 and scoped_rule['expectedRuleFrameMatched']
+                  scoped_rule.update(state='EXPECTED_RULE_FAILURE', expectedDenialMissing=True,
+                                     tests=1, failures=1, errors=0, skipped=0,
+                                     restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+
               proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
                            restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
           finally:
@@ -913,6 +1039,13 @@ jobs:
                   assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '209a71d2411132ba4cfaf46e03e595f1e027f1ff1da0723e48a82db3e47e4d8a'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(test_source)]) == b''
                   proof['sourceRestoredExact'] = True
+              if scoped_read is not None and current:
+                  assert hashlib.sha256(scoped_read['source'].read_bytes()).hexdigest() == scoped_read['testSha']
+                  assert hashlib.sha256(scoped_read['production'].read_bytes()).hexdigest() == scoped_read['productionSha']
+                  for path in (scoped_read['source'], scoped_read['production']):
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  proof[scoped_read['proofKey']]['sourceRestoredExact'] = True
+
               for source, name in [(results, 'red-results'), (reports, 'red-reports')]:
                   if source.exists():
                       shutil.move(source, private / name)
@@ -1079,7 +1212,51 @@ jobs:
           RCT_CI_RUN_ATTEMPT: ${{ github.run_attempt }}
           RCT_CI_JOB_ID: ${{ github.job }}
           RCT_CI_TEST_OUTCOME: ${{ steps.java-tests.outcome }}
-        run: python3 scripts/collect-ci-test-outcomes.py --service '${{ matrix.service.name }}' --task integrationTest
+        run: |
+          python3 scripts/collect-ci-test-outcomes.py --service '${{ matrix.service.name }}' --task integrationTest
+          python3 - '${{ matrix.service.name }}' <<'PY_SCOPED_RESTORED_GREEN'
+          import hashlib, json, os, pathlib, subprocess, sys
+
+          targets = {
+              'auth-service': ('ru.rutcampustrack.auth.integration.ExportJobHttpIT',
+                               'readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable',
+                               'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java',
+                               'c3dd908b07ecadae50569cac484bb3fdc15d8b93c997a1c7a13ab91e6a264929'),
+              'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
+                                     'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
+                                     'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',
+                                     '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'),
+          }
+          service = sys.argv[1]
+          if service not in targets:
+              raise SystemExit(0)
+          def pairs(items):
+              value = {}
+              for key, item in items:
+                  assert key not in value
+                  value[key] = item
+              return value
+          path = pathlib.Path('build/ci-test-outcomes') / service / 'integrationTest/safe-outcomes.json'
+          assert path.is_file() and 0 < path.stat().st_size <= 33554432
+          value = json.loads(path.read_bytes(), object_pairs_hook=pairs,
+                             parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+          assert value['collection'] == 'RESULTS'
+          meta = value['metadata']
+          assert (meta['prHeadSha'] == os.environ['RCT_CI_PR_HEAD_SHA']
+                  and meta['checkoutSha'] == subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+                  and meta['service'] == service and meta['task'] == 'integrationTest'
+                  and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'success'
+                  and meta['runId'] == os.environ['RCT_CI_RUN_ID']
+                  and meta['runAttempt'] == os.environ['RCT_CI_RUN_ATTEMPT'])
+          package, method, source, digest = targets[service]
+          assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+          selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
+                  and case['sourceSha256'] == digest and case['status'] == 'PASSED')
+          print('PASS exact restored scoped-read method in the ordinary integration gate')
+          PY_SCOPED_RESTORED_GREEN
 
       - name: Upload safe integration outcomes
         if: always()

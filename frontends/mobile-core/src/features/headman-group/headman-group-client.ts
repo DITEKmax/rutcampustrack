@@ -66,6 +66,28 @@ export interface HeadmanGroupApiOptions {
   fetcher?: typeof fetch
 }
 
+export type HeadmanCredentialView = {
+  readonly studentId: string
+  readonly credentialsVersion: string
+} & (
+  | {
+      readonly state: 'GENERATED'
+      readonly origin: 'initial' | 'headman_reset'
+      readonly password: string
+    }
+  | {
+      readonly state: 'STUDENT_CHANGED' | 'UNAVAILABLE'
+      readonly origin: null
+      readonly password: null
+    }
+)
+
+export interface HeadmanRecoveryLink {
+  readonly url: string
+  readonly expiresAt: string
+  readonly expiresInSeconds: number
+}
+
 export interface HeadmanLateCheckinBudget {
   readonly studentId: number
   readonly semesterId: number
@@ -95,6 +117,66 @@ export class HeadmanGroupApi {
 
   constructor(private readonly options: HeadmanGroupApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+  }
+
+  async readCredential(studentId: number): Promise<HeadmanCredentialView> {
+    assertPositiveInteger(studentId, 'studentId')
+    return normalizeCredential(
+      await this.request<unknown>(`/api/auth/headman/students/${studentId}/initial-password`, {
+        cache: 'no-store',
+      }),
+      studentId,
+    )
+  }
+
+  async generatePassword(
+    studentId: number,
+    expectedCredentialsVersion: string,
+  ): Promise<HeadmanCredentialView> {
+    assertPositiveInteger(studentId, 'studentId')
+    if (!positiveDecimal(expectedCredentialsVersion))
+      throw new Error('Некорректная версия доступа.')
+    return normalizeCredential(
+      await this.request<unknown>(`/api/auth/headman/students/${studentId}/generated-password`, {
+        method: 'POST',
+        cache: 'no-store',
+        body: JSON.stringify({ expectedCredentialsVersion }),
+      }),
+      studentId,
+    )
+  }
+
+  async issueRecoveryLink(studentId: number): Promise<HeadmanRecoveryLink> {
+    assertPositiveInteger(studentId, 'studentId')
+    const value = await this.request<unknown>(
+      `/api/auth/headman/students/${studentId}/password-reset-link`,
+      { method: 'POST', cache: 'no-store' },
+    )
+    if (
+      !isRecord(value) ||
+      typeof value.url !== 'string' ||
+      typeof value.expiresAt !== 'string' ||
+      value.expiresInSeconds !== 3600
+    )
+      throw new Error('Сервер вернул некорректную ссылку восстановления.')
+    let parsed: URL
+    try {
+      parsed = new URL(value.url)
+    } catch {
+      throw new Error('Сервер вернул некорректную ссылку восстановления.')
+    }
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname)
+    if (
+      (parsed.protocol !== 'https:' && !(loopback && parsed.protocol === 'http:')) ||
+      parsed.username ||
+      parsed.password ||
+      parsed.search ||
+      !/\/password-reset\/?$/.test(parsed.pathname) ||
+      !parsed.hash ||
+      !Number.isFinite(Date.parse(value.expiresAt))
+    )
+      throw new Error('Сервер вернул некорректную ссылку восстановления.')
+    return { url: value.url, expiresAt: value.expiresAt, expiresInSeconds: value.expiresInSeconds }
   }
 
   async getLateCheckinBudget(studentId: number): Promise<HeadmanLateCheckinBudget> {
@@ -543,4 +625,51 @@ function validateRosterFormat(format: HeadmanRosterFormat): void {
   ) {
     throw new RangeError('Выбран неподдерживаемый формат состава группы.')
   }
+}
+
+function positiveDecimal(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    /^[1-9][0-9]{0,18}$/.test(value) &&
+    BigInt(value) <= 9223372036854775807n
+  )
+}
+
+function normalizeCredential(value: unknown, studentId: number): HeadmanCredentialView {
+  const invalid = (): never => {
+    throw new Error('Сервер вернул некорректные данные доступа.')
+  }
+  if (
+    !isRecord(value) ||
+    value.studentId !== String(studentId) ||
+    !positiveDecimal(value.credentialsVersion)
+  )
+    return invalid()
+  if (
+    value.state === 'GENERATED' &&
+    (value.origin === 'initial' || value.origin === 'headman_reset') &&
+    typeof value.password === 'string' &&
+    value.password.length > 0 &&
+    value.password.length <= 128
+  )
+    return {
+      studentId: value.studentId,
+      credentialsVersion: value.credentialsVersion,
+      state: value.state,
+      origin: value.origin,
+      password: value.password,
+    }
+  if (
+    (value.state === 'STUDENT_CHANGED' || value.state === 'UNAVAILABLE') &&
+    value.origin === null &&
+    value.password === null
+  )
+    return {
+      studentId: value.studentId,
+      credentialsVersion: value.credentialsVersion,
+      state: value.state,
+      origin: null,
+      password: null,
+    }
+  return invalid()
 }

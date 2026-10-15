@@ -9,6 +9,8 @@ import {
 } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import HeadmanStatsScreen from './HeadmanStatsScreen.vue'
+import HeadmanSubjectsScreen from '../headman-subjects/HeadmanSubjectsScreen.vue'
+import { HeadmanSubjectsApi } from '../headman-subjects/headman-subjects-client'
 import {
   HeadmanStatsApi,
   type HeadmanStatsBlock,
@@ -207,7 +209,10 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
     if (url.pathname.endsWith('/query')) {
       const query = JSON.parse(String(init?.body)) as HeadmanStatsQuery
       statsQueries.push(query)
-      const result = headmanStatsFixtureResponse('overview-autumn', query)
+      const result = {
+        ...headmanStatsFixtureResponse('overview-autumn', query),
+        reasonCounts: [{ code: 'ILLNESS', label: 'Болезнь', count: 7 }],
+      }
       if (semesterSpecificCatalog) {
         const spring = query.semesterId === 8
         const subject = {
@@ -313,6 +318,75 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
   }
 }
 describe('headman statistics reviewed regressions', () => {
+  it('shows submitted reason counts from the server group response', async () => {
+    const view = harness()
+    await vi.waitFor(() => expect(view.screen().ready).toBe(true))
+    view.screen().openBlock('group')
+    await vi.waitFor(() => expect(text(view.root)).toContain('Болезнь · 7'))
+    expect(text(view.root)).toContain('Поданные уважительные причины')
+  })
+  it('subjects render authoritative per-type progress, empty types and unavailable data separately', async () => {
+    const json = (value: unknown) => new Response(JSON.stringify(value))
+    let reply: unknown = {
+      semesterId: 2,
+      generatedAt: '2026-10-15T10:00:00Z',
+      items: [{ subjectId: 3, lessonType: 'LECTURE', done: 2, total: 7 }],
+    }
+    const api = new HeadmanSubjectsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async (input) => {
+        const path = String(input)
+        if (path.includes('/schedule/groups/')) return json({ semesterProgress: reply })
+        if (path.includes('/academic/semesters'))
+          return json({
+            _embedded: {
+              semesterResponseList: [
+                {
+                  id: 2,
+                  name: 'Семестр',
+                  dateFrom: '2026-09-01',
+                  dateTo: '2027-01-01',
+                  active: true,
+                },
+              ],
+            },
+            page: { totalPages: 1 },
+          })
+        return json({
+          _embedded: {
+            subjectResponseList: [
+              {
+                id: 3,
+                name: 'Предмет',
+                groupId: 1,
+                type: 'LECTURE',
+                lessonTypes: ['LECTURE', 'PRACTICE'],
+                teacherIds: [],
+                assignments: [],
+              },
+            ],
+          },
+          page: { totalPages: 1 },
+        })
+      },
+    })
+    const props = shallowReactive({ api, groupId: 1, offline: false })
+    const root = new Node('root')
+    const app = renderer.createApp({ render: () => h(HeadmanSubjectsScreen, props) })
+    apps.push(app)
+    app.mount(root)
+    await vi.waitFor(() => expect(text(root)).toContain('2 из 7 пар пройдено'))
+    expect(text(root)).toContain('0 из 0 пар пройдено')
+    expect(text(root)).not.toContain('Лаборатор')
+    props.offline = true
+    await nextTick()
+    expect(text(root)).not.toContain('2 из 7')
+    expect(text(root)).toContain('Прогресс недоступен')
+    reply = null
+    props.offline = false
+    await vi.waitFor(() => expect(text(root)).not.toContain('Загружаем прогресс'))
+    expect(text(root)).not.toContain('0 из 0')
+  })
   it('history403 invalidates an in-flight approved-ticket intent and prevents late private detail publication', async () => {
     const { default: History } = await vi.importActual<typeof import('./HeadmanStatsHistory.vue')>(
       './HeadmanStatsHistory.vue',

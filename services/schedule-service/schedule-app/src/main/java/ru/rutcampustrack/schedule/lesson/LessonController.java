@@ -18,6 +18,7 @@ import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
 import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
+import ru.rutcampustrack.schedule.contract.dto.lesson.LessonListResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.LessonType;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
@@ -157,13 +158,15 @@ public class LessonController implements LessonApi {
     @Override
     public ResponseEntity<PagedModel<EntityModel<LessonResponse>>> getLessons(
             Long groupId,
+            Long semesterId,
             LocalDate dateFrom,
             LocalDate dateTo,
             List<LessonStatus> status,
             Pageable pageable,
             PagedResourcesAssembler<LessonResponse> assembler) {
         Page<LessonWithItem> page =
-                lessonService.getLessonsForGroup(groupId, dateFrom, dateTo, status, pageable);
+                lessonService.getLessonsForGroup(
+                        groupId, semesterId, dateFrom, dateTo, status, pageable);
         Map<Long, LessonTransferWriter.TransferState> transferStates =
                 lessonTransferService.statesForLessons(
                         page.getContent().stream().map(row -> row.lesson().getId()).toList());
@@ -182,6 +185,10 @@ public class LessonController implements LessonApi {
                         });
         PagedModel<EntityModel<LessonResponse>> pagedModel =
                 assembler.toModel(responsePage, resp -> EntityModel.of(resp));
-        return ResponseEntity.ok(pagedModel);
+        return ResponseEntity.ok(
+                semesterId == null
+                        ? pagedModel
+                        : new LessonListResponse(
+                                pagedModel, lessonService.semesterProgress(groupId, semesterId)));
     }
 }

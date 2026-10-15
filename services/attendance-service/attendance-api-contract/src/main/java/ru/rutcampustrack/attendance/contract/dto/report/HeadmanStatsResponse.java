@@ -21,7 +21,9 @@ public record HeadmanStatsResponse(
         long totalElements,
         boolean hasPrevious,
         boolean hasNext,
-        EmptyState emptyState) {
+        EmptyState emptyState,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true)
+                List<ReasonCount> reasonCounts) {
     public HeadmanStatsResponse {
         context = Objects.requireNonNull(context, "context");
         summary = Objects.requireNonNull(summary, "summary");
@@ -31,6 +33,51 @@ public record HeadmanStatsResponse(
         columns = List.copyOf(Objects.requireNonNull(columns, "columns"));
         formats = List.copyOf(Objects.requireNonNull(formats, "formats"));
         emptyState = Objects.requireNonNull(emptyState, "emptyState");
+        reasonCounts = reasonCounts == null ? null : List.copyOf(reasonCounts);
+    }
+
+    /** Compatibility callers cannot supply an observed reason distribution. */
+    public HeadmanStatsResponse(
+            Context context,
+            Metrics summary,
+            SummaryTickets summaryTickets,
+            int filteredStudents,
+            List<StudentRow> rows,
+            List<SubjectOption> subjects,
+            List<ColumnDescriptor> columns,
+            List<FormatOption> formats,
+            int page,
+            int size,
+            int totalPages,
+            long totalElements,
+            boolean hasPrevious,
+            boolean hasNext,
+            EmptyState emptyState) {
+        this(
+                context,
+                summary,
+                summaryTickets,
+                filteredStudents,
+                rows,
+                subjects,
+                columns,
+                formats,
+                page,
+                size,
+                totalPages,
+                totalElements,
+                hasPrevious,
+                hasNext,
+                emptyState,
+                null);
+    }
+
+    public record ReasonCount(String code, String label, long count) {
+        public ReasonCount {
+            Objects.requireNonNull(code, "code");
+            Objects.requireNonNull(label, "label");
+            if (count <= 0) throw new IllegalArgumentException("Invalid submitted reason count");
+        }
     }
 
     public record Context(

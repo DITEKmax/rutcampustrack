@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Request, TestInfo } from '@playwright/test';
 import {
   test,
@@ -12,7 +13,7 @@ import {
   oneOff,
   registerPrivateSuite,
 } from '../fixtures/cloud-accepted-support';
-import { loginPwa } from '../fixtures/pwa-auth';
+import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 
 registerPrivateSuite();
@@ -310,6 +311,30 @@ test('MANAGE_EXCUSES decides a real request and revoked decision preserves the p
     await oneOff(dataset, dataset.tomorrow, 1),
     await oneOff(dataset, dataset.tomorrow, 2),
   ];
+  // JS-HEADMAN-18: count submitted identities, including the later rejected and pending tickets.
+  const reasonBaseline = await dataset.headmanActor.call(
+    'POST',
+    '/api/attendance/reports/headman/stats/query',
+    {
+      subjectId: null,
+      lessonTypes: [],
+      page: 0,
+      size: 20,
+      sorts: [],
+      filters: [],
+    },
+  );
+  expect(
+    reasonBaseline.context.groupId === dataset.group.id &&
+      reasonBaseline.context.semesterId === dataset.semester.id &&
+      Array.isArray(reasonBaseline.reasonCounts),
+    'Own current-semester submitted-reason baseline is available',
+  ).toBe(true);
+  const illnessBefore =
+    reasonBaseline.reasonCounts.find(
+      (row: { code: string; count: number }) => row.code === 'ILLNESS',
+    )?.count ?? 0;
+  expect(Number.isSafeInteger(illnessBefore) && illnessBefore >= 0).toBe(true);
   const requests: string[] = [];
   for (const lesson of lessons) {
     const created = await dataset.request.post('/api/v1/student/requests/excuse', {
@@ -371,8 +396,44 @@ test('MANAGE_EXCUSES decides a real request and revoked decision preserves the p
       data: { subjectId: null, lessonTypes: [], page: 0, size: 20, sorts: [], filters: [] },
     });
     expect(stats.status()).toBe(200);
-    expect((await stats.json()).context.groupId).toBe(dataset.group.id);
+    const currentStats = await stats.json();
+    expect(currentStats.context.groupId).toBe(dataset.group.id);
+    expect(
+      currentStats.context.semesterId === dataset.semester.id &&
+        Array.isArray(currentStats.reasonCounts),
+      'Same current-semester reason counts survive partial capability removal',
+    ).toBe(true);
+    expect(
+      currentStats.reasonCounts.find(
+        (row: { code: string; count: number }) => row.code === 'ILLNESS',
+      )?.count,
+    ).toBe(illnessBefore + 2);
   }
+  const reasonView = http(page, '/api/attendance/reports/headman/stats/query', 'POST');
+  await page.reload();
+  await openAssistant(page, 'Статистика группы');
+  const reasonResponse = await reasonView;
+  expect(reasonResponse.status()).toBe(200);
+  const reasonBody = await reasonResponse.json();
+  expect(
+    reasonBody.context.groupId === dataset.group.id &&
+      reasonBody.context.semesterId === dataset.semester.id &&
+      Array.isArray(reasonBody.reasonCounts),
+    'Reloaded current helper receives the same reason scope',
+  ).toBe(true);
+  expect(
+    reasonBody.reasonCounts.find((row: { code: string; count: number }) => row.code === 'ILLNESS')
+      ?.count,
+  ).toBe(illnessBefore + 2);
+  await expect(
+    page
+      .getByRole('region', { name: 'Поданные уважительные причины', exact: true })
+      .getByRole('listitem'),
+  ).toHaveText(
+    reasonBody.reasonCounts.map(
+      (row: { label: string; count: number }) => `${row.label} · ${row.count}`,
+    ),
+  );
   const partiallyDenied = await dataset.request.post(`${pendingPath}/decision`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     data: {
@@ -873,5 +934,237 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     expect
       .soft(cleanupFailed, 'Only this read fixture is cleaned through guarded server commands')
       .toBe(false);
+  }
+});
+
+// JS-HEADMAN-23/34: one own member, real generated reset and existing public self-set.
+test('HEADMAN resets own member access and issues one-use recovery link @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  test.setTimeout(120000);
+  const cutoff = (retryStartedAt.get(info) ?? performance.now()) + 90000;
+  const remaining = () => {
+    const value = Math.floor(cutoff - performance.now());
+    expect(value > 0, 'Credential sequence retains its main-work budget').toBe(true);
+    return value;
+  };
+  const loginOptions = () => ({ retryUntilMs: Date.now() + Math.min(65000, remaining()) });
+  const user = await dataset.user('STUDENT', dataset.group.id);
+  const targetPath = `/api/auth/headman/students/${user.id}`;
+  // One existing genuine target session remains live until the HEADMAN reset.
+  // Only an actual finite Retry-After can defer this ordinary positive admission.
+  const initialLogin = () =>
+    dataset.request.post('/api/auth/login', {
+      data: { login: user.login, password: user.password },
+      timeout: Math.min(10000, remaining()),
+    });
+  let oldLogin = await initialLogin();
+  if (oldLogin.status() === 429) {
+    const header = oldLogin.headers()['retry-after'] ?? '';
+    const seconds = /^[0-9]+$/.test(header) ? Number(header) : 0;
+    expect(
+      Number.isSafeInteger(seconds) &&
+        seconds > 0 &&
+        seconds <= 60 &&
+        seconds * 1000 + 10000 < remaining(),
+      'Owned target admission honors a bounded server Retry-After',
+    ).toBe(true);
+    await delay(seconds * 1000);
+    oldLogin = await initialLogin();
+  }
+  expect(oldLogin.status(), 'Own original target session is genuinely admitted').toBe(200);
+  const oldBody = await oldLogin.json();
+  expect(typeof oldBody.accessToken === 'string' && oldBody.accessToken.length > 0).toBe(true);
+  const oldHeaders = { Authorization: `Bearer ${oldBody.accessToken}` };
+  expect((await dataset.request.get('/api/auth/session', { headers: oldHeaders })).status()).toBe(
+    200,
+  );
+  let generatedPassword = '',
+    recoveryUrl = '';
+  let commands = 0;
+  const observe = (request: Request) => {
+    if (
+      request.method() === 'POST' &&
+      new URL(request.url()).pathname === `${targetPath}/generated-password`
+    )
+      commands++;
+  };
+  page.on('request', observe);
+  try {
+    const openMember = async () => {
+      await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+      await page.getByRole('button', { name: 'Группа', exact: true }).click();
+      const group = page.locator('.headman-group');
+      await group.locator(`[data-member-id="${user.id}"]`).click();
+      await expect(
+        group.getByRole('heading', { name: 'Доступ студента', exact: true }),
+      ).toBeVisible();
+      await expect(
+        group.getByRole('button', { name: 'Сбросить пароль', exact: true }),
+      ).toBeEnabled();
+      return group;
+    };
+    await loginPwa(page, dataset.headman, loginOptions());
+    const selected = await selectRole(page, 'Староста');
+    expect(selected.session.activeRole).toBe('HEADMAN');
+    let group = await openMember();
+    await group.getByRole('button', { name: 'Сбросить пароль', exact: true }).click();
+    let confirmation = page.getByRole('dialog', { name: 'Сбросить пароль?', exact: true });
+    await confirmation.getByRole('button', { name: 'Отмена', exact: true }).click();
+    expect(commands, 'Cancel issues no credential mutation').toBe(0);
+    await group.getByRole('button', { name: 'Сбросить пароль', exact: true }).click();
+    const reset = http(page, `${targetPath}/generated-password`, 'POST');
+    await confirmation.getByRole('button', { name: 'Сбросить пароль', exact: true }).click();
+    const resetResponse = await reset;
+    expect(resetResponse.status()).toBe(200);
+    const resetBody = await resetResponse.json();
+    expect(
+      resetBody.studentId === String(user.id) &&
+        resetBody.state === 'GENERATED' &&
+        resetBody.origin === 'headman_reset' &&
+        typeof resetBody.password === 'string' &&
+        resetBody.password.length > 0,
+      'Server returns only the owned generated state',
+    ).toBe(true);
+    generatedPassword = resetBody.password;
+    expect(
+      await group
+        .textContent()
+        .then((text) => text?.includes(generatedPassword) && text.includes('Сброшен старостой')),
+      'Current generated value and origin render privately',
+    ).toBe(true);
+    expect((await dataset.request.get('/api/auth/session', { headers: oldHeaders })).status()).toBe(
+      401,
+    );
+    // Return through genuine Group navigation; the list itself retains the accepted generated value.
+    await group.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect
+      .poll(
+        async () =>
+          group
+            .locator(`[data-member-id="${user.id}"]`)
+            .textContent()
+            .then((text) =>
+              Boolean(text?.includes(generatedPassword) && text.includes('Сброшен старостой')),
+            ),
+        { message: 'Own group list displays current generated credential privately' },
+      )
+      .toBe(true);
+    await group.getByRole('button', { name: 'Назад', exact: true }).click();
+    // JS-HEADMAN-37: the existing HEADMAN observes server semester totals, never page-length totals.
+    const progressRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === `/api/schedule/groups/${dataset.group.id}/lessons` &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        url.searchParams.get('size') === '1' &&
+        url.searchParams.get('dateFrom') === dataset.semester.dateFrom &&
+        url.searchParams.get('dateTo') === dataset.semester.dateTo
+      );
+    });
+    await page.getByRole('button', { name: 'Предметы', exact: true }).click();
+    const progressResponse = await progressRead;
+    expect(progressResponse.status()).toBe(200);
+    const progress = (await progressResponse.json()).semesterProgress;
+    expect(
+      progress?.semesterId === dataset.semester.id && Array.isArray(progress?.items),
+      'Own current semester progress is genuine metadata',
+    ).toBe(true);
+    const lecture = progress.items.find(
+      (row: { subjectId: number; lessonType: string }) =>
+        row.subjectId === dataset.subject.id && row.lessonType === 'LECTURE',
+    );
+    expect(
+      Boolean(
+        lecture &&
+          Number.isSafeInteger(lecture.done) &&
+          Number.isSafeInteger(lecture.total) &&
+          lecture.done >= 0 &&
+          lecture.total > 0 &&
+          lecture.done <= lecture.total,
+      ),
+      'Existing own lecture has authoritative bounded progress',
+    ).toBe(true);
+    const subjects = page.locator('.headman-subjects');
+    await expect(
+      subjects
+        .locator(`[data-subject-id="${dataset.subject.id}"]`)
+        .getByText(`Лекция · ${lecture.done} из ${lecture.total} пар пройдено`, { exact: true }),
+    ).toBeVisible();
+    await subjects.getByRole('button', { name: 'Назад', exact: true }).click();
+    await logoutPwa(page);
+    await loginPwa(page, { ...user, password: generatedPassword }, loginOptions());
+    await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+    await page.getByRole('button', { name: 'Безопасность', exact: true }).click();
+    const chosenPassword = `Student-${randomUUID()}!1`;
+    await page.getByLabel('Текущий пароль *', { exact: true }).fill(generatedPassword);
+    await page.getByLabel('Новый пароль *', { exact: true }).fill(chosenPassword);
+    await page.getByLabel('Повтори новый пароль *', { exact: true }).fill(chosenPassword);
+    const changed = http(page, '/api/auth/change-password', 'POST');
+    await page.getByRole('button', { name: 'Сменить пароль', exact: true }).click();
+    expect((await changed).status()).toBe(204);
+    await expect(
+      page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+    ).toBeVisible();
+    await loginPwa(page, dataset.headman, loginOptions());
+    await selectRole(page, 'Староста');
+    group = await openMember();
+    await expect(group.getByText('Пароль сменён студентом', { exact: true })).toBeVisible();
+    expect(
+      await group
+        .textContent()
+        .then((text) =>
+          Boolean(text?.includes(chosenPassword) || text?.includes(generatedPassword)),
+        ),
+      'Changed credential is not disclosed',
+    ).toBe(false);
+    await group.getByRole('button', { name: 'Выдать ссылку сброса', exact: true }).click();
+    confirmation = page.getByRole('dialog', { name: 'Выдать ссылку сброса?', exact: true });
+    const issued = http(page, `${targetPath}/password-reset-link`, 'POST');
+    await confirmation.getByRole('button', { name: 'Выдать ссылку', exact: true }).click();
+    const issuedResponse = await issued;
+    expect(issuedResponse.status()).toBe(200);
+    const link = await issuedResponse.json();
+    expect(
+      typeof link.url === 'string' &&
+        link.expiresInSeconds === 3600 &&
+        Number.isFinite(Date.parse(link.expiresAt)),
+      'Existing trusted link contract is genuine',
+    ).toBe(true);
+    recoveryUrl = link.url;
+    expect(
+      (await group.getByLabel('Ссылка для студента', { exact: true }).inputValue()) === recoveryUrl,
+      'Owned recovery link stays in RAM',
+    ).toBe(true);
+    await group.getByRole('button', { name: 'Назад', exact: true }).click();
+    await group.getByRole('button', { name: 'Назад', exact: true }).click();
+    await logoutPwa(page);
+    await page.goto(recoveryUrl);
+    await expect(
+      page.getByRole('heading', { name: 'Задай новый пароль', exact: true }),
+    ).toBeVisible();
+    const finalPassword = `Recovered-${randomUUID()}!1`;
+    await page.getByLabel('Новый пароль', { exact: true }).fill(finalPassword);
+    await page.getByLabel('Повтори новый пароль', { exact: true }).fill(finalPassword);
+    const completed = http(page, '/api/auth/password-reset/complete', 'POST');
+    await page.getByRole('button', { name: 'Сохранить пароль', exact: true }).click();
+    expect((await completed).status()).toBe(204);
+    await expect(
+      page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+    ).toBeVisible();
+    const replacement = await loginPwa(page, { ...user, password: finalPassword }, loginOptions());
+    expect(
+      replacement.session.userId === String(user.id) &&
+        replacement.session.activeRole === 'STUDENT',
+      'Public self-set admits only the same owned student',
+    ).toBe(true);
+    await logoutPwa(page);
+  } finally {
+    page.off('request', observe);
+    generatedPassword = '';
+    recoveryUrl = '';
+    // All synthetic rows/history remain in the already-owned fixture stand until its normal teardown.
   }
 });

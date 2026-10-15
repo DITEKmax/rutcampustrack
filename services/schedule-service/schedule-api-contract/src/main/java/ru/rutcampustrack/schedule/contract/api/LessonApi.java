@@ -146,10 +146,20 @@ public interface LessonApi {
     ResponseEntity<EntityModel<LessonResponse>> unblockLesson(@PathVariable Long id);
 
     @Operation(summary = "Получить расписание группы за диапазон дат (все роли)")
-    @ApiResponse(responseCode = "200", description = "Расписание группы")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Расписание группы; semesterId добавляет полный прогресс семестра",
+            content =
+                    @io.swagger.v3.oas.annotations.media.Content(
+                            schema =
+                                    @io.swagger.v3.oas.annotations.media.Schema(
+                                            implementation =
+                                                    ru.rutcampustrack.schedule.contract.dto.lesson
+                                                            .LessonListResponse.class)))
     @GetMapping("/groups/{groupId}/lessons")
     ResponseEntity<PagedModel<EntityModel<LessonResponse>>> getLessons(
             @PathVariable Long groupId,
+            @RequestParam(required = false) @Positive Long semesterId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(required = false) List<LessonStatus> status,

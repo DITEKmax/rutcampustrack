@@ -278,6 +278,27 @@ function toggleType(code: string): void {
           />
         </article>
       </section>
+      <section
+        v-if="block === 'group' && response"
+        class="headman-stats-mobile__card"
+        aria-label="Поданные уважительные причины"
+      >
+        <h2>Поданные уважительные причины</h2>
+        <p v-if="response.reasonCounts == null">
+          Разбивка причин недоступна.
+        </p>
+        <p v-else-if="!response.reasonCounts.length">
+          Уважительные причины пока не подавали.
+        </p>
+        <ul v-else>
+          <li
+            v-for="reason in response.reasonCounts"
+            :key="reason.code"
+          >
+            {{ reason.label }} · {{ reason.count }}
+          </li>
+        </ul>
+      </section>
       <template v-if="block === 'subject'">
         <section
           v-if="subjectId === null"

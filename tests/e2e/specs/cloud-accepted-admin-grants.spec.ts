@@ -148,6 +148,11 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
   const target = await dataset.user('STUDENT', dataset.group.id);
   const targetPath = `/api/academic/users/${target.id}`;
   const accessPath = `${targetPath}/admin-access`;
+  // Own multirole target keeps an independent ACTIVE role during the status operation.
+  await dataset.admin.call('PUT', `${targetPath}/roles/TEACHER`, {
+    status: 'ACTIVE',
+    employeeNumber: `T${target.id}`,
+  });
   const targetBefore = await dataset.admin.call('GET', targetPath);
   const before = await dataset.admin.call('GET', accessPath);
   expect(before.assigned).toBe(false);
@@ -621,6 +626,100 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
         expect.soft(false, 'Own recovery browser context cleanup failed').toBe(true);
       });
     }
+    // Existing own-account status and transfer editors; no shared recipient is changed.
+    await expect(users).toHaveAttribute('data-view', 'recovery-issued');
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(users).toHaveAttribute('data-view', 'detail');
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(users).toHaveAttribute('data-view', 'list');
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(target.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${target.id}"]`).click();
+    const unchangedTeacher = (user: typeof targetBefore) =>
+      JSON.stringify(user.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT')) ===
+      JSON.stringify(
+        targetBefore.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT'),
+      );
+    for (const status of ['SUSPENDED', 'ACTIVE'] as const) {
+      await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+      const studentRole = users.locator('.admin-users-role').filter({
+        has: users.locator('.admin-users-role-heading').filter({ hasText: /^Студент$/ }),
+      });
+      await studentRole.getByRole('button', { name: 'Изменить статус', exact: true }).click();
+      await users.getByLabel('Статус роли', { exact: true }).selectOption(status);
+      const saved = http(page, `${targetPath}/roles/STUDENT`, 'PUT');
+      await users.getByRole('button', { name: 'Сохранить статус', exact: true }).click();
+      const response = await saved;
+      expect(response.status()).toBe(200);
+      const input = response.request().postDataJSON();
+      expect(
+        input.status === status &&
+          input.groupId === targetBefore.groupId &&
+          input.telegramId === targetBefore.telegramId &&
+          Object.keys(input).sort().join(',') === 'groupId,status,telegramId',
+        'Status editor preserves the current student identity and group',
+      ).toBe(true);
+      const updated = await response.json();
+      const persisted = await dataset.admin.call('GET', targetPath);
+      for (const user of [updated, persisted])
+        expect(
+          user.id === targetBefore.id &&
+            user.login === targetBefore.login &&
+            user.telegramId === targetBefore.telegramId &&
+            user.employeeNumber === targetBefore.employeeNumber &&
+            user.groupId === targetBefore.groupId &&
+            user.roles.some(
+              (grant: { role: string; status: string }) =>
+                grant.role === 'STUDENT' && grant.status === status,
+            ) &&
+            unchangedTeacher(user),
+          'Only the own student role changes; the independent teacher role is retained',
+        ).toBe(true);
+      await expect(users.getByText('Роль сохранена.', { exact: true })).toBeVisible();
+    }
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users.getByRole('button', { name: 'Перевести в другую группу', exact: true }).click();
+    const groupPicker = users.locator('details[data-picker="group"]');
+    await groupPicker.locator('summary').click();
+    await groupPicker
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(actorGroup.name);
+    await groupPicker.getByRole('button', { name: actorGroup.name, exact: true }).click();
+    const transferReason = `Синтетический перевод ${randomUUID()}`;
+    await users.getByLabel('Причина перевода', { exact: true }).fill(transferReason);
+    const transferred = http(page, `${targetPath}/transfer`, 'POST');
+    await users.getByRole('button', { name: 'Перевести студента', exact: true }).click();
+    const transferResponse = await transferred;
+    expect(transferResponse.status()).toBe(200);
+    const transferInput = transferResponse.request().postDataJSON();
+    expect(
+      transferInput.newGroupId === actorGroup.id &&
+        transferInput.reason === transferReason &&
+        Object.keys(transferInput).sort().join(',') === 'newGroupId,reason',
+      'Transfer sends the selected own destination and reason',
+    ).toBe(true);
+    for (const user of [await transferResponse.json(), await dataset.admin.call('GET', targetPath)])
+      expect(
+        user.id === targetBefore.id &&
+          user.login === targetBefore.login &&
+          user.telegramId === targetBefore.telegramId &&
+          user.employeeNumber === targetBefore.employeeNumber &&
+          user.groupId === actorGroup.id &&
+          user.roles.some(
+            (grant: { role: string; status: string; groupId: number | null }) =>
+              grant.role === 'STUDENT' &&
+              grant.status === 'ACTIVE' &&
+              grant.groupId === actorGroup.id,
+          ) &&
+          unchangedTeacher(user),
+        'The real transfer persists on the same multirole account',
+      ).toBe(true);
+    await expect(
+      users.getByText('Студент переведён в другую группу.', { exact: true }),
+    ).toBeVisible();
+    // End own-account status and transfer witness.
     // End ADMIN20 recovery witness.
     const currentSession = await page.request.get('/api/auth/session', {
       headers: { Authorization: `Bearer ${selected.accessToken}` },
@@ -631,6 +730,21 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     await expect(foreignScreens).toHaveCount(0);
     expect(foreignFeatureRequested).toBe(false);
   } finally {
+    // A failed status flow must not leave the own student role suspended.
+    try {
+      const currentTarget = await dataset.admin.call('GET', targetPath);
+      const studentGrant = currentTarget.roles.find(
+        (grant: { role: string }) => grant.role === 'STUDENT',
+      );
+      if (studentGrant?.status === 'SUSPENDED')
+        await dataset.admin.call('PUT', `${targetPath}/roles/STUDENT`, { status: 'ACTIVE' });
+      else
+        expect
+          .soft(studentGrant?.status === 'ACTIVE', 'Own student role cleanup state is known')
+          .toBe(true);
+    } catch {
+      expect.soft(false, 'Own student role status cleanup failed').toBe(true);
+    }
     page.off('response', observeAdmission);
     page.off('request', observeFeatureStart);
     try {

@@ -1,18 +1,11 @@
 package ru.rutcampustrack.auth.service;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.HexFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 import ru.rutcampustrack.auth.dto.AdminPasswordResetLinkResponse;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
@@ -23,6 +16,8 @@ import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 
+import java.time.Instant;
+
 /** An admin-assisted route; public Telegram requests retain their decoy behavior. */
 @Service
 public class AdminPasswordResetService {
@@ -32,9 +27,7 @@ public class AdminPasswordResetService {
     private final AuthService authService;
     private final UserRepository users;
     private final SessionLifecycleService sessions;
-    private static final int LINK_TTL_SECONDS = 3600;
     private final String recoveryUrl;
-    private final SecureRandom random = new SecureRandom();
 
     public AdminPasswordResetService(
             AuthService authService,
@@ -57,7 +50,8 @@ public class AdminPasswordResetService {
                 || current.activeRole().isReadOnly()) {
             throw new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
         }
-        String base = trustedRecoveryUrl();
+        PasswordResetLinkMaterial material =
+                PasswordResetLinkMaterial.create(recoveryUrl, Instant.now());
         try {
             if (userId <= 0 || !users.existsById(userId)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
@@ -66,16 +60,11 @@ public class AdminPasswordResetService {
             throw new AuthSessionException(
                     AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
-        String ticket = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        int ttl = LINK_TTL_SECONDS;
-        Instant expiresAt = Instant.now().plusSeconds(ttl);
         try {
             if (!sessions.issuePasswordResetTicket(
                     userId,
-                    new CredentialSessionTransactionPort.CredentialHash(hash(ticket)),
-                    expiresAt)) {
+                    new CredentialSessionTransactionPort.CredentialHash(material.ticketHash()),
+                    material.response().expiresAt())) {
                 throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
             }
         } catch (RuntimeException exception) {
@@ -84,44 +73,6 @@ public class AdminPasswordResetService {
                     : new AuthSessionException(
                             AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
-        return new AdminPasswordResetLinkResponse(
-                base + "#resetTicket=" + ticket + "&expiresAt=" + expiresAt, expiresAt, ttl);
-    }
-
-    private String trustedRecoveryUrl() {
-        try {
-            URI uri = URI.create(recoveryUrl);
-            String host = uri.getHost();
-            boolean loopback =
-                    "localhost".equalsIgnoreCase(host)
-                            || "127.0.0.1".equals(host)
-                            || "[::1]".equals(host);
-            if (host == null
-                    || uri.getRawUserInfo() != null
-                    || uri.getRawQuery() != null
-                    || uri.getRawFragment() != null
-                    || uri.getPath() == null
-                    || !(uri.getPath().endsWith("/password-reset")
-                            || uri.getPath().endsWith("/password-reset/"))
-                    || !("https".equalsIgnoreCase(uri.getScheme())
-                            || (loopback && "http".equalsIgnoreCase(uri.getScheme())))) {
-                throw new IllegalArgumentException("invalid configured recovery URL");
-            }
-            return uri.toASCIIString();
-        } catch (RuntimeException exception) {
-            // Configuration failures never echo the configured value or incoming request headers.
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
-        }
-    }
-
-    private static String hash(String ticket) {
-        try {
-            return HexFormat.of()
-                    .formatHex(
-                            MessageDigest.getInstance("SHA-256")
-                                    .digest(ticket.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 unavailable", exception);
-        }
+        return material.response();
     }
 }

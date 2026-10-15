@@ -137,7 +137,14 @@ const STATS_EXPORT_CONTENT_TYPES: Readonly<Record<ReportDownloadFormat, string>>
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 }
 
+export interface HeadmanStatsReasonCount {
+  readonly code: string
+  readonly label: string
+  readonly count: number
+}
+
 export interface HeadmanStatsResponse {
+  readonly reasonCounts?: readonly HeadmanStatsReasonCount[] | null
   readonly context: HeadmanStatsContext
   readonly summary: HeadmanStatsMetrics
   readonly summaryTickets?: {
@@ -834,6 +841,7 @@ function validateSemesterId(value: number | undefined): void {
 function normalizeResponse(value: unknown): HeadmanStatsResponse {
   const record = unwrapContent(value)
   if (!record) throw new Error('Сервер вернул неполную статистику группы.')
+  const reasonCounts = normalizeReasonCounts(record.reasonCounts)
   const context = normalizeContext(record.context)
   const summary = normalizeMetrics(record.summary)
   const rows = array(record.rows).map(normalizeRow)
@@ -882,6 +890,7 @@ function normalizeResponse(value: unknown): HeadmanStatsResponse {
     context,
     summary,
     summaryTickets: lateCheckin && excuse ? { lateCheckin, excuse } : null,
+    reasonCounts,
     filteredStudents,
     rows: rows as HeadmanStatsStudentRow[],
     subjects: subjects as HeadmanStatsSubjectOption[],
@@ -895,6 +904,47 @@ function normalizeResponse(value: unknown): HeadmanStatsResponse {
     hasNext,
     emptyState,
   }
+}
+
+function normalizeReasonCounts(value: unknown): readonly HeadmanStatsReasonCount[] | null {
+  if (value == null) return null
+  if (!Array.isArray(value) || value.length > 7)
+    throw new Error('Сервер вернул некорректную разбивку причин.')
+  const codes = new Set<string>()
+  const result = value.map((entry) => {
+    const record = asRecord(entry)
+    const code = record && stringValue(record.code)
+    const label = record && stringValue(record.label)
+    const count = record && positiveInteger(record.count)
+    if (
+      !code ||
+      !label ||
+      count === null ||
+      ![
+        'ILLNESS',
+        'UNIVERSITY_ORDER',
+        'SUMMONS',
+        'OTHER',
+        'MEDICAL_EXAMINATION',
+        'COMPETITION_PARTICIPATION',
+        'FAMILY_CIRCUMSTANCES',
+      ].includes(code) ||
+      codes.has(code)
+    )
+      throw new Error('Сервер вернул некорректную разбивку причин.')
+    codes.add(code)
+    return { code, label, count }
+  })
+  if (
+    result.some(
+      (entry, index) =>
+        index > 0 &&
+        (result[index - 1]!.count < entry.count ||
+          (result[index - 1]!.count === entry.count && result[index - 1]!.code > entry.code)),
+    )
+  )
+    throw new Error('Сервер вернул некорректный порядок причин.')
+  return result
 }
 
 function normalizeTrendResponse(value: unknown): HeadmanStatsTrendResponse {

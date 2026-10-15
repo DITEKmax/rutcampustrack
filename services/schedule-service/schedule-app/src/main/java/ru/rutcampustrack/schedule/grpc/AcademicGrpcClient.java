@@ -237,6 +237,26 @@ public class AcademicGrpcClient {
         }
     }
 
+    /** Read-only progress admission retains the existing typed missing-semester response. */
+    public SemesterStateResponse getSemesterProgressAuthorityState(long semesterId) {
+        if (!DirectedServiceCredential.isCanonicalToken(scheduleToAcademicToken))
+            throw new AcademicServiceUnavailableException(
+                    "Semester progress authority unavailable");
+        Metadata metadata = new Metadata();
+        metadata.put(DirectedServiceCredential.TOKEN_METADATA_KEY, scheduleToAcademicToken);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getSemesterState(
+                            SemesterStateRequest.newBuilder().setSemesterId(semesterId).build());
+        } catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND)
+                throw new ResourceNotFoundException("Semester", "id", semesterId);
+            throw new AcademicServiceUnavailableException(
+                    "Semester progress authority unavailable");
+        }
+    }
+
     /** Reads the authoritative archive epoch through the directed Schedule -> Academic identity. */
     public SemesterStateResponse getSemesterArchiveAuthorityState(long semesterId) {
         if (!DirectedServiceCredential.isCanonicalToken(scheduleToAcademicToken)) {

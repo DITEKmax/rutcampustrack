@@ -3,13 +3,6 @@ package ru.rutcampustrack.academic.migration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,6 +13,14 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Real V57/Flyway/PostgreSQL proof. No Academic/Auth/bot/provider cross-layer claim. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -52,13 +53,13 @@ class BotCredentialLifecycleMigrationIT {
         fresh(null);
         Flyway f = flyway(null);
         f.validate();
-        assertThat(f.info().current().getVersion().getVersion()).isEqualTo("58");
+        assertThat(f.info().current().getVersion().getVersion()).isEqualTo("59");
         assertThat(f.info().pending()).isEmpty();
         assertThat(f.migrate().migrationsExecuted).isZero();
         assertThat(
                         jdbc.queryForList(
-                                "SELECT column_name FROM information_schema.columns "
-                                        + "WHERE table_schema=? AND table_name='bot_credential_messages'",
+                                "SELECT column_name FROM information_schema.columns WHERE"
+                                    + " table_schema=? AND table_name='bot_credential_messages'",
                                 String.class,
                                 schema))
                 .doesNotContain(
@@ -70,8 +71,9 @@ class BotCredentialLifecycleMigrationIT {
                         "payload");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM information_schema.table_constraints "
-                                        + "WHERE table_schema=? AND table_name='bot_credential_messages' AND constraint_type='FOREIGN KEY'",
+                                "SELECT COUNT(*) FROM information_schema.table_constraints WHERE"
+                                    + " table_schema=? AND table_name='bot_credential_messages' AND"
+                                    + " constraint_type='FOREIGN KEY'",
                                 Integer.class,
                                 schema))
                 .isZero();
@@ -83,12 +85,14 @@ class BotCredentialLifecycleMigrationIT {
         long u = user(71101);
         long changed = user(71116);
         jdbc.update(
-                "UPDATE users SET initial_password=NULL,password_changed=TRUE,telegram_id=NULL WHERE id=?",
+                "UPDATE users SET initial_password=NULL,password_changed=TRUE,telegram_id=NULL"
+                        + " WHERE id=?",
                 changed);
         var before =
                 jdbc.queryForList(
-                        "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY installed_rank");
-        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(2);
+                        "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY"
+                                + " installed_rank");
+        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(3);
         flyway(null).validate();
         assertThat(
                         jdbc.queryForObject(
@@ -102,13 +106,15 @@ class BotCredentialLifecycleMigrationIT {
                 .isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE id=?",
+                                "SELECT initial_password IS NOT NULL AND NOT password_changed FROM"
+                                        + " users WHERE id=?",
                                 Boolean.class,
                                 u))
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password IS NULL AND password_changed AND telegram_id IS NULL FROM users WHERE id=?",
+                                "SELECT initial_password IS NULL AND password_changed AND"
+                                        + " telegram_id IS NULL FROM users WHERE id=?",
                                 Boolean.class,
                                 changed))
                 .isTrue();
@@ -116,7 +122,8 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(version(changed, "telegram_binding_version")).isEqualTo(1);
         assertThat(
                         jdbc.queryForList(
-                                "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY installed_rank LIMIT ?",
+                                "SELECT installed_rank,version,checksum FROM flyway_schema_history"
+                                        + " ORDER BY installed_rank LIMIT ?",
                                 before.size()))
                 .isEqualTo(before);
     }
@@ -135,7 +142,8 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(version(u, "credentials_version")).isEqualTo(2);
         assertThat(version(u, "telegram_binding_version")).isEqualTo(1);
         jdbc.update(
-                "UPDATE users SET password_hash=password_hash,initial_password=initial_password WHERE id=?",
+                "UPDATE users SET password_hash=password_hash,initial_password=initial_password"
+                        + " WHERE id=?",
                 u);
         assertThat(version(u, "credentials_version")).isEqualTo(2);
         jdbc.update("UPDATE users SET initial_password=NULL,password_changed=TRUE WHERE id=?", u);
@@ -165,7 +173,7 @@ class BotCredentialLifecycleMigrationIT {
             execute(
                     c,
                     "INSERT INTO auth_outbox(event_type,payload) VALUES ('password.changed',"
-                            + "'{\"event_id\":\"00000000-0000-4000-8000-000000000004\",\"event_version\":2}')");
+                        + "'{\"event_id\":\"00000000-0000-4000-8000-000000000004\",\"event_version\":2}')");
             c.rollback();
         }
         assertThat(version(u, "credentials_version")).isEqualTo(1);
@@ -180,7 +188,7 @@ class BotCredentialLifecycleMigrationIT {
             execute(
                     c,
                     "INSERT INTO auth_outbox(event_type,payload) VALUES ('password.changed',"
-                            + "'{\"event_id\":\"00000000-0000-4000-8000-000000000004\",\"event_version\":2}')");
+                        + "'{\"event_id\":\"00000000-0000-4000-8000-000000000004\",\"event_version\":2}')");
             c.commit();
         }
         assertThat(version(u, "credentials_version")).isEqualTo(2);
@@ -205,13 +213,16 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(state(b, "render_state")).isEqualTo("UNCERTAIN");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT render_revision FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT render_revision FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 Long.class,
                                 a))
                 .isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING' AND invalidated_by_credentials_version<=2",
+                                "SELECT COUNT(*) FROM bot_credential_messages WHERE user_id=? AND"
+                                        + " cleanup_state='PENDING' AND"
+                                        + " invalidated_by_credentials_version<=2",
                                 Integer.class,
                                 u))
                 .isEqualTo(2);
@@ -230,7 +241,8 @@ class BotCredentialLifecycleMigrationIT {
         invalidate(u);
         mutate(
                 "sanitation",
-                "ALTER TABLE bot_credential_messages DROP CONSTRAINT bot_credential_messages_sanitation_settled");
+                "ALTER TABLE bot_credential_messages DROP CONSTRAINT"
+                        + " bot_credential_messages_sanitation_settled");
         assertThatThrownBy(() -> cleanup(a, "SANITIZED")).isInstanceOf(RuntimeException.class);
         assertThatThrownBy(() -> cleanup(b, "SANITIZED")).isInstanceOf(RuntimeException.class);
         assertThat(state(a, "cleanup_state")).isEqualTo("PENDING");
@@ -284,7 +296,8 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(invalidation(a)).isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT private_chat_id FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT private_chat_id FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 Long.class,
                                 a))
                 .isEqualTo(71109);
@@ -319,19 +332,24 @@ class BotCredentialLifecycleMigrationIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET message_id=102,record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " message_id=102,record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET render_revision=2,record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " render_revision=2,record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET updated_at=NOW() WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET updated_at=NOW() WHERE"
+                                                + " record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         render(r, "UNCERTAIN");
@@ -340,14 +358,18 @@ class BotCredentialLifecycleMigrationIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET invalidated_by_credentials_version=3,record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " invalidated_by_credentials_version=3,record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         cleanup(r, "DELETED");
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET cleanup_outcome='ABSENT',record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " cleanup_outcome='ABSENT',record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
     }
@@ -360,14 +382,18 @@ class BotCredentialLifecycleMigrationIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET cleanup_state='PENDING',invalidated_at=NOW(),record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " cleanup_state='PENDING',invalidated_at=NOW(),record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         assertThatThrownBy(() -> render(r, "UNKNOWN")).isInstanceOf(RuntimeException.class);
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET cleanup_state='UNKNOWN',record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " cleanup_state='UNKNOWN',record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         invalidate(u);
@@ -375,14 +401,18 @@ class BotCredentialLifecycleMigrationIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         UUID.fromString("00000000-0000-4000-8000-000000000001"),
                                         r))
                 .isInstanceOf(RuntimeException.class);
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE bot_credential_messages SET invalidated_by_credentials_version=NULL,invalidated_at=NULL,record_revision=record_revision+1 WHERE record_id=?",
+                                        "UPDATE bot_credential_messages SET"
+                                            + " invalidated_by_credentials_version=NULL,invalidated_at=NULL,record_revision=record_revision+1"
+                                            + " WHERE record_id=?",
                                         r))
                 .isInstanceOf(RuntimeException.class);
         assertThat(state(r, "cleanup_state")).isEqualTo("PENDING");
@@ -398,7 +428,9 @@ class BotCredentialLifecycleMigrationIT {
         render(r, "CONFIRMED_EDIT");
         int stale =
                 jdbc.update(
-                        "UPDATE bot_credential_messages SET cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,cleanup_outcome='SANITIZED',record_revision=record_revision+1,updated_at=NOW() WHERE record_id=? AND record_revision=?",
+                        "UPDATE bot_credential_messages SET"
+                            + " cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,cleanup_outcome='SANITIZED',record_revision=record_revision+1,updated_at=NOW()"
+                            + " WHERE record_id=? AND record_revision=?",
                         UUID.fromString("00000000-0000-4000-8000-000000000001"),
                         r,
                         observedRevision);
@@ -406,7 +438,9 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(state(r, "cleanup_state")).isEqualTo("PENDING");
         int current =
                 jdbc.update(
-                        "UPDATE bot_credential_messages SET cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,cleanup_outcome='SANITIZED',record_revision=record_revision+1,updated_at=NOW() WHERE record_id=? AND record_revision=?",
+                        "UPDATE bot_credential_messages SET"
+                            + " cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,cleanup_outcome='SANITIZED',record_revision=record_revision+1,updated_at=NOW()"
+                            + " WHERE record_id=? AND record_revision=?",
                         UUID.fromString("00000000-0000-4000-8000-000000000001"),
                         r,
                         revision(r));
@@ -419,12 +453,17 @@ class BotCredentialLifecycleMigrationIT {
         fresh(null);
         long a =
                 jdbc.queryForObject(
-                        "INSERT INTO users(login,last_name,first_name,credentials_version,telegram_binding_version) VALUES ('overflow_credentials','Synthetic','Common',9223372036854775807,1) RETURNING id",
+                        "INSERT INTO"
+                            + " users(login,last_name,first_name,credentials_version,telegram_binding_version)"
+                            + " VALUES"
+                            + " ('overflow_credentials','Synthetic','Common',9223372036854775807,1)"
+                            + " RETURNING id",
                         Long.class);
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE users SET password_hash='synthetic-overflow' WHERE id=?",
+                                        "UPDATE users SET password_hash='synthetic-overflow' WHERE"
+                                                + " id=?",
                                         a))
                 .isInstanceOf(RuntimeException.class);
         assertThat(version(a, "credentials_version")).isEqualTo(Long.MAX_VALUE);
@@ -436,7 +475,11 @@ class BotCredentialLifecycleMigrationIT {
                 .isTrue();
         long b =
                 jdbc.queryForObject(
-                        "INSERT INTO users(login,last_name,first_name,credentials_version,telegram_binding_version) VALUES ('overflow_binding','Synthetic','Common',1,9223372036854775807) RETURNING id",
+                        "INSERT INTO"
+                            + " users(login,last_name,first_name,credentials_version,telegram_binding_version)"
+                            + " VALUES"
+                            + " ('overflow_binding','Synthetic','Common',1,9223372036854775807)"
+                            + " RETURNING id",
                         Long.class);
         assertThatThrownBy(() -> jdbc.update("UPDATE users SET telegram_id=71114 WHERE id=?", b))
                 .isInstanceOf(RuntimeException.class);
@@ -467,7 +510,9 @@ class BotCredentialLifecycleMigrationIT {
                                     started.countDown();
                                     execute(
                                             c,
-                                            "UPDATE users SET password_hash='synthetic-concurrent-3' WHERE id="
+                                            "UPDATE users SET"
+                                                + " password_hash='synthetic-concurrent-3' WHERE"
+                                                + " id="
                                                     + u);
                                 } catch (SQLException e) {
                                     throw new IllegalStateException(
@@ -480,7 +525,8 @@ class BotCredentialLifecycleMigrationIT {
             while (System.nanoTime() < deadline) {
                 waiting =
                         jdbc.queryForObject(
-                                "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE application_name='np01_waiter' AND wait_event_type='Lock')",
+                                "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE"
+                                    + " application_name='np01_waiter' AND wait_event_type='Lock')",
                                 Boolean.class);
                 if (waiting) break;
                 Thread.sleep(20);
@@ -494,7 +540,8 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(invalidation(r)).isEqualTo(2);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT render_revision FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT render_revision FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 Long.class,
                                 r))
                 .isEqualTo(1);
@@ -530,19 +577,25 @@ class BotCredentialLifecycleMigrationIT {
     private long user(long chat) {
         long id =
                 jdbc.queryForObject(
-                        "INSERT INTO users(login,last_name,first_name,role,telegram_id,password_hash,initial_password) VALUES (?, 'Synthetic', 'Common', 'teacher', ?, 'synthetic-hash-1', 'synthetic-initial') RETURNING id",
+                        "INSERT INTO"
+                            + " users(login,last_name,first_name,role,telegram_id,password_hash,initial_password)"
+                            + " VALUES (?, 'Synthetic', 'Common', 'teacher', ?, 'synthetic-hash-1',"
+                            + " 'synthetic-initial') RETURNING id",
                         Long.class,
                         "np01_" + chat,
                         chat);
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES (?,'teacher','active',NOW(),NOW())",
+                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES"
+                        + " (?,'teacher','active',NOW(),NOW())",
                 id);
         return id;
     }
 
     private long card(long u, long chat, long message) {
         return jdbc.queryForObject(
-                "INSERT INTO bot_credential_messages(user_id,private_chat_id,message_id,telegram_binding_version,credentials_version) VALUES (?,?,?,1,1) RETURNING record_id",
+                "INSERT INTO"
+                    + " bot_credential_messages(user_id,private_chat_id,message_id,telegram_binding_version,credentials_version)"
+                    + " VALUES (?,?,?,1,1) RETURNING record_id",
                 Long.class,
                 u,
                 chat,
@@ -555,14 +608,18 @@ class BotCredentialLifecycleMigrationIT {
 
     private void render(long r, String outcome) {
         jdbc.update(
-                "UPDATE bot_credential_messages SET render_state=?,render_completed_at=NOW(),record_revision=record_revision+1,updated_at=NOW() WHERE record_id=?",
+                "UPDATE bot_credential_messages SET"
+                    + " render_state=?,render_completed_at=NOW(),record_revision=record_revision+1,updated_at=NOW()"
+                    + " WHERE record_id=?",
                 outcome,
                 r);
     }
 
     private void cleanup(long r, String outcome) {
         jdbc.update(
-                "UPDATE bot_credential_messages SET cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,cleanup_outcome=?,record_revision=record_revision+1,updated_at=NOW() WHERE record_id=?",
+                "UPDATE bot_credential_messages SET"
+                    + " cleanup_state='CLEANED',cleaned_at=NOW(),cleanup_event_id=?,cleanup_outcome=?,record_revision=record_revision+1,updated_at=NOW()"
+                    + " WHERE record_id=?",
                 UUID.fromString("00000000-0000-4000-8000-000000000001"),
                 outcome,
                 r);
@@ -584,7 +641,8 @@ class BotCredentialLifecycleMigrationIT {
 
     private Long invalidation(long r) {
         return jdbc.queryForObject(
-                "SELECT invalidated_by_credentials_version FROM bot_credential_messages WHERE record_id=?",
+                "SELECT invalidated_by_credentials_version FROM bot_credential_messages WHERE"
+                        + " record_id=?",
                 Long.class,
                 r);
     }

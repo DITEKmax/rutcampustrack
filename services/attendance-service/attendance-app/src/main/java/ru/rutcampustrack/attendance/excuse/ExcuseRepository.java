@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Aggregation;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 
@@ -12,6 +13,22 @@ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
  * duplicate detection (D-11), student self-view (D-05), and headman group view (D-06).
  */
 public interface ExcuseRepository extends MongoRepository<ExcuseTicket, String> {
+
+    /** Submitted identities, not covered lessons or approved attendance cells. */
+    @Aggregation(
+            pipeline = {
+                "{ '$match': { 'group_id': ?0, 'semester_id': ?1, 'status': { '$in': ['SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED'] } } }",
+                "{ '$group': { '_id': '$excuse_type', 'count': { '$sum': 1 } } }",
+                "{ '$project': { '_id': 0, 'code': '$_id', 'count': 1 } }",
+                "{ '$limit': 10 }"
+            })
+    List<SubmittedReasonCount> submittedReasonCounts(long groupId, long semesterId);
+
+    interface SubmittedReasonCount {
+        String getCode();
+
+        Long getCount();
+    }
 
     /** Read-side lookup for roster pending/approved ticket indicators. */
     List<ExcuseTicket> findByLessonIdsInAndStatusIn(

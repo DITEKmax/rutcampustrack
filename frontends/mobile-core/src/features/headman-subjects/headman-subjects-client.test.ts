@@ -4,6 +4,47 @@ import { HeadmanGroupApi } from '../headman-group/headman-group-client'
 const key = '11111111-1111-4111-8111-111111111111'
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status })
 describe('mutation transport preserves receipts and authority', () => {
+  it('reads server semester progress without interpreting the paged lessons as totals', async () => {
+    let progress: unknown = {
+      semesterId: 2,
+      generatedAt: '2026-10-15T10:00:00Z',
+      items: [{ subjectId: 3, lessonType: 'LECTURE', done: 2, total: 7 }],
+    }
+    const paths: string[] = []
+    const api = new HeadmanSubjectsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async (input) => {
+        paths.push(String(input))
+        return json({
+          _embedded: { lessonResponseList: [] },
+          page: { totalElements: 0 },
+          semesterProgress: progress,
+        })
+      },
+    })
+    const semester = {
+      id: 2,
+      name: 'Семестр',
+      dateFrom: '2026-09-01',
+      dateTo: '2027-01-01',
+      active: false,
+    }
+    expect((await api.semesterProgress(1, semester))?.items).toEqual([
+      { subjectId: 3, lessonType: 'LECTURE', done: 2, total: 7 },
+    ])
+    expect(paths[0]).toContain('/api/schedule/groups/1/lessons?semesterId=2&')
+    expect(paths[0]).toContain('size=1')
+    progress = null
+    expect(await api.semesterProgress(1, semester)).toBeNull()
+    progress = { semesterId: 9, generatedAt: '2026-10-15T10:00:00Z', items: [] }
+    await expect(api.semesterProgress(1, semester)).rejects.toThrow('чужой прогресс')
+    progress = {
+      semesterId: 2,
+      generatedAt: '2026-10-15T10:00:00Z',
+      items: [{ subjectId: 3, lessonType: 'LECTURE', done: 3, total: 2 }],
+    }
+    await expect(api.semesterProgress(1, semester)).rejects.toThrow('прогресс предмета')
+  })
   it('retries401 DELETE with unchanged frozen identity across the Moscow midnight and only accepts204', async () => {
     let token = 'old',
       reads = 0

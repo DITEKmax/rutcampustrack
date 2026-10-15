@@ -24,6 +24,58 @@ class ExcuseRepositoryIT extends AbstractAttendanceIntegrationTest {
     }
 
     @Test
+    void submittedReasonCountsIncludeDecisionsAndCancellationButNotDraftsOrForeignSemesters() {
+        for (var status :
+                List.of(
+                        ExcuseTicketStatus.SUBMITTED,
+                        ExcuseTicketStatus.APPROVED,
+                        ExcuseTicketStatus.REJECTED,
+                        ExcuseTicketStatus.CANCELLED,
+                        ExcuseTicketStatus.DRAFT)) {
+            excuseRepository.save(
+                    ExcuseTicket.builder()
+                            .studentId(100L)
+                            .groupId(10L)
+                            .semesterId(20L)
+                            .lessonIds(List.of(900L, 901L))
+                            .excuseType(
+                                    status == ExcuseTicketStatus.CANCELLED
+                                            ? ExcuseType.OTHER
+                                            : ExcuseType.ILLNESS)
+                            .status(status)
+                            .createdAt(Instant.parse("2026-04-01T00:00:00Z"))
+                            .build());
+        }
+        excuseRepository.save(
+                ExcuseTicket.builder()
+                        .groupId(11L)
+                        .studentId(101L)
+                        .lessonIds(List.of(1900L, 1901L))
+                        .createdAt(Instant.parse("2026-04-01T00:00:00Z"))
+                        .semesterId(20L)
+                        .excuseType(ExcuseType.ILLNESS)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .build());
+        excuseRepository.save(
+                ExcuseTicket.builder()
+                        .groupId(10L)
+                        .semesterId(21L)
+                        .excuseType(ExcuseType.ILLNESS)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .build());
+        var counts = excuseRepository.submittedReasonCounts(10L, 20L);
+        org.assertj.core.api.Assertions.assertThat(counts).hasSize(2);
+        var byCode =
+                counts.stream()
+                        .collect(
+                                java.util.stream.Collectors.toMap(
+                                        ExcuseRepository.SubmittedReasonCount::getCode,
+                                        ExcuseRepository.SubmittedReasonCount::getCount));
+        org.assertj.core.api.Assertions.assertThat(byCode)
+                .containsExactlyInAnyOrderEntriesOf(java.util.Map.of("ILLNESS", 3L, "OTHER", 1L));
+    }
+
+    @Test
     void existsByStudentIdAndLessonIdsInAndStatusIn_returnsTrue_whenActiveTicketOverlaps() {
         ExcuseTicket ticket =
                 ExcuseTicket.builder()

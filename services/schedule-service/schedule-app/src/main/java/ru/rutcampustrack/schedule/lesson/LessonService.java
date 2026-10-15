@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -21,6 +24,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
+import ru.rutcampustrack.schedule.contract.dto.lesson.LessonListResponse.SemesterProgress;
+import ru.rutcampustrack.schedule.contract.dto.lesson.LessonListResponse.TypeProgress;
 import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.LessonType;
@@ -30,6 +35,8 @@ import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.event.LessonRestoredEvent;
 import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
+import ru.rutcampustrack.schedule.exception.ConflictException;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -105,6 +112,58 @@ public class LessonService {
         this.recurringLifecycleWriter = recurringLifecycleWriter;
         this.entityManager = entityManager;
         this.archiveWriteFence = archiveWriteFence;
+    }
+
+    private Clock progressClock;
+
+    @Autowired
+    void useProgressEducationalTime(EducationalTime time) {
+        progressClock = time.clock();
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public SemesterProgress semesterProgress(long groupId, long semesterId) {
+        requireGroupReadAccess(groupId);
+        if (semesterId <= 0)
+            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException(
+                    "semesterId must be positive");
+        var semester = academicGrpcClient.getSemesterProgressAuthorityState(semesterId);
+        if (semester == null
+                || semester.getId() != semesterId
+                || !semester.getDeletionPhase().isEmpty())
+            throw new ResourceNotFoundException("Semester", "id", semesterId);
+        var now = (progressClock == null ? clock : progressClock).instant();
+        var counts =
+                lessonRepository.semesterTypeCounts(
+                        groupId,
+                        semesterId,
+                        LocalDateTime.ofInstant(now, ZoneId.of("Europe/Moscow")).toString());
+        if (counts == null) throw new ConflictException("Прогресс предметов недоступен");
+        var items = new ArrayList<TypeProgress>();
+        var keys = new HashSet<String>();
+        for (var count : counts) {
+            if (count == null
+                    || count.getSubjectId() == null
+                    || count.getSubjectId() <= 0
+                    || count.getLessonType() == null
+                    || count.getInvalid() == null
+                    || count.getInvalid() != 0
+                    || count.getDone() == null
+                    || count.getTotal() == null
+                    || count.getDone() < 0
+                    || count.getTotal() < count.getDone()
+                    || count.getTotal() > 9_007_199_254_740_991L
+                    || !Set.of("lecture", "practice", "lab").contains(count.getLessonType())
+                    || !keys.add(count.getSubjectId() + ":" + count.getLessonType()))
+                throw new ConflictException("Некорректные данные прогресса предметов");
+            items.add(
+                    new TypeProgress(
+                            count.getSubjectId(),
+                            count.getLessonType().toUpperCase(Locale.ROOT),
+                            count.getDone(),
+                            count.getTotal()));
+        }
+        return new SemesterProgress(semesterId, now, items);
     }
 
     @Transactional(readOnly = true)
@@ -484,6 +543,17 @@ public class LessonService {
             LocalDate to,
             List<LessonStatus> statuses,
             Pageable pageable) {
+        return getLessonsForGroup(groupId, null, from, to, statuses, pageable);
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public Page<LessonWithItem> getLessonsForGroup(
+            Long groupId,
+            Long semesterId,
+            LocalDate from,
+            LocalDate to,
+            List<LessonStatus> statuses,
+            Pageable pageable) {
         // M13 G9 — STUDENT видит расписание только своей группы
         requireGroupReadAccess(groupId);
         List<String> effectiveStatuses =
@@ -495,8 +565,11 @@ public class LessonService {
                         : statuses.stream().map(s -> s.name().toLowerCase(Locale.ROOT)).toList();
 
         Page<Lesson> lessonPage =
-                lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
-                        groupId, from, to, effectiveStatuses, pageable);
+                semesterId == null
+                        ? lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
+                                groupId, from, to, effectiveStatuses, pageable)
+                        : lessonRepository.pageByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
+                                groupId, semesterId, from, to, effectiveStatuses, pageable);
 
         // Entity page and durable pointer flags share one MVCC snapshot. A
         // transferred historical row remains visible with current=false.

@@ -199,6 +199,79 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         return request.header("X-User-Id", "999").header("X-User-Role", "ADMIN");
     }
 
+    @Test
+    void semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage()
+            throws Exception {
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
+        ScheduleItem item = createScheduleItem(today.minusYears(1), today.plusYears(1));
+        createLesson(item.getId(), LessonStatus.CLOSED, today.minusDays(10));
+        createLesson(item.getId(), LessonStatus.CLOSED, today.plusDays(10));
+        Lesson planned = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(11));
+        createLesson(item.getId(), LessonStatus.CANCELLED, today.minusDays(9));
+        when(academicGrpcClient.getSemesterProgressAuthorityState(10L))
+                .thenReturn(
+                        SemesterStateResponse.newBuilder().setId(10L).setArchived(true).build());
+        var request =
+                get("/schedule/groups/{groupId}/lessons", testGroupId)
+                        .param("dateFrom", planned.getDate().toString())
+                        .param("dateTo", planned.getDate().toString())
+                        .param("size", "1");
+        mockMvc.perform(withHeadmanHeaders(request))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.semesterProgress").doesNotExist())
+                .andExpect(jsonPath("$.page.totalElements").value(1));
+        var body =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        withHeadmanHeaders(
+                                                get(
+                                                                "/schedule/groups/{groupId}/lessons",
+                                                                testGroupId)
+                                                        .param(
+                                                                "dateFrom",
+                                                                planned.getDate().toString())
+                                                        .param(
+                                                                "dateTo",
+                                                                planned.getDate().toString())
+                                                        .param("semesterId", "10")
+                                                        .param("size", "1")))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.page.totalElements").value(1))
+                                .andExpect(jsonPath("$.semesterProgress.semesterId").value(10))
+                                .andExpect(
+                                        jsonPath("$.semesterProgress.items[0].subjectId")
+                                                .value(100))
+                                .andExpect(
+                                        jsonPath("$.semesterProgress.items[0].lessonType")
+                                                .value("LECTURE"))
+                                .andExpect(jsonPath("$.semesterProgress.items[0].done").value(1))
+                                .andExpect(jsonPath("$.semesterProgress.items[0].total").value(3))
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        assertThat(body.path("_embedded").elements().next().get(0).path("id").asLong())
+                .isEqualTo(planned.getId());
+        assertThat(body.path("_links").has("self")).isTrue();
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                get("/schedule/groups/{groupId}/lessons", testGroupId + 1)
+                                        .param("dateFrom", today.toString())
+                                        .param("dateTo", today.toString())
+                                        .param("semesterId", "10")))
+                .andExpect(status().isForbidden());
+        when(academicGrpcClient.getSemesterProgressAuthorityState(99L))
+                .thenThrow(
+                        new ru.rutcampustrack.schedule.exception.ResourceNotFoundException(
+                                "Semester", "id", 99L));
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                get("/schedule/groups/{groupId}/lessons", testGroupId)
+                                        .param("dateFrom", today.toString())
+                                        .param("dateTo", today.toString())
+                                        .param("semesterId", "99")))
+                .andExpect(status().isNotFound());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"read", "write", "http"})
     @ResourceLock("default-locale")

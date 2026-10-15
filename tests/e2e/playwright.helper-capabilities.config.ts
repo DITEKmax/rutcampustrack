@@ -19,7 +19,7 @@ export default defineConfig<{}, { teachingInstant: Date | undefined }>({
   ...existing,
   testMatch: /cloud-accepted-helper-capabilities\.spec\.ts/,
   outputDir: join(run, 'artifacts'),
-  grep: /(?:VIEW_STATS|CANCEL_LESSONS|MANAGE_EXCUSES)/,
+  grep: /(?:VIEW_STATS|CANCEL_LESSONS|MANAGE_EXCUSES|HEADMAN resets own member access and issues one-use recovery link @cloud-accepted)/,
   forbidOnly: true,
   timeout: 120000,
   use: { ...existing.use, ignoreHTTPSErrors: false, timezoneId: 'Europe/Moscow', teachingInstant },

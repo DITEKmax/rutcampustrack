@@ -516,7 +516,46 @@ public class HeadmanStatsService {
                 total,
                 previous,
                 next,
-                data.emptyState());
+                data.emptyState(),
+                submittedReasons(groupId, data.context().semesterId()));
+    }
+
+    private List<HeadmanStatsResponse.ReasonCount> submittedReasons(long groupId, Long semesterId) {
+        if (semesterId == null) return null;
+        var counts = excuseRepository.submittedReasonCounts(groupId, semesterId);
+        if (counts == null || counts.size() > 7)
+            throw new ReportExportUnavailableException("Submitted reason counts unavailable");
+        Set<String> codes = new HashSet<>();
+        List<HeadmanStatsResponse.ReasonCount> result = new ArrayList<>();
+        for (var count : counts) {
+            if (count == null
+                    || count.getCode() == null
+                    || count.getCount() == null
+                    || count.getCount() <= 0
+                    || count.getCount() > 9_007_199_254_740_991L
+                    || !codes.add(count.getCode()))
+                throw new ReportExportUnavailableException("Invalid submitted reason counts");
+            String label =
+                    switch (count.getCode()) {
+                        case "ILLNESS" -> "Болезнь";
+                        case "UNIVERSITY_ORDER" -> "По приказу вуза или иному документу";
+                        case "SUMMONS" -> "Повестка от военкомата";
+                        case "OTHER" -> "Другое";
+                        case "MEDICAL_EXAMINATION" -> "Медицинское обследование";
+                        case "COMPETITION_PARTICIPATION" -> "Участие в соревнованиях";
+                        case "FAMILY_CIRCUMSTANCES" -> "Семейные обстоятельства";
+                        default ->
+                                throw new ReportExportUnavailableException(
+                                        "Unknown submitted reason");
+                    };
+            result.add(
+                    new HeadmanStatsResponse.ReasonCount(count.getCode(), label, count.getCount()));
+        }
+        result.sort(
+                Comparator.comparingLong(HeadmanStatsResponse.ReasonCount::count)
+                        .reversed()
+                        .thenComparing(HeadmanStatsResponse.ReasonCount::code));
+        return List.copyOf(result);
     }
 
     private static SummaryTickets summaryTickets(List<StudentRow> rows) {

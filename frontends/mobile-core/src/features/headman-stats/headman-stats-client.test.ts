@@ -32,6 +32,32 @@ const statsQuery: HeadmanStatsExportQuery = {
 }
 
 describe('headman statistics downloads', () => {
+  it('retains submitted reason order and distinguishes unavailable from empty or malformed counts', async () => {
+    let reasonCounts: unknown = [
+      { code: 'ILLNESS', label: 'Болезнь', count: 3 },
+      { code: 'OTHER', label: 'Другое', count: 1 },
+    ]
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async () =>
+        new Response(
+          JSON.stringify({
+            ...headmanStatsFixtureResponse('overview-autumn', query),
+            reasonCounts,
+          }),
+        ),
+    })
+    const query = { subjectId: null, lessonTypes: [], page: 0, size: 20, sorts: [], filters: [] }
+    expect((await api.query(query)).reasonCounts).toEqual(reasonCounts)
+    reasonCounts = null
+    expect((await api.query(query)).reasonCounts).toBeNull()
+    reasonCounts = []
+    expect((await api.query(query)).reasonCounts).toEqual([])
+    reasonCounts = [{ code: 'UNKNOWN', label: 'Неизвестно', count: 2 }]
+    await expect(api.query(query)).rejects.toThrow('разбивку причин')
+    reasonCounts = [{ code: 'OTHER', label: 'Другое', count: -1 }]
+    await expect(api.query(query)).rejects.toThrow('разбивку причин')
+  })
   it('preserves the selected block in both transports and returns the actual server filename', async () => {
     const filename = 'headman-stats-group2-20260901-20261001.pdf'
     const fetcher = vi.fn<typeof fetch>(

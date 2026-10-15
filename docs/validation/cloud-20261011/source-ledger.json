@@ -5,9 +5,9 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+      "sha256": "a9b56b2c5f1e18c418f41423d83fbf32c019f3f8b5208b293b5b9f96e60c0d81",
       "status": "authoritative-owner-contract",
-      "revision": "edb7631da2dc7dd63050b5052f48a7634ceaca23+ownerD017WIP",
+      "revision": "189798f4807c198b4de27860c6e9df4c68a95697+ownerD028WIP",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
       "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
       "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
@@ -16,11 +16,14 @@
       "previous_sha256_before_D011": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
       "previous_sha256_before_D012": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27",
       "original_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
-      "owner_decisions_through": "D014",
+      "owner_decisions_through": "D028",
       "previous_sha256_before_D014": "9b43c9e1496b812dd5b705c3c78a4b195756867015dca732882b4e010d91ac91",
       "previous_sha256_before_D015": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
       "previous_sha256_before_D016": "4f45e414322d3d41192c52baf244bfe6e96a2b76b3597ad714f79674eb0f2757",
-      "previous_sha256_before_D017": "d9132dda1bada9670a01abc5d77649f73b4d794779a56ae0c3b767bf7b79d988"
+      "previous_sha256_before_D017": "d9132dda1bada9670a01abc5d77649f73b4d794779a56ae0c3b767bf7b79d988",
+      "recorded_ledger_sha256_before_D028": "aefc314a17f230a6c54567c06533a78116342206116c04ae091460107e652fa7",
+      "previous_sha256_before_D028": "a3e5d647657d0a4ea49adfbc0ee0432d4610ab312b1f4b86446826cf64015650",
+      "prior_actual_contract_recovery": "git show 189798f4807c198b4de27860c6e9df4c68a95697:docs/validation/cloud-20261011/TASK-CONTRACT.md"
     },
     {
       "id": "AGENTS.md",
@@ -14738,6 +14741,13 @@
       "sha256": "9cc891c478b4fe7f9cf1879781bc2ad624da6cef5df964fa11b73aa0ddd253a4",
       "status": "accepted owner decision D027",
       "source_identity": "Main chat exact owner answer received 2026-10-15T13:10:09.499816+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q027-20261015",
+      "path": "docs/product/decisions/2026-10-15-attendance-aggregate-storage-deferral.md",
+      "sha256": "c94a0e898dfe4c9d7e1ef0bb2c94d3e197a7082810289c2704d6a0794a745be6",
+      "status": "accepted owner decision D028",
+      "source_identity": "Main chat exact owner answer recorded 2026-10-15T19:59:41.591452+00:00"
     }
   ],
   "research_receipt": {

@@ -26,6 +26,7 @@ import {
   type PermissionConfirmationContext,
 } from './permission-confirmation';
 import './headman-group-screen.pcss';
+import { useHeadmanCredentials } from './use-headman-credentials';
 const props = withDefaults(
   defineProps<{
     api: HeadmanGroupApi | null;
@@ -241,6 +242,72 @@ const writable = computed(
     member.value?.status === 'ACTIVE' &&
     !isMemberHeadman(member.value),
 );
+const credentialConfirmation = ref<{
+  studentId: number;
+  action: 'generate' | 'link';
+  version: string;
+} | null>(null);
+function credentialEligible(item: HeadmanGroupMember): boolean {
+  return !item.roles?.some((grant) => grant.role === 'ADMIN' && grant.status === 'ACTIVE');
+}
+const credentials = useHeadmanCredentials(() => ({
+  api: props.api,
+  groupId: props.groupId,
+  actorUserId: props.actorUserId,
+  enabled:
+    hasSnapshot.value &&
+    isHeadman.value &&
+    props.actorHeadman &&
+    !props.offline &&
+    !props.readOnly &&
+    !denied.value,
+  memberIds: (view.value === 'list' ? members.value : member.value ? [member.value] : [])
+    .filter(credentialEligible)
+    .map((item) => item.id),
+}));
+function credentialLabel(studentId: number): string {
+  const value = credentials.values.value[studentId];
+  if (value?.state === 'STUDENT_CHANGED') return 'Пароль сменён студентом';
+  if (value?.state === 'GENERATED')
+    return `${value.origin === 'initial' ? 'Начальный пароль' : 'Сброшен старостой'}: ${value.password}`;
+  return 'Пароль недоступен';
+}
+function confirmCredential(action: 'generate' | 'link'): void {
+  if (!member.value || !credentials.available.value || budgetBusy.value || budgetIntent.value)
+    return;
+  const value = credentials.values.value[member.value.id];
+  if (value)
+    credentialConfirmation.value = {
+      studentId: member.value.id,
+      action,
+      version: value.credentialsVersion,
+    };
+}
+async function commitCredential(): Promise<void> {
+  const pending = credentialConfirmation.value;
+  credentialConfirmation.value = null;
+  if (!pending || member.value?.id !== pending.studentId) return;
+  await credentials.perform(pending.studentId, pending.action, pending.version);
+}
+watch(
+  () => [
+    props.api,
+    props.groupId,
+    props.actorUserId,
+    props.actorHeadman,
+    props.offline,
+    props.readOnly,
+    props.assistantPermissions,
+    view.value,
+    memberId.value,
+    denied.value,
+  ],
+  () => {
+    credentialConfirmation.value = null;
+  },
+  { flush: 'sync' },
+);
+
 const budgetWritable = computed(
   () =>
     !props.offline &&
@@ -311,7 +378,14 @@ async function loadBudget(): Promise<void> {
 }
 
 async function increaseBudget(): Promise<void> {
-  if (!budgetWritable.value || !member.value || !props.api || !budget.value) return;
+  if (
+    credentials.busy.value ||
+    !budgetWritable.value ||
+    !member.value ||
+    !props.api ||
+    !budget.value
+  )
+    return;
   if (!budgetIntent.value) {
     if (increaseValue.value === null) return;
     budgetIntent.value = {
@@ -393,6 +467,7 @@ function openMember(item: HeadmanGroupMember): void {
   notice.value = null;
 }
 function openPermissions(): void {
+  if (credentials.busy.value || credentialConfirmation.value) return;
   if (budgetBusy.value || budgetIntent.value) return;
   if (!member.value || isMemberHeadman(member.value)) return;
   baselineAssistantId.value = helper.value?.id ?? null;
@@ -416,6 +491,11 @@ function goBack(): void {
   } else emit('back');
 }
 function back(): boolean {
+  if (credentials.busy.value) return true;
+  if (credentialConfirmation.value) {
+    credentialConfirmation.value = null;
+    return true;
+  }
   if (budgetBusy.value || budgetIntent.value) {
     budgetError.value =
       'Результат увеличения ещё не подтверждён. Повтори запрос или проверь лимит.';
@@ -791,6 +871,15 @@ defineExpose({ back });
     >
       Загружаем группу…
     </p>
+    <StudentWarningBlock
+      v-if="view === 'list' && credentials.error.value"
+      title="Доступ не подтверждён"
+      :message="credentials.error.value"
+      severity="error"
+      action-label="Проверить данные доступа"
+      :action-disabled="credentials.loading.value || credentials.busy.value || offline"
+      @action="credentials.refresh"
+    />
     <template v-if="view === 'list' && hasSnapshot">
       <p class="headman-group__count">
         {{ members.length }} студентов
@@ -811,7 +900,7 @@ defineExpose({ back });
           :data-role="roleLabel(item)"
           @click="openMember(item)"
         >
-          <span><strong>{{ item.fullName }}</strong><small v-if="roleLabel(item) !== 'Студент'">{{ roleLabel(item) }}</small></span><MobileIcon name="chevron-down" />
+          <span><strong>{{ item.fullName }}</strong><small v-if="roleLabel(item) !== 'Студент'">{{ roleLabel(item) }}</small><small v-if="isHeadman && actorHeadman && !offline && !readOnly && !denied">{{ credentialLabel(item.id) }}</small></span><MobileIcon name="chevron-down" />
         </button>
       </div>
       <p v-if="!loading && !filteredMembers.length">
@@ -823,6 +912,52 @@ defineExpose({ back });
         <h2>{{ member.fullName }}</h2><p>{{ roleLabel(member) }}</p>
       </section>
       <template v-if="view === 'detail'">
+        <section
+          v-if="isHeadman && actorHeadman && !offline && !readOnly && !denied && credentialEligible(member)"
+          class="headman-group__summary"
+          aria-labelledby="headman-credentials-title"
+          :aria-busy="credentials.loading.value || credentials.busy.value"
+        >
+          <h2 id="headman-credentials-title">
+            Доступ студента
+          </h2>
+          <p>{{ credentials.loading.value ? 'Загружаем данные доступа…' : credentialLabel(member.id) }}</p>
+          <StudentWarningBlock
+            v-if="credentials.error.value"
+            title="Доступ не подтверждён"
+            :message="credentials.error.value"
+            severity="error"
+            action-label="Проверить данные доступа"
+            :action-disabled="credentials.busy.value"
+            @action="credentials.refresh"
+          />
+          <button
+            type="button"
+            class="headman-group__configure"
+            :disabled="!credentials.available.value || !credentials.values.value[member.id] || budgetBusy || Boolean(budgetIntent)"
+            @click="confirmCredential('generate')"
+          >
+            Сбросить пароль
+          </button>
+          <button
+            type="button"
+            class="headman-group__configure"
+            :disabled="!credentials.available.value || !credentials.values.value[member.id] || budgetBusy || Boolean(budgetIntent)"
+            @click="confirmCredential('link')"
+          >
+            Выдать ссылку сброса
+          </button>
+          <template v-if="credentials.link.value">
+            <label class="headman-group__field">Ссылка для студента<input
+              :value="credentials.link.value.url"
+              readonly
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+            ></label>
+            <p>Ссылка действует до {{ new Date(credentials.link.value.expiresAt).toLocaleString('ru-RU') }}. После её использования студент задаст свой пароль.</p>
+          </template>
+        </section>
         <section
           v-if="isHeadman && actorHeadman"
           class="headman-group__summary"
@@ -936,6 +1071,30 @@ defineExpose({ back });
         </footer>
       </template>
     </template>
+    <MobileToolsSheet
+      :open="credentialConfirmation !== null"
+      :title="credentialConfirmation?.action === 'generate' ? 'Сбросить пароль?' : 'Выдать ссылку сброса?'"
+      icon-close
+      @update:open="credentialConfirmation = null"
+    >
+      <p>{{ member?.fullName }}</p>
+      <p>{{ credentialConfirmation?.action === 'generate' ? 'Будет создан новый пароль. Текущие сеансы студента завершатся. Пароль останется виден здесь до смены студентом.' : 'Предыдущая ссылка перестанет действовать. Текущий пароль и сеансы сохранятся до использования новой ссылки.' }}</p>
+      <div class="headman-group__dialog-actions">
+        <button
+          type="button"
+          @click="credentialConfirmation = null"
+        >
+          Отмена
+        </button>
+        <button
+          type="button"
+          data-action="confirm"
+          @click="commitCredential"
+        >
+          {{ credentialConfirmation?.action === 'generate' ? 'Сбросить пароль' : 'Выдать ссылку' }}
+        </button>
+      </div>
+    </MobileToolsSheet>
     <MobileToolsSheet
       v-if="isHeadman"
       ref="sheet"

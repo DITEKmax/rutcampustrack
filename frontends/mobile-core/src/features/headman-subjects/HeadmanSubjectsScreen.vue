@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import {
   HeadmanSubjectsApiError,
   type HeadmanSemester,
+  type HeadmanSemesterProgress,
   type HeadmanSubject,
   type HeadmanSubjectAssignment,
   type HeadmanSubjectType,
@@ -543,6 +544,57 @@ function setError(cause: unknown, fallback: string): void {
   }
 }
 
+const progress = ref<HeadmanSemesterProgress | null>(null);
+const progressLoading = ref(false);
+const progressError = ref(false);
+let progressRevision = 0;
+
+async function loadProgress(): Promise<void> {
+  const revision = ++progressRevision;
+  progress.value = null;
+  progressError.value = false;
+  progressLoading.value = false;
+  const api = props.api,
+    groupId = props.groupId;
+  const semester = semesters.value.find((value) => value.id === selectedSemesterId.value);
+  if (!api || groupId === null || !semester || props.offline) return;
+  progressLoading.value = true;
+  try {
+    const next = await api.semesterProgress(groupId, semester);
+    if (revision !== progressRevision || disposed) return;
+    progress.value = next;
+  } catch (cause) {
+    if (revision !== progressRevision || disposed) return;
+    progressError.value = true;
+    if (cause instanceof HeadmanSubjectsApiError && [401, 403].includes(cause.response.status)) {
+      denied.value = true;
+      subjects.value = [];
+    }
+  } finally {
+    if (revision === progressRevision && !disposed) progressLoading.value = false;
+  }
+}
+
+function progressText(subjectId: number, type: HeadmanSubjectType): string {
+  if (progressLoading.value) return 'Загружаем прогресс…';
+  if (!progress.value || props.offline) return 'Прогресс недоступен';
+  const row = progress.value.items.find(
+    (item) => item.subjectId === subjectId && item.lessonType === type,
+  );
+  return `${row?.done ?? 0} из ${row?.total ?? 0} пар пройдено`;
+}
+
+watch(
+  [() => props.api, () => props.groupId, () => props.offline],
+  () => {
+    progressRevision++;
+    progress.value = null;
+    progressLoading.value = false;
+    progressError.value = false;
+  },
+  { flush: 'sync' },
+);
+
 async function load(): Promise<LoadOutcome> {
   const revision = ++loadRevision;
   error.value = null;
@@ -569,6 +621,7 @@ async function load(): Promise<LoadOutcome> {
     const resolvedTeachers = await props.api.resolveTeachers(teacherIds);
     if (revision !== loadRevision || disposed) return 'stale';
     for (const teacher of resolvedTeachers) teachers[teacher.id] = teacher;
+    void loadProgress();
     const confirmed = replacementIntents.value.filter(
       (intent) =>
         replacementBelongsToCurrentActor(intent) &&
@@ -1074,6 +1127,7 @@ async function finishServerClosure(handle: HeadmanPendingClosure): Promise<void>
 }
 
 function changeSemester(): void {
+  void loadProgress();
   if (formOpen.value && editorSubject.value) resetEditor(editorSubject.value);
 }
 function toggleType(type: HeadmanSubjectType): void {
@@ -1460,6 +1514,7 @@ watch(
 defineExpose({ back });
 onBeforeUnmount(() => {
   disposed = true;
+  progressRevision++;
   detailRevision++;
   saveFlow.reset();
   loadRevision += 1;
@@ -1655,6 +1710,15 @@ onBeforeUnmount(() => {
       >
         <span aria-hidden="true">+</span>Добавить предмет
       </button>
+      <button
+        v-if="progressError"
+        type="button"
+        class="headman-subjects__secondary"
+        :disabled="offline || progressLoading"
+        @click="loadProgress"
+      >
+        Повторить загрузку прогресса
+      </button>
       <div class="headman-subjects__list">
         <button
           v-for="subject in subjects"
@@ -1673,7 +1737,10 @@ onBeforeUnmount(() => {
                 ),
               ),
             ].join(', ') || 'Преподаватель не назначен'
-          }}</small></span><MobileIcon name="chevron-down" />
+          }}</small><small
+            v-for="type in subject.lessonTypes"
+            :key="type"
+          >{{ typeLabels[type] }} · {{ progressText(subject.id, type) }}</small></span><MobileIcon name="chevron-down" />
         </button>
       </div>
       <p v-if="!loading && !subjects.length">

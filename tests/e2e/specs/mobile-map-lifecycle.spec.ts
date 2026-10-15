@@ -245,6 +245,115 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
     );
     await expect(svgSection.getByRole('img')).toHaveCount(0);
     await expect(svgSection.getByRole('link', { name: 'Скачать SVG', exact: true })).toHaveCount(0);
+    // Clear only the added SVG of the own control floor; main history stays unchanged.
+    await adminMap.getByLabel('Выбрать SVG', { exact: true }).setInputFiles({
+      name: 'synthetic-map.svg',
+      mimeType: 'image/svg+xml',
+      buffer: svg,
+    });
+    const svgSaved = adminPage.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/academic/map/plans' &&
+        response.request().method() === 'POST',
+    );
+    await adminMap.getByRole('button', { name: 'Сохранить схему', exact: true }).click();
+    const svgReply = await svgSaved;
+    expect(svgReply.status()).toBe(200);
+    const svgPublication = await svgReply.json();
+    expect(
+      svgPublication.status === 'replaced' &&
+        svgPublication.plan.buildingId === other.id &&
+        svgPublication.plan.floorId === partial.plan.floorId &&
+        svgPublication.plan.png.state === 'ready' &&
+        svgPublication.plan.png.sha256 === digest(firstPng) &&
+        svgPublication.plan.svg.state === 'ready' &&
+        svgPublication.plan.svg.sha256 === digest(svg),
+    ).toBe(true);
+    await expect(svgSection.getByRole('link', { name: 'Скачать SVG', exact: true })).toBeVisible();
+    const previewReply = adminPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === '/api/academic/map/plans/target/deletion-preview' &&
+        url.searchParams.get('buildingCode') === otherCode &&
+        url.searchParams.get('floorCode') === '2' &&
+        url.searchParams.get('format') === 'svg'
+      );
+    });
+    await svgSection.getByRole('button', { name: 'Удалить SVG', exact: true }).click();
+    const previewResponse = await previewReply;
+    expect(previewResponse.status()).toBe(200);
+    const formatPreview = await previewResponse.json();
+    expect(
+      formatPreview.buildingCode === otherCode &&
+        formatPreview.floorCode === '2' &&
+        formatPreview.format === 'svg' &&
+        formatPreview.files === 1 &&
+        formatPreview.bytes === svg.length &&
+        /^[0-9a-f]{64}$/.test(formatPreview.previewDigest),
+    ).toBe(true);
+    const deletionDialog = adminMap.getByRole('dialog');
+    await expect(deletionDialog).toContainText(
+      'Формат исчезнет из текущей схемы. Этаж и история схем сохранятся.',
+    );
+    await deletionDialog
+      .getByLabel('Пароль текущего администратора', { exact: true })
+      .fill(TEST_USERS.admin.password);
+    const deletedReply = adminPage.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        new URL(response.url()).pathname === '/api/academic/map/plans/target/deletion',
+    );
+    const resolvedAfterDelete = adminPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === '/api/academic/map/plans/target' &&
+        url.searchParams.get('buildingCode') === otherCode &&
+        url.searchParams.get('floorCode') === '2'
+      );
+    });
+    await deletionDialog.getByRole('button', { name: 'Подтвердить удаление', exact: true }).click();
+    const deletedResponse = await deletedReply;
+    expect(deletedResponse.status()).toBe(200);
+    const deletionInput = deletedResponse.request().postDataJSON();
+    expect(
+      deletionInput.buildingCode === otherCode &&
+        deletionInput.floorCode === '2' &&
+        deletionInput.format === 'svg' &&
+        deletionInput.previewDigest === formatPreview.previewDigest &&
+        typeof deletionInput.operationId === 'string' &&
+        /^[0-9a-f-]{36}$/.test(deletionInput.operationId) &&
+        deletionInput.password === TEST_USERS.admin.password,
+      'The own format deletion binds preview, operation and administrator proof',
+    ).toBe(true);
+    const formatDeleted = await deletedResponse.json();
+    expect(
+      formatDeleted.status === 'COMPLETED' &&
+        formatDeleted.operationId === deletionInput.operationId &&
+        formatDeleted.buildingCode === otherCode &&
+        formatDeleted.floorCode === '2' &&
+        formatDeleted.format === 'svg',
+    ).toBe(true);
+    expect((await resolvedAfterDelete).status()).toBe(200);
+    const retained = await dataset.admin.call(
+      'GET',
+      `/api/academic/map/plans/target?buildingCode=${otherCode}&floorCode=2`,
+    );
+    expect(
+      retained.status === 'found' &&
+        retained.floor.id === partial.plan.floorId &&
+        retained.floor.currentPlan.svg.state === 'absent' &&
+        retained.floor.currentPlan.png.state === 'ready' &&
+        retained.floor.currentPlan.png.sha256 === digest(firstPng),
+    ).toBe(true);
+    await expect(svgSection.getByRole('img')).toHaveCount(0);
+    await expect(svgSection.getByRole('link', { name: 'Скачать SVG', exact: true })).toHaveCount(0);
+    await expect(svgSection.getByRole('status')).toHaveText(
+      'SVG не загружен. Просмотр и скачивание SVG недоступны.',
+    );
+    await expect(pngSection.getByRole('link', { name: 'Скачать PNG', exact: true })).toBeVisible();
+    // End own control-floor format deletion witness.
     const student = await admit(dataset.request, dataset.student, 'STUDENT');
     const readAsset = async (plan: Plan, format: 'png' | 'svg') => {
       const slot = plan[format];

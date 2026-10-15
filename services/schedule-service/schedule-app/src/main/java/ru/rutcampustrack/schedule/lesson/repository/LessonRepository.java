@@ -15,6 +15,44 @@ import ru.rutcampustrack.schedule.lesson.projection.NextHomeworkLessonProjection
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
+    /** Counts current physical occurrences, independently of the requested display page. */
+    @Query(
+            value =
+                    """
+        SELECT l.subject_id AS subjectId, l.lesson_type AS lessonType,
+               count(*) FILTER (WHERE l.status::text IN ('planned', 'active', 'closed')) AS total,
+               count(*) FILTER (WHERE l.status::text = 'closed'
+                   AND l.date + l.start_time <= CAST(:moscowNow AS timestamp)) AS done,
+               count(*) FILTER (WHERE l.status::text NOT IN ('planned', 'active', 'closed', 'cancelled', 'transferred', 'deleted')
+                   OR (l.status::text IN ('planned', 'active', 'closed')
+                       AND (l.date IS NULL OR l.start_time IS NULL OR l.end_time IS NULL
+                           OR l.end_time <= l.start_time))) AS invalid
+          FROM lessons l
+         WHERE l.group_id = :groupId AND l.semester_id = :semesterId
+           AND (l.occurrence_id IS NULL OR EXISTS (
+               SELECT 1 FROM lesson_occurrences o
+                WHERE o.id = l.occurrence_id AND o.current_lesson_id = l.id))
+         GROUP BY l.subject_id, l.lesson_type
+         ORDER BY l.subject_id, l.lesson_type
+        """,
+            nativeQuery = true)
+    List<SemesterTypeCount> semesterTypeCounts(
+            @Param("groupId") long groupId,
+            @Param("semesterId") long semesterId,
+            @Param("moscowNow") String moscowNow);
+
+    interface SemesterTypeCount {
+        Long getSubjectId();
+
+        String getLessonType();
+
+        Long getDone();
+
+        Long getTotal();
+
+        Long getInvalid();
+    }
+
     /** Resolve page flags from canonical pointers, including retained transferred history. */
     @Query(
             value =

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: b9fe493f3071077396de52031d76252c37415152ce958f41f815c0d2367b4474
+// Contract: JS-STUDENT-01-r1; SHA-256: 1726565aea7a18bd576ce77a9e836081958729968d5d0bf87aa3137014f4251d
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -800,6 +800,12 @@ export interface components {
             state: "PAST" | "CURRENT" | "FUTURE";
             weekday: string;
         };
+        StudentAttendanceExplanation: {
+            cancellationReason?: string | null;
+            comment?: string | null;
+            reasonCode?: string | null;
+            reasonText?: string | null;
+        } | null;
         StudentAttendanceGraph: {
             days: components["schemas"]["StudentAttendanceSeriesPoint"][];
             weeks: components["schemas"]["StudentAttendanceSeriesPoint"][];
@@ -813,6 +819,7 @@ export interface components {
             percent: number | null;
         };
         StudentAttendanceHistorySegment: {
+            explanation?: components["schemas"]["StudentAttendanceExplanation"];
             id: string;
             /** @enum {string} */
             status: "PRESENT" | "ABSENT" | "EXCUSED" | "FUTURE" | "NO_DATA";
@@ -820,6 +827,7 @@ export interface components {
         StudentAttendanceLesson: {
             /** Format: date */
             date: string;
+            explanation?: components["schemas"]["StudentAttendanceExplanation"];
             id: string;
             number: string;
             requestOptions: components["schemas"]["StudentAttendanceRequestOption"][];

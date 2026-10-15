@@ -56,7 +56,11 @@ export async function admit(
     const retryAfter = response.headers()['retry-after'] ?? '';
     const seconds = /^[0-9]+$/.test(retryAfter) ? Number(retryAfter) : 0;
     if (Number.isSafeInteger(seconds) && seconds > 0 && seconds <= 60) {
-      await setTimeout(seconds * 1000);
+      const retryAt = performance.now() + seconds * 1000;
+      // Timer wake-up can precede its requested delay on the monotonic clock.
+      for (let remaining = seconds * 1000; remaining > 0; remaining = retryAt - performance.now()) {
+        await setTimeout(Math.ceil(remaining));
+      }
       response = await login();
     }
   }

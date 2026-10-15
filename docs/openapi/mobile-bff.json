@@ -4004,6 +4004,28 @@
           }
         }
       },
+      "StudentAttendanceExplanation" : {
+        "type" : "object",
+        "properties" : {
+          "reasonCode" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "reasonText" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "comment" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "cancellationReason" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        },
+        "nullable" : true
+      },
       "StudentAttendanceHistorySegment" : {
         "required" : [ "id", "status" ],
         "type" : "object",
@@ -4014,6 +4036,9 @@
           "status" : {
             "type" : "string",
             "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FUTURE", "NO_DATA" ]
+          },
+          "explanation" : {
+            "$ref" : "#/components/schemas/StudentAttendanceExplanation"
           }
         }
       },
@@ -4800,6 +4825,9 @@
             "items" : {
               "$ref" : "#/components/schemas/StudentAttendanceRequestOption"
             }
+          },
+          "explanation" : {
+            "$ref" : "#/components/schemas/StudentAttendanceExplanation"
           }
         }
       },

@@ -1,4 +1,4 @@
-import type { Request } from '@playwright/test';
+import type { Request, Response } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
@@ -772,6 +772,32 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   expect((await options()).budget).toEqual(exhausted);
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
 
+  // WEB07: the AUTO ticket belongs to today's lesson, not yesterday's manual ABSENT row.
+  await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+  if (yesterdayDate.getUTCDay() === 0)
+    await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
+  await page.getByRole('button', { name: dataset.today, exact: true }).click();
+  const approvedJournalRead = page.waitForResponse(
+    (reply) =>
+      reply.request().method() === 'GET' &&
+      new URL(reply.url()).pathname === `/api/attendance/reports/lesson/${lessonId}`,
+  );
+  await page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }).click();
+  const approvedJournal = await approvedJournalRead;
+  expect(approvedJournal.status()).toBe(200);
+  expect(await approvedJournal.json()).toMatchObject({
+    lessonId: Number(lessonId),
+    groupId: dataset.group.id,
+    lessonDate: dataset.today,
+  });
+  await expect(
+    page.locator(`.headman-journal__roster-list [data-user-id="${dataset.student.id}"]`),
+  ).toHaveAttribute('data-status', 'present');
+  expect(new URL(page.url()).pathname).toBe('/app/');
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  await page.getByRole('button', { name: 'Заявки', exact: true }).click();
+  // End same-session journal witness; restore the original requests queue.
+
   // One accepted HEADMAN archive filter uses these original own tickets and coverage date.
   await page.getByRole('button', { name: 'Архив', exact: true }).click();
   const archiveMain = page.locator('main.headman-requests[data-request-view="archive"]');
@@ -927,6 +953,79 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   }
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Студенты группы', exact: true })).toBeVisible();
+
+  // WEB08: choose the existing subject and explicitly reselect its actual lesson type.
+  const statsSubject = stats.subjects.find(
+    (item: { id: number }) => item.id === dataset.subject.id,
+  );
+  expect(statsSubject !== undefined).toBe(true);
+  const matchesSubjectStats = (reply: Response) => {
+    if (
+      reply.request().method() !== 'POST' ||
+      new URL(reply.url()).pathname !== '/api/attendance/reports/headman/stats/query'
+    )
+      return false;
+    const query = reply.request().postDataJSON();
+    return (
+      query.semesterId === dataset.semester.id &&
+      query.subjectId === dataset.subject.id &&
+      JSON.stringify(query.lessonTypes) === JSON.stringify(['LECTURE'])
+    );
+  };
+  await page.getByRole('button', { name: 'По предметам', exact: true }).click();
+  const [subjectReply] = await Promise.all([
+    page.waitForResponse(matchesSubjectStats),
+    page
+      .getByRole('region', { name: 'Предметы группы', exact: true })
+      .getByRole('button', {
+        name: new RegExp('^' + statsSubject.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+      })
+      .click(),
+  ]);
+  expect(subjectReply.status()).toBe(200);
+  const subjectTable = page.getByRole('table', {
+    name: 'Посещаемость студентов по выбранному предмету, проценты',
+    exact: true,
+  });
+  await expect(subjectTable).toBeVisible();
+  const lectureType = page
+    .getByRole('group', { name: 'Типы занятий', exact: true })
+    .getByRole('button', { name: 'ЛК', exact: true });
+  await expect(lectureType).toHaveAttribute('aria-pressed', 'true');
+  await lectureType.click();
+  await expect(page.getByText('Выбери хотя бы один тип занятия.', { exact: true })).toBeVisible();
+  const [filteredStatsReply] = await Promise.all([
+    page.waitForResponse(matchesSubjectStats),
+    lectureType.click(),
+  ]);
+  expect(filteredStatsReply.status()).toBe(200);
+  const filteredStats = await filteredStatsReply.json();
+  expect(filteredStats.context).toMatchObject({
+    groupId: dataset.group.id,
+    semesterId: dataset.semester.id,
+    subjectId: dataset.subject.id,
+    lessonTypes: ['LECTURE'],
+  });
+  const filteredStudent = filteredStats.rows.find(
+    (row: { studentId: number }) => row.studentId === dataset.student.id,
+  );
+  expect(
+    filteredStudent?.displayName === dataset.student.displayName &&
+      filteredStudent.metrics.present.denominator > 0,
+  ).toBe(true);
+  await expect(page.getByRole('heading', { name: statsSubject.label, exact: true })).toBeVisible();
+  const filteredRow = subjectTable.getByRole('row').filter({
+    has: page.getByRole('button', { name: dataset.student.displayName, exact: true }),
+  });
+  await expect(filteredRow.getByRole('cell')).toHaveText([
+    ...['present', 'excused', 'absent'].map(
+      (kind) => `${Math.round(filteredStudent.metrics[kind].percent)}%`,
+    ),
+    String(filteredStudent.lateCheckin.submitted),
+  ]);
+  await page.getByRole('button', { name: 'Индивидуально', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Студенты группы', exact: true })).toBeVisible();
+  // End subject/type witness; the original group overview and Back path are restored.
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
   // End HEADMAN33; original logout and all following student/history assertions remain unchanged.
   await logoutPwa(page);

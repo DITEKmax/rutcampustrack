@@ -820,7 +820,10 @@ VALUES (?,?,'Credential','Synthetic',?,?,?) RETURNING id
                                 AuthMethod.PASSWORD,
                                 authority.rolesVersion(),
                                 authority.grants(),
-                                null,
+                                jdbc.queryForObject(
+                                        "SELECT password_hash FROM users WHERE id=?",
+                                        String.class,
+                                        userId),
                                 "credential-it",
                                 null));
         assertThat(created.succeeded()).isTrue();

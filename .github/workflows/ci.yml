@@ -376,6 +376,7 @@ jobs:
                   assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
                       'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
                   assert case.get('classname') == package
+                  message = message.removeprefix(failure.get('type') + ': ')
                   assert re.fullmatch(r'\s*Expecting value to be true but was false\s*', message)
                   assert re.search(r'(?m)^\s*at ' + re.escape(proof['ruleFrame']) + r'\s*$', failure.text or '')
                   proof.update(affectedRows=1, expectedRetentionEqual=True, observedRetentionEqual=False)

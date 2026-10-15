@@ -14,6 +14,176 @@ test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 test.describe.configure({ mode: 'default' });
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
 
+// Only the existing HEADMAN/TEACHER case needs completed journal data. Preparation
+// has the dataset's existing 180s fixture budget; its original 60s body stays intact.
+const it = test.extend<{
+  teacherJournalSeed: {
+    lessonId: number;
+    date: string;
+    png: Buffer;
+    foreignLessonId: number;
+    foreignRequestId: string;
+    foreignAttachmentId: string;
+  };
+}>({
+  teacherJournalSeed: [
+    async ({ activeHeadmanDataset: dataset }, use) => {
+      const date = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+        .toISOString()
+        .slice(0, 10);
+      const assignment = dataset.subject.assignments[0];
+      expect(
+        dataset.semester.dateFrom <= date &&
+          date <= dataset.semester.dateTo &&
+          assignment.validFrom <= date &&
+          (assignment.validUntilExclusive == null || date < assignment.validUntilExclusive),
+      ).toBe(true);
+      const past = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: dataset.subject.id,
+          assignmentId: assignment.id,
+          date,
+          lessonNumber: 1,
+          classroom: 'Синтетический журнал',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      const png = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+        'base64',
+      );
+      // A genuine foreign ticket needs its own headman and a different teacher;
+      // the existing foreign student remains the requester and has no own-group grant.
+      const foreignHeadman = await dataset.user('STUDENT', dataset.otherGroup.id);
+      const foreignTeacher = await dataset.user('TEACHER');
+      await dataset.admin.call('PUT', `/api/academic/groups/${dataset.otherGroup.id}/headman`, {
+        studentId: foreignHeadman.id,
+        expectedHeadmanId: null,
+      });
+      const foreignHeadmanActor = await admit(dataset.request, foreignHeadman, 'HEADMAN');
+      let foreignSubject = await foreignHeadmanActor.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: `foreign-journal-${dataset.otherGroup.id}`,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [
+            {
+              teacherId: foreignTeacher.id,
+              semesterId: dataset.semester.id,
+              lessonType: 'LECTURE',
+              validFrom: dataset.semester.dateFrom,
+              validUntilExclusive: null,
+            },
+          ],
+        },
+        [201],
+      );
+      await expect
+        .poll(
+          async () => {
+            foreignSubject = await foreignHeadmanActor.call(
+              'GET',
+              `/api/academic/subjects/${foreignSubject.id}`,
+            );
+            return foreignSubject.assignments?.length ?? 0;
+          },
+          { timeout: 60000, message: 'Foreign assignment adoption becomes published' },
+        )
+        .toBeGreaterThan(0);
+      const foreignLesson = await foreignHeadmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.otherGroup.id,
+          subjectId: foreignSubject.id,
+          assignmentId: foreignSubject.assignments[0].id,
+          date: dataset.tomorrow,
+          lessonNumber: 1,
+          classroom: 'Синтетическая чужая группа',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      const foreignStudent = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+      const foreignCreated = await dataset.request.post('/api/v1/student/requests/excuse', {
+        headers: { ...foreignStudent.headers(), 'Idempotency-Key': randomUUID() },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(foreignLesson.physicalLessonId)],
+                reason: 'ILLNESS',
+                comment: `foreign-ticket-${dataset.otherGroup.id}`,
+              }),
+            ),
+          },
+          files: { name: 'foreign-journal.png', mimeType: 'image/png', buffer: png },
+        },
+      });
+      expect(foreignCreated.status()).toBe(200);
+      const foreignRequest = await foreignCreated.json();
+      expect(foreignRequest.attachments).toHaveLength(1);
+      expect(foreignRequest.attachments[0].state).toBe('ACTIVE');
+      // PLANNED -> ACTIVE -> CLOSED takes two real scheduler ticks. No SQL or clock writes.
+      let report: {
+        lessonStatus: string;
+        entries: { userId: number; status: string; markRevision: string }[];
+      };
+      await expect
+        .poll(
+          async () => {
+            report = (await dataset.headmanActor.call(
+              'GET',
+              `/api/attendance/reports/lesson/${past.physicalLessonId}`,
+            )) as typeof report;
+            return (
+              report.lessonStatus === 'CLOSED' &&
+              [dataset.student.id, dataset.headman.id, dataset.assistant.id].every((userId) => {
+                const row = report.entries.find((entry) => Number(entry.userId) === userId);
+                return (
+                  row?.status === 'absent' &&
+                  typeof row.markRevision === 'string' &&
+                  row.markRevision.length > 0
+                );
+              })
+            );
+          },
+          { timeout: 150000, intervals: [1000], message: 'Own journal lesson closes with absence' },
+        )
+        .toBe(true);
+      const manual = report!.entries.find((row) => Number(row.userId) === dataset.headman.id)!;
+      await dataset.headmanActor.call(
+        'PUT',
+        `/api/attendance/lessons/${past.physicalLessonId}/students/${dataset.headman.id}`,
+        {
+          status: 'EXCUSED',
+          excuseType: 'ILLNESS',
+          comment: 'Синтетическая ручная причина',
+          expectedStatus: 'ABSENT',
+          expectedRevision: manual.markRevision,
+        },
+      );
+      await use({
+        lessonId: Number(past.physicalLessonId),
+        date,
+        png,
+        foreignLessonId: Number(foreignLesson.physicalLessonId),
+        foreignRequestId: foreignRequest.summary.id,
+        foreignAttachmentId: foreignRequest.attachments[0].id,
+      });
+    },
+    { timeout: 180000 },
+  ],
+});
+
 async function selectTomorrowHomework(page: Page, dataset: MobileDataset): Promise<void> {
   await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(
     'aria-selected',
@@ -268,11 +438,13 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     ).toBe(true);
   });
 
-  test('HEADMAN marks the real roster and TEACHER reads without acquiring write permission', async ({
+  it('HEADMAN marks the real roster and TEACHER reads without acquiring write permission', async ({
     page,
     activeHeadmanDataset: dataset,
     ignoreHTTPSErrors,
+    teacherJournalSeed: journalSeed,
   }, info) => {
+    let approvedRequest: { id: string; attachmentId: string };
     await loginPwa(page, dataset.headman);
     await selectPwaRole(page, 'Староста');
     await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
@@ -456,6 +628,38 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         reason: 'ELIGIBLE',
       });
       expect(await budget()).toEqual(beforeBudget);
+      const created = await studentPage.request.post('/api/v1/student/requests/excuse', {
+        headers: { ...headers, 'Idempotency-Key': randomUUID() },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(journalSeed.lessonId)],
+                reason: 'ILLNESS',
+                comment: 'Синтетическое заявление для журнала преподавателя',
+              }),
+            ),
+          },
+          files: { name: 'teacher-journal.png', mimeType: 'image/png', buffer: journalSeed.png },
+        },
+      });
+      expect(created.status()).toBe(200);
+      const request = await created.json();
+      expect(request.attachments).toHaveLength(1);
+      expect(request.attachments[0].state).toBe('ACTIVE');
+      const path = `/api/attendance/requests/${request.summary.id}`;
+      const pending = await dataset.headmanActor.call('GET', path);
+      const approved = await dataset.headmanActor.call('POST', `${path}/decision`, {
+        decision: 'APPROVED',
+        reason: null,
+        expectedRevision: pending.decisionRevision,
+        excludedOccurrenceIds: [],
+        requestKey: randomUUID(),
+      });
+      expect(approved.summary.status).toBe('APPROVED');
+      approvedRequest = { id: request.summary.id, attachmentId: request.attachments[0].id };
     } finally {
       await studentContext.close();
     }
@@ -553,6 +757,14 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       (await dataset.request.get(attachmentPath, { headers: foreign.headers() })).status(),
     );
     await logoutPwa(page);
+    const teacherDay = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/teacher/day' &&
+        url.searchParams.get('date') === dataset.today &&
+        response.request().method() === 'GET'
+      );
+    });
     const { accessToken } = await loginPwa(page, dataset.teacher);
     await expect(page.locator('.teacher-feature-owner')).toBeVisible();
     const lesson = await page.request.get(
@@ -561,6 +773,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     );
     expect(lesson.status()).toBe(200);
     expect(JSON.stringify(await lesson.json())).toContain(dataset.subject.name);
+    const beforeTeacherWrite = await dataset.headmanActor.call('GET', reportPath);
     const denied = await page.request.put(
       `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`,
       {
@@ -569,6 +782,308 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       },
     );
     expect(denied.status()).toBe(403);
+    expect(await dataset.headmanActor.call('GET', reportPath)).toEqual(beforeTeacherWrite);
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const dayResponse = await teacherDay;
+    expect(dayResponse.status()).toBe(200);
+    const day = await dayResponse.json();
+    expect(day.date).toBe(dataset.today);
+    const ownDayLesson = day.lessons.find((row: { id: string }) => row.id === String(id));
+    expect(ownDayLesson).toMatchObject({
+      groupId: String(dataset.group.id),
+      subjectId: String(dataset.subject.id),
+      date: dataset.today,
+      oneOff: true,
+      room: 'Синтетическая аудитория',
+    });
+    const todayCard = page
+      .locator(`[data-teacher-action="lesson-open"][data-lesson-id="${id}"]`)
+      .first();
+    await expect(todayCard).toContainText(dataset.subject.name);
+    await expect(todayCard).toContainText(ownDayLesson.groupName);
+    await expect(todayCard).toContainText('Синтетическая аудитория');
+    await expect(todayCard).toContainText(
+      `${ownDayLesson.startsAt.slice(0, 5)}–${ownDayLesson.endsAt.slice(0, 5)}`,
+    );
+    const detailRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === `/api/v1/teacher/lessons/${id}` &&
+        response.request().method() === 'GET',
+    );
+    await todayCard.click();
+    expect((await detailRead).status()).toBe(200);
+    await expect(page.getByRole('heading', { name: 'Пара', exact: true })).toBeVisible();
+    await expect(page.locator('.teacher-roster')).toContainText(dataset.student.displayName);
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    const catalogRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/teacher/catalog' &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        response.request().method() === 'GET'
+      );
+    });
+    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    const catalogResponse = await catalogRead;
+    expect(catalogResponse.status()).toBe(200);
+    const catalog = await catalogResponse.json();
+    expect(catalog.groups.map((group: { id: string }) => group.id)).toEqual([
+      String(dataset.group.id),
+    ]);
+    const groupName = catalog.groups[0].name;
+    await page.getByRole('button', { name: 'Группа', exact: true }).click();
+    await expect(page.getByRole('option')).toHaveCount(1);
+    await expect(page.getByRole('option', { name: groupName, exact: true })).toBeVisible();
+    expect(
+      catalog.groups.some((group: { id: string }) => group.id === String(dataset.otherGroup.id)),
+    ).toBe(false);
+    await page.getByRole('option', { name: groupName, exact: true }).click();
+    await page.getByRole('button', { name: 'Предмет', exact: true }).click();
+    await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
+    const journalRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/teacher/journal' &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        url.searchParams.get('groupId') === String(dataset.group.id) &&
+        url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+        url.searchParams.get('pastOnly') === 'true' &&
+        response.request().method() === 'GET'
+      );
+    });
+    await page.getByRole('button', { name: 'Открыть журнал и выгрузку', exact: true }).click();
+    await page
+      .locator('.teacher-journal')
+      .getByRole('button', { name: 'Лекция', exact: true })
+      .click();
+    const journalResponse = await journalRead;
+    expect(journalResponse.status()).toBe(200);
+    expect(
+      new URL(journalResponse.url()).searchParams
+        .getAll('lessonType')
+        .map((type) => type.toUpperCase()),
+    ).toEqual(['LECTURE']);
+    const journal = await journalResponse.json();
+    expect(journal.lessons).toHaveLength(1);
+    expect(journal.lessons[0]).toMatchObject({
+      id: String(journalSeed.lessonId),
+      date: journalSeed.date,
+      groupId: String(dataset.group.id),
+      subjectId: String(dataset.subject.id),
+      status: 'closed',
+    });
+    const expectedNames = [dataset.student, dataset.headman, dataset.assistant]
+      .map((user) => user.displayName)
+      .sort((a, b) => a.localeCompare(b, 'ru'));
+    expect(journal.students.map((student: { displayName: string }) => student.displayName)).toEqual(
+      expectedNames,
+    );
+    const table = page.locator('.teacher-journal__table');
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+    await expect(table.locator('thead time')).toHaveAttribute('datetime', journalSeed.date);
+    const journalStudent = journal.students.find(
+      (row: { studentId: string }) => row.studentId === String(dataset.student.id),
+    );
+    expect(journalStudent.cells).toEqual([
+      expect.objectContaining({
+        lessonId: String(journalSeed.lessonId),
+        status: 'excused',
+        ticketId: approvedRequest!.id,
+      }),
+    ]);
+    const journalManual = journal.students.find(
+      (row: { studentId: string }) => row.studentId === String(dataset.headman.id),
+    );
+    expect(journalManual.cells).toEqual([
+      expect.objectContaining({
+        lessonId: String(journalSeed.lessonId),
+        status: 'excused',
+        ticketId: null,
+        excuseType: 'ILLNESS',
+      }),
+    ]);
+    const journalAbsent = journal.students.find(
+      (row: { studentId: string }) => row.studentId === String(dataset.assistant.id),
+    );
+    expect(journalAbsent.cells).toEqual([
+      expect.objectContaining({ lessonId: String(journalSeed.lessonId), status: 'absent' }),
+    ]);
+    await expect(
+      table
+        .getByRole('row')
+        .filter({ hasText: dataset.assistant.displayName })
+        .getByLabel('Отсутствовал', { exact: true }),
+    ).toBeVisible();
+    const excusePath = `/api/v1/teacher/excuses/${approvedRequest!.id}`;
+    const teacherAttachmentPath = `${excusePath}/attachments/${approvedRequest!.attachmentId}`;
+    const excuseRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === excusePath && response.request().method() === 'GET',
+    );
+    const teacherFileRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === teacherAttachmentPath &&
+        response.request().method() === 'GET',
+    );
+    await table
+      .getByRole('row')
+      .filter({ hasText: dataset.student.displayName })
+      .getByRole('button', { name: /Уважительная причина/ })
+      .click();
+    const excuseResponse = await excuseRead;
+    expect(excuseResponse.status()).toBe(200);
+    const excuse = await excuseResponse.json();
+    expect(excuse).toMatchObject({
+      id: approvedRequest!.id,
+      studentId: String(dataset.student.id),
+      studentName: dataset.student.displayName,
+      groupId: String(dataset.group.id),
+      status: 'approved',
+      excuseType: 'illness',
+      decisionBy: String(dataset.headman.id),
+      comment: 'Синтетическое заявление для журнала преподавателя',
+    });
+    expect(excuse.lessons.map((row: { id: string }) => row.id)).toEqual([
+      String(journalSeed.lessonId),
+    ]);
+    expect(
+      Number.isFinite(Date.parse(excuse.createdAt)) &&
+        Number.isFinite(Date.parse(excuse.decisionAt)),
+    ).toBe(true);
+    const excuseMain = page.getByRole('main', { name: 'Причина отсутствия', exact: true });
+    await expect(excuseMain).toContainText(dataset.student.displayName);
+    await expect(excuseMain).toContainText('Уважительная причина · Одобрена');
+    await expect(excuseMain).toContainText('Болезнь');
+    await expect(excuseMain).toContainText(excuse.comment);
+    const instants = await page.evaluate(
+      (values: string[]) =>
+        values.map((value) =>
+          new Intl.DateTimeFormat('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+          }).format(new Date(value)),
+        ),
+      [excuse.createdAt, excuse.decisionAt],
+    );
+    const details = excuseMain.locator('.teacher-screen__details > div');
+    await expect(
+      details.filter({ has: page.getByText('Подана', { exact: true }) }).locator('dd'),
+    ).toHaveText(instants[0]);
+    await expect(
+      details.filter({ has: page.getByText('Решение старосты', { exact: true }) }).locator('dd'),
+    ).toContainText(instants[1]);
+    await expect(
+      excuseMain.getByRole('button', { name: /Одобрить|Отклонить|Изменить отметку|Сохранить/ }),
+    ).toHaveCount(0);
+    const teacherFile = await teacherFileRead;
+    expect(teacherFile.status()).toBe(200);
+    expect(teacherFile.headers()['content-type']).toContain('image/png');
+    expect((await teacherFile.body()).equals(journalSeed.png)).toBe(true);
+    const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
+    await expect(preview).toBeVisible();
+    await expect
+      .poll(() =>
+        preview.evaluate(
+          (element) =>
+            element instanceof HTMLImageElement &&
+            element.complete &&
+            element.naturalWidth === 1 &&
+            element.naturalHeight === 1,
+        ),
+      )
+      .toBe(true);
+    const teacherPopupOpened = page.context().waitForEvent('page');
+    await excuseMain
+      .getByRole('button', { name: 'Открыть teacher-journal.png', exact: true })
+      .click();
+    const teacherPopup = await teacherPopupOpened;
+    try {
+      await teacherPopup.waitForURL(/^blob:/);
+      expect(
+        await teacherPopup.evaluate(async (expected) => {
+          const response = await fetch(location.href);
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          return (
+            bytes.length === expected.length &&
+            bytes.every((byte, index) => byte === expected[index])
+          );
+        }, Array.from(journalSeed.png)),
+      ).toBe(true);
+    } finally {
+      await teacherPopup.close();
+    }
+    await excuseMain.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+    await expect(
+      page.locator('.teacher-journal').getByRole('button', { name: 'Предмет', exact: true }),
+    ).toContainText(dataset.subject.name);
+    const manualRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === `/api/v1/teacher/lessons/${journalSeed.lessonId}` &&
+        response.request().method() === 'GET',
+    );
+    await table
+      .getByRole('row')
+      .filter({ hasText: dataset.headman.displayName })
+      .getByRole('button', { name: /Уважительная причина/ })
+      .click();
+    const manualResponse = await manualRead;
+    expect(manualResponse.status()).toBe(200);
+    expect(
+      (await manualResponse.json()).roster.find(
+        (row: { studentId: string }) => row.studentId === String(dataset.headman.id),
+      ),
+    ).toMatchObject({
+      ticketId: null,
+      status: 'excused',
+      source: 'NO_TICKET',
+      excuseType: 'ILLNESS',
+    });
+    const manualMain = page.getByRole('main', { name: 'Причина отсутствия', exact: true });
+    await expect(manualMain).toContainText(dataset.headman.displayName);
+    await expect(manualMain).toContainText('Болезнь');
+    await expect(manualMain).toContainText('Синтетическая ручная причина');
+    await expect(
+      manualMain.getByText(/^(Автор|Подана|Решение старосты|Комментарий к решению)$/),
+    ).toHaveCount(0);
+    await expect(
+      manualMain.getByRole('button', { name: /Одобрить|Отклонить|Изменить отметку|Сохранить/ }),
+    ).toHaveCount(0);
+    // Keep the accepted no-ticket explanation oracle even if it exposes the current UI gap.
+    // Soft failure retains the remaining real isolation and return-context observations.
+    await expect
+      .soft(manualMain)
+      .toContainText(
+        /(?:заявк[аи]|заявлени[ея])\s+(?:нет|не существует)|без\s+(?:заявки|заявления)/i,
+      );
+    await manualMain.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+    await expect(
+      page.getByRole('heading', { name: new RegExp(`Журнал.*${groupName}`) }),
+    ).toBeVisible();
+    for (const path of [
+      `/api/v1/teacher/lessons/${journalSeed.foreignLessonId}`,
+      `/api/v1/teacher/excuses/${journalSeed.foreignRequestId}`,
+      `/api/v1/teacher/excuses/${journalSeed.foreignRequestId}/attachments/${journalSeed.foreignAttachmentId}`,
+    ]) {
+      const forbidden = await page.request.get(path, { headers });
+      expect([403, 404]).toContain(forbidden.status());
+      expect(forbidden.headers()['content-type'] ?? '').not.toContain('image/png');
+      const forbiddenBody = await forbidden.body();
+      expect(forbiddenBody.includes(journalSeed.png)).toBe(false);
+      expect(forbiddenBody.includes(Buffer.from(dataset.foreignStudent.displayName))).toBe(false);
+      expect(forbiddenBody.includes(Buffer.from(`foreign-ticket-${dataset.otherGroup.id}`))).toBe(
+        false,
+      );
+    }
+    const ownStillReadable = await page.request.get(excusePath, { headers });
+    expect(ownStillReadable.status()).toBe(200);
+    expect((await ownStillReadable.json()).id).toBe(approvedRequest!.id);
+    const ownFileStillReadable = await page.request.get(teacherAttachmentPath, { headers });
+    expect(ownFileStillReadable.status()).toBe(200);
+    expect((await ownFileStillReadable.body()).equals(journalSeed.png)).toBe(true);
   });
 
   test('STUDENT helper marks with its capability and revocation denies the same effect', async ({

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Locator, Page, Request, Response } from '@playwright/test';
+import type { Locator, Page, Request, Response, TestInfo } from '@playwright/test';
 import {
   Actor,
   MobileDataset,
@@ -26,8 +26,10 @@ registerPrivateSuite();
 test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile', async ({
   page,
   dataset,
-}) => {
+}, info) => {
   test.setTimeout(120000);
+  const retryUntilMs =
+    (retryStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
   const path = `/api/academic/homeworks/${dataset.homework.id}`;
   const historyPath = `${path}/history`;
   const feedPath = `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`;
@@ -174,7 +176,9 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   );
   await logoutPwa(page);
 
-  const reopenedStudent = await loginPwa(page, dataset.student);
+  const reopenedStudent = await loginPwa(page, dataset.student, {
+    retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+  });
   const readStudent = new Actor(
     dataset.request,
     reopenedStudent.accessToken,
@@ -427,6 +431,13 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   await expect(page.locator('.notification-card')).toHaveCount(0);
 });
 
+// Charge requested page/scenario setup and the body to one login budget.
+// Earlier runner/auto-fixture overhead is unmeasured; the original timeout still applies.
+const retryStartedAt = new WeakMap<TestInfo, number>();
+test.beforeEach(async ({}, info) => {
+  retryStartedAt.set(info, Date.now());
+});
+
 // These mutations must not reuse the original worker-scoped lesson/homework.
 const isolated = test.extend<{ scenario: MobileDataset }>({
   scenario: async ({ dataset, teachingInstant }, use) => {
@@ -575,8 +586,10 @@ async function publishHomework(
 // This does not claim that the Assistant carrier has the HEADMAN wizard.
 isolated(
   'MANAGE_HOMEWORK next lesson and completed binding survive transfer then open as read-only non-author archive @real-mobile',
-  async ({ page, scenario: dataset }) => {
+  async ({ page, scenario: dataset }, info) => {
     test.setTimeout(120000);
+    const retryUntilMs =
+      (retryStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
     const firstDate = shifted(dataset.today, 21);
     const editedDate = shifted(firstDate, 1);
     const targetDate = shifted(firstDate, 2);
@@ -610,7 +623,9 @@ isolated(
     );
     expect(foreign.status()).toBe(403);
 
-    await loginPwa(page, user);
+    await loginPwa(page, user, {
+      retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+    });
     await openAssistant(page, 'Домашние задания');
     await page.getByLabel('Дата', { exact: true }).fill(firstDate);
     await page.getByRole('button', { name: /^Пара 2 ·/ }).click();

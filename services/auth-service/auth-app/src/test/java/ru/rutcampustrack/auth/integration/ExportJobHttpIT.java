@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +14,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.auth.dto.*;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
 
 /** Actual HTTP filters/JWT/session authority/PG/Redis ticket path; no mocked auth admission. */
 class ExportJobHttpIT extends AbstractIntegrationTest {
@@ -78,9 +81,11 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
         assertThat(historicalJobId).isNotEqualTo(id);
         long historicalAuditId =
                 jdbc.queryForObject(
-                        "INSERT INTO audit_log(user_id,action,target_type,extras,succeeded,created_at) "
-                                + "SELECT id,'registry.export','ADMIN_USERS',?::jsonb,TRUE,NOW()-interval '1 day' "
-                                + "FROM users WHERE login='admin' RETURNING id",
+                        "INSERT INTO"
+                            + " audit_log(user_id,action,target_type,extras,succeeded,created_at)"
+                            + " SELECT"
+                            + " id,'registry.export','ADMIN_USERS',?::jsonb,TRUE,NOW()-interval '1"
+                            + " day' FROM users WHERE login='admin' RETURNING id",
                         Long.class,
                         mapper.writeValueAsString(
                                 Map.of(
@@ -131,7 +136,8 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
         }
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND extras->>'jobId'=?",
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " extras->>'jobId'=?",
                                 Long.class,
                                 id.toString()))
                 .isEqualTo(1);
@@ -144,7 +150,8 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                 .isEqualTo(1);
         for (String envelope :
                 jdbc.queryForList(
-                        "SELECT payload::text FROM auth_outbox WHERE event_type='export.state.changed'",
+                        "SELECT payload::text FROM auth_outbox WHERE"
+                                + " event_type='export.state.changed'",
                         String.class)) {
             assertThat(
                             ru.rutcampustrack.auth.events.EventSchemaValidator.validate(
@@ -211,7 +218,8 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                                     "UPDATE semesters SET is_active=FALSE WHERE id=?",
                                     originalSemester);
                             return jdbc.queryForObject(
-                                    "INSERT INTO semesters(name,date_from,date_to,is_active) VALUES(?,?,?,TRUE) RETURNING id",
+                                    "INSERT INTO semesters(name,date_from,date_to,is_active)"
+                                            + " VALUES(?,?,?,TRUE) RETURNING id",
                                     Long.class,
                                     "Teacher export scope " + UUID.randomUUID(),
                                     today.minusDays(2),
@@ -225,13 +233,14 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
             long teacher =
                     jdbc.queryForObject(
                             """
-                    INSERT INTO users(login,password_hash,last_name,first_name,role,status)
-                    SELECT ?,password_hash,'Экспорт','Преподаватель','teacher','active' FROM users WHERE login='teacher' RETURNING id
-                    """,
+INSERT INTO users(login,password_hash,last_name,first_name,role,status)
+SELECT ?,password_hash,'Экспорт','Преподаватель','teacher','active' FROM users WHERE login='teacher' RETURNING id
+""",
                             Long.class,
                             ownLogin);
             jdbc.update(
-                    "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'teacher','active',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
+                    "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)"
+                            + " VALUES(?,'teacher','active',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
                     teacher);
             long group =
                     jdbc.queryForObject(
@@ -361,10 +370,10 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                                         "SELECT id FROM users WHERE login='admin'", Long.class);
                         jdbc.update(
                                 """
-                        INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,
-                            source_assignment_id,effective_from,source_valid_until,state,operation_kind,requested_cutoff)
-                        VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,'PREPARED','CLOSE_UNASSIGN',?)
-                        """,
+INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,
+    source_assignment_id,effective_from,source_valid_until,state,operation_kind,requested_cutoff)
+VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,'PREPARED','CLOSE_UNASSIGN',?)
+""",
                                 operation,
                                 admin,
                                 UUID.randomUUID(),
@@ -373,18 +382,25 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                                 today.plusDays(3),
                                 today);
                         jdbc.update(
-                                "UPDATE assignment_replacement_operations SET state='APPLIED',schedule_receipt_state='APPLIED' WHERE operation_id=?",
+                                "UPDATE assignment_replacement_operations SET"
+                                        + " state='APPLIED',schedule_receipt_state='APPLIED' WHERE"
+                                        + " operation_id=?",
                                 operation);
                         jdbc.queryForObject(
-                                "SELECT set_config('rutcampustrack.assignment_replacement_operation_id',?,TRUE)",
+                                "SELECT"
+                                    + " set_config('rutcampustrack.assignment_replacement_operation_id',?,TRUE)",
                                 String.class,
                                 operation.toString());
                         jdbc.update(
-                                "UPDATE assignments SET valid_until_exclusive=?,lifecycle_state='CLOSED' WHERE id=?",
+                                "UPDATE assignments SET"
+                                        + " valid_until_exclusive=?,lifecycle_state='CLOSED' WHERE"
+                                        + " id=?",
                                 today,
                                 assignmentA);
                         jdbc.update(
-                                "UPDATE assignment_replacement_operations SET state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE operation_id=?",
+                                "UPDATE assignment_replacement_operations SET"
+                                    + " state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE"
+                                    + " operation_id=?",
                                 operation);
                     });
             for (var denied : List.of(a, ab)) {
@@ -482,7 +498,8 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                     .isTrue();
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT count(*) FROM auth_export_jobs WHERE job_id IN (?,?,?) AND state='ready' AND content IS NOT NULL",
+                                    "SELECT count(*) FROM auth_export_jobs WHERE job_id IN (?,?,?)"
+                                            + " AND state='ready' AND content IS NOT NULL",
                                     Long.class,
                                     a.id(),
                                     ab.id(),
@@ -513,7 +530,8 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
     private long teacherSubject(long group) {
         long subject =
                 jdbc.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",
+                        "INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING"
+                                + " id",
                         Long.class,
                         "Teacher export subject " + UUID.randomUUID(),
                         group);
@@ -526,7 +544,9 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
     private long teacherAssignment(
             long teacher, long group, long subject, long semester, java.time.LocalDate from) {
         return jdbc.queryForObject(
-                "INSERT INTO assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from) VALUES(?,?,?,?,'lecture',?) RETURNING id",
+                "INSERT INTO"
+                    + " assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from)"
+                    + " VALUES(?,?,?,?,'lecture',?) RETURNING id",
                 Long.class,
                 teacher,
                 group,
@@ -560,7 +580,10 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                                 SECRET));
                 assertThat(
                                 jdbc.queryForObject(
-                                        "SELECT state='preparing' AND content IS NULL AND NOT(identity ? 'teacherScope' AND identity->'teacherScope'<>'null'::jsonb) FROM auth_export_jobs WHERE job_id=?",
+                                        "SELECT state='preparing' AND content IS NULL AND"
+                                                + " NOT(identity ? 'teacherScope' AND"
+                                                + " identity->'teacherScope'<>'null'::jsonb) FROM"
+                                                + " auth_export_jobs WHERE job_id=?",
                                         Boolean.class,
                                         id))
                         .as("unproven completion stores no ready bytes or scope")

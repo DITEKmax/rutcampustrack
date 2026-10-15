@@ -704,7 +704,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
       ticketActions.filter(
         (event) =>
           event.action === 'REQUEST_DECIDED' &&
-          event.before?.status === 'PENDING' &&
+          event.before?.status === 'SUBMITTED' &&
           event.after?.status === 'APPROVED',
       ).length,
     ).toBe(1);

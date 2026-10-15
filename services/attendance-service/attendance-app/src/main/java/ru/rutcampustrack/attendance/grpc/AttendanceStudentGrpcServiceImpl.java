@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -32,6 +34,9 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 @GrpcService
 public class AttendanceStudentGrpcServiceImpl
         extends AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceImplBase {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(AttendanceStudentGrpcServiceImpl.class);
 
     private final StudentCheckinService checkinService;
     private final StudentAttendanceSnapshotService snapshotService;
@@ -113,6 +118,10 @@ public class AttendanceStudentGrpcServiceImpl
                     toProto(projection, projectionRequestOptions(claims, request, projection)));
             observer.onCompleted();
         } catch (RuntimeException error) {
+            log.warn(
+                    "Student projection failed: kind={}, stage={}",
+                    projectionFailureKind(error),
+                    projectionFailureStage(error));
             observer.onError(mapError(error));
         }
     }
@@ -841,6 +850,39 @@ public class AttendanceStudentGrpcServiceImpl
             case AUTO_SCHEDULER ->
                     ru.rutcampustrack.attendance.grpc.AttendanceSource.ATTENDANCE_SOURCE_SYSTEM;
         };
+    }
+
+    // Closed diagnostic values only: never emit exception text, identifiers or stack traces.
+    private static String projectionFailureKind(RuntimeException error) {
+        if (error instanceof StudentProjectionException projection) return projection.kind().name();
+        if (error instanceof AcademicServiceUnavailableException) return "ACADEMIC_DEPENDENCY";
+        if (error instanceof ScheduleServiceUnavailableException) return "SCHEDULE_DEPENDENCY";
+        if (error instanceof io.grpc.StatusRuntimeException rpc)
+            return "RPC_" + rpc.getStatus().getCode().name();
+        return "UNKNOWN";
+    }
+
+    private static String projectionFailureStage(RuntimeException error) {
+        for (StackTraceElement frame : error.getStackTrace()) {
+            String method = frame.getMethodName();
+            if (frame.getClassName().equals(AcademicGrpcClient.class.getName())) {
+                if (method.equals("resolveStudentProjectionScope")) return "ACADEMIC_SCOPE";
+                if (method.equals("getGroupMembers")) return "ACADEMIC_MEMBERS";
+            }
+            if (frame.getClassName().equals(ScheduleGrpcClient.class.getName())
+                    && method.equals("getLessonsByGroup")) return "SCHEDULE_LESSONS";
+            if (!frame.getClassName().equals(StudentAttendanceProjectionService.class.getName()))
+                continue;
+            if (method.equals("currentGroupLessons")) return "CURRENT_GROUP_SCOPE";
+            if (method.equals("rankSubjectMap")) return "GROUP_CATALOGUE";
+            if (method.equals("groupSeries") || method.startsWith("lambda$groupSeries$"))
+                return "GROUP_SERIES";
+            if (method.equals("markIndex")) return "OWN_MARKS";
+            if (method.equals("materialize") || method.equals("loadLessons"))
+                return "LESSON_SNAPSHOT";
+            if (method.equals("rankedCohort") || method.equals("rosterNames")) return "RANK";
+        }
+        return "UNKNOWN";
     }
 
     private static RuntimeException mapError(RuntimeException error) {

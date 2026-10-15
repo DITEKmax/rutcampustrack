@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
 import { execFileSync } from 'node:child_process';
 import type { BrowserContext, Page, Request, Response, TestInfo } from '@playwright/test';
@@ -2520,6 +2521,7 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
       page.goto('/mini-app/'),
     ]);
     expect(admitted.status()).toBe(200);
+    let sourceAccessToken: string = (await admitted.json()).accessToken;
     expect(current.status()).toBe(200);
     let session = await current.json();
     expect(String(session.userId) === String(dataset.headman.id)).toBe(true);
@@ -2547,7 +2549,9 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
       await selectPwaRole(page, 'Староста');
       const response = await selected;
       expect(response.status()).toBe(200);
-      session = (await response.json()).session;
+      const selection = await response.json();
+      session = selection.session;
+      sourceAccessToken = selection.accessToken;
     }
     expect(
       String(session.userId) === String(dataset.headman.id) && session.activeRole === 'HEADMAN',
@@ -2630,7 +2634,9 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
       } finally {
         await denied.dispose();
       }
-      const source = await page.request.get('/api/auth/session');
+      const source = await page.request.get('/api/auth/session', {
+        headers: { Authorization: `Bearer ${sourceAccessToken}` },
+      });
       try {
         expect(source.status()).toBe(200);
         const currentOwner = await source.json();
@@ -4573,6 +4579,15 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       // Fresh admission can still read the same assignment; revocation did not alter its data.
       const fresh = await admit(second, dataset.teacher, 'TEACHER');
       const retained = await fresh.call('GET', lessonPath);
+      expect
+        .soft(
+          isDeepStrictEqual(
+            { lesson: retained.lesson, roster: retained.roster },
+            { lesson: beforeLogout.lesson, roster: beforeLogout.roster },
+          ),
+          'Retained lesson and ordered roster preserve structural data',
+        )
+        .toBe(true);
       expect(
         JSON.stringify({ lesson: retained.lesson, roster: retained.roster }) ===
           JSON.stringify({ lesson: beforeLogout.lesson, roster: beforeLogout.roster }),

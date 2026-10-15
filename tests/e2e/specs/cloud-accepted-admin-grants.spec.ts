@@ -697,9 +697,9 @@ test('FULL exports five group attendance formats; dashboard-only LIMITED reads u
       await expect(
         page.getByRole('heading', { name: 'Посещаемость групп', exact: true }),
       ).toBeVisible();
-      for (const [label, value, key] of [
-        ['Сортировка', 'COUNTED_LESSONS', 'sort'],
-        ['Порядок', 'DESC', 'direction'],
+      for (const [selector, value, key] of [
+        ['#admin-attendance-sort', 'COUNTED_LESSONS', 'sort'],
+        ['#admin-attendance-direction', 'DESC', 'direction'],
       ] as const) {
         const changed = page.waitForResponse((response) => {
           const url = new URL(response.url());
@@ -709,7 +709,7 @@ test('FULL exports five group attendance formats; dashboard-only LIMITED reads u
             response.request().method() === 'GET'
           );
         });
-        await page.getByLabel(label, { exact: true }).selectOption(value);
+        await page.locator(`.admin-attendance-screen ${selector}`).selectOption(value);
         expect((await changed).status()).toBe(200);
       }
       await page.getByLabel('Найти группу', { exact: true }).fill(group.name);

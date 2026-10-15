@@ -106,6 +106,7 @@ function mapLesson(
     type: lesson.type,
     schedule: { ...lesson.schedule },
     status: lesson.status,
+    explanation: lesson.explanation ? { ...lesson.explanation } : null,
     requestOptions: lesson.requestOptions.map((option) => ({ ...option })),
   }
 }

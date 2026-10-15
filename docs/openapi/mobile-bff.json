@@ -953,6 +953,21 @@
             "type" : "boolean",
             "default" : false
           }
+        }, {
+          "name" : "includeMetrics",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "metricsStudentId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -3414,6 +3429,9 @@
           },
           "hasMore" : {
             "type" : "boolean"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/TeacherJournalMetrics"
           }
         }
       },
@@ -3451,6 +3469,52 @@
             "type" : "string"
           }
         }
+      },
+      "TeacherJournalLessonMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "type" : "string"
+          },
+          "present" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "excused" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          },
+          "absent" : {
+            "$ref" : "#/components/schemas/TeacherStatsMetric"
+          }
+        }
+      },
+      "TeacherJournalMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "students" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsStudent"
+            }
+          },
+          "series" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherJournalLessonMetrics"
+            }
+          },
+          "selectedStudentId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "nullable" : true
       },
       "TeacherJournalStudent" : {
         "type" : "object",

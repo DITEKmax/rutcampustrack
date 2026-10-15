@@ -590,6 +590,7 @@ public class AttendanceStudentGrpcServiceImpl
                         .addAllRequestOptions(
                                 requestOptions.getOrDefault(lesson.lessonId(), List.of()));
         if (lesson.room() != null) result.setRoom(lesson.room());
+        if (lesson.explanation() != null) result.setExplanation(toProto(lesson.explanation()));
         return result.build();
     }
 
@@ -661,14 +662,30 @@ public class AttendanceStudentGrpcServiceImpl
                 .setMetrics(toProto(card.metrics()))
                 .addAllHistory(
                         card.history().stream()
-                                .map(
-                                        history ->
-                                                StudentAttendanceHistorySegment.newBuilder()
-                                                        .setId(history.id())
-                                                        .setStatus(history.status())
-                                                        .build())
+                                .map(AttendanceStudentGrpcServiceImpl::toProto)
                                 .toList())
                 .build();
+    }
+
+    private static StudentAttendanceHistorySegment toProto(
+            StudentAttendanceProjectionService.HistorySegment history) {
+        StudentAttendanceHistorySegment.Builder result =
+                StudentAttendanceHistorySegment.newBuilder()
+                        .setId(history.id())
+                        .setStatus(history.status());
+        if (history.explanation() != null) result.setExplanation(toProto(history.explanation()));
+        return result.build();
+    }
+
+    private static StudentAttendanceExplanation toProto(
+            StudentAttendanceProjectionService.Explanation value) {
+        StudentAttendanceExplanation.Builder result = StudentAttendanceExplanation.newBuilder();
+        if (value.reasonCode() != null) result.setReasonCode(value.reasonCode());
+        if (value.reasonText() != null) result.setReasonText(value.reasonText());
+        if (value.comment() != null) result.setComment(value.comment());
+        if (value.cancellationReason() != null)
+            result.setCancellationReason(value.cancellationReason());
+        return result.build();
     }
 
     private static StudentAttendanceGraph toProto(StudentAttendanceProjectionService.Graph graph) {

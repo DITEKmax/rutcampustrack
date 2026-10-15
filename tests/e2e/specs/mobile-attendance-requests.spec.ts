@@ -403,6 +403,11 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   const multipleComment = 'Синтетическая общая причина для двух пар';
   await page.getByRole('button', { name: 'Подать', exact: true }).click();
   await page.getByRole('button', { name: 'Уважительная причина', exact: true }).click();
+  // JS-STUDENT-23: inclusive date controls narrow the existing authoritative options.
+  await expect(page.locator(`input[type="checkbox"][value="${lessonId}"]`)).toHaveCount(1);
+  await page.getByLabel('С даты', { exact: true }).fill(yesterday);
+  await page.getByLabel('По дату', { exact: true }).fill(yesterday);
+  await expect(page.locator(`input[type="checkbox"][value="${lessonId}"]`)).toHaveCount(0);
   for (const id of multipleExcuseLessonIds)
     await page.locator(`input[type="checkbox"][value="${id}"]`).check();
   await expect(page.locator('input[type="checkbox"]:checked')).toHaveCount(2);
@@ -601,6 +606,15 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   await page.getByRole('button', { name: 'Заявки', exact: true }).click();
   // D019: this existing HEADMAN session approves the whole two-lesson ticket once.
   const multipleDetailPath = `/api/attendance/requests/${multipleExcuseId}`;
+  const multipleQueueCard = page.locator(`[data-request-id="${multipleExcuseId}"]`);
+  const coverageLabel = new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${yesterday}T00:00:00Z`));
+  // This genuine seed has same-day coverage; the distinct-end branch has a renderer witness.
+  await expect(multipleQueueCard).toContainText(coverageLabel);
+  await expect(multipleQueueCard).toContainText('Пар: 2');
   const [multipleDetailReply] = await Promise.all([
     page.waitForResponse(
       (item) =>
@@ -619,11 +633,15 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
         multipleDetail.currentAffectedLessons.map((row: { lessonId: number }) => row.lessonId),
       ),
   ).toBe(true);
+  const markedSummary = `${multipleDetail.summary.alreadyMarkedCount} из ${multipleDetail.summary.lessonCount} пар уже отмечены`;
+  expect(multipleDetail.summary.lessonCount).toBe(2);
+  await expect(page.getByRole('status').filter({ hasText: markedSummary })).toBeVisible();
   const affectedRows = page.locator('.headman-requests__lessons > li');
   await expect(affectedRows).toHaveCount(2);
   for (const row of await affectedRows.all())
     await expect(row).toHaveAttribute('data-excluded', 'false');
   await page.getByRole('button', { name: 'Одобрить', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: markedSummary })).toBeVisible();
   let multipleDecisions = 0;
   const countMultipleDecision = (request: Request) => {
     if (
@@ -814,13 +832,18 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
 
   // HEADMAN33: this same student's canonical rank and subject/type counts reach the real drilldown.
   await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+  const statsEntry = page
+    .locator('.headman-more')
+    .getByRole('button', { name: 'Статистика', exact: true });
+  await expect(statsEntry).toBeVisible();
+  await expect(statsEntry).toBeEnabled();
   const [statsReply] = await Promise.all([
     page.waitForResponse(
       (reply) =>
         reply.request().method() === 'POST' &&
         new URL(reply.url()).pathname === '/api/attendance/reports/headman/stats/query',
     ),
-    page.getByRole('button', { name: 'Статистика группы', exact: true }).click(),
+    statsEntry.click(),
   ]);
   expect(statsReply.status()).toBe(200);
   const stats = await statsReply.json();
@@ -909,6 +932,27 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   await logoutPwa(page);
   await loginPwa(page, dataset.student);
   await expect(page.getByRole('button', { name: 'Отмечено', exact: true })).toBeVisible();
+  // STUDENT15: the existing approved ticket explains the student's own status on focus.
+  await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+  await page.getByRole('button', { name: 'По дням', exact: true }).click();
+  if (yesterdayDate.getUTCDay() === 0) {
+    await page.getByRole('button', { name: 'Предыдущая неделя', exact: true }).click();
+    await page.locator('.attendance-sunday').click();
+  } else {
+    await page.getByRole('button', { name: coverageLabel, exact: true }).click();
+  }
+  const explainedRow = page.locator(
+    `.attendance-lesson-row[data-lesson-id="${multipleExcuseLessonIds[0]}"]`,
+  );
+  const explanation = `${otherReason.label} · ${multipleComment}`;
+  const explainedStatus = explainedRow.getByRole('button', {
+    name: `Статус: уважительная причина · ${explanation}`,
+    exact: true,
+  });
+  await explainedStatus.focus();
+  await expect(explainedRow.getByRole('tooltip')).toHaveText(explanation);
+  await explainedStatus.press('Escape');
+  await expect(explainedRow.getByRole('tooltip')).toHaveCount(0);
   await openStudentRequests();
   await page.getByRole('tab', { name: 'Архив', exact: true }).click();
   const approvedCard = page

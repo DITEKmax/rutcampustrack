@@ -372,7 +372,26 @@ public final class StudentApiModels {
             LessonType type,
             AttendanceLessonSchedule schedule,
             StudentAttendanceLessonStatus status,
-            List<StudentAttendanceRequestOption> requestOptions) {}
+            List<StudentAttendanceRequestOption> requestOptions,
+            @Schema(nullable = true) StudentAttendanceExplanation explanation) {
+        public StudentAttendanceLesson(
+                String id,
+                LocalDate date,
+                String number,
+                SubjectProjection subject,
+                LessonType type,
+                AttendanceLessonSchedule schedule,
+                StudentAttendanceLessonStatus status,
+                List<StudentAttendanceRequestOption> requestOptions) {
+            this(id, date, number, subject, type, schedule, status, requestOptions, null);
+        }
+    }
+
+    public record StudentAttendanceExplanation(
+            @Schema(nullable = true) String reasonCode,
+            @Schema(nullable = true) String reasonText,
+            @Schema(nullable = true) String comment,
+            @Schema(nullable = true) String cancellationReason) {}
 
     @Schema(
             name = "StudentAttendanceLessonSchedule",
@@ -394,7 +413,13 @@ public final class StudentApiModels {
             name = "StudentAttendanceHistorySegment",
             requiredProperties = {"id", "status"})
     public record StudentAttendanceHistorySegment(
-            String id, StudentAttendanceHistoryStatus status) {}
+            String id,
+            StudentAttendanceHistoryStatus status,
+            @Schema(nullable = true) StudentAttendanceExplanation explanation) {
+        public StudentAttendanceHistorySegment(String id, StudentAttendanceHistoryStatus status) {
+            this(id, status, null);
+        }
+    }
 
     @Schema(
             name = "StudentAttendanceTypeCard",

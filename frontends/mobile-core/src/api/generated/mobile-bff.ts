@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: c0de974dad2a8fabe5fe39aade61a2d1fc2bd43ea16620e39a3e6b9e88558503
+// Contract: JS-STUDENT-01-r1; SHA-256: b9fe493f3071077396de52031d76252c37415152ce958f41f815c0d2367b4474
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -1328,6 +1328,7 @@ export interface components {
         TeacherJournal: {
             hasMore?: boolean;
             lessons?: components["schemas"]["TeacherDayLesson"][];
+            metrics?: components["schemas"]["TeacherJournalMetrics"];
             /** Format: int32 */
             page?: number;
             /** Format: int32 */
@@ -1350,6 +1351,20 @@ export interface components {
             symbol?: string;
             ticketId?: string;
         };
+        TeacherJournalLessonMetrics: {
+            absent?: components["schemas"]["TeacherStatsMetric"];
+            excused?: components["schemas"]["TeacherStatsMetric"];
+            lessonId?: string;
+            present?: components["schemas"]["TeacherStatsMetric"];
+            presentOrExcused?: components["schemas"]["TeacherStatsMetric"];
+        };
+        TeacherJournalMetrics: {
+            selectedStudentId?: string | null;
+            series?: components["schemas"]["TeacherJournalLessonMetrics"][];
+            /** Format: date-time */
+            serverNow?: string;
+            students?: components["schemas"]["TeacherStatsStudent"][];
+        } | null;
         TeacherJournalStudent: {
             cells?: components["schemas"]["TeacherJournalCell"][];
             displayName?: string;
@@ -2924,7 +2939,9 @@ export interface operations {
                 dateFrom?: string;
                 dateTo?: string;
                 groupId: string;
+                includeMetrics?: boolean;
                 lessonType: string[];
+                metricsStudentId?: string;
                 page?: string;
                 pageSize?: string;
                 pastOnly?: boolean;

@@ -404,7 +404,14 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     (option: { parityNumber: number | null }) => option.parityNumber !== null,
   );
   expect(weeks.length === 2 && new Set(weeks.map((week) => week.weekType)).size === 2).toBe(true);
-  await loginPwa(page, dataset.headman);
+  const admissionCutoff =
+    (scenarioStartedAt.get(info) ?? performance.now()) +
+    Math.max(0, Math.min(info.timeout, 240000) - 30000);
+  const remaining = Math.floor(admissionCutoff - performance.now());
+  expect(remaining, 'Positive recurring-slot login retry budget remains').toBeGreaterThan(0);
+  await loginPwa(page, dataset.headman, {
+    retryUntilMs: Date.now() + Math.min(65000, remaining),
+  });
   await selectRole(page, 'Староста');
 
   // HEADMAN11/12/13: own new subject, real per-type teacher lookup and save.

@@ -1,3 +1,5 @@
+import type { StudentAttendanceExplanation } from '../../api/types'
+
 export type AttendanceTheme = 'dark' | 'light'
 
 export type AttendanceReadState<T> =
@@ -69,6 +71,7 @@ export interface AttendanceLesson {
   }
   readonly status: AttendanceLessonStatus
   readonly requestOptions: readonly AttendanceRequestOption[]
+  readonly explanation?: StudentAttendanceExplanation | null
 }
 
 export interface AttendanceDay {
@@ -84,6 +87,7 @@ export type AttendanceHistoryStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'FUTURE
 export interface AttendanceHistorySegment {
   readonly id: string
   readonly status: AttendanceHistoryStatus
+  readonly explanation?: StudentAttendanceExplanation | null
 }
 
 export interface AttendanceSubjectTypeSummary {
@@ -204,4 +208,16 @@ export function graphForRange(
 /** Eligibility is a server-owned option; status alone never enables a request. */
 export function hasEnabledRequestOption(lesson: AttendanceLesson): boolean {
   return lesson.requestOptions.some((option) => option.enabled)
+}
+
+/** Use server display text, never expose an unknown machine code as a reason. */
+export function attendanceExplanationText(
+  status: AttendanceLessonStatus,
+  explanation?: StudentAttendanceExplanation | null,
+): string {
+  if (status === 'CANCELLED') return explanation?.cancellationReason?.trim() ?? ''
+  if (status !== 'EXCUSED') return ''
+  return [explanation?.reasonText, explanation?.comment]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .join(' · ')
 }

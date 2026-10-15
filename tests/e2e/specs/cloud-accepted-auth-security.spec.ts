@@ -917,6 +917,8 @@ test('password recovery consumes its own delivered OTP and admits the replacemen
 }, info) => {
   test.setTimeout(120000);
   const cutoff = (startedAt.get(info) ?? performance.now()) + 90000;
+  // Recovery and QR deadlines use Auth's real clock, before mounting any UI.
+  await page.clock.setSystemTime(new Date());
   const user = await dataset.user('STUDENT', dataset.otherGroup.id);
   await recipient.bind();
   await page.goto('/app/');

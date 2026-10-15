@@ -1062,3 +1062,28 @@ button.attendance-status-badge::after {
   border-radius: var(--rct-radius-full);
   background: var(--rct-color-accent-now);
 }
+
+.attendance-status-explanation {
+  margin: 0;
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  border-radius: var(--rct-radius-lg);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.attendance-type-card__history:has(.attendance-type-card__segment--explanation) {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.attendance-type-card__segment--explanation {
+  min-inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background-clip: content-box;
+  padding-block: calc((var(--rct-control-min-touch) - var(--rct-space-2)) / 2);
+}

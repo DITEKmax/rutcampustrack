@@ -5685,6 +5685,12 @@
             "type" : "string",
             "enum" : [ "NONE", "NO_ACTIVE_SEMESTER", "NO_COMPLETED_LESSONS", "NO_MEMBERS", "FILTERED_EMPTY" ]
           },
+          "reasonCounts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReasonCount"
+            }
+          },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
           }
@@ -5732,6 +5738,21 @@
           },
           "absent" : {
             "$ref" : "#/components/schemas/Metric"
+          }
+        }
+      },
+      "ReasonCount" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -6855,6 +6876,10 @@
           "excuse" : {
             "$ref" : "#/components/schemas/TicketCounts"
           },
+          "rank" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/Rank"
+          },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
           }
@@ -6939,6 +6964,26 @@
           },
           "metrics" : {
             "$ref" : "#/components/schemas/Metrics"
+          }
+        }
+      },
+      "Rank" : {
+        "type" : [ "object", "null" ],
+        "properties" : {
+          "position" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "participantCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "available" : {
+            "type" : "boolean"
+          },
+          "visibility" : {
+            "type" : "string",
+            "enum" : [ "VISIBLE", "HIDDEN" ]
           }
         }
       },

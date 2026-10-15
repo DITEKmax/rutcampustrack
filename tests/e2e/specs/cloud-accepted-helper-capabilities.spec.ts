@@ -944,6 +944,8 @@ test('HEADMAN resets own member access and issues one-use recovery link @cloud-a
 }, info) => {
   test.setTimeout(120000);
   const cutoff = (retryStartedAt.get(info) ?? performance.now()) + 90000;
+  // Recovery-link deadlines use Auth's real clock, before mounting any UI.
+  await page.clock.setSystemTime(new Date());
   const remaining = () => {
     const value = Math.floor(cutoff - performance.now());
     expect(value > 0, 'Credential sequence retains its main-work budget').toBe(true);

@@ -760,9 +760,11 @@ isolated(
     test.setTimeout(120000);
     const retryUntilMs =
       (retryStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
-    const firstDate = shifted(dataset.today, 21);
-    const editedDate = shifted(firstDate, 1);
-    const targetDate = shifted(firstDate, 2);
+    const nextNonSunday = (date: string): string =>
+      new Date(`${date}T12:00:00Z`).getUTCDay() === 0 ? shifted(date, 1) : date;
+    const firstDate = nextNonSunday(shifted(dataset.today, 21));
+    const editedDate = nextNonSunday(shifted(firstDate, 1));
+    const targetDate = nextNonSunday(shifted(editedDate, 1));
     expect(targetDate <= dataset.semester.dateTo).toBe(true);
     const first = await oneOff(dataset, firstDate, 2);
     const second = await oneOff(dataset, editedDate, 3);

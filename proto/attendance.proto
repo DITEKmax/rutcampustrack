@@ -228,6 +228,14 @@ message StudentAttendanceLesson {
   optional string room = 9;
   string status = 10; // PRESENT, ABSENT, EXCUSED, ACTIVE, FUTURE, NO_DATA, CANCELLED
   repeated StudentAttendanceRequestOption request_options = 11;
+  optional StudentAttendanceExplanation explanation = 12;
+}
+
+message StudentAttendanceExplanation {
+  optional string reason_code = 1;
+  optional string reason_text = 2;
+  optional string comment = 3;
+  optional string cancellation_reason = 4;
 }
 
 message StudentAttendanceRequestOption {
@@ -258,6 +266,7 @@ message StudentAttendanceTypeCard {
 message StudentAttendanceHistorySegment {
   string id = 1;
   string status = 2; // PRESENT, ABSENT, EXCUSED, FUTURE, NO_DATA
+  optional StudentAttendanceExplanation explanation = 3;
 }
 
 message StudentAttendanceGraph {

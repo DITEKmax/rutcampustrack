@@ -62,8 +62,29 @@ test('successful sensitive step metadata and worker output are not emitted', asy
       ]),
     ).toEqual([closedDiagnostic]);
     expect(/456|2026-10-14|\/api\//.test(closedAssignment.message)).toBe(false);
+    const transfer = datasetHttpFailure('POST', '/api/schedule/lessons/789/transfer', status);
+    const transferDiagnostic = {
+      stage: 'DATASET_HTTP',
+      cause: 'DATASET_LESSON_TRANSFER_HTTP',
+      httpStatus: status,
+    };
+    expect(classifySafeFailure(transfer)).toEqual(transferDiagnostic);
+    expect(
+      safeFailureDiagnostics([
+        { type: safeFailureAnnotation, description: `DATASET_LESSON_TRANSFER_HTTP:${status}` },
+      ]),
+    ).toEqual([transferDiagnostic]);
+    expect(/789|\/api\//.test(transfer.message)).toBe(false);
   }
   for (const [method, path, status] of [
+    ['GET', '/api/schedule/lessons/789/transfer', 409],
+    ['POST', '/api/schedule/lessons/789/transfer/', 409],
+    ['POST', '/api/schedule/lessons/0/transfer', 409],
+    ['POST', `/api/schedule/lessons/789/transfer?${marker}`, 503],
+    ['POST', '/api/schedule/lessons/789/transfer', 204],
+    ['POST', '/api/schedule/lessons/789/transfer', 302],
+    ['POST', '/api/schedule/lessons/789/transfer', 999],
+    ['POST', '/api/schedule/lessons/789/transfer', marker],
     ['GET', '/api/academic/users/123/archive', 403],
     ['POST', '/api/academic/users/123/archive-preview', 409],
     ['POST', `/api/academic/users/123/archive?${marker}`, 503],

@@ -693,7 +693,8 @@ defineExpose({ back, openNotificationRequest });
             item.reason ??
               (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина')
           }}
-            · {{ date(item.coverageStart) }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
+            · {{ date(item.coverageStart) }}<template v-if="item.coverageEnd !== item.coverageStart"> — {{ date(item.coverageEnd) }}</template>
+            · Пар: {{ item.lessonCount }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
             name="back"
             class="headman-requests__next"
           />
@@ -731,6 +732,11 @@ defineExpose({ back, openNotificationRequest });
           }}<template v-if="selected.summary.coverageEnd !== selected.summary.coverageStart">
             — {{ date(selected.summary.coverageEnd) }}
           </template>
+        </p><p
+          v-if="selected.summary.kind === 'EXCUSE' && selected.summary.status === 'PENDING'"
+          role="status"
+        >
+          {{ selected.summary.alreadyMarkedCount }} из {{ selected.summary.lessonCount }} пар уже отмечены. Подтверждённое присутствие сохранится.
         </p><span
           v-if="selected.summary.status !== 'PENDING'"
           class="headman-requests__badge"

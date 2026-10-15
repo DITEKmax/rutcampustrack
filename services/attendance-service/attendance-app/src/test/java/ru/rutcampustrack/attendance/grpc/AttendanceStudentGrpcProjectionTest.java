@@ -46,6 +46,58 @@ class AttendanceStudentGrpcProjectionTest {
                     false);
 
     @Test
+    void explanationWireKeepsFullCommentAndOptionalPresenceForDayAndHistory() throws Exception {
+        var explanation =
+                new StudentAttendanceProjectionService.Explanation(
+                        "OTHER", "Другое", "Текст ".repeat(40), null);
+        var history =
+                new StudentAttendanceProjectionService.HistorySegment(
+                        "canonical:78", "EXCUSED", explanation);
+        var mapper =
+                AttendanceStudentGrpcServiceImpl.class.getDeclaredMethod(
+                        "toProto", StudentAttendanceProjectionService.HistorySegment.class);
+        mapper.setAccessible(true);
+        var result = (StudentAttendanceHistorySegment) mapper.invoke(null, history);
+        assertThat(result.getId()).isEqualTo("canonical:78");
+        assertThat(result.hasExplanation()).isTrue();
+        assertThat(result.getExplanation().getComment()).isEqualTo(explanation.comment());
+        assertThat(result.getExplanation().hasCancellationReason()).isFalse();
+        var legacy =
+                (StudentAttendanceHistorySegment)
+                        mapper.invoke(
+                                null,
+                                new StudentAttendanceProjectionService.HistorySegment(
+                                        "old", "EXCUSED"));
+        assertThat(legacy.hasExplanation()).isFalse();
+        var lesson = projection().days().getFirst().lessons().getFirst();
+        var dayMapper =
+                AttendanceStudentGrpcServiceImpl.class.getDeclaredMethod(
+                        "toProto",
+                        StudentAttendanceProjectionService.Lesson.class,
+                        java.util.Map.class);
+        dayMapper.setAccessible(true);
+        var cancelled =
+                new StudentAttendanceProjectionService.Lesson(
+                        lesson.lessonId(),
+                        lesson.occurrenceId(),
+                        lesson.groupId(),
+                        lesson.date(),
+                        lesson.lessonNumber(),
+                        lesson.subjectId(),
+                        lesson.subjectName(),
+                        lesson.lessonType(),
+                        lesson.startsAt(),
+                        lesson.endsAt(),
+                        lesson.room(),
+                        StudentAttendanceProjectionService.ScheduleState.CANCELLED,
+                        null,
+                        "Причина отмены");
+        var wire = (StudentAttendanceLesson) dayMapper.invoke(null, cancelled, java.util.Map.of());
+        assertThat(wire.getExplanation().getCancellationReason()).isEqualTo("Причина отмены");
+        assertThat(wire.getExplanation().hasComment()).isFalse();
+    }
+
+    @Test
     void semesterOutageAfterProjectionPreservesReadWithoutRequestActions() throws Exception {
         AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub =
                 mock(AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub.class);

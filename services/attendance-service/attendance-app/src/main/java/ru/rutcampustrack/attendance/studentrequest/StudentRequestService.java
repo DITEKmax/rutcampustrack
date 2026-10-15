@@ -160,6 +160,12 @@ public class StudentRequestService {
                     ExcuseType.COMPETITION_PARTICIPATION, "Участие в соревнованиях",
                     ExcuseType.FAMILY_CIRCUMSTANCES, "Семейные обстоятельства",
                     ExcuseType.OTHER, "Другое");
+
+    /** Existing domain label, also used by student read projections. */
+    public static String reasonLabel(ExcuseType reason) {
+        return reason == null ? null : REASON_LABELS.get(reason);
+    }
+
     private static final Set<String> ALLOWED_MIME_TYPES =
             Set.copyOf(ALLOWED_ATTACHMENT_CONTENT_TYPES);
     private static final Set<String> ALLOWED_EXTENSIONS = Set.copyOf(ALLOWED_ATTACHMENT_EXTENSIONS);

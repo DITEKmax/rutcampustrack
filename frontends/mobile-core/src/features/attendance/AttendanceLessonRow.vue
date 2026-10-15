@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import roomIcon from '../../assets/room-light.svg';
 import lessonTypeIcon from '../../assets/lesson-type-light.svg';
 import {
+  attendanceExplanationText,
   hasEnabledRequestOption,
   lessonStatusLabel,
   lessonTypeLabel,
@@ -32,6 +33,20 @@ const emit = defineEmits<{
 const requestOptions = computed(() => props.lesson.requestOptions);
 const hasRequestOptions = computed(() => requestOptions.value.length > 0);
 const canOpenActions = computed(() => hasEnabledRequestOption(props.lesson) && !props.terminal);
+const explanationOpen = ref<'hover' | 'focus' | 'tap' | null>(null);
+const explanationText = computed(() =>
+  attendanceExplanationText(props.lesson.status, props.lesson.explanation),
+);
+watch(
+  () => props.lesson,
+  () => {
+    explanationOpen.value = null;
+  },
+);
+function openStatus(): void {
+  explanationOpen.value = 'tap';
+  if (canOpenActions.value) emit('toggle-actions', props.lesson.id);
+}
 
 function statusTone(status: AttendanceLesson['status']): string {
   if (status === 'PRESENT') return 'present';
@@ -80,7 +95,24 @@ function optionLabel(option: AttendanceRequestOption): string {
           {{ lesson.subject.name }}
         </h3>
         <button
-          v-if="hasRequestOptions"
+          v-if="explanationText"
+          class="attendance-status-badge"
+          :class="`attendance-status-badge--${statusTone(lesson.status)}`"
+          type="button"
+          :aria-label="`Статус: ${lessonStatusLabel(lesson.status)} · ${explanationText}`"
+          :aria-expanded="explanationOpen !== null"
+          :aria-describedby="explanationOpen ? `attendance-explanation-${lesson.id}` : undefined"
+          @mouseenter="explanationOpen = explanationOpen ?? 'hover'"
+          @mouseleave="explanationOpen === 'hover' && (explanationOpen = null)"
+          @focus="explanationOpen = 'focus'"
+          @blur="explanationOpen = null"
+          @click="openStatus"
+          @keydown.esc="explanationOpen = null"
+        >
+          {{ statusSymbol(lesson.status) }}
+        </button>
+        <button
+          v-else-if="hasRequestOptions"
           class="attendance-status-badge"
           :class="`attendance-status-badge--${statusTone(lesson.status)}`"
           :data-request-trigger="lesson.id"
@@ -103,6 +135,14 @@ function optionLabel(option: AttendanceRequestOption): string {
           :aria-label="`Статус: ${lessonStatusLabel(lesson.status)}`"
         >{{ statusSymbol(lesson.status) }}</span>
       </header>
+      <p
+        v-if="explanationOpen && explanationText"
+        :id="`attendance-explanation-${lesson.id}`"
+        class="attendance-status-explanation"
+        role="tooltip"
+      >
+        {{ explanationText }}
+      </p>
       <div class="attendance-lesson-row__metadata">
         <span>
           <img

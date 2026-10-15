@@ -29,7 +29,14 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
   page,
   dataset,
 }, info) => {
-  let phase: 'SETUP' | 'LOGIN' | 'HEADMAN_STALE' | 'GROUP_PROFILE_ADMIN' = 'SETUP';
+  let phase:
+    | 'SETUP'
+    | 'LOGIN'
+    | 'HEADMAN_STALE'
+    | 'GROUP_READBACK'
+    | 'GROUP_VISIBLE_BACK'
+    | 'ADMIN_SWITCH_RELOAD'
+    | 'ADMIN_UI' = 'SETUP';
   try {
     const retryCutoffMs =
       (loginStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
@@ -100,7 +107,7 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
     expect(stale.status()).toBe(409);
     expect((await stale.json()).extras.code).toBe('SESSION_VERSION_CONFLICT');
     expect((await reloadSession(page)).activeRole).toBe('HEADMAN');
-    phase = 'GROUP_PROFILE_ADMIN';
+    phase = 'GROUP_READBACK';
     await page.getByRole('button', { name: 'Ещё', exact: true }).click();
     const ownAssistants = page.waitForResponse((response) => {
       const url = new URL(response.url());
@@ -123,15 +130,18 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
       active: true,
     });
     expect(retained.permissions).toEqual(['VIEW_STATS']);
+    phase = 'GROUP_VISIBLE_BACK';
     const group = page.locator('.headman-group');
     const member = group.locator(`[data-member-id="${helper.id}"]`);
     await expect(member).toContainText(helper.displayName);
     await expect(member).toContainText('Помощник старосты');
     await group.getByRole('button', { name: 'Назад', exact: true }).click();
     await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+    phase = 'ADMIN_SWITCH_RELOAD';
     const admin = await selectRole(page, 'Администратор');
     expect(admin.session.activeRole).toBe('ADMIN');
     expect((await reloadSession(page)).activeRole).toBe('ADMIN');
+    phase = 'ADMIN_UI';
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
     await expect(
       page.getByRole('button', { name: 'Создать пользователя', exact: true }),
@@ -161,10 +171,14 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
         throw new Error('Four-grant login failed', { cause: error });
       case 'HEADMAN_STALE':
         throw new Error('Four-grant headman and stale-role check failed', { cause: error });
-      case 'GROUP_PROFILE_ADMIN':
-        throw new Error('Four-grant group profile and administrator check failed', {
-          cause: error,
-        });
+      case 'GROUP_READBACK':
+        throw new Error('Four-grant group readback failed', { cause: error });
+      case 'GROUP_VISIBLE_BACK':
+        throw new Error('Four-grant visible group and back navigation failed', { cause: error });
+      case 'ADMIN_SWITCH_RELOAD':
+        throw new Error('Four-grant administrator switch and reload failed', { cause: error });
+      case 'ADMIN_UI':
+        throw new Error('Four-grant administrator UI failed', { cause: error });
     }
   }
 });

@@ -710,6 +710,24 @@
   gap: 0.5rem;
 }
 
+.request-date-range {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.request-date-range legend {
+  margin-block-end: var(--rct-space-3);
+}
+
+.request-field input[type='date'] {
+  min-inline-size: 0;
+}
+
+.request-field input[type='date'],
 .request-field select,
 .request-field textarea,
 .request-late-screen select {
@@ -757,6 +775,7 @@
   resize: vertical;
 }
 
+.request-field input[type='date']:disabled,
 .request-field select:disabled,
 .request-field textarea:disabled,
 .request-late-screen select:disabled {

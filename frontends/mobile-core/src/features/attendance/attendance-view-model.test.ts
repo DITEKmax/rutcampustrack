@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  attendanceExplanationText,
   displayPercent,
   findAttendanceLesson,
   graphForRange,
@@ -58,6 +59,21 @@ const data = {
 } satisfies AttendanceViewModel
 
 describe('attendance controlled projection helpers', () => {
+  it('keeps full explanation text only for the matching status and omits missing legacy fields', () => {
+    const explanation = {
+      reasonCode: 'OTHER',
+      reasonText: 'Другое',
+      comment: 'Длинный текст '.repeat(30),
+      cancellationReason: 'Причина отмены',
+    }
+    expect(attendanceExplanationText('EXCUSED', explanation)).toBe(
+      `Другое · ${explanation.comment}`,
+    )
+    expect(attendanceExplanationText('CANCELLED', explanation)).toBe('Причина отмены')
+    for (const status of ['PRESENT', 'ABSENT', 'FUTURE'] as const)
+      expect(attendanceExplanationText(status, explanation)).toBe('')
+    expect(attendanceExplanationText('EXCUSED')).toBe('')
+  })
   it('keeps null distinct from a real zero and formats a percentage for display', () => {
     expect(displayPercent(null)).toBe('—')
     expect(displayPercent(0)).toBe('0%')

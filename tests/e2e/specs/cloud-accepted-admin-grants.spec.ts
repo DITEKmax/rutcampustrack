@@ -114,6 +114,8 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
   const retryCutoffMs =
     (retryStartedAt.get(info) ?? Number.NEGATIVE_INFINITY) +
     Math.max(0, Math.min(info.timeout, 120000) - 30000);
+  // Recovery-link deadlines use Auth's real clock, before mounting any UI.
+  await page.clock.setSystemTime(new Date());
   // Use the existing dataset's registry-code pattern for a case-owned group.
   // Its headman authority is retained for disposable-stack cleanup, never reset.
   const actorGroup = await dataset.admin.call(
@@ -765,6 +767,8 @@ test('FULL exports five group attendance formats; dashboard-only LIMITED reads u
 }, info) => {
   test.setTimeout(120000);
   const cutoff = (retryStartedAt.get(info) ?? performance.now()) + 90000;
+  // Export-job deadlines use Auth's real clock, before mounting any UI.
+  await page.clock.setSystemTime(new Date());
   const group = await dataset.admin.call(
     'POST',
     '/api/academic/groups/registry',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import RequestLessonSelector from './RequestLessonSelector.vue';
@@ -33,6 +33,41 @@ const emit = defineEmits<{
   continue: [];
   'update:lessonIds': [ids: string[]];
 }>();
+const dateFrom = ref('');
+const dateTo = ref('');
+const rangeInvalid = computed(
+  () =>
+    props.kind === 'EXCUSE' &&
+    Boolean(dateFrom.value && dateTo.value && dateFrom.value > dateTo.value),
+);
+function inRange(option: RequestLessonOption): boolean {
+  if (props.kind !== 'EXCUSE' || (!dateFrom.value && !dateTo.value)) return true;
+  const date = option.lesson?.date;
+  return (
+    !rangeInvalid.value &&
+    Boolean(
+      date &&
+        (!dateFrom.value || date >= dateFrom.value) &&
+        (!dateTo.value || date <= dateTo.value),
+    )
+  );
+}
+const selectedOutsideRange = computed(() =>
+  props.lessons.filter(
+    (option) => props.lessonIds.includes(option.lesson?.id ?? '') && !inRange(option),
+  ),
+);
+// A date filter never deletes or hides the student's existing selection.
+const visibleLessons = computed(() =>
+  props.lessons.filter(
+    (option) => inRange(option) || props.lessonIds.includes(option.lesson?.id ?? ''),
+  ),
+);
+function updateDate(boundary: 'from' | 'to', event: Event): void {
+  const value = (event.target as HTMLInputElement).value;
+  if (boundary === 'from') dateFrom.value = value;
+  else dateTo.value = value;
+}
 const optionsResolved = computed(
   () =>
     props.optionsLoaded &&
@@ -40,6 +75,14 @@ const optionsResolved = computed(
     !props.offline &&
     !props.loading &&
     !props.error,
+);
+const rangeDisabled = computed(
+  () =>
+    props.disabled ||
+    props.readOnly ||
+    props.offline ||
+    props.access !== 'allowed' ||
+    !optionsResolved.value,
 );
 const canContinue = computed(
   () =>
@@ -50,6 +93,8 @@ const canContinue = computed(
     !props.offline &&
     !props.readOnly &&
     !props.disabled &&
+    !rangeInvalid.value &&
+    selectedOutsideRange.value.length === 0 &&
     requestSelectionEligible(props.lessons, props.lessonIds, props.kind),
 );
 function updateSelection(value: string[] | string | null): void {
@@ -82,6 +127,59 @@ function updateSelection(value: string[] | string | null): void {
             : 'Выбери одну пару, на которой ты забыл отметиться.'
         }}
       </p>
+      <fieldset
+        v-if="props.kind === 'EXCUSE'"
+        class="request-date-range"
+      >
+        <legend class="request-field__label">
+          Период пар
+        </legend>
+        <label
+          class="request-field"
+          for="request-date-from"
+        >
+          <span class="request-field__label">С даты</span>
+          <input
+            id="request-date-from"
+            type="date"
+            :value="dateFrom"
+            :disabled="rangeDisabled"
+            :aria-invalid="rangeInvalid || undefined"
+            :aria-describedby="rangeInvalid ? 'request-date-error' : undefined"
+            @input="updateDate('from', $event)"
+          >
+        </label>
+        <label
+          class="request-field"
+          for="request-date-to"
+        >
+          <span class="request-field__label">По дату</span>
+          <input
+            id="request-date-to"
+            type="date"
+            :value="dateTo"
+            :disabled="rangeDisabled"
+            :aria-invalid="rangeInvalid || undefined"
+            :aria-describedby="rangeInvalid ? 'request-date-error' : undefined"
+            @input="updateDate('to', $event)"
+          >
+        </label>
+        <p
+          v-if="rangeInvalid"
+          id="request-date-error"
+          class="requests-form-status"
+          role="alert"
+        >
+          Дата окончания должна быть не раньше даты начала.
+        </p>
+        <p
+          v-if="selectedOutsideRange.length"
+          class="requests-form-status"
+          role="status"
+        >
+          Выбрано вне диапазона: {{ selectedOutsideRange.length }}. Выбор сохранён. Расширь период или сними выбор с этих пар ниже, чтобы продолжить.
+        </p>
+      </fieldset>
       <StudentWarningBlock
         v-if="props.offline || props.readOnly || props.access !== 'allowed'"
         :severity="props.access === 'allowed' ? 'warning' : 'error'"
@@ -124,7 +222,7 @@ function updateSelection(value: string[] | string | null): void {
         :recovery-disabled="
           props.disabled || props.readOnly || props.offline || props.access !== 'allowed'
         "
-        :options="props.lessons"
+        :options="visibleLessons"
         :model-value="props.kind === 'EXCUSE' ? props.lessonIds : (props.lessonIds[0] ?? null)"
         :disabled="
           props.disabled ||

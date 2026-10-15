@@ -1,6 +1,8 @@
-import { createSSRApp } from 'vue'
+import { createRenderer, createSSRApp, h, nextTick, ref } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import RequestLessonSelectionScreen from './RequestLessonSelectionScreen.vue'
+import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
+import { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   getOrCreateRequestsDraft,
@@ -145,6 +147,231 @@ describe('lesson options failure and recovery', () => {
       expect(retained).toContain('Сохранённая известная пара')
       expect(retained).toMatch(/type="checkbox"[^>]*checked[^>]*disabled/)
       expect(retained).toMatch(/class="requests-submit-action"[^>]*disabled/)
+    }
+  })
+})
+
+// Reuse the repository's Node/Vue custom-renderer pattern for actual input events.
+interface SelectionNode {
+  tag: string
+  text: string
+  props: Record<string, unknown>
+  children: SelectionNode[]
+  parent: SelectionNode | null
+}
+function selectionNode(tag: string, text = ''): SelectionNode {
+  return { tag, text, props: {}, children: [], parent: null }
+}
+const selectionRenderer = createRenderer<SelectionNode, SelectionNode>({
+  createElement: selectionNode,
+  createText: (text) => selectionNode('#text', text),
+  createComment: (text) => selectionNode('#comment', text),
+  setText: (node, text) => {
+    node.text = text
+  },
+  setElementText: (node, text) => {
+    node.text = text
+    node.children = []
+  },
+  patchProp: (node, key, _before, value) => {
+    node.props[key] = value
+  },
+  insert(node, parent, anchor) {
+    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
+    node.parent = parent
+    const index = anchor ? parent.children.indexOf(anchor) : -1
+    if (index < 0) parent.children.push(node)
+    else parent.children.splice(index, 0, node)
+  },
+  remove(node) {
+    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
+    node.parent = null
+  },
+  parentNode: (node) => node.parent,
+  nextSibling: (node) => node.parent?.children[node.parent.children.indexOf(node) + 1] ?? null,
+})
+function selectionNodes(node: SelectionNode): SelectionNode[] {
+  return [node, ...node.children.flatMap(selectionNodes)]
+}
+
+describe('EXCUSE date range input', () => {
+  it('filters inclusive local dates, keeps disabled reasons and retains selected outside dates until explicit removal', async () => {
+    const dated: RequestLessonOption[] = [
+      { lesson: { id: 'before', date: '2026-09-01' }, excuseEligible: true },
+      { lesson: { id: 'start', date: '2026-09-02' }, excuseEligible: true },
+      { lesson: { id: 'end', date: '2026-09-03' }, excuseEligible: true },
+      { lesson: { id: 'after', date: '2026-09-04' }, excuseEligible: true },
+      {
+        lesson: { id: 'blocked', date: '2026-09-02' },
+        excuseEligible: false,
+        unavailableReason: 'Пара отменена',
+      },
+    ]
+    const selected = ref(['before', 'start', 'end'])
+    let continued = 0
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp({
+      render: () =>
+        h(RequestLessonSelectionScreen, {
+          kind: 'EXCUSE',
+          lessons: dated,
+          lessonIds: selected.value,
+          access: 'allowed',
+          optionsLoaded: true,
+          'onUpdate:lessonIds': (ids: string[]) => {
+            selected.value = ids
+          },
+          onContinue: () => {
+            continued++
+          },
+        }),
+    })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const field = (id: string) => nodes().find((node) => node.props.id === id)!
+    const button = () => nodes().find((node) => node.props.class === 'requests-submit-action')!
+    const checkboxIds = () =>
+      nodes()
+        .filter((node) => node.props.type === 'checkbox')
+        .map((node) => node.props.value)
+    const input = async (id: string, value: string) => {
+      ;(field(id).props.onInput as (event: Event) => void)({
+        target: { value },
+      } as unknown as Event)
+      await nextTick()
+    }
+    try {
+      await input('request-date-from', '2026-09-02')
+      await input('request-date-to', '2026-09-03')
+      expect(checkboxIds()).toEqual(['before', 'start', 'blocked', 'end'])
+      expect(nodes().find((node) => node.props.value === 'blocked')?.props.disabled).toBe(true)
+      expect(nodes().some((node) => node.text.includes('Пара отменена'))).toBe(true)
+      expect(selected.value).toEqual(['before', 'start', 'end'])
+      expect(
+        nodes()
+          .map((node) => node.text)
+          .join(''),
+      ).toContain('Выбрано вне диапазона: 1')
+      expect(button().props.disabled).toBe(true)
+      ;(button().props.onClick as () => void)()
+      expect(continued).toBe(0)
+      const before = nodes().find((node) => node.props.value === 'before')!
+      ;(before.props.onChange as (event: Event) => void)({
+        target: { checked: false },
+      } as unknown as Event)
+      await nextTick()
+      expect(selected.value).toEqual(['start', 'end'])
+      expect(checkboxIds()).toEqual(['start', 'blocked', 'end'])
+      expect(button().props.disabled).toBe(false)
+      await input('request-date-from', '2026-09-04')
+      expect(nodes().find((node) => node.props.id === 'request-date-error')?.text).toContain(
+        'Дата окончания',
+      )
+      expect(field('request-date-from').props['aria-invalid']).toBe(true)
+      expect(button().props.disabled).toBe(true)
+      expect(selected.value).toEqual(['start', 'end'])
+      await input('request-date-from', '')
+      await input('request-date-to', '')
+      expect(checkboxIds()).toEqual(['before', 'start', 'blocked', 'end', 'after'])
+      expect(button().props.disabled).toBe(false)
+      ;(button().props.onClick as () => void)()
+      expect(continued).toBe(1)
+    } finally {
+      app.unmount()
+    }
+  })
+  it('leaves the single-lesson LATE selection without date controls', async () => {
+    const markup = await renderToString(
+      createSSRApp(RequestLessonSelectionScreen, {
+        kind: 'LATE_CHECKIN',
+        lessons: options,
+        lessonIds: ['one'],
+        access: 'allowed',
+        optionsLoaded: true,
+      }),
+    )
+    expect(markup).not.toContain('type="date"')
+    expect(markup).not.toMatch(/class="requests-submit-action"[^>]*disabled/)
+  })
+})
+
+describe('headman request coverage and predecision summary', () => {
+  it('shows both coverage dates and independent server counts through detail and fresh confirmation', async () => {
+    const id = 'aaaaaaaaaaaaaaaaaaaaaaaa'
+    const summary = {
+      id,
+      kind: 'EXCUSE',
+      status: 'PENDING',
+      studentId: 1,
+      studentName: 'Тестовый студент',
+      reason: 'OTHER',
+      comment: null,
+      coverageStart: '2026-09-02',
+      coverageEnd: '2026-09-07',
+      lessonCount: 5,
+      alreadyMarkedCount: 2,
+      hasAttachments: false,
+    }
+    const lessons = ['2026-09-02', '2026-09-07'].map((date, index) => ({
+      lessonId: index + 1,
+      occurrenceId: String(index + 100),
+      occurrenceRevision: '1',
+      date,
+      attendanceStatus: 'ABSENT',
+    }))
+    const detail = {
+      summary,
+      lessons,
+      currentAffectedLessons: lessons,
+      decisionRevision: '1'.repeat(64),
+      attachments: [],
+    }
+    let markedCount = 2
+    const api = new HeadmanRequestsApi({
+      accessToken: () => 'synthetic-local-test',
+      fetcher: async (url) =>
+        new Response(
+          JSON.stringify(
+            String(url).includes('?')
+              ? { content: [summary], page: 0, size: 20, totalElements: 1, totalPages: 1 }
+              : { ...detail, summary: { ...summary, alreadyMarkedCount: markedCount } },
+          ),
+          { status: 200 },
+        ),
+    })
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp(HeadmanRequestsScreen, { api })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const text = (node: SelectionNode) =>
+      selectionNodes(node)
+        .map((item) => item.text)
+        .join(' ')
+    const settle = async () => {
+      for (let i = 0; i < 20; i++) {
+        await Promise.resolve()
+        await nextTick()
+      }
+    }
+    try {
+      await settle()
+      const ticket = nodes().find((node) => node.props['data-request-id'] === id)!
+      expect(text(ticket)).toContain('2 сентября')
+      expect(text(ticket)).toContain('— 7 сентября')
+      expect(text(ticket)).toContain('Пар: 5')
+      await (ticket.props.onClick as () => Promise<void>)()
+      await settle()
+      expect(text(root)).toContain('2 из 5 пар уже отмечены')
+      markedCount = 3
+      const approve = nodes().find(
+        (node) => node.tag === 'button' && node.text.trim() === 'Одобрить',
+      )!
+      await (approve.props.onClick as () => Promise<void>)()
+      await settle()
+      expect(text(root)).toContain('3 из 5 пар уже отмечены')
+      expect(text(root)).toContain('Подтверждённое присутствие сохранится')
+    } finally {
+      app.unmount()
     }
   })
 })

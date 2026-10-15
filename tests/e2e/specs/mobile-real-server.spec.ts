@@ -2568,6 +2568,8 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
     request: issuer,
     activeHeadmanDataset: dataset,
   }) => {
+    // QR deadlines use Auth's real clock; keep advancing time before mounting any UI.
+    await page.clock.setSystemTime(new Date());
     // The worker owns this disposable group; this case adds its own member and
     // never changes a known student's mark or another browser's selected role.
     const student = await dataset.user('STUDENT', dataset.group.id);

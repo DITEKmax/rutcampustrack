@@ -56,6 +56,68 @@ class StudentSessionProjectionTest {
     }
 
     @Test
+    void attendanceExplanationMapsNestedOptionalDataAndFullCommentWithoutJoiningIds()
+            throws Exception {
+        var explanation =
+                ru.rutcampustrack.attendance.grpc.StudentAttendanceExplanation.newBuilder()
+                        .setReasonCode("OTHER")
+                        .setReasonText("Другое")
+                        .setComment("Полный комментарий ".repeat(20))
+                        .build();
+        var history =
+                ru.rutcampustrack.attendance.grpc.StudentAttendanceHistorySegment.newBuilder()
+                        .setId("occurrence:78")
+                        .setStatus("EXCUSED")
+                        .setExplanation(explanation)
+                        .build();
+        var mapper = StudentQueryService.class.getDeclaredMethod("history", history.getClass());
+        mapper.setAccessible(true);
+        var result =
+                (ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                .StudentAttendanceHistorySegment)
+                        mapper.invoke(null, history);
+        assertThat(result.id()).isEqualTo("occurrence:78");
+        assertThat(result.explanation().comment()).isEqualTo(explanation.getComment());
+        assertThat(result.explanation().reasonText()).isEqualTo("Другое");
+        assertThat(result.explanation().cancellationReason()).isNull();
+        var json =
+                new com.fasterxml.jackson.databind.ObjectMapper()
+                        .findAndRegisterModules()
+                        .valueToTree(result);
+        assertThat(json.path("explanation").path("reasonCode").asText()).isEqualTo("OTHER");
+        var legacy =
+                (ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                .StudentAttendanceHistorySegment)
+                        mapper.invoke(null, history.toBuilder().clearExplanation().build());
+        assertThat(legacy.explanation()).isNull();
+        var lesson =
+                ru.rutcampustrack.attendance.grpc.StudentAttendanceLesson.newBuilder()
+                        .setLessonId(77)
+                        .setDate("2026-09-07")
+                        .setLessonNumber(1)
+                        .setSubjectId(5)
+                        .setSubjectName("Предмет")
+                        .setLessonType("LECTURE")
+                        .setStartsAt("09:00")
+                        .setEndsAt("10:30")
+                        .setStatus("CANCELLED")
+                        .setExplanation(
+                                ru.rutcampustrack.attendance.grpc.StudentAttendanceExplanation
+                                        .newBuilder()
+                                        .setCancellationReason("Причина отмены"))
+                        .build();
+        var dayMapper = StudentQueryService.class.getDeclaredMethod("lesson", lesson.getClass());
+        dayMapper.setAccessible(true);
+        var day =
+                (ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                .StudentAttendanceLesson)
+                        dayMapper.invoke(null, lesson);
+        assertThat(day.id()).isEqualTo("77");
+        assertThat(day.explanation().cancellationReason()).isEqualTo("Причина отмены");
+        assertThat(day.explanation().comment()).isNull();
+    }
+
+    @Test
     void statisticsMapsKnownEmptyAndLegacyGroupComparisonWithoutChangingWeeklyKeys() {
         when(requestContext.claims())
                 .thenReturn(

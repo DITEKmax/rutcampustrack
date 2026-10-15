@@ -791,14 +791,15 @@ VALUES (?,?,'Credential','Synthetic',?,?,?) RETURNING id
                         headman,
                         initial);
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES"
-                        + " (?,'student','active',?)",
+                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                        + " VALUES (?,'student','active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
                 id,
                 group);
         if (headman)
             jdbc.update(
-                    "INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES"
-                            + " (?,'headman','active',?)",
+                    "INSERT INTO"
+                        + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                        + " VALUES (?,'headman','active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
                     id,
                     group);
         return id;

@@ -662,7 +662,7 @@ jobs:
                   assert hashlib.sha256(student_test).hexdigest() == '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'
                   student_production = app / 'src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java'
                   student_current = student_production.read_bytes()
-                  assert hashlib.sha256(student_current).hexdigest() == '42c7e17cce3bcd18d5f344785d33b01aba30fea8dd33ee7813574d0ca86aa564'
+                  assert hashlib.sha256(student_current).hexdigest() == '17e26402e6755a830e02e8d6aa59db4e4f046ca8c9f7be65a16e41a654524835'
                   student_anchor = (b'        long groupId = scope.getRankGroupId();\n'
                                     b'        if (claims.groupId() == null\n'
                                     b'                || claims.groupId() <= 0\n'
@@ -671,7 +671,7 @@ jobs:
                   student_changed = student_anchor.replace(b'                || groupId != claims.groupId()\n', b'')
                   assert student_current.count(student_anchor) == 1
                   student_negative = student_current.replace(student_anchor, student_changed)
-                  assert hashlib.sha256(student_negative).hexdigest() == 'e0c7186f97e80107bc11fd0467191f09c68cc47a5f19a65d1e7c760c0cc620ef'
+                  assert hashlib.sha256(student_negative).hexdigest() == 'a38fa8767339c5c0f38ea1029907365a5fd1356d2c9e748ff4c09c46ead5365a'
                   assert student_negative.replace(student_changed, student_anchor) == student_current
                   student_lines = student_test.decode().splitlines()
                   assert student_lines[451].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
@@ -2728,7 +2728,7 @@ jobs:
       - name: Check the real homework notification target against a controlled navigation fault
         id: homework-target-sensitivity
         timeout-minutes: 7
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.homework-lifecycle.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -2992,9 +2992,9 @@ jobs:
                                'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
           STATS_SOURCES = {
               'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
-                  '06d1742d4ce4b7040ce950bd8945d966331a3877a340d36509c7a5f70c00ad83',
+                  'b366f55ab8f9dacd588c8e2fbb6d540dca5330ca7fd395eb0853903f612317be',
               'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
-                  '4348676649f31eb197bdf84f89d8bb32b382dc94a6392ef2d508ac661d8a9154',
+                  'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
           }
           LIMIT = 8388608
 
@@ -3016,7 +3016,7 @@ jobs:
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
                       'errorCount', 'diagnostics', 'errorLocations'}
               expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1357)}
+                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1364)}
               seen, target = set(), None
               for row in value['results']:
                   if type(row) is not dict or set(row) != keys:
@@ -3042,7 +3042,7 @@ jobs:
                   if identity == ('mobile-schedule-lifecycle.spec.ts', 390):
                       target = row
               return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
-                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1060}])
+                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1067}])
 
           def is_target_failure(value, config):
               core = {'status', 'runnerErrors', 'unsafeArtifact', 'suppressedStdoutBytes',
@@ -3254,7 +3254,7 @@ jobs:
       - name: Verify exact stranded semester effect reconciliation
         id: semester-reconciliation
         timeout-minutes: 9
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.lesson-lifecycle.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443

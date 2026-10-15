@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { type Page } from '@playwright/test';
+import { type Page, type Request, type Response } from '@playwright/test';
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
-import { loginPwa } from '../fixtures/pwa-auth';
+import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
 
@@ -276,6 +276,65 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
     ).toBeDisabled();
     await expect(row.getByRole('button', { name: 'Открыть файл', exact: true })).toHaveCount(0);
   }
+
+  // JS-STUDENT-15: the existing student reads this same cancelled lesson before restore.
+  await logoutPwa(page);
+  let ownAttendance: Response | null = null;
+  const observeStudentAttendance = (reply: Response) => {
+    const url = new URL(reply.url());
+    if (
+      reply.request().method() === 'GET' &&
+      url.pathname === '/api/v1/student/attendance' &&
+      url.searchParams.get('semesterId') === String(dataset.semester.id)
+    )
+      ownAttendance = reply;
+  };
+  page.on('response', observeStudentAttendance);
+  try {
+    const admittedStudent = await loginPwa(page, dataset.student);
+    expect(admittedStudent.session.userId).toBe(String(dataset.student.id));
+    expect(admittedStudent.session.activeRole).toBe('STUDENT');
+    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    const read = ownAttendance ?? (await response(page, '/api/v1/student/attendance', 'GET'));
+    expect(read.status()).toBe(200);
+  } finally {
+    page.off('response', observeStudentAttendance);
+  }
+  await page.getByRole('button', { name: 'По дням', exact: true }).click();
+  const studentRow = page.locator(`.attendance-lesson-row[data-lesson-id="${id}"]`);
+  await expect(studentRow).toHaveAttribute('data-status', 'cancelled');
+  const explanation = studentRow.getByRole('button', {
+    name: `Статус: отменена · ${reason}`,
+    exact: true,
+  });
+  let studentRequestWrites = 0;
+  const countStudentRequestWrite = (request: Request) => {
+    if (
+      new URL(request.url()).pathname.startsWith('/api/v1/student/requests') &&
+      request.method() !== 'GET'
+    )
+      studentRequestWrites += 1;
+  };
+  page.on('request', countStudentRequestWrite);
+  try {
+    await explanation.focus();
+    await expect(studentRow.getByRole('tooltip')).toHaveText(reason);
+    await explanation.press('Escape');
+    await expect(studentRow.getByRole('tooltip')).toHaveCount(0);
+    await explanation.hover();
+    await expect(studentRow.getByRole('tooltip')).toHaveText(reason);
+    await expect(studentRow.locator('.attendance-lesson-row__actions')).toHaveCount(0);
+    expect(studentRequestWrites).toBe(0);
+  } finally {
+    page.off('request', countStudentRequestWrite);
+  }
+  await logoutPwa(page);
+  await loginPwa(page, dataset.headman);
+  await selectPwaRole(page, 'Староста');
+  await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+  await expect(
+    page.locator(`.headman-journal__row[data-user-id="${dataset.student.id}"]`),
+  ).toHaveAttribute('data-status', 'cancelled');
 
   await page.getByRole('button', { name: 'Управление парой', exact: true }).click();
   await page.getByRole('button', { name: 'Восстановить пару', exact: true }).click();

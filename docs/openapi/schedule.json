@@ -2130,6 +2130,15 @@
             "format" : "int64"
           }
         }, {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "exclusiveMinimum" : 0
+          }
+        }, {
           "name" : "dateFrom",
           "in" : "query",
           "required" : true,
@@ -2173,11 +2182,11 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Расписание группы",
+            "description" : "Расписание группы; semesterId добавляет полный прогресс семестра",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PagedModelEntityModelLessonResponse"
+                  "$ref" : "#/components/schemas/LessonListResponse"
                 }
               }
             }
@@ -3206,7 +3215,7 @@
           }
         }
       },
-      "PagedModelEntityModelLessonResponse" : {
+      "LessonListResponse" : {
         "type" : "object",
         "properties" : {
           "_embedded" : {
@@ -3223,8 +3232,50 @@
           "_links" : {
             "$ref" : "#/components/schemas/Links"
           },
+          "semesterProgress" : {
+            "$ref" : "#/components/schemas/SemesterProgress"
+          },
           "page" : {
             "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "SemesterProgress" : {
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "generatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TypeProgress"
+            }
+          }
+        }
+      },
+      "TypeProgress" : {
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "done" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },

@@ -456,3 +456,13 @@ DF-ADMIN-ORDINARY-RESET-001 FIXED_CURRENT_NATIVE: exact013 controlled previous-a
 ## GAP-STUDENT-OPEN-REQUEST-COUNTER — accepted pending-tab count missing
 
 2026-10-15T20:34:45.134060+00:00; severity P3; JS-STUDENT-26/CLIENT-FE-STUDENT-03; published189798f. Canonical87af802 +wire10761 require pending count in tab accessible name. RequestsScreen721b8cd6:188–206 renders static Открытые/Архив, no count binding; existing controller totalElements available. Source-confirmed missing presentation, not inferred nativeFAIL. Actual189request9d08f66b4 WHOLEPASS41409ms closes lifecycle/reason/cancel/re-submit/history andD019cardinality clauses. Remaining counter correction/witness pending; no new endpoint/authority rule. Evidence central#189798f_request9_finite_join_in_progress.
+
+
+## CHECK-AUTH-HEADMAN-FIXTURE-002 — grant timestamps omitted
+
+2026-10-15T21:50:30.539631+00:00; checking defect, not established product defect. Currentc4f HeadmanCredentialsHttpIT6c82 has8 SOURCE_METHOD FAIL at fixture grantINSERT793 before HTTP assertions, DATABASE_INTEGRITY; V59migrationcasePASS. V24 schema requires created_at/updated_at without defaults and both fixture grant inserts omit them. Actual constraint/SQLSTATE was not emitted and remains UNKNOWN. Minimal explicit fixture timestamps assigned c87, no DB/default/security/oracle weakening; native after pending. Evidence central#currentC4f01802Publication.newCredentialFixtureFAIL and c80 existing reports.authHeadmanCredentialsCurrent.
+
+
+## Current c4 checking corrections and authoritative journal closure
+
+2026-10-15T22:33:11.866652+00:00: JS-SYSTEM-16 is PASS by actual c4 Mongo metrics + genuine Teacher Table/Chart and existing selected renderer meaningful75→100 fallback mutation RED→exactrestoreGREEN, independently approved; D028 defers stored counters only. HOMEWORK27 last initial-intent gap likewise actual c4case1406PASS. These do not imply wholeCI/Student503 PASS. Checking corrections now reviewed/Root integrated: prebootstrap real advancing security clock in5cases (Source counterexample, actualoldclock/unique causeUNKNOWN); single existing bounded429 retry; exact HEADMAN menu-label mismatch; closedtransfer diagnostics and4fixedfailure phases; nativeafter pending. See central currentC4FixtureCorrectionPlan and SYSTEM16_server_journal_metrics_bounded_contract.actualAcceptance.

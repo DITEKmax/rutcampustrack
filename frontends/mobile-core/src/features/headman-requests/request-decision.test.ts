@@ -84,6 +84,58 @@ describe('headman selected atomic decisions and authoritative targets', () => {
     expect(detail.currentAffectedLessons?.map((item) => item.lessonId)).toEqual([21, 22, 23])
     expect(detail.summary.lessonCount).toBe(3)
   })
+  it.each([
+    { alreadyMarkedCount: undefined },
+    { alreadyMarkedCount: -1 },
+    { alreadyMarkedCount: 0.5 },
+    { alreadyMarkedCount: 4 },
+    { lessonCount: undefined },
+    { lessonCount: 0 },
+    { lessonCount: Number.MAX_SAFE_INTEGER + 1 },
+  ])('rejects an unconfirmed EXCUSE count in both queue and detail %#', async (counts) => {
+    const malformed = { ...summary, ...counts }
+    const api = new HeadmanRequestsApi({
+      accessToken: () => null,
+      fetcher: async (url) =>
+        json(
+          String(url).includes('?')
+            ? { content: [malformed], totalElements: 1 }
+            : { ...value, summary: malformed },
+        ),
+    })
+    await expect(api.list()).rejects.toThrow('Сервер не подтвердил количество пар заявки')
+    await expect(api.get('whole-ticket')).rejects.toThrow(
+      'Сервер не подтвердил количество пар заявки',
+    )
+  })
+  it('preserves genuine zero and server totals independently of detail rows, including legacy LATE without N', async () => {
+    const zero = new HeadmanRequestsApi({
+      accessToken: () => null,
+      fetcher: async () =>
+        json({ ...value, summary: { ...summary, lessonCount: 5, alreadyMarkedCount: 0 } }),
+    })
+    const detail = await zero.get('whole-ticket')
+    expect(detail.summary).toMatchObject({ lessonCount: 5, alreadyMarkedCount: 0 })
+    expect(detail.currentAffectedLessons).toHaveLength(3)
+    const legacyLate = new HeadmanRequestsApi({
+      accessToken: () => null,
+      fetcher: async () =>
+        json({
+          ...value,
+          summary: {
+            ...summary,
+            kind: 'LATE_CHECKIN',
+            lessonCount: 1,
+            alreadyMarkedCount: undefined,
+          },
+        }),
+    })
+    expect((await legacyLate.get('whole-ticket')).summary).toMatchObject({
+      kind: 'LATE_CHECKIN',
+      lessonCount: 1,
+      alreadyMarkedCount: 0,
+    })
+  })
   it.each([null, [affected[0], {}], [affected[0], affected[0]]])(
     'fails closed on malformed/partial pending current targets %#',
     async (currentAffectedLessons) => {

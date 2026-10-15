@@ -68,6 +68,108 @@ class StudentAttendanceProjectionServiceTest {
     }
 
     @Test
+    void projectsOwnReasonAndFullCommentAndCancellationWithoutStaleExcuseMetadata() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .clearRankGroupId()
+                                .clearRankSubjects()
+                                .clearActiveRosterUserIds()
+                                .setRankEligible(false)
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 101, "2026-09-15", "closed"))
+                                .addLessons(
+                                        lesson(12, 102, "2026-09-16", "cancelled").toBuilder()
+                                                .setCancellationReason(
+                                                        "Занятие отменено преподавателем"))
+                                .addLessons(lesson(13, 103, "2026-09-17", "closed"))
+                                .build());
+        String comment = "Полное пояснение ".repeat(15);
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
+                                explanationMark(
+                                        11, AttendanceStatus.EXCUSED, "2026-09-15", comment),
+                                explanationMark(
+                                        12,
+                                        AttendanceStatus.EXCUSED,
+                                        "2026-09-16",
+                                        "Устаревшее пояснение"),
+                                explanationMark(
+                                        13,
+                                        AttendanceStatus.PRESENT,
+                                        "2026-09-17",
+                                        "Устаревшее пояснение")));
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        var lessons = result.days().stream().flatMap(day -> day.lessons().stream()).toList();
+        assertThat(lessons.get(0).explanation())
+                .isEqualTo(
+                        new StudentAttendanceProjectionService.Explanation(
+                                "OTHER", "Другое", comment, null));
+        assertThat(lessons.get(1).explanation())
+                .isEqualTo(
+                        new StudentAttendanceProjectionService.Explanation(
+                                null, null, null, "Занятие отменено преподавателем"));
+        assertThat(lessons.get(2).explanation()).isNull();
+        var history = result.subjects().getFirst().typeCards().getFirst().history();
+        assertThat(history)
+                .extracting(StudentAttendanceProjectionService.HistorySegment::id)
+                .containsExactly("101", "103");
+        assertThat(history.getFirst().explanation()).isEqualTo(lessons.getFirst().explanation());
+        assertThat(history.getLast().explanation()).isNull();
+    }
+
+    @Test
+    void missingLegacyExplanationRemainsMissingWithoutInventingReasonOrComment() {
+        var lesson =
+                new StudentAttendanceProjectionService.Lesson(
+                        11,
+                        101,
+                        RANK_GROUP_ID,
+                        LocalDate.parse("2026-09-15"),
+                        2,
+                        SUBJECT_ID,
+                        "Математика",
+                        "LECTURE",
+                        java.time.LocalTime.of(10, 0),
+                        java.time.LocalTime.of(11, 30),
+                        null,
+                        StudentAttendanceProjectionService.ScheduleState.CLOSED,
+                        mark(11, OWN_ID, AttendanceStatus.EXCUSED, "2026-09-15"));
+        assertThat(lesson.explanation()).isNull();
+        assertThat(
+                        new StudentAttendanceProjectionService.HistorySegment("101", "EXCUSED")
+                                .explanation())
+                .isNull();
+    }
+
+    private static AttendanceRecord explanationMark(
+            long id, AttendanceStatus status, String date, String comment) {
+        return new AttendanceRecord(
+                id,
+                OWN_ID,
+                RANK_GROUP_ID,
+                SUBJECT_ID,
+                LocalDate.parse(date),
+                null,
+                status,
+                null,
+                "Краткое пояснение…",
+                "OTHER",
+                comment,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    @Test
     void joinsOwnMembershipAndUsesFullSemesterCohortForRank() {
         InternalJwtClaims claims =
                 new InternalJwtClaims(

@@ -646,7 +646,8 @@ public class StudentQueryService {
                                                 option.getLabel(),
                                                 option.getEnabled(),
                                                 option.hasReason() ? option.getReason() : null))
-                        .toList());
+                        .toList(),
+                source.hasExplanation() ? explanation(source.getExplanation()) : null);
     }
 
     private static StudentAttendanceSubject subject(
@@ -678,7 +679,17 @@ public class StudentQueryService {
             ru.rutcampustrack.attendance.grpc.StudentAttendanceHistorySegment source) {
         return new StudentAttendanceHistorySegment(
                 source.getId(),
-                upstreamEnum(StudentAttendanceHistoryStatus.class, source.getStatus()));
+                upstreamEnum(StudentAttendanceHistoryStatus.class, source.getStatus()),
+                source.hasExplanation() ? explanation(source.getExplanation()) : null);
+    }
+
+    private static StudentAttendanceExplanation explanation(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceExplanation source) {
+        return new StudentAttendanceExplanation(
+                source.hasReasonCode() ? source.getReasonCode() : null,
+                source.hasReasonText() ? source.getReasonText() : null,
+                source.hasComment() ? source.getComment() : null,
+                source.hasCancellationReason() ? source.getCancellationReason() : null);
     }
 
     private static StudentAttendanceGraph graph(

@@ -213,6 +213,13 @@ export interface StudentAttendanceRequestOption {
   readonly reason?: string | null
 }
 
+export interface StudentAttendanceExplanation {
+  readonly reasonCode?: string | null
+  readonly reasonText?: string | null
+  readonly comment?: string | null
+  readonly cancellationReason?: string | null
+}
+
 export interface StudentAttendanceLesson {
   readonly id: string
   readonly date: string
@@ -226,6 +233,7 @@ export interface StudentAttendanceLesson {
   }
   readonly status: StudentAttendanceLessonStatus
   readonly requestOptions: readonly StudentAttendanceRequestOption[]
+  readonly explanation?: StudentAttendanceExplanation | null
 }
 
 export interface StudentAttendanceDay {
@@ -239,6 +247,7 @@ export interface StudentAttendanceDay {
 export interface StudentAttendanceHistorySegment {
   readonly id: string
   readonly status: StudentAttendanceHistoryStatus
+  readonly explanation?: StudentAttendanceExplanation | null
 }
 
 export interface StudentAttendanceTypeCard {

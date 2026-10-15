@@ -29,6 +29,8 @@ import ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment;
 import ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility;
 import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
@@ -403,7 +405,8 @@ public class StudentAttendanceProjectionService {
                 endsAt,
                 room,
                 state,
-                null);
+                null,
+                source.hasCancellationReason() ? source.getCancellationReason() : null);
     }
 
     private Map<Long, AttendanceRecord> markIndex(
@@ -520,7 +523,8 @@ public class StudentAttendanceProjectionService {
                                 lesson ->
                                         new HistorySegment(
                                                 Long.toString(lesson.occurrenceId()),
-                                                lesson.historyStatus()))
+                                                lesson.historyStatus(),
+                                                lesson.explanation()))
                         .toList();
         return new TypeCard(type, metrics(lessons).metrics(), history);
     }
@@ -1144,7 +1148,58 @@ public class StudentAttendanceProjectionService {
             LocalTime endsAt,
             String room,
             ScheduleState scheduleState,
-            AttendanceRecord mark) {
+            AttendanceRecord mark,
+            String cancellationReason) {
+
+        public Lesson(
+                long lessonId,
+                long occurrenceId,
+                long groupId,
+                LocalDate date,
+                int lessonNumber,
+                long subjectId,
+                String subjectName,
+                String lessonType,
+                LocalTime startsAt,
+                LocalTime endsAt,
+                String room,
+                ScheduleState scheduleState,
+                AttendanceRecord mark) {
+            this(
+                    lessonId,
+                    occurrenceId,
+                    groupId,
+                    date,
+                    lessonNumber,
+                    subjectId,
+                    subjectName,
+                    lessonType,
+                    startsAt,
+                    endsAt,
+                    room,
+                    scheduleState,
+                    mark,
+                    null);
+        }
+
+        public Explanation explanation() {
+            if ("CANCELLED".equals(uiStatus())) {
+                return explanationOrNull(null, null, null, cancellationReason);
+            }
+            if (!"EXCUSED".equals(uiStatus()) || mark == null) return null;
+            String code = text(mark.excuseType());
+            String label = null;
+            if (code != null) {
+                try {
+                    label = StudentRequestService.reasonLabel(ExcuseType.valueOf(code));
+                } catch (IllegalArgumentException ignored) {
+                    // Legacy unknown metadata does not introduce a new reason code.
+                    code = null;
+                }
+            }
+            return explanationOrNull(
+                    code, label == null ? mark.excuseReason() : label, mark.excuseComment(), null);
+        }
 
         Lesson withMark(AttendanceRecord value) {
             return new Lesson(
@@ -1160,7 +1215,8 @@ public class StudentAttendanceProjectionService {
                     endsAt,
                     room,
                     scheduleState,
-                    value);
+                    value,
+                    cancellationReason);
         }
 
         boolean sameSource(Lesson other) {
@@ -1211,7 +1267,30 @@ public class StudentAttendanceProjectionService {
             AttendanceMetricCalculator.Metrics metrics,
             List<HistorySegment> history) {}
 
-    public record HistorySegment(String id, String status) {}
+    public record HistorySegment(String id, String status, Explanation explanation) {
+        public HistorySegment(String id, String status) {
+            this(id, status, null);
+        }
+    }
+
+    public record Explanation(
+            String reasonCode, String reasonText, String comment, String cancellationReason) {}
+
+    private static String text(String value) {
+        return value == null || value.isBlank() ? null : value;
+    }
+
+    private static Explanation explanationOrNull(
+            String code, String reason, String comment, String cancellation) {
+        Explanation result =
+                new Explanation(text(code), text(reason), text(comment), text(cancellation));
+        return result.reasonCode() == null
+                        && result.reasonText() == null
+                        && result.comment() == null
+                        && result.cancellationReason() == null
+                ? null
+                : result;
+    }
 
     public record Graph(List<SeriesPoint> days, List<SeriesPoint> weeks) {}
 

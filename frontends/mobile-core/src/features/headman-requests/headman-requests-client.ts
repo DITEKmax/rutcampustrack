@@ -363,6 +363,14 @@ function normalizeSummary(value: unknown): HeadmanRequestSummary | null {
       ? record.status
       : null
   if (!id || !kind || !status) return null
+  const lessonCount = positiveInteger(record?.lessonCount)
+  const alreadyMarkedCount = integerValue(record?.alreadyMarkedCount)
+  if (
+    lessonCount === null ||
+    (kind === 'EXCUSE' &&
+      (alreadyMarkedCount === null || alreadyMarkedCount < 0 || alreadyMarkedCount > lessonCount))
+  )
+    throw new Error('Сервер не подтвердил количество пар заявки')
   return {
     id,
     kind,
@@ -373,8 +381,9 @@ function normalizeSummary(value: unknown): HeadmanRequestSummary | null {
     comment: stringValue(record?.comment),
     coverageStart: stringValue(record?.coverageStart),
     coverageEnd: stringValue(record?.coverageEnd),
-    lessonCount: integerValue(record?.lessonCount) ?? 0,
-    alreadyMarkedCount: integerValue(record?.alreadyMarkedCount) ?? 0,
+    lessonCount,
+    // Legacy LATE_CHECKIN summaries did not require this undisplayed EXCUSE count.
+    alreadyMarkedCount: alreadyMarkedCount ?? 0,
     hasAttachments: record?.hasAttachments === true,
     createdAt: stringValue(record?.createdAt),
     updatedAt: stringValue(record?.updatedAt),

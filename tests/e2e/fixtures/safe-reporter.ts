@@ -91,6 +91,10 @@ const datasetHttpOperations = {
     path: /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}$/,
   },
   DATASET_LESSON_CREATE_HTTP: { method: 'POST', path: /^\/api\/schedule\/one-off-lessons$/ },
+  DATASET_LESSON_TRANSFER_HTTP: {
+    method: 'POST',
+    path: /^\/api\/schedule\/lessons\/[1-9][0-9]{0,18}\/transfer$/,
+  },
   DATASET_HOMEWORK_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/homeworks$/ },
   DATASET_ASSISTANT_CREATE_HTTP: { method: 'POST', path: /^\/api\/academic\/assistants$/ },
 } as const;

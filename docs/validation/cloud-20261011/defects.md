@@ -392,3 +392,10 @@ JS-STUDENT-14/17/19: shared ready statistics omits the supplied combined metric,
 JS-HEADMAN-36: accepted server subject deletion with password/bot confirmation and associated-data semantics is absent from the current guarded empty-subject DELETE. Source scope/protocol counterexample: central `8410845_HEADMAN_web05_subject36_scope_resolution`. Severity P2 function gap; no accepted mobile destructive screen is inferred. Prepare a bounded server contract from accepted sources before implementation; do not infer proposed dangerous_action DTO fields as approved or perform production deletion.
 
 JS-ADMIN-12 / JS-SYSTEM-13 implementation is now published and independently Source-reviewed; their matrix state is UNKNOWN pending current native/browser proof, not absent code. No parent PASS added.
+
+
+## 2026-10-15T16:16:49.229611+00:00 — bounded current CI/checking corrections
+
+HARNESS-552-CAUSAL-001: canonical Academic JSON had not been followed by its stock generated TypeScript consumer; Python lint depended on canonical package inference; TeacherREADY fixture omitted V24 NOT NULL timestamps. Minimal exact output/style/fixture corrections integrated with targeted independent review; production constraints and test assertions retained. Actual Academic Admin HTTP/PG three named cases now PASS at552, while its client/files/Mongo/sensitivity requirements remain separate.
+
+HARNESS-552-LOGIN-LOCATOR-001: Source counterexample exact password label matches both new D024 tabpanel and input under installed Playwright1.59.1. The helper now intersects that same label with the actual password input. All three actual552 initial-login failures are preserved; their runtime cause remains UNKNOWN until corrected genuine browser execution. No role/authentication/assertion/cap change. Evidence central552b033_initial_PWA_password_locator_Root_integration.

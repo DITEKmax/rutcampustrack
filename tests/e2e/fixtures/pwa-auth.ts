@@ -22,7 +22,10 @@ export async function loginPwa(
   await page.goto('/app/');
   await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
   await page.getByLabel('Логин', { exact: true }).fill(user.login);
-  await page.getByLabel('Пароль', { exact: true }).fill(user.password);
+  await page
+    .getByLabel('Пароль', { exact: true })
+    .and(page.locator('input[name="password"]'))
+    .fill(user.password);
   const loginUrl = page.url();
   const loginMatch = (response: Response) =>
     new URL(response.url()).pathname === '/api/auth/login' &&

@@ -231,7 +231,7 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
                             Long.class,
                             ownLogin);
             jdbc.update(
-                    "INSERT INTO user_role_grants(user_id,role,status) VALUES(?,'teacher','active')",
+                    "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'teacher','active',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
                     teacher);
             long group =
                     jdbc.queryForObject(

@@ -76068,13 +76068,13 @@
       "oldAdmin": "Alloverlappreimagesexact/frozenAdminauditanddispatchpreserved"
     },
     "b460bc2_current_Root_feature_Source_checkpoint": {
-      "utc": "2026-10-15T15:46:34.453543+00:00",
-      "state": "READY_CAUSAL_PACKAGE_LOCAL_NOT_PUSHED",
-      "count": 99,
+      "utc": "2026-10-15T16:16:49.229611+00:00",
+      "state": "WORKTREE_CAUSAL_CORRECTIONS_AWAIT_CHECKS_COMMIT",
+      "count": 101,
       "currentPins": [
         {
           "sourceRef": ".github/workflows/ci.yml",
-          "sha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f"
+          "sha256": "ba9ff0662752c5e1c4526253ad4417dc18386e0c46fafeb6fc3c62339c1c99df"
         },
         {
           "sourceRef": "docker-compose.e2e.yml",
@@ -76083,6 +76083,10 @@
         {
           "sourceRef": "docs/openapi/academic.json",
           "sha256": "f30bee0733da8c1772a87657fd238e8a62d4e153f4911360b3de7b28cb3e1784"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/api/generated/academic.types.ts",
+          "sha256": "e1e5ce4e4b774a888bcff22f4807ce251a34572b3c63372aa7972604cb8b1bdc"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/admin-attendance/AdminAttendanceScreen.test.ts",
@@ -76398,7 +76402,7 @@
         },
         {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
-          "sha256": "876a52eb68f0a5a3385019d14a59a0aaef46f993f1a3d8a692fff86c60e15510"
+          "sha256": "3cc2218874816f145b38e79245208658f56386015fc53828516ecd29dbadc687"
         },
         {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
@@ -76434,11 +76438,15 @@
         },
         {
           "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
-          "sha256": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8"
+          "sha256": "9187bca546d9cff477abc4d6a705f9f253b24e28a748a214d64bc2feba539d3e"
         },
         {
           "sourceRef": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/teacher/TeacherReportScope.java",
           "sha256": "0834ae3717850c9e137fa03c282a9bcf212820ba69842615ca18167bfc7eef5e"
+        },
+        {
+          "sourceRef": "tests/e2e/fixtures/pwa-auth.ts",
+          "sha256": "befccc5d5075ec6845bc1db98f9e4fddc114fce363a43049aa58403fde7e23d6"
         },
         {
           "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
@@ -76471,7 +76479,7 @@
       ],
       "pendingIntegration": [],
       "rootActiveProcess": null,
-      "published": "8410845182c93055eabc31e14f28a929c693aad2"
+      "published": "552b033ac139b67a6e0803753d91ad2b2227c2ed"
     },
     "Admin_directed_TLS_Bot_fourteen_Root_integration": {
       "utc": "2026-10-15T14:49:34.116547+00:00",
@@ -77784,6 +77792,1330 @@
       "schemaDiff": "ONLY4newadminattendancepaths/5newSchemas; alloldpaths/schemas/topsemantics unchanged,1012internalrefsresolve,noServers/strictduplicate-nonfiniteparse",
       "sourceCompatibility": "c84independentlycurrentAdminApi0f4fcc/DTOa88bb/Controller3eb8 equalactualproducer841publishedpins; normalizer3d862 matchesstockproof",
       "review": "c80 stockpublicreader provenance/privacy/CRC/digest +c84 canonicaloutput/sourcejoin +Root independent semanticdiff/exactcopy. No handwrittenJSON/generatorrerun/formatterrewrite. PriorAcademicFAIL retained."
+    },
+    "841_causal_corrections_real_publication_552b033": {
+      "utc": "2026-10-15T15:51:22.313056+00:00",
+      "state": "PUSHED_EXACT_LOCAL_REMOTE_PR_EQUAL",
+      "head": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+      "priorPublished": "8410845182c93055eabc31e14f28a929c693aad2",
+      "commits": [
+        "4bd885d04b602d1b4652371f7cb8d248cc74fc6c",
+        "1d96650e872e2b04265dabc2f4a5caa720fbc62a",
+        "552b033ac139b67a6e0803753d91ad2b2227c2ed"
+      ],
+      "semanticSourceInventory": [
+        ".github/workflows/ci.yml",
+        "docs/openapi/academic.json",
+        "frontends/tma-vue/src/App.vue",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcService.java",
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+        "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+        "docs/validation/cloud-20261011/CURRENT.md",
+        "docs/validation/cloud-20261011/resources.md",
+        "docs/validation/cloud-20261011/attempts.ndjson",
+        "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+        "docs/validation/cloud-20261011/defects.md",
+        "docs/validation/cloud-20261011/scenarios.csv"
+      ],
+      "formatInventory": [
+        "services/notification-bot/tests/test_bot_service_credentials.py"
+      ],
+      "finalSourceUnion": 99,
+      "readback": {
+        "local": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "gitRemote": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "officialPRHead": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "draft": true,
+        "base": "main",
+        "merged": false
+      },
+      "phases": [
+        {
+          "label": "format-diff-check",
+          "seconds": 0.237,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "format-stage",
+          "seconds": 0.242,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "format-configured-checks",
+          "seconds": 2.77,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "format-commit",
+          "seconds": 0.748,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "semantic-diff-check",
+          "seconds": 0.476,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "semantic-stage",
+          "seconds": 0.494,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "semantic-configured-checks",
+          "seconds": 2.813,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "semantic-commit",
+          "seconds": 0.436,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "range-gitleaks",
+          "seconds": 1.214,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "real-push",
+          "seconds": 3.03,
+          "nativeExit": 0,
+          "ownedReaped": true
+        },
+        {
+          "label": "real-ls-remote",
+          "seconds": 0.736,
+          "nativeExit": 0,
+          "ownedReaped": true
+        }
+      ],
+      "receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+      "newExactGates": "PENDING",
+      "qualification": "coherentactualcompiler/fixture/snapshotcausesfixedwithreview; all841FAILretained; correctednativeflows/newADMIN14sensitivity/nativeTLS NOT_RUN untilnewCI. No production/mainmerge."
+    },
+    "552b033_initial_gates_generated_consumer_drift": {
+      "utc": "2026-10-15T15:56:32.144488+00:00",
+      "head": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+      "CI": {
+        "run": 38763721914,
+        "status": "IN_PROGRESS"
+      },
+      "Coverage": {
+        "run": 38763721982,
+        "status": "IN_PROGRESS"
+      },
+      "Security": {
+        "run": 38763721753,
+        "conclusion": "SUCCESS"
+      },
+      "OpenAPI": {
+        "run": 38763721800,
+        "conclusion": "FAILURE",
+        "job": 116521380909,
+        "step": 5,
+        "cause": "Canonical academic types drifted",
+        "source": "scripts/generate-academic-schedule-types.mjs:17:13",
+        "sourcePrefix": "1736fd0c"
+      },
+      "classification": "GENERATED_CONSUMER_NOT_REGENERATED_WITH_CANONICAL_ACADEMIC_JSON; notAuthruntimeSnapshot orproductbehaviorclaim",
+      "actualCheckout": "PENDING_EXECUTION_WITNESS",
+      "assigned": "c79 stockcanonicalAcademic TSgeneration exactcurrentRoot552 inputs, no manualgeneratededits/semanticAPIscriptschange; c80 soleobserver preservesusefulnative552 run",
+      "next": "stockgeneration/sourcebytepin/diff/regenerate-check andminimumconsumerTSchecks; no fullreviewcampaignforcanonicaloutput, ordinarynextcoherentpush"
+    },
+    "552b033_actual_checkout_quality_and_causal_ownership": {
+      "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+      "gates": [
+        {
+          "id": 38763721914,
+          "event": "pull_request",
+          "headSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "attempt": 1,
+          "status": "in_progress",
+          "conclusion": null,
+          "updatedAt": "2026-10-15T15:54:05Z"
+        },
+        {
+          "id": 38763721982,
+          "event": "pull_request",
+          "headSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "attempt": 1,
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 38763721800,
+          "event": "pull_request",
+          "headSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "attempt": 1,
+          "status": "completed",
+          "conclusion": "failure",
+          "updatedAt": "2026-10-15T15:51:09Z"
+        },
+        {
+          "id": 38763721753,
+          "event": "pull_request",
+          "headSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "updatedAt": "2026-10-15T15:52:06Z"
+        }
+      ],
+      "actualCheckout": {
+        "artifact": 11987770739,
+        "run": 38763721914,
+        "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "digest": "sha256:33579293558fad48382daeb56de38928e160c8a470c13368ce10c18bb8bbb75c",
+        "bytes": 292,
+        "checkout": {
+          "checkout_sha": "93534d6a7e75cde65ceb85afe29eb26365cbf847",
+          "tree_sha": "aada95a11a43306e298dc2eef683ccd896a65390",
+          "producer_head_sha": "552b033ac139b67a6e0803753d91ad2b2227c2ed"
+        },
+        "officialJoin": "EXACT_COMMIT_TREE_PARENTS",
+        "officialParents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "552b033ac139b67a6e0803753d91ad2b2227c2ed"
+        ]
+      },
+      "openApiClosedCause": {
+        "jobId": 116521380909,
+        "stepNumber": 5,
+        "category": "CANONICAL_GENERATED_TYPES_DRIFT",
+        "service": "academic",
+        "uniqueStaticError": true,
+        "sourceFrames": [
+          {
+            "line": 17,
+            "column": 13
+          }
+        ],
+        "rawLogBytes": 19738,
+        "rawOutputPersisted": false,
+        "transportAllocation": "UNKNOWN",
+        "postresponseCapBytes": 33554432,
+        "sourcePin": {
+          "path": "frontends/mobile-core/scripts/generate-academic-schedule-types.mjs",
+          "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "sha256": "1736fd0ce365c6996a1478cf9f9ead972194f70fe84a109a3ca6aa3b190d47ff"
+        }
+      },
+      "pythonClosedCause": {
+        "jobId": 116521388957,
+        "failures": [
+          {
+            "category": "RUFF_IMPORT_ORDER",
+            "code": "I001",
+            "source": {
+              "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+              "line": 3,
+              "column": 1
+            }
+          },
+          {
+            "category": "RUFF_IMPORT_ORDER",
+            "code": "I001",
+            "source": {
+              "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+              "line": 157,
+              "column": 5
+            }
+          }
+        ],
+        "rawOutputPersisted": false,
+        "sourcePin": {
+          "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+          "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "sha256": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8"
+        }
+      },
+      "vueClosedCause": {
+        "jobId": 116521388827,
+        "category": "CANONICAL_ACADEMIC_GENERATED_TYPES_DRIFT",
+        "sameStaticErrorAsOpenApiGuard": true,
+        "rawOutputPersisted": false
+      },
+      "reports": {
+        "checkout": {
+          "artifact": 11987770739,
+          "run": 38763721914,
+          "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "digest": "sha256:33579293558fad48382daeb56de38928e160c8a470c13368ce10c18bb8bbb75c",
+          "bytes": 292,
+          "checkout": {
+            "checkout_sha": "93534d6a7e75cde65ceb85afe29eb26365cbf847",
+            "tree_sha": "aada95a11a43306e298dc2eef683ccd896a65390",
+            "producer_head_sha": "552b033ac139b67a6e0803753d91ad2b2227c2ed"
+          },
+          "officialJoin": "EXACT_COMMIT_TREE_PARENTS",
+          "officialParents": [
+            "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "552b033ac139b67a6e0803753d91ad2b2227c2ed"
+          ]
+        },
+        "authAdmin14Quality": {
+          "artifact": 11988180526,
+          "run": 38763721914,
+          "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "digest": "sha256:b1208d4be94f4c8dcbb3cca7a665c0745a93d44db5c8be92d94b55f466d8b0ee",
+          "bytes": 1073,
+          "proof": {
+            "schemaVersion": 1,
+            "producerHeadSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+            "checkoutSha": "93534d6a7e75cde65ceb85afe29eb26365cbf847",
+            "service": "auth-service",
+            "state": "EXPECTED_RULE_FAILURE",
+            "phase": "XML_RULE",
+            "counterexample": "PREVIOUS_ACTIVE_ADMIN_PASSWORD_RESET_AUTHORITY",
+            "previousRevision": "dbf964286a2199cc6b6f13d1c98696723b9b87b4",
+            "ruleFrame": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT.ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin(AuthOtpFlowIT.java:432)",
+            "testMethod": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT.ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin",
+            "testSourceSha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b",
+            "nativeExit": 1,
+            "failureCategory": "ASSERTION",
+            "namedMethodFrameCount": 1,
+            "expectedRuleFrameMatched": true,
+            "observedNamedMethodLine": 432,
+            "expectedNoOtpDelivery": true,
+            "observedNoOtpDelivery": false,
+            "tests": 1,
+            "failures": 1,
+            "errors": 0,
+            "skipped": 0,
+            "restoredGreen": "REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE",
+            "sourceRestoredExact": true
+          },
+          "sourcePins": [
+            {
+              "path": ".github/workflows/ci.yml",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "08cf144d9e77b37634ccd509dff01c5cad313001d5cf2681bcf618c9cc1bf72b"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "cc8b5b39b7a1eafbba3a69144a22a019cde58183ec290ebbd5e54188f347eae7"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "5b13be4b6c4ed895b5b83a4f3c305fba460a4718ef6e7eee1cf21b2f925815a6"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "b67e309784a8d5d3fe581246f703c811d9294acb602566e67f2aa842317deb9d"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "cc8b5b39b7a1eafbba3a69144a22a019cde58183ec290ebbd5e54188f347eae7",
+              "kind": "restoredSourceSha256"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "5b13be4b6c4ed895b5b83a4f3c305fba460a4718ef6e7eee1cf21b2f925815a6",
+              "kind": "restoredSourceSha256"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+              "sourceRef": "dbf964286a2199cc6b6f13d1c98696723b9b87b4",
+              "sha256": "249b9a76d519ab977fd2e8d11f2e3d304f4bfa1d4652de98e5139795b3d0d93b",
+              "kind": "counterexampleSourceSha256"
+            },
+            {
+              "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+              "sourceRef": "dbf964286a2199cc6b6f13d1c98696723b9b87b4",
+              "sha256": "b5cef648221489390b9c2d2746bb5791a75dd1e2858d91001cf952226c5779b7",
+              "kind": "counterexampleSourceSha256"
+            }
+          ],
+          "relevantAuthAdmin14CounterexampleRED": true,
+          "ordinarySameMethodGreen": "PENDING_OR_SKIPPED_SEPARATE_NAMED_ORDINARY_RESULT_REQUIRED",
+          "rawLogsOrXML": false,
+          "qualification": "Only current exact Source-declared closed phase/native diagnostic; no semantic RED when absent and no GREEN from metadata.",
+          "cause": "EXACT_NO_OTP_DELIVERY_BOOLEAN_COUNTEREXAMPLE"
+        },
+        "reasonEnumQuality": {
+          "state": "EXACT_CURRENT_REASON_ENUM_CLOSED_PROOF",
+          "artifact": 11988275682,
+          "run": 38763721914,
+          "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "digest": "sha256:3e8d86e4879cf98a0145dbc36dfa738bab4df7e221ecbd6cd2e25d0680a1de39",
+          "bytes": 795,
+          "proof": {
+            "schemaVersion": 1,
+            "state": "UNEXPECTED_RULE_RESULT",
+            "phase": "RED_XML_RULE",
+            "producerHeadSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+            "checkoutSha": "93534d6a7e75cde65ceb85afe29eb26365cbf847",
+            "runId": "38763721914",
+            "runAttempt": "1",
+            "event": "pull_request",
+            "service": "attendance-service",
+            "task": "test",
+            "testMethod": "ru.rutcampustrack.attendance.grpc.StudentRequestGrpcMapperTest.studentReasonCodesRoundtripWithoutChangingPublishedNumbers",
+            "testSourceSha256": "634d96cfefafc74800bdeed29b55445992db45e4fdd278291a9ee17304bd0fe1",
+            "restoredSourceSha256": "21c29e14a84fa54dfea8d9762b11c230d89b3ed8cfab158ee1185fcd8b6a857e",
+            "counterexampleSourceSha256": "98a95e309edc13bfa0d3def34db03143ef3c179cb2f46015f8c5164af8f1486a",
+            "counterexample": "UNIVERSITY_ORDER_MAPPED_TO_SUMMONS",
+            "expectedWireCode": 6,
+            "observedWireCode": 7,
+            "sourceRestoredExact": true,
+            "restoredCompileCacheDisabled": true,
+            "red": {
+              "nativeExit": 1
+            },
+            "failureClass": "AssertionError"
+          },
+          "sourcePins": [
+            {
+              "path": ".github/workflows/ci.yml",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f"
+            },
+            {
+              "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "21c29e14a84fa54dfea8d9762b11c230d89b3ed8cfab158ee1185fcd8b6a857e"
+            },
+            {
+              "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "634d96cfefafc74800bdeed29b55445992db45e4fdd278291a9ee17304bd0fe1"
+            }
+          ],
+          "relevantSemanticRedRestoredSameGreen": false,
+          "rawXmlLogsOrDiskPayload": false,
+          "cause": "UNKNOWN_UNLESS_SEMANTIC_COMPLETE",
+          "qualification": "Static expected wire codes are not observations of a runtime test until full strict COMPLETE proof.",
+          "closedJobLogDiagnostic": {
+            "jobId": 116521389136,
+            "rawLogBytes": 52570,
+            "postresponseCapBytes": 33554432,
+            "transportAllocation": "UNKNOWN",
+            "runtimePythonTracebackFound": false,
+            "compilerDiagnosticFound": false,
+            "rawOutputPersisted": false,
+            "cause": "UNKNOWN_XML_RULE_ASSERTION_NO_RETAINED_CLOSED_GUARD_DETAIL",
+            "noFurtherSamePurposeFetch": true
+          }
+        }
+      },
+      "updatedAt": "2026-10-15T15:59:43.665857+00:00",
+      "nextReadPoint": "Current ordinary Auth/Academic integration uploads after step15 terminal; browser boot11 terminal/new user-flow uploads. No unchanged polling; ordinary same Auth method GREEN and promotion method separately required.",
+      "utc": "2026-10-15T16:01:58.117791+00:00",
+      "observer": "c80 sole officialobserver",
+      "qualification": "Auth exact432 relevantRED/sourceexactrestore confirmed; ordinarysame-methodGREEN PENDING, no familyPASS. Reason enum RED_XML_RULE causeUNKNOWN, no assertion weakening.",
+      "assignments": {
+        "c79": "stock Academic generatedTS +Python I001 only",
+        "c84": "STUDENT19 backend/proto additivehistorical pooledgroupPresent",
+        "c87": "STUDENT14/17 UI/client/E2E +19 afterport",
+        "c80": "fresh552 terminalnormalproofs, no unchangedpoll"
+      }
+    },
+    "552b033_reason_quality_closed_phase_independent_plan": {
+      "utc": "2026-10-15T16:04:22.303003+00:00",
+      "reviewer": "c86 independentread-only",
+      "decision": "APPROVE_MINIMAL_CLOSED_PHASE_DIAGNOSTIC_ONLY",
+      "source": {
+        "ci": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f",
+        "mapperPrefix": "21c29e14",
+        "testPrefix": "634d96cf"
+      },
+      "actual": "UNEXPECTED_RULE_RESULT/RED_XML_RULE/native1/restoredExacttrue; no actualguard cause or relevantREDproven",
+      "change": "set existing phase RED_XML_IDENTITY before native_case(True), RED_FAILURE_TYPE before exacttype, RED_MESSAGE_RULE beforeunchangedmessageextraction/fullmatch, RED_NAMED_FRAME beforeexactunique152frame",
+      "preserve": "alloriginalassertions/sourceidentity/FQN/method/caps/cleanup/exactrestore/COMPLETErequiresrestoredsame-methodGREEN; no fields/rawvalues/ordinalfallback",
+      "writer": "c80 soleCI, smallcoherentdiagnostic,no framework",
+      "Auth552": "strict allfailed-case SOURCE_METHOD wrapper rejected on unrelatednon-source-method; exactnamedtargetstatusUNKNOWN, B015FROZEN/no partialprojection or sameartifact schemaweakening"
+    },
+    "552b033_canonical_Academic_consumer_and_Python_style_Root_integration": {
+      "utc": "2026-10-15T16:05:30.110667+00:00",
+      "state": "SOURCE_INTEGRATED_NOT_YET_COMMITTED",
+      "head": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+      "writer": "c79",
+      "rootPreimageChecks": "sixexact+fullPythonASTincludingimportorder",
+      "sourceInventory": [
+        {
+          "path": "frontends/mobile-core/src/api/generated/academic.types.ts",
+          "pre": "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86",
+          "post": "e1e5ce4e4b774a888bcff22f4807ce251a34572b3c63372aa7972604cb8b1bdc"
+        },
+        {
+          "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+          "pre": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8",
+          "post": "9187bca546d9cff477abc4d6a705f9f253b24e28a748a214d64bc2feba539d3e"
+        }
+      ],
+      "stockCanonicalEvidence": {
+        "rootBefore": [
+          {
+            "sourceRef": "docs/openapi/academic.json",
+            "sha256": "f30bee0733da8c1772a87657fd238e8a62d4e153f4911360b3de7b28cb3e1784"
+          },
+          {
+            "sourceRef": "docs/openapi/schedule.json",
+            "sha256": "098f0d563d43fbddaf8f256c4c28c67ddeae7c788d66ce9636ade45b8531febb"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/scripts/generate-academic-schedule-types.mjs",
+            "sha256": "1736fd0ce365c6996a1478cf9f9ead972194f70fe84a109a3ca6aa3b190d47ff"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/api/generated/academic.types.ts",
+            "sha256": "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/api/generated/schedule.types.ts",
+            "sha256": "faa42b8abdae6d33d8a54f3b7992631a0562fc7db72484d7e2a70563a005144c"
+          },
+          {
+            "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
+            "sha256": "5a759789afa1d8e2ca35f965cc118aea19d8812c57f5aafd775881c8fd55f0f8"
+          }
+        ],
+        "academic": {
+          "target": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/api/generated/academic.types.ts",
+          "sha256": "e1e5ce4e4b774a888bcff22f4807ce251a34572b3c63372aa7972604cb8b1bdc",
+          "stockGenerate": "PASS",
+          "stockCheck": "PASS",
+          "ScheduleByteExact": true,
+          "stockScriptByteExact": true
+        },
+        "bot": {
+          "target": "/workspace/rct-worktrees/request-enum-874-20261014/services/notification-bot/tests/test_bot_service_credentials.py",
+          "sha256": "9187bca546d9cff477abc4d6a705f9f253b24e28a748a214d64bc2feba539d3e",
+          "canonicalOldI001Count": 2,
+          "formatCheck": "PASS",
+          "lint": "PASS",
+          "astWithTypeComments": "EXACT",
+          "previousProofQualification": "Previous explicit Root-config check used physical WT filename and failed to match canonical first-party package inference; insufficient CI lint proof"
+        },
+        "RootUnchanged": true,
+        "status": "SOURCE_READY_CANONICAL_OUTPUT_AND_STYLE_ONLY",
+        "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "checks": {
+          "outputGuard": {
+            "direct_pid": 952816,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 952816,
+                "start_ticks": 33396502
+              },
+              {
+                "pid": 952817,
+                "start_ticks": 33396508
+              },
+              {
+                "pid": 952831,
+                "start_ticks": 33396773
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "elapsedSeconds": 5.426,
+            "peakOwnedRssBytes": 243896320,
+            "logBytes": 1803,
+            "logPath": "/tmp/rct-c79-reason-catalog-felshiul/causal-552-outputs.log"
+          },
+          "consumerGuard": {
+            "direct_pid": 953046,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 953046,
+                "start_ticks": 33400616
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "elapsedSeconds": 4.097,
+            "peakOwnedRssBytes": 359067648,
+            "logBytes": 67,
+            "logPath": "/tmp/rct-c79-reason-catalog-felshiul/academic-552-consumers.log"
+          },
+          "consumer": {
+            "parser": "PASS",
+            "canonicalRootNarrowTSC": "PASS",
+            "targetLogicalPaths": [
+              "/workspace/rutcampustrack/frontends/mobile-core/src/api/generated/academic.types.ts",
+              "/workspace/rutcampustrack/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts"
+            ],
+            "generatedInterfaceMemberChanges": {
+              "paths": {
+                "added": [
+                  "\"/academic/admin/attendance/export\"",
+                  "\"/academic/admin/attendance\"",
+                  "\"/academic/admin/attendance/semesters\"",
+                  "\"/academic/admin/attendance/formats\""
+                ],
+                "removed": []
+              },
+              "components": {
+                "added": [],
+                "removed": []
+              },
+              "operations": {
+                "added": [
+                  "generate",
+                  "read",
+                  "semesters",
+                  "formats"
+                ],
+                "removed": []
+              }
+            },
+            "openapiTypescriptVersion": "7.13.0",
+            "rootUnchanged": true
+          },
+          "semantic": {
+            "existingMembersSemanticallyIdenticalIgnoringObjectPropertyOrder": true,
+            "additions": {
+              "paths": {
+                "added": [
+                  "\"/academic/admin/attendance/export\"",
+                  "\"/academic/admin/attendance\"",
+                  "\"/academic/admin/attendance/semesters\"",
+                  "\"/academic/admin/attendance/formats\""
+                ],
+                "missing": [],
+                "changed": []
+              },
+              "operations": {
+                "added": [
+                  "generate",
+                  "read",
+                  "semesters",
+                  "formats"
+                ],
+                "missing": [],
+                "changed": []
+              },
+              "schemas": {
+                "added": [
+                  "Export",
+                  "Page",
+                  "Row",
+                  "Semester",
+                  "Semesters"
+                ],
+                "missing": [],
+                "changed": []
+              }
+            }
+          }
+        },
+        "sourcePins": [
+          {
+            "path": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/api/generated/academic.types.ts",
+            "sha256": "e1e5ce4e4b774a888bcff22f4807ce251a34572b3c63372aa7972604cb8b1bdc"
+          },
+          {
+            "path": "/workspace/rct-worktrees/request-enum-874-20261014/services/notification-bot/tests/test_bot_service_credentials.py",
+            "sha256": "9187bca546d9cff477abc4d6a705f9f253b24e28a748a214d64bc2feba539d3e"
+          }
+        ],
+        "diffs": [
+          {
+            "path": "/tmp/rct-c79-reason-catalog-felshiul/academic-552-generated.diff",
+            "sha256": "942b5dde080b120a48bd04818d199e3c189573bfb475e9e9e923fd5349a6d37f"
+          },
+          {
+            "path": "/tmp/rct-c79-reason-catalog-felshiul/bot-552-style.diff",
+            "sha256": "0f781817f1bcb75eab1808e34c46662da798898a5d1873bcd4b2b9d384f68410"
+          }
+        ],
+        "stockExecution": "Exact canonical atomic script and exact Academic/Schedule inputs in private /tmp layout; existing canonical pinned openapi-typescript resolved read-only through loader; both outputs generated/checked; Schedule identity proven; only Academic output copied to WT. No hand edit or script semantics change.",
+        "botCommand": "Ruff0.17.0 check --fix --select I001 --no-cache --stdin-filename <canonicalRootLogicalFile> -; format stdin; format --check stdin; check stdin; cwd canonical notification-bot. WT source supplied via stdin and written only to assigned WTfile.",
+        "qualification": "No runtime/product behavior claims; no install/network/Gradle/browser/tests. Previous physical-WT lint proof retained as historical but inadequate for canonical Root package inference. AST INCLUDING original import order/type_comments exactly equal; only two missing separators added."
+      },
+      "qualification": "No nativebehaviorPASS; genuineRootlintinferencefixandstockgeneratedconsumer; Schedule/scripts/specsunchanged. No standalonefullreviewcampaignneeded."
+    },
+    "552b033_HEADMAN36_server_protocol_bounded_source_plan": {
+      "utc": "2026-10-15T16:07:45.810298+00:00",
+      "reviewer": "c88 read-only; no Source/runtime edits",
+      "accepted": "canonical87af JSHEADMAN36 556–558 password+botcode full irreversible subject delete; no mobilecarrier accepted",
+      "current": "emptyguardedDELETE only; no subjectpurposeOTP/destructiveprotocol",
+      "reuse": {
+        "auth": "SemesterDeletionConfirmationService livepassword/session/attemptbudget primitives; ADMINguard remains, new currentown-groupHEADMAN gate needed",
+        "otp": "purposeisolated durablechallenge/atomicconsume; loginOTP/reset-ticket cannotauthorize deletion, botonlylogin/reset now",
+        "academic": "existingsemesterdurable PREPARE/SEAL/fences/idempotency/recovery patterns, not atomicmultidbrollback",
+        "cascade": "oldsubject.deleted rejects retainedhistory/writable-semester violation; lesson.deleted alone lacks wholeHW/requestcascade"
+      },
+      "technicalProposal": "subject-specific preview/challenge/confirm/status; exactactionUID/SID/SV/RV/group/subject/manifest/operationbound single-useproof; no irreversibleeffects beforeallparticipantadmission; durablepending/recovery aftercommit, no partialsuccess",
+      "blockers": [
+        "Q025 archive/multisemester",
+        "Q026 mixedEXCUSEticket"
+      ],
+      "qualification": "GAP remains, no destructiveimplementation beforeanswers; researchnotnewAPIpermission; independentCI/STUDENTworkavailable"
+    },
+    "552b033_Auth_snapshot_metadata_Teacher_fixture_Root_integration": {
+      "utc": "2026-10-15T16:08:17.195803+00:00",
+      "status": "SOURCE_INTEGRATED_NOT_COMMITTED",
+      "sourceInventory": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+          "pre": "6dca62d732385786a6fec5c18a6b49efcbcc243bbd3ffe976ab6475a4a004e65",
+          "post": "0cfe2d3ca279a3854e6a0acb3060f63929a218508429c60fee2788158877b574"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+          "pre": "876a52eb68f0a5a3385019d14a59a0aaef46f993f1a3d8a692fff86c60e15510",
+          "post": "3cc2218874816f145b38e79245208658f56386015fc53828516ecd29dbadc687"
+        }
+      ],
+      "RootProof": "bothwholefilebyteinverseexact; allmethodbodies/normalizer/Teacherassertions unchanged",
+      "teacherCause": "actualDATABASE233; V24created_at/updated_at NOTNULL/nodefault, fixture INSERTomitted both; add CURRENT_TIMESTAMP only. Production/schema unchanged.",
+      "snapshotCause": "actualAuthOpenApiSnapshotIT70ASSERTION, newmethodmetadata sourceidentityavailablefornewnativeat68; no reinterpretationoldordinal/B015projection",
+      "checks": "c79GJF/parser/cachedoneclassjavac0; c84GJFparser/check0; allownedreaped; nativePG/newcanonicalAuthJSON PENDING",
+      "next": "c80coherentclosedreasonphases+stockAuthcanonicalgeneration; targetedindependentreviewthenpush"
+    },
+    "552b033_causal_package_frozen_independent_review": {
+      "utc": "2026-10-15T16:13:39.756273+00:00",
+      "decision": "c86_TARGETED_INDEPENDENT_APPROVE_NO_FINDINGS",
+      "CI": {
+        "state": "SOURCE_READY_NATIVE_PENDING",
+        "ciPath": "/workspace/rct-worktrees/renderer-outage-874-20261014/.github/workflows/ci.yml",
+        "ciSha256": "ba9ff0662752c5e1c4526253ad4417dc18386e0c46fafeb6fc3c62339c1c99df",
+        "baseReasonOnlySha256": "8498f5b7f1b7be3274923d67b47b8f68aa6fcbd18a391a0a0a9e068ef87da8ed",
+        "basePublishedSha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f",
+        "delta": "EXACT_REVIEWED_ACADEMIC_GENERATOR_TWO_STEP_AUTH_SPECIALIZATION_PLUS_APPROVED_FOUR_REASON_PHASES",
+        "authSnapshotSourcePin": {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+          "sourceRef": "FUTURE_ROOT_PACKET_FROM_552",
+          "sha256": "0cfe2d3ca279a3854e6a0acb3060f63929a218508429c60fee2788158877b574",
+          "method": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.apiDocsMatchesSnapshot",
+          "expectedEqualityLine": 68
+        },
+        "publicArtifact": "auth-openapi-generated-<attempt>",
+        "members": [
+          "auth.json",
+          "generation.safe.json"
+        ],
+        "caps": {
+          "publicJsonBytes": 2097152,
+          "proofBytes": 32768,
+          "nativeSeconds": 360,
+          "stepMinutes": 8
+        },
+        "proofKeys": [
+          "schemaVersion",
+          "state",
+          "producerHeadSha",
+          "checkoutSha",
+          "runId",
+          "runAttempt",
+          "testMethod",
+          "testSourceSha256",
+          "originalDriftFrameLine",
+          "originalIntegrationOutcome",
+          "generatedSnapshotSha256",
+          "generatedSnapshotBytes",
+          "trackedChanges",
+          "preexistingWrapperModeChange",
+          "wrapperSourceSha256",
+          "ordinaryFailurePreserved"
+        ],
+        "allExistingStepsSemanticAndByteInverse": true,
+        "bashSyntax": "PASS",
+        "pythonCompile": "PASS",
+        "sourceNativeIdentityControls": [
+          {
+            "control": "plain",
+            "admitted": true
+          },
+          {
+            "control": "decorated",
+            "admitted": true
+          },
+          {
+            "control": "absent",
+            "admitted": false
+          },
+          {
+            "control": "wrongMethod",
+            "admitted": false
+          },
+          {
+            "control": "wrongIdentity",
+            "admitted": false
+          },
+          {
+            "control": "wrongHash",
+            "admitted": false
+          },
+          {
+            "control": "wrongCount",
+            "admitted": false
+          },
+          {
+            "control": "wrongType",
+            "admitted": false
+          },
+          {
+            "control": "wrongLine",
+            "admitted": false
+          },
+          {
+            "control": "ambiguous",
+            "admitted": false
+          },
+          {
+            "control": "DTD",
+            "admitted": false
+          }
+        ],
+        "ordinaryFailurePreserved": true,
+        "rawLogsXmlOrRuntime": "NOT_RUN",
+        "readerAdmission": "EXACT_NEW_SOURCE_DECLARED_AUTH_PURPOSE_REQUIRED_AFTER_PUBLISHED_NEW_PRODUCER"
+      },
+      "reason": {
+        "state": "SOURCE_READY_NOT_RUNTIME_PROOF",
+        "path": "/workspace/rct-worktrees/renderer-outage-874-20261014/.github/workflows/ci.yml",
+        "sourceRefBase": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "preimageSha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f",
+        "sha256": "8498f5b7f1b7be3274923d67b47b8f68aa6fcbd18a391a0a0a9e068ef87da8ed",
+        "delta": "FOUR_CLOSED_PHASE_ASSIGNMENTS_ONLY",
+        "newPhases": [
+          "RED_XML_IDENTITY",
+          "RED_FAILURE_TYPE",
+          "RED_MESSAGE_RULE",
+          "RED_NAMED_FRAME"
+        ],
+        "assertionsAndAllOtherBytesInverseExact": true,
+        "yamlWholeOtherFieldsEqual": true,
+        "bashSyntax": "PASS",
+        "currentPythonHeredocCompile": "PASS",
+        "finiteActualValidatorControls": [
+          {
+            "control": "valid",
+            "phase": "RED_NAMED_FRAME",
+            "expectedFailure": false
+          },
+          {
+            "control": "identity",
+            "phase": "RED_XML_IDENTITY",
+            "expectedFailure": true
+          },
+          {
+            "control": "type",
+            "phase": "RED_FAILURE_TYPE",
+            "expectedFailure": true
+          },
+          {
+            "control": "message",
+            "phase": "RED_MESSAGE_RULE",
+            "expectedFailure": true
+          },
+          {
+            "control": "frame",
+            "phase": "RED_NAMED_FRAME",
+            "expectedFailure": true
+          },
+          {
+            "control": "ambiguous",
+            "phase": "RED_NAMED_FRAME",
+            "expectedFailure": true
+          }
+        ],
+        "readerPhaseAdmission": "SOURCE_DECLARED_FINITE_ENUM_UPDATE_ONLY_AFTER_NEW_PRODUCER_ADMISSION",
+        "actualCurrentCause": "UNKNOWN",
+        "runtime": "NOT_RUN"
+      },
+      "preserve": "wholeinverse allold3b627steps +4diagnosticassignments/twoAuthstocksteps; authentic NEWSOURCE_METHOD source/equality68; originalnormalFAILretained; no B015projection/oldordinalcredit; TeacherSQLsingleliteralinverseexactV24timestamps; noassertionchange",
+      "status": "Rootintegrated5Sources/checkscommitsnext"
+    },
+    "552b033_ordinary_primary_join_for_next_package": {
+      "utc": "2026-10-15T16:13:39.756273+00:00",
+      "reports": {
+        "academicAdminReportOrdinary": {
+          "existingFailedSourceMethodProjection": [],
+          "existingCaseSummary": {
+            "PASSED": 458,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "state": "EXACT_CURRENT_NAMED_SOURCE_METHODS",
+          "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "checkoutSha": "93534d6a7e75cde65ceb85afe29eb26365cbf847",
+          "runId": 38763721914,
+          "jobId": 116521389096,
+          "artifactId": 11989451054,
+          "artifactBytes": 22243,
+          "artifactDigest": "sha256:6e10898c43329482cc4317458ee178bdf33cd0999c30e4d1939624e2f073a740",
+          "metadata": {
+            "checkoutSha": "93534d6a7e75cde65ceb85afe29eb26365cbf847",
+            "prHeadSha": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+            "service": "academic-service",
+            "task": "integrationTest",
+            "job": "java-integration-test",
+            "runId": "38763721914",
+            "runAttempt": "1",
+            "event": "pull_request",
+            "testStepOutcome": "success"
+          },
+          "targets": [
+            {
+              "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+              "classname": "ru.rutcampustrack.academic.adminattendance.AdminAttendanceReportIT",
+              "method": "actualHttpBoundaryKeepsNoStoreAndRejectsUnknownSelectorsWithoutReflectingThem",
+              "sourceSha256": "05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "declarationLine": 140,
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "uniqueNamedCase": true
+            },
+            {
+              "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+              "classname": "ru.rutcampustrack.academic.adminattendance.AdminAttendanceReportIT",
+              "method": "otherRegistryGrantsCannotReadAndRevocationDuringRemoteReadReturnsNoRows",
+              "sourceSha256": "05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "declarationLine": 201,
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "uniqueNamedCase": true
+            },
+            {
+              "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+              "classname": "ru.rutcampustrack.academic.adminattendance.AdminAttendanceReportIT",
+              "method": "exportRequiresExactOwnedPreparingLeaseAndUsesAllFilteredRowsNotDisplayedPage",
+              "sourceSha256": "05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "declarationLine": 221,
+              "status": "PASSED",
+              "identity": "SOURCE_METHOD",
+              "uniqueNamedCase": true
+            }
+          ],
+          "xmlCaseSummaryConsistent": true,
+          "allDeclaredCountsConsistent": true,
+          "sourceMethodProof": "FQN_METHOD_SOURCE_HASH_UNIQUE_NO_ORDINAL_FALLBACK",
+          "rawXmlOrLogsRead": false,
+          "artifactOrPayloadWrittenToDisk": false,
+          "acceptance": "ONLY_EXACT_NAMED_NATIVE_RESULTS_NO_PRODUCT_FAMILY_PROMOTION"
+        },
+        "currentFirst3": {
+          "state": "EXACT_STRICT_PRIMARY_READ",
+          "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+          "run": 38763721914,
+          "artifact": 11988307934,
+          "digest": "sha256:2e683970104ef013133f28371cfcfeec5a8d4b4171737fc4e4a5ba7be4e29935",
+          "bytes": 2196,
+          "members": {
+            "artifacts/safe-results.json": {
+              "status": "failed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "mobile-real-server.spec.ts",
+                  "line": 685,
+                  "project": "chromium",
+                  "status": "failed",
+                  "expectedStatus": "passed",
+                  "durationMs": 435,
+                  "errorCount": 1,
+                  "diagnostics": [
+                    {
+                      "stage": "UNKNOWN",
+                      "cause": "UNKNOWN",
+                      "httpStatus": 0
+                    }
+                  ],
+                  "errorLocations": [
+                    {
+                      "file": "mobile-real-server.spec.ts",
+                      "line": 689
+                    }
+                  ]
+                },
+                {
+                  "file": "mobile-real-server.spec.ts",
+                  "line": 734,
+                  "project": "chromium",
+                  "status": "failed",
+                  "expectedStatus": "passed",
+                  "durationMs": 796,
+                  "errorCount": 1,
+                  "diagnostics": [
+                    {
+                      "stage": "UNKNOWN",
+                      "cause": "UNKNOWN",
+                      "httpStatus": 0
+                    }
+                  ],
+                  "errorLocations": [
+                    {
+                      "file": "mobile-real-server.spec.ts",
+                      "line": 741
+                    }
+                  ]
+                },
+                {
+                  "file": "mobile-real-server.spec.ts",
+                  "line": 1777,
+                  "project": "chromium",
+                  "status": "failed",
+                  "expectedStatus": "passed",
+                  "durationMs": 563,
+                  "errorCount": 1,
+                  "diagnostics": [
+                    {
+                      "stage": "UNKNOWN",
+                      "cause": "UNKNOWN",
+                      "httpStatus": 0
+                    }
+                  ],
+                  "errorLocations": [
+                    {
+                      "file": "mobile-real-server.spec.ts",
+                      "line": 1781
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "diagnosticSchema": {
+            "artifacts/safe-results.json": [
+              {
+                "caseCode": "STUDENT",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              },
+              {
+                "caseCode": "HEADMAN",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              },
+              {
+                "caseCode": "HELPER",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ]
+          },
+          "observationEnd": {
+            "STUDENT": {
+              "events": [
+                {
+                  "caseCode": "STUDENT",
+                  "phase": "END",
+                  "facts": {
+                    "testStatus": "failed",
+                    "diagnosticCompleted": true,
+                    "droppedEventCount": 0
+                  }
+                }
+              ],
+              "droppedEventCount": 0
+            },
+            "HEADMAN": {
+              "events": [
+                {
+                  "caseCode": "HEADMAN",
+                  "phase": "END",
+                  "facts": {
+                    "testStatus": "failed",
+                    "diagnosticCompleted": true,
+                    "droppedEventCount": 0
+                  }
+                }
+              ],
+              "droppedEventCount": 0
+            },
+            "HELPER": {
+              "events": [
+                {
+                  "caseCode": "HELPER",
+                  "phase": "END",
+                  "facts": {
+                    "testStatus": "failed",
+                    "diagnosticCompleted": true,
+                    "droppedEventCount": 0
+                  }
+                }
+              ],
+              "droppedEventCount": 0
+            }
+          },
+          "observedHttpFailures": {
+            "STUDENT": [],
+            "HEADMAN": [],
+            "HELPER": []
+          },
+          "sourcePins": [
+            {
+              "path": ".github/workflows/ci.yml",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "3b627653e73eb809d8e4d22f306ca140970a602c1f1b6ecf883a9d7eafcfa72f"
+            },
+            {
+              "path": "tests/e2e/fixtures/artifact-privacy.ts",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "429fefcff447d758bd6ca156badbcc47bb45764e4918b745b26d342eb01894f6"
+            },
+            {
+              "path": "tests/e2e/fixtures/first3-observer.ts",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "c665056b6af8f2b8467ff335e57606a10d3885c7cf25bbff2ca761eeca274072"
+            },
+            {
+              "path": "tests/e2e/fixtures/safe-reporter.ts",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4"
+            },
+            {
+              "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "sha256": "fcaded8bb93668614cc34f8d683992942e4301d4cbd6f862c75bdef04b90f5d9"
+            }
+          ],
+          "exactDeclarations": [
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 685,
+              "title": "STUDENT completion persists and another group cannot mutate the homework",
+              "project": "chromium",
+              "call": "test",
+              "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 734,
+              "title": "HEADMAN marks the real roster and TEACHER reads without acquiring write permission",
+              "project": "chromium",
+              "call": "it",
+              "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 1777,
+              "title": "STUDENT helper marks with its capability and revocation denies the same effect",
+              "project": "chromium",
+              "call": "test",
+              "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+            }
+          ],
+          "schemaSource": "/workspace/scratch/rct-validation/ci_edb_closed_read/first3/strict-browser-schema.py",
+          "schemaOriginalSha256": "c92e6aff404db34d863aeb6dff72f98ea1bb95dd342911ed6f48fcccbdf0ac69",
+          "schemaSpecializedSha256": "d4d7025f737d73424ba63c2c916f0efbd139ca7493eb650b0d2880d5710847bd",
+          "qualification": "Current552 exact complete3 identities/project and4member observer schema; original caps/status/privacy/digestCRC preserved. END/HTTPfailures only saved; frames identify caller only.",
+          "cause": "UNKNOWN",
+          "staticCallerClassification": [
+            {
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "file": "mobile-real-server.spec.ts",
+              "line": 689,
+              "stage": "INITIAL_LOGIN_PWA_CALL",
+              "actorRole": "STUDENT",
+              "actualHttpStatus": "UNKNOWN",
+              "actualFailureCause": "UNKNOWN"
+            },
+            {
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "file": "mobile-real-server.spec.ts",
+              "line": 741,
+              "stage": "INITIAL_LOGIN_PWA_CALL",
+              "actorRole": "HEADMAN",
+              "actualHttpStatus": "UNKNOWN",
+              "actualFailureCause": "UNKNOWN"
+            },
+            {
+              "sourceRef": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+              "file": "mobile-real-server.spec.ts",
+              "line": 1781,
+              "stage": "INITIAL_LOGIN_PWA_CALL",
+              "actorRole": "HELPER",
+              "actualHttpStatus": "UNKNOWN",
+              "actualFailureCause": "UNKNOWN"
+            }
+          ]
+        },
+        "authAdmin14OrdinaryNamed": {
+          "state": "STRICT_READ_REJECTED",
+          "phase": "EXACT_SOURCE_METHOD",
+          "exceptionClass": "AssertionError",
+          "httpStatus": null,
+          "ownLine": 50,
+          "actualTargetStatus": "UNKNOWN"
+        }
+      },
+      "qualification": "Academic458allPASS and3uniqueAdminmethods true; crossserviceUI/export notproved. FIRST3all3earlyfail initialloginPwa only, causeUNKNOWN, no429/5xxinference. BrowserbootSUCCESS distinctold841.",
+      "ordinaryFailureClassification": "samejob116521388979 closedAuthsnapshotASSERTION70 +ExportJobHttpITDATABASE233; strict allfailedcasereaderrejectednon-source-method/no namedGREEN"
+    },
+    "552b033_initial_PWA_password_locator_Root_integration": {
+      "utc": "2026-10-15T16:16:49.229611+00:00",
+      "status": "SOURCE_INTEGRATED_CHECKED_UNCOMMITTED",
+      "source": {
+        "status": "READ_ONLY_SOURCE_COUNTEREXAMPLE_FOUND_ACTUAL_CAUSE_UNKNOWN",
+        "producer": "552b033ac139b67a6e0803753d91ad2b2227c2ed",
+        "actual": {
+          "artifact": 11988307934,
+          "callers": [
+            689,
+            741,
+            1781
+          ],
+          "diagnostic": "UNKNOWN",
+          "httpStatus": 0,
+          "sourceFrame": "initial loginPwa call",
+          "noNewArtifactRead": true,
+          "c80ExistingOneLogRead": "HTTP404_NO_BYTES_NO_RETRY"
+        },
+        "sourceFinding": {
+          "introducedPanel": "LoginScreen.vue123–125 password tabpanel aria-labelledby login-password-tab",
+          "sameTabText": "LoginScreen.vue105 exact Пароль",
+          "input": "LoginScreen.vue138–145 implicit exact Пароль label",
+          "helper": "pwa-auth.ts25 exactlabel Пароль fill",
+          "engine": "PW1.59.1 internal:label scans all elements; getElementLabels returns aria-labelledby text for any element before native-control-label fallback",
+          "counterexample": "Both password tabpanel and password input match getByLabel exact Пароль; strict fill is ambiguous before submit/loginHTTP",
+          "qualification": "Source deterministic ambiguity; actual retained safe primary does not expose native exception so no claim of actual precise runtime cause"
+        },
+        "minimumPlan": {
+          "path": "tests/e2e/fixtures/pwa-auth.ts",
+          "change": "Retain exact accessible label AND intersect with input[name=\"password\"] before fill. No first()/nth() or label removal. Same helper options/retry/budget/status/header/privacy/credentials/oracles unchanged. No product UI change needed.",
+          "checks": "Exact one-expression inverse; formatter/parser/canonical Root e2eTSC, future existing ordinary smoke/FIRST3 native path. No new harness/fields/log acquisition needed for Source correction."
+        },
+        "sourceWrites": 0,
+        "nativeTests": 0,
+        "sourcePins": [
+          {
+            "path": "/workspace/rutcampustrack/frontends/pwa-vue/src/LoginScreen.vue",
+            "sha256": "aa057806835cb6c20b3c2f63fafdb82a0e57ec64e1f82b711650a20b2c29c5a5"
+          },
+          {
+            "path": "/workspace/rutcampustrack/tests/e2e/fixtures/pwa-auth.ts",
+            "sha256": "b84482c852786b5cd04308f5c6be850ae51760c845fde9a305f2cd6b389cd7df"
+          },
+          {
+            "path": "/workspace/rutcampustrack/tests/e2e/specs/mobile-real-server.spec.ts",
+            "sha256": "fcaded8bb93668614cc34f8d683992942e4301d4cbd6f862c75bdef04b90f5d9"
+          },
+          {
+            "path": "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/generated/injectedScriptSource.js",
+            "sha256": "53aac4133e2d1bfa605c7c33590d95e4edb57078412f895d21b5a08663296975"
+          },
+          {
+            "path": "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/utils/isomorphic/locatorUtils.js",
+            "sha256": "a82004d8937628c05bec84c61f245d7d027624b58c08abf91ed2319e63742670"
+          }
+        ],
+        "implementation": {
+          "path": "/workspace/rct-worktrees/request-enum-874-20261014/tests/e2e/fixtures/pwa-auth.ts",
+          "preimageSha256": "b84482c852786b5cd04308f5c6be850ae51760c845fde9a305f2cd6b389cd7df",
+          "sha256": "befccc5d5075ec6845bc1db98f9e4fddc114fce363a43049aa58403fde7e23d6",
+          "formatter": "PASS",
+          "parser": "PASS",
+          "eslint": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "canonicalRootNarrowFixtureTSC": 0,
+          "exactOutsideExpressionInverse": true,
+          "sourceCounterexample": "Exact password label matches both aria-labelledby panel and native password input; intersection admits only named password input",
+          "sourceControl": "Existing DOM name=password/type=password verified; stock PW1.59.1 label engine includes non-input aria-labelledby elements",
+          "nativeCause": "UNKNOWN",
+          "nativeBrowser": "NOT_RUN",
+          "rootUnchanged": true,
+          "guard": {
+            "direct_pid": 955150,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 955150,
+                "start_ticks": 33470589
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true,
+            "elapsedSeconds": 6.217,
+            "peakOwnedRssBytes": 415682560,
+            "logBytes": 760,
+            "logPath": "/tmp/rct-c79-reason-catalog-felshiul/pwa-password-locator-check.log"
+          },
+          "diffPath": "/tmp/rct-c79-reason-catalog-felshiul/pwa-password-locator-only.diff",
+          "sourcePins": [
+            {
+              "path": "/workspace/rct-worktrees/request-enum-874-20261014/tests/e2e/fixtures/pwa-auth.ts",
+              "sha256": "befccc5d5075ec6845bc1db98f9e4fddc114fce363a43049aa58403fde7e23d6"
+            }
+          ]
+        }
+      },
+      "rootInverse": "exactoneexpression/passwordsemanticlabelretained/inputqualifieronly",
+      "actualQualification": "Current5523earlyinitialloginFAIL causeUNKNOWN; sourcecollisiontabpanellabel+inputprovenbyactualPW1.59.1 semantics+RootLoginScreen, no currentnativecauseinferred. Futuregenuinebrowserrequired."
+    },
+    "552b033_STUDENT_statistics_independent_review_F1": {
+      "utc": "2026-10-15T16:19:42.680986+00:00",
+      "reviewer": "c88 independentSourceonly24files",
+      "status": "ONE_P2_CORRECTION_REQUIRED_NO_OTHER_MATERIAL_FINDING",
+      "backendBundle": "3878ab178a0cdf48b67aca0b256e3a3f96a2d156238f8716852577d7a3360af4",
+      "frontendPatch": "d6a404a265c7eb1083dc08921bf4070feaac1b34aa5380addf2abbfa643d9880",
+      "finding": {
+        "id": "STUDENT-STATS-F1",
+        "severity": "P2",
+        "sourceRef": "frontends/mobile-core/src/features/statistics/statistics-chart-geometry.ts",
+        "sourceSha256": "6e756a393facc526062c8a0bc823c12143661751cb84bdbe34d7a159b90b4b46",
+        "line": 137,
+        "cause": "groupPaths excludes personalFUTURE instead of checking suppliedgroupPresent independently",
+        "counterexample": "LatejoinTuesday/firstownThursdayPLANNED; currentgroupCLOSEDMonday historicalvalidpositivegroupPresent inSAMEweek. Graphhidesknowncomparison/textcanstillshowknownpercent.",
+        "correction": "derivegroupavailabilitysupplieddenominator>0/finitepercent/date independently; preserveownFUTURE/noData/nullnotzero; onefocusedexistinggeometrycontrol REDold→fixedGREEN",
+        "writer": "c87 sameauthor, no newendpoint/formula/timer"
+      },
+      "reviewRetained": "backend9/privacy/additiveproto7/historicalpooled/missingstatuslegacyexistingHeadmanrules; rankingownscope/staleabort/cache/removal/decoder; E2Eallbd16oldlinesorder+caps/cleanup retained. Other23pins/proofs reusable. No nativePASS."
+    },
+    "552b033_local_configured_secret_scan_false_positive": {
+      "utc": "2026-10-15T16:19:42.680986+00:00",
+      "phase": "semantic-configured",
+      "nativeExit": 1,
+      "allOwnedReaped": true,
+      "rule": "generic-api-key",
+      "locations": [
+        78272,
+        78957
+      ],
+      "classification": "OWN_SOURCE_SHA256_FILENAME_KEY_AND_NONSECRET_FAILURE_CLASSIFICATION_SENTENCE",
+      "proof": "firstvalueequalsactualpublished552botSourceSHA5a759; secondisclosedfailurecategoriesonly. No credentialsfound/read/printed.",
+      "correction": "newreceiptmetadataonly rootBefore map→sourceRef/sha256records; renamefailureclassificationkey; originalauthorreceipt/sourcebytes preserved. Scanner/config unchanged.",
+      "next": "sameconfiguredgateafterrealmetadatareshape; no suppression/allowlist"
     }
   }
 }

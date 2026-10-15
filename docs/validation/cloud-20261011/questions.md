@@ -182,3 +182,12 @@ PENDING_OWNER 2026-10-15T13:07:53.604981+00:00. Proposed FULL and current LIMITE
 2026-10-15T13:10:09.499816+00:00: Q023 ANSWERED / D026: Administrator group attendance screen and report contents. Canonical docs/product/decisions/2026-10-15-admin-attendance-report-screen.md.
 
 2026-10-15T13:10:09.499816+00:00: Q024 ANSWERED / D027: Administrator group attendance report authorization. Canonical docs/product/decisions/2026-10-15-admin-attendance-report-access.md.
+
+
+## Q025 — Full subject deletion and archived semester dependencies
+
+PENDING_OWNER 2026-10-15T16:07:45.810298+00:00. Accepted JS-HEADMAN-36 canonical87af:556–558 requires irreversible subject+attendance+homework deletion with password+botcode. Current Subject group_id has no semester_id, so one subject can span multiple/archived semesters; existing subject.deleted cascade expressly rejects retained canonical history/writable-semester violation. Semester-delete approval cannot authorize archive purge by analogy. Choices A (recommended history-safe): reject full subject deletion if it has closed/archived-semester dependencies; otherwise delete all accepted current subject data after password+purpose-specificbotOTP. B explicitly include closed/archived subject data in irreversible cascade with clear scope warning/confirmation. Only full subject deletion/archive branch blocked; all unrelated work continues. No production deletion or accepted history rule change before answer.
+
+## Q026 — Full subject deletion and indivisible mixed-subject EXCUSE ticket
+
+PENDING_OWNER 2026-10-15T16:07:45.810298+00:00. D019 preserves one indivisible EXCUSE ticket/decision; current validateLessonIds permits multiple subjects in one group+semester. Accepted JS-HEADMAN36 says all subject-related data, but does not decide removing one subject from a ticket covering others. Choices A (recommended conservative): reject full subject deletion while such a mixed-subject ticket exists. B preserve ticket/history and other subjects' coverage, remove only deleted subject's lessons from that ticket with an explicit history record; original decision remains one operation, no silent split/purge of other subject data. Only this destructive mixed-ticket branch depends. Do not silently delete whole mixed ticket or assume accepted cascade semantics.

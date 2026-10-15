@@ -14668,6 +14668,34 @@
       "sha256": "48d4bd40d44445a87bfc663e3340ac48f52661d89ff8c871997edd84a41a6b14",
       "status": "accepted-authoritative-owner-decision-D017",
       "chosen_asset_sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+    },
+    {
+      "id": "owner:cloud-validation-Q018-20261015",
+      "path": "docs/product/decisions/2026-10-15-mobile-theme-staged-validation.md",
+      "sha256": "c239d2bfa4cb5f7a2ee521847ac8085fa82d7c6e89b2c883de7d5fa395f304ed",
+      "status": "accepted owner decision D018",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T09:29:29.263706+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q017-20261015",
+      "path": "docs/product/decisions/2026-10-15-excuse-multiple-lessons.md",
+      "sha256": "e5ab957579720ccc2dfe5484ed07c2c145ea111fbf0b1b74dcaee17cbcb4ac5c",
+      "status": "accepted owner decision D019",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T09:29:29.263706+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q016-20261015",
+      "path": "docs/product/decisions/2026-10-15-login-context-separation.md",
+      "sha256": "727fb99bbd5d6180286a13c6ffb62b1fc3bd35556584ba84aab0a5ee925283ee",
+      "status": "accepted owner decision D020",
+      "source_identity": "Main chat exact owneranswer received 2026-10-15T09:31:50.668456+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q019-20261015",
+      "path": "docs/product/decisions/2026-10-15-webkit-offline-owner-acceptance.md",
+      "sha256": "193a111e0fb1143c98cf004e087342ef6c5274c1e767d4f2e3bf31c84615944f",
+      "status": "accepted owner decision D021",
+      "source_identity": "Main chat exact owneranswer received 2026-10-15T09:36:45.637550+00:00"
     }
   ],
   "research_receipt": {

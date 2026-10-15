@@ -2909,9 +2909,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
@@ -3014,11 +3014,11 @@ export interface components {
             /** Format: date */
             baselineDate?: string;
             /** Format: int64 */
-            studentsDelta?: number;
+            studentsDelta?: number | null;
             /** Format: int64 */
-            teachersDelta?: number;
+            teachersDelta?: number | null;
             /** Format: int64 */
-            groupsDelta?: number;
+            groupsDelta?: number | null;
         };
         EntityModelDashboardStatsResponse: {
             /** Format: int64 */

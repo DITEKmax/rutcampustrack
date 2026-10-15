@@ -21,418 +21,6 @@ import {
 
 registerPrivateSuite();
 
-// BOUNDARY-36/38: publisher identity is information, not an author-only edit grant.
-// One DATE homework before its Moscow cutoff; no clock writes or archive/transfer claim.
-test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile', async ({
-  page,
-  dataset,
-}, info) => {
-  test.setTimeout(120000);
-  const retryUntilMs =
-    (retryStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
-  const path = `/api/academic/homeworks/${dataset.homework.id}`;
-  const historyPath = `${path}/history`;
-  const feedPath = `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`;
-  const original = await dataset.headmanActor.call('GET', path);
-  expect(original).toMatchObject({
-    publishedBy: dataset.headman.id,
-    archived: false,
-    bindingMode: 'DATE',
-    lessonDate: dataset.tomorrow,
-    lessonNumber: null,
-  });
-  expect(original.bindingId).toBeGreaterThan(0);
-  const originalHistory = await dataset.headmanActor.call('GET', `${historyPath}?size=100`);
-  expect(Array.isArray(originalHistory.content)).toBe(true);
-
-  const admittedStudent = await loginPwa(page, dataset.student, {
-    retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
-  });
-  const student = new Actor(dataset.request, admittedStudent.accessToken, admittedStudent.session);
-  await page.getByRole('button', { name: 'Задания', exact: true }).click();
-  await selectHomeworkDate(page, dataset, dataset.tomorrow);
-  const completion = page.getByRole('slider', {
-    name: `Выполнить: ${dataset.marker}`,
-    exact: true,
-  });
-  await completion.focus();
-  for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
-  const completedResponse = http(page, `/api/v1/student/homework/${original.id}/completion`, 'PUT');
-  await completion.press('Enter');
-  expect((await completedResponse).status()).toBe(200);
-  await expect(
-    page.getByRole('slider', { name: `Снять отметку: ${dataset.marker}`, exact: true }),
-  ).toBeVisible();
-  const completedFeed = await student.call('GET', feedPath);
-  const completedItems = completedFeed.items.filter(
-    (item: { id: string }) => item.id === String(original.id),
-  );
-  expect(completedItems).toHaveLength(1);
-  const completed = completedItems[0];
-  expect(completed).toMatchObject({ completed: true, archived: false });
-  expect(completed.completedAt).toEqual(expect.any(String));
-  // Completion is a personal STUDENT operation and does not confer content management.
-  await expect(page.getByRole('button', { name: 'Изменить', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Удалить', exact: true })).toHaveCount(0);
-  const deniedStudent = await dataset.request.put(path, {
-    headers: student.headers(),
-    data: {
-      title: `${dataset.marker}-student-denied`,
-      description: original.description,
-      link: original.link,
-      expectedRevision: original.revision,
-      requestKey: randomUUID(),
-    },
-  });
-  expect(deniedStudent.status()).toBe(403);
-  expect(await dataset.headmanActor.call('GET', path)).toEqual(original);
-  expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(
-    originalHistory,
-  );
-  await logoutPwa(page);
-
-  const { user, grant } = await singleCapability(dataset, 'MANAGE_HOMEWORK');
-  expect(user.id).not.toBe(original.publishedBy);
-  const admittedHelper = await loginPwa(page, user);
-  const helper = new Actor(dataset.request, admittedHelper.accessToken, admittedHelper.session);
-  expect(admittedHelper.session.activeRole).toBe('STUDENT');
-  expect(
-    admittedHelper.session.roles.some((role) => role.role === 'HEADMAN' && role.selectable),
-  ).toBe(false);
-  expect(
-    assistantPermissionCodes(await helper.call('GET', '/api/academic/assistants/me/permissions')),
-  ).toEqual(['MANAGE_HOMEWORK']);
-  await openAssistant(page, 'Домашние задания');
-  await page.getByLabel('Дата', { exact: true }).fill(dataset.tomorrow);
-  await page.getByRole('combobox', { name: /^Привязка/ }).selectOption('DATE');
-  await expect(
-    page
-      .getByText(original.title, { exact: true })
-      .and(page.locator('.assistant-homework__item strong')),
-  ).toBeVisible();
-  await page.getByRole('button', { name: 'Изменить', exact: true }).click();
-  const title = `${dataset.marker}-helper-edit`;
-  const description = 'Синтетическая правка помощника без сброса выполнения';
-  await page.getByLabel('Название', { exact: true }).fill(title);
-  await page.getByLabel('Описание', { exact: true }).fill(description);
-  const changedResponse = http(page, path, 'PUT');
-  await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
-  expect((await changedResponse).status()).toBe(200);
-  await expect(
-    page.getByText(title, { exact: true }).and(page.locator('.assistant-homework__item strong')),
-  ).toBeVisible();
-  await expect(
-    page.locator('.assistant-homework__item').getByText(description, { exact: true }),
-  ).toBeVisible();
-  const edited = await dataset.headmanActor.call('GET', path);
-  expect(edited).toMatchObject({
-    id: original.id,
-    title,
-    description,
-    publishedBy: original.publishedBy,
-    bindingId: original.bindingId,
-    requestKey: original.requestKey,
-    bindingMode: original.bindingMode,
-    lessonDate: original.lessonDate,
-    lessonNumber: original.lessonNumber,
-    archived: false,
-  });
-  expect(edited.revision).toBe(original.revision + 1);
-  const history = await dataset.headmanActor.call('GET', `${historyPath}?size=100`);
-  expect(history.content).toHaveLength(originalHistory.content.length + 1);
-  const edit = history.content[history.content.length - 1];
-  expect(edit).toMatchObject({
-    action: 'EDITED',
-    actorId: user.id,
-    revision: edited.revision,
-    before: { title: original.title, description: original.description },
-    after: { title, description },
-  });
-  expect(edit.occurredAt).toEqual(expect.any(String));
-  expect(history.content.slice(0, -1)).toEqual(originalHistory.content);
-  const openedHistory = http(page, historyPath, 'GET');
-  await page.getByRole('button', { name: 'История', exact: true }).click();
-  expect((await openedHistory).status()).toBe(200);
-  const historyRegion = page.getByRole('region', {
-    name: 'История домашнего задания',
-    exact: true,
-  });
-  await expect(historyRegion).toContainText(`Версия ${edited.revision}`);
-  await expect(historyRegion).toContainText(`Пользователь #${user.id}`);
-
-  // Keep the real editor open across live grant revocation; the server owns admission.
-  await page.getByRole('button', { name: 'Изменить', exact: true }).click();
-  await page.getByLabel('Название', { exact: true }).fill(`${title}-revoked-denied`);
-  await dataset.headmanActor.call('DELETE', `/api/academic/assistants/${grant.id}`, undefined, [
-    204,
-  ]);
-  const revokedResponse = http(page, path, 'PUT');
-  await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
-  expect((await revokedResponse).status()).toBe(403);
-  expect(await dataset.headmanActor.call('GET', path)).toEqual(edited);
-  expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(history);
-  await page.reload();
-  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Действия помощника', exact: true })).toHaveCount(
-    0,
-  );
-  await logoutPwa(page);
-
-  const reopenedStudent = await loginPwa(page, dataset.student, {
-    retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
-  });
-  const readStudent = new Actor(
-    dataset.request,
-    reopenedStudent.accessToken,
-    reopenedStudent.session,
-  );
-  await page.getByRole('button', { name: 'Задания', exact: true }).click();
-  await selectHomeworkDate(page, dataset, dataset.tomorrow);
-  const card = page
-    .locator('.homework-card')
-    .filter({ has: page.getByText(title, { exact: true }) });
-  const completedSlider = card.getByRole('slider', {
-    name: `Снять отметку: ${dataset.subject.name}`,
-    exact: true,
-  });
-  await expect(completedSlider).toBeVisible();
-  await expect(card).toHaveCount(1);
-  await expect(card).toHaveAttribute('data-completion', 'completed');
-  await expect(page.getByRole('button', { name: 'Изменить', exact: true })).toHaveCount(0);
-  await page.reload();
-  await page.getByRole('button', { name: 'Задания', exact: true }).click();
-  await selectHomeworkDate(page, dataset, dataset.tomorrow);
-  await expect(completedSlider).toBeVisible();
-  const reloadedFeed = await readStudent.call('GET', feedPath);
-  const reloadedItems = reloadedFeed.items.filter(
-    (item: { id: string }) => item.id === String(original.id),
-  );
-  expect(reloadedItems).toHaveLength(1);
-  expect(reloadedItems[0]).toMatchObject({
-    id: completed.id,
-    title,
-    description,
-    completed: true,
-    completedAt: completed.completedAt,
-    archived: false,
-    lessonDate: completed.lessonDate,
-    bindingMode: completed.bindingMode,
-  });
-  expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(history);
-
-  // JS-HEADMAN-17 / JS-SYSTEM-10: this real UI edit must reach its dated audience.
-  // The event uses the real clock, independently of the educational browser clock.
-  const moscowDay = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Moscow',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-  expect(
-    dataset.semester.dateFrom <= moscowDay.format(new Date(edit.occurredAt)) &&
-      dataset.semester.dateFrom <= moscowDay.format(new Date()),
-  ).toBe(true);
-  type NotificationRow = {
-    id: string;
-    type: string;
-    sentAt: string;
-    readAt: string | null;
-    revision: string;
-    details: { label: string; value: string }[];
-    action: { kind: string; role: string; homeworkId: string; lessonDate: string } | null;
-  };
-  const inboxPath = '/api/notifications/inbox';
-  const matchesHomework = (row: NotificationRow, type: string, itemTitle: string) =>
-    row.type === type &&
-    row.action?.kind === 'homework' &&
-    row.action.homeworkId === String(original.id) &&
-    row.action.lessonDate === dataset.tomorrow &&
-    row.details.some((detail) => detail.label === 'Задание' && detail.value === itemTitle);
-  let notificationRows: NotificationRow[] = [];
-  await expect
-    .poll(
-      async () => {
-        const inbox = await readStudent.call('GET', `${inboxPath}?limit=100`);
-        expect(inbox.role === 'STUDENT' && Array.isArray(inbox.items)).toBe(true);
-        notificationRows = inbox.items;
-        return (
-          notificationRows.filter((row) => matchesHomework(row, 'HOMEWORK_UPDATED', title))
-            .length === 1 &&
-          notificationRows.filter((row) =>
-            matchesHomework(row, 'HOMEWORK_PUBLISHED', original.title),
-          ).length === 1
-        );
-      },
-      { timeout: 20000, message: 'Real homework publication and edit reach the student inbox' },
-    )
-    .toBe(true);
-  const updatedNotification = notificationRows.find((row) =>
-    matchesHomework(row, 'HOMEWORK_UPDATED', title),
-  )!;
-  const publishedNotification = notificationRows.find((row) =>
-    matchesHomework(row, 'HOMEWORK_PUBLISHED', original.title),
-  )!;
-  expect(
-    updatedNotification.action?.role === 'STUDENT' &&
-      updatedNotification.readAt === null &&
-      Number.isFinite(Date.parse(updatedNotification.sentAt)),
-  ).toBe(true);
-  const notificationsDialog = page.getByRole('dialog', { name: 'Уведомления', exact: true });
-  const updatedNotificationCard = notificationsDialog
-    .locator('.notification-card')
-    .filter({ has: page.getByText(title, { exact: true }) });
-  const publishedNotificationCard = notificationsDialog
-    .locator('.notification-card')
-    .filter({ has: page.getByText(original.title, { exact: true }) });
-  // The existing notification entry is in the Today header, not the homework list.
-  await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
-  const [openedInbox] = await Promise.all([
-    http(page, inboxPath, 'GET'),
-    page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
-  ]);
-  expect(openedInbox.status()).toBe(200);
-  await expect(updatedNotificationCard).toBeVisible();
-  await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'true');
-  await expect(publishedNotificationCard).toBeVisible();
-  const readPath = `${inboxPath}/${updatedNotification.id}/read-state`;
-  const notificationAction = updatedNotificationCard.locator('.notification-card__main');
-  await expect(notificationAction).toBeEnabled();
-  let readRequestObserved = false;
-  const observeReadRequest = (request: Request) => {
-    if (request.method() === 'PUT' && new URL(request.url()).pathname === readPath)
-      readRequestObserved = true;
-  };
-  page.on('request', observeReadRequest);
-  let responses: [
-    PromiseSettledResult<Response>,
-    PromiseSettledResult<Response>,
-    PromiseSettledResult<void>,
-  ];
-  try {
-    // Keep a simultaneous click timeout from being hidden by the response timeout.
-    responses = await Promise.allSettled([
-      http(page, readPath, 'PUT'),
-      page.waitForResponse((response) => {
-        const url = new URL(response.url());
-        return (
-          response.request().method() === 'GET' &&
-          url.pathname === '/api/v1/student/homework' &&
-          url.searchParams.get('from') === dataset.tomorrow &&
-          url.searchParams.get('to') === dataset.tomorrow
-        );
-      }),
-      notificationAction.click(),
-    ]);
-  } finally {
-    page.off('request', observeReadRequest);
-  }
-  const [readResult, targetResult, clickResult] = responses;
-  if (responses.some((response) => response.status === 'rejected')) {
-    expect
-      .soft(clickResult.status === 'fulfilled', 'Notification action click completed')
-      .toBe(true);
-    expect.soft(readRequestObserved, 'Notification read-state PUT was emitted').toBe(true);
-    expect
-      .soft(targetResult.status === 'fulfilled', 'Notification target response arrived')
-      .toBe(true);
-  }
-  if (readResult.status === 'rejected') throw readResult.reason;
-  if (targetResult.status === 'rejected') throw targetResult.reason;
-  if (clickResult.status === 'rejected') throw clickResult.reason;
-  const readResponse = readResult.value;
-  const targetResponse = targetResult.value;
-  expect(readResponse.status()).toBe(200);
-  const readCommand = readResponse.request().postDataJSON();
-  expect(
-    readCommand.read === true && readCommand.expectedRevision === updatedNotification.revision,
-  ).toBe(true);
-  const readReceipt = await readResponse.json();
-  const readNotification = readReceipt.item as NotificationRow;
-  expect(
-    readReceipt.role === 'STUDENT' &&
-      readNotification.id === updatedNotification.id &&
-      readNotification.sentAt === updatedNotification.sentAt &&
-      readNotification.revision !== updatedNotification.revision &&
-      typeof readNotification.readAt === 'string' &&
-      Number.isFinite(Date.parse(readNotification.readAt)),
-  ).toBe(true);
-  expect(targetResponse.status()).toBe(200);
-  const targetFeed = await targetResponse.json();
-  const targetItems = targetFeed.items.filter((item: { id: string }) => item.id === completed.id);
-  expect(targetItems.length === 1).toBe(true);
-  expect(
-    targetItems[0].title === title &&
-      targetItems[0].description === description &&
-      targetItems[0].lessonDate === dataset.tomorrow &&
-      targetItems[0].completed === true &&
-      targetItems[0].completedAt === completed.completedAt,
-  ).toBe(true);
-  await expect(notificationsDialog).toHaveCount(0);
-  await expect(card).toBeVisible();
-  await expect(card).toHaveAttribute('data-completion', 'completed');
-  await expect(completedSlider).toBeFocused();
-
-  await page.reload();
-  await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
-  const [reopenedInbox] = await Promise.all([
-    http(page, inboxPath, 'GET'),
-    page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
-  ]);
-  expect(reopenedInbox.status()).toBe(200);
-  const durableInbox = await reopenedInbox.json();
-  expect(durableInbox.role === 'STUDENT' && Array.isArray(durableInbox.items)).toBe(true);
-  const durableRows = durableInbox.items as NotificationRow[];
-  expect(
-    durableRows.filter((row) => row.id === updatedNotification.id).length === 1 &&
-      durableRows.some((row) => JSON.stringify(row) === JSON.stringify(readNotification)) &&
-      durableRows.some((row) => JSON.stringify(row) === JSON.stringify(publishedNotification)),
-  ).toBe(true);
-  await expect(updatedNotificationCard).toBeVisible();
-  await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'false');
-  await expect(publishedNotificationCard).toBeVisible();
-
-  // A different already-admitted recipient can read its own event, not this student's row.
-  const headmanInbox = await dataset.headmanActor.call('GET', `${inboxPath}?limit=100`);
-  expect(headmanInbox.role === 'HEADMAN' && Array.isArray(headmanInbox.items)).toBe(true);
-  const headmanRows = (headmanInbox.items as NotificationRow[]).filter((row) =>
-    matchesHomework(row, 'HOMEWORK_UPDATED', title),
-  );
-  expect(
-    headmanRows.length === 1 &&
-      headmanRows[0].action?.role === 'HEADMAN' &&
-      headmanRows[0].id !== updatedNotification.id &&
-      !headmanInbox.items.some((row: NotificationRow) => row.id === updatedNotification.id),
-  ).toBe(true);
-  const foreignRead = await dataset.request.put(readPath, {
-    headers: dataset.headmanActor.headers(),
-    data: { read: false, expectedRevision: readNotification.revision },
-  });
-  expect(foreignRead.status()).toBe(404);
-  await foreignRead.dispose();
-  const unchangedInbox = await readStudent.call('GET', `${inboxPath}?limit=100`);
-  expect(
-    unchangedInbox.items.some(
-      (row: NotificationRow) => JSON.stringify(row) === JSON.stringify(readNotification),
-    ),
-  ).toBe(true);
-
-  await readStudent.call('POST', '/api/auth/logout-all', undefined, [204]);
-  const revokedInbox = await dataset.request.get(inboxPath, { headers: readStudent.headers() });
-  expect(revokedInbox.status()).toBe(401);
-  await revokedInbox.dispose();
-  const revokedRead = await dataset.request.put(readPath, {
-    headers: readStudent.headers(),
-    data: { read: false, expectedRevision: readNotification.revision },
-  });
-  expect(revokedRead.status()).toBe(401);
-  await revokedRead.dispose();
-  await page.reload();
-  await expect(
-    page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
-  ).toBeVisible();
-  await expect(page.locator('.notification-card')).toHaveCount(0);
-});
-
 // Charge requested page/scenario setup and the body to one login budget.
 // Earlier runner/auto-fixture overhead is unmeasured; the original timeout still applies.
 const retryStartedAt = new WeakMap<TestInfo, number>();
@@ -448,6 +36,586 @@ const isolated = test.extend<{ scenario: MobileDataset }>({
     await use(own);
   },
 });
+
+// BOUNDARY-36/38: publisher identity is information, not an author-only edit grant.
+// One DATE homework before its Moscow cutoff; no clock writes or archive/transfer claim.
+isolated(
+  'MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile',
+  async ({ page, scenario: dataset }, info) => {
+    test.setTimeout(120000);
+    const retryUntilMs =
+      (retryStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
+    const path = `/api/academic/homeworks/${dataset.homework.id}`;
+    const historyPath = `${path}/history`;
+    const feedPath = `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`;
+    const original = await dataset.headmanActor.call('GET', path);
+    expect(original).toMatchObject({
+      publishedBy: dataset.headman.id,
+      archived: false,
+      bindingMode: 'DATE',
+      lessonDate: dataset.tomorrow,
+      lessonNumber: null,
+    });
+    expect(original.bindingId).toBeGreaterThan(0);
+    const originalHistory = await dataset.headmanActor.call('GET', `${historyPath}?size=100`);
+    expect(Array.isArray(originalHistory.content)).toBe(true);
+
+    const admittedStudent = await loginPwa(page, dataset.student, {
+      retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+    });
+    const student = new Actor(
+      dataset.request,
+      admittedStudent.accessToken,
+      admittedStudent.session,
+    );
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectHomeworkDate(page, dataset, dataset.tomorrow);
+    const completion = page.getByRole('slider', {
+      name: `Выполнить: ${dataset.marker}`,
+      exact: true,
+    });
+    await completion.focus();
+    for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
+    const completedResponse = http(
+      page,
+      `/api/v1/student/homework/${original.id}/completion`,
+      'PUT',
+    );
+    await completion.press('Enter');
+    expect((await completedResponse).status()).toBe(200);
+    await expect(
+      page.getByRole('slider', { name: `Снять отметку: ${dataset.marker}`, exact: true }),
+    ).toBeVisible();
+    const completedFeed = await student.call('GET', feedPath);
+    const completedItems = completedFeed.items.filter(
+      (item: { id: string }) => item.id === String(original.id),
+    );
+    expect(completedItems).toHaveLength(1);
+    const completed = completedItems[0];
+    expect(completed).toMatchObject({ completed: true, archived: false });
+    expect(completed.completedAt).toEqual(expect.any(String));
+    // Completion is a personal STUDENT operation and does not confer content management.
+    await expect(page.getByRole('button', { name: 'Изменить', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Удалить', exact: true })).toHaveCount(0);
+    const deniedStudent = await dataset.request.put(path, {
+      headers: student.headers(),
+      data: {
+        title: `${dataset.marker}-student-denied`,
+        description: original.description,
+        link: original.link,
+        expectedRevision: original.revision,
+        requestKey: randomUUID(),
+      },
+    });
+    expect(deniedStudent.status()).toBe(403);
+    expect(await dataset.headmanActor.call('GET', path)).toEqual(original);
+    expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(
+      originalHistory,
+    );
+    await logoutPwa(page);
+
+    const { user, grant } = await singleCapability(dataset, 'MANAGE_HOMEWORK');
+    expect(user.id).not.toBe(original.publishedBy);
+    const admittedHelper = await loginPwa(page, user);
+    const helper = new Actor(dataset.request, admittedHelper.accessToken, admittedHelper.session);
+    expect(admittedHelper.session.activeRole).toBe('STUDENT');
+    expect(
+      admittedHelper.session.roles.some((role) => role.role === 'HEADMAN' && role.selectable),
+    ).toBe(false);
+    expect(
+      assistantPermissionCodes(await helper.call('GET', '/api/academic/assistants/me/permissions')),
+    ).toEqual(['MANAGE_HOMEWORK']);
+    await openAssistant(page, 'Домашние задания');
+    await page.getByLabel('Дата', { exact: true }).fill(dataset.tomorrow);
+    await page.getByRole('combobox', { name: /^Привязка/ }).selectOption('DATE');
+    await expect(
+      page
+        .getByText(original.title, { exact: true })
+        .and(page.locator('.assistant-homework__item strong')),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Изменить', exact: true }).click();
+    const title = `${dataset.marker}-helper-edit`;
+    const description = 'Синтетическая правка помощника без сброса выполнения';
+    await page.getByLabel('Название', { exact: true }).fill(title);
+    await page.getByLabel('Описание', { exact: true }).fill(description);
+    const changedResponse = http(page, path, 'PUT');
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    expect((await changedResponse).status()).toBe(200);
+    await expect(
+      page.getByText(title, { exact: true }).and(page.locator('.assistant-homework__item strong')),
+    ).toBeVisible();
+    await expect(
+      page.locator('.assistant-homework__item').getByText(description, { exact: true }),
+    ).toBeVisible();
+    const edited = await dataset.headmanActor.call('GET', path);
+    expect(edited).toMatchObject({
+      id: original.id,
+      title,
+      description,
+      publishedBy: original.publishedBy,
+      bindingId: original.bindingId,
+      requestKey: original.requestKey,
+      bindingMode: original.bindingMode,
+      lessonDate: original.lessonDate,
+      lessonNumber: original.lessonNumber,
+      archived: false,
+    });
+    expect(edited.revision).toBe(original.revision + 1);
+    const history = await dataset.headmanActor.call('GET', `${historyPath}?size=100`);
+    expect(history.content).toHaveLength(originalHistory.content.length + 1);
+    const edit = history.content[history.content.length - 1];
+    expect(edit).toMatchObject({
+      action: 'EDITED',
+      actorId: user.id,
+      revision: edited.revision,
+      before: { title: original.title, description: original.description },
+      after: { title, description },
+    });
+    expect(edit.occurredAt).toEqual(expect.any(String));
+    expect(history.content.slice(0, -1)).toEqual(originalHistory.content);
+    const openedHistory = http(page, historyPath, 'GET');
+    await page.getByRole('button', { name: 'История', exact: true }).click();
+    expect((await openedHistory).status()).toBe(200);
+    const historyRegion = page.getByRole('region', {
+      name: 'История домашнего задания',
+      exact: true,
+    });
+    await expect(historyRegion).toContainText(`Версия ${edited.revision}`);
+    await expect(historyRegion).toContainText(`Пользователь #${user.id}`);
+
+    // Keep the real editor open across live grant revocation; the server owns admission.
+    await page.getByRole('button', { name: 'Изменить', exact: true }).click();
+    await page.getByLabel('Название', { exact: true }).fill(`${title}-revoked-denied`);
+    await dataset.headmanActor.call('DELETE', `/api/academic/assistants/${grant.id}`, undefined, [
+      204,
+    ]);
+    const revokedResponse = http(page, path, 'PUT');
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    expect((await revokedResponse).status()).toBe(403);
+    expect(await dataset.headmanActor.call('GET', path)).toEqual(edited);
+    expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(history);
+    await page.reload();
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Действия помощника', exact: true })).toHaveCount(
+      0,
+    );
+    await logoutPwa(page);
+
+    const reopenedStudent = await loginPwa(page, dataset.student, {
+      retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+    });
+    const readStudent = new Actor(
+      dataset.request,
+      reopenedStudent.accessToken,
+      reopenedStudent.session,
+    );
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectHomeworkDate(page, dataset, dataset.tomorrow);
+    const card = page
+      .locator('.homework-card')
+      .filter({ has: page.getByText(title, { exact: true }) });
+    const completedSlider = card.getByRole('slider', {
+      name: `Снять отметку: ${dataset.subject.name}`,
+      exact: true,
+    });
+    await expect(completedSlider).toBeVisible();
+    await expect(card).toHaveCount(1);
+    await expect(card).toHaveAttribute('data-completion', 'completed');
+    await expect(page.getByRole('button', { name: 'Изменить', exact: true })).toHaveCount(0);
+    await page.reload();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectHomeworkDate(page, dataset, dataset.tomorrow);
+    await expect(completedSlider).toBeVisible();
+    const reloadedFeed = await readStudent.call('GET', feedPath);
+    const reloadedItems = reloadedFeed.items.filter(
+      (item: { id: string }) => item.id === String(original.id),
+    );
+    expect(reloadedItems).toHaveLength(1);
+    expect(reloadedItems[0]).toMatchObject({
+      id: completed.id,
+      title,
+      description,
+      completed: true,
+      completedAt: completed.completedAt,
+      archived: false,
+      lessonDate: completed.lessonDate,
+      bindingMode: completed.bindingMode,
+    });
+    expect(await dataset.headmanActor.call('GET', `${historyPath}?size=100`)).toEqual(history);
+
+    // JS-HEADMAN-17 / JS-SYSTEM-10: this real UI edit must reach its dated audience.
+    // The event uses the real clock, independently of the educational browser clock.
+    const moscowDay = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Moscow',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    expect(
+      dataset.semester.dateFrom <= moscowDay.format(new Date(edit.occurredAt)) &&
+        dataset.semester.dateFrom <= moscowDay.format(new Date()),
+    ).toBe(true);
+    type NotificationRow = {
+      id: string;
+      type: string;
+      sentAt: string;
+      readAt: string | null;
+      revision: string;
+      details: { label: string; value: string }[];
+      action: { kind: string; role: string; homeworkId: string; lessonDate: string } | null;
+    };
+    const inboxPath = '/api/notifications/inbox';
+    const matchesHomework = (row: NotificationRow, type: string, itemTitle: string) =>
+      row.type === type &&
+      row.action?.kind === 'homework' &&
+      row.action.homeworkId === String(original.id) &&
+      row.action.lessonDate === dataset.tomorrow &&
+      row.details.some((detail) => detail.label === 'Задание' && detail.value === itemTitle);
+    let notificationRows: NotificationRow[] = [];
+    await expect
+      .poll(
+        async () => {
+          const inbox = await readStudent.call('GET', `${inboxPath}?limit=100`);
+          expect(inbox.role === 'STUDENT' && Array.isArray(inbox.items)).toBe(true);
+          notificationRows = inbox.items;
+          return (
+            notificationRows.filter((row) => matchesHomework(row, 'HOMEWORK_UPDATED', title))
+              .length === 1 &&
+            notificationRows.filter((row) =>
+              matchesHomework(row, 'HOMEWORK_PUBLISHED', original.title),
+            ).length === 1
+          );
+        },
+        { timeout: 20000, message: 'Real homework publication and edit reach the student inbox' },
+      )
+      .toBe(true);
+    const updatedNotification = notificationRows.find((row) =>
+      matchesHomework(row, 'HOMEWORK_UPDATED', title),
+    )!;
+    const publishedNotification = notificationRows.find((row) =>
+      matchesHomework(row, 'HOMEWORK_PUBLISHED', original.title),
+    )!;
+    expect(
+      updatedNotification.action?.role === 'STUDENT' &&
+        updatedNotification.readAt === null &&
+        Number.isFinite(Date.parse(updatedNotification.sentAt)),
+    ).toBe(true);
+    const notificationsDialog = page.getByRole('dialog', { name: 'Уведомления', exact: true });
+    const updatedNotificationCard = notificationsDialog
+      .locator('.notification-card')
+      .filter({ has: page.getByText(title, { exact: true }) });
+    const publishedNotificationCard = notificationsDialog
+      .locator('.notification-card')
+      .filter({ has: page.getByText(original.title, { exact: true }) });
+    // The existing notification entry is in the Today header, not the homework list.
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    const [openedInbox] = await Promise.all([
+      http(page, inboxPath, 'GET'),
+      page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
+    ]);
+    expect(openedInbox.status()).toBe(200);
+    await expect(updatedNotificationCard).toBeVisible();
+    await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'true');
+    await expect(publishedNotificationCard).toBeVisible();
+    const readPath = `${inboxPath}/${updatedNotification.id}/read-state`;
+    const notificationAction = updatedNotificationCard.locator('.notification-card__main');
+    await expect(notificationAction).toBeEnabled();
+    let readRequestObserved = false;
+    const observeReadRequest = (request: Request) => {
+      if (request.method() === 'PUT' && new URL(request.url()).pathname === readPath)
+        readRequestObserved = true;
+    };
+    page.on('request', observeReadRequest);
+    let responses: [
+      PromiseSettledResult<Response>,
+      PromiseSettledResult<Response>,
+      PromiseSettledResult<void>,
+    ];
+    try {
+      // Keep a simultaneous click timeout from being hidden by the response timeout.
+      responses = await Promise.allSettled([
+        http(page, readPath, 'PUT'),
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/student/homework' &&
+            url.searchParams.get('from') === dataset.tomorrow &&
+            url.searchParams.get('to') === dataset.tomorrow
+          );
+        }),
+        notificationAction.click(),
+      ]);
+    } finally {
+      page.off('request', observeReadRequest);
+    }
+    const [readResult, targetResult, clickResult] = responses;
+    if (responses.some((response) => response.status === 'rejected')) {
+      expect
+        .soft(clickResult.status === 'fulfilled', 'Notification action click completed')
+        .toBe(true);
+      expect.soft(readRequestObserved, 'Notification read-state PUT was emitted').toBe(true);
+      expect
+        .soft(targetResult.status === 'fulfilled', 'Notification target response arrived')
+        .toBe(true);
+    }
+    if (readResult.status === 'rejected') throw readResult.reason;
+    if (targetResult.status === 'rejected') throw targetResult.reason;
+    if (clickResult.status === 'rejected') throw clickResult.reason;
+    const readResponse = readResult.value;
+    const targetResponse = targetResult.value;
+    expect(readResponse.status()).toBe(200);
+    const readCommand = readResponse.request().postDataJSON();
+    expect(
+      readCommand.read === true && readCommand.expectedRevision === updatedNotification.revision,
+    ).toBe(true);
+    const readReceipt = await readResponse.json();
+    const readNotification = readReceipt.item as NotificationRow;
+    expect(
+      readReceipt.role === 'STUDENT' &&
+        readNotification.id === updatedNotification.id &&
+        readNotification.sentAt === updatedNotification.sentAt &&
+        readNotification.revision !== updatedNotification.revision &&
+        typeof readNotification.readAt === 'string' &&
+        Number.isFinite(Date.parse(readNotification.readAt)),
+    ).toBe(true);
+    expect(targetResponse.status()).toBe(200);
+    const targetFeed = await targetResponse.json();
+    const targetItems = targetFeed.items.filter((item: { id: string }) => item.id === completed.id);
+    expect(targetItems.length === 1).toBe(true);
+    expect(
+      targetItems[0].title === title &&
+        targetItems[0].description === description &&
+        targetItems[0].lessonDate === dataset.tomorrow &&
+        targetItems[0].completed === true &&
+        targetItems[0].completedAt === completed.completedAt,
+    ).toBe(true);
+    await expect(notificationsDialog).toHaveCount(0);
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute('data-completion', 'completed');
+    await expect(completedSlider).toBeFocused();
+
+    await page.reload();
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    const [reopenedInbox] = await Promise.all([
+      http(page, inboxPath, 'GET'),
+      page.getByRole('button', { name: /^Открыть уведомления/ }).click(),
+    ]);
+    expect(reopenedInbox.status()).toBe(200);
+    const durableInbox = await reopenedInbox.json();
+    expect(durableInbox.role === 'STUDENT' && Array.isArray(durableInbox.items)).toBe(true);
+    const durableRows = durableInbox.items as NotificationRow[];
+    expect(
+      durableRows.filter((row) => row.id === updatedNotification.id).length === 1 &&
+        durableRows.some((row) => JSON.stringify(row) === JSON.stringify(readNotification)) &&
+        durableRows.some((row) => JSON.stringify(row) === JSON.stringify(publishedNotification)),
+    ).toBe(true);
+    await expect(updatedNotificationCard).toBeVisible();
+    await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'false');
+    await expect(publishedNotificationCard).toBeVisible();
+
+    // A different already-admitted recipient can read its own event, not this student's row.
+    const headmanInbox = await dataset.headmanActor.call('GET', `${inboxPath}?limit=100`);
+    expect(headmanInbox.role === 'HEADMAN' && Array.isArray(headmanInbox.items)).toBe(true);
+    const headmanRows = (headmanInbox.items as NotificationRow[]).filter((row) =>
+      matchesHomework(row, 'HOMEWORK_UPDATED', title),
+    );
+    expect(
+      headmanRows.length === 1 &&
+        headmanRows[0].action?.role === 'HEADMAN' &&
+        headmanRows[0].id !== updatedNotification.id &&
+        !headmanInbox.items.some((row: NotificationRow) => row.id === updatedNotification.id),
+    ).toBe(true);
+    const foreignRead = await dataset.request.put(readPath, {
+      headers: dataset.headmanActor.headers(),
+      data: { read: false, expectedRevision: readNotification.revision },
+    });
+    expect(foreignRead.status()).toBe(404);
+    await foreignRead.dispose();
+    const unchangedInbox = await readStudent.call('GET', `${inboxPath}?limit=100`);
+    expect(
+      unchangedInbox.items.some(
+        (row: NotificationRow) => JSON.stringify(row) === JSON.stringify(readNotification),
+      ),
+    ).toBe(true);
+
+    // CLIENT-FE-NOTIFY-01: only this isolated scenario's own recipient is changed.
+    // Its existing published/read-updated pair distinguishes the real unread filter.
+    await notificationsDialog
+      .getByRole('button', { name: 'Вернуться к предыдущему экрану', exact: true })
+      .click();
+    await expect(notificationsDialog).toHaveCount(0);
+    const unreadCountPath = `${inboxPath}/unread-count`;
+    const initialCount = await readStudent.call('GET', unreadCountPath);
+    expect(initialCount.role).toBe('STUDENT');
+    expect(Number.isSafeInteger(initialCount.count) && initialCount.count > 0).toBe(true);
+    const notificationEntry = page.getByRole('button', { name: /^Открыть уведомления/ });
+    await expect(notificationEntry).toHaveAccessibleName(
+      `Открыть уведомления, непрочитанных: ${initialCount.count}`,
+    );
+    await expect(notificationEntry.locator('.notifications-entry__badge')).toHaveText(
+      initialCount.count > 99 ? '99+' : String(initialCount.count),
+    );
+    const [filterInbox] = await Promise.all([
+      http(page, inboxPath, 'GET'),
+      notificationEntry.click(),
+    ]);
+    expect(filterInbox.status()).toBe(200);
+    const unreadOnlyResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === inboxPath &&
+        url.searchParams.get('unreadOnly') === 'true'
+      );
+    });
+    await notificationsDialog.getByRole('button', { name: 'Непрочитанные', exact: true }).click();
+    const unreadOnly = await unreadOnlyResponse;
+    expect(unreadOnly.status()).toBe(200);
+    const unreadPage = await unreadOnly.json();
+    const unreadRows = unreadPage.items as NotificationRow[];
+    expect(
+      unreadPage.role === 'STUDENT' &&
+        unreadRows.every((row) => row.readAt === null) &&
+        !unreadRows.some((row) => row.id === updatedNotification.id) &&
+        unreadRows.some((row) => row.id === publishedNotification.id),
+    ).toBe(true);
+    await expect(
+      notificationsDialog.getByRole('button', { name: 'Непрочитанные', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(updatedNotificationCard).toHaveCount(0);
+    await expect(publishedNotificationCard).toBeVisible();
+    const allReadResponse = http(page, `${inboxPath}/mark-all-read`, 'POST');
+    const afterAllReadInbox = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === inboxPath &&
+        url.searchParams.get('unreadOnly') === 'true'
+      );
+    });
+    await notificationsDialog.getByRole('button', { name: 'Прочитать все', exact: true }).click();
+    const allRead = await allReadResponse;
+    expect(allRead.status()).toBe(200);
+    expect(await allRead.json()).toMatchObject({ role: 'STUDENT', unreadCount: 0 });
+    const refreshedUnread = await afterAllReadInbox;
+    expect(refreshedUnread.status()).toBe(200);
+    const emptyUnread = await refreshedUnread.json();
+    expect(emptyUnread.role === 'STUDENT' && emptyUnread.items.length === 0).toBe(true);
+    await expect(notificationsDialog.locator('.notification-card')).toHaveCount(0);
+    const allInboxResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === inboxPath &&
+        url.searchParams.get('unreadOnly') === 'false'
+      );
+    });
+    await notificationsDialog.getByRole('button', { name: 'Все', exact: true }).click();
+    const allInbox = await allInboxResponse;
+    expect(allInbox.status()).toBe(200);
+    const allRows = (await allInbox.json()).items as NotificationRow[];
+    for (const ownId of [publishedNotification.id, updatedNotification.id]) {
+      const ownRow = allRows.find((row) => row.id === ownId);
+      expect(typeof ownRow?.readAt === 'string' && Number.isFinite(Date.parse(ownRow.readAt))).toBe(
+        true,
+      );
+    }
+    await expect(updatedNotificationCard).toHaveAttribute('data-unread', 'false');
+    await expect(publishedNotificationCard).toHaveAttribute('data-unread', 'false');
+    const clearedCount = await readStudent.call('GET', unreadCountPath);
+    expect(clearedCount).toMatchObject({ role: 'STUDENT', count: 0 });
+    await notificationsDialog
+      .getByRole('button', { name: 'Вернуться к предыдущему экрану', exact: true })
+      .click();
+    await expect(notificationEntry).toHaveAccessibleName('Открыть уведомления');
+    await expect(notificationEntry.locator('.notifications-entry__badge')).toHaveCount(0);
+
+    type Preference = { appPush: boolean; telegram: boolean; colorId: string };
+    type Preferences = {
+      revision: string;
+      splitChannels: boolean;
+      types: Record<string, Preference>;
+      mutedUntil: string | null;
+      telegramLinked: boolean;
+    };
+    const preferencesPath = '/api/notifications/preferences/v2';
+    const [catalogResponse, preferencesResponse] = await Promise.all([
+      http(page, '/api/notifications/catalog', 'GET'),
+      http(page, preferencesPath, 'GET'),
+      notificationEntry.click(),
+    ]);
+    expect(catalogResponse.status()).toBe(200);
+    expect(preferencesResponse.status()).toBe(200);
+    const catalog = await catalogResponse.json();
+    const beforePreferences = (await preferencesResponse.json()) as Preferences;
+    const updatedType = (catalog.types as { id: string; label: string }[]).find(
+      (type) => type.id === 'HOMEWORK_UPDATED',
+    );
+    expect(typeof updatedType?.label === 'string' && updatedType.label.length > 0).toBe(true);
+    const beforeChoice = beforePreferences.types.HOMEWORK_UPDATED;
+    expect(typeof beforeChoice?.appPush === 'boolean').toBe(true);
+    const expectedTypes = structuredClone(beforePreferences.types);
+    expectedTypes.HOMEWORK_UPDATED.appPush = !beforeChoice.appPush;
+    if (!beforePreferences.splitChannels)
+      expectedTypes.HOMEWORK_UPDATED.telegram = !beforeChoice.appPush;
+    await notificationsDialog
+      .getByRole('button', { name: 'Настройки уведомлений', exact: true })
+      .click();
+    const settings = page.getByRole('dialog', { name: 'Настройки уведомлений', exact: true });
+    const choiceName = `${updatedType!.label}: ${beforePreferences.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`;
+    const checkbox = settings.getByRole('checkbox', { name: choiceName, exact: true });
+    await expect(checkbox).toBeChecked({ checked: beforeChoice.appPush });
+    await checkbox.setChecked(!beforeChoice.appPush);
+    const savePreferences = http(page, preferencesPath, 'PUT');
+    await settings.getByRole('button', { name: 'Сохранить настройки', exact: true }).click();
+    const savedResponse = await savePreferences;
+    expect(savedResponse.status()).toBe(200);
+    const postedPreferences = savedResponse.request().postDataJSON();
+    expect(postedPreferences.expectedRevision).toBe(beforePreferences.revision);
+    expect(postedPreferences.splitChannels).toBe(beforePreferences.splitChannels);
+    expect(postedPreferences.types).toEqual(expectedTypes);
+    expect(Object.hasOwn(postedPreferences, 'mutedUntil')).toBe(false);
+    const savedPreferences = (await savedResponse.json()) as Preferences;
+    expect(savedPreferences.revision !== beforePreferences.revision).toBe(true);
+    expect(savedPreferences.splitChannels).toBe(beforePreferences.splitChannels);
+    expect(savedPreferences.types).toEqual(expectedTypes);
+    expect(savedPreferences.mutedUntil).toBe(beforePreferences.mutedUntil);
+    expect(savedPreferences.telegramLinked).toBe(beforePreferences.telegramLinked);
+    expect(await readStudent.call('GET', preferencesPath)).toEqual(savedPreferences);
+    await page.reload();
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    const reloadedPreferencesResponse = http(page, preferencesPath, 'GET');
+    await page.getByRole('button', { name: /^Открыть уведомления/ }).click();
+    const reloadedPreferences = await reloadedPreferencesResponse;
+    expect(reloadedPreferences.status()).toBe(200);
+    expect(await reloadedPreferences.json()).toEqual(savedPreferences);
+    await notificationsDialog
+      .getByRole('button', { name: 'Настройки уведомлений', exact: true })
+      .click();
+    await expect(
+      page
+        .getByRole('dialog', { name: 'Настройки уведомлений', exact: true })
+        .getByRole('checkbox', { name: choiceName, exact: true }),
+    ).toBeChecked({ checked: !beforeChoice.appPush });
+
+    await readStudent.call('POST', '/api/auth/logout-all', undefined, [204]);
+    const revokedInbox = await dataset.request.get(inboxPath, { headers: readStudent.headers() });
+    expect(revokedInbox.status()).toBe(401);
+    await revokedInbox.dispose();
+    const revokedRead = await dataset.request.put(readPath, {
+      headers: readStudent.headers(),
+      data: { read: false, expectedRevision: readNotification.revision },
+    });
+    expect(revokedRead.status()).toBe(401);
+    await revokedRead.dispose();
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+    ).toBeVisible();
+    await expect(page.locator('.notification-card')).toHaveCount(0);
+  },
+);
 
 function shifted(date: string, days: number): string {
   return new Date(Date.parse(`${date}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);

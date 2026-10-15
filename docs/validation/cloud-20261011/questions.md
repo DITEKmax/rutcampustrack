@@ -130,3 +130,19 @@ Q017 correction 2026-10-15T06:42:32.069409+00:00: Root directly reopened ExcuseR
 
 PENDING_OWNER; raised 2026-10-15T08:54:03.161500+00:00 through mainasync. Current aa37 nativeAuthA349 FAILat440 afterselectinglight; actualcode PWAApp168/TMA112 lockedMode dark, sharedtheme143resolvesdark whilepreservingpreference; Appearance34rendersresolvedTheme. Existingthemeunits65/160matchdeliberatelock. Canonical JS-STUDENT-25:831requires3choices; mobile-spec343 dark-only describesnarrowearlystudentprobe, no acceptedgeneralwholemobiledeferral found. Oct4/5codecomments aren't ownerproductauthority.
 Choices A apply selectedlight/dark/system now (recommendedcanonicalexpectedbehavior); B retainfixedDark andexplicitlyexplainlimitationinsettings. DependentONLYappearancebehavior/itsvisualoracle, no newweb/Angular/design/Figma. Password/security/admin/otherclientworkcontinues; silence neitherselectsrule norpermitsweakeningvisualassertion.
+
+
+2026-10-15T09:29:29.263706+00:00: Q018 ANSWERED / D018: staged theme infrastructure, one existing screen may demonstrate light for owner validation; other mobile screens remain dark until validation. No all-screen light redesign; affected AuthA visual oracle must match new scope.
+2026-10-15T09:29:29.263706+00:00: Q017 ANSWERED / D019: several selected lessons in one indivisible EXCUSE ticket and one decision. Existing full-form multi-select preserved; actual multi-lesson client proof still required.
+
+
+2026-10-15T09:31:50.668456+00:00: Q016 ANSWERED / D020: tokens at login followed by authoritative context loading, operations unavailable until required context, live server rights remain. Combined response not required in current acceptance.
+
+2026-10-15T09:33:00.546712+00:00: Q016 engineering recommendation explained and explicitly accepted by owner; D020 above. Token issuance and context assembly remain separate; no new endpoint.
+
+
+## Q019 — Cloud WebKit offline capability
+
+2026-10-15T09:35:38.308736+00:00: PENDING_OWNER. Exactbb W1directcachecontrol11960653133 fails353ms at offline reload3666 after exactonlinecontroller/cache/200/fromSW/document positives. This reproduces outside productionSW, but exactnativecause remainsUNKNOWN and no actualSafari verdict follows. Options: A accept genuineChromiumoffline/reconnect+WebKitonline inCloud and ownerexecutesSafarioffline locally (recommended finiteavailablecapability); B keepSafariofflineCloudBLOCKED until suitablecapability. Dependent onlyW1engineacceptancescope/requiredCIselection; no skip/change untilanswer. Existingproductionoffline tests and historicalFAIL retained; other workcontinues.
+
+2026-10-15T09:36:45.637550+00:00: Q019 ANSWERED / D021: genuineChromiumoffline+WebKitonline accepted inCloud; actualSafarioffline transferredowner local OWNER_MANUAL_PENDING/notPASS. RetainoriginalFAIL/control/testSources, updateonlydependentCIengine selection. No unrelatedgate/assertion weakened.

@@ -157,6 +157,55 @@ describe('createMobileTheme', () => {
 })
 
 describe('caller-owned mobile theme preference', () => {
+  it('previews a persistent choice and system changes without changing the locked app target', () => {
+    const query = mediaQuery(false)
+    const root = target(query)
+    const values = new Map<string, string>([[MOBILE_THEME_PREFERENCE_KEY, 'light']])
+    const preference = createMobileThemePreference(() => ({
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => {
+        values.set(key, value)
+      },
+    }))
+    const app = createMobileTheme({
+      target: root as unknown as HTMLElement,
+      mode: preference.read() ?? 'dark',
+      lockedMode: 'dark',
+    })
+    controllers.push(app)
+    const stopPersistence = app.subscribe(({ mode }) => preference.write(mode))
+    vi.stubGlobal('window', { matchMedia: () => query as unknown as MediaQueryList })
+    try {
+      const preview = createMobileTheme({ target: null, mode: app.mode })
+      controllers.push(preview)
+      expect(preview.resolvedMode).toBe('light')
+      expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
+      app.setMode('system')
+      preview.setMode(app.mode)
+      expect(preference.read()).toBe('system')
+      expect(preview.resolvedMode).toBe('light')
+      query.matches = true
+      query.emit()
+      expect(preview.resolvedMode).toBe('dark')
+      expect(app.resolvedMode).toBe('dark')
+      expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
+      const listener = vi.fn()
+      preview.subscribe(listener)
+      preview.dispose()
+      query.matches = false
+      query.emit()
+      expect(listener).not.toHaveBeenCalled()
+      const reopened = createMobileTheme({ target: null, mode: preference.read() ?? 'dark' })
+      controllers.push(reopened)
+      expect(reopened.mode).toBe('system')
+      expect(reopened.resolvedMode).toBe('light')
+      expect(root.style.colorScheme).toBe('dark')
+    } finally {
+      stopPersistence()
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('persists only the chosen theme key across owners while applied appearance remains locked dark', () => {
     const values = new Map<string, string>([['unrelated-account', 'untouched']])
     const reads: string[] = [],

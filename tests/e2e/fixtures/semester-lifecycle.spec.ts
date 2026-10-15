@@ -1819,6 +1819,45 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       requireValue(false, 'Initial archive operation identity missing');
     }
     if (operation.operationState === 'ERROR' && operation.retryable === true) {
+      // Classify only the original POST response: a further GET advances the coordinator.
+      const reason = operation.blockingReason;
+      const reasonCode = semesterReasonCode(reason);
+      if (reason === 'Schedule returned a different archive operation identity')
+        requireValue(false, 'Initial archive retryable receipt identity mismatch');
+      if (reason === 'Schedule returned a receipt for a different archive command phase')
+        requireValue(false, 'Initial archive retryable receipt phase mismatch');
+      if (reason === 'Schedule returned an unspecified archive barrier state')
+        requireValue(false, 'Initial archive retryable receipt state unknown');
+      const rpcPrefix =
+        'Не удалось установить barrier архивации в schedule-service в schedule-service: ';
+      const rpc =
+        typeof reason === 'string' && reason.startsWith(rpcPrefix)
+          ? reason.slice(rpcPrefix.length)
+          : '';
+      if (/^Status\{code=UNAVAILABLE(?:,|})/.test(rpc))
+        requireValue(false, 'Initial archive retryable Schedule RPC unavailable');
+      if (/^Status\{code=DEADLINE_EXCEEDED(?:,|})/.test(rpc))
+        requireValue(false, 'Initial archive retryable Schedule RPC deadline');
+      if (/^Status\{code=INTERNAL(?:,|})/.test(rpc))
+        requireValue(false, 'Initial archive retryable Schedule RPC internal failure');
+      if (rpc) requireValue(false, 'Initial archive retryable Schedule RPC other status');
+      if (reasonCode === 'SCHEDULE_EFFECT_ACK_PENDING')
+        requireValue(false, 'Initial archive retryable error with exact Schedule ACK reason');
+      if (reasonCode !== 'UNKNOWN')
+        requireValue(false, 'Initial archive retryable error with classified participant reason');
+      if (
+        operation.academic === 'NOT_STARTED' &&
+        operation.schedule === 'NOT_STARTED' &&
+        operation.attendance === 'NOT_STARTED'
+      )
+        requireValue(
+          false,
+          'Initial archive retryable unknown reason before participant readiness',
+        );
+      if (operation.academic === 'READY' && operation.schedule === 'NOT_STARTED')
+        requireValue(false, 'Initial archive retryable unknown reason after Academic readiness');
+      if (operation.schedule === 'PENDING')
+        requireValue(false, 'Initial archive retryable unknown reason with Schedule pending');
       requireValue(false, 'Initial archive operation retryable error');
     }
     if (operation.operationState === 'ERROR' && operation.retryable === false) {

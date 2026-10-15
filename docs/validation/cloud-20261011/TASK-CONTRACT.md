@@ -480,3 +480,53 @@ Owner answered Q014: «Использовать существующую R ка�
 D017 accepts the existing green-blue rounded R RutTrack SVG as a temporary PWA installation icon. Exact chosen source: frontends/landing/dist/favicon.svg, SHA256 85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8. Preserve the existing image; copy it byte-exact into the tracked PWA public assets and derive conventional installation sizes192/512 and Apple touch180. Add the manifest/index references required by the existing accepted PWA installation path. No new visual design, brand rewrite, Figma publication or Angular modification is authorized. This temporary asset does not decide the owner's eventual logo.
 
 Supersedes only the missing accepted installation-asset branch of BRAND_DIRECTION's later-logo placeholder for current PWA. D015 still assigns native/device installation acceptance to the owner; Cloud verifies source, dimensions/declarations, build and applicable logic. Do not claim actual OS installation from asset generation. Keep server/browser/data/rights/gates and other accepted behavior unchanged.
+
+
+---
+## D018 — Q018 staged mobile theme validation
+
+Owner exact answer: «Пока я не отвалидировал светлую тему и её пока нет но в теории оно всё должно работать а светлую тему потом подключим пока просто сделай чтоб всё работает а сам светлый интерфейс я попозже сделаю (но чтобы переключение темы к этому времени уже работало). ты можешь один экран сделать светлую тему чтоб валидировать».
+
+Prepare functioning light/dark/system preference switching and persistence for future connection of validated light UI. Current global PWA/TMA appearance remains dark until owner validates the light interface; do not silently publish an all-screen light redesign. The owner permits one existing screen to demonstrate and validate the light theme; choose the appearance/settings screen with existing accepted semantic tokens and components, no new design system or Figma publication. Explain the current staged limitation in that screen. Verify switching, persistence/reload, system-mode resolution and scope isolation; the remaining screens stay dark. The previous AuthA visual oracle expecting immediate application-wide light appearance must follow this new staged scope, while password/security assertions remain mandatory.
+
+Supersedes only the unresolved Q018 all-screen selected-theme versus fixed-dark ambiguity and conflicting visual oracle. Angular, server permissions, native acceptance D015, security/data criteria and production prohibitions remain unchanged. Scope: shared mobile theme, PWA/TMA adapters, appearance screen, sufficient affected checks. This is a faithful operational reading of the owner answer; no approval of a complete light interface is inferred.
+
+Canonical: docs/product/decisions/2026-10-15-mobile-theme-staged-validation.md.
+
+
+---
+## D019 — Q017 multiple lessons per EXCUSE ticket
+
+Owner exact answer: «Несколько пар одним тикетом «у» (рекомендую по принятой истории)».
+
+An EXCUSE request may contain several selected eligible lessons and has one indivisible ticket and one headman decision. Preserve accepted eligibility/date-range/attachment/cancellation/history/authority rules. The full existing requests form already has multi-selection; the earlier question premise that all mobile forms select only one lesson was corrected in questions.md. This decision confirms accepted cardinality and does not itself establish a missing implementation. The contextual Today route may preselect one lesson; it does not repeal full-form multiple selection. Manual absence request remains its separately accepted single-lesson behavior.
+
+Supersedes only contradictory candidate later single-pair EXCUSE layout/cardinality ambiguity. Require actual client/server evidence for several selected lessons sharing one ticket and one decision; no speculative new aggregate or endpoint. No change to unrelated product rules or permissions.
+
+Canonical: docs/product/decisions/2026-10-15-excuse-multiple-lessons.md.
+
+
+---
+## D020 — Q016 separate login and current context
+
+Owner answered: «Сохранить вход и отдельную загрузку контекста (рекомендую)».
+
+For current acceptance retain the compatible existing login response with tokens, followed by separate authoritative session-context reads for profile, roles and active semester. The client must remain in a loading/non-operational state until required context is loaded; failure or revocation must not expose a protected screen or enable operations. Every server action still checks current authority; client context is not a grant. One combined response is not required by this acceptance, and no new bootstrap endpoint or Auth DTO expansion is authorized by the old story alone. Verify successful bootstrap plus partial failure/revocation behavior through existing real PWA/TMA/server paths.
+
+Supersedes only the unresolved combined-response assembly clause in historical JS-SYSTEM-14 for current acceptance. Token/session, grants, password, privacy, compatibility and other mandatory criteria remain unchanged. No new web frontend or production operations.
+
+Canonical: docs/product/decisions/2026-10-15-login-context-separation.md.
+
+
+---
+## D021 — Q019 available offline browser capability and owner Safari acceptance
+
+Owner answered: «Chromium offline + WebKit online; Safari offline проверю локально (рекомендую)».
+
+For current Cloud acceptance use genuine Chromium PWA offline/read-only/reconnect checks and genuine WebKit online checks. Transfer actual Safari offline acceptance to the owner local stand, status OWNER_MANUAL_PENDING, not PASS. Preserve the original production offline scenarios, original WebKit failures and exact bb minimal direct-cache-control failure as evidence of an unavailable Cloud emulation path; do not assert actual Safari fails or is unsupported. The isolated control proved only that Playwright WebKit offline reload rejected outside production PWA after successful controlled online cached-document loading.
+
+The mandatory ordinary CI WebKit selection may now cover the retained online session/admission/revocation/recovery scenario instead of the two failing offline-emulation scenarios and their diagnostic control. Keep Chromium offline scenarios and all unrelated gates/assertions. Keep diagnostic/production test implementations unchanged and document their exact historical results; do not make a failing diagnostic look like a passed product check. No test skip or relaxed assertion may replace remaining mandatory client/server behavior. Current Cloud W1 acceptance consists of the available engine checks plus source-qualified known limitation and explicit owner handoff. Actual Safari offline remains a finite local manual check on the final reviewed revision.
+
+Supersedes only the requirement that Cloud prove offline behavior through this unavailable WebKit emulation path. D002 behavior, Chromium actual offline and reconnect, current WebKit online, data/privacy/session rules and all other criteria remain unchanged. This is no production-readiness or deployment approval.
+
+Canonical: docs/product/decisions/2026-10-15-webkit-offline-owner-acceptance.md.

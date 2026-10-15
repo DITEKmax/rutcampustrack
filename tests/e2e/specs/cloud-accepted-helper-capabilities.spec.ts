@@ -650,7 +650,7 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     const changedEntry = (changed.entries as Entry[]).find(
       (entry) => entry.userId === liveMark.userId,
     )!;
-    expect(changedEntry.status).toBe('ABSENT');
+    expect(changedEntry.status).toBe('absent');
     expect(typeof changedEntry.markRevision).toBe('string');
     liveMark.revision = changedEntry.markRevision!;
     expect(counts(changed.entries)).toEqual([0, 1]);

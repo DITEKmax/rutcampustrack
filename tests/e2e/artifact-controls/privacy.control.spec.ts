@@ -391,6 +391,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     'cloud-accepted-registry-export.spec.ts',
     'cloud-accepted-helper-capabilities.spec.ts',
     'cloud-accepted-auth-security.spec.ts',
+    '../clock-specs/teaching-clock-geo.spec.ts',
   ]) {
     const publicSpec = resolve(__dirname, '../specs', filename);
     const publicError: Record<string, unknown> = {

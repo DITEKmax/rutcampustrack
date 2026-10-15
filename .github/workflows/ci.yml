@@ -1563,7 +1563,7 @@ jobs:
           printf 'RCT_E2E_SYSTEM_CERT=%s\n' /usr/local/share/ca-certificates/rct-e2e-localhost.crt >> "$GITHUB_ENV"
           sudo update-ca-certificates
 
-      - name: Run accepted admission and offline reconnect in actual WebKit
+      - name: Run accepted online session revocation and recovery in actual WebKit
         id: webkit-subset
         timeout-minutes: 7
         if: ${{ !cancelled() && steps.webkit-ready.outcome == 'success' }}

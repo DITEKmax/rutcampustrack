@@ -59491,5 +59491,49 @@
     "scope": "exact existinglanding R source temporaryPWA192/512+apple180 assets/declarations; no newbrand/Angular/Figma; nativeownerD015",
     "sha256": "48d4bd40d44445a87bfc663e3340ac48f52661d89ff8c871997edd84a41a6b14",
     "asset_sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+  },
+  "delivery_2026_10_15_mobile_theme_staged_validation": {
+    "source_id": "owner:cloud-validation-Q018-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-mobile-theme-staged-validation.md",
+    "status": "accepted owner decision D018",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T09:29:29.263706+00:00",
+    "sha256": "c239d2bfa4cb5f7a2ee521847ac8085fa82d7c6e89b2c883de7d5fa395f304ed",
+    "supersedes": [
+      "Unresolved Q018 global-light visual scope only"
+    ]
+  },
+  "delivery_2026_10_15_excuse_multiple_lessons": {
+    "source_id": "owner:cloud-validation-Q017-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-excuse-multiple-lessons.md",
+    "status": "accepted owner decision D019",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T09:29:29.263706+00:00",
+    "sha256": "e5ab957579720ccc2dfe5484ed07c2c145ea111fbf0b1b74dcaee17cbcb4ac5c",
+    "supersedes": [
+      "Unresolved Q017 EXCUSE cardinality only"
+    ]
+  },
+  "delivery_login_context_separation_20261015": {
+    "source_id": "owner:cloud-validation-Q016-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-login-context-separation.md",
+    "status": "accepted owner decision D020",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T09:31:50.668456+00:00",
+    "sha256": "727fb99bbd5d6180286a13c6ffb62b1fc3bd35556584ba84aab0a5ee925283ee",
+    "supersedes": [
+      "Unresolved historical combined login/context assembly clause only"
+    ]
+  },
+  "delivery_webkit_offline_owner_acceptance_20261015": {
+    "source_id": "owner:cloud-validation-Q019-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-webkit-offline-owner-acceptance.md",
+    "status": "accepted owner decision D021",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T09:36:45.637550+00:00",
+    "sha256": "193a111e0fb1143c98cf004e087342ef6c5274c1e767d4f2e3bf31c84615944f",
+    "supersedes": [
+      "Cloud-owned offline proof via unavailable PlaywrightWebKit emulation only"
+    ]
   }
 }

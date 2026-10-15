@@ -63629,6 +63629,682 @@
       "basis": "RootexactcomparedBoundary43 ticketonewinner/actual30sexpiry/burn/logout-before-consume/openWSrevoke+event/foreign-binding expectedinvariant toindependentc86P09same6join; all coveredretainednamedticket+realAuthopensocket/livecontrol+targetedREDrestoreGREEN+874spoofCONNECT/foreignSUBSCRIBE. Oldboundaryblockerpredatesadoptedticketproof; no extraGatewaybrowsercrossproductaccepted.",
       "limits": "SourcequalifiedcomposedCloud/explicitproducerreceipts; notnativeprovider/deployment; no newtest/read",
       "setup": "initialCSVwriteheldbeforeeffectbecauseextraunrecognizedverificationcolumn; correctedtoexistingminimal_sufficient_actual_check, fulloriginalCSVserializationverifiedexact"
+    },
+    "bb5b5a6_actual_publication": {
+      "utc": "2026-10-15T09:09:33.647888+00:00",
+      "head": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+      "parent": "aa37a49c1c7013f939747a77704bb61f3574542b",
+      "actualRemote": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+      "officialPR": {
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "head": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+        "base": "main",
+        "baseSha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "mergeCandidate": "a5888a0c2ce061aec8a1a06a1cb38544f500c49b"
+      },
+      "phases": [
+        {
+          "label": "configured-six",
+          "seconds": 2.735,
+          "native": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "label": "ordinary-commit",
+          "seconds": 0.447,
+          "native": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "label": "range-gitleaks",
+          "seconds": 1.061,
+          "native": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "label": "real-designated-push",
+          "seconds": 3.059,
+          "native": 0,
+          "allOwnedReaped": true
+        }
+      ],
+      "scope": "6reviewedSource+9existingtaskdocs; original25untracked/Angular/main preserved",
+      "actualCheckout": "NOT_YET_PROVED",
+      "currentGates": "WAITING_INITIAL_METADATA",
+      "safe": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/aa37-six-publish-01.safe.json",
+      "actualNewCases": "NOT_RUN newW1control/activation; officialAcademic3nullunionJSON+stocktypespending; noDONE"
+    },
+    "bb5_admin_promotion_B_seam_current": {
+      "utc": "2026-10-15T09:09:33.647888+00:00",
+      "readerAuthor": "c87",
+      "state": "SOURCE_FEASIBILITY_ONLY_NO_B_IMPLEMENTATION",
+      "source": "SemesterService115/264 forbidsAPIcompletedsemesters+overlap; legacySpring2026V2type/yearNULL,V35nobackfill; repositoryrequiresSPRING/typeyear; PGGroupPromotionCycleIT803updateslegacy butcannotcopythatmutationsharedE2E. No guaranteedexistingtypedcompletedSpring.",
+      "minimumNext": "separatelyadmittedNEWownhistoricaltypedSpring +2owncohortPGfixture maybefinite; no alteringseededlegacy metadata/Clock/prodAPI. Needjob03Moscowrace guard/currenttypedcyclepreflight/exactownactionables/ownedledgeronly preservation/outboxnotifications effects understood. Sourceplanbeforewrite, no newProductGAP fromfixtureabsence.",
+      "A": "87a activationready/publishedbb, unaffected",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#adminSemesterPromotionWitnessSourcePlan.BReadOnlyFeasibility"
+    },
+    "bb5_notify_UI_remainder_Source_plan_partial": {
+      "utc": "2026-10-15T09:09:33.647888+00:00",
+      "author": "c84",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "preimage": "6b94f147f1e84acd653e6b7bc1ebd1d6e36b3de13536d79c3b5ad1270e2a18c3",
+      "state": "SOURCE_PLAN_ONLY",
+      "isolationFinding": "firstgenuineHW->inboxcasecurrentlyusesworker-scopeddataset/student, readall/settingswouldmutateshareduser. ExistingSAMEFILEisolatedfixture443-450alreadycreatesfreshMobileDataset; moveitsdefinition/budgethookbeforefirsttest, firstregistrationusesexistingisolated/scenario:dataset alias, alloldbody/title120s/materialsassertionspreserved.",
+      "next": "c84finishes3UIactions/requestresponse/cleanupplanbeforeSourceGO. No neweventjourney/framework/provider/fullstack."
+    },
+    "bb5_notify_three_UI_Source_GO": {
+      "utc": "2026-10-15T09:12:24.933527+00:00",
+      "author": "c84",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "preimage": "6b94f147f1e84acd653e6b7bc1ebd1d6e36b3de13536d79c3b5ad1270e2a18c3",
+      "planReceipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#notificationReadyClientSourcePlan",
+      "scope": "ONEexistingfirstHW->audience->Vueinboxjourney onalreadyexistingisolatedscenariofixture/freshstudent; moveexactfixture+budgethookbeforefirstregistration, test->isolated/scenario:dataset; preservealloldbody/materials/history/foreign-revoke/target/completion assertions/title120s andexistinglatercases",
+      "newUIactions": "Unreadfilter GETunreadOnly true/knownreadupdatedexcluded/unreadpublishedpresent; realmarkallPOST200/authoritativereadcount0/list andvisiblecount/badge/ALLbothownIDsread; exactownedsettingscatalogcheckbox->PUTcurrentrevision/fulluntouchedtypes/colors/pause->newrevision/GET/reloadreadback. No sharedworkerstudentprefs/history mutations/newjourney/provider/framework/config/locks.",
+      "acceptance": "authorformat-parser-RootTSC/exactoldcaseinvariants andisolation/race/cleanupchecks; oneindependentcoherentreview; actualexistinghomeworknormalCI later, no localbrowser/server/DB/newquota/rateprobe"
+    },
+    "bb5_admin_promotion_new_owned_cycle_plan_admission": {
+      "utc": "2026-10-15T09:12:24.933527+00:00",
+      "author": "c87",
+      "scope": "SOURCE_PLAN_ONLY, ONEsemesterfile futureB from87a; no newwrites/runtime yet",
+      "choice": "Ifno existingauthoritativetypedSpring, proposeNEWownedcompletedtypedSpring inunoccupiedhistoricalrange plus2ownedcohorts inexistingisolatedAcademicPGfixture. Directsynthetichistoricalseed isdiagnosticdata, notprodAPIcompletedsemesterfeature; doNOTalterlegacySpring2026metadata/Clock/securitytime/schema/API.",
+      "requirements": "sourceactualGroupPromotionService latestcompletedquery/scheduler03Moscow+readycatchup ordering/race and420sbudget guard, exactownactionables/ownledger writes only+skipreadonly rule, group created-beforecutoff/course-enrollment-duration consistency; no unrelatedsemester/scope/currentactivechange. Preservegeneratedoutbox/notifications andconsistentownedhistory; cleanupnotfalseonly2rows. Historicalcycle insertion/cleanup pathmustbeconcreteandowned/nonoverlap/preflightnoexistingcycleidentity overwrite.",
+      "next": "c87compactboundedSourceplan thenRootGOorpreciseenvironmentcapabilityblocker, no genericseedframework/legacyrepair/infiniteSourcehunt"
+    },
+    "bb5_Geo429_bounded_Source_RCA_assignment": {
+      "utc": "2026-10-15T09:12:24.933527+00:00",
+      "reader": "c79",
+      "scope": "Source-only exactmobile-dataset Actor.login/setupcallchain +currentAuth/Gateway429source/config andexistingpositiveLoginPwaretrypattern. No livequota/rate/IPprobe/newmutation/native/credentialdump/B014equivalent.",
+      "goal": "classifyknownactualGeo429 beforegeobody; identifyacceptedpositivefixturebudget/retry/RetryAfter versusproductlimit, proposeminimalboundedpreparationcorrection respecting429/quota andoldtestoracles. DonotclaimIPvsaccount/currentfailedactor fromsinglehint. No classifier/schema/newreader/fields/framework.",
+      "implementation": "notauthorizeduntilSourceplan/actualevidence Rootaccepts; sharedfixturewriteronlyifsubsequentlyassignedexplicitly; W1pairfrozenpublishedbb"
+    },
+    "bb5_initial_gates_actual_checkout": {
+      "utc": "2026-10-15T09:29:29.263706+00:00",
+      "producer": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+      "observerReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#currentBb5b5a6Primary",
+      "actualCheckout": {
+        "state": "OFFICIAL_ARTIFACT_GIT_JOIN_VERIFIED",
+        "checkoutSha": "a5888a0c2ce061aec8a1a06a1cb38544f500c49b",
+        "treeSha": "85197ed5655dccb0cd0bfb8564ca2c201e07c9e1",
+        "producerHeadSha": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+        "parents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2"
+        ],
+        "mainUnchanged": true
+      },
+      "runs": [
+        {
+          "id": 38710206108,
+          "name": "CI",
+          "event": "pull_request",
+          "headSha": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+          "attempt": 1,
+          "status": "in_progress",
+          "conclusion": null,
+          "updatedAt": "2026-10-15T09:09:54Z"
+        },
+        {
+          "id": 38710206025,
+          "name": "Coverage",
+          "event": "pull_request",
+          "headSha": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+          "attempt": 1,
+          "status": "in_progress",
+          "conclusion": null,
+          "updatedAt": "2026-10-15T09:06:29Z"
+        },
+        {
+          "id": 38710206026,
+          "name": "Security",
+          "event": "pull_request",
+          "headSha": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+          "attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "updatedAt": "2026-10-15T09:06:49Z"
+        },
+        {
+          "id": 38710206044,
+          "name": "OpenAPI Drift Guard",
+          "event": "pull_request",
+          "headSha": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+          "attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "updatedAt": "2026-10-15T09:05:11Z"
+        }
+      ],
+      "state": "SNAPSHOT_NOT_FINAL"
+    },
+    "aa37_late_helper_reconciliation_actual_primary": {
+      "utc": "2026-10-15T09:29:29.263706+00:00",
+      "helper": {
+        "artifactId": 11959287629,
+        "state": "FAILED_PRIMARY_READ_AFTER_WRITE_AND_STUDENT_MARK_CLEANUP",
+        "caseDeclaration": 468,
+        "primaryFrame": 653,
+        "primaryPredicate": "changedEntry.status === 'ABSENT'",
+        "actualReadStatusOrMissingEntry": "UNKNOWN",
+        "writeResponse": "PriorActorCallDidNotThrow; no new direct HTTPstatus proof",
+        "cleanupFrames": [
+          688,
+          704
+        ],
+        "cleanupCategory": "OWN_STUDENT_MARK_FAILURE_AND_AGGREGATE_FAILURE",
+        "foregroundPollReached": false,
+        "otherFourExactCases": "PASSED",
+        "underlyingCause": "UNKNOWN"
+      },
+      "semester": {
+        "artifactId": 11959018577,
+        "state": "ARCHIVE_INITIAL_OPERATION_ERROR_RETRYABLE_TRUE",
+        "phase": "PENDING_ARCHIVE",
+        "staticClosedBranchFrame": 1761,
+        "sourceSha256": "a1181f42e2163c5a24be01ed1430e5fc4b10de7e85c52502cef8cd98579aae41",
+        "operationIdentityPresent": true,
+        "operationState": "ERROR",
+        "retryable": true,
+        "postHttpStatus": "UNKNOWN",
+        "blockingReason": "UNKNOWN",
+        "underlyingCause": "UNKNOWN",
+        "replayAttempted": false,
+        "restorationSucceeded": false,
+        "cleanupOutcome": "FAILED",
+        "clockUnchanged": true,
+        "downstreamAssignmentRecoveryOriginalSemesterLesson": "SKIPPED_BY_RESTORATION_GATE"
+      },
+      "limits": "Exact actual values/participant cause unknown; no product verdict; helper foreground counter not reached; archive ERROR retryable true is Source-qualified branch evidence, not normal pending proof."
+    },
+    "bb5_notification_UI_Source_ready": {
+      "utc": "2026-10-15T09:29:29.263706+00:00",
+      "author": "c84",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "preimage": "6b94f147f1e84acd653e6b7bc1ebd1d6e36b3de13536d79c3b5ad1270e2a18c3",
+      "postimage": "a51fa4b7d2d95e6e4f5de15a8e58925fe1ef8277e37ca924ddb0c89086b59c54",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#notificationReadyClientSourcePlan",
+      "checks": "Formatter/parser/transpile/Root RAM overlay TSC0; exact previous body/cases/inverse retained; 4.453s/426770432B/all owned reaped",
+      "next": "c86 independent one-file review, then Root integrate and ordinary genuine browser CI; new UI actions NOT_RUN"
+    },
+    "bb5_Geo_one_path_diagnostic_Source_GO": {
+      "utc": "2026-10-15T09:29:29.263706+00:00",
+      "author": "c79",
+      "paths": [
+        "tests/e2e/fixtures/artifact-privacy.ts",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts"
+      ],
+      "scope": "ONLY exact public clock-specs/teaching-clock-geo.spec.ts filepath admission plus matching existing privacy control tuple; no directory wildcard, no classifier/schema/cap/reader/status changes",
+      "ownership": "Sole shared artifact-privacy/control writer transferred to c79 for this one hunk. c87 must not edit these common files.",
+      "why": "Current exact Geo FAIL427ms ACTOR_LOGIN_HTTP429 is setup or UI caller unknown. Existing same message conflates two callers. Need current existing closed diagnostic to locate static public body frame if present.",
+      "notApproved": "No unproven retry/Geo assertion/login helper/dataset/quota/IP probe/B014 equivalent changes; no local browser/server/DB",
+      "checks": "Existing relevant browser-free privacy controls/parser/TSC and one-path previous-allowlist sensitivity; independent coherent privacy review; no unchanged broad repeats"
+    },
+    "bb5_promotion_B_owned_historical_fixture_Source_GO": {
+      "utc": "2026-10-15T09:29:29.263706+00:00",
+      "author": "c87",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "preimage": "87a31f12ac280f08969d149df3ff84d77a10b0b50c78ae9f81e3530d167b13a4",
+      "plan": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#adminSemesterPromotionWitnessSourcePlan.BOwnedHistoricalCyclePlanBb5",
+      "scope": "ONE existing420s story, unchanged A; fixed owned PG transaction inserts one new inactive typed historical SPRING plus2consistent empty historical cohorts; max3 unoccupied/latest completed candidates; currentactive/legacy/foreign rows unchanged. Real Vue single-row and mass promotion, exact own actionables/ledger/readback and nonown unchanged projection.",
+      "guards": "Actual03:00 Moscow scheduler only; no invented ready-hook; active lock/03:00 crossing fail before seed. At least210s remaining, new work absolute60s +150s cleanup reserve; no timeout increase.",
+      "retentionAccepted": "Keep new own inactive cycle+two own archived historical groups+own ledger/outbox/expected admin notifications until ordinary owned disposable stand teardown. Archive still-active own groups through existing API; no physical DELETE, coverage deletion, foreign purge, sequence rewind or false zero-row cleanup. Original semester cleanup always independently attempted.",
+      "checks": "Formatter/parser/overlay TSC, exact outside-B/A preservation, meaningful pure fixed guard controls; one independent significant-package review; actual next ordinary CI. No local DB/browser/Gradle/network."
+    },
+    "bb5_eight_research_existing_evidence_independent_join": {
+      "utc": "2026-10-15T09:31:50.668456+00:00",
+      "reviewer": "c85 independent read-only",
+      "disposition": "PASS research-disposition only; no new runtime/native/current CI/deploy inference",
+      "rows": {
+        "L04": "criterion_H_L01_L08_current_reconciliation locale538RED→96GREEN plus f6b2_BOUNDARY50_independent_finite_acceptance E1/E2/E3 stable codes/null/unknown/history; no ordinal migration",
+        "P01": "Existing657 SubjectAssignmentAuthorityIT own create/foreign nonheadman denial and SubjectServiceIT groupfiltered reads. Current Sources b0ed8fc3/44e5aa27 exact; real domain DB proof, no new DI wiring test",
+        "P02": "62df_E1_E2_finite_reconciliation +874_E2_R3_current_compatibility_join+official45 BFF JSON/stocktypes; DTO response and consumers; new growth nullable output follow-up separate",
+        "P13": "493_C2_applicability_reconciliation plus actual4058 headmanreplacement/oldhelper403+897rollback/L02authority. Old657 CacheIT39e5/Rbac2f0f differ from current4d0c/d1ba onlyD016 replacement methods; do not claim old revoke native as current named replacement. Optional Redis cleanup preserves committedlogout",
+        "P14": "E13_C1_actual_serializer_acceptance production serializer3GREEN→foreigntype allowanceRED→exactrestore3GREEN/RESTmapper independent; currentCacheConfig0a58b00b exact, no RedisIO inference",
+        "P18": "Actual populatedV17→V30 checksums/history/indexes/sequences and meaningful sequenceRED→restoredGREEN; accepted0648 compatibility plus actual874V31Academiclegacyc331a002. CurrentScheduleITca2→b72 only count12→13/version30→31; oldV30notnewV31execution. NewV58feature separatelytracked",
+        "P19": "62df_renderer_routed_outage_actual_acceptance actualGatewayPDF fail/no partialdownload→restoredfreshPDF +874_E15_finite_existing_proof_join PG admissionoutage/recovery/exposure/worker cancellation. No universal drainSLA/probe as routing",
+        "P20": "f6b2_BOUNDARY51_independent_finite_acceptance fresh applicationrestore/pendingreplay/history/attachment+0648/75cb inventory/schema/sequences/indexes/files; currentrecoverySources013248/846679/1d5dc8 exact. Externalfilestoremodes inapplicable; backuprestore separatelyproven"
+      },
+      "limits": "No additional required research operation unidentified in these8; pending feature clauses/current gates/native and deployment remain separate."
+    },
+    "bb5_helper_absent_readback_oracle_Source_GO": {
+      "utc": "2026-10-15T09:33:00.546712+00:00",
+      "author": "c84",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "cause": "Current readback ReportService285 emits lowercase status.name().toLowerCase into String DTO, existing ReportServiceTest435 expects present. Command/CAS remains uppercase ABSENT. Current case653 wrongly expects uppercase from report.",
+      "RootSourceRecheck": "Opened exactcase630-665/ReportService274-290 and existingReportServiceTest435; matches author RCA. Actual returned value still not directly read; established source oracle conflict, not product defect.",
+      "scope": "ONE expected literal ABSENT→absent at changedEntry.status; keep command/CAS/status enum uppercase/revision capture/counts[0,1]/40sforegroundpoll/currentselectedlesson/old4/history/grants/softfinally unchanged. No normalization or weaker acceptedvalues.",
+      "checks": "Formatter/parser/targetedRootTSC +exact singleliteralinverse; ordinary existingCI validates actualpoll/cleanup. No newruntime or full separate review campaign for safeone literal; Root boundedSourceacceptance sufficient."
+    },
+    "bb5_official_Academic_three_null_unions_ready": {
+      "utc": "2026-10-15T09:33:14.452144+00:00",
+      "observer": "c80",
+      "artifact": 11960608304,
+      "producer": "bb5b5a6",
+      "checkout": "a5888a0c",
+      "DTO": "1af03",
+      "json_bytes": 449650,
+      "sha256": "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287",
+      "state": "STRICT_ORIGINAL_READY; all3 DailyGrowth deltas integer|null/int64",
+      "handoff": "c80 own .agent/evidence/academic-generated-bb5b5a6.json to c84 sole outputs writer",
+      "guard": "0/.771s/all_owned_reaped904931",
+      "gates_snapshot": "Coverage FAIL/Security+OpenAPI SUCCESS/CI browser37running; not final PASS",
+      "next": "c84 stockAcademicJSON+TS only, wholeJSONsemanticdiff/TSconsumer; nohandJSON/Schedule change; c80 actualW1fourcase artifact11960653133 next"
+    },
+    "bb5_notification_UI_independent_review": {
+      "utc": "2026-10-15T09:34:31.748968+00:00",
+      "reviewer": "c86 read-only independent",
+      "result": "APPROVE; no material P1/P2",
+      "source": "a51fa4b7d2d95e6e4f5de15a8e58925fe1ef8277e37ca924ddb0c89086b59c54",
+      "checked": "Own fresh student exists before genuine HW pair; exact UI/request association filter/readall/fullrevisionedsettings, live audience/foreign denial and original120s/title/body/othercases/cleanup/privacy retained. Shared recipient history/settings untouched. Existing authorchecks reused no newruntime.",
+      "limits": "New3UIactions actualNOT_RUN; do not close NOTIFY01 from Source approval."
+    },
+    "bb5_archive_initial_retryable_Source_RCA": {
+      "utc": "2026-10-15T09:34:31.748968+00:00",
+      "reviewer": "c85 independent read-only",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json#aa37ArchiveRetryableSourceRca",
+      "actual": "11959018577 ERROR/retryabletrue, identitypresent, primaryframe1761, causeUNKNOWN",
+      "source": "EffectLedger153 noACKreason→ScheduleBarrier47-61 PENDING→Coordinator357-410 receipt→Command288-290 centralPENDING; soleERRORmarkRetryableError609-621 invoked coordinator RuntimeException84-87; sixcriticalSources wholebyteequal aa37/current",
+      "interpretation": "Additional caught advancement failure, not normal withheldACK; do notrelax PENDING/ACK/stateVersion/race assertions. TransientRPC/authority cause onlyhypothesis.",
+      "minimumNext": "Classify SAMEinitialPOST blockingReason+existingparticipants inRAM using existing finite reasons/closedfixedprefixes before unchangedhardfail; no statusGET/coordinator.advance extra action, rawreason/ID/newfields/reader/caps. c87 solefile author must concrete Sourceplan and targetedreview."
+    },
+    "bb5_notification_UI_Root_integration": {
+      "utc": "2026-10-15T09:34:31.748968+00:00",
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "postimage": "a51fa4b7d2d95e6e4f5de15a8e58925fe1ef8277e37ca924ddb0c89086b59c54",
+      "copied": "Exact independentlyreviewed assignedSource; noRootproductedit",
+      "runtime": "newUIactionsNOT_RUN"
+    },
+    "bb5_W1_direct_cache_control_actual_FAIL": {
+      "utc": "2026-10-15T09:35:38.308736+00:00",
+      "observer": "c80",
+      "artifact": 11960653133,
+      "producer": "bb5b5a6",
+      "source": "eb10",
+      "config": "6cb7",
+      "case_declaration": 3545,
+      "actual": "FAIL353ms/error1/Sourceframe3666 awaitofflinecontrolPage.reload aftersetOffline(true)",
+      "precedingByExactSourceFlow": "activatedcontroller+exactcachedHTML+ONLINEreload200/fromServiceWorker/exactdocument passed3653-3658",
+      "notReached": "offline response/document assertions3667+",
+      "interpretation": "Same offline load rejection in minimal directcache control outside productionSW. Exacterrorclass/nativecause unknown; no Safariunsupported/productPASS claim. Prior live1286PASS/warm1981FAIL/neutral2429FAIL retained.",
+      "guard": "0/1.099s/allownedreaped905136",
+      "dependentQuestion": "Q019 asks CloudChromiumoffline+WebKitonline / ownerSafarioffline; pending only engine verification scope"
+    },
+    "bb5_Geo_one_path_diagnostic_Source_ready": {
+      "utc": "2026-10-15T09:35:38.308736+00:00",
+      "author": "c79",
+      "paths": {
+        "tests/e2e/fixtures/artifact-privacy.ts": "b7fdb6a0ea8c43600d5f6879068929149e70653e5fcb12784827d24b294348f3",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "5d40251663b0307083017f996577b1a8cbdacc5cfb10ec4322736846a61f5459"
+      },
+      "scope": "ExactONEGeofilepathline eachfile, fullinverse old427878/63d430, no otherclassifier/caps/reader/schema/retry/IP behavior",
+      "checks": "formatter/parser/canonicalRootRAMTSC0; existingONEbrowserfreeprivacycontrol GREEN0/4.731s→oldallowlistRED1/3.932s/error1→restoredGREEN0/3.884s; markerabsent/unsafeFALSE/runner0/maxRSS523MB/allreaped. Initialwronganchoredgrep selected0/runner1 retainedsetup-only.",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.geo429Bb5SourceRca.onePathDiagnosticImplementation",
+      "next": "c85 independent one-path privacy review; actualGeo429 caller not yet known."
+    },
+    "bb5_D021_WebKit_selection_Source_GO": {
+      "utc": "2026-10-15T09:36:45.637550+00:00",
+      "author": "c80 soleconfig/workflowwriter",
+      "paths": [
+        "tests/e2e/playwright.real-mobile.config.ts",
+        ".github/workflows/ci.yml"
+      ],
+      "owner": "D021/Q019",
+      "scope": "Change webkitSubset grep from4 exact currenttitles to retained online live-session revoke/recovery title ONLY; honestCIstep label. Preserve alltestimplementations, priorFAIL/control, Chromiumoffline/defaultselections/role/admin/worker gates/runtime/timeout/guards unchanged. No testskip/assertionrelaxation/continue-on-error.",
+      "checks": "Exact two narrowdiffs, formatter/parser/configselection proof; Root/freshread-onlyreview of scope; normalCI currentrevision. No localnativebrowser/server.",
+      "limits": "RealSafariOfflineOWNER_MANUAL_PENDING notPASS, oldfailureevidence retained."
+    },
+    "bb5_Geo_one_path_independent_review": {
+      "utc": "2026-10-15T09:38:28.948183+00:00",
+      "reviewer": "c85 independentread-only",
+      "result": "APPROVE_SOURCE_ONLY/noP1P2",
+      "checked": "Exact resolvedGeo filepath admission/control only; inverse wholeoldSource exact; redaction/classifiers/framebounds/caps/untrustedhints unchanged. ExistingmeaningfulGREEN→oldallowlistRED→restoreGREEN accepted.",
+      "actualGeo": "429 causeUNKNOWN/notrerun"
+    },
+    "bb5_Academic_helper_three_Source_ready": {
+      "utc": "2026-10-15T09:38:28.948183+00:00",
+      "author": "c84",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#officialAcademicBbThreeUnions",
+      "sources": {
+        "docs/openapi/academic.json": "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287",
+        "frontends/mobile-core/src/api/generated/academic.types.ts": "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86",
+        "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts": "4f965f621bc8dd63cbad65035b310976f1ff51a7a94291511cb425acb46c534a"
+      },
+      "checks": "Exactofficial original449650B/3integer→integer|null int64retained; stockgeneration+check0/Scheduleunchanged/ASTonly3nullunions+order-onlyPage/RootconsumerTSC0. HelperonlyexpectedliteralABSENT→absent/fullinverse16afa/commandsCASrevisionpollcleanupunchanged; formatter/parser/transpile/helperTSC0. Combinedguard0/8.473s/400MB/0log/allownedreaped.",
+      "runtime": "Wholehelper foregroundpoll/cleanup+ordinaryAcademicsnapshot nextCI required; notPASSfromSource"
+    },
+    "bb5_current_reconciliation_actual_FAIL": {
+      "utc": "2026-10-15T09:38:28.948183+00:00",
+      "observer": "c80",
+      "artifact": 11962560010,
+      "producer": "bb5b5a6",
+      "source": "87a31f12ac280f08969d149df3ff84d77a10b0b50c78ae9f81e3530d167b13a4",
+      "caseDeclaration": 1021,
+      "actual": "FAIL90090ms/error1/fixedframe1822=>operationIdpresent+stateERROR/retryabletrue",
+      "state": "PENDING_ARCHIVE/exactDlqEnvelope true/replaynotattempted/restorationfalse/cleanupFAILED/clockunchanged",
+      "cause": "HTTP/blockingReason/internalcauseUNKNOWN",
+      "dependent": "Latersteps43–51allSKIPPED incloriginalsem47; activation87a/massarchive-restore NOT_PROVED. No SourceACTUALfalsepromotion.",
+      "guard": "0/.834s/allownedreaped905915"
+    },
+    "bb5_archive_same_POST_reason_diagnostic_Source_GO": {
+      "utc": "2026-10-15T09:38:28.948183+00:00",
+      "author": "c87 sole semesterfilewriter",
+      "scope": "ONLY initialsamePOSTERRORretryablebranch beforeunchangedhardFAIL. Existing semesterReasonCode classification plus finitefixedhardSourceframes for known ACK/otherknownreason, unknown allNOT_STARTED/AcademicREADY-ScheduleNOT_STARTED/SchedulePENDING/fallback; optionally Source-exact known receipt identity/phase/state errors and fixed archive-RPCstatus-prefix categories in sameexistingclassifier, no rawreason/ID/schemafields/caps/reader/extraget.",
+      "why": "NoACK normalPENDING; ERROR caught RuntimeException. Currentbb actual firstfailure blocksalllatersemesters, so prioritize this boundeddiagnostic publication before waitingonlargeB ifnotready.",
+      "preserve": "All PENDING/ACK/version/race/clock/timeout/hardfailure/cleanup originalassertions, no broadnormalization or catch. No getOperation/status call thatadvances/erasesoriginalfailure.",
+      "checks": "Formatter/parser/TSC/exactoutsidebranchpreservation/one targetedindependentreview; nextordinaryCI actualcause; no localDB/browser."
+    },
+    "bb5_B_owned_empty_history_coverage_correction_GO": {
+      "utc": "2026-10-15T09:38:28.948183+00:00",
+      "author": "c87",
+      "sourceFinding": "NotificationAudienceResolver group.renamed/group.archived→HistoricalMembershipService.readMemberUserIds91/readManagedRoster105 requires coverage evenempty group. Original no-coverage plan wouldcause downstreamerror, caught in Source before runtime.",
+      "correction": "Samefixedownedtransaction also INSERT2 own group_history_coverage rows using existing writer version+coveragefrom each own cohort created Moscowday, verify no users/grants/history and knownempty synthetic cohort. This is newownfixture initialcoverage, not foreignlegacybackfill/purge. Onecycle+2groups+2coverage retainedconsistent throughordinarywholeownedstandteardown; ownledger/outbox/events retained.",
+      "limits": "No deletecoverage/foreignrows/history fabrication/epoch change or production. Full original420s/absolute60s/newwork+150cleanup/time03 guards/actionables/oracles retained. c86independentreview wholeB beforeintegration."
+    },
+    "bb5_reviewed_five_Source_Root_integration": {
+      "utc": "2026-10-15T09:38:28.948183+00:00",
+      "sources": {
+        "docs/openapi/academic.json": "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287",
+        "frontends/mobile-core/src/api/generated/academic.types.ts": "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86",
+        "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts": "4f965f621bc8dd63cbad65035b310976f1ff51a7a94291511cb425acb46c534a",
+        "tests/e2e/fixtures/artifact-privacy.ts": "b7fdb6a0ea8c43600d5f6879068929149e70653e5fcb12784827d24b294348f3",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "5d40251663b0307083017f996577b1a8cbdacc5cfb10ec4322736846a61f5459"
+      },
+      "copied": "ExactassignedSources; noRootproductedits; GeoindependentAPPROVE; Academic/helper pendingboundedsame-reviewercheckofnewofficialgeneratedtypes, previousDTOindependentreview accepted",
+      "limits": "No native/currentwholeflowPASS fromintegration"
+    },
+    "bb5_D018_scoped_Appearance_Source_GO": {
+      "utc": "2026-10-15T09:40:37.798226+00:00",
+      "author": "c79",
+      "plan": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.themeD018StagedSourcePlanBb5",
+      "authority": "D018 owner functional switching/persistence now; one screen lightvalidation allowed; globalother screensdark untilownervalidation. RootindependentlyopenedAppearance/currentStudentthemepropwiring/AuthA438-451 andplan19pins; selectedthemeprop alreadymode, noownerwiringchange required.",
+      "paths": [
+        "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+        "frontends/mobile-core/src/styles/tokens.pcss",
+        "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+        "frontends/mobile-core/src/shared/theme.test.ts",
+        "tests/e2e/specs/cloud-accepted-auth-security.spec.ts"
+      ],
+      "ownership": "c79 solewriter all5 in existingrequest-enumWT; Authspec frozen c87 ownership explicitly transferredc79. RootsoleGit/docs. ExistingGeo2frozenalreadyreviewed/integrated.",
+      "implementation": "Exactly one scopedAppearance unlocked createMobileTheme(target:null,mode:props.theme), localresolveddata-theme/colorScheme/propwatch/disposal, existingparentpersistence/radios, clearstagednote/role=status, existingcurrentColorMobileIconback. Onlyscopedexisting9semantic aliases fromacceptedlighttokens; scopediconremtoken. No globalroot/controller/preference/PWA/TMA/FeatureOwners/newtoken/nodesign/Figma/Angular changes.",
+      "AuthOracle": "Only existingthemeinterval current438-451: keepactualscopedlightfirst; afterreloadprofiledark/reopenAppearance light+computedpalette/note/persistedradio; dark/systemmedia light↔dark scopedpreview; restoremedia in finally. Allpassword/history/session/security tail and120s/title/actor remainexact.",
+      "checks": "Canonicalformatter/affectedlint/VuePCSSparser/affectedVueTypeScript, existingtheme tests for targetnull-scopedpreview/lockedglobal/media/disposal/persistence; actualexistingAuthA ordinaryCI later. KnownactualoldAuthA lightpreviewFAIL reused beforeproof. No newrenderer/framework/browsercase/dependency/localbrowser/server. Oneindependentreview coherentUI/theme/affectedoracle beforeintegration."
+    },
+    "bb5_same_POST_archive_diagnostic_Source_ready": {
+      "utc": "2026-10-15T09:41:22.541341+00:00",
+      "author": "c87",
+      "source": "/tmp/rct-auth-f545-20261015/tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "preimage": "87a31f12ac280f08969d149df3ff84d77a10b0b50c78ae9f81e3530d167b13a4",
+      "postimage": "0b0fe674e57a848b06a952eb79b7044dbabe93e4c7679f6b5710d95eda1000b6",
+      "scope": "DiagnosticONLY sameinitialPOSTERRORretryable branch; exact3receiptidentity/phase/state +fixedSourceScheduleRPC unavailable/deadline/internal/other +existingknownACK/reason +3unknownparticipantframes+originalhardfallback. No ReasonCode/outputschema/GET/waits/statuscalls orassertion relaxation. B parkedcoherentprivate/source notcandidate.",
+      "checks": "Wholeoutsidebranch inverse87a exact; formatter/parser/transpile/overlayTSC0;15finitecontrols originalonlygeneric vsnew13categories/PENDING+nonretryableunchanged/markerabsent;4.139s/388927488B/allownedreaped906400",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#adminSemesterPromotionWitnessSourcePlan.samePostDiagnosticCheck",
+      "next": "c85targetedindependentreview thenRootintegration/publication, actualcause stillUNKNOWNuntilnextordinaryCI"
+    },
+    "bb5_D021_selection_Source_ready": {
+      "utc": "2026-10-15T09:42:59.047183+00:00",
+      "author": "c80",
+      "sources": {
+        "tests/e2e/playwright.real-mobile.config.ts": "666355d2362b7f88595af8f4dbf45cdd6e5e5dfbc8782cf999a266b06a72ab48",
+        ".github/workflows/ci.yml": "1d1bfe94a0cc54e377ec4c3dbaa188a46f03d3b6ad071e1bb82210d002c209bf"
+      },
+      "diff": "ONLY WebKitgrep4titles→oneexistingonline sessionrevocation/recovery title and honestCIstepname. All testSource/Chromiumoffline/defaultothermodes/guards/timeouts/gatesunchanged; no skip orassertionrelaxation.",
+      "checks": "byteinverse/YAML/cachedformatter/TSparse+transpile/6selectioncontrolsPASS;1.734s/allownedreaped906612+906615",
+      "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#currentBb5b5a6Primary.reports.D021SelectionSource",
+      "next": "c86targetedscope review thenRootexactintegration; Q019ownerD021 explicit; no newactualPASS"
+    },
+    "bb5_D020_context_assembly_existing_evidence_join": {
+      "utc": "2026-10-15T09:42:59.047183+00:00",
+      "reviewer": "c85 independentread-only",
+      "row": "current_finite_Q01_Q12_refinement.rows[10]/existingResidualIndex10/Q03/BOUNDARY-01+JS-SYSTEM-14",
+      "decision": "D020resolvescombinedresponse fork; no API expansion. BLOCKED_Q016→UNKNOWN_PROOF_GAP",
+      "existing": "232login/profile+explicitADMIN;6172signedTMA736/950/1763; a8cChromiumoffline/reconnect/latefeed;3647failedlogout+stalerole retainedoriginalproducers. CurrentApp7e92PWA/49058TMA awaitgenerationboundcontextbeforeactivation; no productbugfound.",
+      "missing": "ONEfreshsuccessfulactualPWAlogin→heldmandatoryowncontext withno prior snapshot/owner→no protected UI/navigation/commands→failcontext→stillnonoperational/error→removefault/retrygenuinecontext→ownscreen. Existinglatefeed/logoutstartwithalreadyactivatedowner do notprovefirstloadinginterval. TMA Sourcecompatibility no roles×endpoints×engines requirement.",
+      "classification": "Works by Source/currentactualsuccess; narrow freshcontext-negative proofgap remains. No wholecriterionPASS or productFAIL."
+    },
+    "bb5_archive_diagnostic_independent_P2": {
+      "utc": "2026-10-15T09:43:14.409796+00:00",
+      "reviewer": "c85",
+      "candidate": "0b0fe674e57a848b06a952eb79b7044dbabe93e4c7679f6b5710d95eda1000b6",
+      "severity": "P2",
+      "location": "semester-lifecycle1837-1843",
+      "finding": "Regex expects CODE: afterexactRPCprefix, actualScheduleGrpcClient528-529 concatenates grpcStatus.toString =>Status{code=CODE, description=…}; UNAVAILABLE/DEADLINE_EXCEEDED/INTERNAL categories cannot fire, allRPCother. Sourceconfirmed installedgrpc-api1.82.4 class with no runtime.",
+      "correction": "Sameauthor match bounded exact actual Status{code=CODE, shape in3closed categories+relevantcontrols; genericfallback/no rawtail retained.",
+      "status": "AUTHOR_CORRECTION_REQUIRED; noRootintegration orruntime"
+    },
+    "bb5_Academic_helper_independent_targeted_recheck": {
+      "utc": "2026-10-15T09:43:39.448600+00:00",
+      "reviewer": "c86 independentread-only",
+      "result": "APPROVE/nofindings",
+      "sources": [
+        "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287",
+        "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86",
+        "4f965f621bc8dd63cbad65035b310976f1ff51a7a94291511cb425acb46c534a"
+      ],
+      "checked": "OAS3.1all3integer|null int64 →stockTS?number|null agreesDTO1af03/unchangedUNKNOWN factory/currentstrictadminclientnullsemantics. Officialbb original449650B/provenance/semantic3unions+Pageorder/stockchecks reused. Helperliteralabsent matchesReport285/unit435; exactinverse16afa3ca33bcaf6f063b6136c4d6ade2a7baedf6781c7d73b871c09babc15466 preserves command/CAS/revision/poll/finally.",
+      "limits": "WholeAcademicsnapshot/currentCI/helperforegroundpoll+cleanup requireactualnextCI; originalFAILretained; no ownruns."
+    },
+    "bb5_archive_diagnostic_P2_correction_Source_ready": {
+      "utc": "2026-10-15T09:44:15.095220+00:00",
+      "author": "c87",
+      "postimage": "7b07598db1d772c6688be690665e5e871a1e507fed9bbc9fc19a645edb2313f3",
+      "fix": "3actualStatus{code=CODE, prefixcategories andfallback; oldCODE: shape explicitlyuncreditedforrealproducerdiagnosis",
+      "checks": "15actualshapecontrolsPASS/formatter/parser/transpile/overlayTSC0/outsidebranchinverse87aexact;5.031s/384446464B/allownedreaped906821",
+      "next": "c85targetedP2recheckbeforeRootcopy; Bparked"
+    },
+    "bb5_D021_selection_independent_review": {
+      "utc": "2026-10-15T09:45:11.177769+00:00",
+      "reviewer": "c86 independentread-only",
+      "result": "APPROVE/no findings",
+      "checked": "Wholefilediff ONLY config67 WebKit4→uniqueexistingonline1286 plusCI1565honestonline label; correctmode/project/env; Chromiumoffline/defaultothers/privacy/SW/guards/retries/timeouts/conditions/gates/tests unchanged; no skip/continueonerror/assertionrelax. OwnerD021explicit/nativeSafariofflineownerpending/notPASS.",
+      "authorChecks": "Sixselectioncontrols/parseYAML/inverse reused; noownruns"
+    },
+    "bb5_D021_selection_Root_integration": {
+      "utc": "2026-10-15T09:45:11.177769+00:00",
+      "sources": {
+        "tests/e2e/playwright.real-mobile.config.ts": "666355d2362b7f88595af8f4dbf45cdd6e5e5dfbc8782cf999a266b06a72ab48",
+        ".github/workflows/ci.yml": "1d1bfe94a0cc54e377ec4c3dbaa188a46f03d3b6ad071e1bb82210d002c209bf"
+      },
+      "copied": "ExactindependentlyreviewedSources; noRootproductedit",
+      "limits": "ActualSafariOfflineOWNER_MANUAL_PENDING; nextcurrentnormalCI required"
+    },
+    "bb5_D019_two_lesson_EXCUSE_Source_GO": {
+      "utc": "2026-10-15T09:45:11.177769+00:00",
+      "author": "c84",
+      "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+      "preimage": "ce678caef4e8003b62b81c6a06f408ad3afbcb7e9f91f3101216ff4b298ff8c4",
+      "authority": "D019 owneraccepted multiplelessons oneindivisibleticket/decision; existingfullform/controller/backendalreadysupportarray, no productchange",
+      "existingProof": "Currentrequests one240scase singlelessonEXCUSE, laterHEADMANsingleLATECHECKIN; no actualmultiEXCUSEclientwitness found scoped; Angularnotused/touched.",
+      "implementation": "Samecase/title240s/actors/logins/clock/oldassertions. Add2own yesterdayoneoffs slots6/7 separateoriginal5manualquota lessons, foldclosed/excuseEligible readiness intoexisting120spoll; afteroldcancel/reject/originalOpenIds check beforemanualquota5, fullform selectboth→one realmultipartEXCUSEPOST with exact2lessonIDs/onePENDINGticket/card/durableGET/pendingmarksunchanged/foreign403. ExistingHEADMANsession: one full2lessonapproval/exact1POST(noexclusions)/ticketID+revision→bothreports excused/headman_excuse/audit same ticket+headman/studentarchiveoneapprovedticket2lessons. OriginalAUTO/manualbudget/retry/failure/privacy tail intact.",
+      "guards": "No duplicateexistinglessoncell, reuseowneddata/disposablestand; original240s/120s/no timeoutincrease/newactor/login/API/UI/framework. Meaningfuloldcaseinverse outsideexactnewblocks. Realexistingbackendatomicityproof joined ratherthan newgenericfaultmatrix.",
+      "checks": "Formatter/parser/RootRAMTSC +preservation/targetednewassertions control; oneindependentcoherentreview beforeintegration; genuineordinaryrequestsCI later. No localbrowser/server/DB."
+    },
+    "bb5_archive_diagnostic_independent_P2_recheck": {
+      "utc": "2026-10-15T09:45:36.864841+00:00",
+      "reviewer": "c85 independentread-only",
+      "result": "APPROVE_SOURCE_ONLY/P2CLOSED/no remainingfindings",
+      "postimage": "7b07598db1d772c6688be690665e5e871a1e507fed9bbc9fc19a645edb2313f3",
+      "checked": "Exactly3regex corrections producerStatus{code=CODE, shape; inverse0b0feexact; finitefixedlabels/fallback/privacy/hardfailure unchanged; authoractualshapecontrols reused",
+      "runtime": "Cause stillUNKNOWN untilordinaryCI"
+    },
+    "bb5_archive_diagnostic_Root_integration": {
+      "utc": "2026-10-15T09:45:36.864841+00:00",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "postimage": "7b07598db1d772c6688be690665e5e871a1e507fed9bbc9fc19a645edb2313f3",
+      "copied": "ExactreviewedSource; Bexcluded/parked, no Rootproductedit",
+      "runtime": "NOT_RUN currentcause"
+    },
+    "bb5_D018_five_Source_ready": {
+      "utc": "2026-10-15T09:48:24.786294+00:00",
+      "author": "c79",
+      "sources": [
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+          "sha256": "d198de554786dd2b4554f25147bbdf14f9aa8030abc01ee1a83014af6156b0d0"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+          "sha256": "916f52e71c73508364f8814a153bd5c8f954927b7b04fb3f1fd77c135828e729"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/styles/tokens.pcss",
+          "sha256": "a9c26bdaf098d6808f899db77bc763aabaedffae10ba62167f5329595e39720e"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/theme.test.ts",
+          "sha256": "520785bc733429e4ddac6f4f8730b7b7fa7c606bd268fea4a3392f3870fcd0ce"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sha256": "44f4f9f5950a4cc0294bcbcbb31d819cbd5af85865a029993676f5ea18398947"
+        }
+      ],
+      "scope": "Onlyapproved5files scopedtargetnullAppearancecontroller/lifecycle/watch/status/note/backicon/scoped9existingsemanticlightaliases; globalApp/owners/controller/preferencesunchanged; AuthONLY438-476 themeinterval/outsideinversec86dexact/title120s/securitytail retained",
+      "checks": "Formatter/affectedlint/VuePCSS/TSparser/RootRAMe2eTSC0/8.452s534MB; existingthemeVitest7/7PASS; scopedstockVueTSCchangedSFC+imports0/2.741s309MB; guardsallreaped. FullPWA VueTSC512MiBheap OOM retained environmentlimitation, notSourceFAIL; fullordinarymobileCI required.",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.themeD018StagedSourcePlanBb5.implementation",
+      "next": "c86independentcoherentreview; nextpackage; realnewUI/securityGREEN NOT_RUN/old440redretained"
+    },
+    "bb5_nine_Source_publication_ready": {
+      "utc": "2026-10-15T09:48:24.786294+00:00",
+      "base": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+      "sources": {
+        ".github/workflows/ci.yml": "1d1bfe94a0cc54e377ec4c3dbaa188a46f03d3b6ad071e1bb82210d002c209bf",
+        "docs/openapi/academic.json": "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287",
+        "frontends/mobile-core/src/api/generated/academic.types.ts": "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "5d40251663b0307083017f996577b1a8cbdacc5cfb10ec4322736846a61f5459",
+        "tests/e2e/fixtures/artifact-privacy.ts": "b7fdb6a0ea8c43600d5f6879068929149e70653e5fcb12784827d24b294348f3",
+        "tests/e2e/fixtures/semester-lifecycle.spec.ts": "7b07598db1d772c6688be690665e5e871a1e507fed9bbc9fc19a645edb2313f3",
+        "tests/e2e/playwright.real-mobile.config.ts": "666355d2362b7f88595af8f4dbf45cdd6e5e5dfbc8782cf999a266b06a72ab48",
+        "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts": "4f965f621bc8dd63cbad65035b310976f1ff51a7a94291511cb425acb46c534a",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts": "a51fa4b7d2d95e6e4f5de15a8e58925fe1ef8277e37ca924ddb0c89086b59c54"
+      },
+      "reviews": "c86 notification/nullability/helper/D021APPROVE; c85GeoAPPROVE/archiveP2CLOSED focusedrecheck; authorchecksPASS",
+      "excluded": "Theme5awaitreview/EXCUSEawaitSource/Bparked+rebase notincluded. No product/native acceptance frompublication.",
+      "next": "Configuredsix/ordinarycommit/rangeGitleaks/realdesignatedbranchpush/actualreadbacks/currentnormalCI; no main/force/Ready/deploy"
+    },
+    "bb5_nine_configured_precommit_metadata_FALSE_POSITIVE": {
+      "utc": "2026-10-15T09:51:42.797553+00:00",
+      "state": "Configuredsix native1 beforecommit; allownedreaped; other5hooksPASS",
+      "receipt": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/bb5-nine-publish-01.safe.json",
+      "rule": "generic-api-key",
+      "safeFindings": "Centralmetadata publicSourcehash fields at64144(tokenspath)/64146(Authsecurityspecpath). Bothvalues independentlyverified actualassignedSourceSHA256, nocredential values read/output.",
+      "correction": "Neutralmetadatastructure sourceRef/sha256 separatefields insteadof sourcefilepath-as-key nexttohash. Preserveactualchecksums/provenance; nosecurityrules/ignore/thresholds changed.",
+      "next": "Theme5nowindependentAPPROVE; expand coherentprecommit-onlycandidate9→14 ratherthan publishknownAuthvisualFAILthenimmediatefollowup. No priorcommit/push fromfailedattempt."
+    },
+    "bb5_D018_independent_coherent_review": {
+      "utc": "2026-10-15T09:51:42.797553+00:00",
+      "reviewer": "c86 independentread-only",
+      "result": "APPROVE/no materialfindings",
+      "checked": "Exact5pins; onMountedtargetnull localcontroller/propswatch/subscription/unmountdispose, no globaltargetmutation. Existingownerselectedmode+persistence unchanged/rootlockedDark. 9canonicalexistingsemanticvalues scopedAppearance actualCSSnotonlyattribute. Nativefieldset/radios/status/describedby/stagednote/currentColorback/remgeometry. Authactualcomputedlight/reloadglobaldark/reopenedpersistedlight/systembothmedia/finallyrestore; alloutsideAuthinterval/title120s/securitytail exact.",
+      "limits": "Existing7themeunits+Source/TSCcontrols reused; fullPWA512MiBheapOOM environment retained/fullCIpending; actualpreview/securitygreenandownerlightvalidation NOT_RUN"
+    },
+    "bb5_D018_five_Root_integration": {
+      "utc": "2026-10-15T09:51:42.797553+00:00",
+      "sources": [
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+          "sha256": "d198de554786dd2b4554f25147bbdf14f9aa8030abc01ee1a83014af6156b0d0"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+          "sha256": "916f52e71c73508364f8814a153bd5c8f954927b7b04fb3f1fd77c135828e729"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/styles/tokens.pcss",
+          "sha256": "a9c26bdaf098d6808f899db77bc763aabaedffae10ba62167f5329595e39720e"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/theme.test.ts",
+          "sha256": "520785bc733429e4ddac6f4f8730b7b7fa7c606bd268fea4a3392f3870fcd0ce"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sha256": "44f4f9f5950a4cc0294bcbcbb31d819cbd5af85865a029993676f5ea18398947"
+        }
+      ],
+      "copied": "ExactindependentlyreviewedSource; noRootproductedits",
+      "actual": "newUIpreview/securitytailNOT_RUN; ordinaryCI required"
+    },
+    "bb5_five_research_existing_evidence_independent_join": {
+      "utc": "2026-10-15T09:51:42.797553+00:00",
+      "reviewer": "c85 independentread-only",
+      "rows": {
+        "P06": "VC-AUTH-DURABLE-RECONSTRUCTION-PG-OUTAGE-01/ca3dnamedadmissionoutage/4058liverolelogout/f6b2_terminal_current_gates_and_recovery artifact11948999905 actualAuthrestart/restoredDB checks revokedaccess+refresh AND validcontrol; currentauthorityb5cef648/recovery013248 retained.",
+        "P08": "f6b2_S2_cookie_policy_independent_join +ce943_CORS75_actual_native_PASS attributes/rotation/clear/forbiddenOrigin403-nocookiedamage/allowedrotation+VueReload; naturalHTTPexpiry. CurrentAuthCookiesab64785a exact; no browserCORS-enforcement/B014rateprobe claim.",
+        "P10": "ActualUnicodechange/reset/rollback+sessionrevocation; P10-one-encoding-loss-RED-exact-restore.safe.json→P10-one-encoding-loss-restored-GREEN.safe.json plus ca3dexactnamedPASS. CurrentAuthServicee336adee/HTTPtest954457e0/JDBC1a2626b7 exact. CASE-SB06-INITIAL-PASSWORD-DISPLAY limitedinitialexception remains separate. UnfinishedAuthAnewbrowsertail separate.",
+        "P17": "criterion_H_L01_L08_current_reconciliation L03/QRomitted-advice sensitivity/CASE-SB01-OTP-VALIDATION-REDACTION/CASE-SB05-REPORT-PROOF-REDACTION/E1E2safeHTTPerrors. ScopedcurrentRFC9457/redactionmechanism; no blanketallendpoint/log/SQLfailureclaim.",
+        "SD-TMA": "CASE-SD01-TMA-SERVER/edbexactnamedlivebindinggrants/a8c_tma_family_independent_acceptance/f6b2_TMA_retained_Cloud_logic_independent_join. Currentservice53a95814/testc3a819f3 exact: tamper/expiry/future denial, reusableagevalidfreshauthority; acceptedduplicatekeylastvalue retained/no newrejectallduplicatesrule. D015nativeownerpending."
+      },
+      "remainingP21": "UNKNOWN/B015FROZEN; E2positivecompatibility/RF04cancellation/userpositive valid, but admitted protectedcaller-target-method-TLS negative execution identityjoin absent. S1_current_policy_Source_assessment remains; no equivalentreader/campaignproposed.",
+      "limits": "Researchdispositions only; originalproducerslevels preserved; D020negativecontext/authUI/features/currentgates/native unaffected; no newruntime/writes/fetch."
+    },
+    "bb5_fourteen_Source_publication_ready": {
+      "utc": "2026-10-15T09:51:42.797553+00:00",
+      "base": "bb5b5a6df3b495d0c2976ab93499b69f5d37c3f2",
+      "sourceInventory": [
+        {
+          "sourceRef": ".github/workflows/ci.yml",
+          "sha256": "1d1bfe94a0cc54e377ec4c3dbaa188a46f03d3b6ad071e1bb82210d002c209bf"
+        },
+        {
+          "sourceRef": "docs/openapi/academic.json",
+          "sha256": "a6dd46875ac5d6be1f193c8d169a488746da59c3c634943066d7ed65abbea287"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/api/generated/academic.types.ts",
+          "sha256": "d2bb017e245016093f733b4e8d0055357a70b45158c17a0b8ec58c6fc93bbb86"
+        },
+        {
+          "sourceRef": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+          "sha256": "5d40251663b0307083017f996577b1a8cbdacc5cfb10ec4322736846a61f5459"
+        },
+        {
+          "sourceRef": "tests/e2e/fixtures/artifact-privacy.ts",
+          "sha256": "b7fdb6a0ea8c43600d5f6879068929149e70653e5fcb12784827d24b294348f3"
+        },
+        {
+          "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "sha256": "7b07598db1d772c6688be690665e5e871a1e507fed9bbc9fc19a645edb2313f3"
+        },
+        {
+          "sourceRef": "tests/e2e/playwright.real-mobile.config.ts",
+          "sha256": "666355d2362b7f88595af8f4dbf45cdd6e5e5dfbc8782cf999a266b06a72ab48"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+          "sha256": "4f965f621bc8dd63cbad65035b310976f1ff51a7a94291511cb425acb46c534a"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+          "sha256": "a51fa4b7d2d95e6e4f5de15a8e58925fe1ef8277e37ca924ddb0c89086b59c54"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+          "sha256": "d198de554786dd2b4554f25147bbdf14f9aa8030abc01ee1a83014af6156b0d0"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+          "sha256": "916f52e71c73508364f8814a153bd5c8f954927b7b04fb3f1fd77c135828e729"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/styles/tokens.pcss",
+          "sha256": "a9c26bdaf098d6808f899db77bc763aabaedffae10ba62167f5329595e39720e"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/theme.test.ts",
+          "sha256": "520785bc733429e4ddac6f4f8730b7b7fa7c606bd268fea4a3392f3870fcd0ce"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sha256": "44f4f9f5950a4cc0294bcbcbb31d819cbd5af85865a029993676f5ea18398947"
+        }
+      ],
+      "sourceCount": 14,
+      "reviews": "All9previousSourceindependentAPPROVE/archiveP2CLOSED +D0185coherentc86APPROVE; no openblockingfindings",
+      "checks": "Applicableauthorformatter/lint/parser/generator/type/unit/privacycontrols PASS; fullordinaryfinalgates+actualnewflows remain required. Last9precommit heldonlypublic-hashmetadatafalsepositives correctedstructure/rulesunchanged.",
+      "notIncluded": "c84EXCUSEtwo-lesson/c87promotionB notready; no all-authorbarrier",
+      "next": "Exact30file stage/configuredsix/normalcommit/rangeGitleaks/realdesignatedpush/readbacks"
     }
   }
 }

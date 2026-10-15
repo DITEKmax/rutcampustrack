@@ -172,7 +172,19 @@
   --rct-radius-xs: 0.25rem;
 }
 
-/* Current mobile stage intentionally has one dark semantic palette. */
+/* D018: only Appearance previews the accepted light semantics; all other screens stay dark. */
+.profile-appearance[data-theme='light'] {
+  --rct-color-surface-base: #fcfbfe;
+  --rct-color-surface-raised: #ffffff;
+  --rct-color-surface-float: #ffffff;
+  --rct-color-text-primary: #292531;
+  --rct-color-text-secondary: #565061;
+  --rct-color-text-muted: #6e6779;
+  --rct-color-border-default: #ded9e8;
+  --rct-color-accent-now: #6d28d9;
+  --rct-color-accent-on-now: #ffffff;
+}
+
 @define-mixin rct-type-body {
   font-size: var(--rct-font-size-body);
   font-weight: var(--rct-font-weight-regular);

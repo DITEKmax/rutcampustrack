@@ -1391,10 +1391,99 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Verify exact stranded semester effect reconciliation
+        id: semester-reconciliation
+        timeout-minutes: 9
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-semester-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_SEMESTER_RECONCILIATION_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          set +e
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin reconciles one exact stranded close before archive completion$'
+          case_exit=$?
+          set -e
+          if ! python3 - <<'PY_RECONCILIATION_GATE'
+          import json, os, stat
+          from pathlib import Path
+
+          def pairs(items):
+              result = {}
+              for key, value in items:
+                  if key in result:
+                      raise ValueError('Duplicate reconciliation field')
+                  result[key] = value
+              return result
+
+          restored = False
+          try:
+              path = Path(os.environ['RCT_SEMESTER_LIFECYCLE_RUN']) / 'reconciliation.safe.json'
+              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                  info = os.fstat(stream.fileno())
+                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or not 0 < info.st_size <= 4096:
+                      raise ValueError('Invalid reconciliation receipt')
+                  raw = stream.read(4097)
+                  if len(raw) != info.st_size:
+                      raise ValueError('Reconciliation receipt size changed')
+              value = json.loads(raw, object_pairs_hook=pairs,
+                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite reconciliation field')))
+              booleans = {'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
+                          'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
+                          'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
+              keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
+                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome'}
+              if (type(value) is not dict or set(value) != keys
+                      or value['schema'] != 'semester-reconciliation.v1'
+                      or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
+                      or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
+                      or value['measuredListenerAttempts'] != 'UNKNOWN'
+                      or not all(type(value[key]) is bool for key in booleans)
+                      or not (value['retainedDlqCopies'] == 'UNKNOWN'
+                              or (type(value['retainedDlqCopies']) is int and value['retainedDlqCopies'] == 1))
+                      or value['cleanupOutcome'] not in {'PENDING', 'PASSED', 'FAILED'}):
+                  raise ValueError('Invalid closed reconciliation schema')
+              restored = (value['restorationSucceeded'] is True
+                          and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
+          except Exception:
+              pass
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('restorationSucceeded=' + str(restored).lower() + '\n')
+          print('Semester reconciliation restoration gate: ' + ('RESTORED' if restored else 'UNPROVEN'))
+          if not restored:
+              raise SystemExit(1)
+          PY_RECONCILIATION_GATE
+          then
+            if [ "$case_exit" -ne 0 ]; then exit "$case_exit"; fi
+            exit 1
+          fi
+          exit "$case_exit"
+
+      - name: Upload closed semester reconciliation outcome
+        if: always() && steps.semester-reconciliation.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: semester-reconciliation-safe-${{ github.run_attempt }}
+          path: |
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Verify interrupted assignment closure and next-day replacement
         id: assignment-lifecycle
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -1583,7 +1672,7 @@ jobs:
       - name: Restore a real application checkpoint into fresh disposable databases
         id: application-recovery
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -1911,7 +2000,7 @@ jobs:
       - name: Verify real semester archive and restore participants
         id: semester-lifecycle
         timeout-minutes: 9
-        if: ${{ !cancelled() && steps.application-recovery.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -1927,7 +2016,7 @@ jobs:
           mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
           mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
           printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
-          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin archives and restores the disposable CI semester through real participants$'
 
       - name: Locate the pending semester effect without exposing event data
         timeout-minutes: 1
@@ -1949,7 +2038,7 @@ jobs:
       - name: Verify real Vue schedule lifecycle and attendance requests
         id: lesson-lifecycle
         timeout-minutes: 17
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443

@@ -339,3 +339,9 @@ DF-BFF-REQUEST-ENUM-001 now FIXED_LOCAL_REVIEWED: sameTest04c actualknown-source
 ## GAP-PWA-MAP-ZOOM-PAN-001 — P2 / accepted function missing
 
 JS-STUDENT-24 and accepted mobile map UX require zoom/pan. Shared MapScreen inline preview/CSS have no implementation; Source-confirmed GAP, no browser FAIL claimed. Current exact view/download/retry/delete/history PASS62df retained. Exact pointers: receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_map_zoom_pan_accepted_Source_GAP. Assigned c65_client_final_browser existingVue/CSS scope with current design skill/originals, then existingrealmapcase and independentreview. No newweb/Angular/legend/API.
+
+## DF-PWA-TEACHER-MANUAL-NO-TICKET-001 — P2 / confirmed UI omission
+
+2026-10-15T03:55:03.019048+00:00: current3647 mixed HEADMAN/TEACHER realbrowser case448 reaches manual ILLNESS card with ticketId=null/source=NO_TICKET, but required explicit explanation is absent (softFAIL1066). Cause: TeacherManualExcuseScreen.vue c0ab successbranch renders reason/comment/lesson but no no-request explanation. Primary JS-TEACHER-12:405 and wireframe122:193 require it; not an oracle wording conflict. c87 assigned minimal existing-design SFC correction after applying designskill. BEFORE evidence current4065#3647_actual_role_first3_webkit; implementation/review/real-after proof pending. Separate PNGcapturedResponsebody mismatch is NOT declared productcorruption: actual openedUIBlob and directAPI bytes exact; capturecauseUNKNOWN.
+
+2026-10-15T03:55:03.019048+00:00: GAP-PWA-MAP-ZOOM-PAN-001 CLOSED_FINITE_ACTUAL: studentmapwholePASS currentf545 map103 plusindependentc86acceptance closes zoom/pan/reset/download; current4065#f545_helper_editor_and_map_independent_finite_acceptance. EarlierSource-gap entry retainedhistory; D004legendexcluded/nativeD015separate.

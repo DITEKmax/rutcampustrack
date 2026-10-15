@@ -989,6 +989,12 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(teacherFile.headers()['content-type']).toContain('image/png');
     const teacherFileBytes = await teacherFile.body();
     expect.soft(teacherFileBytes.equals(journalSeed.png)).toBe(true);
+    expect
+      .soft(
+        teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('utf8'), 'utf8')),
+        'TEACHER_PNG_CAPTURE_LOSSY_UTF8_ROUND_TRIP',
+      )
+      .toBe(false);
     const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
     await expect(preview).toBeVisible();
     await expect
@@ -2091,8 +2097,38 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
             mainDocumentResponse = 'UNAVAILABLE';
           }
         };
+        const reloadLocation = new URL(page.url());
+        let mainDocumentFailureObserved = false;
+        let mainDocumentFailure = 'UNOBSERVED' as 'UNOBSERVED' | 'NETWORK' | 'INTERNAL' | 'OTHER';
+        const observeDocumentFailure = (item: Request) => {
+          if (mainDocumentFailureObserved) return;
+          try {
+            if (!item.isNavigationRequest() || item.frame() !== page.mainFrame()) return;
+            const location = new URL(item.url());
+            if (
+              location.origin !== reloadLocation.origin ||
+              location.pathname !== reloadLocation.pathname ||
+              location.search !== reloadLocation.search
+            )
+              return;
+            mainDocumentFailureObserved = true;
+            const errorText = item.failure()?.errorText;
+            if (typeof errorText !== 'string' || errorText.length > 512) return;
+            mainDocumentFailure =
+              /ERR_INTERNET_DISCONNECTED|NS_ERROR_OFFLINE|NetworkError|network (?:error|connection)|Could not connect|Connection refused|The Internet connection appears to be offline/i.test(
+                errorText,
+              )
+                ? 'NETWORK'
+                : /internal error/i.test(errorText)
+                  ? 'INTERNAL'
+                  : 'OTHER';
+          } catch {
+            // Missing or unsafe protocol failure text remains unknown.
+          }
+        };
         page.on('request', observeDocumentRequest);
         page.on('response', observeDocumentResponse);
+        page.on('requestfailed', observeDocumentFailure);
         try {
           await page.reload();
         } catch (error) {
@@ -2215,10 +2251,25 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
                 break;
             }
           }
+          switch (mainDocumentFailure) {
+            case 'NETWORK':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_NETWORK').toBe(true);
+              break;
+            case 'INTERNAL':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_INTERNAL').toBe(true);
+              break;
+            case 'OTHER':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_OTHER').toBe(true);
+              break;
+            case 'UNOBSERVED':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_UNOBSERVED').toBe(true);
+              break;
+          }
           throw error;
         } finally {
           page.off('request', observeDocumentRequest);
           page.off('response', observeDocumentResponse);
+          page.off('requestfailed', observeDocumentFailure);
         }
         await expect(
           page.locator('.today-list').getByText('Синтетическая аудитория', { exact: true }),

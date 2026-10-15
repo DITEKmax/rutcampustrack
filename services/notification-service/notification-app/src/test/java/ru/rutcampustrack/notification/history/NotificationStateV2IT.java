@@ -3,9 +3,21 @@ package ru.rutcampustrack.notification.history;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Utils;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bson.Document;
 import org.junit.jupiter.api.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,6 +30,11 @@ import ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesV2Dto;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.notification.preferences.*;
+import ru.rutcampustrack.notification.push.NotificationPushIntentDispatcher;
+import ru.rutcampustrack.notification.push.NotificationPushIntentStore;
+import ru.rutcampustrack.notification.push.PushSubscriptionDocument;
+import ru.rutcampustrack.notification.push.PushSubscriptionRepository;
+import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.notification.security.RequestContext;
 
 /** Real Mongo atomic updates and independent role views; no provider/server/foreign data. */
@@ -759,6 +776,232 @@ class NotificationStateV2IT {
                                 .countDocuments())
                 .isEqualTo(1);
         verify(push, never()).sendToSubscription(any(), anyString(), any());
+    }
+
+    @Test
+    @Timeout(30)
+    void webPush503LeavesInboxReadableAndRetriesOnceWithoutDuplicatingHistoryOrDelivery()
+            throws Exception {
+        deliveryCollections();
+        if (Security.getProvider("BC") == null) Security.addProvider(new BouncyCastleProvider());
+        var vapidGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
+        vapidGenerator.initialize(new ECGenParameterSpec("prime256v1"));
+        var subscriptionGenerator = KeyPairGenerator.getInstance("ECDH", "BC");
+        subscriptionGenerator.initialize(new ECGenParameterSpec("prime256v1"));
+        var subscriptionKey = subscriptionGenerator.generateKeyPair();
+        byte[] auth = new byte[16];
+        new SecureRandom().nextBytes(auth);
+        var requests = new AtomicInteger();
+        var handlerFailed = new AtomicBoolean();
+        var executor = Executors.newSingleThreadExecutor();
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.setExecutor(executor);
+        server.createContext(
+                "/push",
+                exchange -> {
+                    try (exchange) {
+                        int attempt = requests.incrementAndGet();
+                        int size = exchange.getRequestBody().readNBytes(8193).length;
+                        boolean valid =
+                                "POST".equals(exchange.getRequestMethod())
+                                        && "/push".equals(exchange.getRequestURI().getPath())
+                                        && size > 0
+                                        && size <= 8192
+                                        && attempt <= 2;
+                        if (!valid) handlerFailed.set(true);
+                        exchange.sendResponseHeaders(valid ? (attempt == 1 ? 503 : 201) : 500, -1);
+                    } catch (Exception error) {
+                        handlerFailed.set(true);
+                    }
+                });
+        Throwable primary = null;
+        try {
+            server.start();
+            var clock = new DeliveryClock(Instant.now());
+            var intents = new NotificationPushIntentStore(mongo, clock);
+            var client = mock(NotificationAudienceClient.class);
+            var audience =
+                    new NotificationAudienceService(
+                            mongo,
+                            client,
+                            mock(
+                                    ru.rutcampustrack.notification.reminder
+                                            .ReminderAttendanceStateService.class));
+            var event =
+                    NotificationAudienceAdmissionTest.envelope(
+                            "lesson.cancelled", Map.of("lesson_id", 51L, "group_id", 7L));
+            when(client.resolve(anyMap())).thenReturn(Map.of(11L, Set.of("STUDENT")));
+            var prefs = mock(NotificationPreferencesService.class);
+            when(prefs.isEnabledForUser(eq(11L), eq("lesson.cancelled"), anyMap()))
+                    .thenReturn(true);
+            var subscriptions = mock(PushSubscriptionRepository.class);
+            var subscription =
+                    PushSubscriptionDocument.builder()
+                            .id("student-sub")
+                            .userId(11L)
+                            .endpoint("http://127.0.0.1:" + server.getAddress().getPort() + "/push")
+                            .p256dh(
+                                    Base64.getUrlEncoder()
+                                            .withoutPadding()
+                                            .encodeToString(
+                                                    Utils.encode(
+                                                            (ECPublicKey)
+                                                                    subscriptionKey.getPublic())))
+                            .auth(Base64.getUrlEncoder().withoutPadding().encodeToString(auth))
+                            .build();
+            when(subscriptions.findAllByUserIdIn(any())).thenReturn(List.of(subscription));
+            // PushService 5.1.2 exposes no close API; its per-request client uses ClosableCallback.
+            var pushService =
+                    new PushService(
+                            vapidGenerator.generateKeyPair(), "mailto:push-test@example.test");
+            var provider =
+                    new WebPushDeliveryService(
+                            subscriptions,
+                            pushService,
+                            new com.fasterxml.jackson.databind.ObjectMapper(),
+                            mongo,
+                            clock);
+            var guard =
+                    new ru.rutcampustrack.shared.events.IdempotencyGuard(
+                            new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo));
+            var history =
+                    new NotificationHistoryEventProcessor(
+                            mock(NotificationHistoryRepository.class),
+                            mock(NotificationHistoryService.class),
+                            guard,
+                            mock(AcademicGroupMemberClient.class),
+                            mock(org.springframework.messaging.simp.SimpMessagingTemplate.class),
+                            null,
+                            audience,
+                            new NotificationRoleHistoryWriter(mongo));
+            var consumer =
+                    new ru.rutcampustrack.notification.event.EventConsumer(
+                            mock(org.springframework.messaging.simp.SimpMessagingTemplate.class),
+                            provider,
+                            guard,
+                            null,
+                            audience,
+                            history,
+                            intents,
+                            prefs);
+            var transactions =
+                    new org.springframework.transaction.support.TransactionTemplate(
+                            new org.springframework.data.mongodb.MongoTransactionManager(
+                                    mongo.getMongoDatabaseFactory()));
+            transactions.executeWithoutResult(status -> consumer.onEvent(event));
+            assertThat(requests.get()).isZero();
+            assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isEqualTo(1);
+            var original = mongo.findAll(NotificationHistoryDocument.class).getFirst();
+            assertThat(original.getEventId().equals(event.get("event_id"))).isTrue();
+            assertThat(original.getPayload().get("lesson_id")).isEqualTo(51L);
+            assertThat(original.getSentAt()).isNotNull();
+            var deliveryInbox =
+                    new NotificationInboxService(
+                            mongo, new NotificationCatalog(), Clock.systemUTC());
+            var student = context(11L, "STUDENT");
+            var initialPage = deliveryInbox.list(student, 10, null, false);
+            assertThat(initialPage.items()).hasSize(1);
+            var unread = initialPage.items().getFirst();
+            assertThat(unread.id().equals(original.getId())).isTrue();
+            assertThat(unread.sentAt()).isEqualTo(original.getSentAt());
+            assertThat(unread.readAt()).isNull();
+            assertThat(unread.revision()).isEqualTo("0");
+            var dispatcher =
+                    new NotificationPushIntentDispatcher(
+                            intents,
+                            audience,
+                            prefs,
+                            subscriptions,
+                            provider,
+                            new NotificationCatalog());
+            dispatcher.dispatchOne();
+            assertThat(requests.get()).isEqualTo(1);
+            assertThat(handlerFailed.get()).isFalse();
+            var pending =
+                    mongo.findById(
+                            event.get("event_id"),
+                            Document.class,
+                            NotificationPushIntentStore.COLLECTION);
+            assertThat(pending.getString("state")).isEqualTo("PENDING");
+            assertThat(pending.getInteger("attempts")).isEqualTo(1);
+            assertThat(pending.getString("error_kind")).isEqualTo("ProviderRejected503");
+            assertThat(pending.getList("delivered", String.class)).isEmpty();
+            assertThat(pending.containsKey("active_key")).isFalse();
+            var failedPage = deliveryInbox.list(student, 10, null, false);
+            assertThat(failedPage.items()).hasSize(1);
+            assertThat(failedPage.items().getFirst().equals(unread)).isTrue();
+            var read =
+                    deliveryInbox.readState(
+                            student, unread.id(), new NotificationInboxDto.ReadState(true, "0"));
+            assertThat(read.item().readAt()).isNotNull();
+            assertThat(read.item().revision()).isEqualTo("1");
+            assertThat(read.item().sentAt()).isEqualTo(original.getSentAt());
+            assertThat(read.unreadCount()).isZero();
+            clock.instant = clock.instant.plusSeconds(6);
+            dispatcher.dispatchOne();
+            assertThat(requests.get()).isEqualTo(2);
+            assertThat(handlerFailed.get()).isFalse();
+            var completed =
+                    mongo.findById(
+                            event.get("event_id"),
+                            Document.class,
+                            NotificationPushIntentStore.COLLECTION);
+            assertThat(completed.getString("state")).isEqualTo("COMPLETED");
+            assertThat(completed.getInteger("attempts")).isEqualTo(2);
+            assertThat(completed.getList("delivered", String.class))
+                    .containsExactly("11:student-sub");
+            var claims =
+                    mongo.findAll(
+                            Document.class,
+                            ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore
+                                    .DEFAULT_COLLECTION);
+            assertThat(claims).hasSize(1);
+            assertThat(claims.getFirst().getString("event_id").equals(event.get("event_id")))
+                    .isTrue();
+            transactions.executeWithoutResult(status -> consumer.onEvent(event));
+            dispatcher.dispatchOne();
+            assertThat(requests.get()).isEqualTo(2);
+            assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isEqualTo(1);
+            assertThat(mongo.getCollection(NotificationPushIntentStore.COLLECTION).countDocuments())
+                    .isEqualTo(1);
+            assertThat(
+                            mongo.findById(
+                                            event.get("event_id"),
+                                            Document.class,
+                                            NotificationPushIntentStore.COLLECTION)
+                                    .equals(completed))
+                    .isTrue();
+            var replayClaims =
+                    mongo.findAll(
+                            Document.class,
+                            ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore
+                                    .DEFAULT_COLLECTION);
+            assertThat(replayClaims).hasSize(1);
+            assertThat(replayClaims.getFirst().equals(claims.getFirst())).isTrue();
+            var replay = mongo.findById(original.getId(), NotificationHistoryDocument.class);
+            assertThat(replay.getPayload().equals(original.getPayload())).isTrue();
+            assertThat(replay.getSentAt()).isEqualTo(original.getSentAt());
+            assertThat(replay.getRoleViews().get("STUDENT").getReadAt())
+                    .isEqualTo(read.item().readAt());
+            assertThat(replay.getRoleViews().get("STUDENT").getRevision()).isEqualTo(1);
+            var finalPage = deliveryInbox.list(student, 10, null, false);
+            assertThat(finalPage.items()).hasSize(1);
+            assertThat(finalPage.items().getFirst().equals(read.item())).isTrue();
+            assertThat(deliveryInbox.count(student).count()).isZero();
+        } catch (Exception | AssertionError error) {
+            primary = error;
+            throw error;
+        } finally {
+            try {
+                server.stop(0);
+                executor.shutdownNow();
+                assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
+                assertThat(handlerFailed.get()).isFalse();
+            } catch (Exception | AssertionError cleanup) {
+                if (primary != null) primary.addSuppressed(cleanup);
+                else throw cleanup;
+            }
+        }
     }
 
     private void deliveryCollections() {

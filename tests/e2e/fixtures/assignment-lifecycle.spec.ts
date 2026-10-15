@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
-import { type APIRequestContext, expect } from '@playwright/test';
+import { type APIRequestContext, type APIResponse, expect } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit, type SyntheticUser } from './mobile-dataset';
 import { readTeachingInstant } from './teaching-clock';
@@ -39,6 +39,7 @@ interface Checkpoint {
   marks: Row[];
   homeworks: Row[];
   future: Row;
+  teacherStatsBaseline?: Row;
 }
 
 function requireValue(condition: unknown, message: string): asserts condition {
@@ -216,8 +217,44 @@ async function close(request: APIRequestContext, headman: Actor, checkpoint: Che
     headers: { ...headman.headers(), 'Idempotency-Key': checkpoint.closeKey },
   });
 }
-async function groupHistory(request: APIRequestContext, teacher: Actor, checkpoint: Checkpoint) {
+type GroupHistoryStage = 'PREPARE' | 'ADOPTED_PUBLISHED' | 'ADOPTED_AFTER_REPLACEMENT';
+async function groupHistory(
+  request: APIRequestContext,
+  teacher: Actor,
+  checkpoint: Checkpoint,
+  stage: GroupHistoryStage = 'PREPARE',
+) {
   const response = await request.get(journalPath(checkpoint), { headers: teacher.headers() });
+  const status = response.status();
+  if (status !== 200) {
+    // Two closed Source frames identify the caller and status without response data.
+    if (stage === 'PREPARE') expect.soft(false).toBe(true);
+    if (stage === 'ADOPTED_PUBLISHED') expect.soft(false).toBe(true);
+    if (stage === 'ADOPTED_AFTER_REPLACEMENT') expect.soft(false).toBe(true);
+    if (status === 201) expect.soft(false).toBe(true);
+    if (status === 202) expect.soft(false).toBe(true);
+    if (status === 204) expect.soft(false).toBe(true);
+    if (status === 400) expect.soft(false).toBe(true);
+    if (status === 401) expect.soft(false).toBe(true);
+    if (status === 403) expect.soft(false).toBe(true);
+    if (status === 404) expect.soft(false).toBe(true);
+    if (status === 409) expect.soft(false).toBe(true);
+    if (status === 410) expect.soft(false).toBe(true);
+    if (status === 412) expect.soft(false).toBe(true);
+    if (status === 422) expect.soft(false).toBe(true);
+    if (status === 423) expect.soft(false).toBe(true);
+    if (status === 429) expect.soft(false).toBe(true);
+    if (status === 500) expect.soft(false).toBe(true);
+    if (status === 502) expect.soft(false).toBe(true);
+    if (status === 503) expect.soft(false).toBe(true);
+    if (status === 504) expect.soft(false).toBe(true);
+    if (
+      ![
+        201, 202, 204, 400, 401, 403, 404, 409, 410, 412, 422, 423, 429, 500, 502, 503, 504,
+      ].includes(status)
+    )
+      expect.soft(false).toBe(true);
+  }
   expect(response.status()).toBe(200);
   const journal = await response.json();
   expect(
@@ -247,6 +284,188 @@ async function deniedGroup(request: APIRequestContext, teacher: Actor, checkpoin
   // TeacherReadFacade.journal checks live group authority and conceals foreign group scope.
   expect(response.status()).toBe(404);
   expect((await response.json()).code).toBe('OUT_OF_SCOPE');
+}
+
+function teacherStatsPath(checkpoint: Checkpoint): string {
+  return `/api/v1/teacher/stats?${new URLSearchParams({
+    semesterId: String(checkpoint.semesterId),
+    scope: 'students',
+    groupId: String(checkpoint.groupId),
+    subjectId: String(checkpoint.subjectId),
+    lessonType: 'lecture',
+  })}`;
+}
+
+function teacherStatsProjection(value: unknown, checkpoint: Checkpoint): Row {
+  requireValue(
+    typeof value === 'object' && value !== null && !Array.isArray(value),
+    'Teacher stats must return a real aggregate',
+  );
+  const stats = value as Row;
+  const id = (value: unknown): number => {
+    requireValue(
+      typeof value === 'string' &&
+        /^[1-9][0-9]*$/.test(value) &&
+        Number.isSafeInteger(Number(value)),
+      'Teacher stats identity must be a positive canonical decimal',
+    );
+    return Number(value);
+  };
+  const metrics = (row: Row): Row =>
+    Object.fromEntries(
+      ['present', 'presentOrExcused', 'excused', 'absent'].map((key) => {
+        const metric = row[key];
+        requireValue(
+          metric &&
+            Number.isSafeInteger(metric.numerator) &&
+            metric.numerator >= 0 &&
+            Number.isSafeInteger(metric.denominator) &&
+            metric.denominator >= metric.numerator &&
+            typeof metric.percent === 'number' &&
+            Number.isFinite(metric.percent) &&
+            metric.percent >= 0 &&
+            metric.percent <= 100,
+          'Teacher stats must retain finite native metric triples',
+        );
+        return [key, projection(metric, ['numerator', 'denominator', 'percent'])];
+      }),
+    );
+  requireValue(
+    stats.scope === 'students' &&
+      id(stats.semesterId) === checkpoint.semesterId &&
+      stats.periodFrom === checkpoint.yesterday &&
+      stats.periodTo === checkpoint.yesterday &&
+      Number.isSafeInteger(stats.lessonsCount) &&
+      stats.lessonsCount === checkpoint.historyIds.length &&
+      stats.lessonsCount > 0 &&
+      Array.isArray(stats.students) &&
+      Array.isArray(stats.groups) &&
+      Array.isArray(stats.subjectOptions),
+    'Teacher stats must include the exact nonempty closed lesson scope',
+  );
+  const students: Row[] = stats.students
+    .map((row: Row) => ({ studentId: id(row.studentId), ...metrics(row) }))
+    .sort((left: Row, right: Row) => left.studentId - right.studentId);
+  requireValue(
+    new Set(students.map((row: Row) => row.studentId)).size === students.length,
+    'Teacher stats students must be unique',
+  );
+  const marked = students.filter((row: Row) => row.studentId === checkpoint.studentId);
+  requireValue(
+    marked.length === 1 &&
+      marked[0].present.numerator === checkpoint.historyIds.length &&
+      marked[0].present.denominator === checkpoint.historyIds.length &&
+      marked[0].present.percent === 100,
+    'Teacher stats must retain the own seeded PRESENT numerator and denominator',
+  );
+  const groups = stats.groups.map((row: Row) => {
+    requireValue(
+      id(row.groupId) === checkpoint.groupId && row.lessonsCount === checkpoint.historyIds.length,
+      'Teacher stats group must retain its own closed lesson count',
+    );
+    return { groupId: id(row.groupId), lessonsCount: row.lessonsCount, ...metrics(row) };
+  });
+  requireValue(groups.length === 1, 'Teacher stats must retain one exact own group');
+  const subjectOptions = stats.subjectOptions
+    .map((row: Row) => {
+      requireValue(
+        Array.isArray(row.lessonTypes) &&
+          row.lessonTypes.length > 0 &&
+          row.lessonTypes.every(
+            (type: unknown) =>
+              typeof type === 'string' && ['lecture', 'practice', 'lab'].includes(type),
+          ) &&
+          new Set(row.lessonTypes).size === row.lessonTypes.length,
+        'Teacher stats subject types must remain canonical and unique',
+      );
+      return {
+        groupId: id(row.groupId),
+        subjectId: id(row.subjectId),
+        lessonTypes: [...row.lessonTypes].sort(),
+      };
+    })
+    .sort(
+      (left: Row, right: Row) => left.groupId - right.groupId || left.subjectId - right.subjectId,
+    );
+  requireValue(
+    new Set(subjectOptions.map((row: Row) => `${row.groupId}:${row.subjectId}`)).size ===
+      subjectOptions.length &&
+      subjectOptions.some(
+        (row: Row) =>
+          row.groupId === checkpoint.groupId &&
+          row.subjectId === checkpoint.subjectId &&
+          row.lessonTypes.includes('lecture'),
+      ),
+    'Teacher stats catalogue must retain the own lecture subject',
+  );
+  return {
+    scope: stats.scope,
+    semesterId: checkpoint.semesterId,
+    periodFrom: stats.periodFrom,
+    periodTo: stats.periodTo,
+    lessonsCount: stats.lessonsCount,
+    students,
+    groups,
+    subjectOptions,
+  };
+}
+
+async function teacherStatsUnavailable(response: APIResponse): Promise<void> {
+  requireValue(response.status() === 503, 'Unavailable Schedule must return teacher stats HTTP503');
+  requireValue(
+    response.headers()['content-type']?.split(';')[0].trim().toLowerCase() ===
+      'application/problem+json',
+    'Teacher stats HTTP503 must be a typed problem',
+  );
+  const problem = await response.json();
+  requireValue(
+    problem &&
+      typeof problem === 'object' &&
+      !Array.isArray(problem) &&
+      problem.status === 503 &&
+      problem.code === 'DEPENDENCY_UNAVAILABLE' &&
+      problem.type === 'urn:rct:problem:dependency-unavailable' &&
+      !['lessonsCount', 'students', 'groups'].some((key) => key in problem),
+    'Teacher stats outage must not masquerade as successful empty statistics',
+  );
+}
+
+async function teacherStatsRead(
+  request: APIRequestContext,
+  teacher: Actor,
+  checkpoint: Checkpoint,
+  readyUntil?: number,
+): Promise<Row> {
+  let lastTyped503 = false;
+  const remainingBudget = () => {
+    const remaining = readyUntil === undefined ? 10000 : readyUntil - Date.now();
+    if (remaining <= 0 && lastTyped503)
+      throw new Error(
+        'Teacher stats dependency HTTP503 persisted through the original restart deadline',
+      );
+    requireValue(remaining > 0, 'Teacher stats original restart deadline expired');
+    return remaining;
+  };
+  while (true) {
+    const response = await request.get(teacherStatsPath(checkpoint), {
+      headers: teacher.headers(),
+      timeout: Math.min(10000, remainingBudget()),
+    });
+    try {
+      if (response.status() === 200) {
+        remainingBudget();
+        const snapshot = teacherStatsProjection(await response.json(), checkpoint);
+        remainingBudget();
+        return snapshot;
+      }
+      await teacherStatsUnavailable(response);
+      lastTyped503 = true;
+      requireValue(readyUntil !== undefined, 'Teacher stats baseline must return HTTP200');
+    } finally {
+      await response.dispose();
+    }
+    await delay(Math.min(500, remainingBudget()));
+  }
 }
 
 async function prepare(request: APIRequestContext, run: string) {
@@ -440,7 +659,9 @@ async function prepare(request: APIRequestContext, run: string) {
       future: projection(futureRow, physicalFields),
     };
     await retainedHistory(headman, checkpoint);
-    await groupHistory(request, await admit(request, dataset.teacher, 'TEACHER'), checkpoint);
+    const statsTeacher = await admit(request, dataset.teacher, 'TEACHER');
+    await groupHistory(request, statsTeacher, checkpoint);
+    checkpoint.teacherStatsBaseline = await teacherStatsRead(request, statsTeacher, checkpoint);
     save(run, 'prepared.private.json', checkpoint);
   } finally {
     requireValue(
@@ -462,6 +683,18 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
   const admin = await admit(request, TEST_USERS.admin, 'ADMIN');
   await assignmentRestartReady(request, admin, checkpoint.semesterId, restartReadyUntil);
   await assignmentReportReady(request, headman, checkpoint, restartReadyUntil);
+  requireValue(checkpoint.teacherStatsBaseline, 'Teacher stats private baseline must be present');
+  const statsTeacher = await admit(request, checkpoint.former, 'TEACHER');
+  const recoveredStats = await teacherStatsRead(
+    request,
+    statsTeacher,
+    checkpoint,
+    restartReadyUntil,
+  );
+  requireValue(
+    JSON.stringify(recoveredStats) === JSON.stringify(checkpoint.teacherStatsBaseline),
+    'Teacher stats recovery must preserve the same numeric baseline',
+  );
   requireValue(
     Date.now() < restartReadyUntil,
     'Assignment same-channel readiness deadline expired before resume',
@@ -522,7 +755,7 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
       Number(adoptedFuture.assignedTeacherId) === checkpoint.adopted.id,
   ).toBe(true);
   const adopted = await admit(request, checkpoint.adopted, 'TEACHER');
-  await groupHistory(request, adopted, checkpoint);
+  await groupHistory(request, adopted, checkpoint, 'ADOPTED_PUBLISHED');
   await retainedHistory(headman, checkpoint);
 
   const command = {
@@ -591,7 +824,7 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
   ).toBe(1);
   await retainedHistory(headman, checkpoint);
   // B remains active today; C's accepted assignment starts on the later replacement date.
-  await groupHistory(request, adopted, checkpoint);
+  await groupHistory(request, adopted, checkpoint, 'ADOPTED_AFTER_REPLACEMENT');
   await deniedGroup(request, former, checkpoint);
   await deniedGroup(request, await admit(request, checkpoint.foreign, 'TEACHER'), checkpoint);
   await deniedGroup(request, await admit(request, checkpoint.replacement, 'TEACHER'), checkpoint);
@@ -826,6 +1059,15 @@ test('assignment lifecycle API phase', async ({ playwright }, info) => {
     if (phase === 'prepare') return await prepare(request, run);
     const checkpoint = load<Checkpoint>(run, 'prepared.private.json');
     if (phase === 'resume') return await resume(request, run, checkpoint);
+    const statsTeacher = await admit(request, checkpoint.former, 'TEACHER');
+    const statsUnavailable = await request.get(teacherStatsPath(checkpoint), {
+      headers: statsTeacher.headers(),
+    });
+    try {
+      await teacherStatsUnavailable(statsUnavailable);
+    } finally {
+      await statsUnavailable.dispose();
+    }
     const headman = await admit(request, checkpoint.headman, 'HEADMAN');
     const before = await headman.call('GET', subjectPath(checkpoint));
     const response = await close(request, headman, checkpoint);

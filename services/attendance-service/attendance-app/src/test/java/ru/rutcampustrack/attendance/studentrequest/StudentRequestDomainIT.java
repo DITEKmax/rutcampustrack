@@ -91,6 +91,7 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus;
@@ -1018,6 +1019,101 @@ class StudentRequestDomainIT {
         assertThat(excuseRepository.findById(detail.summary().id()).orElseThrow())
                 .usingRecursiveComparison()
                 .isEqualTo(originalTicket);
+    }
+
+    @Test
+    void autoPendingRequestRemainsApprovableDaysLaterWithoutManualCharge() {
+        long lessonId = 51L;
+        seedBudget(5, 5);
+        LateCheckinRequest autoLate =
+                lateCheckinRepository.save(
+                        LateCheckinRequest.builder()
+                                .id("62a000000000000000000051")
+                                .studentId(STUDENT_ID)
+                                .groupId(GROUP_ID)
+                                .lessonId(lessonId)
+                                .subjectId(1051L)
+                                .subjectName("Subject 1051")
+                                .subjectType("LECTURE")
+                                .semesterId(SEMESTER_ID)
+                                .lessonNumber(51)
+                                .lessonDate(LocalDate.of(2026, 9, 7))
+                                .startsAt(LocalTime.of(10, 0))
+                                .endsAt(LocalTime.of(11, 0))
+                                .studentName("Student 100")
+                                .status(LateCheckinRequestStatus.PENDING)
+                                .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
+                                .createdAt(START)
+                                .updatedAt(START)
+                                .build());
+        RequestDetail initial = service.get(STUDENT, autoLate.getId());
+        StudentLateCheckinBudgetDocument originalBudget =
+                budgetRepository
+                        .findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID)
+                        .orElseThrow();
+        int decidedBefore = actualOutboxEvents("late_checkin.decided").size();
+        assertThat(initial.summary().createdAt()).isEqualTo(START);
+        assertThat(originalBudget.getLimit()).isEqualTo(5);
+        assertThat(originalBudget.getUsed()).isEqualTo(5);
+        assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)).isEmpty();
+
+        // Age the same legitimate AUTO request; do not rewrite its stored timestamps.
+        Instant threeDaysLater = START.plusSeconds(TimeUnit.DAYS.toSeconds(3));
+        clock.set(threeDaysLater);
+        RequestDetail pendingStudent = service.get(STUDENT, autoLate.getId());
+        var pendingHeadman = headmanRequestService.get(HEADMAN, autoLate.getId());
+        assertThat(pendingStudent.summary().id()).isEqualTo(initial.summary().id());
+        assertThat(pendingStudent.summary().createdAt()).isEqualTo(START);
+        assertThat(pendingStudent.summary().status()).isEqualTo(StudentRequestStatus.PENDING);
+        assertThat(pendingStudent.summary().origin())
+                .isEqualTo(StudentRequestOrigin.AUTO_GEO_FAILURE);
+        assertThat(pendingHeadman.summary().id()).isEqualTo(autoLate.getId());
+        assertThat(pendingHeadman.summary().studentId()).isEqualTo(STUDENT_ID);
+        assertThat(pendingHeadman.summary().status()).isEqualTo("PENDING");
+        assertThat(pendingHeadman.summary().createdAt()).isEqualTo(START);
+        assertThat(
+                        lateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc(
+                                GROUP_ID, LateCheckinRequestStatus.PENDING))
+                .extracting(LateCheckinRequest::getId)
+                .containsExactly(autoLate.getId());
+        assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)).isEmpty();
+        assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
+                .get()
+                .usingRecursiveComparison()
+                .isEqualTo(originalBudget);
+        assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(decidedBefore);
+
+        RequestDetail approved = service.decideLateCheckin(HEADMAN, autoLate.getId(), true);
+        LateCheckinRequest stored = lateCheckinRepository.findById(autoLate.getId()).orElseThrow();
+        assertThat(approved.summary().id()).isEqualTo(initial.summary().id());
+        assertThat(approved.summary().createdAt()).isEqualTo(START);
+        assertThat(approved.summary().status()).isEqualTo(StudentRequestStatus.APPROVED);
+        assertThat(approved.summary().origin()).isEqualTo(StudentRequestOrigin.AUTO_GEO_FAILURE);
+        assertThat(approved.decision().decidedBy()).isEqualTo(HEADMAN.userId());
+        assertThat(approved.decision().decidedAt()).isEqualTo(threeDaysLater);
+        assertThat(stored.getStatus()).isEqualTo(LateCheckinRequestStatus.APPROVED);
+        assertThat(stored.getOrigin()).isEqualTo(LateCheckinRequestOrigin.AUTO_GEO_FAILURE);
+        assertThat(stored.getResolutionReason())
+                .isEqualTo(LateCheckinResolutionReason.HEADMAN_APPROVED);
+        assertThat(stored.getCreatedAt()).isEqualTo(START);
+        assertThat(stored.getDecisionAt()).isEqualTo(threeDaysLater);
+        assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID))
+                .get()
+                .satisfies(
+                        mark -> {
+                            assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+                            assertThat(mark.getSource()).isEqualTo(AttendanceSource.LATE_CHECKIN);
+                        });
+        assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
+                .get()
+                .usingRecursiveComparison()
+                .isEqualTo(originalBudget);
+        List<OutboxRecord> events = actualOutboxEvents("late_checkin.decided");
+        assertThat(events).hasSize(decidedBefore + 1);
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "late_checkin.decided.json", events.getLast().payload()))
+                .isEmpty();
     }
 
     @Test

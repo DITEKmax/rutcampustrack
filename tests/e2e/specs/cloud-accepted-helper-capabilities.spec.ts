@@ -393,11 +393,18 @@ test('HEADMAN edits helper capabilities through member row and retains VIEW_STAT
 test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud-accepted', async ({
   page,
   activeHeadmanDataset: dataset,
+  teachingInstant,
 }, info) => {
   const retryUntilMs = Date.now() + Math.max(0, Math.min(info.timeout, 120000) - 30000);
   const lessonId = dataset.lesson.physicalLessonId;
   const reportPath = `/api/attendance/reports/lesson/${lessonId}`;
   const schedulePath = `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${dataset.today}&dateTo=${dataset.today}&size=100`;
+  expect(teachingInstant).toBeInstanceOf(Date);
+  const teachingNow = teachingInstant!.getTime();
+  const lessonTime = (
+    lesson: { date: string; startTime: string; endTime: string },
+    edge: 'startTime' | 'endTime',
+  ) => Date.parse(`${lesson.date}T${lesson[edge]}+03:00`);
   type Entry = { userId: number; status: string | null; markRevision: string | null };
   type Action = {
     id: string;
@@ -438,13 +445,21 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
     otherLessonId = Number(other.physicalLessonId);
     const schedule = await dataset.headmanActor.call('GET', schedulePath);
     const lessons = schedule._embedded?.lessonResponseList ?? schedule.content ?? [];
-    expect(lessons.find((row: { id: number }) => row.id === lessonId)).toMatchObject({
+    const ongoingLesson = lessons.find((row: { id: number }) => row.id === lessonId);
+    const otherLesson = lessons.find((row: { id: number }) => row.id === otherLessonId);
+    expect(ongoingLesson).toMatchObject({
       status: 'ACTIVE',
       current: true,
     });
-    expect(lessons.find((row: { id: number }) => row.id === otherLessonId)).toMatchObject({
-      current: false,
+    expect(lessonTime(ongoingLesson, 'startTime')).toBeLessThanOrEqual(teachingNow);
+    expect(lessonTime(ongoingLesson, 'endTime')).toBeGreaterThan(teachingNow);
+    // current identifies the physical occurrence pointer, including future lessons.
+    // Status and Moscow slot times distinguish the ongoing lesson from the next one.
+    expect(otherLesson).toMatchObject({
+      status: 'PLANNED',
+      current: true,
     });
+    expect(lessonTime(otherLesson, 'startTime')).toBeGreaterThan(teachingNow);
     const members = await dataset.headmanActor.call(
       'GET',
       '/api/academic/groups/my/members?size=100',

@@ -110,6 +110,7 @@ async function load(): Promise<void> {
     />
     <template v-else-if="state && entry">
       <article class="teacher-screen__ticket">
+        <p>Причина указана старостой без заявки.</p>
         <dl class="teacher-screen__details">
           <div>
             <dt>Студент</dt><dd>{{ entry.displayName }}</dd>

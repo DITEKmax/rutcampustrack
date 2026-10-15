@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Uses AbstractAcademicIntegrationTest (Testcontainers PostgreSQL, no RabbitMQ/Redis). Tests run
  * in @Transactional for automatic rollback — DB state is restored per test.
  */
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RestApiIT extends AbstractAcademicIntegrationTest {
 
@@ -106,6 +107,253 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         JsonNode json = objectMapper.readTree(content);
         assertThat(json.get("login").asText()).isEqualTo("testov-test-0001");
         assertThat(json.get("initialPassword").asText()).hasSizeGreaterThan(0);
+    }
+
+    @Test
+    void duplicateIdentityResolvesToExistingAccountAndRoleFailuresLeaveCommittedStateUnchanged()
+            throws Exception {
+        // No test transaction: each HTTP mutation commits before the independent SQL readback.
+        long initialAccountCount =
+                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class);
+        Long managedGroupId =
+                groupService
+                        .createGroup(
+                                new ru.rutcampustrack.academic.contract.dto.group
+                                        .CreateGroupRequest("ДУБ-111"))
+                        .getId();
+        long telegramId = 880004127L;
+        String occupiedEmployeeNumber = "Q04-4127";
+        String availableEmployeeNumber = "Q04-8259";
+        String studentBody =
+                """
+                {"lastName":"Дубликатов","firstName":"Тест","role":"STUDENT",
+                 "groupId":%d,"telegramId":%d}
+                """
+                        .formatted(managedGroupId, telegramId);
+        JsonNode student =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        post("/academic/users")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(studentBody)
+                                                .header("X-User-Id", seedAdminId)
+                                                .header("X-User-Role", "ADMIN")
+                                                .with(signedAdmin()))
+                                .andExpect(status().isCreated())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        long studentId = student.get("id").asLong();
+        String studentLogin = student.get("login").asText();
+        JsonNode teacher =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        post("/academic/users")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(
+                                                        """
+{"lastName":"Дубликатов","firstName":"Тест","role":"TEACHER",
+ "employeeNumber":"%s"}
+"""
+                                                                .formatted(occupiedEmployeeNumber))
+                                                .header("X-User-Id", seedAdminId)
+                                                .header("X-User-Role", "ADMIN")
+                                                .with(signedAdmin()))
+                                .andExpect(status().isCreated())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        long teacherId = teacher.get("id").asLong();
+        assertThat(teacherId).isNotEqualTo(studentId);
+        assertThat(teacher.get("login").asText()).isEqualTo(studentLogin + "-2");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class))
+                .isEqualTo(initialAccountCount + 2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
+                                Long.class,
+                                studentId))
+                .isEqualTo(1);
+
+        java.util.function.Supplier<java.util.List<?>> durableState =
+                () ->
+                        java.util.List.of(
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM users WHERE id IN (?, ?) ORDER BY id",
+                                        studentId,
+                                        teacherId),
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id IN (?, ?)"
+                                                + " ORDER BY id",
+                                        studentId,
+                                        teacherId),
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM student_group_history WHERE user_id IN (?,"
+                                                + " ?) ORDER BY id",
+                                        studentId,
+                                        teacherId),
+                                jdbcTemplate.queryForObject(
+                                        "SELECT COUNT(*) FROM users", Long.class));
+        var beforeFailures = durableState.get();
+
+        mockMvc.perform(
+                        post("/academic/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(studentBody)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", is("telegramId")));
+        // Private credential/hash snapshots are compared as booleans, never assertion payloads.
+        assertThat(beforeFailures.equals(durableState.get()))
+                .as("Duplicate identity must preserve committed account, grant and history state")
+                .isTrue();
+        mockMvc.perform(
+                        get("/academic/users")
+                                .param("search", Long.toString(telegramId))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(1)))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].id", is((int) studentId)))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].login", is(studentLogin)));
+
+        mockMvc.perform(
+                        put("/academic/users/{id}/roles/TEACHER", studentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"status":"ACTIVE","employeeNumber":"%s"}
+                                        """
+                                                .formatted(occupiedEmployeeNumber))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", is("employeeNumber")));
+        assertThat(beforeFailures.equals(durableState.get()))
+                .as(
+                        "Occupied employee number must preserve committed account, grant and"
+                                + " history state")
+                .isTrue();
+
+        mockMvc.perform(
+                        put("/academic/users/{id}/roles/TEACHER", studentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"status":"ACTIVE","employeeNumber":"%s","groupId":%d}
+                                        """
+                                                .formatted(availableEmployeeNumber, managedGroupId))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.field", is("groupId")));
+        assertThat(beforeFailures.equals(durableState.get()))
+                .as(
+                        "Invalid teacher role data must preserve committed account, grant and"
+                                + " history state")
+                .isTrue();
+
+        String preservedFields =
+                "SELECT"
+                        + " id,login,last_name,first_name,middle_name,password_hash,initial_password,telegram_id,role,status,group_id,is_headman,password_changed,created_at"
+                        + " FROM users WHERE id=?";
+        var studentIdentity = jdbcTemplate.queryForMap(preservedFields, studentId);
+        var teacherAccount = jdbcTemplate.queryForMap("SELECT * FROM users WHERE id=?", teacherId);
+        var studentGrant =
+                jdbcTemplate.queryForList(
+                        "SELECT * FROM user_role_grants WHERE user_id=? AND role='student' ORDER BY"
+                                + " id",
+                        studentId);
+        var studentHistory =
+                jdbcTemplate.queryForList(
+                        "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
+                        studentId);
+        assertThat(studentGrant).hasSize(1);
+        assertThat(studentHistory).hasSize(1);
+
+        mockMvc.perform(
+                        put("/academic/users/{id}/roles/TEACHER", studentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"status":"ACTIVE","employeeNumber":"%s"}
+                                        """
+                                                .formatted(availableEmployeeNumber))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is((int) studentId)))
+                .andExpect(jsonPath("$.login", is(studentLogin)));
+
+        assertThat(studentIdentity.equals(jdbcTemplate.queryForMap(preservedFields, studentId)))
+                .as("Adding a role must preserve the existing account identity and credentials")
+                .isTrue();
+        assertThat(
+                        teacherAccount.equals(
+                                jdbcTemplate.queryForMap(
+                                        "SELECT * FROM users WHERE id=?", teacherId)))
+                .as("Adding a role must preserve the other account")
+                .isTrue();
+        assertThat(
+                        studentGrant.equals(
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id=? AND"
+                                                + " role='student' ORDER BY id",
+                                        studentId)))
+                .as("Adding a teacher role must preserve the existing student grant")
+                .isTrue();
+        assertThat(
+                        studentHistory.equals(
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM student_group_history WHERE user_id=? ORDER"
+                                                + " BY id",
+                                        studentId)))
+                .as("Adding a teacher role must preserve the existing student history")
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class))
+                .isEqualTo(initialAccountCount + 2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
+                                Long.class,
+                                studentId))
+                .isEqualTo(2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND"
+                                        + " role='teacher' AND status='active'",
+                                Long.class,
+                                studentId))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT employee_number FROM users WHERE id=?",
+                                String.class,
+                                studentId))
+                .isEqualTo(availableEmployeeNumber);
+        mockMvc.perform(
+                        get("/academic/users/{id}", studentId)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is((int) studentId)))
+                .andExpect(jsonPath("$.login", is(studentLogin)))
+                .andExpect(jsonPath("$.roles", hasSize(2)))
+                .andExpect(
+                        jsonPath(
+                                "$.roles[?(@.role == 'STUDENT' && @.status == 'ACTIVE')]",
+                                hasSize(1)))
+                .andExpect(
+                        jsonPath(
+                                "$.roles[?(@.role == 'TEACHER' && @.status == 'ACTIVE')]",
+                                hasSize(1)));
     }
 
     // =====================================================================

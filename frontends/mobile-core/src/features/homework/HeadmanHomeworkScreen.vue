@@ -525,12 +525,59 @@ async function openDetail(item: HeadmanManagedHomework): Promise<void> {
   history.value = [];
   await loadCalendar(item.lessonDate, false);
 }
+async function removeHomework(): Promise<void> {
+  const api = props.api;
+  const item = detail.value;
+  const owner = ownerRevision;
+  if (
+    !api ||
+    !item ||
+    !writeAllowed.value ||
+    busy.value ||
+    retryLocked.value ||
+    item.groupId !== props.groupId ||
+    item.semesterId !== semester.value?.id ||
+    item.archived ||
+    item.revision === null
+  )
+    return;
+  if (typeof window === 'undefined' || !window.confirm(`Удалить задание «${item.title}»?`)) return;
+  const current = () =>
+    !disposed &&
+    owner === ownerRevision &&
+    api === props.api &&
+    item.groupId === props.groupId &&
+    detail.value?.id === item.id &&
+    item.semesterId === semester.value?.id &&
+    writeAllowed.value;
+  if (!current()) return;
+  detailRevision += 1;
+  busy.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await api.deleteHomework(item.id);
+    if (!current()) return;
+    // Display the authoritative archive only after the DELETE acknowledgement.
+    const archived = await api.getHomework(item.id, true);
+    if (!current()) return;
+    detail.value = archived;
+    await loadDayHomeworks(selectedDate.value);
+    if (!current()) return;
+    await loadCalendar(selectedDate.value, false);
+    if (current()) notice.value = 'Задание удалено. Архив и история доступны для просмотра.';
+  } catch (cause) {
+    reportError(cause, owner);
+  } finally {
+    if (!disposed && owner === ownerRevision) busy.value = false;
+  }
+}
 async function showHistory(): Promise<void> {
   const api = props.api;
   const item = detail.value;
   const owner = ownerRevision;
   const revision = ++detailRevision;
-  if (!api || !item || props.offline || denied.value) return;
+  if (!api || !item || props.offline || denied.value || busy.value) return;
   view.value = 'history';
   historyLoading.value = true;
   history.value = [];
@@ -559,6 +606,8 @@ async function openEdit(): Promise<void> {
   const item = detail.value;
   if (
     !item ||
+    busy.value ||
+    retryLocked.value ||
     item.semesterId !== semester.value?.id ||
     !writeAllowed.value ||
     item.archived ||
@@ -1146,9 +1195,20 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           "
           class="headman-homework__primary"
           type="button"
+          :disabled="busy || retryLocked"
           @click="openEdit"
         >
           Изменить задание
+        </button>
+        <button
+          v-if="writeAllowed && detail.groupId === groupId && detail.semesterId === semester?.id && !detail.archived && detail.revision !== null"
+          class="headman-homework__secondary"
+          type="button"
+          :disabled="busy || retryLocked"
+          :aria-busy="busy"
+          @click="removeHomework"
+        >
+          Удалить задание
         </button>
         <div class="headman-homework__detail-tools">
           <p
@@ -1160,7 +1220,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           <button
             class="headman-homework__secondary"
             type="button"
-            :disabled="historyLoading"
+            :disabled="historyLoading || busy"
             @click="showHistory"
           >
             История изменений

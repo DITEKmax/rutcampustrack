@@ -369,6 +369,637 @@ async function inactiveStudentHistory(request: APIRequestContext, student: Actor
   );
 }
 
+// Fixed historical fixture for the two real Vue promotion commands below.
+// Durable rows/events are retained in this disposable CI stand; no historical data is purged.
+const promotionStartedAt = new WeakMap<object, number>();
+test.beforeEach(async ({}, info) => {
+  promotionStartedAt.set(info, performance.now());
+});
+
+function promotionForeignCohortsSafe(groups: Row[], cutoff: string): boolean {
+  const end = Date.parse(`${cutoff}T23:59:59.999+03:00`);
+  return groups.every(
+    (group) =>
+      group.is_active === false ||
+      (group.is_active === true &&
+        Number.isFinite(Date.parse(group.created_at)) &&
+        Date.parse(group.created_at) > end),
+  );
+}
+
+function promotionCycleCandidate(
+  rows: Row[],
+  today: string,
+  groups: Row[],
+): { from: string; to: string; year: number } {
+  requireValue(rows.length < 100, 'Promotion semester inventory must be bounded');
+  const newestYear = Number(today.slice(0, 4)) - (today.slice(5) <= '06-30' ? 1 : 0);
+  for (let offset = 0; offset < 3; offset++) {
+    const year = newestYear - offset;
+    const from = `${year}-02-01`,
+      to = `${year}-06-30`;
+    const unoccupied = rows.every((row) => row.date_to < from || row.date_from > to);
+    const latest = rows.every(
+      (row) =>
+        row.semester_type !== 'SPRING' ||
+        (row.promotion_cycle_date_to ?? row.date_to) >= today ||
+        (row.promotion_cycle_date_to ?? row.date_to) < to,
+    );
+    if (unoccupied && latest && promotionForeignCohortsSafe(groups, to)) return { from, to, year };
+  }
+  throw new Error('No unoccupied latest historical spring fixture range');
+}
+
+function promotionActionables(
+  plan: Row,
+  cycle: number,
+  group: number | null,
+  promote: number[],
+  archive: number[],
+  dryRun: boolean,
+): void {
+  requireValue(
+    plan.cycleSemesterId === cycle &&
+      plan.groupId === group &&
+      plan.dryRun === dryRun &&
+      plan.executed === !dryRun &&
+      typeof plan.previewVersion === 'string' &&
+      /^[0-9a-f]{64}$/.test(plan.previewVersion) &&
+      Array.isArray(plan.toPromote) &&
+      Array.isArray(plan.toArchive) &&
+      Array.isArray(plan.skipped) &&
+      Array.isArray(plan.conflicts) &&
+      plan.conflicts.length === 0,
+    'Promotion must confirm the exact owned cycle and plan',
+  );
+  equal(
+    plan.toPromote.map((item: Row) => item.id),
+    promote,
+    'Promotion contains unowned promote action',
+  );
+  equal(
+    plan.toArchive.map((item: Row) => item.id),
+    archive,
+    'Promotion contains unowned archive action',
+  );
+  requireValue(
+    [...plan.toPromote, ...plan.toArchive].every((item: Row) => item.studentCount === 0),
+    'Promotion fixture groups must remain empty',
+  );
+}
+
+function promotionWorkBudget(
+  caseEnd: number,
+  workEnd: number,
+  cap: number,
+  now = performance.now(),
+): number {
+  const remaining = Math.floor(Math.min(workEnd, caseEnd - 150000) - now);
+  requireValue(remaining >= 100, 'Promotion main work must retain original recovery time');
+  return Math.min(cap, remaining);
+}
+
+async function ownedHistoricalPromotion(
+  page: import('@playwright/test').Page,
+  request: APIRequestContext,
+  admin: Actor,
+  caseEnd: number,
+  currentSemesterId: number,
+): Promise<void> {
+  requireValue(
+    caseEnd - performance.now() >= 210000,
+    'Promotion requires its full main and cleanup reserve',
+  );
+  const workEnd = performance.now() + 60000;
+  let cleaning = false,
+    cleanupEnd = 0;
+  const budget = (cap = 5000): number =>
+    cleaning
+      ? (() => {
+          const left = Math.floor(cleanupEnd - performance.now());
+          requireValue(left >= 100, 'Owned promotion cleanup deadline exhausted');
+          return Math.min(cap, left);
+        })()
+      : promotionWorkBudget(caseEnd, workEnd, cap);
+  const natural = () => {
+    const fields = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Moscow',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const value = (type: string) => fields.find((part) => part.type === type)?.value ?? '';
+    const second =
+      Number(value('hour')) * 3600 + Number(value('minute')) * 60 + Number(value('second'));
+    const since = (second - 10800 + 86400) % 86400;
+    requireValue(
+      since > 600 && (86400 - since) * 1000 > caseEnd - performance.now() + 1000,
+      'Promotion fixture must not overlap the natural scheduled cycle',
+    );
+    return `${value('year')}-${value('month')}-${value('day')}`;
+  };
+  const today = natural();
+  const root = resolve(__dirname, '../../..'),
+    envFile = join(root, 'tests/e2e/.env.ci');
+  const envStat = lstatSync(envFile);
+  requireValue(
+    envStat.isFile() &&
+      !envStat.isSymbolicLink() &&
+      envStat.size <= 65536 &&
+      (envStat.mode & 0o022) === 0,
+    'Promotion requires bounded owned CI configuration',
+  );
+  let password = '';
+  for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
+    const match = /^POSTGRES_ACADEMIC_PASSWORD=(.*)$/.exec(line);
+    if (match) {
+      password = match[1];
+      if (
+        password.length >= 2 &&
+        ['"', "'"].includes(password[0]) &&
+        password.at(-1) === password[0]
+      )
+        password = password.slice(1, -1);
+    }
+  }
+  requireValue(password.length > 0, 'Owned Academic fixture credential is required');
+  const native = (args: string[], input?: string, secret = false): string => {
+    requireValue(natural() === today, 'Natural promotion date must stay unchanged');
+    try {
+      return execFileSync('docker', args, {
+        cwd: root,
+        env: {
+          PATH: process.env.PATH ?? '/usr/bin:/bin',
+          LANG: 'C.UTF-8',
+          RCT_E2E_TEACHING_CLOCK_DIR: process.env.RCT_E2E_TEACHING_CLOCK_DIR!,
+          ...(secret ? { PGPASSWORD: password } : {}),
+        },
+        input,
+        timeout: budget(),
+        maxBuffer: 262144,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+    } catch {
+      throw new Error('Owned Academic promotion command failed');
+    }
+  };
+  const json = (text: string): Row => {
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error('Owned promotion JSON is invalid');
+    }
+  };
+  const ids = native([
+    'compose',
+    '--env-file',
+    envFile,
+    '-p',
+    'rct-e2e',
+    '-f',
+    join(root, 'docker-compose.e2e.yml'),
+    '-f',
+    join(root, 'tests/e2e/infra/docker-compose.clock-fixture.yml'),
+    'ps',
+    '-q',
+    'postgres-academic',
+  ])
+    .trim()
+    .split(/\s+/);
+  requireValue(
+    ids.length === 1 && /^[0-9a-f]{12,64}$/.test(ids[0]),
+    'Exactly one owned Academic database is required',
+  );
+  const inspect = () =>
+    json(
+      native([
+        'inspect',
+        '--format',
+        '{"id":{{json .Id}},"image":{{json .Image}},"configuredImage":{{json .Config.Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}}}',
+        ids[0],
+      ]),
+    );
+  const pin = inspect();
+  requireValue(
+    pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+      pin.labels?.['com.docker.compose.service'] === 'postgres-academic' &&
+      pin.configuredImage === 'postgres:16' &&
+      pin.running === true &&
+      pin.health === 'healthy',
+    'Exact healthy owned Academic database is required',
+  );
+  const identity = () => equal(inspect(), pin, 'Owned Academic container identity changed');
+  const nonce = randomUUID();
+  const marker = `RCT-PROMOTION-${nonce}`;
+  const alphabet = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
+  const prefix = (part: string) => [...part].map((digit) => alphabet[parseInt(digit, 16)]).join('');
+  const aPrefix = prefix(nonce.slice(0, 4)),
+    bPrefix = prefix(nonce.slice(9, 13));
+  requireValue(aPrefix !== bPrefix, 'Owned promotion prefixes must be distinct');
+  let cycle: ReturnType<typeof promotionCycleCandidate> | undefined;
+  let seedAttempted = false,
+    own: Row | undefined;
+  let before: Row | undefined,
+    aCreated = '',
+    bCreated = '';
+  const quote = (text: string) => `'${text.replace(/'/g, "''")}'`;
+  // This fixed operation selector cannot execute caller-supplied SQL.
+  const pg = (operation: 'snapshot' | 'seed' | 'owned'): Row => {
+    identity();
+    let command: string;
+    const ownFilter = own ? `id NOT IN (${own.a},${own.b})` : 'true';
+    if (operation === 'snapshot')
+      command = `
+      SELECT json_build_object('date', (clock_timestamp() AT TIME ZONE 'Europe/Moscow')::date,
+        'free', NOT EXISTS (SELECT 1 FROM shedlock WHERE name='academic-group-promotion-job' AND lock_until>clock_timestamp()),
+        'semesters', (SELECT COALESCE(jsonb_agg(to_jsonb(s) ORDER BY id),'[]') FROM semesters s ${own ? `WHERE id<>${own.cycle}` : ''}),
+        'groups', (SELECT COALESCE(jsonb_agg(to_jsonb(g) ORDER BY id),'[]') FROM groups g WHERE ${ownFilter}),
+        'coverage', (SELECT COALESCE(jsonb_agg(to_jsonb(h) ORDER BY group_id),'[]') FROM group_history_coverage h ${own ? `WHERE group_id NOT IN (${own.a},${own.b})` : ''}),
+        'ledger', (SELECT COALESCE(jsonb_agg(to_jsonb(l) ORDER BY id),'[]') FROM group_promotion_cycle_record l ${own ? `WHERE cycle_semester_id<>${own.cycle}` : ''}));`;
+    else if (operation === 'seed') {
+      requireValue(cycle && before && !own, 'Owned historical seed prerequisites are required');
+      command = `LOCK TABLE semesters, groups, group_history_coverage, group_promotion_cycle_record IN SHARE ROW EXCLUSIVE MODE;
+        DO $fixture$ BEGIN
+          IF (SELECT COALESCE(jsonb_agg(to_jsonb(s) ORDER BY id),'[]') FROM semesters s) IS DISTINCT FROM ${quote(JSON.stringify(before.semesters))}::jsonb
+            OR (SELECT COALESCE(jsonb_agg(to_jsonb(g) ORDER BY id),'[]') FROM groups g) IS DISTINCT FROM ${quote(JSON.stringify(before.groups))}::jsonb
+            OR (SELECT COALESCE(jsonb_agg(to_jsonb(l) ORDER BY id),'[]') FROM group_promotion_cycle_record l) IS DISTINCT FROM ${quote(JSON.stringify(before.ledger))}::jsonb
+            OR (SELECT COALESCE(jsonb_agg(to_jsonb(h) ORDER BY group_id),'[]') FROM group_history_coverage h) IS DISTINCT FROM ${quote(JSON.stringify(before.coverage))}::jsonb
+            OR EXISTS (SELECT 1 FROM groups WHERE is_active AND (created_at AT TIME ZONE 'Europe/Moscow')::date<=${quote(cycle.to)}::date)
+            OR EXISTS (SELECT 1 FROM shedlock WHERE name='academic-group-promotion-job' AND lock_until>clock_timestamp())
+            OR (clock_timestamp() AT TIME ZONE 'Europe/Moscow')::date<>${quote(today)}::date
+          THEN RAISE EXCEPTION 'Owned historical promotion admission changed'; END IF;
+        END $fixture$;
+        WITH c AS (INSERT INTO semesters(name,date_from,date_to,is_active,created_at,semester_type,academic_year)
+          VALUES (${quote(marker)},${quote(cycle.from)},${quote(cycle.to)},false,${quote(`${cycle.year}-01-15T00:00:00+03:00`)},'SPRING',${cycle.year - 1}) RETURNING id),
+        a AS (INSERT INTO groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active,created_at)
+          VALUES (${quote(aPrefix + '-110')},${quote(aPrefix)},'110',1,4,'KNOWN',true,${quote(aCreated)}) RETURNING id),
+        b AS (INSERT INTO groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active,created_at)
+          VALUES (${quote(bPrefix + '-410')},${quote(bPrefix)},'410',4,4,'KNOWN',true,${quote(bCreated)}) RETURNING id),
+        coverage AS (INSERT INTO group_history_coverage(group_id,coverage_from,writer_version)
+          SELECT id,${quote(aCreated.slice(0, 10))}::date,'managed_v1' FROM a
+          UNION ALL SELECT id,${quote(bCreated.slice(0, 10))}::date,'managed_v1' FROM b RETURNING group_id)
+        SELECT json_build_object('cycle',(SELECT id FROM c),'a',(SELECT id FROM a),'b',(SELECT id FROM b));`;
+    } else {
+      requireValue(cycle, 'Owned historical recovery needs its original candidate');
+      command = `SELECT json_build_object('cycles',(SELECT COALESCE(jsonb_agg(to_jsonb(s)),'[]') FROM semesters s WHERE name=${quote(marker)}),
+        'groups',(SELECT COALESCE(jsonb_agg(to_jsonb(g) ORDER BY id),'[]') FROM groups g
+          WHERE (alphabetic_code=${quote(aPrefix)} AND created_at=${quote(aCreated)}::timestamptz)
+             OR (alphabetic_code=${quote(bPrefix)} AND created_at=${quote(bCreated)}::timestamptz)),
+        'coverage',(SELECT COALESCE(jsonb_agg(to_jsonb(h) ORDER BY group_id),'[]') FROM group_history_coverage h JOIN groups g ON g.id=h.group_id
+          WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
+             OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz)),
+        'empty', NOT EXISTS (SELECT 1 FROM users u JOIN groups g ON g.id=u.group_id
+          WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
+             OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz))
+          AND NOT EXISTS (SELECT 1 FROM user_role_grants r JOIN groups g ON g.id=r.group_id
+          WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
+             OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz))
+          AND NOT EXISTS (SELECT 1 FROM student_group_history h JOIN groups g ON g.id=h.group_id
+          WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
+             OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz)),
+        'ledger',(SELECT COALESCE(jsonb_agg(to_jsonb(l) ORDER BY group_id),'[]') FROM group_promotion_cycle_record l
+          WHERE cycle_semester_id IN (SELECT id FROM semesters WHERE name=${quote(marker)})));`;
+    }
+    const raw = native(
+      [
+        'exec',
+        '-i',
+        '-e',
+        'PGPASSWORD',
+        pin.id,
+        'psql',
+        '-X',
+        '-qAt',
+        '-U',
+        'rct_user',
+        '-d',
+        'academic_db',
+        '-v',
+        'ON_ERROR_STOP=1',
+      ],
+      `BEGIN; SET LOCAL statement_timeout='2000ms'; SET LOCAL lock_timeout='1000ms'; ${command} COMMIT;`,
+      true,
+    );
+    return json(raw.trim());
+  };
+  const call = async (method: 'GET' | 'PUT', path: string, data?: Row): Promise<Row> => {
+    const response = await request.fetch(path, {
+      method,
+      data,
+      headers: admin.headers(),
+      timeout: budget(5000),
+    });
+    requireValue(response.status() === 200, 'Owned promotion read or finalization must succeed');
+    return response.json();
+  };
+  const uiResponse = async (path: string, action: () => Promise<void>): Promise<Row> => {
+    let observed: Response | undefined;
+    const matches = (response: Response) =>
+      new URL(response.url()).pathname === path && response.request().method() === 'POST';
+    const observe = (response: Response) => {
+      if (matches(response)) observed ??= response;
+    };
+    page.on('response', observe);
+    try {
+      await action();
+      const response =
+        observed ?? (await page.waitForResponse(matches, { timeout: budget(10000) }));
+      requireValue(response.status() === 200, 'Real Vue promotion command must succeed');
+      const body = response.request().postDataJSON();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let value: Row;
+      try {
+        value = await Promise.race([
+          response.json(),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(
+              () => reject(new Error('Vue promotion response body deadline exhausted')),
+              budget(5000),
+            );
+          }),
+        ]);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+      if (path.endsWith('/preview'))
+        equal(
+          body,
+          value.groupId === null ? {} : { groupId: value.groupId },
+          'Vue preview scope changed',
+        );
+      else
+        equal(
+          body,
+          {
+            cycleSemesterId: value.cycleSemesterId,
+            previewVersion: value.previewVersion,
+            groupId: value.groupId,
+          },
+          'Vue execute scope changed',
+        );
+      return value;
+    } finally {
+      page.off('response', observe);
+    }
+  };
+  let primary: { error: unknown } | undefined;
+  try {
+    before = pg('snapshot');
+    requireValue(
+      before.date === today &&
+        before.free === true &&
+        before.groups.length < 1000 &&
+        before.ledger.length < 5000,
+      'Owned historical promotion inventory and scheduler must be bounded and stable',
+    );
+    const currentBefore = before.semesters.filter((row: Row) => row.is_active === true);
+    requireValue(
+      currentBefore.length === 1 &&
+        currentBefore[0].id === currentSemesterId &&
+        currentBefore[0].date_from <= today &&
+        currentBefore[0].date_to >= today,
+      'Historical promotion fixture must preserve the known current semester',
+    );
+    cycle = promotionCycleCandidate(before.semesters, today, before.groups);
+    requireValue(
+      before.groups.every(
+        (row: Row) =>
+          row.alphabetic_code !== aPrefix &&
+          row.alphabetic_code !== bPrefix &&
+          !String(row.name).startsWith(aPrefix + '-') &&
+          !String(row.name).startsWith(bPrefix + '-'),
+      ),
+      'Owned historical group prefixes must not already exist',
+    );
+    const seconds = parseInt(nonce.slice(-4), 16) % 86400;
+    const time = new Date(Date.UTC(2000, 0, 1, 0, 0, seconds)).toISOString().slice(11, 19);
+    const fraction = parseInt(nonce.slice(14, 18), 16).toString().padStart(6, '0');
+    aCreated = `${cycle.year - 1}-09-01T${time}.${fraction}+03:00`;
+    bCreated = `${cycle.year - 4}-09-01T${time}.${fraction}+03:00`;
+    seedAttempted = true;
+    own = pg('seed');
+    requireValue(
+      ['cycle', 'a', 'b'].every((key) => Number.isSafeInteger(own![key]) && own![key] > 0) &&
+        own.a !== own.b,
+      'Owned historical seed identities must be positive and distinct',
+    );
+    const seed = pg('owned');
+    requireValue(
+      seed.cycles.length === 1 &&
+        seed.cycles[0].id === own.cycle &&
+        seed.cycles[0].is_active === false &&
+        seed.cycles[0].semester_type === 'SPRING' &&
+        seed.cycles[0].date_from === cycle.from &&
+        seed.cycles[0].date_to === cycle.to &&
+        seed.cycles[0].academic_year === cycle.year - 1 &&
+        seed.groups.length === 2 &&
+        seed.coverage.length === 2 &&
+        seed.empty === true &&
+        seed.coverage.every((row: Row) => row.writer_version === 'managed_v1') &&
+        seed.ledger.length === 0,
+      'Owned historical cohort must be newly seeded and unprocessed',
+    );
+    // Native SQL prepares historical state only; both actual mutations use Vue and the real API.
+    await page
+      .getByRole('button', { name: 'Назад', exact: true })
+      .first()
+      .click({ timeout: budget(10000) });
+    await page
+      .getByRole('button', { name: 'Группы', exact: true })
+      .click({ timeout: budget(10000) });
+    await page.getByRole('tab', { name: /^Черновики/ }).click({ timeout: budget(10000) });
+    const search = page.getByRole('searchbox', { name: 'Найти группу', exact: true });
+    await search.fill(aPrefix, { timeout: budget(10000) });
+    await page
+      .getByRole('button', { name: 'Найти группу', exact: true })
+      .click({ timeout: budget(10000) });
+    const row = page.locator(`[data-group-id="${own.a}"]`);
+    await row.locator('.admin-groups-item__trigger').click({ timeout: budget(10000) });
+    const first = await uiResponse('/api/academic/groups/promote/preview', () =>
+      row
+        .getByRole('button', { name: 'Перевести на следующий курс', exact: true })
+        .click({ timeout: budget(10000) }),
+    );
+    promotionActionables(first, own.cycle, own.a, [own.a], [], true);
+    requireValue(
+      first.cycleDateTo === cycle.to &&
+        first.toPromote[0].from === aPrefix + '-110' &&
+        first.toPromote[0].to === aPrefix + '-210',
+      'Row preview must show the real historical course increment',
+    );
+    await page
+      .getByRole('button', { name: 'Подтвердить показанный план', exact: true })
+      .click({ timeout: budget(10000) });
+    const executed = await uiResponse('/api/academic/groups/promote', () =>
+      page
+        .getByRole('dialog', { name: 'Подтверди перевод групп', exact: true })
+        .getByRole('button', { name: 'Подтвердить перевод', exact: true })
+        .click({ timeout: budget(10000) }),
+    );
+    promotionActionables(executed, own.cycle, own.a, [own.a], [], false);
+    requireValue(
+      executed.previewVersion === first.previewVersion,
+      'Row command must execute the exact shown preview',
+    );
+    await expect(row.getByText(aPrefix + '-210', { exact: true })).toBeVisible({
+      timeout: budget(10000),
+    });
+    const aAfter = await call('GET', `/api/academic/groups/${own.a}`);
+    requireValue(
+      aAfter.name === aPrefix + '-210' &&
+        aAfter.currentCourse === 2 &&
+        aAfter.trainingDurationYears === 4 &&
+        aAfter.active === true,
+      'Single Vue promotion must authoritatively advance only its own course',
+    );
+    const mass = await uiResponse('/api/academic/groups/promote/preview', () =>
+      page
+        .getByRole('button', { name: 'Перевести все группы на следующий курс', exact: true })
+        .click({ timeout: budget(10000) }),
+    );
+    promotionActionables(mass, own.cycle, null, [], [own.b], true);
+    requireValue(
+      mass.cycleDateTo === cycle.to &&
+        mass.skipped.some(
+          (item: Row) =>
+            item.id === own!.a &&
+            item.reason === 'ALREADY_PROCESSED' &&
+            item.previousAction === 'PROMOTE' &&
+            item.previousFrom === aPrefix + '-110' &&
+            item.previousTo === aPrefix + '-210',
+        ),
+      'Mass plan must exclude the row already processed in the same cycle',
+    );
+    await page
+      .getByRole('button', { name: 'Подтвердить показанный план', exact: true })
+      .click({ timeout: budget(10000) });
+    const completed = await uiResponse('/api/academic/groups/promote', () =>
+      page
+        .getByRole('dialog', { name: 'Подтверди перевод групп', exact: true })
+        .getByRole('button', { name: 'Подтвердить перевод', exact: true })
+        .click({ timeout: budget(10000) }),
+    );
+    promotionActionables(completed, own.cycle, null, [], [own.b], false);
+    requireValue(
+      completed.previewVersion === mass.previewVersion,
+      'Mass command must execute the exact shown preview',
+    );
+    equal(
+      await call('GET', `/api/academic/groups/${own.a}`),
+      aAfter,
+      'Mass promotion changed the already processed own row',
+    );
+    const bAfter = await call('GET', `/api/academic/groups/${own.b}`);
+    requireValue(
+      bAfter.name === `${bPrefix}-410 (выпуск ${cycle.year})` &&
+        bAfter.active === false &&
+        bAfter.currentCourse === 4 &&
+        bAfter.trainingDurationYears === 4,
+      'Mass Vue promotion must archive the exact graduating own cohort',
+    );
+    await expect(
+      page
+        .locator('.admin-groups-promotion__result')
+        .getByText(bPrefix + '-410 — отправлена в архив', { exact: true }),
+    ).toBeVisible({ timeout: budget(10000) });
+    const after = pg('snapshot');
+    equal(
+      after.semesters,
+      before.semesters,
+      'Promotion changed a pre-existing semester or its active context',
+    );
+    equal(after.groups, before.groups, 'Promotion changed an unowned group');
+    equal(after.coverage, before.coverage, 'Promotion changed an unowned history coverage');
+    equal(after.ledger, before.ledger, 'Promotion changed an unowned cycle ledger');
+    const ownedAfter = pg('owned');
+    requireValue(
+      ownedAfter.empty === true,
+      'Owned historical cohorts must retain their known empty history',
+    );
+    equal(ownedAfter.coverage, seed.coverage, 'Promotion changed the owned empty history coverage');
+    const ledger = ownedAfter.ledger;
+    requireValue(
+      ledger.length === 2 &&
+        ledger.some(
+          (item: Row) =>
+            item.group_id === own!.a &&
+            item.action === 'PROMOTE' &&
+            item.from_name === aPrefix + '-110' &&
+            item.to_name === aPrefix + '-210' &&
+            item.student_count === 0,
+        ) &&
+        ledger.some(
+          (item: Row) =>
+            item.group_id === own!.b &&
+            item.action === 'ARCHIVE' &&
+            item.from_name === bPrefix + '-410' &&
+            item.to_name === bAfter.name &&
+            item.student_count === 0,
+        ),
+      'Exactly both own actions must be durably recorded in their historical cycle',
+    );
+  } catch (error) {
+    primary = { error };
+  } finally {
+    cleaning = true;
+    cleanupEnd = Math.min(performance.now() + 30000, caseEnd - 120000);
+    let cleanupFailure: { error: unknown } | undefined;
+    if (seedAttempted && cycle) {
+      try {
+        const retained = pg('owned');
+        requireValue(
+          retained.empty === true &&
+            retained.cycles.length <= 1 &&
+            retained.groups.length <= 2 &&
+            (retained.groups.length === 0 || retained.cycles.length === 1),
+          'Owned historical finalization identity is inconsistent',
+        );
+        for (const group of retained.groups) {
+          try {
+            requireValue(
+              group.training_duration_years === 4 &&
+                [aPrefix, bPrefix].includes(group.alphabetic_code),
+              'Owned historical finalization group identity changed',
+            );
+            if (group.is_active) {
+              const archived = await call('PUT', `/api/academic/groups/${group.id}`, {
+                name: group.name,
+                active: false,
+              });
+              requireValue(
+                archived.active === false,
+                'Owned historical group must be safely archived',
+              );
+            }
+          } catch (error) {
+            cleanupFailure ??= { error };
+          }
+        }
+        const settled = pg('owned');
+        requireValue(
+          settled.groups.every(
+            (group: Row) => group.is_active === false && group.archived_at !== null,
+          ),
+          'Owned historical groups must finish inactive with archive provenance',
+        );
+      } catch (error) {
+        cleanupFailure ??= { error };
+      }
+    }
+    // Retain the inactive cycle, archived groups, ledger and real events for normal stand teardown.
+    expect
+      .soft(cleanupFailure === undefined, 'Owned historical cohort finalization must complete')
+      .toBe(true);
+    if (primary) throw primary.error;
+    if (cleanupFailure) throw cleanupFailure.error;
+  }
+}
+
 test('FULL admin archives and restores the disposable CI semester through real participants', async ({
   playwright,
   page,
@@ -376,6 +1007,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const browserLoginCutoff = performance.now() + 270000;
+  const promotionCaseEnd = promotionStartedAt.get(info)! + info.timeout - 10000;
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
   requireValue(
     run && isAbsolute(run),
@@ -891,6 +1523,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
       beforeHistory,
       'Permitted homework edit changed attendance history',
     );
+    await ownedHistoricalPromotion(page, request, admin, promotionCaseEnd, ownSemesterId);
     diagnostic.primary.stage = 'COMPLETED';
   } catch (error) {
     primaryFailure = { error };

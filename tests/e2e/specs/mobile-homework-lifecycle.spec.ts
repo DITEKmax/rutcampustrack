@@ -1400,12 +1400,11 @@ isolated(
   },
 );
 
-// Own-author manual DELETE is an existing operation; this is API deletion plus
-// genuine HEADMAN archive/history UI, not UI delete/confirmation acceptance.
-// JS-HEADMAN-27/28/29; non-author DELETE remains outside this case pending Q015.
+// Preserve the original author archive/history path and exercise D022 through
+// both existing management clients with current own-group authority.
 isolated(
   'HEADMAN author manual DELETE retains one read-only archive and edit history after replay @real-mobile',
-  async ({ page, scenario: dataset }) => {
+  async ({ page, scenario: dataset }, info) => {
     test.setTimeout(120000);
     const caseDeadline = Date.now() + 110000;
     const author = dataset.headmanActor;
@@ -1424,6 +1423,111 @@ isolated(
     expect(original.bindingId).toBeGreaterThan(0);
     const originalHistory = await author.call('GET', `${historyPath}?size=100`);
     expect(Array.isArray(originalHistory.content)).toBe(true);
+
+    // D022: reuse the existing own assistant and restore its exact grant before
+    // the original author story. Only this one additional UI login is needed.
+    const grantPath = `/api/academic/assistants/${dataset.assistantGrant.id}/permissions`;
+    const originalPermissions = [...dataset.assistantGrant.permissions];
+    const helperRetryDeadline = Math.min(
+      caseDeadline,
+      (retryStartedAt.get(info) ?? Date.now()) + 90000,
+    );
+    expect(helperRetryDeadline - Date.now(), 'Own helper login budget remains').toBeGreaterThan(0);
+    let helperPublished: Record<string, any> | undefined;
+    try {
+      await author.call('PATCH', grantPath, { permissions: ['MANAGE_HOMEWORK'] });
+      const admittedHelper = await loginPwa(page, dataset.assistant, {
+        retryUntilMs: Math.min(helperRetryDeadline, Date.now() + 65000),
+      });
+      const helper = new Actor(dataset.request, admittedHelper.accessToken, admittedHelper.session);
+      expect(admittedHelper.session.activeRole).toBe('STUDENT');
+      expect(
+        assistantPermissionCodes(
+          await helper.call('GET', '/api/academic/assistants/me/permissions'),
+        ),
+      ).toEqual(['MANAGE_HOMEWORK']);
+      const publish = async (creator: Actor, suffix: string) => {
+        const payload = {
+          title: `${dataset.marker}-${suffix}`,
+          description: 'Синтетическое задание для удаления текущим управляющим группы',
+          link: null,
+          subjectId: dataset.subject.id,
+          groupId: dataset.group.id,
+          semesterId: dataset.semester.id,
+          lessonDate: dataset.tomorrow,
+          lessonNumber: null,
+          bindingMode: 'DATE',
+          lessonType: 'LECTURE',
+          requestKey: randomUUID(),
+        };
+        let published: Record<string, any> | undefined;
+        const remaining = Math.min(20000, helperRetryDeadline - Date.now());
+        expect(remaining, 'Own publication budget remains').toBeGreaterThan(0);
+        await expect
+          .poll(
+            async () => {
+              published = await creator.call(
+                'POST',
+                '/api/academic/homeworks',
+                payload,
+                [201, 200, 202],
+              );
+              return published.state !== 'PENDING' && Number.isSafeInteger(published.id);
+            },
+            { timeout: remaining, message: 'Own nonauthor deletion fixture becomes active' },
+          )
+          .toBe(true);
+        return creator.call('GET', `/api/academic/homeworks/${published!.id}`);
+      };
+      helperPublished = await publish(helper, 'helper-created-delete');
+      expect(helperPublished.publishedBy).toBe(dataset.assistant.id);
+      const headmanPublished = await publish(author, 'headman-created-delete');
+      const headmanPath = `/api/academic/homeworks/${headmanPublished.id}`;
+      const headmanHistory = await author.call('GET', `${headmanPath}/history?size=100`);
+      await openAssistant(page, 'Домашние задания');
+      await page.getByLabel('Дата', { exact: true }).fill(dataset.tomorrow);
+      await page.getByRole('combobox', { name: /^Привязка/ }).selectOption('DATE');
+      const helperCard = page.locator('.assistant-homework__item').filter({
+        has: page.getByText(headmanPublished.title, { exact: true }),
+      });
+      await expect(helperCard).toHaveCount(1);
+      const helperDelete = http(page, headmanPath, 'DELETE');
+      const helperDialog = page.waitForEvent('dialog');
+      const helperClick = helperCard.getByRole('button', { name: 'Удалить', exact: true }).click();
+      const confirmation = await helperDialog;
+      expect(confirmation.type()).toBe('confirm');
+      await confirmation.accept();
+      await helperClick;
+      expect((await helperDelete).status()).toBe(204);
+      await expect(helperCard).toHaveCount(0);
+      const helperDeleted = await author.call('GET', `${headmanPath}?archived=true`);
+      expect({ ...helperDeleted, _links: null }).toEqual({
+        ...headmanPublished,
+        _links: null,
+        archived: true,
+      });
+      expect(helperDeleted.publishedBy).toBe(dataset.headman.id);
+      expect(await author.call('GET', `${headmanPath}/history?size=100`)).toEqual(headmanHistory);
+      const noActive = await dataset.request.get(headmanPath, { headers: author.headers() });
+      expect(noActive.status()).toBe(404);
+      await noActive.dispose();
+      await author.call('PATCH', grantPath, { permissions: originalPermissions });
+      const revokedReplay = await dataset.request.delete(headmanPath, {
+        headers: helper.headers(),
+      });
+      expect(revokedReplay.status()).toBe(403);
+      await revokedReplay.dispose();
+      expect(await author.call('GET', `${headmanPath}?archived=true`)).toEqual(helperDeleted);
+      expect(await author.call('GET', `${headmanPath}/history?size=100`)).toEqual(headmanHistory);
+      await logoutPwa(page);
+    } finally {
+      try {
+        await author.call('PATCH', grantPath, { permissions: originalPermissions });
+      } catch {
+        expect.soft(false, 'Own assistant permission cleanup succeeds').toBe(true);
+      }
+    }
+    expect(helperPublished !== undefined, 'Own helper-authored homework was published').toBe(true);
 
     // Give the terminal read a real content change to preserve and display.
     const title = `${dataset.marker}-manual-delete`;
@@ -1562,5 +1666,70 @@ isolated(
     await expect(region).toContainText('текст');
     expect(await author.call('GET', `${path}?archived=true`)).toEqual(archived);
     expect(await author.call('GET', `${historyPath}?size=100`)).toEqual(history);
+
+    // The same HEADMAN login now deletes another creator's current homework.
+    // A dismissed native confirmation cannot issue a DELETE.
+    const helperItem = helperPublished!;
+    const helperPath = `/api/academic/homeworks/${helperItem.id}`;
+    const helperHistory = await author.call('GET', `${helperPath}/history?size=100`);
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    const helperCreatedCard = page.locator(
+      `.headman-homework__item[data-homework-id="${helperItem.id}"]`,
+    );
+    await expect(helperCreatedCard).toHaveCount(1);
+    await helperCreatedCard.click();
+    let deleteRequests = 0;
+    const countDelete = (request: Request) => {
+      if (new URL(request.url()).pathname === helperPath && request.method() === 'DELETE')
+        deleteRequests += 1;
+    };
+    page.on('request', countDelete);
+    try {
+      const deleteButton = page.getByRole('button', { name: 'Удалить задание', exact: true });
+      const cancelDialog = page.waitForEvent('dialog');
+      const cancelClick = deleteButton.click();
+      const cancelled = await cancelDialog;
+      expect(cancelled.type()).toBe('confirm');
+      await cancelled.dismiss();
+      await cancelClick;
+      expect(deleteRequests).toBe(0);
+      expect(await author.call('GET', helperPath)).toEqual(helperItem);
+      expect(await author.call('GET', `${helperPath}/history?size=100`)).toEqual(helperHistory);
+      const headmanDelete = http(page, helperPath, 'DELETE');
+      const confirmDialog = page.waitForEvent('dialog');
+      const confirmClick = deleteButton.click();
+      await (await confirmDialog).accept();
+      await confirmClick;
+      expect((await headmanDelete).status()).toBe(204);
+      await expect(page.getByText('Архив · только просмотр', { exact: true })).toBeVisible();
+      await expect(deleteButton).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Изменить задание', exact: true })).toHaveCount(
+        0,
+      );
+      expect(deleteRequests).toBe(1);
+      const helperArchived = await author.call('GET', `${helperPath}?archived=true`);
+      expect({ ...helperArchived, _links: null }).toEqual({
+        ...helperItem,
+        _links: null,
+        archived: true,
+      });
+      expect(helperArchived.publishedBy).toBe(dataset.assistant.id);
+      const activeHelper = await dataset.request.get(helperPath, { headers: author.headers() });
+      expect(activeHelper.status()).toBe(404);
+      await activeHelper.dispose();
+      expect(await author.call('GET', `${helperPath}/history?size=100`)).toEqual(helperHistory);
+      const deletedHistory = http(page, `${helperPath}/history`, 'GET');
+      await page.getByRole('button', { name: 'История изменений', exact: true }).click();
+      expect((await deletedHistory).status()).toBe(200);
+      const helperHistoryRegion = page.getByRole('region', {
+        name: 'История изменений',
+        exact: true,
+      });
+      await expect(helperHistoryRegion.locator('li')).toHaveCount(helperHistory.content.length);
+      expect(await author.call('GET', `${helperPath}/history?size=100`)).toEqual(helperHistory);
+    } finally {
+      page.off('request', countDelete);
+    }
   },
 );

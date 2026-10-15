@@ -59535,5 +59535,16 @@
     "supersedes": [
       "Cloud-owned offline proof via unavailable PlaywrightWebKit emulation only"
     ]
+  },
+  "delivery_homework_nonauthor_delete_20261015": {
+    "source_id": "owner:cloud-validation-Q015-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-homework-nonauthor-delete.md",
+    "status": "accepted owner decision D022",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T10:24:21.207843+00:00",
+    "sha256": "ed6c1f670e444c605dddc73345553f56380bcff9b54d2587f320172b9d9ec814",
+    "supersedes": [
+      "Unresolved nonauthor homework DELETE rule only"
+    ]
   }
 }

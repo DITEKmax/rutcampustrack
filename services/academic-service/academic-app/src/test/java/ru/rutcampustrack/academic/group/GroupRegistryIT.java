@@ -23,7 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
 import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.dashboard.DashboardService;
@@ -46,6 +49,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @Autowired private JdbcTemplate jdbc;
     @Autowired private GroupService groupService;
     @Autowired private DashboardService dashboardService;
+    @Autowired private PlatformTransactionManager transactionManager;
     @PersistenceContext private EntityManager entityManager;
 
     @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory jwtFactory;
@@ -316,42 +320,84 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         DashboardStatsResponse before = dashboardService.getStats().getContent();
         String suffix = Long.toString(System.nanoTime());
 
-        Long activeStudent = createUser("ds_" + suffix, "student");
-        addGrant(activeStudent, "student", "active", null);
-        Long activeTeacher = createUser("dt_" + suffix, "teacher");
-        addGrant(activeTeacher, "teacher", "active", null);
-        Long suspendedStudent = createUser("dsp_" + suffix, "student");
-        addGrant(suspendedStudent, "student", "suspended", null);
-        Long archivedStudent = createUser("da_" + suffix, "student");
-        addGrant(archivedStudent, "student", "archived", null);
-        Long multiRoleUser = createUser("dm_" + suffix, "student");
-        addGrant(multiRoleUser, "student", "active", null);
-        addGrant(multiRoleUser, "teacher", "active", null);
+        var committedFixture = new TransactionTemplate(transactionManager);
+        committedFixture.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        List<Long> ownedUsers = new ArrayList<>();
+        List<Long> ownedGroups = new ArrayList<>();
+        Throwable primaryFailure = null;
+        try {
+            // The real dashboard capture reads committed state in its own transaction.
+            // Keep the enclosing test and its administrator admission rollback-only.
+            committedFixture.executeWithoutResult(
+                    status -> {
+                        Long activeStudent = createUser("ds_" + suffix, "student");
+                        ownedUsers.add(activeStudent);
+                        addGrant(activeStudent, "student", "active", null);
+                        Long activeTeacher = createUser("dt_" + suffix, "teacher");
+                        ownedUsers.add(activeTeacher);
+                        addGrant(activeTeacher, "teacher", "active", null);
+                        Long suspendedStudent = createUser("dsp_" + suffix, "student");
+                        ownedUsers.add(suspendedStudent);
+                        addGrant(suspendedStudent, "student", "suspended", null);
+                        Long archivedStudent = createUser("da_" + suffix, "student");
+                        ownedUsers.add(archivedStudent);
+                        addGrant(archivedStudent, "student", "archived", null);
+                        Long multiRoleUser = createUser("dm_" + suffix, "student");
+                        ownedUsers.add(multiRoleUser);
+                        addGrant(multiRoleUser, "student", "active", null);
+                        addGrant(multiRoleUser, "teacher", "active", null);
 
-        Long activeGroup = addGroup("dg-a-" + suffix, true);
-        addGroup("dg-d-" + suffix, true);
-        addGroup("dg-x-" + suffix, false);
-        Long headman = createUser("dh_" + suffix, "student");
-        addGrant(headman, "headman", "active", activeGroup);
+                        Long activeGroup = addGroup("dg-a-" + suffix, true);
+                        ownedGroups.add(activeGroup);
+                        ownedGroups.add(addGroup("dg-d-" + suffix, true));
+                        ownedGroups.add(addGroup("dg-x-" + suffix, false));
+                        Long headman = createUser("dh_" + suffix, "student");
+                        ownedUsers.add(headman);
+                        addGrant(headman, "headman", "active", activeGroup);
+                    });
 
-        mockMvc.perform(dashboardRequest(adminId))
-                .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath(
-                                "$.totalStudents",
-                                equalTo(Math.toIntExact(before.getTotalStudents() + 2))))
-                .andExpect(
-                        jsonPath(
-                                "$.totalTeachers",
-                                equalTo(Math.toIntExact(before.getTotalTeachers() + 2))))
-                .andExpect(
-                        jsonPath(
-                                "$.totalGroups",
-                                equalTo(Math.toIntExact(before.getActiveGroups() + 1))))
-                .andExpect(
-                        jsonPath(
-                                "$.activeGroups",
-                                equalTo(Math.toIntExact(before.getActiveGroups() + 1))));
+            mockMvc.perform(dashboardRequest(adminId))
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath(
+                                    "$.totalStudents",
+                                    equalTo(Math.toIntExact(before.getTotalStudents() + 2))))
+                    .andExpect(
+                            jsonPath(
+                                    "$.totalTeachers",
+                                    equalTo(Math.toIntExact(before.getTotalTeachers() + 2))))
+                    .andExpect(
+                            jsonPath(
+                                    "$.totalGroups",
+                                    equalTo(Math.toIntExact(before.getActiveGroups() + 1))))
+                    .andExpect(
+                            jsonPath(
+                                    "$.activeGroups",
+                                    equalTo(Math.toIntExact(before.getActiveGroups() + 1))));
+        } catch (Exception | Error failure) {
+            primaryFailure = failure;
+            throw failure;
+        } finally {
+            try {
+                committedFixture.executeWithoutResult(
+                        status -> {
+                            for (Long userId : ownedUsers) {
+                                jdbc.update(
+                                        "DELETE FROM user_role_grants WHERE user_id = ?", userId);
+                                jdbc.update("DELETE FROM users WHERE id = ?", userId);
+                            }
+                            for (Long groupId : ownedGroups) {
+                                jdbc.update("DELETE FROM groups WHERE id = ?", groupId);
+                            }
+                        });
+            } catch (RuntimeException | Error cleanupFailure) {
+                if (primaryFailure != null) {
+                    primaryFailure.addSuppressed(cleanupFailure);
+                } else {
+                    throw cleanupFailure;
+                }
+            }
+        }
     }
 
     @Test

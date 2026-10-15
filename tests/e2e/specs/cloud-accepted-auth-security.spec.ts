@@ -24,11 +24,7 @@ const test = base.extend<{ otpRecipient: ReturnType<typeof ownedOtpReceiver> }>(
       try {
         await use(recipient);
       } finally {
-        try {
-          await recipient.close();
-        } catch {
-          expect.soft(false, 'OTP_OWN_QUEUE_CLEANUP_FAILED').toBe(true);
-        }
+        await recipient.close();
       }
     },
     { timeout: 30000 },
@@ -360,7 +356,290 @@ test('own profile security changes password and replacement login rejects old au
   };
   const user = await dataset.user('STUDENT', dataset.otherGroup.id);
   const peer = await admit(dataset.request, user);
-  const original = await loginPwa(page, user, loginOptions());
+  const original = await (async () => {
+    const fresh = await context.storageState({ indexedDB: true });
+    expect(
+      fresh.cookies.length === 0 && fresh.origins.length === 0,
+      'Fresh browser has no owner',
+    ).toBe(true);
+    const origin = new URL(String(info.project.use.baseURL)).origin;
+    const remaining = () => {
+      const value = Math.floor(cutoff - performance.now());
+      expect(value > 0, 'Initial context recovery retains its original budget').toBe(true);
+      return value;
+    };
+    const contextPath = (url: URL) =>
+      url.origin === origin && url.pathname === '/api/auth/session' && url.search === '';
+    let release: (delivery: 'fault' | 'abort') => void = () => {};
+    const gate = new Promise<'fault' | 'abort'>((resolve) => {
+      release = resolve;
+    });
+    let signalReady: () => void = () => {};
+    const ready = new Promise<void>((resolve) => {
+      signalReady = resolve;
+    });
+    let finishHeld: () => void = () => {};
+    const finished = new Promise<void>((resolve) => {
+      finishHeld = resolve;
+    });
+    let held = false;
+    let ownContextReady = false;
+    let heldSessionId: string | undefined;
+    let watchdogFired = false;
+    let holdTimer: ReturnType<typeof setTimeout> | undefined;
+    let routeFailed = false;
+    let routeError: unknown;
+    let observedLogin: import('@playwright/test').Response | undefined;
+    let blockCommands = true;
+    let protectedCommands = 0;
+    const observeLogin = (response: import('@playwright/test').Response) => {
+      const url = new URL(response.url());
+      if (
+        url.origin === origin &&
+        url.pathname === '/api/auth/login' &&
+        response.request().method() === 'POST' &&
+        response.status() === 200
+      )
+        observedLogin = response;
+    };
+    const countCommands = (request: import('@playwright/test').Request) => {
+      const url = new URL(request.url());
+      if (
+        blockCommands &&
+        url.origin === origin &&
+        url.pathname.startsWith('/api/') &&
+        request.method() !== 'GET' &&
+        !['/api/auth/login', '/api/auth/refresh'].includes(url.pathname)
+      )
+        protectedCommands += 1;
+    };
+    const holdContext = async (route: import('@playwright/test').Route) => {
+      if (route.request().method() !== 'GET' || held) {
+        await route.continue();
+        return;
+      }
+      held = true;
+      try {
+        const response = await route.fetch({ timeout: Math.min(10000, remaining()) });
+        try {
+          const profile = await response.json();
+          ownContextReady =
+            response.status() === 200 &&
+            profile.userId === String(user.id) &&
+            profile.activeRole === 'STUDENT' &&
+            typeof profile.sessionId === 'string' &&
+            profile.sessionId.length > 0;
+          heldSessionId = profile.sessionId;
+          holdTimer = setTimeout(
+            () => {
+              watchdogFired = true;
+              release('abort');
+            },
+            Math.min(15000, remaining()),
+          );
+          signalReady();
+          if ((await gate) === 'fault' && !watchdogFired) {
+            // One controlled HTTP response fault; the real own 200 above stays in RAM.
+            await route.fulfill({
+              status: 503,
+              contentType: 'application/problem+json',
+              body: JSON.stringify({
+                type: 'about:blank',
+                title: 'Service Unavailable',
+                status: 503,
+              }),
+            });
+          } else await route.abort('failed');
+        } finally {
+          await response.dispose();
+        }
+      } catch (error) {
+        routeFailed = true;
+        routeError = error;
+        signalReady();
+        await route.abort('failed').catch((error) => {
+          cleanupErrors.push(error);
+        });
+      } finally {
+        clearTimeout(holdTimer);
+        finishHeld();
+      }
+    };
+    let loginFailed = false;
+    let loginError: unknown;
+    let admission: Promise<void> | undefined;
+    let bodyFailed = false;
+    const cleanupErrors: unknown[] = [];
+    page.on('response', observeLogin);
+    page.on('request', countCommands);
+    try {
+      await page.route(contextPath, holdContext);
+      // Settle both outcomes immediately; a held context cannot leave a rejected helper unobserved.
+      admission = loginPwa(page, user, loginOptions()).then(
+        () => {},
+        (error) => {
+          loginFailed = true;
+          loginError = error;
+        },
+      );
+      await Promise.race([
+        ready,
+        admission.then(() => {
+          if (loginFailed) throw loginError;
+          throw new Error('Own context was not held');
+        }),
+      ]);
+      if (routeFailed) throw routeError;
+      expect(ownContextReady, 'Real own context was fetched before the fault').toBe(true);
+      expect(Boolean(observedLogin), 'Real UI login returned 200').toBe(true);
+      const login = await observedLogin!.json();
+      expect(typeof login.accessToken === 'string', 'Real login token stays in RAM').toBe(true);
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+      await expect(
+        page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+      ).toBeVisible();
+      await expect(page.getByLabel('Логин', { exact: true })).toBeDisabled();
+      await expect(page.getByLabel('Пароль', { exact: true })).toBeDisabled();
+      await expect(page.locator('.login-card__submit')).toHaveAttribute('aria-busy', 'true');
+      await expect(
+        page.getByRole('navigation', { name: 'Основная навигация', exact: true }),
+      ).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Профиль', exact: true })).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          () => localStorage.getItem('rct-student-mobile.current-owner') === null,
+        ),
+        'No snapshot owner before context',
+      ).toBe(true);
+      expect(protectedCommands === 0, 'No protected command before context').toBe(true);
+      expect(watchdogFired, 'Context hold was not released by its watchdog').toBe(false);
+      release('fault');
+      await finished;
+      await admission;
+      if (routeFailed) throw routeError;
+      if (!loginFailed) throw new Error('Context fault did not reject login');
+      if (
+        !(loginError instanceof Error) ||
+        loginError.message !== 'Synthetic actor session: HTTP 503'
+      )
+        throw loginError;
+      expect(watchdogFired, 'Context fault was explicitly released').toBe(false);
+      await expect(page.getByRole('alert')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Войти', exact: true })).toBeEnabled();
+      await expect(
+        page.getByRole('navigation', { name: 'Основная навигация', exact: true }),
+      ).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Профиль', exact: true })).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          () => localStorage.getItem('rct-student-mobile.current-owner') === null,
+        ),
+        'Context failure cannot establish a snapshot owner',
+      ).toBe(true);
+      expect(protectedCommands === 0, 'Context failure cannot enable protected commands').toBe(
+        true,
+      );
+      await page.unroute(contextPath, holdContext);
+      blockCommands = false;
+      const responseOptions = { timeout: Math.min(10000, remaining()) };
+      const refreshed = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).origin === origin &&
+          new URL(response.url()).pathname === '/api/auth/refresh' &&
+          response.request().method() === 'POST',
+        responseOptions,
+      );
+      const recoveredContext = page.waitForResponse(
+        (response) => contextPath(new URL(response.url())) && response.request().method() === 'GET',
+        responseOptions,
+      );
+      const recoveredStudent = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).origin === origin &&
+          new URL(response.url()).pathname === '/api/v1/student/session' &&
+          response.request().method() === 'GET',
+        responseOptions,
+      );
+      const recoveredSchedule = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          url.origin === origin &&
+          url.pathname === '/api/v1/student/schedule' &&
+          url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+          response.request().method() === 'GET'
+        );
+      }, responseOptions);
+      // A user reload retries context with the actual cookie; it creates no third LOGIN/session.
+      const recovery = await Promise.all([
+        page.reload({ timeout: Math.min(10000, remaining()) }),
+        refreshed,
+        recoveredContext,
+        recoveredStudent,
+        recoveredSchedule,
+      ]);
+      expect(
+        recovery.slice(1).every((response) => response?.status() === 200),
+        'Real refreshed context and own schedule recover',
+      ).toBe(true);
+      const session: Awaited<ReturnType<typeof loginPwa>>['session'] = await recovery[2]!.json();
+      const student = await recovery[3]!.json();
+      const schedule = await recovery[4]!.json();
+      expect(
+        session.userId === String(user.id) &&
+          session.sessionId === heldSessionId &&
+          session.activeRole === 'STUDENT',
+        'Recovery retains the exact own session',
+      ).toBe(true);
+      expect(
+        String(student.user.id) === String(user.id) &&
+          String(student.group?.id) === String(dataset.otherGroup.id) &&
+          String(student.semester?.id) === String(dataset.semester.id) &&
+          String(schedule.semester.id) === String(dataset.semester.id),
+        'Real BFF recovery retains the own group and semester',
+      ).toBe(true);
+      await expect(
+        page.getByRole('navigation', { name: 'Основная навигация', exact: true }),
+      ).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Профиль', exact: true })).toBeVisible();
+      return { accessToken: login.accessToken as string, session };
+    } catch (error) {
+      bodyFailed = true;
+      throw error;
+    } finally {
+      release('abort');
+      clearTimeout(holdTimer);
+      page.off('response', observeLogin);
+      page.off('request', countCommands);
+      try {
+        await page.unroute(contextPath, holdContext);
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+      if (held) {
+        try {
+          await finished;
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      }
+      if (admission) {
+        try {
+          await admission;
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      }
+      if (cleanupErrors.length) {
+        if (bodyFailed) expect.soft(false, 'CONTEXT_FAULT_CLEANUP_FAILED').toBe(true);
+        else throw cleanupErrors[0];
+      }
+    }
+  })();
   expect(original.session.userId === String(user.id), 'Own student session admitted').toBe(true);
 
   const profileRead = http(page, '/api/auth/session', 'GET');

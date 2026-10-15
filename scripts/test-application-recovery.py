@@ -238,6 +238,23 @@ def capture(args):
         if numeric(doc["lesson_id"]) in (op["source_lesson_id"], op["target_lesson_id"])
     ]
     r.require(not future_marks, "This minimal future transfer drill requires no future attendance marks")
+    # L06: inspect the same immutable Mongo inventory after the refused public command.
+    transfer_lesson_ids = {op["source_lesson_id"], op["target_lesson_id"]}
+    r.require(
+        not any(
+            transfer_lesson_ids.intersection(numeric(lesson_id) for lesson_id in doc.get("lesson_ids", []))
+            for doc in mongo_rows(inventory, "excuse_tickets")
+        ),
+        "Pending transfer must not leave an excuse request for either physical lesson",
+    )
+    r.require(
+        not any(
+            numeric(doc["lesson_id"]) in transfer_lesson_ids
+            for doc in mongo_rows(inventory, "late_checkin_requests")
+        ),
+        "Pending transfer must not leave a late-checkin request for either physical lesson",
+    )
+    # End L06 immutable no-request proof.
     occurrence_ids = [l["occurrence_id"] for l in lessons]
     snapshot = {
         "operation": op,

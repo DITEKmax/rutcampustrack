@@ -52,7 +52,7 @@ class BotCredentialLifecycleMigrationIT {
         fresh(null);
         Flyway f = flyway(null);
         f.validate();
-        assertThat(f.info().current().getVersion().getVersion()).isEqualTo("57");
+        assertThat(f.info().current().getVersion().getVersion()).isEqualTo("58");
         assertThat(f.info().pending()).isEmpty();
         assertThat(f.migrate().migrationsExecuted).isZero();
         assertThat(
@@ -88,7 +88,7 @@ class BotCredentialLifecycleMigrationIT {
         var before =
                 jdbc.queryForList(
                         "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY installed_rank");
-        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(1);
+        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(2);
         flyway(null).validate();
         assertThat(
                         jdbc.queryForObject(
@@ -116,7 +116,8 @@ class BotCredentialLifecycleMigrationIT {
         assertThat(version(changed, "telegram_binding_version")).isEqualTo(1);
         assertThat(
                         jdbc.queryForList(
-                                "SELECT installed_rank,version,checksum FROM flyway_schema_history WHERE version IS DISTINCT FROM '57' ORDER BY installed_rank"))
+                                "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY installed_rank LIMIT ?",
+                                before.size()))
                 .isEqualTo(before);
     }
 

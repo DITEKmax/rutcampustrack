@@ -1214,6 +1214,88 @@ class HomeworkEditLifecycleIT {
     }
 
     @Test
+    void nonAuthorAssistantDeletePreservesCreatorHistoryAndActualActorOutboxOnReplay()
+            throws Exception {
+        Homework homework = linkedHomework();
+        assertThat(publisher).isNotEqualTo(actor);
+        completion(homework);
+        service.updateHomework(homework.getId(), edit("B", 1));
+        var history = service.history(homework.getId(), PageRequest.of(0, 10)).getContent();
+        assertThat(history).hasSize(1);
+        List<String> before = actions(homework);
+        becomeAssistant();
+
+        when(context.getGroupId()).thenReturn(group + 1);
+        assertThatThrownBy(() -> service.deleteHomework(homework.getId()))
+                .isInstanceOf(AccessDeniedException.class);
+        when(context.getGroupId()).thenReturn(group);
+        assertThat(repository.findById(homework.getId()).orElseThrow().getPublicationState())
+                .isEqualTo(HomeworkPublicationState.ACTIVE);
+        assertThat(actions(homework)).isEqualTo(before);
+        verify(schedule, never()).archiveHomeworkBinding(anyLong(), anyLong(), any());
+
+        when(schedule.archiveHomeworkBinding(binding, homework.getId(), createKey))
+                .thenReturn(
+                        linkedBinding(homework.getId(), 2).toBuilder()
+                                .setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED)
+                                .build());
+        service.deleteHomework(homework.getId());
+        Homework archived = repository.findById(homework.getId()).orElseThrow();
+        assertThat(archived.getPublicationState()).isEqualTo(HomeworkPublicationState.ARCHIVED);
+        assertThat(archived.getPublishedBy()).isEqualTo(publisher);
+        assertThat(archived.getActorId()).isEqualTo(publisher);
+        assertThat(archived.getArchiveActionActorId()).isEqualTo(actor);
+        assertThat(archived.getArchiveActionActorRole()).isEqualTo("ASSISTANT");
+        assertThat(archived.getTitle()).isEqualTo("B");
+        assertThat(archived.getRevision()).isEqualTo(2);
+        assertThat(service.isCompleted(homework.getId())).isTrue();
+        assertThat(service.history(homework.getId(), PageRequest.of(0, 10)).getContent())
+                .isEqualTo(history);
+        List<String> archivedActions = actions(homework);
+        assertThat(archivedActions).hasSize(before.size() + 1).startsWithElementsOf(before);
+        String action = archivedActions.getLast();
+        assertThat(
+                        ru.rutcampustrack.academic.events.EventSchemaValidator.validate(
+                                "homework.action-recorded.json", action))
+                .isEmpty();
+        var payload = mapper.readTree(action).path("payload");
+        assertThat(payload.path("action").asText()).isEqualTo("HOMEWORK_ARCHIVED");
+        assertThat(payload.path("actor").path("user_id").asLong()).isEqualTo(actor);
+        assertThat(payload.path("actor").path("role").asText()).isEqualTo("ASSISTANT");
+        assertThat(payload.path("before").path("publication_state").asText()).isEqualTo("ACTIVE");
+        assertThat(payload.path("after").path("publication_state").asText()).isEqualTo("ARCHIVED");
+        List<String> withdrawn =
+                jdbc.queryForList(
+                        "SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.withdrawn' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                        String.class,
+                        homework.getId().toString());
+        assertThat(withdrawn).hasSize(1);
+        assertThat(
+                        mapper.readTree(withdrawn.getFirst())
+                                .path("payload")
+                                .path("actor_user_id")
+                                .asLong())
+                .isEqualTo(actor);
+
+        service.deleteHomework(homework.getId());
+        jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
+        assertThatThrownBy(() -> service.deleteHomework(homework.getId()))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThat(actions(homework)).isEqualTo(archivedActions);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.withdrawn' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                                String.class,
+                                homework.getId().toString()))
+                .isEqualTo(withdrawn);
+        assertThat(service.history(homework.getId(), PageRequest.of(0, 10)).getContent())
+                .isEqualTo(history);
+        assertThat(repository.findById(homework.getId()).orElseThrow().getPublishedBy())
+                .isEqualTo(publisher);
+        verify(schedule, times(1)).archiveHomeworkBinding(binding, homework.getId(), createKey);
+    }
+
+    @Test
     void producerActionsKeepActualIdsAndReplayNoopArchiveAreAppendOnce() throws Exception {
         var lesson =
                 LessonResponse.newBuilder()

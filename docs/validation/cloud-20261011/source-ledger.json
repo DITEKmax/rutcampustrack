@@ -14696,6 +14696,13 @@
       "sha256": "193a111e0fb1143c98cf004e087342ef6c5274c1e767d4f2e3bf31c84615944f",
       "status": "accepted owner decision D021",
       "source_identity": "Main chat exact owneranswer received 2026-10-15T09:36:45.637550+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q015-20261015",
+      "path": "docs/product/decisions/2026-10-15-homework-nonauthor-delete.md",
+      "sha256": "ed6c1f670e444c605dddc73345553f56380bcff9b54d2587f320172b9d9ec814",
+      "status": "accepted owner decision D022",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T10:24:21.207843+00:00"
     }
   ],
   "research_receipt": {

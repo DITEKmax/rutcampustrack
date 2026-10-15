@@ -557,6 +557,19 @@ test('application recovery API phase', async ({ playwright }, info) => {
         (card: { history: unknown[] }) => card.history.length > 0,
       );
       save(run, 'history-before.json', history);
+      // L06: establish this same student's valid own EXCUSE precondition before transfer.
+      const available = await student.call('GET', '/api/v1/student/requests/options');
+      const sourceOption = available.lessons.find(
+        (item: { lesson: { id: string } }) => item.lesson.id === String(checkpoint.sourceLessonId),
+      );
+      requireValue(
+        sourceOption?.lesson.status === 'planned' &&
+          sourceOption.excuseEligible === true &&
+          sourceOption.pendingRequests.length === 0 &&
+          available.reasons.some((reason: { code: string }) => reason.code === 'ILLNESS'),
+        'Recovery source must be eligible for this student excuse before transfer',
+      );
+      // End L06 eligible precondition.
       const accepted = await headman.call(
         'POST',
         `/api/schedule/lessons/${checkpoint.sourceLessonId}/transfer`,
@@ -564,6 +577,39 @@ test('application recovery API phase', async ({ playwright }, info) => {
         [202],
       );
       requireValue(accepted.state === 'PENDING', 'Transfer must be pending before checkpoint');
+      // L06: an actual pending Schedule operation must reject the mutable Attendance command.
+      const refusedExcuse = await request.post('/api/v1/student/requests/excuse', {
+        headers: { ...student.headers(), 'Idempotency-Key': randomUUID() },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(checkpoint.sourceLessonId)],
+                reason: 'ILLNESS',
+                comment: 'Синтетическая проверка переноса',
+              }),
+            ),
+          },
+        },
+      });
+      requireValue(
+        refusedExcuse.status() === 503 &&
+          refusedExcuse.headers()['content-type']?.includes('application/problem+json'),
+        'Pending transfer must reject the student excuse with a typed unavailable response',
+      );
+      const refusal = await refusedExcuse.json().catch(() => {
+        throw new Error('Pending transfer refusal must be a readable typed problem');
+      });
+      requireValue(
+        refusal.status === 503 &&
+          refusal.code === 'DEPENDENCY_UNAVAILABLE' &&
+          refusal.type === 'urn:rct:problem:dependency-unavailable',
+        'Pending transfer must retain the public dependency-unavailable contract',
+      );
+      // The existing quiesced capture checks durable no-write separately from this response.
+      // End L06 pending command.
       save(run, 'pending.json', {
         operationId: accepted.operationId,
         historyLessonId: checkpoint.historyLessonId,

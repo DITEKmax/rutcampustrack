@@ -910,7 +910,9 @@
         "JS-ADMIN-18",
         "JS-ADMIN-19",
         "JS-ADMIN-20",
-        "JS-ADMIN-26"
+        "JS-ADMIN-26",
+        "JS-ADMIN-14",
+        "JS-ADMIN-21"
       ],
       "research_ids": [
         "P01",
@@ -1086,7 +1088,30 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "AdminAccessAuthorityIT real PG but constructs service/authority and mocks event publisher; AdminPermissionRpcIT real network gRPC with mocked JDBC authority. Actual every administrative REST route grant/revoke must be checked beyond these.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_admin_finite_residuals": [
+        {
+          "id": "JS-ADMIN-20",
+          "state": "PROOF_GAP",
+          "missing": "ExistingADMINrowmenu recoveryissue->replacementcredentialusable; actual657AuthOtpFlowIT student/teacher/negative serverproof sufficient, not readyADMINUI.",
+          "owner": "c84 Sourceplan",
+          "check": "One accepted recoveryalternative linkORregeneration, notboth bydefault."
+        },
+        {
+          "id": "JS-ADMIN-21",
+          "state": "PROOF_GAP",
+          "missing": "ExistingADMIN bindingexistingteacher operation/readback; creationwithTelegram/rebindsafety/botbridge proof retained.",
+          "owner": "c84 Sourceplan",
+          "check": "GenuineexistingadminUI +accepted syntheticbotbridge; nativeD015ownerpending."
+        },
+        {
+          "id": "JS-ADMIN-12 / JS-ADMIN-14",
+          "state": "SOURCE_DISPOSITION_UNRESOLVED",
+          "missing": "12acceptedavg-group-semester butundecidedADMINcarrier;14lostADMIN explicitlyexternaloperation, no productresetUI. Exactdated/release/operatorSource resolution c86pending.",
+          "owner": "c86 read-only source resolution",
+          "check": "Determine acceptedcurrent carrier/disposition/operationalprocedure; no speculativeendpoint/screen/implicitexclusion."
+        }
+      ]
     },
     {
       "id": "ACADEMIC-GROUPS",
@@ -2363,7 +2388,7 @@
     {
       "id": "ACADEMIC-CACHE-DTO",
       "priority": 2,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "criterion": "cache roundtrip/foreign type rejection/actor scope, enums and display values",
       "remaining_observable_oracle": "Actual DTO/date/collection cache roundtrip, foreign polymorphic @class rejection, actor-scoped cold/warm/mutation/rollback/role-revoke isolation; new enum coverage across remaining consumers. L05 query optimization optional, no count/SLA campaign.",
@@ -2513,7 +2538,8 @@
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "RepositoryNPlusOneGuardTest is structural/count guard, not measured subject-list user latency. Turkish/default-locale roundtrip belongs current security author focused tests after integration.",
       "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
-      "precise_missing_oracle": "Existing CacheIT/RbacCacheIT show scoped keys/TTL/eviction; no copied assertion proves foreign polymorphic rejection. Test actual production serializer allowed DTO/date/collection roundtrip plus foreign@class payload rejection once; whitelist source alone insufficient."
+      "precise_missing_oracle": "Existing CacheIT/RbacCacheIT show scoped keys/TTL/eviction; no copied assertion proves foreign polymorphic rejection. Test actual production serializer allowed DTO/date/collection roundtrip plus foreign@class payload rejection once; whitelist source alone insufficient.",
+      "current_finite_disposition": "Closed accepted finite/applicability criterion by independent existingproof reconciliation; old inferred resource-mode/actor-cache/genericruntime requirements corrected, historical source text retained. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.58def_Q13_Q15_existing_parent_accounting"
     },
     {
       "id": "SCHEDULE-CLOCK-GENERATION",
@@ -3620,7 +3646,8 @@
         "JS-STUDENT-07",
         "JS-STUDENT-14",
         "JS-STUDENT-17",
-        "JS-STUDENT-19"
+        "JS-STUDENT-19",
+        "JS-ADMIN-12"
       ],
       "research_ids": [
         "P02",
@@ -3994,7 +4021,16 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "MockMvc/real Mongo with mocked Academic/Schedule/renderer. Weekly DOCX generated bytes checked; PDF/PNG converter is mocked signature/zip fixture, not full rendering. JS-STUDENT-16/AT-17 proposal is not accepted missing self-export function.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_admin_finite_residuals": [
+        {
+          "id": "JS-ADMIN-12 / JS-ADMIN-14",
+          "state": "SOURCE_DISPOSITION_UNRESOLVED",
+          "missing": "12acceptedavg-group-semester butundecidedADMINcarrier;14lostADMIN explicitlyexternaloperation, no productresetUI. Exactdated/release/operatorSource resolution c86pending.",
+          "owner": "c86 read-only source resolution",
+          "check": "Determine acceptedcurrent carrier/disposition/operationalprocedure; no speculativeendpoint/screen/implicitexclusion."
+        }
+      ]
     },
     {
       "id": "ATTENDANCE-PARTICIPANTS",
@@ -6381,7 +6417,7 @@
     {
       "id": "HEALTH-OUTAGE",
       "priority": 2,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "criterion": "readiness degradation and bounded dependency status/deadline",
       "remaining_observable_oracle": "Actual routed API behavior during authority/Rabbit/DB/renderer outage and subsequent recovery, targeted deadlines/status, readiness/private Actuator boundary; healthUP alone insufficient and no invented uptime/drainSLA.",
@@ -6669,12 +6705,13 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "Health/probe status or mocked gRPC deadline is not successful routed user operation after recovery. Need current stand API while dependency stopped/recovered where required.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_finite_disposition": "Closed accepted finite/applicability criterion by independent existingproof reconciliation; old inferred resource-mode/actor-cache/genericruntime requirements corrected, historical source text retained. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.58def_Q13_Q15_existing_parent_accounting"
     },
     {
       "id": "RECOVERY",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "criterion": "fresh synthetic restore inventory/bytes and pending transfer application recovery",
       "remaining_observable_oracle": "Actual scripts/recovery.py disposable PG/Mongo/files capture+fresh restore, schema/indices/sequences/history/blob checksum; real application pending transfer retry once on restored stack after writer quiescence. Validator/loopback mocks are not application recovery.",
@@ -6761,7 +6798,8 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "test-application-recovery-checks is validator unit/loopback HTTP with mocks and explicitly never application evidence; test-recovery runs real disposable PG/Mongo/files; application harness capture/verify needs quiesced checkpoint + restored apps and original retry.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_finite_disposition": "Closed accepted finite/applicability criterion by independent existingproof reconciliation; old inferred resource-mode/actor-cache/genericruntime requirements corrected, historical source text retained. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.58def_Q13_Q15_existing_parent_accounting"
     },
     {
       "id": "SECURITY2-ACCEPTANCE",
@@ -6794,7 +6832,19 @@
       "known_assertion_candidates": [],
       "proposed_commands_NOT_EXECUTED": [],
       "missing_oracle": "Exact observable state above; source/fixture existence does not prove execution. Use existing current templates/harness below, extending only uncovered accepted criterion.",
-      "actual_runtime_this_receipt": "NOT_RUN"
+      "actual_runtime_this_receipt": "NOT_RUN",
+      "source_story_ids": [
+        "JS-ADMIN-22"
+      ],
+      "current_admin_finite_residuals": [
+        {
+          "id": "JS-ADMIN-22",
+          "state": "PROOF_GAP",
+          "missing": "ExistingdashboardToday↔alltime rendersactualaggregate/geo numerator-denominator/Todaycomparison; data-onlyB34PASS doesnotproveUI.",
+          "owner": "c84 Sourceplan",
+          "check": "One genuineexistingdashboardtoggle/readback, no event×period×rolecrossproduct."
+        }
+      ]
     },
     {
       "id": "PUBLIC-RETIRED-NEGATIVE",
@@ -7092,6 +7142,68 @@
         "tests/e2e/REAL-MOBILE.md",
         "tests/e2e/specs/auth-token-lifecycle.spec.ts",
         "tests/e2e/specs/mini-app.spec.ts"
+      ],
+      "source_story_ids": [
+        "JS-ADMIN-08",
+        "JS-ADMIN-09",
+        "JS-ADMIN-10",
+        "JS-ADMIN-16",
+        "JS-ADMIN-17",
+        "JS-ADMIN-18",
+        "JS-ADMIN-20",
+        "JS-ADMIN-21",
+        "JS-ADMIN-22"
+      ],
+      "current_admin_finite_residuals": [
+        {
+          "id": "JS-ADMIN-08",
+          "state": "PROOF_GAP",
+          "missing": "ExistingreadyAdminSemesterScreen create name/year/range ->authoritativepersistedmetadata; setupcreatedsemesternotUIproof.",
+          "owner": "existingsemesterwriter c87 afterD022",
+          "check": "One genuine existingcreateflow, no newwebscreen."
+        },
+        {
+          "id": "JS-ADMIN-09",
+          "state": "PROOF_GAP",
+          "missing": "Prepared activation A whole completed context/userflow; server soleactive/concurrency alreadyaccepted.",
+          "owner": "c87 preparedSource",
+          "check": "ExistingA on ordinaryCI aftercurrentreport500causefixed."
+        },
+        {
+          "id": "JS-ADMIN-10 / JS-ADMIN-18",
+          "state": "PROOF_GAP",
+          "missing": "Existinggroup/semester destructiveconsequencepreview ->same approvedconsequences+passwordconfirm->participantterminal/foreign/history bounds. Userarchive branch real4058 alreadyPASS; reversiblearchive/recoverynotdeletion.",
+          "owner": "existingsemester/admin scopes",
+          "check": "Existingaccepteddestructivecarrier, no unrelateduserarchive repetition."
+        },
+        {
+          "id": "JS-ADMIN-16 / JS-ADMIN-17",
+          "state": "PROOF_GAP",
+          "missing": "ActualrowA course+1 thenmassB graduate/archive +samecycleexclusion; B343deaSourceapproved, notruntime. ExistingPGonce/catchup/ledger/replay/conflict sufficient.",
+          "owner": "c87 preparedB",
+          "check": "ExistingB ordinaryCI; no auto×manual browsermatrix."
+        },
+        {
+          "id": "JS-ADMIN-20",
+          "state": "PROOF_GAP",
+          "missing": "ExistingADMINrowmenu recoveryissue->replacementcredentialusable; actual657AuthOtpFlowIT student/teacher/negative serverproof sufficient, not readyADMINUI.",
+          "owner": "c84 Sourceplan",
+          "check": "One accepted recoveryalternative linkORregeneration, notboth bydefault."
+        },
+        {
+          "id": "JS-ADMIN-21",
+          "state": "PROOF_GAP",
+          "missing": "ExistingADMIN bindingexistingteacher operation/readback; creationwithTelegram/rebindsafety/botbridge proof retained.",
+          "owner": "c84 Sourceplan",
+          "check": "GenuineexistingadminUI +accepted syntheticbotbridge; nativeD015ownerpending."
+        },
+        {
+          "id": "JS-ADMIN-22",
+          "state": "PROOF_GAP",
+          "missing": "ExistingdashboardToday↔alltime rendersactualaggregate/geo numerator-denominator/Todaycomparison; data-onlyB34PASS doesnotproveUI.",
+          "owner": "c84 Sourceplan",
+          "check": "One genuineexistingdashboardtoggle/readback, no event×period×rolecrossproduct."
+        }
       ]
     },
     {
@@ -7146,7 +7258,7 @@
     {
       "id": "CLIENT-OFFLINE-D002",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "remaining_observable_oracle": "Production serviceWorkers allow/warm+reload with persistent own schedule/homework; expiry/revoke offline only read until reconnectauthority, no writes/newattachments/roleswitch/TMAoffline; explicitlogout and userA→B including latecallbacks expose no old scope. Loaded-tab offline/unit worker mocks do not close.",
       "known_assertion_candidates": [],
@@ -7165,7 +7277,8 @@
         "tests/e2e/REAL-MOBILE.md",
         "tests/e2e/specs/auth-token-lifecycle.spec.ts",
         "tests/e2e/specs/mini-app.spec.ts"
-      ]
+      ],
+      "current_finite_disposition": "Closed accepted finite/applicability criterion by independent existingproof reconciliation; old inferred resource-mode/actor-cache/genericruntime requirements corrected, historical source text retained. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.58def_Q13_Q15_existing_parent_accounting"
     },
     {
       "id": "CLIENT-TMA-PROVIDER",
@@ -7299,9 +7412,11 @@
       {
         "alias_existing_scope": "**E14-W1** WebKit subset Q14",
         "already_proved": "T005 native43 independent addendum: 25 ELF+14 DSO+4 capability checks PASS; all process/resource qualifications explicit. Это **не browser launch**.",
-        "finite_missing_action": "One genuine WebKit launch + existing critical login/role admission/offline read, current production build+real backend. Existing `playwright.real-mobile.config.ts` excludes WebKit when remaining5=true; simply adding --project=webkit to that lane discovers no such project. Need own ordinary configured WebKit lane with existing assertions, no silent launcher/env changes.",
+        "finite_missing_action": "No further Cloud offline emulation run required by D021. Current final ordinary WebKit online gate still required; owner performs Safari offline/reconnect on final reviewed revision.",
         "resource_classification": "Existing official dependency/local-DSO representation reviewed; new browser grant/resource plan required before local execution. Normal CI ordinary install/runtime lane is feasible checking work; native Safari/iOS ≠ WebKit Playwright. No blanket provider or security bypass; B014 unrelated and frozen.",
-        "current_disposition": "GenuineWebKit launch/live revocation→login PASS actual62df; twoofflinecases1319/1470FAILcauseUNKNOWN. No launchercapabilityblock; Sourcecorrelation next, not unchangedrerun. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_actual_browser_finite_join"
+        "current_disposition": "PASS finite Cloud under explicit D021: genuine Chromium offline/reconnect plus retained genuine WebKit online revocation/recovery. Actual Safari offline OWNER_MANUAL_PENDING; all original offline/control FAIL and exact Sources retained. Current final gates remain separate.",
+        "status": "PASS",
+        "owner_scope_update": "docs/product/decisions/2026-10-15-webkit-offline-owner-acceptance.md; Root58def_W1_available_Cloud_finite_join"
       },
       {
         "alias_existing_scope": "**E14-H1** CLIENT-FE-TMA01/02/03 / B49 / D003",
@@ -7315,7 +7430,7 @@
         "already_proved": "Python provider mocks/adapters+durable delivery/preference proofs, current synthetic TMA/browser actions; old prior native receipt only if exact dated receipt/source scope can be joined.",
         "finite_missing_action": "Actual assigned test Telegram client binding + launch/deeplink/Back/download; actual assigned WebPush subscription background/closed delivery→current-recipient target, opt-out/unbind/logout no private late delivery; actual external OTP/initial credential card effect/cleanup uses own test provider. One positive and accepted private-boundary negative per **distinct provider policy**, not new promises of provider exactly-once.",
         "resource_classification": "**EXTERNAL_CAPABILITY_BLOCKED** from existing frontend-inventory resource observation: no assigned native Telegram/test binding/provider identities/subscriptions and no inspected prior receipt proving these clauses. I did not inspect env/secrets or re-probe. Root can join safe historical receipt or obtain assigned test capability; no private bot/production use. Ordinary CI mocks cannot promote native/provider clause.",
-        "owner_scope_update": "D015/Q013 2026-10-14: native Telegram/WebPush/OSinstall execution OWNER_MANUAL_PENDING on ownerlocalstand. Cloud implementation/consistentlogic/synthetic+availablebrowser/server checks retained, no nativePASS claim. Missing nativecapability no longerCloudblocker; finiteownerchecklisthandoffrequired. Canonicaldocs/product/decisions/2026-10-14-owner-native-client-acceptance.md."
+        "owner_scope_update": "D015/Q013 2026-10-14: native Telegram/WebPush/OSinstall execution OWNER_MANUAL_PENDING on ownerlocalstand. Cloud implementation/consistentlogic/synthetic+availablebrowser/server checks retained, no nativePASS claim. Missing nativecapability no longerCloudblocker; finiteownerchecklisthandoffrequired. Canonicaldocs/product/decisions/2026-10-14-owner-native-client-acceptance.md. D021/Q019 also transfers actual Safari offline/read-only/reconnect/revoked-cache behavior to owner local acceptance; implementation and available Cloud browser checks retained. No nativePASS."
       },
       {
         "alias_existing_scope": "**E15-R1** RECOVERY/P20/B51 files",
@@ -7379,17 +7494,18 @@
         ],
         "package": "Q01/Q02",
         "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[1]",
-        "classification": "PROOF_GAP",
+        "classification": "SOURCE_QUALIFIED_COMPOSED_ACTUAL_ACCEPTED",
         "existingCaseIds": [
           "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01"
         ],
         "rootReceiptKeys": [
           "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review",
-          "current4065#20b90_headman_finite_acceptance"
+          "current4065#20b90_headman_finite_acceptance",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.58def_actual_finite_parent_independent_join"
         ],
         "sufficientOrPartial": "Chooser/manual clear/ABSENT are adequate; read-action history and live counters are not asserted by those results.",
-        "missingAction": "ONE real readyPWA summary→counter read tied ongoinglesson (independent selectedmanualpanel/groupdenominator)→scoped action-log read percanonicalJSHEADMAN25/26. GETneedNOTcreateaudit/countdelta. CurrentselectedLessonreportcounterSource mismatchCANDIDATE only, notruntimeFAIL.",
-        "recommendedWholeResidualStatus": "UNKNOWN",
+        "missingAction": "NONE for finite ongoingcounter/actionhistory residual; current58def helper468 wholePASS plus unchanged named history/scope/CAS proofs independently joinedc85.",
+        "recommendedWholeResidualStatus": "PASS",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
       },
       {
@@ -8106,6 +8222,7 @@
         "remaining": "Distinct Q10 membership/headman/helper audience-change/prejoin-history and partial-channel failures remain; Q09 line576 actual login429 before transfer/archive carrier is separate, not basic edit/inbox gap."
       }
     ],
-    "rootReceipt": "current4065#6172_existing_finite_acceptance_reconciliation"
+    "rootReceipt": "current4065#6172_existing_finite_acceptance_reconciliation",
+    "student_headman_parent_residual_pointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.58def_student_headman_existing_parent_accounting"
   }
 }

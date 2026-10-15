@@ -1,3 +1,4 @@
+import type { Request } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
@@ -59,6 +60,40 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     );
     manualLessons.push(String(lesson.physicalLessonId));
   }
+  // D019: separate own lessons preserve the original five manual-budget lessons.
+  const multipleExcuseLessonIds: string[] = [];
+  for (const lessonNumber of [6, 7]) {
+    const lesson = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: yesterday,
+        lessonNumber,
+        classroom: 'Синтетическая аудитория',
+      },
+      [201, 200],
+      { 'Idempotency-Key': randomUUID() },
+    );
+    multipleExcuseLessonIds.push(String(lesson.physicalLessonId));
+  }
+  expect(new Set([...manualLessons, ...multipleExcuseLessonIds]).size).toBe(7);
+  type PairMark = { status: string | null; source: string | null; markRevision: string | null };
+  const readPairMark = async (id: string): Promise<PairMark> => {
+    const report = await dataset.headmanActor.call('GET', `/api/attendance/reports/lesson/${id}`);
+    const entry = report.entries.find(
+      (row: { userId: number }) => Number(row.userId) === dataset.student.id,
+    );
+    return {
+      status: entry?.status ?? null,
+      source: entry?.source ?? null,
+      markRevision: entry?.markRevision ?? null,
+    };
+  };
+  const multipleBefore = new Map<string, PairMark>();
+  // End D019 own lesson setup.
   await expect
     .poll(
       async () => {
@@ -72,6 +107,31 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
           ),
         );
         if (!allClosed) return false;
+        // D019: reuse this readiness budget for both additional closed lessons.
+        for (const id of multipleExcuseLessonIds) {
+          const eligible = available.lessons.some(
+            (option: {
+              lesson: { id: string; status: string };
+              excuseEligible: boolean;
+              pendingRequests: unknown[];
+            }) =>
+              option.lesson.id === id &&
+              option.lesson.status === 'closed' &&
+              option.excuseEligible &&
+              option.pendingRequests.length === 0,
+          );
+          if (!eligible) return false;
+          const mark = await readPairMark(id);
+          if (
+            mark.status !== 'absent' ||
+            mark.source !== 'auto_scheduler' ||
+            typeof mark.markRevision !== 'string' ||
+            !mark.markRevision
+          )
+            return false;
+          multipleBefore.set(id, mark);
+        }
+        // End D019 readiness.
         const report = await dataset.headmanActor.call(
           'GET',
           `/api/attendance/reports/lesson/${manualLessons[0]}`,
@@ -327,6 +387,92 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
       JSON.stringify(originalOpenIds),
   ).toBe(true);
 
+  // D019: the full form submits both selected lessons as one genuine ticket.
+  const multipleComment = 'Синтетическая общая причина для двух пар';
+  await page.getByRole('button', { name: 'Подать', exact: true }).click();
+  await page.getByRole('button', { name: 'Уважительная причина', exact: true }).click();
+  for (const id of multipleExcuseLessonIds)
+    await page.locator(`input[type="checkbox"][value="${id}"]`).check();
+  await expect(page.locator('input[type="checkbox"]:checked')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Продолжить', exact: true }).click();
+  await page.locator('#request-excuse-reason').click();
+  await page.getByRole('option', { name: otherReason.label, exact: true }).click();
+  await page.getByLabel('Комментарий', { exact: true }).fill(multipleComment);
+  let multipleSubmissions = 0;
+  const countMultipleSubmission = (request: Request) => {
+    if (
+      new URL(request.url()).pathname === '/api/v1/student/requests/excuse' &&
+      request.method() === 'POST'
+    )
+      multipleSubmissions++;
+  };
+  page.on('request', countMultipleSubmission);
+  const multipleReply = await (async () => {
+    try {
+      const [reply] = await Promise.all([
+        page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/v1/student/requests/excuse' &&
+            item.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'Отправить заявку', exact: true }).click(),
+      ]);
+      return reply;
+    } finally {
+      page.off('request', countMultipleSubmission);
+    }
+  })();
+  expect(multipleReply.status()).toBe(200);
+  expect(multipleSubmissions).toBe(1);
+  const multipartBytes = multipleReply.request().postDataBuffer();
+  expect(Boolean(multipartBytes)).toBe(true);
+  const multipart = await new globalThis.Response(new Uint8Array(multipartBytes!), {
+    headers: { 'Content-Type': multipleReply.request().headers()['content-type']! },
+  }).formData();
+  const requestPart = multipart.get('request');
+  expect(requestPart instanceof Blob).toBe(true);
+  const multipleCommand = JSON.parse(await (requestPart as Blob).text());
+  const samePair = (ids: unknown[]) =>
+    JSON.stringify(ids.map(String).sort()) === JSON.stringify([...multipleExcuseLessonIds].sort());
+  expect(
+    samePair(multipleCommand.lessonIds) &&
+      multipleCommand.reason === 'OTHER' &&
+      multipleCommand.comment === multipleComment,
+  ).toBe(true);
+  const multipleCreated = await multipleReply.json();
+  const multipleExcuseId: string = multipleCreated.summary.id;
+  expect(
+    /^[a-f0-9]{24}$/.test(multipleExcuseId) &&
+      multipleCreated.summary.kind === 'EXCUSE' &&
+      multipleCreated.summary.status === 'PENDING' &&
+      samePair(multipleCreated.summary.lessons.map((row: { id: string }) => row.id)),
+  ).toBe(true);
+  const multipleCard = page.getByRole('article').filter({
+    has: page.locator(`[id="request-title-${multipleExcuseId}"]`),
+  });
+  await expect(multipleCard).toHaveCount(1);
+  await expect(multipleCard.getByText('На рассмотрении', { exact: true })).toBeVisible();
+  await expect(multipleCard.locator('.request-card__lessons > li')).toHaveCount(2);
+  const multiplePending = await student.call('GET', `/api/v1/student/requests/${multipleExcuseId}`);
+  expect(
+    multiplePending.summary.id === multipleExcuseId &&
+      multiplePending.summary.status === 'PENDING' &&
+      samePair(multiplePending.summary.lessons.map((row: { id: string }) => row.id)),
+  ).toBe(true);
+  const multipleOpen = await student.call(
+    'GET',
+    '/api/v1/student/requests?bucket=OPEN&page=0&size=50',
+  );
+  expect(
+    multipleOpen.content.filter((row: { id: string }) => row.id === multipleExcuseId).length,
+  ).toBe(1);
+  for (const id of multipleExcuseLessonIds)
+    expect(JSON.stringify(await readPairMark(id)) === JSON.stringify(multipleBefore.get(id))).toBe(
+      true,
+    );
+  expect((await options()).budget).toMatchObject({ limit: 5, used: 4, remaining: 1 });
+  // End D019 student submission.
+
   await page.getByRole('button', { name: 'Подать', exact: true }).click();
   await page.getByRole('button', { name: 'Забыл отметиться', exact: true }).click();
   await page.locator(`input[type="checkbox"][value="${manualLessons[4]}"]`).check();
@@ -411,6 +557,13 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     headers: foreign.headers(),
   });
   expect(denied.status()).toBe(403);
+  // D019: the already-admitted foreign student cannot read the aggregate.
+  const deniedMultiple = await dataset.request.get(`/api/v1/student/requests/${multipleExcuseId}`, {
+    headers: foreign.headers(),
+  });
+  expect(deniedMultiple.status()).toBe(403);
+  await deniedMultiple.dispose();
+  // End D019 foreign boundary.
   await openStudentRequests();
   const autoCard = page
     .getByRole('article')
@@ -437,6 +590,140 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   ).toHaveAttribute('data-status', 'absent');
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await page.getByRole('button', { name: 'Заявки', exact: true }).click();
+  // D019: this existing HEADMAN session approves the whole two-lesson ticket once.
+  const multipleDetailPath = `/api/attendance/requests/${multipleExcuseId}`;
+  const [multipleDetailReply] = await Promise.all([
+    page.waitForResponse(
+      (item) =>
+        new URL(item.url()).pathname === multipleDetailPath && item.request().method() === 'GET',
+    ),
+    page.locator(`[data-request-id="${multipleExcuseId}"]`).click(),
+  ]);
+  expect(multipleDetailReply.status()).toBe(200);
+  const multipleDetail = await multipleDetailReply.json();
+  expect(
+    multipleDetail.summary.id === multipleExcuseId &&
+      multipleDetail.summary.status === 'PENDING' &&
+      typeof multipleDetail.decisionRevision === 'string' &&
+      Boolean(multipleDetail.decisionRevision) &&
+      samePair(
+        multipleDetail.currentAffectedLessons.map((row: { lessonId: number }) => row.lessonId),
+      ),
+  ).toBe(true);
+  const affectedRows = page.locator('.headman-requests__lessons > li');
+  await expect(affectedRows).toHaveCount(2);
+  for (const row of await affectedRows.all())
+    await expect(row).toHaveAttribute('data-excluded', 'false');
+  await page.getByRole('button', { name: 'Одобрить', exact: true }).click();
+  let multipleDecisions = 0;
+  const countMultipleDecision = (request: Request) => {
+    if (
+      new URL(request.url()).pathname === `${multipleDetailPath}/decision` &&
+      request.method() === 'POST'
+    )
+      multipleDecisions++;
+  };
+  page.on('request', countMultipleDecision);
+  const multipleDecisionReply = await (async () => {
+    try {
+      const [reply] = await Promise.all([
+        page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === `${multipleDetailPath}/decision` &&
+            item.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'Одобрить 2 пары', exact: true }).click(),
+      ]);
+      return reply;
+    } finally {
+      page.off('request', countMultipleDecision);
+    }
+  })();
+  expect(multipleDecisionReply.status()).toBe(200);
+  expect(multipleDecisions).toBe(1);
+  const multipleDecisionCommand = multipleDecisionReply.request().postDataJSON();
+  expect(
+    multipleDecisionCommand.decision === 'APPROVED' &&
+      multipleDecisionCommand.expectedRevision === multipleDetail.decisionRevision &&
+      multipleDecisionCommand.excludedOccurrenceIds.length === 0 &&
+      typeof multipleDecisionCommand.requestKey === 'string' &&
+      Boolean(multipleDecisionCommand.requestKey),
+  ).toBe(true);
+  const multipleApproved = await multipleDecisionReply.json();
+  expect(
+    multipleApproved.summary.id === multipleExcuseId &&
+      multipleApproved.summary.status === 'APPROVED' &&
+      multipleApproved.decisionSelection.expectedRevision === multipleDetail.decisionRevision &&
+      multipleApproved.decisionSelection.requestKey === multipleDecisionCommand.requestKey &&
+      multipleApproved.decisionSelection.excludedLessons.length === 0 &&
+      samePair(
+        multipleApproved.decisionSelection.includedLessons.map(
+          (row: { lessonId: number }) => row.lessonId,
+        ),
+      ),
+  ).toBe(true);
+  await expect(page.getByText('Одобрена', { exact: true })).toBeVisible();
+  const multipleDurable = await student.call('GET', `/api/v1/student/requests/${multipleExcuseId}`);
+  expect(
+    multipleDurable.summary.id === multipleExcuseId &&
+      multipleDurable.summary.status === 'APPROVED' &&
+      samePair(
+        multipleDurable.decisionSelection.includedLessons.map((row: { id: string }) => row.id),
+      ) &&
+      multipleDurable.decisionSelection.excludedLessons.length === 0,
+  ).toBe(true);
+  for (const id of multipleExcuseLessonIds) {
+    const mark = await readPairMark(id);
+    expect(
+      mark.status === 'excused' &&
+        mark.source === 'headman_excuse' &&
+        typeof mark.markRevision === 'string' &&
+        Boolean(mark.markRevision) &&
+        mark.markRevision !== multipleBefore.get(id)!.markRevision,
+    ).toBe(true);
+    const history = await dataset.headmanActor.call(
+      'GET',
+      `/api/attendance/reports/lesson/${id}/actions?limit=50`,
+    );
+    type TicketAction = {
+      action: string;
+      outcome: string;
+      actor: { userId: number; role: string } | null;
+      student: { userId: number } | null;
+      ticket: { kind: string; id: string; status: string } | null;
+      before: { status: string } | null;
+      after: { status: string; source?: string } | null;
+    };
+    const ticketActions = (history.items as TicketAction[]).filter(
+      (event) =>
+        event.outcome === 'APPLIED' &&
+        event.actor?.userId === dataset.headman.id &&
+        event.actor.role === 'HEADMAN' &&
+        event.student?.userId === dataset.student.id &&
+        event.ticket?.kind === 'EXCUSE' &&
+        event.ticket.id === multipleExcuseId &&
+        event.ticket.status === 'APPROVED',
+    );
+    expect(
+      ticketActions.filter(
+        (event) =>
+          event.action === 'REQUEST_DECIDED' &&
+          event.before?.status === 'PENDING' &&
+          event.after?.status === 'APPROVED',
+      ).length,
+    ).toBe(1);
+    expect(
+      ticketActions.filter(
+        (event) =>
+          event.action === 'ATTENDANCE_SET' &&
+          event.before?.status === 'ABSENT' &&
+          event.after?.status === 'EXCUSED' &&
+          event.after.source === 'HEADMAN_EXCUSE',
+      ).length,
+    ).toBe(1);
+  }
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  // End D019 whole-ticket decision.
   await page.locator(`[data-request-id="${requestId}"]`).click();
   await expect(
     page.getByRole('main').getByText(dataset.student.displayName, { exact: true }),
@@ -467,6 +754,12 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     .filter({ has: page.locator(`[id="request-title-${requestId}"]`) });
   await expect(approvedCard.getByText('Одобрена', { exact: true })).toBeVisible();
 
+  // D019: the same student sees one approved ticket containing both lessons.
+  await expect(multipleCard).toHaveCount(1);
+  await expect(multipleCard.getByText('Одобрена', { exact: true })).toBeVisible();
+  await expect(multipleCard.locator('.request-card__lessons > li')).toHaveCount(2);
+  // End D019 student archive.
+
   // Accepted AT-11: a headman adds attempts without resetting the exhausted student's usage.
   await logoutPwa(page);
   const budgetHeadman = await loginPwa(page, dataset.headman);
@@ -490,7 +783,10 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   expect((await options()).budget).toMatchObject({ limit: 7, used: 5, remaining: 2 });
   const foreignBudget = await dataset.request.get(budgetPath, { headers: foreign.headers() });
   expect(foreignBudget.status()).toBe(403);
-  const manual = open.content.find((row: { origin: string }) => row.origin === 'MANUAL');
+  const manual = open.content.find(
+    (row: { kind: string; origin: string }) =>
+      row.kind === 'LATE_CHECKIN' && row.origin === 'MANUAL',
+  );
   expect(Boolean(manual)).toBe(true);
   const retryLessonId = manual.lessons[0].id;
   await student.call('POST', `/api/v1/student/requests/${manual.id}/cancel`);

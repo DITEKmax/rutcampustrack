@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import type { Download, Page } from '@playwright/test';
+import type { Download, Page, TestInfo } from '@playwright/test';
 import {
   test,
   expect,
@@ -19,199 +19,213 @@ registerPrivateSuite();
 // CLIENT-MAP-FILES-EXPORTS + CLIENT-ADMIN / D006,D007 / JS-ADMIN-13 / BOUNDARY-46.
 // This finite HTML carrier verifies the actual choose → durable ready → ticket →
 // browser download sequence. Other four formats/native Telegram remain separate.
-for (const mode of ['FULL', 'LIMITED'] as const) {
-  test(`${mode} ordinary user export downloads filtered HTML with exact safe fields @cloud-accepted`, async ({
-    page,
-    dataset,
-  }, info) => {
-    // TestInfo.duration is zero while running. Reserve 30s of the original
-    // case budget and charge all body setup against this one absolute limit.
-    const retryUntilMs = Date.now() + Math.max(0, Math.min(info.timeout, 120000) - 30000);
-    const user = await dataset.user('ADMIN', undefined, mode === 'LIMITED');
-    const target = await dataset.user('STUDENT', dataset.group.id);
-    const nonmatching = await dataset.user('STUDENT', dataset.otherGroup.id);
-    expect(nonmatching.login !== target.login).toBe(true);
-    const staffNumber = `E2E-${target.id}`;
-    await dataset.admin.call('PUT', `/api/academic/users/${target.id}/roles/TEACHER`, {
-      status: 'ACTIVE',
-      employeeNumber: staffNumber,
+type RegistryExportMode = 'FULL' | 'LIMITED';
+type RegistryExportFixtures = { page: Page; dataset: MobileDataset };
+
+async function ordinaryRegistryExport(
+  mode: RegistryExportMode,
+  { page, dataset }: RegistryExportFixtures,
+  info: TestInfo,
+): Promise<void> {
+  // TestInfo.duration is zero while running. Reserve 30s of the original
+  // case budget and charge all body setup against this one absolute limit.
+  const retryUntilMs = Date.now() + Math.max(0, Math.min(info.timeout, 120000) - 30000);
+  const user = await dataset.user('ADMIN', undefined, mode === 'LIMITED');
+  const target = await dataset.user('STUDENT', dataset.group.id);
+  const nonmatching = await dataset.user('STUDENT', dataset.otherGroup.id);
+  expect(nonmatching.login !== target.login).toBe(true);
+  const staffNumber = `E2E-${target.id}`;
+  await dataset.admin.call('PUT', `/api/academic/users/${target.id}/roles/TEACHER`, {
+    status: 'ACTIVE',
+    employeeNumber: staffNumber,
+  });
+  const profile = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);
+  expect(profile.fullName === target.displayName).toBe(true);
+  expect(profile.employeeNumber === staffNumber).toBe(true);
+  expect(
+    profile.roles
+      .map((grant: { role: string; status: string }) => `${grant.role}: ${grant.status}`)
+      .join('; ') === 'STUDENT: ACTIVE; TEACHER: ACTIVE',
+  ).toBe(true);
+  expect(typeof dataset.group.name === 'string' && dataset.group.name.length > 0).toBe(true);
+  await loginPwa(page, user, { retryUntilMs });
+  const selected = await selectRole(page, 'Администратор');
+  await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+  await page.getByRole('searchbox', { name: 'Найти пользователя', exact: true }).fill(target.login);
+  await page.getByRole('button', { name: 'Найти', exact: true }).click();
+  await expect(page.locator(`[data-user-id="${target.id}"]`)).toBeVisible();
+  await expect(page.locator('.admin-users-card')).toHaveCount(1);
+  // Job/ticket expiry uses ordinary server time. This registry flow has no
+  // educational-date selector, so the synthetic next-weekday clock must end.
+  await page.clock.setFixedTime(new Date());
+  const catalogue = http(page, '/api/academic/registry-exports/users/formats', 'GET');
+  await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
+  const formats = await catalogue;
+  expect(formats.status()).toBe(200);
+  expect((await formats.json()).map((value: { code: string }) => value.code).sort()).toEqual([
+    'docx',
+    'html',
+    'pdf',
+    'png',
+    'xlsx',
+  ]);
+  await page.getByLabel(/^Формат выгрузки/).selectOption('html');
+  const created = http(page, '/api/auth/export-jobs', 'POST');
+  const capability = page.waitForResponse(
+    (response) =>
+      /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(response.url()).pathname) &&
+      response.request().method() === 'POST',
+  );
+  const bytes = page.waitForResponse((response) =>
+    /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(new URL(response.url()).pathname),
+  );
+  const saved = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Скачать', exact: true }).click();
+  const job = await created;
+  expect(job.status()).toBe(202);
+  const jobId: string = (await job.json()).jobId;
+  const issued = await capability;
+  expect(issued.status()).toBe(200);
+  const ticket: { downloadPath: string; suggestedFilename: string } = await issued.json();
+  const file = await bytes;
+  if (file.status() !== 200)
+    throw datasetHttpFailure('GET', new URL(file.url()).pathname, file.status());
+  expect(file.status()).toBe(200);
+  expect(file.headers()['content-type'].split(';')[0]).toBe('text/html');
+  const download = await saved;
+  expect(await download.failure()).toBeNull();
+  const content = (await registryBrowserDownloadBytes(download)).toString('utf8');
+  expect(content.startsWith('<!doctype html>')).toBe(true);
+  const boundary = registryHtmlBoundary(
+    content,
+    mode === 'FULL',
+    [
+      target.displayName,
+      target.login,
+      'STUDENT: ACTIVE; TEACHER: ACTIVE',
+      dataset.group.name,
+      staffNumber,
+      'Привязан',
+      ...(mode === 'FULL' ? [String(target.telegramId)] : []),
+    ],
+    nonmatching,
+  );
+  expect(boundary.tableShape).toBe(true);
+  expect(boundary.columnsExact).toBe(true);
+  expect(boundary.oneRow).toBe(true);
+  expect(boundary.valuesExact).toBe(true);
+  expect(boundary.knownNonmatchAbsent).toBe(true);
+  expect(content.includes('Telegram ID')).toBe(mode === 'FULL');
+  expect(content.includes(String(target.telegramId))).toBe(mode === 'FULL');
+  expect(content.includes(target.password)).toBe(false);
+  expect(/парол|password|password-reset/i.test(content)).toBe(false);
+  expect(download.suggestedFilename() === ticket.suggestedFilename).toBe(true);
+  expect(download.suggestedFilename().endsWith('.html')).toBe(true);
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Файл готов. Скачивание передано браузеру.' }),
+  ).toBeVisible();
+  const headers = { Authorization: `Bearer ${selected.accessToken}` };
+  expect((await dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers })).status()).toBe(
+    200,
+  );
+  const foreignUser = await dataset.user('ADMIN');
+  const foreign = await admit(dataset.request, foreignUser, 'ADMIN');
+  expect(
+    (
+      await dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers: foreign.headers() })
+    ).status(),
+  ).toBe(404);
+  expect(
+    (
+      await dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, {
+        headers: foreign.headers(),
+      })
+    ).status(),
+  ).toBe(404);
+  if (mode === 'LIMITED') {
+    const path = `/api/academic/users/${user.id}/admin-access`;
+    const profile = await dataset.admin.call('GET', path);
+    // A fresh, working capability distinguishes live revocation from ticket expiry.
+    const freshTicketResponse = await dataset.request.post(
+      `/api/auth/export-jobs/${jobId}/ticket`,
+      { headers },
+    );
+    expect(freshTicketResponse.status()).toBe(200);
+    const freshTicket: { downloadPath: string } = await freshTicketResponse.json();
+    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(200);
+    await dataset.admin.call('PUT', path, {
+      mode: 'LIMITED',
+      permissions: ['GROUPS_VIEW'],
+      expectedVersion: profile.version,
     });
-    const profile = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);
-    expect(profile.fullName === target.displayName).toBe(true);
-    expect(profile.employeeNumber === staffNumber).toBe(true);
-    expect(
-      profile.roles
-        .map((grant: { role: string; status: string }) => `${grant.role}: ${grant.status}`)
-        .join('; ') === 'STUDENT: ACTIVE; TEACHER: ACTIVE',
-    ).toBe(true);
-    expect(typeof dataset.group.name === 'string' && dataset.group.name.length > 0).toBe(true);
-    await loginPwa(page, user, { retryUntilMs });
-    const selected = await selectRole(page, 'Администратор');
-    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
-    await page
-      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
-      .fill(target.login);
-    await page.getByRole('button', { name: 'Найти', exact: true }).click();
-    await expect(page.locator(`[data-user-id="${target.id}"]`)).toBeVisible();
-    await expect(page.locator('.admin-users-card')).toHaveCount(1);
-    // Job/ticket expiry uses ordinary server time. This registry flow has no
-    // educational-date selector, so the synthetic next-weekday clock must end.
-    await page.clock.setFixedTime(new Date());
-    const catalogue = http(page, '/api/academic/registry-exports/users/formats', 'GET');
-    await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
-    const formats = await catalogue;
-    expect(formats.status()).toBe(200);
-    expect((await formats.json()).map((value: { code: string }) => value.code).sort()).toEqual([
-      'docx',
-      'html',
-      'pdf',
-      'png',
-      'xlsx',
-    ]);
-    await page.getByLabel(/^Формат выгрузки/).selectOption('html');
-    const created = http(page, '/api/auth/export-jobs', 'POST');
-    const capability = page.waitForResponse(
-      (response) =>
-        /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(response.url()).pathname) &&
-        response.request().method() === 'POST',
-    );
-    const bytes = page.waitForResponse((response) =>
-      /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(new URL(response.url()).pathname),
-    );
-    const saved = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Скачать', exact: true }).click();
-    const job = await created;
-    expect(job.status()).toBe(202);
-    const jobId: string = (await job.json()).jobId;
-    const issued = await capability;
-    expect(issued.status()).toBe(200);
-    const ticket: { downloadPath: string; suggestedFilename: string } = await issued.json();
-    const file = await bytes;
-    if (file.status() !== 200)
-      throw datasetHttpFailure('GET', new URL(file.url()).pathname, file.status());
-    expect(file.status()).toBe(200);
-    expect(file.headers()['content-type'].split(';')[0]).toBe('text/html');
-    const download = await saved;
-    expect(await download.failure()).toBeNull();
-    const content = (await registryBrowserDownloadBytes(download)).toString('utf8');
-    expect(content.startsWith('<!doctype html>')).toBe(true);
-    const boundary = registryHtmlBoundary(
-      content,
-      mode === 'FULL',
-      [
-        target.displayName,
-        target.login,
-        'STUDENT: ACTIVE; TEACHER: ACTIVE',
-        dataset.group.name,
-        staffNumber,
-        'Привязан',
-        ...(mode === 'FULL' ? [String(target.telegramId)] : []),
-      ],
-      nonmatching,
-    );
-    expect(boundary.tableShape).toBe(true);
-    expect(boundary.columnsExact).toBe(true);
-    expect(boundary.oneRow).toBe(true);
-    expect(boundary.valuesExact).toBe(true);
-    expect(boundary.knownNonmatchAbsent).toBe(true);
-    expect(content.includes('Telegram ID')).toBe(mode === 'FULL');
-    expect(content.includes(String(target.telegramId))).toBe(mode === 'FULL');
-    expect(content.includes(target.password)).toBe(false);
-    expect(/парол|password|password-reset/i.test(content)).toBe(false);
-    expect(download.suggestedFilename() === ticket.suggestedFilename).toBe(true);
-    expect(download.suggestedFilename().endsWith('.html')).toBe(true);
-    await expect(
-      page.getByRole('status').filter({ hasText: 'Файл готов. Скачивание передано браузеру.' }),
-    ).toBeVisible();
-    const headers = { Authorization: `Bearer ${selected.accessToken}` };
-    expect(
-      (await dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers })).status(),
-    ).toBe(200);
-    const foreignUser = await dataset.user('ADMIN');
-    const foreign = await admit(dataset.request, foreignUser, 'ADMIN');
+    // The profile write bumps rolesVersion. Old credentials must fail as stale,
+    // before the request can reach the current registry permission check.
+    for (const operation of [
+      () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers }),
+      () => dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, { headers }),
+      () => dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, { headers }),
+    ]) {
+      const denied = await operation();
+      expect(denied.status()).toBe(409);
+      expect((await denied.json()).code === 'SESSION_STATE_STALE').toBe(true);
+    }
+    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
+
+    // Refresh the browser's owning session, whose cookie is independent of the
+    // synthetic actors above; a new login would change ownership and yield 404.
+    const refreshed = await page.request.post('/api/auth/refresh');
+    expect(refreshed.status()).toBe(200);
+    const currentHeaders = {
+      Authorization: `Bearer ${(await refreshed.json()).accessToken}`,
+    };
+    const current = await page.request.get('/api/auth/session', { headers: currentHeaders });
+    expect(current.status()).toBe(200);
+    const currentSession = await current.json();
+    expect(currentSession.sessionId === selected.session.sessionId).toBe(true);
+    expect(currentSession.activeRole).toBe('ADMIN');
+    for (const operation of [
+      () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers: currentHeaders }),
+      () =>
+        dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, {
+          headers: currentHeaders,
+        }),
+      () =>
+        dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, {
+          headers: currentHeaders,
+        }),
+    ])
+      expect((await operation()).status()).toBe(403);
+    // A new request also reaches live USERS_VIEW admission, independently of
+    // the old job's stored principal/version and idempotent replay identity.
     expect(
       (
-        await dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers: foreign.headers() })
-      ).status(),
-    ).toBe(404);
-    expect(
-      (
-        await dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, {
-          headers: foreign.headers(),
+        await dataset.request.post('/api/auth/export-jobs', {
+          headers: currentHeaders,
+          data: { requestId: randomUUID(), report: job.request().postDataJSON().report },
         })
       ).status(),
-    ).toBe(404);
-    if (mode === 'LIMITED') {
-      const path = `/api/academic/users/${user.id}/admin-access`;
-      const profile = await dataset.admin.call('GET', path);
-      // A fresh, working capability distinguishes live revocation from ticket expiry.
-      const freshTicketResponse = await dataset.request.post(
-        `/api/auth/export-jobs/${jobId}/ticket`,
-        { headers },
-      );
-      expect(freshTicketResponse.status()).toBe(200);
-      const freshTicket: { downloadPath: string } = await freshTicketResponse.json();
-      expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(200);
-      await dataset.admin.call('PUT', path, {
-        mode: 'LIMITED',
-        permissions: ['GROUPS_VIEW'],
-        expectedVersion: profile.version,
-      });
-      // The profile write bumps rolesVersion. Old credentials must fail as stale,
-      // before the request can reach the current registry permission check.
-      for (const operation of [
-        () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers }),
-        () => dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, { headers }),
-        () => dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, { headers }),
-      ]) {
-        const denied = await operation();
-        expect(denied.status()).toBe(409);
-        expect((await denied.json()).code === 'SESSION_STATE_STALE').toBe(true);
-      }
-      expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
-
-      // Refresh the browser's owning session, whose cookie is independent of the
-      // synthetic actors above; a new login would change ownership and yield 404.
-      const refreshed = await page.request.post('/api/auth/refresh');
-      expect(refreshed.status()).toBe(200);
-      const currentHeaders = {
-        Authorization: `Bearer ${(await refreshed.json()).accessToken}`,
-      };
-      const current = await page.request.get('/api/auth/session', { headers: currentHeaders });
-      expect(current.status()).toBe(200);
-      const currentSession = await current.json();
-      expect(currentSession.sessionId === selected.session.sessionId).toBe(true);
-      expect(currentSession.activeRole).toBe('ADMIN');
-      for (const operation of [
-        () => dataset.request.get(`/api/auth/export-jobs/${jobId}`, { headers: currentHeaders }),
-        () =>
-          dataset.request.post(`/api/auth/export-jobs/${jobId}/ticket`, {
-            headers: currentHeaders,
-          }),
-        () =>
-          dataset.request.get(`/api/auth/export-jobs/${jobId}/file`, {
-            headers: currentHeaders,
-          }),
-      ])
-        expect((await operation()).status()).toBe(403);
-      // A new request also reaches live USERS_VIEW admission, independently of
-      // the old job's stored principal/version and idempotent replay identity.
-      expect(
-        (
-          await dataset.request.post('/api/auth/export-jobs', {
-            headers: currentHeaders,
-            data: { requestId: randomUUID(), report: job.request().postDataJSON().report },
-          })
-        ).status(),
-      ).toBe(403);
-      expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
-      const unchanged = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);
-      expect(unchanged.initialPassword === target.password).toBe(true);
-    }
-    // Download bodies/tickets/identities are never attached or persisted by this test.
-    await download.delete();
-  });
+    ).toBe(403);
+    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
+    const unchanged = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);
+    expect(unchanged.initialPassword === target.password).toBe(true);
+  }
+  // Download bodies/tickets/identities are never attached or persisted by this test.
+  await download.delete();
 }
+
+test('FULL ordinary user export downloads filtered HTML with exact safe fields @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  await ordinaryRegistryExport('FULL', { page, dataset }, info);
+});
+
+test('LIMITED ordinary user export downloads filtered HTML with exact safe fields @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  await ordinaryRegistryExport('LIMITED', { page, dataset }, info);
+});
 
 // Q11 / JS-ADMIN-13 / D006,D007. The HTML browser/grant tests above remain the
 // client carrier. These selected binary cases add the actual native producer
@@ -691,23 +705,110 @@ async function registryPngTable(page: Page, actual: Buffer, reference: Buffer, t
   }
 }
 
-for (const mode of ['FULL', 'LIMITED'] as const) {
-  test(`${mode} native user PDF preserves selected ordered fields and its committed audit @cloud-accepted`, async ({
-    page,
-    dataset,
-  }, info) => {
-    const nativeUntil = Date.now() + info.timeout;
-    const owner = await dataset.user('ADMIN', undefined, mode === 'LIMITED');
-    const actor = await admit(dataset.request, owner, 'ADMIN');
-    const prefix = `Эк${randomUUID().replace(/-/g, '').slice(0, 8)}`;
-    const targets = [
-      await registryPdfUser(dataset, prefix, 'А'),
-      await registryPdfUser(dataset, prefix, 'Я'),
-    ].sort((left, right) => (left.login < right.login ? 1 : -1));
-    const nonmatching = await dataset.user('STUDENT', dataset.otherGroup.id);
-    registryRequire(targets[0]!.login !== targets[1]!.login, 'OWN_DISTINCT_ROWS');
-    const startedAt = Date.now();
-    const created = await actor.call(
+async function nativeRegistryPdfExport(
+  mode: RegistryExportMode,
+  { page, dataset }: RegistryExportFixtures,
+  info: TestInfo,
+): Promise<void> {
+  const nativeUntil = Date.now() + info.timeout;
+  const owner = await dataset.user('ADMIN', undefined, mode === 'LIMITED');
+  const actor = await admit(dataset.request, owner, 'ADMIN');
+  const prefix = `Эк${randomUUID().replace(/-/g, '').slice(0, 8)}`;
+  const targets = [
+    await registryPdfUser(dataset, prefix, 'А'),
+    await registryPdfUser(dataset, prefix, 'Я'),
+  ].sort((left, right) => (left.login < right.login ? 1 : -1));
+  const nonmatching = await dataset.user('STUDENT', dataset.otherGroup.id);
+  registryRequire(targets[0]!.login !== targets[1]!.login, 'OWN_DISTINCT_ROWS');
+  const startedAt = Date.now();
+  const created = await actor.call(
+    'POST',
+    '/api/auth/export-jobs',
+    {
+      requestId: randomUUID(),
+      report: {
+        kind: 'ADMIN_USERS',
+        adminUsers: {
+          search: prefix,
+          sorts: [{ field: 'login', descending: true }],
+          format: 'pdf',
+        },
+      },
+    },
+    [202],
+  );
+  const jobId: unknown = created.jobId;
+  registryRequire(
+    typeof jobId === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(jobId),
+    'OWN_JOB_ID',
+  );
+  await expect
+    .poll(
+      async () => {
+        const status = await actor.call('GET', `/api/auth/export-jobs/${jobId}`);
+        registryRequire(
+          status.jobId === jobId && ['queued', 'preparing', 'ready'].includes(status.state),
+          'OWN_JOB_STATUS',
+        );
+        return status.state;
+      },
+      { timeout: 60000, message: 'Own native PDF export becomes durably ready' },
+    )
+    .toBe('ready');
+  const ticket = await actor.call('POST', `/api/auth/export-jobs/${jobId}/ticket`);
+  registryRequire(
+    typeof ticket.downloadPath === 'string' &&
+      /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(ticket.downloadPath) &&
+      typeof ticket.suggestedFilename === 'string' &&
+      ticket.suggestedFilename.endsWith('.pdf'),
+    'OWN_TICKET_PATH',
+  );
+  const response = await dataset.request.get(ticket.downloadPath);
+  try {
+    if (response.status() !== 200)
+      throw datasetHttpFailure('GET', ticket.downloadPath, response.status());
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']?.split(';')[0] === 'application/pdf').toBe(true);
+    const content = await response.body();
+    const info = registryPoppler(nativeUntil, content, 'pdfinfo');
+    const pageCount = Number(/^Pages:\s+([0-9]+)\s*$/m.exec(info)?.[1]);
+    registryRequire(
+      Number.isSafeInteger(pageCount) && pageCount > 0 && pageCount <= 4,
+      'PDF_PAGES',
+    );
+    const document = registryPoppler(nativeUntil, content, 'pdftotext');
+    const extracted = [...document.matchAll(/<word\b[^>]*>([^<]*)<\/word>/g)]
+      .map((word) => registryPdfDecode(word[1]!))
+      .join(' ')
+      .replace(/\s+/g, '');
+    expect((document.match(/<page\b/g) ?? []).length === pageCount).toBe(true);
+    const expectedRows = targets.map((user) => [
+      user.displayName,
+      user.login,
+      'STUDENT: ACTIVE; TEACHER: ACTIVE',
+      dataset.group.name as string,
+      user.staffNumber,
+      'Привязан',
+      ...(mode === 'FULL' ? [String(user.telegramId)] : []),
+    ]);
+    expect(registryPdfCells(document, expectedRows, mode === 'FULL')).toBe(true);
+    // Test only booleans; neither parsed names nor synthetic initial credentials
+    // may appear in an assertion diff or native-process error.
+    expect(
+      extracted.includes(nonmatching.login) ||
+        extracted.includes(nonmatching.displayName.replace(/\s+/g, '')),
+    ).toBe(false);
+    expect(/парол|password|password-reset/i.test(extracted)).toBe(false);
+    for (const user of [...targets, nonmatching, owner]) {
+      expect(extracted.includes(user.password)).toBe(false);
+      if (mode === 'LIMITED') expect(extracted.includes(String(user.telegramId))).toBe(false);
+    }
+    registryAudit(nativeUntil, jobId, owner.id, startedAt);
+
+    // Q11's distinct PNG risk: real dispatch/ZIP, browser image decoding and
+    // ordered page content. Reuse the exact field/privacy/audit proof above;
+    // no OCR or image-text assertion and no new actor, login or dataset.
+    const pngJob = await actor.call(
       'POST',
       '/api/auth/export-jobs',
       {
@@ -717,156 +818,80 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
           adminUsers: {
             search: prefix,
             sorts: [{ field: 'login', descending: true }],
-            format: 'pdf',
+            format: 'png',
           },
         },
       },
       [202],
     );
-    const jobId: unknown = created.jobId;
     registryRequire(
-      typeof jobId === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(jobId),
-      'OWN_JOB_ID',
+      typeof pngJob.jobId === 'string' &&
+        /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(pngJob.jobId),
+      'PNG_JOB_ID',
     );
     await expect
       .poll(
         async () => {
-          const status = await actor.call('GET', `/api/auth/export-jobs/${jobId}`);
+          const status = await actor.call('GET', `/api/auth/export-jobs/${pngJob.jobId}`);
           registryRequire(
-            status.jobId === jobId && ['queued', 'preparing', 'ready'].includes(status.state),
-            'OWN_JOB_STATUS',
+            status.jobId === pngJob.jobId &&
+              ['queued', 'preparing', 'ready'].includes(status.state),
+            'PNG_JOB_STATUS',
           );
           return status.state;
         },
-        { timeout: 60000, message: 'Own native PDF export becomes durably ready' },
+        { timeout: 60000, message: 'Own native PNG export becomes durably ready' },
       )
       .toBe('ready');
-    const ticket = await actor.call('POST', `/api/auth/export-jobs/${jobId}/ticket`);
+    const pngTicket = await actor.call('POST', `/api/auth/export-jobs/${pngJob.jobId}/ticket`);
     registryRequire(
-      typeof ticket.downloadPath === 'string' &&
-        /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(ticket.downloadPath) &&
-        typeof ticket.suggestedFilename === 'string' &&
-        ticket.suggestedFilename.endsWith('.pdf'),
-      'OWN_TICKET_PATH',
+      typeof pngTicket.downloadPath === 'string' &&
+        /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(pngTicket.downloadPath) &&
+        typeof pngTicket.suggestedFilename === 'string' &&
+        pngTicket.suggestedFilename.endsWith('.zip'),
+      'PNG_TICKET',
     );
-    const response = await dataset.request.get(ticket.downloadPath);
+    const pngResponse = await dataset.request.get(pngTicket.downloadPath);
     try {
-      if (response.status() !== 200)
-        throw datasetHttpFailure('GET', ticket.downloadPath, response.status());
-      expect(response.status()).toBe(200);
-      expect(response.headers()['content-type']?.split(';')[0] === 'application/pdf').toBe(true);
-      const content = await response.body();
-      const info = registryPoppler(nativeUntil, content, 'pdfinfo');
-      const pageCount = Number(/^Pages:\s+([0-9]+)\s*$/m.exec(info)?.[1]);
-      registryRequire(
-        Number.isSafeInteger(pageCount) && pageCount > 0 && pageCount <= 4,
-        'PDF_PAGES',
-      );
-      const document = registryPoppler(nativeUntil, content, 'pdftotext');
-      const extracted = [...document.matchAll(/<word\b[^>]*>([^<]*)<\/word>/g)]
-        .map((word) => registryPdfDecode(word[1]!))
-        .join(' ')
-        .replace(/\s+/g, '');
-      expect((document.match(/<page\b/g) ?? []).length === pageCount).toBe(true);
-      const expectedRows = targets.map((user) => [
-        user.displayName,
-        user.login,
-        'STUDENT: ACTIVE; TEACHER: ACTIVE',
-        dataset.group.name as string,
-        user.staffNumber,
-        'Привязан',
-        ...(mode === 'FULL' ? [String(user.telegramId)] : []),
-      ]);
-      expect(registryPdfCells(document, expectedRows, mode === 'FULL')).toBe(true);
-      // Test only booleans; neither parsed names nor synthetic initial credentials
-      // may appear in an assertion diff or native-process error.
-      expect(
-        extracted.includes(nonmatching.login) ||
-          extracted.includes(nonmatching.displayName.replace(/\s+/g, '')),
-      ).toBe(false);
-      expect(/парол|password|password-reset/i.test(extracted)).toBe(false);
-      for (const user of [...targets, nonmatching, owner]) {
-        expect(extracted.includes(user.password)).toBe(false);
-        if (mode === 'LIMITED') expect(extracted.includes(String(user.telegramId))).toBe(false);
-      }
-      registryAudit(nativeUntil, jobId, owner.id, startedAt);
-
-      // Q11's distinct PNG risk: real dispatch/ZIP, browser image decoding and
-      // ordered page content. Reuse the exact field/privacy/audit proof above;
-      // no OCR or image-text assertion and no new actor, login or dataset.
-      const pngJob = await actor.call(
-        'POST',
-        '/api/auth/export-jobs',
-        {
-          requestId: randomUUID(),
-          report: {
-            kind: 'ADMIN_USERS',
-            adminUsers: {
-              search: prefix,
-              sorts: [{ field: 'login', descending: true }],
-              format: 'png',
-            },
-          },
-        },
-        [202],
-      );
-      registryRequire(
-        typeof pngJob.jobId === 'string' &&
-          /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(pngJob.jobId),
-        'PNG_JOB_ID',
-      );
-      await expect
-        .poll(
-          async () => {
-            const status = await actor.call('GET', `/api/auth/export-jobs/${pngJob.jobId}`);
-            registryRequire(
-              status.jobId === pngJob.jobId &&
-                ['queued', 'preparing', 'ready'].includes(status.state),
-              'PNG_JOB_STATUS',
-            );
-            return status.state;
-          },
-          { timeout: 60000, message: 'Own native PNG export becomes durably ready' },
-        )
-        .toBe('ready');
-      const pngTicket = await actor.call('POST', `/api/auth/export-jobs/${pngJob.jobId}/ticket`);
-      registryRequire(
-        typeof pngTicket.downloadPath === 'string' &&
-          /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(pngTicket.downloadPath) &&
-          typeof pngTicket.suggestedFilename === 'string' &&
-          pngTicket.suggestedFilename.endsWith('.zip'),
-        'PNG_TICKET',
-      );
-      const pngResponse = await dataset.request.get(pngTicket.downloadPath);
-      try {
-        if (pngResponse.status() !== 200)
-          throw datasetHttpFailure('GET', pngTicket.downloadPath, pngResponse.status());
-        expect(pngResponse.headers()['content-type']?.split(';')[0] === 'application/zip').toBe(
-          true,
+      if (pngResponse.status() !== 200)
+        throw datasetHttpFailure('GET', pngTicket.downloadPath, pngResponse.status());
+      expect(pngResponse.headers()['content-type']?.split(';')[0] === 'application/zip').toBe(true);
+      const pages = registryPngPages(nativeUntil, await pngResponse.body(), pageCount);
+      const pdfPages = [...document.matchAll(/<page\b[^>]*>([\s\S]*?)<\/page>/g)];
+      for (const [index, bytes] of pages.entries()) {
+        const top = Number(
+          /<word\b[^>]*\byMin="([0-9.]+)"[^>]*>ФИО<\/word>/.exec(pdfPages[index]![1]!)?.[1],
         );
-        const pages = registryPngPages(nativeUntil, await pngResponse.body(), pageCount);
-        const pdfPages = [...document.matchAll(/<page\b[^>]*>([\s\S]*?)<\/page>/g)];
-        for (const [index, bytes] of pages.entries()) {
-          const top = Number(
-            /<word\b[^>]*\byMin="([0-9.]+)"[^>]*>ФИО<\/word>/.exec(pdfPages[index]![1]!)?.[1],
-          );
-          expect(
-            await registryPngTable(
-              page,
-              bytes,
-              registryPdfRaster(nativeUntil, content, index + 1),
-              top,
-            ),
-          ).toBe(true);
-        }
-      } finally {
-        await pngResponse.dispose();
+        expect(
+          await registryPngTable(
+            page,
+            bytes,
+            registryPdfRaster(nativeUntil, content, index + 1),
+            top,
+          ),
+        ).toBe(true);
       }
     } finally {
-      await response.dispose();
+      await pngResponse.dispose();
     }
-  });
+  } finally {
+    await response.dispose();
+  }
 }
+
+test('FULL native user PDF preserves selected ordered fields and its committed audit @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  await nativeRegistryPdfExport('FULL', { page, dataset }, info);
+});
+
+test('LIMITED native user PDF preserves selected ordered fields and its committed audit @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  await nativeRegistryPdfExport('LIMITED', { page, dataset }, info);
+});
 
 // E15-R2: one owned renderer outage across the existing durable PDF job route.
 // Keep the successful HTML/PDF/PNG cases and their original budgets unchanged.

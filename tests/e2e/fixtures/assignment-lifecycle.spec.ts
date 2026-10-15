@@ -461,6 +461,7 @@ async function resume(request: APIRequestContext, run: string, checkpoint: Check
   const headman = await admit(request, checkpoint.headman, 'HEADMAN');
   const admin = await admit(request, TEST_USERS.admin, 'ADMIN');
   await assignmentRestartReady(request, admin, checkpoint.semesterId, restartReadyUntil);
+  await assignmentReportReady(request, headman, checkpoint, restartReadyUntil);
   requireValue(
     Date.now() < restartReadyUntil,
     'Assignment same-channel readiness deadline expired before resume',
@@ -689,6 +690,91 @@ async function assignmentRestartReady(
     const remainingAfterRead = readyUntil - Date.now();
     requireValue(remainingAfterRead > 0, 'Assignment same-channel readiness deadline expired');
     await delay(Math.min(500, remainingAfterRead));
+  }
+}
+
+function assignmentReportMatches(value: unknown, checkpoint: Checkpoint): boolean {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  const report = value as Record<string, unknown>;
+  return (
+    report.lessonId === checkpoint.currentPhysical.id &&
+    report.groupId === checkpoint.groupId &&
+    report.subjectId === checkpoint.subjectId &&
+    report.semesterId === checkpoint.semesterId &&
+    report.lessonDate === checkpoint.currentPhysical.date &&
+    Array.isArray(report.entries) &&
+    report.entries.some(
+      (entry: unknown) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        !Array.isArray(entry) &&
+        (entry as Record<string, unknown>).userId === checkpoint.studentId,
+    )
+  );
+}
+
+// Read the retained current lesson through Attendance's own Schedule channel
+// before resuming mutations. Reuse CI's original absolute restart deadline.
+async function assignmentReportReady(
+  request: APIRequestContext,
+  headman: Actor,
+  checkpoint: Checkpoint,
+  readyUntil: number,
+): Promise<void> {
+  const lesson = checkpoint.currentPhysical;
+  requireValue(
+    [
+      lesson.id,
+      checkpoint.groupId,
+      checkpoint.subjectId,
+      checkpoint.semesterId,
+      checkpoint.studentId,
+    ].every((id) => Number.isSafeInteger(id) && id > 0) &&
+      lesson.groupId === checkpoint.groupId &&
+      lesson.subjectId === checkpoint.subjectId &&
+      lesson.semesterId === checkpoint.semesterId &&
+      typeof lesson.date === 'string' &&
+      lesson.date === checkpoint.today,
+    'Assignment readiness report requires the own checkpoint lesson',
+  );
+  const path = `/api/attendance/reports/lesson/${lesson.id}`;
+  let unavailable = false;
+  const remainingBudget = () => {
+    const remaining = readyUntil - Date.now();
+    if (remaining <= 0 && unavailable) throw datasetHttpFailure('GET', path, 503);
+    requireValue(remaining > 0, 'Assignment report readiness deadline expired');
+    return remaining;
+  };
+  while (true) {
+    const remaining = remainingBudget();
+    const response = await request.get(path, {
+      headers: headman.headers(),
+      timeout: Math.min(remaining, 3000),
+    });
+    try {
+      if (response.status() === 503) {
+        unavailable = true;
+      } else if (response.status() === 200) {
+        remainingBudget();
+        let report: unknown;
+        try {
+          report = await response.json();
+        } catch {
+          throw new Error('Assignment readiness report must be valid JSON');
+        }
+        remainingBudget();
+        requireValue(
+          assignmentReportMatches(report, checkpoint),
+          'Assignment readiness report must match the own checkpoint lesson and student',
+        );
+        return;
+      } else {
+        throw datasetHttpFailure('GET', path, response.status());
+      }
+    } finally {
+      await response.dispose();
+    }
+    await delay(Math.min(500, remainingBudget()));
   }
 }
 

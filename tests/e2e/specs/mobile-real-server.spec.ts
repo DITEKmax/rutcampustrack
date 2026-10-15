@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import type { Page, Request, Route } from '@playwright/test';
+import type { Page, Request, Response, TestInfo } from '@playwright/test';
 import { test, expect, admit, selectPwaRole, type MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
@@ -13,6 +13,13 @@ import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 test.describe.configure({ mode: 'default' });
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
+
+// Charge requested fixtures and body setup to this caller's monotonic budget.
+// Earlier runner/auto-fixture overhead is unmeasured; the original timeout applies.
+const retryStartedAt = new WeakMap<TestInfo, number>();
+test.beforeEach(async ({}, info) => {
+  retryStartedAt.set(info, performance.now());
+});
 
 // Only the existing HEADMAN/TEACHER case needs completed journal data. Preparation
 // has the dataset's existing 180s fixture budget; its original 60s body stays intact.
@@ -981,7 +988,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(teacherFile.status()).toBe(200);
     expect(teacherFile.headers()['content-type']).toContain('image/png');
     const teacherFileBytes = await teacherFile.body();
-    expect(teacherFileBytes.equals(journalSeed.png)).toBe(true);
+    expect.soft(teacherFileBytes.equals(journalSeed.png)).toBe(true);
     const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
     await expect(preview).toBeVisible();
     await expect
@@ -2040,6 +2047,52 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         await page.evaluate(() => {
           Object.defineProperty(window, '__rctD002WarmOfflineReloadOldWindow', { value: true });
         });
+        const cachedFallback = await page
+          .evaluate(async () => {
+            try {
+              const worker = navigator.serviceWorker.controller;
+              if (!worker) return 'UNAVAILABLE';
+              return (await caches.match(new URL('./', worker.scriptURL).href))
+                ? 'PRESENT'
+                : 'ABSENT';
+            } catch {
+              return 'UNAVAILABLE';
+            }
+          })
+          .catch(() => 'UNAVAILABLE');
+        let mainDocumentRequestSeen = false;
+        let mainDocumentResponse = 'NONE' as
+          | 'NONE'
+          | 'SW_200'
+          | 'SW_OTHER'
+          | 'NETWORK_200'
+          | 'NETWORK_OTHER'
+          | 'UNAVAILABLE';
+        const observeDocumentRequest = (item: Request) => {
+          try {
+            if (item.isNavigationRequest() && item.frame() === page.mainFrame())
+              mainDocumentRequestSeen = true;
+          } catch {
+            // Missing protocol observations remain unknown.
+          }
+        };
+        const observeDocumentResponse = (item: Response) => {
+          try {
+            const request = item.request();
+            if (!request.isNavigationRequest() || request.frame() !== page.mainFrame()) return;
+            mainDocumentResponse = item.fromServiceWorker()
+              ? item.status() === 200
+                ? 'SW_200'
+                : 'SW_OTHER'
+              : item.status() === 200
+                ? 'NETWORK_200'
+                : 'NETWORK_OTHER';
+          } catch {
+            mainDocumentResponse = 'UNAVAILABLE';
+          }
+        };
+        page.on('request', observeDocumentRequest);
+        page.on('response', observeDocumentResponse);
         try {
           await page.reload();
         } catch (error) {
@@ -2107,7 +2160,65 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           if (oldDocument === true) expect.soft(false, 'D002 reload OLD_DOCUMENT').toBe(true);
           else if (oldDocument === false) expect.soft(false, 'D002 reload NEW_DOCUMENT').toBe(true);
           else expect.soft(false, 'D002 reload DOCUMENT_UNAVAILABLE').toBe(true);
+          switch (cachedFallback) {
+            case 'PRESENT':
+              expect.soft(false, 'D002 reload FALLBACK_PRESENT').toBe(true);
+              break;
+            case 'ABSENT':
+              expect.soft(false, 'D002 reload FALLBACK_ABSENT').toBe(true);
+              break;
+            default:
+              expect.soft(false, 'D002 reload FALLBACK_UNAVAILABLE').toBe(true);
+          }
+          if (mainDocumentRequestSeen) {
+            switch (mainDocumentResponse) {
+              case 'SW_200':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_SW_200').toBe(true);
+                break;
+              case 'SW_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_SW_OTHER').toBe(true);
+                break;
+              case 'NETWORK_200':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_NETWORK_200').toBe(true);
+                break;
+              case 'NETWORK_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_NETWORK_OTHER').toBe(true);
+                break;
+              case 'NONE':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_RESPONSE_UNOBSERVED').toBe(true);
+                break;
+              case 'UNAVAILABLE':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_RESPONSE_UNAVAILABLE').toBe(true);
+                break;
+            }
+          } else {
+            switch (mainDocumentResponse) {
+              case 'SW_200':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_SW_200').toBe(true);
+                break;
+              case 'SW_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_SW_OTHER').toBe(true);
+                break;
+              case 'NETWORK_200':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_NETWORK_200').toBe(true);
+                break;
+              case 'NETWORK_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_NETWORK_OTHER').toBe(true);
+                break;
+              case 'NONE':
+                expect.soft(false, 'D002 reload REQUEST_AND_RESPONSE_UNOBSERVED').toBe(true);
+                break;
+              case 'UNAVAILABLE':
+                expect
+                  .soft(false, 'D002 reload REQUEST_UNOBSERVED_RESPONSE_UNAVAILABLE')
+                  .toBe(true);
+                break;
+            }
+          }
           throw error;
+        } finally {
+          page.off('request', observeDocumentRequest);
+          page.off('response', observeDocumentResponse);
         }
         await expect(
           page.locator('.today-list').getByText('Синтетическая аудитория', { exact: true }),
@@ -2268,127 +2379,133 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     await loginPwa(page, dataset.student);
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     await expect(page.getByText(marker, { exact: true })).toBeVisible();
-    let release: () => void = () => {};
-    const gate = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    let held = false;
-    let fetchedOwnResponse = false;
-    let ownerReady = false;
-    let releasedToNewOwner = false;
-    let routeFailed = false;
-    let finishHeld: () => void = () => {};
-    const heldDone = new Promise<void>((resolve) => {
-      finishHeld = resolve;
-    });
-    let releaseTimer: ReturnType<typeof setTimeout> | undefined;
-    const path = '**/api/v1/student/homework?*';
-    const holdOldFeed = async (route: Route) => {
-      const url = new URL(route.request().url());
-      if (
-        route.request().method() !== 'GET' ||
-        url.searchParams.get('from') !== dataset.tomorrow ||
-        url.searchParams.get('to') !== dataset.tomorrow ||
-        held
-      ) {
-        await route.continue();
-        return;
-      }
-      held = true;
-      try {
-        const response = await route.fetch({ timeout: 10000 });
-        try {
-          const feed = await response.json();
-          fetchedOwnResponse =
-            response.status() === 200 &&
-            feed.items.some(
-              (item: { id: string }) => String(item.id) === String(dataset.homework.id),
-            );
-          releaseTimer = setTimeout(release, 15000);
-          await gate;
-          releasedToNewOwner = ownerReady;
-          await route.fulfill({ response });
-        } finally {
-          await response.dispose();
-        }
-      } catch {
-        routeFailed = true;
-        await route.abort('failed');
-      } finally {
-        finishHeld();
-      }
-    };
-    await page.route(path, holdOldFeed);
-    try {
-      const fetchObserver = await page.evaluateHandle((tomorrow) => {
+    const heldFetch = await page.evaluateHandle(
+      ({ tomorrow, homeworkId }) => {
         const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
-        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable) {
-          return { read: () => null, restore: () => {} };
-        }
+        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
+          throw new Error('D002 native fetch descriptor unavailable');
         const original = descriptor.value as typeof fetch;
-        let homeworkGetSeen = false;
-        let tomorrowGetSeen = false;
-        const observed: typeof fetch = function (this: unknown, ...args) {
+        let held = false;
+        let fetchedOwnResponse = false;
+        let nativeRejected = false;
+        let inspectionFailed = false;
+        let ownerReady = false;
+        let releasedToNewOwner = false;
+        let delivered = false;
+        let released = false;
+        let releaseGate!: () => void;
+        const gate = new Promise<void>((resolve) => {
+          releaseGate = resolve;
+        });
+        let releaseTimer: ReturnType<typeof setTimeout> | undefined;
+        const release = () => {
+          if (released) return;
+          released = true;
+          if (releaseTimer !== undefined) clearTimeout(releaseTimer);
+          releaseGate();
+        };
+        const delayed: typeof fetch = function (this: unknown, ...args) {
+          let matches = false;
           try {
             const [input, init] = args;
             const request = input instanceof globalThis.Request ? input : null;
             const method = init?.method ?? request?.method ?? 'GET';
             const address =
               typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
-            if (method.toUpperCase() === 'GET' && typeof address === 'string') {
+            if (!held && method.toUpperCase() === 'GET' && typeof address === 'string') {
               const url = new URL(address, location.href);
-              if (url.origin === location.origin && url.pathname === '/api/v1/student/homework') {
-                homeworkGetSeen = true;
-                if (
-                  url.searchParams.get('from') === tomorrow &&
-                  url.searchParams.get('to') === tomorrow
-                )
-                  tomorrowGetSeen = true;
-              }
+              matches =
+                url.origin === location.origin &&
+                url.pathname === '/api/v1/student/homework' &&
+                url.searchParams.get('from') === tomorrow &&
+                url.searchParams.get('to') === tomorrow;
             }
           } catch {
-            // Observation cannot change the native call's arguments, result or error.
+            // Matching never changes the native call's arguments, result or error.
           }
-          return Reflect.apply(original, this, args);
+          if (matches) held = true;
+          const nativePromise: ReturnType<typeof fetch> = Reflect.apply(original, this, args);
+          if (!matches) return nativePromise;
+          return nativePromise.then(
+            async (response) => {
+              try {
+                const feed = await response.clone().json();
+                fetchedOwnResponse =
+                  response.status === 200 &&
+                  Array.isArray(feed.items) &&
+                  feed.items.some((item: { id: string }) => String(item.id) === homeworkId);
+              } catch {
+                inspectionFailed = true;
+              }
+              if (!released) releaseTimer = setTimeout(release, 15000);
+              await gate;
+              releasedToNewOwner = ownerReady;
+              delivered = true;
+              return response;
+            },
+            (error) => {
+              nativeRejected = true;
+              throw error;
+            },
+          );
         };
-        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: observed });
+        const restore = () => Object.defineProperty(globalThis, 'fetch', descriptor);
+        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: delayed });
         return {
-          read: () => ({ homeworkGetSeen, tomorrowGetSeen }),
+          read: () => ({
+            held,
+            fetchedOwnResponse,
+            nativeRejected,
+            inspectionFailed,
+            delivered,
+            releasedToNewOwner,
+          }),
           restore: () => {
-            Object.defineProperty(globalThis, 'fetch', descriptor);
+            restore();
+          },
+          releaseToNewOwner: () => {
+            ownerReady = true;
+            release();
+          },
+          cleanup: () => {
+            release();
+            restore();
           },
         };
-      }, dataset.tomorrow);
-      let fetchRestored = false;
+      },
+      { tomorrow: dataset.tomorrow, homeworkId: String(dataset.homework.id) },
+    );
+    let fetchRestored = false;
+    let gateDisposed = false;
+    try {
       try {
         await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
         try {
-          await expect.poll(() => fetchedOwnResponse).toBe(true);
+          await expect
+            .poll(
+              async () => (await heldFetch.evaluate((value) => value.read())).fetchedOwnResponse,
+            )
+            .toBe(true);
         } catch (error) {
-          if (!held) expect.soft(false, 'D002 old feed NOT_INTERCEPTED').toBe(true);
-          else if (routeFailed) expect.soft(false, 'D002 old feed FETCH_FAILED').toBe(true);
+          const state = await heldFetch.evaluate((value) => value.read()).catch(() => null);
+          if (state === null) expect.soft(false, 'D002 old feed GATE_UNAVAILABLE').toBe(true);
+          else if (!state.held) expect.soft(false, 'D002 old feed GATE_NOT_CLAIMED').toBe(true);
+          else if (state.nativeRejected)
+            expect.soft(false, 'D002 old feed NATIVE_REJECTED').toBe(true);
+          else if (state.inspectionFailed)
+            expect.soft(false, 'D002 old feed INSPECTION_FAILED').toBe(true);
           else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
-          const observed = await fetchObserver.evaluate((value) => value.read()).catch(() => null);
-          if (observed === null)
-            expect.soft(false, 'D002 old feed FETCH_OBSERVER_UNAVAILABLE').toBe(true);
-          else if (observed.tomorrowGetSeen)
-            expect.soft(false, 'D002 old feed FETCH_EXACT_TOMORROW_SEEN').toBe(true);
-          else if (observed.homeworkGetSeen)
-            expect.soft(false, 'D002 old feed FETCH_OTHER_HOMEWORK_RANGE_SEEN').toBe(true);
-          else expect.soft(false, 'D002 old feed FETCH_HOMEWORK_NOT_SEEN').toBe(true);
           throw error;
         }
       } finally {
         try {
-          await fetchObserver.evaluate((value) => value.restore());
+          await heldFetch.evaluate((value) => value.restore());
           fetchRestored = true;
         } catch {
-          expect.soft(false, 'D002 old feed FETCH_OBSERVER_RESTORE_UNAVAILABLE').toBe(true);
-        } finally {
-          await fetchObserver.dispose().catch(() => {});
+          expect.soft(false, 'D002 old feed FETCH_GATE_RESTORE_UNAVAILABLE').toBe(true);
         }
       }
-      expect(fetchRestored, 'D002 old feed FETCH_OBSERVER_NOT_RESTORED').toBe(true);
+      expect(fetchRestored, 'D002 old feed FETCH_GATE_NOT_RESTORED').toBe(true);
       await logoutPwa(page);
       // Keep this document alive: loginPwa.goto would destroy the delayed callback.
       await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
@@ -2416,21 +2533,11 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await expect(emptyDay).toHaveText('На этот день заданий нет.');
       await expect(emptyDay).toBeVisible();
       await expect(page.locator('.homework-card')).toHaveCount(0);
-      ownerReady = true;
-      const delivered = page.waitForResponse((item) => {
-        const url = new URL(item.url());
-        return (
-          url.pathname === '/api/v1/student/homework' &&
-          url.searchParams.get('from') === dataset.tomorrow
-        );
-      });
-      release();
-      const late = await delivered;
-      expect(late.status()).toBe(200);
-      await late.finished();
-      await heldDone;
-      expect(routeFailed).toBe(false);
-      expect(releasedToNewOwner).toBe(true);
+      await heldFetch.evaluate((value) => value.releaseToNewOwner());
+      await expect
+        .poll(async () => (await heldFetch.evaluate((value) => value.read())).delivered)
+        .toBe(true);
+      expect((await heldFetch.evaluate((value) => value.read())).releasedToNewOwner).toBe(true);
       await page.evaluate(
         () =>
           new Promise<void>((resolve) =>
@@ -2447,6 +2554,9 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           ),
         )
         .toBe(true);
+      await heldFetch.evaluate((value) => value.cleanup());
+      await heldFetch.dispose().catch(() => {});
+      gateDisposed = true;
       await context.setOffline(true);
       await page.reload();
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
@@ -2460,10 +2570,15 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         ),
       ).toBe(true);
     } finally {
-      release();
-      if (releaseTimer) clearTimeout(releaseTimer);
-      await page.unroute(path, holdOldFeed);
-      if (held) await heldDone;
+      if (!gateDisposed) {
+        try {
+          await heldFetch.evaluate((value) => value.cleanup());
+        } catch {
+          expect.soft(false, 'D002 old feed FETCH_GATE_CLEANUP_UNAVAILABLE').toBe(true);
+        } finally {
+          await heldFetch.dispose().catch(() => {});
+        }
+      }
       await context.setOffline(false);
     }
   });
@@ -2968,14 +3083,21 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     page,
     dataset,
     playwright,
-  }) => {
+  }, info) => {
+    const retryCutoffMs =
+      (retryStartedAt.get(info) ?? Number.NEGATIVE_INFINITY) +
+      Math.max(0, Math.min(info.timeout, 120000) - 30000);
     const studentRole = `/api/academic/users/${dataset.teacher.id}/roles/STUDENT`;
     await dataset.admin.call('PUT', studentRole, {
       status: 'ACTIVE',
       groupId: dataset.group.id,
       telegramId: dataset.teacher.telegramId,
     });
-    const logged = await loginPwa(page, dataset.teacher);
+    const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
+    expect(retryRemainingMs, 'Synthetic teacher login retry budget remains').toBeGreaterThan(0);
+    const logged = await loginPwa(page, dataset.teacher, {
+      retryUntilMs: Date.now() + Math.min(65000, retryRemainingMs),
+    });
     expect(logged.session.activeRole).toBe('STUDENT');
     expect(
       ['STUDENT', 'TEACHER'].every((role) =>

@@ -45,7 +45,9 @@ test('MANAGE_HOMEWORK non-author edits preserve student completion and revoked a
   const originalHistory = await dataset.headmanActor.call('GET', `${historyPath}?size=100`);
   expect(Array.isArray(originalHistory.content)).toBe(true);
 
-  const admittedStudent = await loginPwa(page, dataset.student);
+  const admittedStudent = await loginPwa(page, dataset.student, {
+    retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+  });
   const student = new Actor(dataset.request, admittedStudent.accessToken, admittedStudent.session);
   await page.getByRole('button', { name: 'Задания', exact: true }).click();
   await selectHomeworkDate(page, dataset, dataset.tomorrow);

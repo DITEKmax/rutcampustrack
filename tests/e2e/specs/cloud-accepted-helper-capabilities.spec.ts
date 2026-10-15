@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { TestInfo } from '@playwright/test';
 import {
   test,
   expect,
@@ -15,6 +16,13 @@ import { loginPwa } from '../fixtures/pwa-auth';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 
 registerPrivateSuite();
+
+// Charge requested fixtures and body setup to this caller's monotonic budget.
+// Earlier runner/auto-fixture overhead is unmeasured; the original timeout applies.
+const retryStartedAt = new WeakMap<TestInfo, number>();
+test.beforeEach(async ({}, info) => {
+  retryStartedAt.set(info, performance.now());
+});
 
 // CLIENT-HEADMAN / CLIENT-FE-HEADMAN-06 / JS-HEADMAN-14,15 / BOUNDARY-49.
 // MARK_ATTENDANCE is already covered in mobile-real-server; these actors each
@@ -183,7 +191,10 @@ test('CANCEL_LESSONS confirms a real cancellation and revoked restore cannot res
 test('MANAGE_EXCUSES decides a real request and revoked decision preserves the pending request @cloud-accepted', async ({
   page,
   dataset,
-}) => {
+}, info) => {
+  const retryCutoffMs =
+    (retryStartedAt.get(info) ?? Number.NEGATIVE_INFINITY) +
+    Math.max(0, Math.min(info.timeout, 120000) - 30000);
   const { user, grant } = await singleCapability(dataset, 'MANAGE_EXCUSES');
   const requester = await dataset.user('STUDENT', dataset.group.id);
   const actor = await admit(dataset.request, requester, 'STUDENT');
@@ -212,7 +223,11 @@ test('MANAGE_EXCUSES decides a real request and revoked decision preserves the p
     expect(created.status()).toBe(200);
     requests.push((await created.json()).summary.id);
   }
-  const { accessToken } = await loginPwa(page, user);
+  const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
+  expect(retryRemainingMs, 'Synthetic helper login retry budget remains').toBeGreaterThan(0);
+  const { accessToken } = await loginPwa(page, user, {
+    retryUntilMs: Date.now() + Math.min(65000, retryRemainingMs),
+  });
   await openAssistant(page, 'Уважительные причины и заявки');
   await page.locator(`[data-request-id="${requests[0]}"]`).click();
   await page.getByRole('button', { name: 'Отклонить', exact: true }).click();
@@ -369,5 +384,190 @@ test('HEADMAN edits helper capabilities through member row and retains VIEW_STAT
     await dataset.headmanActor.call('DELETE', `/api/academic/assistants/${grant.id}`, undefined, [
       204,
     ]);
+  }
+});
+
+// CLIENT-FE-HEADMAN-01 / JS-HEADMAN-25,26: one genuine ongoing-summary and
+// scoped action-log read. No-current, live refresh and an independent history
+// pager remain separate criteria; VIEW_STATS selects the existing CI lane.
+test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud-accepted', async ({
+  page,
+  activeHeadmanDataset: dataset,
+}, info) => {
+  const retryUntilMs = Date.now() + Math.max(0, Math.min(info.timeout, 120000) - 30000);
+  const lessonId = dataset.lesson.physicalLessonId;
+  const reportPath = `/api/attendance/reports/lesson/${lessonId}`;
+  const schedulePath = `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${dataset.today}&dateTo=${dataset.today}&size=100`;
+  type Entry = { userId: number; status: string | null; markRevision: string | null };
+  type Action = {
+    id: string;
+    action: string;
+    outcome: string;
+    occurredAt: string;
+    actor: { userId: number; displayName: string };
+    student: { userId: number; displayName: string };
+    after: { status: string; source: string };
+  };
+  const seeded: { userId: number; status: string; revision: string }[] = [];
+  let otherLessonId: number | undefined;
+  try {
+    const before = await dataset.headmanActor.call('GET', reportPath);
+    for (const [user, status] of [
+      [dataset.student, 'PRESENT'],
+      [dataset.assistant, 'EXCUSED'],
+    ] as const) {
+      const row = (before.entries as Entry[]).find((entry) => entry.userId === user.id);
+      expect(row).toMatchObject({ status: null, markRevision: null });
+      // These existing mark commands only prepare a distinguishable read fixture.
+      await dataset.headmanActor.call(
+        'PUT',
+        `/api/attendance/lessons/${lessonId}/students/${user.id}`,
+        {
+          status,
+          ...(status === 'EXCUSED' ? { excuseType: 'ILLNESS', comment: dataset.marker } : {}),
+          expectedStatus: 'EMPTY',
+          expectedRevision: 'EMPTY',
+        },
+      );
+      const marked = await dataset.headmanActor.call('GET', reportPath);
+      const actual = (marked.entries as Entry[]).find((entry) => entry.userId === user.id)!;
+      expect(typeof actual.markRevision).toBe('string');
+      seeded.push({ userId: user.id, status, revision: actual.markRevision! });
+    }
+    const other = await oneOff(dataset, dataset.today, 2);
+    otherLessonId = Number(other.physicalLessonId);
+    const schedule = await dataset.headmanActor.call('GET', schedulePath);
+    const lessons = schedule._embedded?.lessonResponseList ?? schedule.content ?? [];
+    expect(lessons.find((row: { id: number }) => row.id === lessonId)).toMatchObject({
+      status: 'ACTIVE',
+      current: true,
+    });
+    expect(lessons.find((row: { id: number }) => row.id === otherLessonId)).toMatchObject({
+      current: false,
+    });
+    const members = await dataset.headmanActor.call(
+      'GET',
+      '/api/academic/groups/my/members?size=100',
+    );
+    const roster = members._embedded?.userResponseList ?? members.content ?? [];
+    const memberIds = roster
+      .map((row: { id: number }) => row.id)
+      .sort((a: number, b: number) => a - b);
+    const current = await dataset.headmanActor.call('GET', reportPath);
+    const entries = current.entries as Entry[];
+    expect(entries.map((row) => row.userId).sort((a, b) => a - b)).toEqual(memberIds);
+    const denominator = memberIds.length;
+    expect(new Set(memberIds).size).toBe(denominator);
+    expect(denominator).toBeGreaterThanOrEqual(3);
+    const counts = (rows: Entry[]) => [
+      rows.filter((row) => row.status?.toUpperCase() === 'PRESENT').length,
+      rows.filter((row) => row.status?.toUpperCase() === 'EXCUSED').length,
+    ];
+    expect(counts(entries)).toEqual([1, 1]);
+    const actionsPath = `/api/attendance/reports/lesson/${lessonId}/actions`;
+    const stored = await dataset.headmanActor.call('GET', `${actionsPath}?limit=50`);
+    const events = (stored.items as Action[]).filter(
+      (event) =>
+        event.action === 'ATTENDANCE_SET' &&
+        event.outcome === 'APPLIED' &&
+        event.actor?.userId === dataset.headman.id &&
+        seeded.some((mark) => mark.userId === event.student?.userId),
+    );
+    expect(events).toHaveLength(2);
+    await loginPwa(page, dataset.headman, { retryUntilMs });
+    expect((await selectRole(page, 'Староста')).session.activeRole).toBe('HEADMAN');
+    const home = page.locator('.headman-home');
+    await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
+    const historyRead = http(page, actionsPath, 'GET');
+    await home.getByRole('button', { name: 'Журнал', exact: true }).click();
+    const history = await historyRead;
+    expect(history.status()).toBe(200);
+    const visibleEvents = (await history.json()).items as Action[];
+    const log = page.locator('.headman-actions');
+    await expect(log).toHaveAttribute('data-lesson-id', String(lessonId));
+    for (const event of events) {
+      expect(visibleEvents.find((row) => row.id === event.id)).toEqual(event);
+      expect(event.after.source).toBe('HEADMAN');
+      const row = log.locator(`[data-event-id="${event.id}"]`);
+      await expect(row).toContainText(event.student.displayName);
+      await expect(row).toContainText(event.actor.displayName);
+      await expect(row.locator('time')).toHaveAttribute('datetime', event.occurredAt);
+      await expect(row).toHaveAttribute('data-mark', event.after.status.toLowerCase());
+      const [afterLabel, afterSymbol] =
+        event.after.status === 'PRESENT' ? ['Присутствует', '+'] : ['Уважительная причина', 'у'];
+      const transition = row.locator('.headman-actions__transition');
+      await expect(transition).toBeVisible();
+      await expect(transition).toHaveAttribute('aria-label', `Без отметки → ${afterLabel}`);
+      await expect(transition.getByText('—', { exact: true })).toBeVisible();
+      await expect(transition.getByText('→', { exact: true })).toBeVisible();
+      await expect(transition.getByText(afterSymbol, { exact: true })).toBeVisible();
+    }
+    // Browse another history through existing Home controls, without a manual mark.
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
+    await home.getByRole('button', { name: 'Следующая пара', exact: true }).click();
+    await expect(home).toHaveAttribute('data-lesson-id', String(otherLessonId));
+    const otherHistoryRead = http(
+      page,
+      `/api/attendance/reports/lesson/${otherLessonId}/actions`,
+      'GET',
+    );
+    await home.getByRole('button', { name: 'Журнал', exact: true }).click();
+    expect((await otherHistoryRead).status()).toBe(200);
+    await expect(log).toHaveAttribute('data-lesson-id', String(otherLessonId));
+    for (const event of events) {
+      await expect(log.locator(`[data-event-id="${event.id}"]`)).toHaveCount(0);
+    }
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await expect(home).toHaveAttribute('data-lesson-id', String(lessonId));
+    const selectedReportRead = http(page, `/api/attendance/reports/lesson/${otherLessonId}`, 'GET');
+    await home.getByRole('button', { name: 'Следующая пара', exact: true }).click();
+    const selectedReport = await selectedReportRead;
+    expect(selectedReport.status()).toBe(200);
+    expect(counts((await selectedReport.json()).entries)).toEqual([0, 0]);
+    await expect(home).toHaveAttribute('data-lesson-id', String(otherLessonId));
+    const stillCurrent = await dataset.headmanActor.call('GET', schedulePath);
+    const stillLessons = stillCurrent._embedded?.lessonResponseList ?? stillCurrent.content ?? [];
+    expect(stillLessons.find((row: { id: number }) => row.id === lessonId)).toMatchObject({
+      status: 'ACTIVE',
+      current: true,
+    });
+    const readback = await dataset.headmanActor.call('GET', reportPath);
+    expect(counts(readback.entries)).toEqual([1, 1]);
+    expect(readback.entries).toHaveLength(denominator);
+    // The accepted ongoing summary must retain both full-group fractions even
+    // though the selected panel now reads the other lesson's empty report.
+    await expect(home.locator('.headman-home__metrics')).toContainText(`1 из ${denominator}`);
+    await expect(home.locator('.headman-home__excused')).toContainText(`1 из ${denominator}`);
+  } finally {
+    let cleanupFailed = false;
+    for (const mark of seeded) {
+      try {
+        const query = new URLSearchParams({
+          expectedStatus: mark.status,
+          expectedRevision: mark.revision,
+        });
+        await dataset.headmanActor.call(
+          'DELETE',
+          `/api/attendance/lessons/${lessonId}/students/${mark.userId}?${query}`,
+          undefined,
+          [204],
+        );
+      } catch {
+        cleanupFailed = true;
+      }
+    }
+    if (otherLessonId !== undefined) {
+      try {
+        await dataset.headmanActor.call('PATCH', `/api/schedule/lessons/${otherLessonId}/cancel`, {
+          reason: 'Очистка синтетической проверки чтения',
+        });
+      } catch {
+        cleanupFailed = true;
+      }
+    }
+    expect(cleanupFailed, 'Only this read fixture is cleaned through guarded server commands').toBe(
+      false,
+    );
   }
 });

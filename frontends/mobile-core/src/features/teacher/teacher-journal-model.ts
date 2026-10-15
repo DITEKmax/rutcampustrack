@@ -69,6 +69,7 @@ export function mergeJournalPage(
   }
   return {
     ...next,
+    metrics: previous ? (previous.metrics ?? null) : (next.metrics ?? null),
     lessons: [...lessons.values()].sort(
       (a, b) =>
         a.date.localeCompare(b.date) ||
@@ -90,7 +91,13 @@ export async function loadJournalPages(
   if (teacherJournalTypes(query).length === 0 || !isCurrent()) return null
   let merged: TeacherJournalResponse | null = null
   for (let page = 0; ; page += 1) {
-    const next = await api.journal({ ...query, page, pageSize: 100 })
+    const next = await api.journal({
+      ...query,
+      page,
+      pageSize: 100,
+      includeMetrics: page === 0,
+      metricsStudentId: undefined,
+    })
     if (!isCurrent()) return null
     if (
       next.page !== page ||
@@ -99,8 +106,38 @@ export async function loadJournalPages(
     )
       throw new Error('Сервер вернул несогласованные страницы журнала.')
     merged = mergeJournalPage(merged, next)
-    if (!next.hasMore) return merged
+    if (!next.hasMore) {
+      if (
+        merged.metrics &&
+        (merged.metrics.selectedStudentId !== null ||
+          merged.metrics.series.some(
+            (point) =>
+              !merged?.lessons.some(
+                (lesson) =>
+                  lesson.id === point.lessonId && lesson.status === 'CLOSED' && !lesson.cancelled,
+              ),
+          ))
+      )
+        throw new Error('Сервер вернул несогласованные метрики журнала.')
+      return merged
+    }
   }
+}
+/** Formatting only: percentages and their common denominator belong to Attendance. */
+export function journalMetricPercent(
+  metric: import('./teacher-client').TeacherStatsMetric | null | undefined,
+): string {
+  return metric && metric.denominator > 0
+    ? `${new Intl.NumberFormat('ru', { maximumFractionDigits: 1 }).format(metric.percent)} %`
+    : '—'
+}
+export function journalMetricLabel(
+  label: string,
+  metric: import('./teacher-client').TeacherStatsMetric | null | undefined,
+): string {
+  return metric
+    ? `${label}: ${metric.numerator} из ${metric.denominator}`
+    : `${label}: данные недоступны`
 }
 export function journalPercent(value: number, denominator: number): string {
   return denominator

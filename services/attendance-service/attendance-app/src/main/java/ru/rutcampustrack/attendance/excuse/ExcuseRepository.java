@@ -17,9 +17,9 @@ public interface ExcuseRepository extends MongoRepository<ExcuseTicket, String> 
     /** Submitted identities, not covered lessons or approved attendance cells. */
     @Aggregation(
             pipeline = {
-                "{ '$match': { 'group_id': ?0, 'semester_id': ?1, 'status': { '$in': ['SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED'] } } }",
+                "{ '$match': { 'group_id': ?0, 'semester_id': ?1, 'status': { '$in': ['submitted', 'approved', 'rejected', 'cancelled'] } } }",
                 "{ '$group': { '_id': '$excuse_type', 'count': { '$sum': 1 } } }",
-                "{ '$project': { '_id': 0, 'code': '$_id', 'count': 1 } }",
+                "{ '$project': { '_id': 0, 'code': { '$toUpper': '$_id' }, 'count': 1 } }",
                 "{ '$limit': 10 }"
             })
     List<SubmittedReasonCount> submittedReasonCounts(long groupId, long semesterId);

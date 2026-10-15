@@ -104,7 +104,34 @@ public final class TeacherApiModels {
             int page,
             int pageSize,
             int totalLessons,
-            boolean hasMore) {}
+            boolean hasMore,
+            @Schema(nullable = true) JournalMetrics metrics) {
+        public JournalResponse(
+                List<DayLesson> lessons,
+                List<JournalStudent> students,
+                Instant serverNow,
+                int page,
+                int pageSize,
+                int totalLessons,
+                boolean hasMore) {
+            this(lessons, students, serverNow, page, pageSize, totalLessons, hasMore, null);
+        }
+    }
+
+    @Schema(name = "TeacherJournalMetrics")
+    public record JournalMetrics(
+            List<StatsStudent> students,
+            List<JournalLessonMetrics> series,
+            @Schema(nullable = true) String selectedStudentId,
+            Instant serverNow) {}
+
+    @Schema(name = "TeacherJournalLessonMetrics")
+    public record JournalLessonMetrics(
+            String lessonId,
+            StatsMetric present,
+            StatsMetric presentOrExcused,
+            StatsMetric excused,
+            StatsMetric absent) {}
 
     @Schema(name = "TeacherExcuseAttachment")
     public record ExcuseAttachment(

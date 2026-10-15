@@ -1063,6 +1063,7 @@ isolated(
     await selectPwaRole(page, 'Староста');
     await page.getByRole('button', { name: 'Ещё', exact: true }).click();
     await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
+    await page.getByRole('button', { name: 'Открыть архив', exact: true }).click();
     // Existing seven-day calendar, three weeks forward; no clock/semester mutation.
     const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
     const weeksForward = Math.floor((23 + weekdayOffset) / 7);
@@ -1632,7 +1633,26 @@ isolated(
     });
     await selectPwaRole(page, 'Староста');
     await page.getByRole('button', { name: 'Ещё', exact: true }).click();
-    await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
+    const listReads: boolean[] = [];
+    const countListRead = (request: Request) => {
+      const url = new URL(request.url());
+      if (request.method() === 'GET' && url.pathname === '/api/academic/homeworks')
+        listReads.push(url.searchParams.get('archived') === 'true');
+    };
+    page.on('request', countListRead);
+    try {
+      await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
+      await expect(page.getByText('Выбери действие:', { exact: false })).toBeVisible();
+      await expect(page.getByText('На этот день заданий нет.', { exact: true })).toHaveCount(0);
+      expect(listReads).toEqual([]);
+      const selectedArchive = http(page, '/api/academic/homeworks', 'GET');
+      await page.getByRole('button', { name: 'Открыть архив', exact: true }).click();
+      expect((await selectedArchive).status()).toBe(200);
+      expect(listReads.length).toBeGreaterThan(0);
+      expect(listReads.every((archived) => archived)).toBe(true);
+    } finally {
+      page.off('request', countListRead);
+    }
     const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
     if (weekdayOffset === 6)
       await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
@@ -1676,6 +1696,7 @@ isolated(
     const helperHistory = await author.call('GET', `${helperPath}/history?size=100`);
     await page.getByRole('button', { name: 'Назад', exact: true }).click();
     await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Посмотреть актуальные', exact: true }).click();
     const helperCreatedCard = page.locator(
       `.headman-homework__item[data-homework-id="${helperItem.id}"]`,
     );

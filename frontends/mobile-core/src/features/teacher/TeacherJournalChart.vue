@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { headmanStatsTrendAxis } from '../headman-stats/headman-stats-trend-axis';
-import type { TeacherJournalResponse } from './teacher-client';
-import { journalCounts, journalPercent, type JournalCounts } from './teacher-journal-model';
+import type { TeacherJournalResponse, TeacherJournalMetrics } from './teacher-client';
+import { journalMetricPercent } from './teacher-journal-model';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
 import { journalChartBarLayout } from './teacher-journal-chart-layout';
 const props = defineProps<{
   journal: TeacherJournalResponse;
   studentId: number | null;
+  metrics?: TeacherJournalMetrics | null;
   from: string;
   to: string;
 }>();
@@ -79,20 +80,15 @@ const bars = computed(() =>
         lesson.date <= props.to,
     )
     .map((lesson) => {
-      const students =
-        props.studentId === null
-          ? props.journal.students
-          : props.journal.students.filter((student) => student.studentId === props.studentId);
-      const counts: JournalCounts = { present: 0, excused: 0, absent: 0, denominator: 0 };
-      for (const student of students) {
-        const value = journalCounts(student.cells, new Set([lesson.id]));
-        counts.present += value.present;
-        counts.excused += value.excused;
-        counts.absent += value.absent;
-        counts.denominator += value.denominator;
-      }
+      const counts =
+        props.metrics?.selectedStudentId === props.studentId
+          ? props.metrics.series.find((point) => point.lessonId === lesson.id)
+          : undefined;
       return { lesson, counts };
-    }),
+    })
+    .filter(
+      (bar): bar is typeof bar & { counts: NonNullable<typeof bar.counts> } => bar.counts != null,
+    ),
 );
 const layout = computed(
   () =>
@@ -111,12 +107,12 @@ function x(index: number): number {
 function barWidth(index: number): number {
   return layout.value.get(bars.value[index]!.lesson.id)?.width ?? 0;
 }
-function size(count: number, total: number): number {
-  return total ? (count / total) * (height - top - bottom) : 0;
+function size(percent: number): number {
+  return (percent / 100) * (height - top - bottom);
 }
 function text(index: number): string {
   const bar = bars.value[index]!;
-  return `${bar.lesson.date}, ${teacherLessonTypeLabel(bar.lesson.lessonType)}, ${bar.lesson.lessonNumber}-я пара: присутствия ${journalPercent(bar.counts.present, bar.counts.denominator)}, уважительные причины ${journalPercent(bar.counts.excused, bar.counts.denominator)}, отсутствия ${journalPercent(bar.counts.absent, bar.counts.denominator)}; ${bar.counts.denominator} отметок`;
+  return `${bar.lesson.date}, ${teacherLessonTypeLabel(bar.lesson.lessonType)}, ${bar.lesson.lessonNumber}-я пара: присутствия ${journalMetricPercent(bar.counts.present)}, присутствия и уважительные причины ${journalMetricPercent(bar.counts.presentOrExcused)}, уважительные причины ${journalMetricPercent(bar.counts.excused)}, отсутствия ${journalMetricPercent(bar.counts.absent)}; ${bar.counts.present.denominator} отметок`;
 }
 </script>
 <template>
@@ -125,10 +121,10 @@ function text(index: number): string {
     aria-label="Столбчатый график посещаемости"
   >
     <p
-      v-if="!bars.some((bar) => bar.counts.denominator)"
+      v-if="!bars.some((bar) => bar.counts.present.denominator)"
       role="status"
     >
-      За выбранный период нет данных для графика.
+      {{ metrics ? 'За выбранный период нет данных для графика.' : 'Метрики графика недоступны.' }}
     </p>
     <svg
       ref="plot"
@@ -180,25 +176,25 @@ function text(index: number): string {
         <rect
           class="teacher-journal__bar--present"
           :x="x(index)"
-          :y="height - bottom - size(bar.counts.present, bar.counts.denominator)"
+          :y="height - bottom - size(bar.counts.present.percent)"
           :width="barWidth(index)"
-          :height="size(bar.counts.present, bar.counts.denominator)"
+          :height="size(bar.counts.present.percent)"
         />
         <rect
           class="teacher-journal__bar--excused"
           :x="x(index)"
           :y="
-            height - bottom - size(bar.counts.present + bar.counts.excused, bar.counts.denominator)
+            height - bottom - size(bar.counts.present.percent + bar.counts.excused.percent)
           "
           :width="barWidth(index)"
-          :height="size(bar.counts.excused, bar.counts.denominator)"
+          :height="size(bar.counts.excused.percent)"
         />
         <rect
           class="teacher-journal__bar--absent"
           :x="x(index)"
-          :y="height - bottom - size(bar.counts.denominator, bar.counts.denominator)"
+          :y="height - bottom - size(100)"
           :width="barWidth(index)"
-          :height="size(bar.counts.absent, bar.counts.denominator)"
+          :height="size(bar.counts.absent.percent)"
         />
       </g>
       <g

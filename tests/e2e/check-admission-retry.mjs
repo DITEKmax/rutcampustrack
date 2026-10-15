@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -104,7 +105,42 @@ try {
   await check(200, undefined, 200, 401)
   await check(200, undefined, 200, 200, 403)
   process.stdout.write(`${JSON.stringify({ state: 'ADMISSION_RETRY_CONTROLS_PASS', cases })}\n`)
-} catch {
+} catch (error) {
+  let category = 'UNKNOWN'
+  let line = null
+  try {
+    const scriptPath = fileURLToPath(import.meta.url)
+    const scriptLines = readFileSync(scriptPath, 'utf8').split(/\r?\n/).length
+    const escaped = scriptPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const frame =
+      typeof error?.stack === 'string'
+        ? error.stack.match(
+            new RegExp(
+              `^\\s+at (?:async )?(?:[^\\r\\n]*?\\()?(?:file://)?${escaped}:([1-9][0-9]*):[1-9][0-9]*\\)?$`,
+              'm',
+            ),
+          )
+        : null
+    const candidate = frame ? Number(frame[1]) : null
+    if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= scriptLines) {
+      line = candidate
+      if (error instanceof assert.AssertionError) category = 'ASSERTION'
+      else if (
+        error instanceof SyntaxError ||
+        [
+          'MODULE_NOT_FOUND',
+          'ERR_MODULE_NOT_FOUND',
+          'ERR_UNKNOWN_FILE_EXTENSION',
+          'ERR_REQUIRE_ESM',
+        ].includes(error?.code)
+      )
+        category = 'IMPORT_SETUP'
+    }
+  } catch {
+    category = 'UNKNOWN'
+    line = null
+  }
+  process.stderr.write(`ADMISSION_RETRY_CONTROLS_HINT ${JSON.stringify({ category, line })}\n`)
   process.stderr.write('ADMISSION_RETRY_CONTROLS_FAIL\n')
   process.exitCode = 1
 }

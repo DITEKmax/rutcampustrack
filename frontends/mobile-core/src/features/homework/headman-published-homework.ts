@@ -22,7 +22,12 @@ export async function readPublishedHomeworks(
   groupId: number,
   semesterId: number,
   isCurrent: () => boolean,
+  scope?: 'current' | 'archive',
 ): Promise<readonly HeadmanManagedHomework[] | null> {
+  if (scope !== undefined) {
+    const items = await api.listHomeworks(groupId, semesterId, scope === 'archive')
+    return isCurrent() ? items : null
+  }
   const active = await api.listHomeworks(groupId, semesterId)
   if (!isCurrent()) return null
   const archived = await api.listHomeworks(groupId, semesterId, true)

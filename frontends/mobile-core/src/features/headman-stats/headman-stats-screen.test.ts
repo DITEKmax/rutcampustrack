@@ -139,7 +139,7 @@ afterEach(() => {
   for (const app of apps.splice(0)) app.unmount()
   vi.unstubAllGlobals()
 })
-function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
+function harness(legacyPersonal = false, semesterSpecificCatalog = false, targetRank?: unknown) {
   vi.stubGlobal('HTMLButtonElement', class {})
   vi.stubGlobal('HTMLElement', class {})
   vi.stubGlobal('document', {
@@ -238,7 +238,7 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
       )
     }
     if (url.pathname.endsWith('/detail')) {
-      const result = headmanStatsFixtureDetail('overview-autumn', 11, 7)
+      const result = { ...headmanStatsFixtureDetail('overview-autumn', 11, 7), rank: targetRank }
       return json(
         legacyPersonal
           ? { ...result, sources: undefined, lateCheckin: undefined, excuse: undefined }
@@ -621,6 +621,42 @@ describe('headman statistics reviewed regressions', () => {
       expect(text(sourceCard)).not.toMatch(/Гео\s*25%/)
     },
   )
+  it.each([
+    [{ position: 2, participantCount: 7, available: true, visibility: 'VISIBLE' }, '2 из 7'],
+    [
+      { position: null, participantCount: 0, available: false, visibility: 'VISIBLE' },
+      'Нет данных для рейтинга',
+    ],
+    [
+      { position: null, participantCount: 0, available: false, visibility: 'HIDDEN' },
+      'Рейтинг скрыт для этой истории',
+    ],
+    [undefined, 'Сервер не передал рейтинг студента'],
+  ])('personal view renders the server rank %j and subject counts', async (rank, expected) => {
+    const h = harness(false, false, rank)
+    h.recover()
+    await vi.waitFor(() => expect(h.screen().ready).toBe(true))
+    h.screen().openStudentDetail(11, {} as MouseEvent)
+    await vi.waitFor(() => expect(h.screen().ready).toBe(true))
+    const region = find(h.root, (node) => node.props['aria-label'] === 'Рейтинг студента')!
+    expect(text(region)).toContain(String(expected))
+    const detail = headmanStatsFixtureDetail('overview-autumn', 11, 7)
+    const subjects = find(
+      h.root,
+      (node) => node.props['aria-label'] === 'Посещаемость по предметам и типам занятий',
+    )!
+    for (const subject of detail.subjects) {
+      expect(text(subjects)).toContain(subject.subjectName)
+      for (const metric of Object.values(subject.metrics))
+        expect(text(subjects)).toContain(`${metric.numerator} из ${metric.denominator}`)
+      for (const type of subject.lessonTypes) expect(text(subjects)).toContain(type.label)
+    }
+    const combined = detail.metrics.presentOrExcused
+    expect(text(h.root)).toContain(`${combined.numerator} из ${combined.denominator}`)
+    h.props.api = null as unknown as HeadmanStatsApi
+    await nextTick()
+    expect(find(h.root, (node) => node.props['aria-label'] === 'Рейтинг студента')).toBeUndefined()
+  })
   it('the personal chart retry repeats the personal endpoint and clears its visible error', async () => {
     const h = harness()
     await vi.waitFor(() => expect(h.screen().ready).toBe(true))

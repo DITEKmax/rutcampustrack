@@ -176,6 +176,10 @@ class StudentAttendanceProjectionServiceTest {
 
         verify(scheduleGrpcClient)
                 .getLessonsByGroup(RANK_GROUP_ID, SEMESTER_ID, "2026-09-01", "2026-09-30");
+        // The additional admitted target read reuses the same canonical cohort after original
+        // assertions.
+        assertThat(service.rankForHeadman(scope(), OWN_ID, SEMESTER_ID, RANK_GROUP_ID))
+                .isEqualTo(projection.ownRank());
     }
 
     @Test
@@ -528,6 +532,50 @@ class StudentAttendanceProjectionServiceTest {
                         .setSemesterId(SEMESTER_ID);
         for (long id : ids) result.addStudents(StudentInfo.newBuilder().setUserId(id));
         return result.build();
+    }
+
+    @Test
+    void headmanRankRejectsForeignScopeAndKeepsHiddenOrEmptyUnavailable() {
+        assertThatThrownBy(
+                        () ->
+                                service.rankForHeadman(
+                                        scope(), OWN_ID, SEMESTER_ID, RANK_GROUP_ID + 1))
+                .isInstanceOf(StudentProjectionException.class);
+        assertThatThrownBy(
+                        () ->
+                                service.rankForHeadman(
+                                        scope(), OWN_ID + 1, SEMESTER_ID, RANK_GROUP_ID))
+                .isInstanceOf(StudentProjectionException.class);
+        var hidden =
+                scope().toBuilder()
+                        .clearRankGroupId()
+                        .clearRankSubjects()
+                        .clearActiveRosterUserIds()
+                        .setRankEligible(false)
+                        .setRankVisibility(
+                                StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                        .build();
+        var unavailable = service.rankForHeadman(hidden, OWN_ID, SEMESTER_ID, RANK_GROUP_ID);
+        assertThat(unavailable.available()).isFalse();
+        assertThat(unavailable.position()).isNull();
+        assertThat(unavailable.participantCount()).isZero();
+        var empty =
+                hidden.toBuilder()
+                        .setRankVisibility(
+                                StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
+                        .build();
+        assertThat(service.rankForHeadman(empty, OWN_ID, SEMESTER_ID, RANK_GROUP_ID))
+                .isEqualTo(unavailable);
+        assertThatThrownBy(
+                        () ->
+                                service.rankForHeadman(
+                                        hidden.toBuilder().addActiveRosterUserIds(200L).build(),
+                                        OWN_ID,
+                                        SEMESTER_ID,
+                                        RANK_GROUP_ID))
+                .isInstanceOf(StudentProjectionException.class);
     }
 
     private static StudentProjectionScopeResponse scope() {

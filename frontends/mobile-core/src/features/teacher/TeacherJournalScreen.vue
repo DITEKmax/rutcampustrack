@@ -18,6 +18,7 @@ import {
   type TeacherExportFormatCode,
   type TeacherJournalQuery,
   type TeacherJournalResponse,
+  type TeacherJournalMetrics,
   type TeacherStatsSubjectOption,
   type TeacherSemester,
 } from './teacher-client';
@@ -77,6 +78,10 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const chart = ref(false);
 const studentId = ref<number | null>(null);
+const chartMetrics = ref<TeacherJournalMetrics | null>(null);
+const chartLoading = ref(false);
+const chartError = ref<string | null>(null);
+let chartRevision = 0;
 const formats = ref<readonly TeacherExportFormat[]>([]);
 const selectedFormat = ref<TeacherExportFormatCode>('docx');
 const formatsLoading = ref(false);
@@ -166,6 +171,10 @@ watch(
     exportError.value = null;
     exportStatus.value = null;
     studentId.value = null;
+    chartRevision += 1;
+    chartMetrics.value = null;
+    chartLoading.value = false;
+    chartError.value = null;
     void load();
     void loadFormats();
   },
@@ -184,15 +193,22 @@ watch(
   () => props.active,
   (active) => {
     if (!active) {
+      chartRevision += 1;
+      chartMetrics.value = null;
+      chartLoading.value = false;
+      chartError.value = null;
       exportRevision += 1;
       exportLoading.value = false;
       exportError.value = null;
       exportStatus.value = null;
+    } else if (chart.value && state.value) {
+      void loadChartMetrics();
     }
   },
   { flush: 'sync' },
 );
 onBeforeUnmount(() => {
+  chartRevision += 1;
   disposed = true;
   revision += 1;
   formatsRevision += 1;
@@ -240,6 +256,11 @@ async function load(): Promise<void> {
   const api = props.api;
   const value = effectiveQuery.value;
   const current = ++revision;
+  chartRevision += 1;
+  chartMetrics.value = null;
+  chartError.value = null;
+  chartLoading.value = false;
+  studentId.value = null;
   if (!api || !value || !teacherJournalTypes(value).length) return;
   loading.value = true;
   error.value = null;
@@ -252,7 +273,10 @@ async function load(): Promise<void> {
     context === journalContextKey(effectiveQuery.value);
   try {
     const journal = await loadJournalPages(api, value, active);
-    if (active()) state.value = journal;
+    if (active()) {
+      state.value = journal;
+      chartMetrics.value = journal?.metrics ?? null;
+    }
   } catch (cause) {
     if (!active() || cause instanceof StaleSessionGenerationError) return;
     error.value =
@@ -372,7 +396,61 @@ function changeFormat(value: string): void {
     selectedFormat.value = value as TeacherExportFormatCode;
 }
 function changeStudent(value: string): void {
-  studentId.value = value === 'group' ? null : Number(value);
+  const selected = value === 'group' ? null : Number(value);
+  if (
+    selected !== null &&
+    !completedJournal.value?.students.some((row) => row.studentId === selected)
+  )
+    return;
+  studentId.value = selected;
+  void loadChartMetrics();
+}
+async function loadChartMetrics(): Promise<void> {
+  const api = props.api,
+    query = effectiveQuery.value,
+    selected = studentId.value;
+  const current = ++chartRevision;
+  chartMetrics.value = null;
+  chartError.value = null;
+  if (!api || !query || !props.active) return;
+  const context = journalContextKey(query);
+  const active = () =>
+    !disposed &&
+    props.active &&
+    current === chartRevision &&
+    api === props.api &&
+    context === journalContextKey(effectiveQuery.value) &&
+    selected === studentId.value;
+  chartLoading.value = true;
+  try {
+    const response = await api.journal({
+      ...query,
+      page: 0,
+      pageSize: 1,
+      includeMetrics: true,
+      metricsStudentId: selected ?? undefined,
+    });
+    if (!active()) return;
+    if (
+      !response.metrics ||
+      response.metrics.selectedStudentId !== selected ||
+      response.metrics.series.some(
+        (point) =>
+          !state.value?.lessons.some(
+            (lesson) =>
+              lesson.id === point.lessonId && lesson.status === 'CLOSED' && !lesson.cancelled,
+          ),
+      )
+    )
+      throw new Error('Метрики выбранного студента недоступны.');
+    chartMetrics.value = response.metrics;
+  } catch (cause) {
+    if (!active() || cause instanceof StaleSessionGenerationError) return;
+    chartError.value = 'Не удалось загрузить метрики графика.';
+    emit('error', cause);
+  } finally {
+    if (active()) chartLoading.value = false;
+  }
 }
 </script>
 <template>
@@ -500,14 +578,29 @@ function changeStudent(value: string): void {
           :model-value="studentId === null ? 'group' : String(studentId)"
           :options="studentOptions"
           @update:model-value="changeStudent"
-        /><TeacherJournalChart
-          v-if="chartFrom && chartTo && chartFrom <= chartTo"
+        /><p
+          v-if="chartLoading"
+          role="status"
+        >
+          Загружаем метрики графика…
+        </p>
+        <StudentWarningBlock
+          v-else-if="chartError"
+          title="График недоступен"
+          :message="chartError"
+          action-label="Повторить"
+          severity="error"
+          @action="loadChartMetrics"
+        />
+        <TeacherJournalChart
+          v-if="!chartLoading && !chartError && chartFrom && chartTo && chartFrom <= chartTo"
           :journal="completedJournal"
           :student-id="studentId"
+          :metrics="chartMetrics"
           :from="chartFrom"
           :to="chartTo"
         /><p
-          v-else
+          v-else-if="!chartLoading && !chartError"
           role="status"
         >
           Границы семестра недоступны.

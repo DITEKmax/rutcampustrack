@@ -149,7 +149,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-async function mount(hostBack = false, editing = false) {
+async function mount(hostBack = false, editing = false, entryOnly = false) {
   vi.stubGlobal('Document', class {})
   vi.stubGlobal('ShadowRoot', class {})
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
@@ -176,6 +176,10 @@ async function mount(hostBack = false, editing = false) {
     input: HeadmanHomeworkCreateInput
     receipt: HeadmanHomeworkPublicationReceipt | null
   }[] = []
+  const lists: {
+    archived: boolean
+    response: ReturnType<typeof deferred<readonly HeadmanManagedHomework[]>>
+  }[] = []
   const edits: HeadmanHomeworkUpdateInput[] = []
   let createResponse = deferred<HeadmanHomeworkCreateResult>()
   let editResponse = deferred<HeadmanManagedHomework>()
@@ -187,7 +191,12 @@ async function mount(hostBack = false, editing = false) {
       dateTo: null,
       active: true,
     }),
-    listHomeworks: async () => (editing ? [existing] : [...records.values()]),
+    listHomeworks: async (_group: number, _semester: number, archived = false) => {
+      if (!entryOnly) return editing ? [existing] : [...records.values()]
+      const response = deferred<readonly HeadmanManagedHomework[]>()
+      lists.push({ archived, response })
+      return response.promise
+    },
     listSubjects: async () => [{ id: 88, name: 'Предмет' }],
     nextHomeworkLesson: async () => ({
       id: 300,
@@ -336,6 +345,7 @@ async function mount(hostBack = false, editing = false) {
   const open = async () => {
     await click('Домашнее задание')
     if (editing) {
+      await click('Посмотреть актуальные')
       const item = nodes(root).find(
         (node) =>
           node.tag === 'button' && String(node.props.class).includes('headman-homework__item'),
@@ -369,7 +379,8 @@ async function mount(hostBack = false, editing = false) {
   }
   await settle()
   await click('Ещё')
-  await open()
+  if (entryOnly) await click('Домашнее задание')
+  else await open()
   return {
     root,
     props,
@@ -382,6 +393,7 @@ async function mount(hostBack = false, editing = false) {
     records,
     creates,
     edits,
+    lists,
     chooseCurrentDate: async () => {
       const month = nodes(root).find((item) => item.props.class === 'headman-homework__month')!
       const target = month.children.find(
@@ -405,6 +417,49 @@ async function mount(hostBack = false, editing = false) {
 }
 
 describe('homework mutation across real parent navigation and form', () => {
+  it('defers list reads until a chosen action and distinguishes an unread day from a successful empty read', async () => {
+    const screen = await mount(false, false, true)
+    expect(screen.lists).toHaveLength(0)
+    expect(text(screen.root)).toContain('Выбери действие')
+    expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    screen.props.offline = true
+    await settle()
+    screen.props.offline = false
+    await settle()
+    expect(screen.lists).toHaveLength(0)
+    await screen.click('Выдать ДЗ')
+    expect(text(screen.root)).toContain('Шаг 1 из 4')
+    expect(screen.lists).toHaveLength(0)
+    await screen.back()
+    expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    await screen.click('Посмотреть актуальные')
+    expect(screen.lists.map((read) => read.archived)).toEqual([false])
+    expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    screen.lists[0]!.response.resolve([])
+    await settle()
+    expect(text(screen.root)).toContain('На этот день заданий нет.')
+    await screen.click('Открыть архив')
+    expect(screen.lists.map((read) => read.archived)).toEqual([false, true])
+    expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    screen.lists[1]!.response.resolve([{ ...screen.existing, archived: true }])
+    await settle()
+    expect(text(screen.root)).toContain(screen.existing.title)
+    expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+  })
+
+  it('does not publish a late current-list result after the archive action takes ownership', async () => {
+    const screen = await mount(false, false, true)
+    await screen.click('Посмотреть актуальные')
+    await screen.click('Открыть архив')
+    screen.lists[0]!.response.resolve([screen.existing])
+    await settle()
+    expect(text(screen.root)).not.toContain(screen.existing.title)
+    expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    screen.lists[1]!.response.resolve([])
+    await settle()
+    expect(text(screen.root)).toContain('На этот день заданий нет.')
+  })
+
   it.each([
     ['uncertain', 400],
     ['uncertain', 422],

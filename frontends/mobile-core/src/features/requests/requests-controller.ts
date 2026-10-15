@@ -452,7 +452,7 @@ export class RequestsController {
     this.contextChanged()
     this.refreshAccess()
     if (this.options.offline()) {
-      this.view.open.stale = this.view.open.requests.length > 0
+      this.view.open.stale = this.view.open.page >= 0 || this.view.open.requests.length > 0
       this.view.archive.stale = this.view.archive.requests.length > 0
     }
   }
@@ -464,6 +464,31 @@ export class RequestsController {
 
   bucketView(bucket = this.view.bucket): RequestsBucketView {
     return bucket === 'open' ? this.view.open : this.view.archive
+  }
+
+  /** The server OPEN total is independent of loaded pages and the archive selection. */
+  openCount(): number | null {
+    const scope = this.options.scope()
+    const state = this.view.open
+    if (
+      this.disposed ||
+      this.lastIdentity !== this.identity() ||
+      !scope ||
+      scope.activeRole !== 'STUDENT' ||
+      !scope.userId ||
+      !scope.semesterId ||
+      !this.options.port() ||
+      this.options.offline() ||
+      state.page < 0 ||
+      state.loading ||
+      state.loadingMore ||
+      state.stale ||
+      state.error ||
+      !Number.isSafeInteger(state.totalElements) ||
+      state.totalElements < 0
+    )
+      return null
+    return state.totalElements
   }
 
   invalidateOpenBucket(): void {

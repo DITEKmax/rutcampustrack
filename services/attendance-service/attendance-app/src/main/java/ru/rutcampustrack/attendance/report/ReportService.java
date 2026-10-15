@@ -929,8 +929,120 @@ public class ReportService {
     private record AttendanceAggregation(
             Map<Long, StudentStatsAccumulator> students, Map<Long, GroupStatsAccumulator> groups) {}
 
+    /** Full selected journal context, independent of display pagination. */
+    public TeacherJournalMetrics getTeacherJournalMetrics(
+            List<Long> lessonIds, long teacherId, Long selectedStudentId) {
+        if (teacherId <= 0
+                || lessonIds == null
+                || lessonIds.size() > 5_000
+                || lessonIds.stream().anyMatch(id -> id == null || id <= 0)
+                || lessonIds.stream().distinct().count() != lessonIds.size()
+                || selectedStudentId != null && selectedStudentId <= 0) {
+            throw new BadRequestException("Invalid journal metrics context");
+        }
+        TeacherSubjectsResponse authority = academicGrpcClient.getCurrentTeacherSubjects(teacherId);
+        if (authority == null || currentTeacherSubjectKeys(authority).isEmpty()) {
+            throw new AccessDeniedException("Teacher assignment authority is unavailable");
+        }
+        List<LessonInfo> lessons =
+                lessonIds.isEmpty() ? List.of() : scheduleGrpcClient.getLessonsByIds(lessonIds);
+        if (lessons == null || lessons.size() != lessonIds.size()) {
+            throw new ScheduleServiceUnavailableException("Incomplete journal metrics lessons");
+        }
+        Map<Long, LessonInfo> byId = new java.util.HashMap<>();
+        LessonInfo context = null;
+        for (LessonInfo lesson : lessons) {
+            if (lesson == null
+                    || !lessonIds.contains(lesson.getLessonId())
+                    || byId.put(lesson.getLessonId(), lesson) != null) {
+                throw new ScheduleServiceUnavailableException("Malformed journal metrics lessons");
+            }
+            authorizeTeacherStatsLesson(lesson, authority);
+            requireStatsLessonStatus(lesson);
+            parseLessonDate(lesson.getDate());
+            if (context != null
+                    && (lesson.getSemesterId() != context.getSemesterId()
+                            || lesson.getGroupId() != context.getGroupId()
+                            || lesson.getSubjectId() != context.getSubjectId())) {
+                throw new BadRequestException(
+                        "Journal metrics require one semester, group and subject");
+            }
+            context = lesson;
+        }
+        List<LessonInfo> ordered = lessonIds.stream().map(byId::get).toList();
+        Map<Long, StatsCounter> series = new java.util.LinkedHashMap<>();
+        java.time.Instant now = clock.instant();
+        AttendanceAggregation aggregation =
+                aggregateAttendance(
+                        ordered,
+                        Set.of(),
+                        true,
+                        selectedStudentId,
+                        series,
+                        lesson -> journalMetricsEligible(lesson, now));
+        if (selectedStudentId != null && !aggregation.students().containsKey(selectedStudentId)) {
+            throw new AccessDeniedException("Student is outside the dated journal roster");
+        }
+        return new TeacherJournalMetrics(
+                aggregation.students().values().stream()
+                        .map(StudentStatsAccumulator::toResult)
+                        .sorted(
+                                Comparator.comparing(TeacherStudentStats::displayName)
+                                        .thenComparingLong(TeacherStudentStats::studentId))
+                        .toList(),
+                series.entrySet().stream()
+                        .map(
+                                entry ->
+                                        new TeacherJournalLessonMetrics(
+                                                entry.getKey(),
+                                                entry.getValue().presentMetric(),
+                                                entry.getValue().presentOrExcusedMetric(),
+                                                entry.getValue().excusedMetric(),
+                                                entry.getValue().absentMetric()))
+                        .toList(),
+                selectedStudentId,
+                now);
+    }
+
+    private static boolean journalMetricsEligible(LessonInfo lesson, java.time.Instant now) {
+        if (!isCompleted(lesson) || isCancelled(lesson)) return false;
+        try {
+            java.time.LocalDateTime startsAt = java.time.LocalDateTime.parse(lesson.getStartsAt());
+            if (!startsAt.toLocalDate().equals(parseLessonDate(lesson.getDate())))
+                throw new IllegalArgumentException("Inconsistent physical lesson timing");
+            // Schedule owns CLOSED after physical end+grace; a future start is
+            // still ineligible even if its stored status is inconsistent.
+            return !startsAt.atZone(JournalLessonPolicy.MOSCOW).toInstant().isAfter(now);
+        } catch (RuntimeException error) {
+            throw new ScheduleServiceUnavailableException("Journal lesson timing is unavailable");
+        }
+    }
+
+    public record TeacherJournalMetrics(
+            List<TeacherStudentStats> students,
+            List<TeacherJournalLessonMetrics> series,
+            Long selectedStudentId,
+            java.time.Instant serverNow) {}
+
+    public record TeacherJournalLessonMetrics(
+            long lessonId,
+            TeacherMetric present,
+            TeacherMetric presentOrExcused,
+            TeacherMetric excused,
+            TeacherMetric absent) {}
+
     private AttendanceAggregation aggregateAttendance(
             List<LessonInfo> lessons, Set<Long> groupIds, boolean collectStudents) {
+        return aggregateAttendance(lessons, groupIds, collectStudents, null, null, lesson -> true);
+    }
+
+    private AttendanceAggregation aggregateAttendance(
+            List<LessonInfo> lessons,
+            Set<Long> groupIds,
+            boolean collectStudents,
+            Long selectedStudentId,
+            Map<Long, StatsCounter> series,
+            java.util.function.Predicate<LessonInfo> eligible) {
         Map<Long, StudentStatsAccumulator> students = new java.util.LinkedHashMap<>();
         Map<Long, GroupStatsAccumulator> groups = new java.util.LinkedHashMap<>();
         for (Long groupId : groupIds.stream().sorted().toList())
@@ -950,7 +1062,10 @@ public class ReportService {
                     groups.computeIfAbsent(
                             lesson.getGroupId(),
                             ignored -> new GroupStatsAccumulator(lesson.getGroupId()));
-            group.lessonsCount++;
+            boolean counted = eligible.test(lesson);
+            if (counted) group.lessonsCount++;
+            StatsCounter lessonCounter = counted && series != null ? new StatsCounter() : null;
+            if (lessonCounter != null) series.put(lesson.getLessonId(), lessonCounter);
             GroupMembersResponse roster =
                     rosters.computeIfAbsent(
                             lesson.getGroupId()
@@ -981,6 +1096,7 @@ public class ReportService {
                                                         member.getUserId(),
                                                         member.getDisplayName()))
                                 : null;
+                if (!counted) continue;
                 AttendanceRecord record = records.get(member.getUserId());
                 // Closed lessons normally have an AUTO_SCHEDULER ABSENT record.
                 // Treat a missing historical mark as ABSENT so the denominator is
@@ -991,6 +1107,10 @@ public class ReportService {
                                 : record.status();
                 if (student != null) student.counter.add(status);
                 group.counter.add(status);
+                if (lessonCounter != null
+                        && (selectedStudentId == null || selectedStudentId == member.getUserId())) {
+                    lessonCounter.add(status);
+                }
             }
         }
 

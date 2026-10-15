@@ -120,16 +120,28 @@ public class MobileAttendanceClient {
     }
 
     public TeacherJournalResponse teacherJournal(List<Long> lessonIds, boolean pastOnly) {
+        return teacherJournal(lessonIds, pastOnly, false, List.of(), null);
+    }
+
+    public TeacherJournalResponse teacherJournal(
+            List<Long> lessonIds,
+            boolean pastOnly,
+            boolean includeMetrics,
+            List<Long> aggregateLessonIds,
+            Long metricsStudentId) {
+        TeacherJournalRequest.Builder request =
+                TeacherJournalRequest.newBuilder()
+                        .addAllLessonIds(lessonIds)
+                        .setPastOnly(pastOnly)
+                        .setIncludeMetrics(includeMetrics)
+                        .addAllAggregateLessonIds(aggregateLessonIds);
+        if (metricsStudentId != null) request.setMetricsStudentId(metricsStudentId);
         return call(
                 "teacherJournal",
                 () ->
                         auth.attach(teacherStub)
                                 .withDeadlineAfter(10, TimeUnit.SECONDS)
-                                .getTeacherJournal(
-                                        TeacherJournalRequest.newBuilder()
-                                                .addAllLessonIds(lessonIds)
-                                                .setPastOnly(pastOnly)
-                                                .build()),
+                                .getTeacherJournal(request.build()),
                 ProblemCode.LESSON_NOT_FOUND);
     }
 

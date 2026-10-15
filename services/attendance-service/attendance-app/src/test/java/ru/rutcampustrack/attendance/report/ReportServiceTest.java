@@ -1497,6 +1497,86 @@ class ReportServiceTest {
         verify(attendanceReadPort, never()).findByLessonIds(any());
     }
 
+    @Test
+    void journalMetricsUseDatedCohortsCanonicalCountersAndSelectedStudentSeries() {
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID)).thenReturn(statsAuthority());
+        List<Long> ids = List.of(1L, 2L, 3L, 4L, 5L);
+        when(scheduleGrpcClient.getLessonsByIds(ids))
+                .thenReturn(
+                        List.of(
+                                statsLesson(1L, "closed", "2026-04-01"),
+                                statsLesson(2L, "closed", "2026-04-02"),
+                                statsLesson(3L, "cancelled", "2026-04-02"),
+                                statsLesson(4L, "closed", "2026-04-03").toBuilder()
+                                        .setStartsAt("2026-04-03T18:00:00")
+                                        .build(),
+                                statsLesson(5L, "planned", "2026-04-04")));
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(statsRoster());
+        for (int day : List.of(2, 3, 4))
+            when(academicGrpcClient.getGroupMembers(
+                            GROUP_ID, LocalDate.of(2026, 4, day), SEMESTER_ID))
+                    .thenReturn(
+                            statsRoster().toBuilder()
+                                    .setAsOfDate("2026-04-0" + day)
+                                    .clearStudents()
+                                    .addStudents(
+                                            StudentInfo.newBuilder()
+                                                    .setUserId(101L)
+                                                    .setDisplayName("Б Петров"))
+                                    .build());
+        when(clock.instant()).thenReturn(Instant.parse("2026-04-03T09:00:00Z"));
+        when(attendanceReadPort.findByLessonIds(ids))
+                .thenReturn(
+                        List.of(
+                                statsRecord(
+                                        1L, 100L, GROUP_ID, SUBJECT_ID_1, AttendanceStatus.PRESENT),
+                                statsRecord(
+                                        1L,
+                                        101L,
+                                        GROUP_ID,
+                                        SUBJECT_ID_1,
+                                        AttendanceStatus.FREE_ATTENDANCE),
+                                statsRecord(
+                                        3L, 101L, GROUP_ID, SUBJECT_ID_1, AttendanceStatus.PRESENT),
+                                statsRecord(
+                                        4L,
+                                        101L,
+                                        GROUP_ID,
+                                        SUBJECT_ID_1,
+                                        AttendanceStatus.PRESENT)));
+        var group = reportService.getTeacherJournalMetrics(ids, USER_ID, null);
+        assertThat(group.students())
+                .extracting(ReportService.TeacherStudentStats::studentId)
+                .containsExactly(100L, 101L);
+        assertThat(group.students().get(0).present())
+                .isEqualTo(new ReportService.TeacherMetric(1, 1, 100));
+        assertThat(group.students().get(1).present())
+                .isEqualTo(new ReportService.TeacherMetric(0, 2, 0));
+        assertThat(group.students().get(1).presentOrExcused())
+                .isEqualTo(new ReportService.TeacherMetric(1, 2, 50));
+        assertThat(group.students().get(1).absent())
+                .isEqualTo(new ReportService.TeacherMetric(1, 2, 50));
+        assertThat(group.series())
+                .extracting(ReportService.TeacherJournalLessonMetrics::lessonId)
+                .containsExactly(1L, 2L);
+        assertThat(group.series().get(0).present())
+                .isEqualTo(new ReportService.TeacherMetric(1, 2, 50));
+        var selected = reportService.getTeacherJournalMetrics(ids, USER_ID, 100L);
+        assertThat(selected.series().get(0).present())
+                .isEqualTo(new ReportService.TeacherMetric(1, 1, 100));
+        assertThat(selected.series().get(1).present())
+                .isEqualTo(new ReportService.TeacherMetric(0, 0, 0));
+        assertThatThrownBy(() -> reportService.getTeacherJournalMetrics(ids, USER_ID, 999L))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThat(reportService.getTeacherJournalMetrics(List.of(), USER_ID, null).series())
+                .isEmpty();
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
+                .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+        assertThatThrownBy(() -> reportService.getTeacherJournalMetrics(ids, USER_ID, null))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
     private TeacherSubjectsResponse twoSubjectAuthority() {
         return statsAuthority().toBuilder()
                 .addSubjects(

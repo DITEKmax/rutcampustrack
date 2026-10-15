@@ -1004,6 +1004,7 @@ const homeRoleSwitchDisabled = computed(
   () => offline.value || props.profilePort === null || scope.value === null,
 );
 const requestBucketView = computed(() => requests.activeBucket.value);
+const requestOpenCount = computed(() => requests.controller.openCount());
 const requestHasNextPage = computed(() => requests.hasNextPage.value);
 const requestOptions = computed(() => requests.view.options);
 const requestLessons = computed(() => requestOptions.value?.lessons ?? []);
@@ -1214,8 +1215,10 @@ function ensureRequestsRoute(routeValue: MobileRoute): void {
   if (routeValue.id === 'more/requests') {
     requests.selectBucket(bucket);
     const state = requests.bucketView(bucket);
-    if (!offline.value && !state.loading && state.page < 0)
+    if (!offline.value && !state.loading && (state.page < 0 || state.stale))
       void requests.load(bucket).catch(handleRequestsError);
+    if (!offline.value && bucket === 'archive' && !requests.view.open.loading)
+      void requests.load('open').catch(handleRequestsError);
     return;
   }
   requests.selectBucket('open');
@@ -1718,6 +1721,8 @@ function selectRequestBucket(bucket: RequestBucket): void {
   updateRequestDraft({ bucket, view: 'inbox' });
   requests.selectBucket(bucket);
   if (!offline.value) void requests.load(bucket).catch(handleRequestsError);
+  if (!offline.value && bucket === 'archive' && !requests.view.open.loading)
+    void requests.load('open').catch(handleRequestsError);
 }
 
 function retryRequests(): void {
@@ -2495,6 +2500,7 @@ defineExpose({ openNotificationAction });
     <RequestsScreen
       v-else-if="route.id === 'more/requests' || route.id === requestNotificationRoute.id"
       :bucket="requests.view.bucket"
+      :open-count="requestOpenCount"
       :requests="requestBucketView.requests"
       :loading="requestBucketView.loading"
       :error="requestBucketView.error"

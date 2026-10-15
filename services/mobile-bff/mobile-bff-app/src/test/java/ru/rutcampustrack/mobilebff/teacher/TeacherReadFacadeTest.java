@@ -127,6 +127,57 @@ class TeacherReadFacadeTest {
                 .satisfies(student -> assertThat(student.cells()).hasSize(1));
         verify(schedule).lessons(33L, 9L, LocalDate.of(2026, 9, 2), LocalDate.of(2026, 9, 8));
         verify(attendance).teacherJournal(List.of(107L));
+
+        var metrics =
+                ru.rutcampustrack.teacher.grpc.TeacherJournalMetrics.newBuilder()
+                        .setServerNow("2026-09-09T00:00:00Z")
+                        .build();
+        when(attendance.teacherJournal(List.of(107L), false, true, List.of(107L, 108L), null))
+                .thenReturn(journalResponse(107L).toBuilder().setMetrics(metrics).build());
+        var aggregate =
+                facade.journal(
+                        9L,
+                        33L,
+                        22L,
+                        List.of("lecture", "lab"),
+                        LocalDate.of(2026, 9, 2),
+                        LocalDate.of(2026, 9, 8),
+                        0,
+                        1,
+                        false,
+                        true,
+                        null);
+        assertThat(aggregate.metrics()).isNotNull();
+        assertThat(aggregate.totalLessons()).isEqualTo(2);
+        when(attendance.teacherJournal(List.of(108L))).thenReturn(journalResponse(108L));
+        facade.journal(
+                9L,
+                33L,
+                22L,
+                List.of("lecture", "lab"),
+                LocalDate.of(2026, 9, 2),
+                LocalDate.of(2026, 9, 8),
+                1,
+                1,
+                false,
+                false,
+                null);
+        verify(attendance).teacherJournal(List.of(108L));
+        assertThatThrownBy(
+                        () ->
+                                facade.journal(
+                                        9L,
+                                        33L,
+                                        22L,
+                                        List.of("lecture"),
+                                        null,
+                                        null,
+                                        0,
+                                        100,
+                                        false,
+                                        false,
+                                        101L))
+                .isInstanceOf(MobileBffException.class);
     }
 
     @Test

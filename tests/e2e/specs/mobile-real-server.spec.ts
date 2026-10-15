@@ -1208,6 +1208,87 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         .filter({ hasText: dataset.assistant.displayName })
         .getByLabel('Отсутствовал', { exact: true }),
     ).toBeVisible();
+    expect(new URL(journalResponse.url()).searchParams.get('includeMetrics')).toBe('true');
+    expect(journal.metrics).toMatchObject({ selectedStudentId: null });
+    expect(journal.metrics.students).toHaveLength(expectedNames.length);
+    const zeroJournalMetric = { numerator: 0, denominator: 1, percent: 0 };
+    const fullJournalMetric = { numerator: 1, denominator: 1, percent: 100 };
+    expect(journal.metrics.students.map((row: { studentId: string }) => row.studentId)).toEqual(
+      expect.arrayContaining(
+        [dataset.student, dataset.headman, dataset.assistant].map((user) => String(user.id)),
+      ),
+    );
+    const expectedMetrics = {
+      studentId: String(dataset.student.id),
+      displayName: dataset.student.displayName,
+      present: zeroJournalMetric,
+      presentOrExcused: fullJournalMetric,
+      excused: fullJournalMetric,
+      absent: zeroJournalMetric,
+    };
+    expect(
+      journal.metrics.students.find(
+        (row: { studentId: string }) => row.studentId === String(dataset.student.id),
+      ),
+    ).toEqual(expectedMetrics);
+    const metricRow = table.getByRole('row').filter({ hasText: dataset.student.displayName });
+    for (const [label, key] of [
+      ['Присутствия', 'present'],
+      ['Присутствия и уважительные причины', 'presentOrExcused'],
+      ['Уважительные причины', 'excused'],
+      ['Отсутствия', 'absent'],
+    ] as const) {
+      const metric = expectedMetrics[key];
+      await expect(
+        metricRow.getByLabel(`${label}: ${metric.numerator} из ${metric.denominator}`, {
+          exact: true,
+        }),
+      ).toContainText(`${metric.percent} %`);
+    }
+    await page.getByRole('button', { name: 'Показать график', exact: true }).click();
+    await page.getByRole('button', { name: 'Студент', exact: true }).click();
+    const [selectedJournalResponse] = await Promise.all([
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          url.pathname === '/api/v1/teacher/journal' &&
+          url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+          url.searchParams.get('groupId') === String(dataset.group.id) &&
+          url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+          url.searchParams
+            .getAll('lessonType')
+            .map((type) => type.toUpperCase())
+            .join() === 'LECTURE' &&
+          url.searchParams.get('pastOnly') === 'true' &&
+          url.searchParams.get('page') === '0' &&
+          url.searchParams.get('pageSize') === '1' &&
+          url.searchParams.get('includeMetrics') === 'true' &&
+          url.searchParams.get('metricsStudentId') === String(dataset.student.id) &&
+          response.request().method() === 'GET'
+        );
+      }),
+      page.getByRole('option', { name: dataset.student.displayName, exact: true }).click(),
+    ]);
+    expect(selectedJournalResponse.status()).toBe(200);
+    const selectedJournal = await selectedJournalResponse.json();
+    expect(selectedJournal.metrics).toMatchObject({
+      selectedStudentId: String(dataset.student.id),
+    });
+    expect(selectedJournal.metrics.series).toEqual([
+      {
+        lessonId: String(journalSeed.lessonId),
+        present: zeroJournalMetric,
+        presentOrExcused: fullJournalMetric,
+        excused: fullJournalMetric,
+        absent: zeroJournalMetric,
+      },
+    ]);
+    await expect(
+      page.locator('.teacher-journal__chart').getByRole('img', {
+        name: /присутствия 0 %, присутствия и уважительные причины 100 %/,
+      }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Показать таблицу', exact: true }).click();
     const excusePath = `/api/v1/teacher/excuses/${approvedRequest!.id}`;
     const teacherAttachmentPath = `${excusePath}/attachments/${approvedRequest!.attachmentId}`;
     const excuseRead = page.waitForResponse(

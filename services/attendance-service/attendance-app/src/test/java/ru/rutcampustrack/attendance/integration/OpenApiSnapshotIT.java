@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -33,7 +32,6 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
                     .normalize();
 
     @Test
-    @DisplayName("M11 G3: /api-docs matches committed snapshot")
     void apiDocsMatchesSnapshot() throws Exception {
         String actual = normalizeLineEndings(fetchAndNormalize());
 

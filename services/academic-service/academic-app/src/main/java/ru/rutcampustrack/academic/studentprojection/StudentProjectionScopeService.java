@@ -83,8 +83,44 @@ public class StudentProjectionScopeService {
     }
 
     private StudentProjectionScope resolveInternal(long semesterId, InternalJwtClaims claims) {
-        Authorization authorization = authorize(claims);
+        return resolveInternal(semesterId, authorize(claims), null);
+    }
 
+    /** Internal target read; the caller must first admit the dated target with live VIEW_STATS. */
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public StudentProjectionScope resolveHeadmanRank(
+            long semesterId, long studentId, long groupId) {
+        if (semesterId <= 0 || studentId <= 0 || groupId <= 0) {
+            throw StudentProjectionException.invalidRequest("Invalid target rank identity");
+        }
+        var authorityResult = query.findAuthority(studentId);
+        if (authorityResult == null) {
+            throw StudentProjectionException.dependency(
+                    "Academic target authority is unavailable", null);
+        }
+        var authority =
+                authorityResult.orElseThrow(
+                        () ->
+                                StudentProjectionException.unresolved(
+                                        "Target student authority is unavailable"));
+        if (authority.userId() != studentId || authority.rolesVersion() <= 0) {
+            throw StudentProjectionException.inconsistent(
+                    "Target authority identity is inconsistent");
+        }
+        var grant = studentGrant(authority);
+        String status = normalize(grant.status());
+        // A suspended student cannot participate; personal headman history remains readable.
+        return resolveInternal(
+                semesterId,
+                new Authorization(
+                        studentId,
+                        grant,
+                        TERMINAL_STATUSES.contains(status) || "SUSPENDED".equals(status)),
+                groupId);
+    }
+
+    private StudentProjectionScope resolveInternal(
+            long semesterId, Authorization authorization, Long allowedGroupId) {
         Optional<StudentProjectionQuery.SemesterSnapshot> semesterResult =
                 query.findSemester(semesterId);
         if (semesterResult == null) {
@@ -104,7 +140,12 @@ public class StudentProjectionScopeService {
                 query.findGroupHistory(authorization.userId());
         HistoryTimeline history = HistoryTimeline.validate(historyRows, authorization.userId());
         List<StudentProjectionScope.MembershipSegment> clippedSegments =
-                history.clip(semester.dateFrom(), dateUntilExclusive);
+                history.clip(semester.dateFrom(), dateUntilExclusive).stream()
+                        .filter(
+                                segment ->
+                                        allowedGroupId == null
+                                                || segment.groupId() == allowedGroupId)
+                        .toList();
         if (clippedSegments.isEmpty()) {
             throw StudentProjectionException.unresolved(
                     "Student has no valid membership in the semester");
@@ -121,7 +162,8 @@ public class StudentProjectionScopeService {
                         semester.dateFrom(),
                         dateUntilExclusive,
                         semester.dateTo(),
-                        serverDate);
+                        serverDate,
+                        allowedGroupId);
         List<StudentProjectionScope.Subject> rankSubjects =
                 resolveRankSubjects(semesterId, semester.dateFrom(), dateUntilExclusive, rank);
 
@@ -197,27 +239,8 @@ public class StudentProjectionScopeService {
             throw StudentProjectionException.invalidSession("Signed student authority is stale");
         }
 
-        List<StudentProjectionQuery.RoleGrantSnapshot> grants = authority.grants();
-        List<StudentProjectionQuery.RoleGrantSnapshot> studentGrants =
-                grants.stream()
-                        .filter(Objects::nonNull)
-                        .filter(grant -> STUDENT_ROLE.equals(normalize(grant.role())))
-                        .toList();
-        if (studentGrants.size() != 1) {
-            throw StudentProjectionException.invalidSession(
-                    "Signed student role grant is unavailable");
-        }
-        StudentProjectionQuery.RoleGrantSnapshot studentGrant = studentGrants.get(0);
+        StudentProjectionQuery.RoleGrantSnapshot studentGrant = studentGrant(authority);
         String accountStatus = normalize(studentGrant.status());
-        String authorityStatus = normalize(authority.accountStatus());
-        if (!isKnownStatus(accountStatus) || !authorityStatus.equals(accountStatus)) {
-            throw StudentProjectionException.inconsistent(
-                    "Student role grant disagrees with account authority");
-        }
-        if (studentGrant.id() <= 0) {
-            throw StudentProjectionException.inconsistent(
-                    "Student role grant has no durable identity");
-        }
         if (!accountStatus.equals(normalize(claims.status()))) {
             throw StudentProjectionException.invalidSession("Signed student status is stale");
         }
@@ -258,6 +281,30 @@ public class StudentProjectionScopeService {
                     "Active student grant has no authoritative group");
         }
         return new Authorization(claims.userId(), studentGrant, terminal && claims.readOnly());
+    }
+
+    private static StudentProjectionQuery.RoleGrantSnapshot studentGrant(
+            StudentProjectionQuery.AuthoritySnapshot authority) {
+        List<StudentProjectionQuery.RoleGrantSnapshot> studentGrants =
+                authority.grants().stream()
+                        .filter(Objects::nonNull)
+                        .filter(grant -> STUDENT_ROLE.equals(normalize(grant.role())))
+                        .toList();
+        if (studentGrants.size() != 1) {
+            throw StudentProjectionException.invalidSession(
+                    "Signed student role grant is unavailable");
+        }
+        var grant = studentGrants.get(0);
+        String status = normalize(grant.status());
+        if (!isKnownStatus(status) || !normalize(authority.accountStatus()).equals(status)) {
+            throw StudentProjectionException.inconsistent(
+                    "Student role grant disagrees with account authority");
+        }
+        if (grant.id() <= 0) {
+            throw StudentProjectionException.inconsistent(
+                    "Student role grant has no durable identity");
+        }
+        return grant;
     }
 
     private SubjectResolution resolveSubjects(
@@ -367,7 +414,8 @@ public class StudentProjectionScopeService {
             LocalDate semesterFrom,
             LocalDate semesterUntilExclusive,
             LocalDate semesterTo,
-            LocalDate serverDate) {
+            LocalDate serverDate,
+            Long allowedGroupId) {
         boolean past = serverDate.isAfter(semesterTo);
         if (past && history.everTransferred()) {
             // This branch intentionally returns before any roster query.
@@ -381,6 +429,11 @@ public class StudentProjectionScopeService {
         if (grantGroupId == null || grantGroupId <= 0) {
             throw StudentProjectionException.inconsistent(
                     "Active student grant has no authoritative group");
+        }
+
+        // No foreign current-group or cohort data is needed for this admitted historical target.
+        if (allowedGroupId != null && !allowedGroupId.equals(grantGroupId)) {
+            return RankDecision.hidden();
         }
 
         Optional<Long> currentGroup = history.currentGroupAt(serverDate);

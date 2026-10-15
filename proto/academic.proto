@@ -152,6 +152,7 @@ message HeadmanStatsScopeResponse {
   optional HeadmanStatsSemester selected_semester = 5;
   int64 membership_active = 6;
   int64 membership_total = 7;
+  StudentProjectionScopeResponse student_rank_scope = 8; // admitted target, authorized group only
 }
 
 message GroupRequest {

@@ -21,6 +21,26 @@ function item(id: number, archived: boolean): HeadmanManagedHomework {
   }
 }
 describe('all published assignments for the selected semester', () => {
+  it.each(['current', 'archive'] as const)(
+    'reads only the explicitly selected %s scope',
+    async (scope) => {
+      const reads: boolean[] = []
+      const result = await readPublishedHomeworks(
+        {
+          listHomeworks: async (_group, _semester, archived = false) => {
+            reads.push(archived)
+            return [item(1, archived)]
+          },
+        },
+        2,
+        3,
+        () => true,
+        scope,
+      )
+      expect(reads).toEqual([scope === 'archive'])
+      expect(result?.map((entry) => entry.archived)).toEqual([scope === 'archive'])
+    },
+  )
   it('retains active and terminal assignments and chooses terminal duplicate representation', async () => {
     const result = await readPublishedHomeworks(
       {

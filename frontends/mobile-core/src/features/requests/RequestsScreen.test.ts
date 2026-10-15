@@ -36,6 +36,7 @@ const pendingRequest: RequestDetail = {
 async function renderScreen(
   overrides: Partial<{
     bucket: 'open' | 'archive'
+    openCount: number | null
     requests: readonly RequestDetail[]
     loading: boolean
     error: string | null
@@ -79,6 +80,8 @@ async function renderExcuse(
     reasons: readonly RequestReasonOption[]
     reason: string | null
     comment: string
+    submitError: string | null
+    ambiguous: boolean
   }> = {},
 ): Promise<string> {
   return renderToString(
@@ -97,6 +100,24 @@ async function renderExcuse(
 }
 
 describe('RequestsScreen rendered states', () => {
+  it('shows the authoritative open total across archive pages without inventing an unknown zero', async () => {
+    const archive = await renderScreen({ bucket: 'archive', requests: [], openCount: 27 })
+    expect(archive).toMatch(/role="tab"[\s\S]*?>\s*Открытые \(27\)/)
+    const empty = await renderScreen({ requests: [], openCount: 0 })
+    expect(empty).toContain('Открытые (0)')
+    for (const overrides of [
+      { openCount: null },
+      { openCount: -1 },
+      { openCount: Number.NaN },
+      { openCount: 27, offline: true },
+      { openCount: 27, access: 'forbidden' as const },
+      { openCount: 27, loading: true },
+    ]) {
+      const unavailable = await renderScreen(overrides)
+      expect(unavailable).not.toMatch(/Открытые \(/)
+    }
+  })
+
   it('renders the open card with a worded status, lesson metadata and cancellation intent', async () => {
     const html = await renderScreen()
     expect(html).toContain('Заявки')
@@ -183,6 +204,22 @@ describe('RequestsScreen rendered states', () => {
     expect(missing).toContain('Убрать из заявки')
     expect(missing).not.toContain('lesson-missing')
     expect(missing).toMatch(/class="requests-submit-action"[^>]*disabled/)
+  })
+
+  it('keeps a network submission failure visible with explicit recovery and no false success', async () => {
+    const failed = await renderExcuse({
+      submitError: 'Сеть недоступна. Результат отправки не подтверждён.',
+      ambiguous: true,
+    })
+    expect(failed).toContain('Не удалось отправить заявку')
+    expect(failed).toContain('Сеть недоступна. Результат отправки не подтверждён.')
+    expect(failed).toContain('Отказаться от неподтверждённой отправки')
+    expect(failed).toMatch(/class="requests-submit-action"[^>]*disabled/)
+    expect(failed).not.toContain('Заявка отправлена')
+    const ready = await renderExcuse({ submitError: null, ambiguous: false })
+    expect(ready).not.toContain('Не удалось отправить заявку')
+    expect(ready).not.toContain('Отказаться от неподтверждённой отправки')
+    expect(ready).toContain('Отправить заявку')
   })
 
   it('gates blank comments from server metadata instead of reason-code inference', async () => {

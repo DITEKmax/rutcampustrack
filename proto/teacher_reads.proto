@@ -139,12 +139,31 @@ message TeacherRosterEntry {
 message TeacherJournalRequest {
   repeated int64 lesson_ids = 1;
   bool past_only = 2;
+  repeated int64 aggregate_lesson_ids = 3;
+  optional int64 metrics_student_id = 4;
+  bool include_metrics = 5;
 }
 
 message TeacherJournalResponse {
   repeated TeacherLessonSummary lessons = 1;
   repeated TeacherJournalStudent students = 2;
   string server_now = 3;
+  TeacherJournalMetrics metrics = 4;
+}
+
+message TeacherJournalMetrics {
+  repeated TeacherStudentStats students = 1;
+  repeated TeacherJournalLessonMetrics series = 2;
+  optional int64 selected_student_id = 3;
+  string server_now = 4;
+}
+
+message TeacherJournalLessonMetrics {
+  int64 lesson_id = 1;
+  TeacherStatsMetric present = 2;
+  TeacherStatsMetric present_or_excused = 3;
+  TeacherStatsMetric excused = 4;
+  TeacherStatsMetric absent = 5;
 }
 
 message TeacherJournalStudent {

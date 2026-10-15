@@ -76068,13 +76068,13 @@
       "oldAdmin": "Alloverlappreimagesexact/frozenAdminauditanddispatchpreserved"
     },
     "b460bc2_current_Root_feature_Source_checkpoint": {
-      "utc": "2026-10-15T20:32:10.573039+00:00",
-      "state": "LOCAL_C3BFED_PLUS_APPROVED_STUDENT503_MINIMAL3_SOURCE_WIP",
-      "count": 177,
+      "utc": "2026-10-15T21:30:15.159900+00:00",
+      "state": "FROZEN_ROOT_INTEGRATED_TYPECHECKS_PASS_CONFIGURED_CHECKS_NEXT",
+      "count": 207,
       "currentPins": [
         {
           "sourceRef": ".github/workflows/ci.yml",
-          "sha256": "66956b3bb372646733687d5198cd2e9b4c45c8824879bf615dc1a4edd8e55f40"
+          "sha256": "5571ef54a71a411e0e7b57c840a1c2dda2b23df9bbf7da3fdc6a5e6eefeadddd"
         },
         {
           "sourceRef": "docker-compose.e2e.yml",
@@ -76086,7 +76086,7 @@
         },
         {
           "sourceRef": "docs/openapi/auth.json",
-          "sha256": "0a9552f046fc69bed499a3a76a60c78ba7f3a6585e27938ce567084133d0d1d2"
+          "sha256": "f7edb8f5e0655faf1d16b35134490527cdbb75c77e33f1328ea6ca40bb626857"
         },
         {
           "sourceRef": "docs/openapi/mobile-bff.json",
@@ -76098,7 +76098,7 @@
         },
         {
           "sourceRef": "frontends/mobile-core/src/api/generated/auth.ts",
-          "sha256": "6351876cca971e30d18c51cd8fe2a216486982cd328b3f3e74b405ba673eb0b9"
+          "sha256": "311060c7ea88cb59bdf8708bdcb03242e451ad7bebc5cbeb5eae4a3ec28dc764"
         },
         {
           "sourceRef": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
@@ -76173,20 +76173,24 @@
           "sha256": "5f81cd487cc05c97de1b0a8f2eec871ff210b465abb65792b301ef5ce08ba887"
         },
         {
+          "sourceRef": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsDetailPanel.vue",
+          "sha256": "9baabdbe03a87dd11bd3d7baae25df1a1039d5967d7ec132e2c592001e1fe452"
+        },
+        {
           "sourceRef": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsMobileView.vue",
-          "sha256": "0f8758761a3fb5ce8310897bc2283a41bb7a1d8561f17fe6a53bc7d28b9b1f08"
+          "sha256": "8c110f2d5d208c97680069f9fca8f9a85b5c72fa63bcc79bdbe6d8b1d6ca2e85"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.test.ts",
-          "sha256": "cb2f7ac9b46ba26d910a2d08ef79777fda61aee213040462d3486f6b8aa68c8e"
+          "sha256": "d55dd49522c36700317ce453bd047b9206e6887844b962001e2e30132ccd5f72"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
-          "sha256": "78f944d50925243f291d1ba813e156e4d807268c1804bcbec6301ed803234e36"
+          "sha256": "22382c0ead365f5912c09b2713e4fdae88e85226190e39fa8e60681f0d460b92"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/headman-stats/headman-stats-screen.test.ts",
-          "sha256": "a28efb33fea5791ca57be29a41bcfef583328e23c30050963478b89850e91df2"
+          "sha256": "a920f5637342fd909d793f4b912a53a313f14e23d20a7b099bae8bcada19e4c7"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/headman-subjects/HeadmanSubjectsScreen.vue",
@@ -76199,6 +76203,22 @@
         {
           "sourceRef": "frontends/mobile-core/src/features/headman-subjects/headman-subjects-client.ts",
           "sha256": "db1250ec3edd26178946c0fd0d75964241a004dac9a98342b5988f8389169cac"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/homework/HeadmanHomeworkScreen.vue",
+          "sha256": "e27b6b92ef403cddf289424004218735dfe290ef3639a35dcac365ea29ce0680"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+          "sha256": "caec3b961e8e44dd27db7cdd5caad0c7ea2f7ed2e4c5f36e9bab6adb96e8e929"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/homework/headman-published-homework.test.ts",
+          "sha256": "fcfaec537fb4eae36f9fcf4c55147ce7908d72936ae0584110917de83ea60525"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/homework/headman-published-homework.ts",
+          "sha256": "3ba9240569b69428dc6eb1d7af1c5bdc0621d82c880364702099393ddd89bed6"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/profile/BrowserLoginApprovalForm.vue",
@@ -76223,6 +76243,22 @@
         {
           "sourceRef": "frontends/mobile-core/src/features/profile/profile-types.ts",
           "sha256": "67f6a210d2580b70fc946facd0606fe2756b9eef8c0b454c2708a24359e49d0a"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+          "sha256": "c4b64f6a15cb0a4afcc0a18d540fb26880b9f2500a3646d792975c6f90095326"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+          "sha256": "02863596b327236a52d75cb52b66be1f732b3e826a8d38393ec1de9c5e023086"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+          "sha256": "6478a87028037f0958d811191d8f27194d8790cc94d90b8fb5eb39e430472b1d"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+          "sha256": "b3996feeaf4c35eb44b6ec9cb85dfaa7a3e301d975bb46ca8bfe11ce5df94f6c"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
@@ -76269,24 +76305,40 @@
           "sha256": "a70827c75b81151ea8934935b958850bc633b2f23afbed2c0f54e572cb511349"
         },
         {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalChart.vue",
+          "sha256": "5788cf6bbe05a6eb1ca82479f80efd6e07d071f8078f2669dff6af28aecbdf73"
+        },
+        {
           "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
-          "sha256": "d139c7b66f3aab6ff37e5a6bb90be61c8a5999f04ce3e6d01dd0407153f3a3b7"
+          "sha256": "6af28aa830d783022d78234f1fae5bc2a73664bcc110cdbeeeb4b05b3a323d0c"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
-          "sha256": "5fb9f1a9a639af3c82a3ffdf0e8ab62f7e42e2ef94bc14a54f0778821ca6bd77"
+          "sha256": "22facc44e1a955e971b8db359e6a97e9f093367d489e468cd8f6d0a0d67dd381"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
           "sha256": "aa67d4aafde970c41410066aac0ae13655940b4cd9a7a67666545d12a65e7eef"
         },
         {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-attendance-context.test.ts",
+          "sha256": "a65ea56c85b1497a31b26790ce3134b14180603dd6dc6fd4bbe4b6cc9f20ed2f"
+        },
+        {
           "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-client.ts",
-          "sha256": "cd44b23b0568b03b16d6869dee89cec6bffab44a9c64c418c67b0e50e0f510f2"
+          "sha256": "98d397fa8c35b8c242e3f015884d71dd01c1ab9696ec8f1dd2f33a85952b8475"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-model.test.ts",
+          "sha256": "a78db1ce5af4e4500f6a8e32d9ed35a423eff1c4d5b9148329c04ca1a0f6d6d8"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-model.ts",
+          "sha256": "87baf16d7da53d36a61fa668eb103bc087bdb26a006cec82a62b9e840ccacdf2"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
-          "sha256": "814c370e357c57aea74166ae86be9bd33755ce3e5e8819e5a5c15ade4fb2a949"
+          "sha256": "0d9d7e0ee0dac3f40de3a90b1e498106e2aa52b2ac14402a9ad9bb31fcae7790"
         },
         {
           "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-stats-route.ts",
@@ -76318,7 +76370,7 @@
         },
         {
           "sourceRef": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
-          "sha256": "90c11e16fabe4a347a95658764cef98abf46443bfebe75439044381c593c9b9d"
+          "sha256": "e54a6318f73a86d5e350c6546cffdf2dac4638b7add44a7df742ada8e887654d"
         },
         {
           "sourceRef": "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
@@ -76377,12 +76429,16 @@
           "sha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd"
         },
         {
+          "sourceRef": "proto/academic.proto",
+          "sha256": "528eaf69ea8b4168bad9d8bacd1e15a1908460ba7890edd7926c2344e1528fc0"
+        },
+        {
           "sourceRef": "proto/attendance.proto",
           "sha256": "b67e79c4325cc2f2554fb89c0e7f718068bac9ca5f9c9b6fbdb97be8fc0a8512"
         },
         {
           "sourceRef": "proto/teacher_reads.proto",
-          "sha256": "e920346b2c4a17f0fc05a749969772eb367d3de153c5f38a2b212e7d4cb6e46c"
+          "sha256": "1591d28d4e5af03b5ddb42b60135551ac4cbd7d47b7b6ef34de307fad4278cfd"
         },
         {
           "sourceRef": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/AdminAttendanceReportApi.java",
@@ -76417,6 +76473,14 @@
           "sha256": "6882436c2b34fb7b69c8ef6174780caf37c1456e161bc266e8bfffdb608d7ec9"
         },
         {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanStatsScopeReadService.java",
+          "sha256": "8b265ac17d028eac4c65d550fe55e1c1f08f18fbcdd5fbf977c6880bda3a261e"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+          "sha256": "0c5542c026a6979056779e847db1197d36a32ed1355a9841d6cf9b65d0c13103"
+        },
+        {
           "sourceRef": "services/academic-service/academic-app/src/main/resources/application-prod.yml",
           "sha256": "152653732e0754404a6c5e085745d6f2a8619300138f4a7f8319391bc7f7d338"
         },
@@ -76433,8 +76497,16 @@
           "sha256": "05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e"
         },
         {
+          "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+          "sha256": "b82b503dc80933e6bbed8c60669da5ffc3e090b9fd9744fdcdbef64c7622b4b4"
+        },
+        {
           "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
           "sha256": "25606c3e005b6807d58f05dfb4cb79f31b0a7a470a372cdec32843d8efd42bc9"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+          "sha256": "fe1089259bb9af897258fd5f303b38544eac82f69885c93df313e20efc279e2b"
         },
         {
           "sourceRef": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
@@ -76457,12 +76529,16 @@
           "sha256": "8dfb1c7513c40ad6c592f2c288057e8a8136cd5d8731d1e08de66d57f8360922"
         },
         {
+          "sourceRef": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsStudentDetailResponse.java",
+          "sha256": "0e2c12a742816ae125bcd9dce781926cd7ae5229b8d3f52fd38448ec777665ca"
+        },
+        {
           "sourceRef": "services/attendance-service/attendance-app/Dockerfile",
           "sha256": "e4710255aa749f06ab34d8eb599f01a5e75456fe947189dc7007a5784537c7ab"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseRepository.java",
-          "sha256": "ea0b87aca42c1ca3c0cbcc0c6f2e4e0ed0032d8c7b704d86674db59a83d406e4"
+          "sha256": "2737cd506ae5173362a3909cdd66ab326d5129e57a50f80c951787092131564e"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcIdentity.java",
@@ -76481,20 +76557,24 @@
           "sha256": "4348676649f31eb197bdf84f89d8bb32b382dc94a6392ef2d508ac661d8a9154"
         },
         {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcService.java",
+          "sha256": "6e4abc8d1b1c6e2b8f1c367f408d43c17f9029d206eb885c3915d4ce041fd7d3"
+        },
+        {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/AdminGroupStatsReadService.java",
           "sha256": "95744a68cbc8c06b5feeb615fe64a958ff948dd912a64e1bb0cb8adfc9d4c868"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
-          "sha256": "3c8402b1c81c5ed43ae21eff14c26293c12bedf7bf5b272fec868cda6dd4d11a"
+          "sha256": "e8dbb6f8b79f208855913b223626b2c3167b42d8d278e75c16878683ca7f432b"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
-          "sha256": "0c01725aaed3d38de40aa41dddb89d5ed9ef09e0b62c7a0331707e7c8dcfdbea"
+          "sha256": "06d2ec820db53b02e64d49fd9897591f852a9d5de6f3b3c69dc6ed0e891a5b12"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
-          "sha256": "ec64e55e50dcc099663c63d24aeac7fccef37bd8ad807e13101dedc9f69b9866"
+          "sha256": "42c7e17cce3bcd18d5f344785d33b01aba30fea8dd33ee7813574d0ca86aa564"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportService.java",
@@ -76521,20 +76601,32 @@
           "sha256": "1472a4a6e8e21640d2a83a3cab4ed78f152434de419bd8feef274fdc7e3afe90"
         },
         {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+          "sha256": "0420128cc09aa77c4bdc55442601da04c1fd25bbf6393fa1df840fab63afb13a"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+          "sha256": "f7f908c97355eb58786f6da1273a66943a897122c68f7f401c1e01ce0a77126a"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+          "sha256": "85b34fa98383c5f5f5ac21c37c50ec50b0db5b1d1b4437db5cf84e9b1bb134ac"
+        },
+        {
           "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
           "sha256": "eac8726dedebfaf9a1a93487c4605478e371db9d8e1ec0873433d09774a33e6c"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
-          "sha256": "90224f9cbd22b58737e505ca335549a2e7ad03e09d8ce34d958876991f13eb40"
+          "sha256": "aa76bb9765c1cd23b38230dffb8ecd968731a318671d7c8a6d03ac0aa418e37f"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
-          "sha256": "0ad9f7a0306695cdda8fe777b1169bbbf0c3539203f199ec03677324cc0b24c4"
+          "sha256": "c567cc6289dc9d0e334e1a51393cbb2c2e7772584b577e37c11d35b0f12a4884"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
-          "sha256": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c"
+          "sha256": "21ba11b1ea140f18371f89f6a9799d53ab1d73cd8a34834c81f39b33ae7e8070"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
@@ -76617,6 +76709,10 @@
           "sha256": "a39f532ca36c6cd681d501dc0ecec5ddb77b0b3b2e7785f282c181c7b2f0412e"
         },
         {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+          "sha256": "ef5628a2a4588843fe6a4514c526bf3ccd225d54876d30a4b8957a77282623f4"
+        },
+        {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AdminAttendanceSelectorTest.java",
           "sha256": "646c22ede074f813223e14f4abeab8901f5165961656b4df8da6351ea242d35b"
         },
@@ -76634,15 +76730,27 @@
         },
         {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/HeadmanCredentialsHttpIT.java",
-          "sha256": "b570e89140e1f045a0af3569c47eccfa00281810ebc5db9284692aae8c250342"
+          "sha256": "6c82e8fe3246fed5953314cb623b4ccbbcef7bf704f29c284216497b3682f16c"
         },
         {
           "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
           "sha256": "51abf1298e036ce5b5ce1c3dac7cdcec7d8786b4d4c839cd75e5512a317fc812"
         },
         {
+          "sourceRef": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/TeacherApi.java",
+          "sha256": "a503dbf8f87a31fdbb8746fa01165a279265bd32820ddee30e032d11d0bdc0dd"
+        },
+        {
           "sourceRef": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
           "sha256": "e1dfe777ea413d5dd875c8c0c2089b480c5303c19f3eb8bf60316aa22ff59eda"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/TeacherApiModels.java",
+          "sha256": "c5ddf7c2f458fb741c559d7f7ad41a88d4c844fb359dc6892c91601741d3bcb6"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+          "sha256": "ec594e1d892586e9ad46af7346bcf3b876b60deee0a910fa266fdc2920c5accf"
         },
         {
           "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
@@ -76650,11 +76758,11 @@
         },
         {
           "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherApiController.java",
-          "sha256": "a9d26c2848474f4daac80aa3fcd245c2f2db99d8b8b3848230e73aeb940cef37"
+          "sha256": "f3a0cae6af522cb75168135de866189614b5ef3fc859b96d2865f43b77fd02b6"
         },
         {
           "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java",
-          "sha256": "8678043ed178a10cc44b23620f7d0d956eff701f6a4b9b1f27b4070bb799a4c0"
+          "sha256": "f7f0a8e75d49d159e77ede783bfc0db67ec2655f82d8aea74fab60eb03147739"
         },
         {
           "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/resources/application-prod.yml",
@@ -76666,7 +76774,7 @@
         },
         {
           "sourceRef": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacadeTest.java",
-          "sha256": "eb57b7a7b859811843b3ce75a25dafc8c01c6bee29c90cab5147dae32f4930b5"
+          "sha256": "a33102092327fd60543350e90fe6a467ef8d38c197ae332bac7807eb16423296"
         },
         {
           "sourceRef": "services/notification-bot/bot/__main__.py",
@@ -76713,12 +76821,24 @@
           "sha256": "c795768085454244f7daf310ceb0e1f40947273f2d5f7de8cfe8917b6813a357"
         },
         {
+          "sourceRef": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+          "sha256": "a5bb0d935eee38b31f168e8e2ff7f4735aedf90910241835cd746a6f88f5fa1c"
+        },
+        {
+          "sourceRef": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+          "sha256": "875c354eb7159489cc75aebab0844aaa56647a0542a1c4531016f6b341d08af2"
+        },
+        {
           "sourceRef": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/teacher/TeacherReportScope.java",
           "sha256": "0834ae3717850c9e137fa03c282a9bcf212820ba69842615ca18167bfc7eef5e"
         },
         {
           "sourceRef": "tests/e2e/artifact-controls/privacy.control.spec.ts",
           "sha256": "907955697212229d94998abb3b73a66da1a4f99ec2ed5b16fc55933c290575e0"
+        },
+        {
+          "sourceRef": "tests/e2e/check-admission-retry.mjs",
+          "sha256": "f73811e89bbae3510b9d5b4e0ea20f7f225b7053be8f4baeef917d6df114bf88"
         },
         {
           "sourceRef": "tests/e2e/fixtures/artifact-privacy.ts",
@@ -76762,7 +76882,11 @@
         },
         {
           "sourceRef": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
-          "sha256": "d08f66b436534875400b81e79150ebd825136297d31765682baedef97eaae029"
+          "sha256": "b182a3558e6c3611d3623e6363349cdb4ec616b06ac02fe32b90d21a8bd8c2e3"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+          "sha256": "b0bec9936f0862182475aa5489f685608e74bcccb59c74de08e3bedce1538bb7"
         },
         {
           "sourceRef": "tests/e2e/specs/mobile-map-lifecycle.spec.ts",
@@ -76770,22 +76894,18 @@
         },
         {
           "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
-          "sha256": "4e195dde2eca4848aedd6e4255f544a90993cac89f1ba6cc818d83503fad571a"
+          "sha256": "2d3403eb8d6a429b94596417338bca269d64bfcaba738787007aeb513c69511c"
         },
         {
           "sourceRef": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
           "sha256": "06d1742d4ce4b7040ce950bd8945d966331a3877a340d36509c7a5f70c00ad83"
-        },
-        {
-          "sourceRef": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
-          "sha256": "875c354eb7159489cc75aebab0844aaa56647a0542a1c4531016f6b341d08af2"
         }
       ],
-      "pendingIntegration": "exact3copied/awaitconfiguredchecks-normalcommit-push",
+      "pendingIntegration": "Final configured checks, coherent semantic commit and real push/readbacks",
       "rootActiveProcess": null,
-      "published": "189798f4807c198b4de27860c6e9df4c68a95697",
-      "localHead": "c3bfed18fa77a4d002cd15994964efb1ec41d613",
-      "currentHead": "eb2a7a3af63200412f2227fe16898759d397babd"
+      "published": "6cdce35b3900a63153e02c2628dad60a142bd146",
+      "localHead": "e1016cb983e081774bf1e4fc2ce3d82e0739017b",
+      "currentHead": "e1016cb983e081774bf1e4fc2ce3d82e0739017b"
     },
     "Admin_directed_TLS_Bot_fourteen_Root_integration": {
       "utc": "2026-10-15T14:49:34.116547+00:00",
@@ -91274,7 +91394,211 @@
         "state": "CURRENT20_ROOT_PREIMAGES_ALL_MATCH_PLAN_ONLY_ASSIGNED_WT_REFRESH",
         "scope": "17assignedWT files historical,3tests alreadymatch; preservehistoricalhashes andunrelatedWIP; no processes/checks launched",
         "protoExplicitPresence": "include_metrics field5 alongside aggregate_lesson_ids3/optionalmetrics_student_id4; allpublishednumberspreserved",
-        "D028": "onrequestaccepted/no storedcounterarchitecture"
+        "D028": "onrequestaccepted/no storedcounterarchitecture",
+        "progress": "11JavaGJF/parser+tmpstockprotoc3.25.8/grpc1.82.4(69generatedtmpfiles)+cachedjavacownedpackage/testsPASS afterauthorduplicateoverload/testhelperaritycorrection. Exactoptionaltyping and2of24frontendfixture/tickfailures correctedkeepingoldassertions; finaltypes/24checks+selectedpureJUnitpending. No native."
+      },
+      "SourceReady": {
+        "utc": "2026-10-15T20:52:41.329629+00:00",
+        "state": "FROZEN_TWENTY_EXISTING_SOURCES_AWAIT_C88_REVIEW",
+        "ownReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.teacherJournalServerMetricsSystem16SourcePlan189798f.implementation",
+        "scope": "20modified/0new/0delete; full20pre/postmanifest ownreceipt; existing19/Auth/helper/Student503unchanged",
+        "checks": "tmpstockprotoc3.25.8/grpc1.82.4 generated69; old178fields/30messages/2servicesbytecontractstable.11JavaGJF/parser+cachedjavacinclMongoIT/APIcompatPASS; pureJUnit61PASS. Frontend24+finalselectedlifecycle1PASS/scopedVueTSC/formatter/lint0, allreaped. InitialMockitoattachSETUPFAIL correctedlocalstartupagent noSourcechange; initialtyping/fixtures corrected retainingoldassertions",
+        "semantic": "include_metrics5 explicitpresence; full dated currentgroupANDsubject server4metrictriples plusONEgroup/selectedchartseries; page0once/subsequentpagesnoaggregate/nooverwrite; stale/API/lifecycleguards; legacydefaults/constructors/overloads retained; D028requesttime/no storecache",
+        "native": "Mongo/newgRPC+browser/officialBFFschema+canonicalTSgeneration NOT_RUN/Root-ownednormalCI",
+        "corePins": {
+          "proto": "1591d28d4e5af03b5ddb42b60135551ac4cbd7d47b7b6ef34de307fad4278cfd",
+          "ReportService": "06d2ec820db53b02e64d49fd9897591f852a9d5de6f3b3c69dc6ed0e891a5b12",
+          "Screen": "6af28aa830d783022d78234f1fae5bc2a73664bcc110cdbeeeb4b05b3a323d0c",
+          "Table": "22facc44e1a955e971b8db359e6a97e9f093367d489e468cd8f6d0a0d67dd381",
+          "Chart": "5788cf6bbe05a6eb1ca82479f80efd6e07d071f8078f2669dff6af28aecbdf73"
+        }
+      },
+      "independentReview": {
+        "utc": "2026-10-15T20:59:44.169181+00:00",
+        "reviewer": "c88 freshnonauthor",
+        "state": "ONE_P2_FIXTURE_FINDING_NO_OTHER_MATERIAL_PRODUCT_FINDINGS",
+        "F1": {
+          "source": "ReportIT.java1f5000c306a2dda7c35dbe19eeb7d053c20b67c5a4144f7496c658301f6b5ab4:533-548",
+          "cause": "newLessonInfo lackspositiveteacher_id/assignment_id; currentReportServiceauthorizeTeacherStatsLesson1199-1209rejectsbeforemetricsassertions",
+          "correctionGO": "samec79ONLYnewfixture setTeacherId(teacherId)+positiveownedsyntheticassignmentId, preserveallhardmetrics/series/date/scopechecks; no productionguardchange",
+          "native": "SourcefixturecounterexampleforUNPUBLISHED20, NOTcauseofcurrent6cdceITFAIL"
+        },
+        "transportCarrierGO": "samec79ONEminimalexistingcase734insertion afterjournal1160-1210: genuineincludeMetrics=true/non-nullmetrics/currentIDs/canonicalseeded4triples→sameTablevalues; toggleexistingChart/selectexistingownstudent→journalpage0/pageSize1/includeMetrics/metricsStudentId exact+realenvelope/bararia; returnTablebeforeoldticketactions. No newactor/data/case/cap/CIselection. Inventory20→21 iffexistingSpec.",
+        "reviewNext": "targetedF1+authorizedtinycarrierhunk only, old20reviewretained; realMongo/browser stillNOT_RUN",
+        "F1AndNativeBindingCorrection": {
+          "utc": "2026-10-15T21:08:03.308121+00:00",
+          "state": "FROZEN_TWENTY_ONE_SOURCE_AWAIT_C88_TARGETED_RECHECK",
+          "ownReceipt": "schedule-current874.safe.json#Q01_Q12_remaining_join.teacherJournalServerMetricsSystem16SourcePlan189798f.implementation.F1AndNativeBindingCorrection",
+          "ReportITpost": "85b34fa98383c5f5f5ac21c37c50ec50b0db5b1d1b4437db5cf84e9b1bb134ac",
+          "fixture": "only2newLessonInfo setterlines assignment900+teacherId; inversereproduces1f5000, hardoraclesuntouched; GJF/javac0/5.680s307MB/allreaped",
+          "RealmPost": "2d3403eb8d6a429b94596417338bca269d64bfcaba738787007aeb513c69511c",
+          "RealmPre": "4e195dde2eca4848aedd6e4255f544a90993cac89f1ba6cc818d83503fad571a",
+          "carrier": "ONE81formattedlineinsertionafterold1210; alloldbytes/order/declaration734/60s/fixture180 unchanged. Realquery/envelope/currentIDs/4triples/Table thenChart/selectedsamecontextpage0size1 andbararia/returnTable beforetickets. Formats/parser/E2ETSC0/4.563s426MB/allreaped; actualbrowserfitUNKNOWN",
+          "others": "all19otheroldreviewedpinsunchanged/no20restart",
+          "recheck": {
+            "utc": "2026-10-15T21:12:24.026834+00:00",
+            "reviewer": "c88 independentnonauthor",
+            "verdict": "APPROVE_TARGETED_F1_AND_TINY_CARRIER_COHERENT21_NO_OPEN_FINDINGS",
+            "proof": "ReportIT85b34 twoidentitysettersinverse1f5000; Realm2d340one81lineinsertioninverse4e19alloldbytes/asserts/budgets; 19otherreviewedunchanged; query/response/Table/chartselectedflowexactcurrentstudent/context",
+            "limits": "newMongo/gRPC/browserfit/officialschema/generatedTS/sensitivityNOT_RUN"
+          }
+        }
+      },
+      "integration": {
+        "utc": "2026-10-15T21:12:24.026834+00:00",
+        "state": "EXACT_ROOT_PREIMAGES_AND_POSTPINS_COPIED_AFTER_COHERENT_REVIEW_F1_RECHECK",
+        "parent": "6cdce35b3900a63153e02c2628dad60a142bd146",
+        "inventory": [
+          {
+            "sourceRef": "proto/teacher_reads.proto",
+            "before": "e920346b2c4a17f0fc05a749969772eb367d3de153c5f38a2b212e7d4cb6e46c",
+            "sha256": "1591d28d4e5af03b5ddb42b60135551ac4cbd7d47b7b6ef34de307fad4278cfd",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/proto/teacher_reads.proto",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/TeacherApi.java",
+            "before": "a835a747d8426d4f5566dd918229acdde7d176dce52448ca1e73a36a261a463b",
+            "sha256": "a503dbf8f87a31fdbb8746fa01165a279265bd32820ddee30e032d11d0bdc0dd",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/TeacherApi.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/TeacherApiModels.java",
+            "before": "07b75775c8b1df39d7411eb5e60ffc66f1488ed2996908ff35ea38116f5ca2e2",
+            "sha256": "c5ddf7c2f458fb741c559d7f7ad41a88d4c844fb359dc6892c91601741d3bcb6",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/TeacherApiModels.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherApiController.java",
+            "before": "a9d26c2848474f4daac80aa3fcd245c2f2db99d8b8b3848230e73aeb940cef37",
+            "sha256": "f3a0cae6af522cb75168135de866189614b5ef3fc859b96d2865f43b77fd02b6",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherApiController.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java",
+            "before": "8678043ed178a10cc44b23620f7d0d956eff701f6a4b9b1f27b4070bb799a4c0",
+            "sha256": "f7f0a8e75d49d159e77ede783bfc0db67ec2655f82d8aea74fab60eb03147739",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+            "before": "51738b3a10c9051501ae5a703cab4acf508697945a0d9bdfff1fc93f5d017d98",
+            "sha256": "ec594e1d892586e9ad46af7346bcf3b876b60deee0a910fa266fdc2920c5accf",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+            "before": "0c01725aaed3d38de40aa41dddb89d5ed9ef09e0b62c7a0331707e7c8dcfdbea",
+            "sha256": "06d2ec820db53b02e64d49fd9897591f852a9d5de6f3b3c69dc6ed0e891a5b12",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcService.java",
+            "before": "8ae114f8f8f92b73d46e5a0500374e1d0e833323ef6dbe0e25cf642b40314582",
+            "sha256": "6e4abc8d1b1c6e2b8f1c367f408d43c17f9029d206eb885c3915d4ce041fd7d3",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcService.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-client.ts",
+            "before": "cd44b23b0568b03b16d6869dee89cec6bffab44a9c64c418c67b0e50e0f510f2",
+            "sha256": "98d397fa8c35b8c242e3f015884d71dd01c1ab9696ec8f1dd2f33a85952b8475",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/teacher-client.ts",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-model.ts",
+            "before": "adc072d3b3c8c51b7540987666d6eb5a507325dfee9f0472c33e316a9cf6ea49",
+            "sha256": "87baf16d7da53d36a61fa668eb103bc087bdb26a006cec82a62b9e840ccacdf2",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/teacher-journal-model.ts",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+            "before": "d139c7b66f3aab6ff37e5a6bb90be61c8a5999f04ce3e6d01dd0407153f3a3b7",
+            "sha256": "6af28aa830d783022d78234f1fae5bc2a73664bcc110cdbeeeb4b05b3a323d0c",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+            "before": "5fb9f1a9a639af3c82a3ffdf0e8ab62f7e42e2ef94bc14a54f0778821ca6bd77",
+            "sha256": "22facc44e1a955e971b8db359e6a97e9f093367d489e468cd8f6d0a0d67dd381",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherJournalChart.vue",
+            "before": "19e809c5652644347c04c93633e620756e626ddc69fd5cb1b24e804ab9d49138",
+            "sha256": "5788cf6bbe05a6eb1ca82479f80efd6e07d071f8078f2669dff6af28aecbdf73",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/TeacherJournalChart.vue",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+            "before": "0ad9f7a0306695cdda8fe777b1169bbbf0c3539203f199ec03677324cc0b24c4",
+            "sha256": "c567cc6289dc9d0e334e1a51393cbb2c2e7772584b577e37c11d35b0f12a4884",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+            "before": "cf6859b3bdf96dc6e895dd8467f4a31c4bdf3d5fba3416f00970e2e5a5a8dbbf",
+            "sha256": "0420128cc09aa77c4bdc55442601da04c1fd25bbf6393fa1df840fab63afb13a",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacadeTest.java",
+            "before": "eb57b7a7b859811843b3ce75a25dafc8c01c6bee29c90cab5147dae32f4930b5",
+            "sha256": "a33102092327fd60543350e90fe6a467ef8d38c197ae332bac7807eb16423296",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacadeTest.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+            "before": "b5b938294759e7997b228e6e91bb31a25389e86b67cd73c795e1b5a8f4eeae4d",
+            "sha256": "85b34fa98383c5f5f5ac21c37c50ec50b0db5b1d1b4437db5cf84e9b1bb134ac",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-model.test.ts",
+            "before": "e2566663cfd5e3866078930d9d68a7ec5ce9f7fca65f713cd850fe21770b02b3",
+            "sha256": "a78db1ce5af4e4500f6a8e32d9ed35a423eff1c4d5b9148329c04ca1a0f6d6d8",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/teacher-journal-model.test.ts",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+            "before": "814c370e357c57aea74166ae86be9bd33755ce3e5e8819e5a5c15ade4fb2a949",
+            "sha256": "0d9d7e0ee0dac3f40de3a90b1e498106e2aa52b2ac14402a9ad9bb31fcae7790",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-attendance-context.test.ts",
+            "before": "a9f0c14140de6051c4cb03815c26807f679cd02bcd4c30aac23d194c8b7300ba",
+            "sha256": "a65ea56c85b1497a31b26790ce3134b14180603dd6dc6fd4bbe4b6cc9f20ed2f",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/teacher/teacher-attendance-context.test.ts",
+            "package": "Teacher21"
+          },
+          {
+            "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "before": "4e195dde2eca4848aedd6e4255f544a90993cac89f1ba6cc818d83503fad571a",
+            "sha256": "2d3403eb8d6a429b94596417338bca269d64bfcaba738787007aeb513c69511c",
+            "source": "/workspace/rct-worktrees/request-enum-874-20261014/tests/e2e/specs/mobile-real-server.spec.ts",
+            "package": "Teacher21"
+          }
+        ],
+        "RootConfiguredChecks": "pendingcoherentnextpackage",
+        "native": "NOT_RUN"
       }
     },
     "189798f_next_reviewed_HEADMAN_feature_delivery": {
@@ -91820,7 +92144,7 @@
       },
       "integration": {
         "utc": "2026-10-15T20:32:10.573039+00:00",
-        "state": "EXACT3_SOURCE_INTEGRATED_REVIEW_AND_CONFIGURED_CHECKS_PASS_READY_NORMAL_COMMIT_PUSH",
+        "state": "PUBLISHED_6CDCE_REAL_REMOTE_PR_EQUAL_NATIVE_PENDING",
         "parent": "c3bfed18fa77a4d002cd15994964efb1ec41d613",
         "inventory": [
           {
@@ -91971,7 +92295,112 @@
           },
           "privateLog": "/tmp/rct-root-c3bfed-student503-scopedchecks.private.log",
           "logBytes": 0
-        }
+        },
+        "commit": {
+          "parent": "c3bfed18fa77a4d002cd15994964efb1ec41d613",
+          "headAfter": "6cdce35b3900a63153e02c2628dad60a142bd146",
+          "files": [
+            ".github/workflows/ci.yml",
+            "docs/validation/cloud-20261011/CURRENT.md",
+            "docs/validation/cloud-20261011/attempts.ndjson",
+            "docs/validation/cloud-20261011/defects.md",
+            "docs/validation/cloud-20261011/questions.md",
+            "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+            "docs/validation/cloud-20261011/resources.md",
+            "docs/validation/cloud-20261011/scenarios.csv",
+            "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java",
+            "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java"
+          ],
+          "phases": [
+            {
+              "phase": 0,
+              "result": {
+                "direct_pid": 985741,
+                "native_exit": 0,
+                "terminal_reason": "NATIVE_TERMINAL",
+                "signal_count": 0,
+                "settled": true,
+                "all_owned_processes_reaped": true,
+                "all_members_including_Z_after": [],
+                "known_owned_identities": [
+                  {
+                    "pid": 985741,
+                    "start_ticks": 35040069
+                  }
+                ],
+                "adopted_waitpid_receipts": [],
+                "supervision_error_type": null,
+                "phase_success": true
+              }
+            },
+            {
+              "phase": 1,
+              "result": {
+                "direct_pid": 985763,
+                "native_exit": 0,
+                "terminal_reason": "NATIVE_TERMINAL",
+                "signal_count": 0,
+                "settled": true,
+                "all_owned_processes_reaped": true,
+                "all_members_including_Z_after": [],
+                "known_owned_identities": [
+                  {
+                    "pid": 985763,
+                    "start_ticks": 35040109
+                  },
+                  {
+                    "pid": 985805,
+                    "start_ticks": 35040119
+                  }
+                ],
+                "adopted_waitpid_receipts": [
+                  {
+                    "pid": 985805,
+                    "start_ticks": 35040119,
+                    "native_exit": 0
+                  }
+                ],
+                "supervision_error_type": null,
+                "phase_success": true
+              }
+            },
+            {
+              "phase": 2,
+              "result": {
+                "direct_pid": 985806,
+                "native_exit": 0,
+                "terminal_reason": "NATIVE_TERMINAL",
+                "signal_count": 0,
+                "settled": true,
+                "all_owned_processes_reaped": true,
+                "all_members_including_Z_after": [],
+                "known_owned_identities": [
+                  {
+                    "pid": 985806,
+                    "start_ticks": 35040143
+                  },
+                  {
+                    "pid": 985812,
+                    "start_ticks": 35040198
+                  }
+                ],
+                "adopted_waitpid_receipts": [],
+                "supervision_error_type": null,
+                "phase_success": true
+              }
+            }
+          ],
+          "elapsedSeconds": 1.92,
+          "resources": {
+            "minWorkspace": 4356096000,
+            "minTmp": 6571495424,
+            "maxMemory": 6051561472
+          },
+          "privateLog": "/tmp/rct-root-c3bfed-student503-commit.private.log",
+          "logBytes": 0
+        },
+        "localAfter": "6cdce35b3900a63153e02c2628dad60a142bd146",
+        "actualPGClient": "NOT_RUN"
       }
     },
     "JS_HEADMAN36_common_full_subject_delete_readonly_plan": {
@@ -91986,7 +92415,21 @@
         "Q026mixedsubjectEXCUSE"
       ],
       "native": "NOT_RUN",
-      "nextIndependent": "c87 readonly finite request9 existing-proof join; no subject codeGO/V60/OTP implementation"
+      "nextIndependent": "c87 readonly finite request9 existing-proof join; no subject codeGO/V60/OTP implementation",
+      "ownerPolicyUpdate": {
+        "utc": "2026-10-15T21:27:31.665590+00:00",
+        "state": "Q025_Q026_ANSWERED_D029_D030",
+        "canonical": "docs/product/decisions/2026-10-15-subject-deletion-semester-and-mixed-excuse.md",
+        "meaning": "new per-semester subject identity; exact subject data only; preserve mixed EXCUSE and remove only target lessons with history; no archive-purge inference",
+        "author": "c87 updating existing readonly plan; contract/schema/code writer GO pending concrete inventory"
+      },
+      "ownerPolicyPlanUpdated": {
+        "utc": "2026-10-15T21:30:15.159900+00:00",
+        "author": "c87",
+        "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#headman36FullSubjectDeleteSourcePlanC3bfed",
+        "result": "35 Source pins; semester-local subject binding compatibility + mixed effective lesson coverage/history; proposed single contract owner; no new product question; no Source writes yet",
+        "next": "Root freeze concrete server contract/inventory and writer GO after ready packet publication"
+      }
     },
     "189798f_request9_finite_join_in_progress": {
       "utc": "2026-10-15T20:28:26.111637+00:00",
@@ -92086,7 +92529,846 @@
       "contract": "ServerOPENtotal independentofpage/archivebucket; loading/error/staleowner/offline not inventedzero/crossscope. Existinglabel/accessibletab andlive refresh submit/cancel. ApplydesignskillbeforeUI. Preservekeyboard/privacy/generation/rightsguards. No newendpoint/storagearchitecture/case/actor/clock/caps/quota suite.",
       "verification": "onecountermeaningfulregression control+focusedcachedformat/type/render/controller checks; sourceproofnotnative. Addminimalcountsubmit/cancelandarchivefilterwitness toexistinggenuinecarrier; networkerrorreuse actualtestfirst. Oneindependentreviewcoherentpackage. No localbrowser/Gradle/Docker/install.",
       "priority": "Root5033Sourcecommit/push doesNOTwaitthisnewpackage",
-      "limits": "B013/B014/B015frozen; no Angular/newweb/Figma/production/mainmerge/secrets"
+      "limits": "B013/B014/B015frozen; no Angular/newweb/Figma/production/mainmerge/secrets",
+      "authorProgress": {
+        "utc": "2026-10-15T20:44:16.615828+00:00",
+        "state": "SIX_SOURCE_AUTHORED_SCOPED_GREEN_PENDING_RANKWITNESSCONTRACT",
+        "preimages": "all5frontendownWTexactRoot; oldrequestWT2f5preservedbeforerefreshRootd08",
+        "checks": "counteroldSource meaningfulrendererRED/allreaped986697; frontendformat/parser/template/lint/controllerTSC/E2ETSC0/8.299s/745MB/allreaped987292; focusedunitGREENstillrunning",
+        "semantics": "ownedOPENserver total/pagevalidity, unknown/error/loading/stale/offline/changedownerhidden; archiveview refreshOPEN, existing submit/cancelrefresh reused",
+        "witness": "samecase9 countassertions+HEADMANFIO/coveragearchivefilter exact3ownIDs/UI; old240s/actors/clocksunchanged; c84ranktinyfuturewitnesspendingnotyetfrozen; no nativebrowserPASS"
+      },
+      "SourceReady": {
+        "utc": "2026-10-15T20:47:48.296983+00:00",
+        "state": "FROZEN_SIX_SOURCE_READY_AWAIT_FRESH_C86_REVIEW",
+        "ownReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#student26Headman02RequestsSourceC3bfed",
+        "preimageInventory": "/tmp/rct-c87-requests-c3-preimages/inventory.json",
+        "checks": "45focusedrenderer/controllerPASS; formatter/parser/template/lint/stockcontroller+E2ETSC/RequestsScreenVuePASS allreaped. OldSourcecountermeaningfulRED→sameGREEN; nativeNOT_RUN",
+        "requestSource": "a7ef4d244b100787be97f526c19b9d225a55a619b078d73407005d23d2303474",
+        "scope": "6modified/no new/delete; canonicald08inverse aftercountadds/two tabnamequalifications+archiveblock; Auth17/helperunchanged; Rankwitnessnotincluded andmustnotdelayreview"
+      },
+      "independentReview": {
+        "utc": "2026-10-15T20:51:19.281901+00:00",
+        "reviewer": "c86 independentnonauthor",
+        "verdict": "APPROVE_COHERENT_SIX_SOURCE_NO_MATERIAL_FINDINGS",
+        "critical": "all6pre/postpins reopened; OPENpageauthoritativetotal/owner/error/loading/offline/changedscope/generation/known0suppression; archive/reconnectrefresh; optionalcountaccessiblecurrenttab; mutationrefresh;45meaningfulchecks/oldSourceREDqualified; currentownedarchiveexact3IDs responseANDrendered, originalactors/caps/clock/assertions retained",
+        "limits": "actualbrowsercount/archiveNOT_RUN; file-retry existingcontroller exactFile/key+failure/recoveryrenderer no realnetwork/browserPASS"
+      },
+      "integration": {
+        "utc": "2026-10-15T20:54:41.719367+00:00",
+        "state": "EXACT_SIX_SOURCE_COPIED_ROOT_AFTER_C86_APPROVE",
+        "parent": "6cdce35b3900a63153e02c2628dad60a142bd146",
+        "inventory": [
+          {
+            "sourceRef": "frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+            "before": "721b8cd6ce806ba24d8aa01b6faef0938fcaa073b92b348245e7c03b1a085011",
+            "sha256": "02863596b327236a52d75cb52b66be1f732b3e826a8d38393ec1de9c5e023086"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+            "before": "9400e5d82674d25d4044e7d330b747e732ad8990478ce7fedbb7209016920d72",
+            "sha256": "c4b64f6a15cb0a4afcc0a18d540fb26880b9f2500a3646d792975c6f90095326"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+            "before": "e6654628639c7a93a1b8336a347054b4ddd7d6ebee70146939cbd7c5ec090e98",
+            "sha256": "b3996feeaf4c35eb44b6ec9cb85dfaa7a3e301d975bb46ca8bfe11ce5df94f6c"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+            "before": "4b31da528f16c2aa4a02634e40ffaa4a1ee4c7a8a1be217170eade629f6b28d5",
+            "sha256": "6478a87028037f0958d811191d8f27194d8790cc94d90b8fb5eb39e430472b1d"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+            "before": "90c11e16fabe4a347a95658764cef98abf46443bfebe75439044381c593c9b9d",
+            "sha256": "e54a6318f73a86d5e350c6546cffdf2dac4638b7add44a7df742ada8e887654d"
+          },
+          {
+            "sourceRef": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+            "before": "d08f66b436534875400b81e79150ebd825136297d31765682baedef97eaae029",
+            "sha256": "a7ef4d244b100787be97f526c19b9d225a55a619b078d73407005d23d2303474"
+          }
+        ],
+        "oldUnion": 177,
+        "currentUnion": 181,
+        "checks": "author45focused/type/formatPASSallreaped reused; Rootconfiguredchecksaftercoherentnextpackage",
+        "native": "NOT_RUN; current6cdce usesoldd08; c80admissionupdatewhenfinalrequestSourcefrozen"
+      },
+      "rank33TailIntegration": {
+        "utc": "2026-10-15T21:25:52.820495+00:00",
+        "reviewer": "c86 independent targeted APPROVE zero important findings",
+        "source": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+        "sha256": "b182a3558e6c3611d3623e6363349cdb4ec616b06ac02fe32b90d21a8bd8c2e3",
+        "exactInverseToReviewedRequests6": true,
+        "nativeBrowser": "NOT_RUN"
+      }
+    },
+    "HEADMAN33_canonical_target_rank_bounded_GO": {
+      "utc": "2026-10-15T20:39:03.386341+00:00",
+      "writer": "c84 soleassignedproduction/domain/protoacademic/HeadmanStatsclient/UI/tests; c87soleexistingrequestsE2Espec",
+      "baseline": "6cdce35b3900a63153e02c2628dad60a142bd146; all18candidate/supportpins exactc3unchanged by503delta",
+      "ownPlan": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#headman33CanonicalTargetRankSourcePlanC3bfed",
+      "decision": "ACCEPT_PLAN_TYPED_AUTHORIZED_TARGET_SCOPE_REUSE_CANONICAL_RANK_NO_FAKE_STUDENTCLAIMS",
+      "inventory": "16existingwritablecandidatepathsfrom18sourcePins excludingreadonlyOwnRankCalculator andmobile-attendance-requests.spec; StudentProjectionScope recordonlyifneeded. Oneadditionalsharedpolicyclass admitted services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentRankScopeResolver.java ONLYifneeded forminimalcommonpolicy extraction. RootpinsbeforeWTrefresh, preserveotherWIP. No othernewclass/queryformula/storage/newendpoint.",
+      "required": "addcompatiblepublicnullable rank andinternalfield8typedtargetpresence onlyafterfreshVIEW_STATS+own-group+datedmember; canonicalsameStudentcohort/competitionties/exactfractions/transfers/history/terminal; foreignrankgroupHIDDEN beforeforeigncohortlookup. PublicStudententryrights unchanged, no fabricatedStudentclaims/privilegedresolve. Mobilepersonalcard existingservercombinedN/M+subject/type anddesktoprank, no localmath/rewrite. ApplydesignskillbeforeUI. Preserveconstructors/legacyunknown, existingmetrics/pagination/generation/rights.",
+      "verification": "existingPGauthority/refactorparity/unitcanonicalexactrank/differentdenominators/ties/latejoin/foreignhidden/legacyunknown/renderedserverfields tests; cachedboundedstocktmpprotogen/format/typecheck only no localGradle/Docker/browser/install. Meaningfulnewboundarysensitivity afterordinaryGREEN with precise nonfrozenproposal; no blanketB013replay. Onecoherentindependentc86reviewwhenstable. RealclientcurrentHeadmandrill+independentStudentAPIparity inexistingrequest9 viaSOLEc87writer, oldcaps/actors/clocks/case/outcomes retained.",
+      "ownership": "oldc79Headman19Sourcesfrozen/transferredforassignedstatsfiles ONLY; c79Teacher20ReportService/teacher_readsBFF/journal untouched. c80soleCIwriterlaterexactsourcepinadmissionupdate fornewStudentScopefilehash, no RootGITraces. Rootstockcanonicalgeneration only.",
+      "priority": "published503package/nativecycle NOTblockedbythisnewfeature; old2query/Admin2 freeze",
+      "limits": "No newproductfork found, no newrankpolicy/peerPII/desktopweb/Angular/Figma/production/mainmerge/secret/B013-15equivalent",
+      "SourceReady": {
+        "utc": "2026-10-15T20:54:41.719367+00:00",
+        "state": "FROZEN_FIFTEEN_EXISTING_SOURCE_AWAIT_C86_REVIEW",
+        "ownReceipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#headman33CanonicalTargetRankImplementation6cd",
+        "inventory": "15modifiedof16admitted; StudentProjectionScope unchanged/no newhelper; requestSpec untouched",
+        "checks": "GJF/parser/tmpstockproto/cachedactualdepsjavac0/9.414s438689792B; Vueformat/lint/template/plainTSC0/9.68s; VueTSC0/6.313s; Vitest29PASS/6.996s; allreaped",
+        "native": "PG/browser/sensitivityNOT_RUN; oldStudentbody/sessionguardsexactinverse; oldDTOconstructors preserved",
+        "corePins": "proto528eaf69/AcademicHeadman8b265ac1/StudentScope0c5542c0/StudentProjection42c7e17c/HeadmanStatse8dbb6f8/detailb0884098/client22382c0e/Mobile8c110f2d/Desktop9baabdbe"
+      },
+      "independentReview": {
+        "utc": "2026-10-15T20:59:44.169181+00:00",
+        "reviewer": "c86 freshnonauthor",
+        "state": "ONE_P2_NULL_SCHEMA_FINDING_NO_AUTHORITY_MATH_PII_FINDINGS",
+        "F1": {
+          "source": "HeadmanStatsStudentDetailResponse b0884098f2332cd4d86ad015c13a970406c8076356b46e36d4918c6afb9124c1:26,42",
+          "cause": "rank/Integerposition onlySchema(nullable=true), officialAttendanceOAS3.1needs explicitnullunions/currentSwaggerbehavior; publicruntimelegacyranknull/hiddenpositionnullaccepted",
+          "correctionGO": "samec84ONLYnewtwofields explicit OAS3.1nullrepresentation usingexistingacceptedpattern, Integernull int32 andnullableRankref; no runtimeconstructor/valuechange, no manualgeneratedoutputs orannotation-onlytestcampaign",
+          "verification": "targetedSourcecompatibilityrecheck; Rootstockordinarygeneration actualnullalternatives beforePASS",
+          "correction": {
+            "utc": "2026-10-15T21:08:03.308121+00:00",
+            "post": "0e2c12a742816ae125bcd9dce781926cd7ae5229b8d3f52fd38448ec777665ca",
+            "state": "FROZEN_DTO_ONLY_AWAIT_C86_TARGETED_RECHECK",
+            "check": "cachedSwagger2.2.30 OAS3.1 compiledDTO confirms rankrefcomponentobject|null andpositioninteger|null/int32; Schema(types={object,null},implementation=Rank.class) notinvalidref+siblingintersection; GJF/parser/javac/inversePASS",
+            "limits": "officialstockJSONNOT_RUN; other14pinsunchanged"
+          },
+          "recheck": {
+            "utc": "2026-10-15T21:12:24.026834+00:00",
+            "reviewer": "c86 independentnonauthor",
+            "verdict": "APPROVE_TARGETED_NULL_SCHEMA_F1_ALL15_NO_OPEN_FINDINGS",
+            "post": "0e2c12a742816ae125bcd9dce781926cd7ae5229b8d3f52fd38448ec777665ca",
+            "proof": "exacttwoannotationreverse→b088; all14otherpinsunchanged; cachedactualSwagger2.2.30nullablecomponent+integernull checks reused",
+            "limits": "stockofficialschema/PG/browser/sensitivitystillNOT_RUN"
+          }
+        },
+        "reviewNext": "targetedF1recheckonly/no15restart; PG/browser/sensitivityNOT_RUN"
+      },
+      "reason67RCA": {
+        "utc": "2026-10-15T21:08:03.308121+00:00",
+        "state": "CONFIRMED_QUERY_CODE_MAPPING_COUNTEREXAMPLE_SINGLE_QUERY_GO",
+        "ownReceipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#submittedReasonCountsNative67SourceRca6cd",
+        "cause": "canonicalMongoConverters persistsstatuslowercase, raw@Aggregation matchesUPPER; actualcachedTypeBasedAggregationOperationContext+MappingMongoConverter lowerpersistedTRUE/typedpipelineUPPERTRUE/noMatchTRUE 3.96s387MB/allreaped/noDB. Reasonprojectioncode also persistedlowercase vspubliccanonicaluppercase. CurrentnativeAssertion67 matchesSourcecounterexample; no observedactualreturnedsizeclaim",
+        "GO": "c84ONLYExcuseRepository.javaea0b querypath matchcanonical4lowercasestatuses andprojectcode $toUpper of_id; preservegroup/semester/DRAFTexcluded/count/grouping/limit/unknowncodeguard; ITaf20 hardILLNESS3/OTHER1 unchanged. Reusecanonicalcodes/converterpolicy, no newenum/migration. Cachedmapping/pipeline/parser/check adequateSource, actualMongonextCI; foreigngroup sensitivityafterordinaryGREEN.",
+        "SourceReady": {
+          "utc": "2026-10-15T21:12:24.026834+00:00",
+          "post": "2737cd506ae5173362a3909cdd66ab326d5129e57a50f80c951787092131564e",
+          "ownReceipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#submittedReasonCountsNative67QueryFix6cd",
+          "change": "ONLYcanonical4lowercasestatusmatch+publicreasoncodeToUpper; group/semester/DRAFTexcluded/count/group/limit/unknowncodeguard unchanged; ITaf20hardoraclebyteexact",
+          "checks": "GJF/parser/zeroformatdiff/cachedRepositoryjavac+actualConvertertypedAggregation4states/DRAFT/scope/codePASS10.401s389099520B/allreaped",
+          "native": "MongoNOT_RUN/actual67sizeUNKNOWN",
+          "next": "c86targetedonequeryreview"
+        },
+        "independentReview": {
+          "utc": "2026-10-15T21:19:20.949653+00:00",
+          "reviewer": "c86 nonauthor",
+          "verdict": "APPROVE_ONE_QUERY_NO_FINDINGS",
+          "proof": "persistedfourstateslowercase/DRAFTexcluded; publicreasonuppercase boundary; exactscope/count/group/limit/serviceknowncodeguards; IT3/1unchanged",
+          "native": "MongoNOT_RUN"
+        },
+        "RootIntegration": {
+          "utc": "2026-10-15T21:25:52.820495+00:00",
+          "state": "EXACT_COPY",
+          "source": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseRepository.java",
+          "sha256": "2737cd506ae5173362a3909cdd66ab326d5129e57a50f80c951787092131564e",
+          "nativeMongo": "NOT_RUN"
+        }
+      },
+      "integration": {
+        "utc": "2026-10-15T21:12:24.026834+00:00",
+        "state": "EXACT_ROOT_PREIMAGES_AND_POSTPINS_COPIED_AFTER_COHERENT_REVIEW_F1_RECHECK",
+        "parent": "6cdce35b3900a63153e02c2628dad60a142bd146",
+        "inventory": [
+          {
+            "sourceRef": "proto/academic.proto",
+            "before": "5c6905b6137438ec80817fdcdc0901cc9f4d7a6a425b51037aa6384e6c7d847a",
+            "sha256": "528eaf69ea8b4168bad9d8bacd1e15a1908460ba7890edd7926c2344e1528fc0",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/proto/academic.proto",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanStatsScopeReadService.java",
+            "before": "dd81388a0a3cff3ac4cfa2b24e22e3987df1b4135e976e8a43ad5570b186a2b5",
+            "sha256": "8b265ac17d028eac4c65d550fe55e1c1f08f18fbcdd5fbf977c6880bda3a261e",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanStatsScopeReadService.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+            "before": "30c589ca6c975c56b19cd531c18063b0d82737c06f63d8c0c4bea3274ff9022c",
+            "sha256": "0c5542c026a6979056779e847db1197d36a32ed1355a9841d6cf9b65d0c13103",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
+            "before": "ec64e55e50dcc099663c63d24aeac7fccef37bd8ad807e13101dedc9f69b9866",
+            "sha256": "42c7e17cce3bcd18d5f344785d33b01aba30fea8dd33ee7813574d0ca86aa564",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
+            "before": "3c8402b1c81c5ed43ae21eff14c26293c12bedf7bf5b272fec868cda6dd4d11a",
+            "sha256": "e8dbb6f8b79f208855913b223626b2c3167b42d8d278e75c16878683ca7f432b",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsStudentDetailResponse.java",
+            "before": "3852a4a49a862c7a38db9b146352f759624bb74ac981a3e266013ac1feba9b9c",
+            "sha256": "0e2c12a742816ae125bcd9dce781926cd7ae5229b8d3f52fd38448ec777665ca",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsStudentDetailResponse.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+            "before": "78f944d50925243f291d1ba813e156e4d807268c1804bcbec6301ed803234e36",
+            "sha256": "22382c0ead365f5912c09b2713e4fdae88e85226190e39fa8e60681f0d460b92",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsMobileView.vue",
+            "before": "0f8758761a3fb5ce8310897bc2283a41bb7a1d8561f17fe6a53bc7d28b9b1f08",
+            "sha256": "8c110f2d5d208c97680069f9fca8f9a85b5c72fa63bcc79bdbe6d8b1d6ca2e85",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/headman-stats/HeadmanStatsMobileView.vue",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsDetailPanel.vue",
+            "before": "62ca16e333dc08c68f254a92aaf8e335114650208bd48bd2b7f7a74af5664498",
+            "sha256": "9baabdbe03a87dd11bd3d7baae25df1a1039d5967d7ec132e2c592001e1fe452",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/headman-stats/HeadmanStatsDetailPanel.vue",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+            "before": "6bdae6bba67a4c1e0e9418003847cd4314dd1e29f694c6c99f6a1d3a36ff07e6",
+            "sha256": "b82b503dc80933e6bbed8c60669da5ffc3e090b9fd9744fdcdbef64c7622b4b4",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+            "before": "e97c1087bda66fe08eec1ca0bd39d7dd4cc46d8dd65e53173d6dfe6820326d5d",
+            "sha256": "fe1089259bb9af897258fd5f303b38544eac82f69885c93df313e20efc279e2b",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "before": "f05ab0b838526ce99ad461e63360afa4b9e71ab0727a96ee7823be95ea7a720c",
+            "sha256": "21ba11b1ea140f18371f89f6a9799d53ab1d73cd8a34834c81f39b33ae7e8070",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+            "before": "90224f9cbd22b58737e505ca335549a2e7ad03e09d8ce34d958876991f13eb40",
+            "sha256": "aa76bb9765c1cd23b38230dffb8ecd968731a318671d7c8a6d03ac0aa418e37f",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.test.ts",
+            "before": "cb2f7ac9b46ba26d910a2d08ef79777fda61aee213040462d3486f6b8aa68c8e",
+            "sha256": "d55dd49522c36700317ce453bd047b9206e6887844b962001e2e30132ccd5f72",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/headman-stats/headman-stats-client.test.ts",
+            "package": "Rank15"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/headman-stats/headman-stats-screen.test.ts",
+            "before": "a28efb33fea5791ca57be29a41bcfef583328e23c30050963478b89850e91df2",
+            "sha256": "a920f5637342fd909d793f4b912a53a313f14e23d20a7b099bae8bcada19e4c7",
+            "source": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/headman-stats/headman-stats-screen.test.ts",
+            "package": "Rank15"
+          }
+        ],
+        "RootConfiguredChecks": "pendingcoherentnextpackage",
+        "native": "NOT_RUN"
+      }
+    },
+    "current6cdcePublication": {
+      "utc": "2026-10-15T20:40:45.929594+00:00",
+      "state": "REAL_PUSH_LOCAL_REMOTE_OFFICIAL_DRAFT_PR_EQUAL_NATIVE_PENDING",
+      "localHead": "6cdce35b3900a63153e02c2628dad60a142bd146",
+      "remoteBranch": "6cdce35b3900a63153e02c2628dad60a142bd146",
+      "officialPRHead": "6cdce35b3900a63153e02c2628dad60a142bd146",
+      "branch": "codex/server-validation-20261011",
+      "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "target": "main",
+      "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "draft": true,
+      "open": true,
+      "merged": false,
+      "candidateMerge": "e62a7c419da8d12b18ad069614b4a5d46900d744",
+      "actualCheckout": {
+        "sha": "e62a7c419da8d12b18ad069614b4a5d46900d744",
+        "tree": "47e952e95109902ca6ee83c5070de1fbcd415fcf",
+        "parents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "6cdce35b3900a63153e02c2628dad60a142bd146"
+        ],
+        "proof": "strictactualartifact12005447198/digest22f9c1ca9011062c700b4310c8f1fd82490ac6821a5a8b0829aadb1745251e98+officialcommitparents/treejoined",
+        "ownReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current6cdce35Primary",
+        "reader": "987177/native0/0.843s/allreaped/noartifactdisk",
+        "utc": "2026-10-15T20:44:16.615828+00:00"
+      },
+      "gitReadback": "git ls-remote --heads origin refs/heads/codex/server-validation-20261011 actual exit0 exactsingleSHA; officialgithub_fetch/pulls/2 separatelyconfirmed",
+      "push": {
+        "head": "6cdce35b3900a63153e02c2628dad60a142bd146",
+        "operation": "realpushonlydesignatedbranch",
+        "result": {
+          "direct_pid": 985990,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 985990,
+              "start_ticks": 35049848
+            },
+            {
+              "pid": 985992,
+              "start_ticks": 35049848
+            },
+            {
+              "pid": 985991,
+              "start_ticks": 35049848
+            },
+            {
+              "pid": 985994,
+              "start_ticks": 35049894
+            },
+            {
+              "pid": 985996,
+              "start_ticks": 35049896
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "elapsedSeconds": 4.103,
+        "resources": {
+          "minWorkspace": 4356083712,
+          "minTmp": 6571438080,
+          "maxMemory": 6053662720
+        }
+      },
+      "sources": "c3bfedcoherent40 reviewedSources plusminimal3 query-PGtest-closeddiag; native newfunctionsPG/browser/sensitivityNOT_RUN",
+      "gates": "CI/Coverage/Security/OpenAPI newheadUNKNOWN untilsolec80officialobserver",
+      "localWIP": "onlyRoottaskdocs newerstate; nextTeacher20/Rank33/RequestsSources inisolatedWT notintegrated",
+      "initialGates": {
+        "utc": "2026-10-15T20:42:19.097406+00:00",
+        "CI": {
+          "run": 38803602937,
+          "state": "APIqueued/jobs executing"
+        },
+        "Coverage": {
+          "run": 38803602970,
+          "state": "IN_PROGRESS"
+        },
+        "Security": {
+          "run": 38803602889,
+          "state": "SUCCESS"
+        },
+        "OpenAPI": {
+          "run": 38803602827,
+          "state": "SUCCESS"
+        },
+        "browserJob": 116658648057,
+        "authITJob": 116658648152,
+        "actualCheckoutArtifact": {
+          "id": 12005447198,
+          "bytes": 292,
+          "digest": "22f9c1ca9011062c700b4310c8f1fd82490ac6821a5a8b0829aadb1745251e98",
+          "state": "ready butstrictRAM+parentsjoinpending"
+        },
+        "limits": "No nativecase/schema/qualityPASS; candidateMerge notactualexecutionproof"
+      },
+      "firstFAIL": {
+        "utc": "2026-10-15T20:47:48.296983+00:00",
+        "service": "auth",
+        "task": "test",
+        "job": 116658648338,
+        "step": 9,
+        "status": "FAIL_UNIT_TEST",
+        "safePrimary": {
+          "id": 12006210372,
+          "bytes": 7973,
+          "digest": "19e4179edf3a7a26b27339803e2f82e0fe7b28806445ee569eba2d0ca9187cb3"
+        },
+        "cause": "UNKNOWN pendingstrictSourceMETHODprimary; no product/oracle/envclassificationyet",
+        "otherLanes": "AuthITordinary15running, newAuthqualitystep11metadataSUCCESS/art12005267532 butsemanticREDproofpending; browserboot11running",
+        "next": "solec80targetprimarycausefirst, exactexistingtasktestidentity/noordinal; originalAuthauthorc87willcorrectconfirmedcause",
+        "primaryRead": {
+          "strict": "REJECTfailedcasewithoutSOURCE_METHODidentity(line40), no failedname/status emitted/noordinalfallback",
+          "reader": "988708/native1/0.94s/allreaped",
+          "causalLog": "ONEofficialAuthunitjoblog51980B/32MiBRAM, fixedexception@publicTest.java frameprojection0records; actualcauseUNKNOWN, no rawtext/output/disk",
+          "next": "newconcreteArchUnitfiniteallowlistSourcecounterexample, closedpublicsymbolcausalpattern onlyifneeded; neverweakenartifactidentity"
+        },
+        "sourceCounterexample": {
+          "writer": "c87 originalAuthauthor readonly",
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java:65-102",
+          "rule": "finiteOR-listrestControllersMustImplementContractInterface includesAdminPasswordResetApi butomitsacceptedHeadmanCredentialsApi; newHeadmanCredentialsControllerimplementsONLYnewinterface, so canonicalarchitecture test deterministicallyrejectsacceptednewcontractcontroller",
+          "classification": "confirmedSource fixture/oracle catalogue maintenance, actualnativecauseUNKNOWN",
+          "GO": "minimaladdONLYexactHeadmanCredentialsApi.class toexistingOR-list, preserveallotherguards/noany-interfaceweakening. First reproduceexistingAuthApiContractTest againstcompilednewacceptedcontroller withcachedtargetJUnit/ArchUnit ifavailable; exactoldRED→oneadd→GREEN. No localGradle/DB/services/browser/install; no Req6/AuthproductSources changes. IfcachecannotexecutehonestNOT_RUN andordinaryCIstillrequired. Rootindependentonefileallowlistreview sufficient, notnewAuth17fullreview."
+        },
+        "confirmedCausalSourceField": {
+          "utc": "2026-10-15T20:54:41.719367+00:00",
+          "native": "AuthApiContractTest.restControllersMustImplementContractInterface staticArchTestFIELD exactGradleFAILEDheaderONCE/categoryASSERTION; job116658648338/log51980BRAM",
+          "source": "AuthApiContractTest1dae95f8 finiteORomitsacceptedHeadmanCredentialsApi; Controller45264c implementsinterface325f17",
+          "classification": "nativeSourceFIELD+concretefinitecataloguecounterexample supportsoneexplicitinterfacefix, notproductAuthsecuritybug",
+          "limits": "No rawdetailedarchitectureviolationinlog; safeSOURCE_METHODartifactREJECTretained/noordinal-statusremap"
+        },
+        "allowlistSourceReady": {
+          "utc": "2026-10-15T20:59:44.169181+00:00",
+          "writer": "c87originalAuthauthor",
+          "ownReceipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#authContractHeadmanAllowlist6cdce",
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+          "before": "1dae95f8 prefix",
+          "formattedBaseline": "d511fa87f868b1902783f39ea1120ff395c3454c3bdd3aae38fa3675d122fde1",
+          "baselineFile": "/tmp/rct-c87-auth-contract/AuthApiContractTest.baseline.formatted.java",
+          "after": "ef5628a2a4588843fe6a4514c526bf3ccd225d54876d30a4b8957a77282623f4",
+          "semantic": "ONLYtwoORlines HeadmanCredentialsApi; finalminustwo byteexactformattedbaseline. Threeoldformatranges token/literal-equivalentrawpreimage, format-onlycommit split available",
+          "checks": "old3found2PASS1FAIL0skip exactfield+newController; same3GREEN0fail/3.781s363855872B/allreaped989917; javac0/allreaped989865/finalformat0/allreaped990060; no productAuth/Req6/helperchange",
+          "RootReview": {
+            "utc": "2026-10-15T21:17:52.292508+00:00",
+            "reviewer": "Rootnonauthorfocusedonfinitecatalogue+threeformatranges",
+            "verdict": "APPROVE_EXACT_ONE_INTERFACE_OR_ADDITION_AND_FIXTURE_NAME_BOUND",
+            "format": "baselineonlyblankimportseparator+2concatenatedidenticalreasonliterals; semanticfinaladdsONLYorShouldHeadmanCredentialsApi, preservingallarchitectureguards",
+            "fixture": "exactoneexpressionUUIDhex16/prefix14=30<=schema32; all otherITb570bytesunchanged; currentSQLintegritySourcecauseandcachedcompilelimitsretained",
+            "next": "format-onlybaselinecommit thenexactsemantic+fixture incoherentnextpackage; no fullAuth17review"
+          },
+          "formatBaselinePrepared": {
+            "utc": "2026-10-15T21:17:52.292508+00:00",
+            "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+            "before": "1dae95f8e197bbf16b5a9a1e77dae38062f22f631b900e9b54b4c33b2319c394",
+            "after": "d511fa87f868b1902783f39ea1120ff395c3454c3bdd3aae38fa3675d122fde1",
+            "parent": "6cdce35b3900a63153e02c2628dad60a142bd146"
+          },
+          "formatCommit": {
+            "utc": "2026-10-15T21:19:20.949653+00:00",
+            "sha": "e1016cb983e081774bf1e4fc2ce3d82e0739017b",
+            "parent": "6cdce35b3900a63153e02c2628dad60a142bd146",
+            "inventory": "ONLYAuthApiContractTest.java formattedbaseline d511fa87;5insert/2delete; no semanticAPIrulechange/no push",
+            "normalGitExit": 0,
+            "otherWIP": "all198previousSourcepins preserved, no stash/reset/bypass"
+          }
+        }
+      },
+      "native20_56": {
+        "utc": "2026-10-15T20:59:44.169181+00:00",
+        "browser": {
+          "job": 116658648057,
+          "status": "FAIL_INSTALL_PLAYWRIGHT_STEP13",
+          "boot11": "SUCCESS",
+          "usercases15to54": "ALL_SKIPPED",
+          "cleanup58": "SUCCESS",
+          "native503orhelper6": "NOT_RUN"
+        },
+        "AuthIT": {
+          "job": 116658648152,
+          "step": 15,
+          "status": "FAIL",
+          "safePrimary": 12006615852,
+          "reader": "STRICT_REJECTfailedSOURCE_METHODidentity; nocases/names/statusescredited"
+        },
+        "AttendanceIT": {
+          "job": 116658648464,
+          "step": 15,
+          "status": "FAIL",
+          "safePrimary": 12006710254,
+          "reader": "sameSTRICT_REJECT"
+        },
+        "ScheduleIT": {
+          "job": 116658648486,
+          "step": 15,
+          "status": "FAIL",
+          "safePrimary": 12006635437,
+          "reader": "sameSTRICT_REJECT"
+        },
+        "AcademicIT": {
+          "job": 116658648530,
+          "step": 15,
+          "state": "RUNNING"
+        },
+        "CI_Coverage": "inprogress",
+        "otherJobs": "SUCCESS",
+        "next": "solec80closedcausaljoblogs, no identityloosening/B015remap, no repeatunitlog; preserveusefulAcademicuntilterminal",
+        "authSchema": "official12006451274ready/generation23upload24SUCCESS; exactoldconsumerrestorationNOTcriticalpathholduntilrequired"
+      },
+      "terminal": {
+        "utc": "2026-10-15T21:08:03.308121+00:00",
+        "CI": {
+          "run": 38803602937,
+          "state": "COMPLETED_FAILURE"
+        },
+        "Coverage": {
+          "run": 38803602970,
+          "state": "COMPLETED_FAILURE",
+          "failedJobs": [
+            116658646471,
+            116658646657,
+            116658646739
+          ],
+          "sameCauseAsCI": "UNKNOWN coveragecausallogsnotread"
+        },
+        "Security": {
+          "run": 38803602889,
+          "state": "SUCCESS"
+        },
+        "OpenAPI": {
+          "run": 38803602827,
+          "state": "SUCCESS"
+        },
+        "jobs21": "ALL_TERMINAL",
+        "AcademicIT": 116658648530,
+        "browser": "controls13FAIL/usercasesALL_SKIPPED/cleanup58SUCCESS",
+        "safeToNextPublish": true,
+        "rootActiveProcess": null
+      },
+      "browserClosedCause": {
+        "job": 116658648057,
+        "closedCategory": "ADMISSION_RETRY_CONTROLS_FAIL",
+        "bytes": 439659,
+        "runtime": "NPMthencheck-admission-retry.mjs beforePlaywrightinstall; scriptcatchmarker knownFAILandnoPASS; not browserdownload/networkcause",
+        "next": "originalc87afterAuthfixturefix Source-grounded localexistingNodecontrol diagnostic, no browser/standrepeat"
+      },
+      "authStockCanonical": {
+        "artifact": 12006451274,
+        "digest": "70900c4e9e100ac9f3100465a0c25021826eef39e3983b06511d5df7df361eb9",
+        "file": "/tmp/rct-auth-generated-6cdce35.json",
+        "sha256": "f7edb8f5e0655faf1d16b35134490527cdbb75c77e33f1328ea6ca40bb626857",
+        "bytes": 134040,
+        "proof": "same16keyproducer6cdce/checkoute62a/run38803602937/job116658648152/caps/CRC/shape joined; reader991011/native0/0.902s/allreaped",
+        "next": "RootverifyandbyteapplyofficialAuthsnapshot+stockauthTSgeneration; no manualschema edits",
+        "RootIntegration": {
+          "utc": "2026-10-15T21:19:20.949653+00:00",
+          "inventory": [
+            {
+              "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+              "before": "d511fa87f868b1902783f39ea1120ff395c3454c3bdd3aae38fa3675d122fde1",
+              "sha256": "ef5628a2a4588843fe6a4514c526bf3ccd225d54876d30a4b8957a77282623f4",
+              "source": "/tmp/rct-auth-f545-20261015/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java"
+            },
+            {
+              "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/HeadmanCredentialsHttpIT.java",
+              "before": "b570e89140e1f045a0af3569c47eccfa00281810ebc5db9284692aae8c250342",
+              "sha256": "6c82e8fe3246fed5953314cb623b4ccbbcef7bf704f29c284216497b3682f16c",
+              "source": "/tmp/rct-auth-f545-20261015/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/HeadmanCredentialsHttpIT.java"
+            },
+            {
+              "sourceRef": "docs/openapi/auth.json",
+              "before": "0a9552f046fc69bed499a3a76a60c78ba7f3a6585e27938ce567084133d0d1d2",
+              "sha256": "f7edb8f5e0655faf1d16b35134490527cdbb75c77e33f1328ea6ca40bb626857",
+              "source": "/tmp/rct-auth-generated-6cdce35.json"
+            }
+          ],
+          "state": "BYTEEXACT_AUTH_STOCK_APPLIED_NO_MANUAL_SCHEMA_EDIT_STOCK_TS_NEXT",
+          "RootReview": "explicitknownHeadmaninterfaceonly andonefixturelengthbound reviewed; oldassertions/guards preserved",
+          "canonicalProducer": "6cdce/e62a/run38803602937/auth12006451274 proof retained; AuthproductionSourcesunchangedbetweenproducerandcurrentfuturefeatures"
+        },
+        "RootStockGeneration": {
+          "utc": "2026-10-15T21:25:52.820495+00:00",
+          "command": "npm run generate:auth-types",
+          "cwd": "/workspace/rutcampustrack/frontends",
+          "session": 36313,
+          "exit": 0,
+          "canonicalSha256": "f7edb8f5e0655faf1d16b35134490527cdbb75c77e33f1328ea6ca40bb626857",
+          "generatedSource": "frontends/mobile-core/src/api/generated/auth.ts",
+          "generatedSha256": "311060c7ea88cb59bdf8708bdcb03242e451ad7bebc5cbeb5eae4a3ec28dc764",
+          "manualGeneratedEdits": false,
+          "check": {
+            "command": "npm run generate:auth-types:check",
+            "session": 12837,
+            "exit": 0,
+            "result": "stock generated Auth types match canonical f7edb8f5",
+            "ownedProcessCompleted": true
+          }
+        }
+      },
+      "academicNamedPASS": {
+        "artifact": 12006865382,
+        "digest": "052a9f7ddf7523fe2d7256073bdcc0af00db55620681477c05b5b780703c8abf",
+        "whole": "458PASS0FAIL0ERROR0SKIP only3namedclaims",
+        "named": [
+          "BotCredentialLifecycleMigrationIT25606c.freshFullChainAndMetadataOnlyTableValidateAndRepeat",
+          "BotCredentialLifecycleMigrationIT25606c.historicalV56UpgradePreservesRowsAndOldChecksums",
+          "HeadmanStatsScopeIT6bdae.selectedArchivedReadCountsCurrentGrantsAndRejectsForeignOrRevokedActor"
+        ],
+        "reader": "991400/native0/0.799s/allreaped",
+        "limits": "no otheranonymouscaseidentitypromotion/NativeAuth17PASS"
+      },
+      "authFixture774SourceGO": {
+        "writer": "c87originalauthor",
+        "scope": "ONLYHeadmanCredentialsHttpITgroupfixture774",
+        "cause": "prefixcredential-it-(14)+UUID36=50 > canonicalV8groupnameVARCHAR32. Currentnative8failureblocksSource774 DATABASE_INTEGRITY+POSTGRESQL_EXCEPTION consistent; noSQLSTATEclaim/rawSQL",
+        "GO": "prefix+UUIDhexsubstring16=30chars asestablishedExportJobfixture; retainallIDs/grants/passwordsecurity/audit/concurrency/oldoracles. ExistingGJF/cachedcompile enoughbeforeordinaryPGCI, no newmirroringtest/no localDB/Gradle. Sourcecounterexample before50/after30 documentscause; onefixturetargetedindependentrecheck notfullAuth17.",
+        "SourceReady": {
+          "utc": "2026-10-15T21:12:24.026834+00:00",
+          "post": "6c82e8fe3246fed5953314cb623b4ccbbcef7bf704f29c284216497b3682f16c",
+          "ownReceipt": "outcome.safe.json#headmanCredentials23_34SourcePlan209e.groupFixture774Correction",
+          "change": "onegroupnameUUIDhex16=30<=32 insteadold50; allprivacy/authority/audit/F1F2oraclesunchanged",
+          "checks": "GJF0/cachedjavac0/5.861s329.5MB/allreaped; realPGNOT_RUN",
+          "next": "Rootfocusednonauthorinverse/schema-boundreview"
+        }
+      },
+      "admissionRetryControlSourceRca": {
+        "utc": "2026-10-15T21:14:26.784556+00:00",
+        "writer": "c87 originalAuth/acceptedclientauthor",
+        "state": "EXACT_UNCHANGED_LOCAL_18_CONTROL_PASS_NATIVE_CAUSE_UNKNOWN",
+        "script": "tests/e2e/check-admission-retry.mjs8c04b1f3",
+        "helper": "mobile-dataset758e26c2",
+        "check": "samecurrent18controls native0/4.692s126MB/allreaped992762/privatecachedPWtransform/no browser/server/network/install",
+        "cause": "genericCIcatch lostspecificassert/import failure. 1000ms walltiming hypothesisUNCONFIRMED; no flaky/productcauseclaim/assertlowering",
+        "diagnosticGO": "c87ONLYexistingcheck-admission-retry.mjs failurecatch diagnostic: preservegenericFAIL/native1/all18assertions/helperpolicy; emitfixedclosedcategory ASSERTION|IMPORT_SETUP|UNKNOWN plus boundedexactpublicTHISscriptSource line ifpresent, no rawerror.message/stack/code/credentials/markers/requestvalues/freeclass names. Samecurrent18PASS once ifneeded+smallprivacycontrols; no framework/timeout/rate changes. Rootnonauthorcatchhunkreview, no fullhelpercampaign.",
+        "next": "newnextCI maypassoridentifycause, neverrepeatunchangedoldlog/controlwithoutreason",
+        "RootFocusedReview": {
+          "utc": "2026-10-15T21:25:52.820495+00:00",
+          "reviewer": "Root nonauthor",
+          "verdict": "APPROVE",
+          "scope": "one fs import + closed outer catch only",
+          "sha256": "f73811e89bbae3510b9d5b4e0ea20f7f225b7053be8f4baeef917d6df114bf88",
+          "retained": "all18 original checks/timer1000/generic FAIL/native1; exact script line or null and fixed category only; no raw message/stack/code/class/credentials emitted",
+          "authorControls": "10 privacy controls and same18 PASS; native original CI cause UNKNOWN"
+        }
+      }
+    },
+    "189798f_additional_bounded_existing_proof_joins": {
+      "utc": "2026-10-15T20:42:19.097406+00:00",
+      "c86": "readonlyJS-STUDENT03/15/23+HEADMAN43/44/WEB06/WEB07; reuseactual189request9+existingnamedunchangedproofs, strictcompleteclauses/no newfetch/run/test/requirements; Rankreviewwhenreadytakespriority",
+      "c88": "readonlyHEADMAN27/CLIENTFEHEADMAN07 modeintentacceptedmobileapplicability +existingHW4 genuineactions; usecanonical/date/accepteddecisions notnewdesktoplayout or ignoredoldtext; no productwrites/newfetch/run; Teacher20reviewwhenSource-readytakespriority",
+      "next": "oneexistingcentral outcomeperjoin/rootmatrixapply; no newreceipts/copies/framework"
+    },
+    "189798f_request_seven_more_family_finite_independent_join": {
+      "utc": "2026-10-15T20:47:48.296983+00:00",
+      "reviewer": "c86 independent readonly",
+      "producer": "189798f4807c198b4de27860c6e9df4c68a95697",
+      "run": 38793236462,
+      "checkout": "affd54af3431310b890be83a934edd93fe2dff93",
+      "artifact": 12003721042,
+      "requestSource": "d08f66b436534875400b81e79150ebd825136297d31765682baedef97eaae029",
+      "whole": "request9WHOLEPASS41409ms",
+      "retainedMongo": "18451/run38313867449 SOURCE_METHOD10, method-bodycompatibility verified c87/rootAdoption, no wholeclass/currentruntimeinference",
+      "JS-STUDENT-03": "PASS_COMPOSED canonical714-717; actual194-209fourreasoncodes/visiblelabels+239-283OTHERcommentpersisted+589-670HEADMANdecision; ce943_reason_initial_named_actual realMongo commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict/art11954547282 +aa37_Q10_existing_six_row_independent_acceptance audience/delivery seams retained; no nativeproviderclaim",
+      "JS-STUDENT-15": "UNKNOWN onlyactualSTUDENTstatuscellhover/focus→excused/cancelledreason+comment canonical749; form/archive/Teacherhistory cannot substitute thisinteraction",
+      "JS-STUDENT-23": "SourceGAP acceptedEXCUSEdate-rangecontrol canonical795/D019preserved: ExcuseRequestScreen269-275→RequestLessonSelector groupsoptionsbydate, no rangecontrol. D0192lesson/one decision/file/eligibility/PRESENT preservation nowproven; no manual-Nbulk/rangereopen",
+      "JS-HEADMAN-43": "SourceGAP queuecoverageEND+lessoncount canonical476-479. Screen5f81:692-696 rowFIO/reason/startonly, end/count onlydetail730-733. Archivefilterbrowserwitness also pendingc87readycase",
+      "JS-HEADMAN-44": "SourceGAP predecision NизMпаружeотмечены canonical484. Existing772-845 detail symbols+general preservationmessage notsummary;189609-612only2unexcluded. PRESENTpreservation alreadyrealMongo+genuineindivisibleapproval, no neednewcrossproduct",
+      "JS-HEADMAN-WEB-06": "UNKNOWN exactacceptedpreACKoptimisticlistprojection: source365-370awaitsdecision then393-395selecteddetail only, back415-416reloadsqueue; fast200notproof. Preservefuturedesktop/mobileapplicabilityqualification, no newpolicy inferred",
+      "JS-HEADMAN-WEB-07": "UNKNOWN exactHEADMANvisible journalabsent→PRESENT withoutreload. ActualAPI740+decisiondurable sufficient; before584-586journalabsent thennavigatesRequests thenlogout743, no postdecisionvisiblecellassert. Notanotherquota/decisiontest",
+      "limits": "no newfetch/run/Sourcewrites/newrequirements; actual6cdce newnative notborrowed"
+    },
+    "189798f_HOMEWORK27_intent_finite_independent_join": {
+      "utc": "2026-10-15T20:47:48.296983+00:00",
+      "reviewer": "c88 independentreadonly",
+      "state": "ONE_SHARED_SOURCE_GAP_TWO_FAMILY_ROWS_NO_NEW_PRODUCT_QUESTION",
+      "families": [
+        "JS-HEADMAN-27",
+        "CLIENT-FE-HEADMAN-07"
+      ],
+      "accepted": "canonicaljobstories87af602-604 explicit Add/current/archiveintent andinitialnotyetrequested!=empty. Desktopwire6a9df95f3/14literal1920launcher notportrequired. Latermobilekit5441988a475-477/490-494,ownerrevision63ce6641:42-46,functionalmap4b87f782:52-54 supportcalendar/card/wizard, no explicitinitialprefetchoverride",
+      "counterexample": "HeadmanHomeworkScreenaa547b0b399-437/928-942 immediate load includingbeforeinitialCreate; helper91a178bf20-30 fetchesbothfullsemester current+archived lists beforeuserintent, thenclientdateItems filter. Deferred-readmissing, notnewdesktoplayout",
+      "minimal": "Existingmobileentry/readownership: allowcreate/current/archive choice beforeeitherlistquery; initialnotrequested distinctfromrealempty; retaincalendar/wizard/allprovedlifecycle. NarrowexistingHWcarrier no-list-beforeintent thenselectedread/create observation; no newAPI/stack",
+      "sufficient": "central209e106_Headman_calendar_generation_and_cancel_restore_existing_join/authorheadmanLifecycleNineRowExistingJoin209e.homework013: actualrun38768364719/art11991637277/digest0bf2e588,Source92afb983whole4cases42/757/1103/1405. Realpublish/date/transfer/binding/completion/>14d/archive/readOnly/noRestore/history/edit/revoke/nonauthordelete/replay/current403 sufficientunchanged. No repeatsneeded",
+      "native": "No newexecution/transport/Sourcechanges; D015 providerseparate"
+    },
+    "HOMEWORK27_deferred_intent_author_plan": {
+      "utc": "2026-10-15T21:08:03.308121+00:00",
+      "state": "SPAWNED_C89_SOLE_INDEPENDENT_PRODUCT_WRITER",
+      "baseline": "6cdce35b3900a63153e02c2628dad60a142bd146",
+      "worktree": "/tmp/rct-headman-hw-intent-6cdce-20261015",
+      "capacity": "tracked11189files514569179B; /tmp6562533376B, conservative2payload leaves>4GiB. No workspacefullWTcopy; keepfloorunchanged",
+      "goal": "HEADMAN27/FEHEADMAN07 oneaccepteddeferred-list-readintent Sourcegap only; currentcalendar/wizard/lifecycle retained; no desktoplauncher/newAPI",
+      "review": "freshnonauthor future c87/c84, c88findingauthornotselfreview",
+      "gitSession": 29113,
+      "gitExit": 0,
+      "writerRequested": "c89_hw_intent",
+      "modelRequested": "gpt-6.1-sol/high/forknone actualUNKNOWN",
+      "scope": "HeadmanHomeworkScreen.vue/headman-published-homework.ts onlyifneeded +existingfocusedtests +existingmobile-homework-lifecycle.spec carrier; no helper/requestSpec/Teacher/Rank/Auth/API/lockfile/config/Git/shared docs writes",
+      "required": "Applycurrentdesignskill, preservemobilecalendar/card/wizard, no exactdesktoplauncher. Entrychoosecreate/current/archive BEFORE eitherlistrequest, notrequested distinctempty; explicitinitialCreate/notification/accepteddeep-linkintent maycountchoice. Oneoldmeaningfulcounterexample→green+focusedchecks; minimal existingHWcarrierassert no-list-beforeintent thenuserread/create, no newactor/case/cap; allprovedlifecycle unchanged",
+      "resources": "newWT514MBonly/tmp afterconservativefloorpreflight, no localbrowser/Gradle/Docker/install, tmpcachedlightchecks only",
+      "next": "newassigneddeveloper writesonlyindependentWT, freshnonauthorreviewnotc88selffix",
+      "agent": "/root/c89_homework_intent",
+      "initialSourceScope": "Screen + existingassistant-homework-back.test.ts + existingmobile-homework-lifecycle.spec.ts; helperoptionalintent+existinghelpertest admittedifneeded(currentdefaultbroadreadretained)",
+      "refinementGO": "ExistingmobileCTAs current/archive/creation +selectedintentownsread; helpertypedoptionalcurrent/archive scope mayfetchselectedexistingAPIonly whileundefinedpreservesbroadcurrent+archiveexistingcallers. Notrequested!=empty, explicitdirectcreate/deeplinkintentallowed, generation/revoke/offline/oldlifecycle retained, no newAPI/design. <=5existingSources; writerdeclareexactinventory. OldHW4notrerunfull.",
+      "SourceReady": {
+        "utc": "2026-10-15T21:12:24.026834+00:00",
+        "writer": "c89nonauthorreviewpending",
+        "state": "FROZEN_FIVE_EXISTING_SOURCE",
+        "ownReceipt": "/tmp/rct-headman-hw-intent-6cdce-20261015/.agent/evidence/c89-hw-intent.safe.json",
+        "behavior": "current/archive/nullintent, no default/create-first/reconnectbeforeintent listfetch; emptyonlysuccess, modeownsresponse; helperundefineddefaultbroadterminalwinsunchanged/selectedscopeoneexistingAPI",
+        "checks": "oldrenderer0expectedgot1RED→final26GREEN; canonicalformat/lint/template/scopedTS+E2ETS/VueTSC/gitdiff0/allreaped",
+        "carrier": "existing4lifecyclecases/caps120000ms unchanged; explicitarchive2places/currentbeforedelete+oneintent0list→selectedarchive200witness; nativeNOT_RUN",
+        "limit": "stockViteconfig transientRootnode_modules/.vite-temp mtime touched, nowempty/no persistentdepsfiles/cleanup; recordednorealdataleak",
+        "corePins": "screene27b6b92/helper3ba92405/helpertestfcfaec53/renderercaec3b96/E2Eb0bec993",
+        "next": "c88nonauthorreviewofc89newimplementation, notselfwrittenfix"
+      },
+      "independentReview": {
+        "utc": "2026-10-15T21:19:20.949653+00:00",
+        "reviewer": "c88 independentnonauthorofc89implementation",
+        "verdict": "APPROVE_COHERENT_FIVE_SOURCE_NO_FINDINGS",
+        "proof": "all5pre/post; nullintent beforemount/createfirst/reconnect; selectedoneAPI/terminaldefaultintact; mode/day/owner/APIrejectlate, contextresetsintent; existingcalendar/wizard/grants/offline/draft/historyoracles and4capsunchanged; oneobserverfinallycleanup0beforeintent→archive200",
+        "native": "HW4/newintentNOT_RUN; recordedemptymtimequalifierno persistentdependencydelta"
+      },
+      "RootIntegration": {
+        "utc": "2026-10-15T21:25:52.820495+00:00",
+        "state": "APPROVED_EXACT_COPY_5",
+        "sourcePins": [
+          {
+            "sourceRef": "frontends/mobile-core/src/features/homework/HeadmanHomeworkScreen.vue",
+            "preimageSha256": "aa547b0b18f0c13fa3591089e320e78ece7e43c4d73b853e15cd6156f61aaa16",
+            "sha256": "e27b6b92ef403cddf289424004218735dfe290ef3639a35dcac365ea29ce0680",
+            "packet": "Homework5"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/homework/headman-published-homework.ts",
+            "preimageSha256": "91a178bf77a2d67b7802dba8a97d81b0ad49d111b60e96c0a6e8f321ee98d24c",
+            "sha256": "3ba9240569b69428dc6eb1d7af1c5bdc0621d82c880364702099393ddd89bed6",
+            "packet": "Homework5"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/homework/headman-published-homework.test.ts",
+            "preimageSha256": "411a53068e3785b3c6bca5cfb08499fab79520090926c5baef8a54bcf35055cd",
+            "sha256": "fcfaec537fb4eae36f9fcf4c55147ce7908d72936ae0584110917de83ea60525",
+            "packet": "Homework5"
+          },
+          {
+            "sourceRef": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+            "preimageSha256": "f80c199a21c1fcca11ac35f3cf2387a92bea4cbdc0643faf3df476d115eb74a9",
+            "sha256": "caec3b961e8e44dd27db7cdd5caad0c7ea2f7ed2e4c5f36e9bab6adb96e8e929",
+            "packet": "Homework5"
+          },
+          {
+            "sourceRef": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+            "preimageSha256": "92afb983ebd8c4e121d69f84c93484ca858f206a38025cbd53cdedec807ac061",
+            "sha256": "b0bec9936f0862182475aa5489f685608e74bcccb59c74de08e3bedce1538bb7",
+            "packet": "Homework5"
+          }
+        ],
+        "native": "NOT_RUN"
+      }
+    },
+    "stockAttendanceScheduleSchema_producer_bounded_GO": {
+      "utc": "2026-10-15T21:08:03.308121+00:00",
+      "writer": "c80 soleCI/configand2snapshot-testMETADATAwriter",
+      "purpose": "getofficialcanonical2servicepayloads afterintentionalacceptedDTOcontractdrift; ordinarysnapshotassertions/gates stayreduntilRootappliesgenuineoutput",
+      "GO": "CloneexistingliteralAuth/Academic/BFFstockgenerator+uploadpattern forAttendance/Schedule, exactmethod/Source/line/producer/checkout/failure/caps32MiBXML/2MiBJSON/private360s/8min/outputchanges/wrapperproof/16fields. ForfuturegenuineSOURCE_METHOD removeONLYDisplayNameannotation+unusedimportin2OpenApiSnapshotITs preservingallmethods/asserts/normalizers; old6cdceordinalrejectionsstayimmutable, no reader/gateidentityloosening/B015remap. No triggers/newframework/manualJSON.",
+      "next": "metadata2frozenpins thenexistingpattern2generate+uploadpairs; updatefutureCIadmissionhashparameters ONLYafterRootnextproduct Sourcesfinal; onecoherentindependentreview significantproducerchanges, no fullunchangedCIreview",
+      "why": "currentAuthofficial134040B available; other2haveNOproducerartifact. Cannotmanualpatchgoldenfiles/claimoldnamedtest; futureactualoutputneeded.",
+      "authorProgress": {
+        "utc": "2026-10-15T21:12:24.026834+00:00",
+        "state": "THREE_SOURCE_AUTHORED_CHECKING_NO_ADMISSIONPARAM_EDITS_YET",
+        "CI": "41ffe329cedeb3c1e0986769d7ece1ff0827ec4e761e1024d90191a08b91808a",
+        "AttendanceSnapshot": "f7f908c97355eb58786f6da1273a66943a897122c68f7f401c1e01ce0a77126a",
+        "ScheduleSnapshot": "a5bb0d935eee38b31f168e8e2ff7f4735aedf90910241835cd746a6f88f5fa1c",
+        "change": "fourliteralgen+uploadstepscloneAuthpattern; ONLYDisplayName/importremoval in2sources; ordinaryassertions preserved; futureactualMETHODproofnotoldremap",
+        "checks": "inverse/YAML/Bash/closedcontrols running; nativecandidateoutputsNOT_RUN"
+      },
+      "SourceReady": {
+        "utc": "2026-10-15T21:14:26.784556+00:00",
+        "state": "FROZEN_THREE_SOURCE_AWAIT_FRESH_REVIEW",
+        "ownReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current6cdce35Primary.attendanceScheduleStockSourceReady",
+        "CI": "41ffe329cedeb3c1e0986769d7ece1ff0827ec4e761e1024d90191a08b91808a",
+        "AttendanceSnapshot": "f7f908c97355eb58786f6da1273a66943a897122c68f7f401c1e01ce0a77126a",
+        "ScheduleSnapshot": "a5bb0d935eee38b31f168e8e2ff7f4735aedf90910241835cd746a6f88f5fa1c",
+        "checks": "YAMLdrop4steps/textinverse→66956,2metadatawholeinverses,Python2compile/Bash2syntax,42actualprefixadmission controls inclnegativeidentity/status/caps/frame/DTD PASS0/0.730s/allreaped; no native/newfutureadmissionparams yet"
+      },
+      "independentReview": {
+        "utc": "2026-10-15T21:19:20.949653+00:00",
+        "reviewer": "c86 nonauthor",
+        "verdict": "APPROVE_COHERENT_THREE_SOURCE_NO_FINDINGS",
+        "proof": "4stepsliteralAuthclone afternormalizedadmittedservicetags/hash; futureSOURCE_METHODonly+nativeuniqueXML/count1/1/0/0/exactequalityframe/producer/checkout/16fields/caps/wrapper/ordinaryfailurepreserved; 2metadatafilesonlyDisplayName/importremoval",
+        "native": "official2servicegenerationpending; oldrejectionsimmutable/noB015remap"
+      },
+      "RootIntegration": {
+        "utc": "2026-10-15T21:25:52.820495+00:00",
+        "state": "APPROVED_EXACT_COPY_3",
+        "sourcePins": [
+          {
+            "sourceRef": ".github/workflows/ci.yml",
+            "preimageSha256": "66956b3bb372646733687d5198cd2e9b4c45c8824879bf615dc1a4edd8e55f40",
+            "sha256": "41ffe329cedeb3c1e0986769d7ece1ff0827ec4e761e1024d90191a08b91808a",
+            "packet": "Stock3"
+          },
+          {
+            "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+            "preimageSha256": "23e181aca2b3fcdd5d1758ed420126b92ef529f3e6f7b4b98f1d7513d8dfb35e",
+            "sha256": "f7f908c97355eb58786f6da1273a66943a897122c68f7f401c1e01ce0a77126a",
+            "packet": "Stock3"
+          },
+          {
+            "sourceRef": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+            "preimageSha256": "21533c19787367da1e04bba0f052e48eb28e560710af418d387d74ce930c2df4",
+            "sha256": "a5bb0d935eee38b31f168e8e2ff7f4735aedf90910241835cd746a6f88f5fa1c",
+            "packet": "Stock3"
+          }
+        ],
+        "native": "NOT_RUN; no old ordinal identity reinterpretation"
+      },
+      "finalLiteralHashUpdate": {
+        "utc": "2026-10-15T21:28:51.078849+00:00",
+        "sha256": "5571ef54a71a411e0e7b57c840a1c2dda2b23df9bbf7da3fdc6a5e6eefeadddd",
+        "author": "c80",
+        "RootFocusedReview": "APPROVE exact two64hex parameter-only updates; normalized wholeCI inverse; no logic/control/cap changes",
+        "authorReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current6cdce35Primary.nextFrozenRootSourceAdmissionLiteralUpdate",
+        "native": "NOT_RUN"
+      }
+    },
+    "STUDENT15_existing_status_reason_bounded_source_plan": {
+      "utc": "2026-10-15T21:27:48.727339+00:00",
+      "writer": "c89 existing HW worktree",
+      "mode": "READONLY_SOURCE_PLAN_FIRST",
+      "goal": "establish exact accepted mobile applicability and current status-cell reason path; no new endpoint/design or runtime claim",
+      "scope": "only current Student attendance status cell/component/API and exact accepted JS-STUDENT15 design references",
+      "output": "existing own receipt compact source plan; wait concrete Source writer GO",
+      "priority": "independent while Root publishes ready packet"
+    },
+    "final207SourceIntegratedTypechecks": {
+      "utc": "2026-10-15T21:30:15.159900+00:00",
+      "localHead": "e1016cb983e081774bf1e4fc2ce3d82e0739017b",
+      "sources": "exact union207 reviewed WIP",
+      "checks": [
+        {
+          "command": "npm run typecheck --workspace @rct/pwa-vue",
+          "session": 97436,
+          "exit": 0
+        },
+        {
+          "command": "npm run typecheck --workspace @rct/tma-vue",
+          "session": 38485,
+          "exit": 0
+        },
+        {
+          "command": "node frontends/node_modules/typescript/bin/tsc -p tests/e2e/tsconfig.real-mobile.json --noEmit",
+          "session": 76394,
+          "exit": 0
+        }
+      ],
+      "noRuntimeClaim": true,
+      "processesCompleted": true,
+      "configuredChecksFirst": {
+        "session": 81911,
+        "exit": 1,
+        "elapsedSeconds": 8.56,
+        "fiveOtherHooks": "PASS",
+        "gitleaks": "FALSE_POSITIVE public generated Source SHA bound to ambiguous metadata key",
+        "correction": "explicit generatedSource path/sha256 structure; no suppression/config change"
+      }
     }
   }
 }

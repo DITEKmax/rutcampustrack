@@ -299,6 +299,97 @@ describe('RequestsController', () => {
     expect(context.value.view.optionsLoading).toBe(false)
   })
 
+  it('keeps the server OPEN total independent of pages and suppresses unavailable or stale ownership', async () => {
+    const reply = deferred<StudentRequestPage>()
+    let fail = false
+    const { value, state } = controller({
+      port: port({
+        listRequests: async (bucket, pageNumber) => {
+          if (fail) throw new Error('Список недоступен')
+          if (bucket === 'ARCHIVE') return { ...page([]), totalElements: 91 }
+          if (pageNumber === 0) return reply.promise
+          return { ...page([summary('next')]), page: 1, totalElements: 27, totalPages: 3 }
+        },
+      }),
+    })
+    expect(value.openCount()).toBeNull()
+    const initial = value.loadBucket('open')
+    expect(value.openCount()).toBeNull()
+    reply.resolve({ ...page([summary('one')]), totalElements: 27, totalPages: 3 })
+    await initial
+    expect(value.openCount()).toBe(27)
+    await value.loadMore('open')
+    expect(value.view.open.requests).toHaveLength(2)
+    expect(value.openCount()).toBe(27)
+    value.selectBucket('archive')
+    await value.loadBucket('archive')
+    expect(value.openCount()).toBe(27)
+    fail = true
+    await expect(value.loadBucket('open')).rejects.toThrow('Список недоступен')
+    expect(value.openCount()).toBeNull()
+    fail = false
+    await value.loadBucket('open')
+    state.offline = true
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+    state.offline = false
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+    await value.loadBucket('open')
+    expect(value.openCount()).toBe(27)
+    state.scope = { ...scope, userId: 'new-owner' }
+    expect(value.openCount()).toBeNull()
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+  })
+
+  it('refreshes the OPEN total after submission and cancellation and discards a late owner count', async () => {
+    let ids = ['one']
+    const stale = deferred<StudentRequestPage>()
+    let hold = false
+    const { value, state } = controller({
+      port: port({
+        listRequests: async () => (hold ? stale.promise : page(ids.map((id) => summary(id)))),
+        submitExcuse: async () => {
+          ids = ['one', 'created']
+          return detail(summary('created'))
+        },
+        cancelRequest: async () => {
+          ids = ['one']
+          return detail({ ...summary('created'), status: 'CANCELLED' })
+        },
+      }),
+    })
+    value.view.options = options()
+    await value.loadBucket('open')
+    expect(value.openCount()).toBe(1)
+    await value.submitExcuse({
+      lessonIds: ['lesson-1'],
+      reason: 'OTHER',
+      comment: 'Пояснение',
+      files: [],
+    })
+    expect(value.openCount()).toBe(2)
+    await value.cancelRequest('created')
+    expect(value.openCount()).toBe(1)
+    hold = true
+    const late = value.loadBucket('open')
+    state.scope = { ...scope, sessionId: 'replacement-session' }
+    value.onContextChanged()
+    stale.resolve({ ...page([]), totalElements: 82 })
+    await late
+    expect(value.openCount()).toBeNull()
+    hold = false
+    ids = []
+    await value.loadBucket('open')
+    expect(value.openCount()).toBe(0)
+    state.offline = true
+    value.onContextChanged()
+    state.offline = false
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+  })
+
   it('requests OPEN page size 10 and hydrates at most ten details with concurrency three', async () => {
     const summaries = Array.from({ length: 12 }, (_, index) => summary('request-' + index))
     let active = 0
@@ -712,10 +803,13 @@ describe('RequestsController', () => {
     const sent: Array<{ key: string; comment: string }> = []
     const keys = ['request-key-0001', 'request-key-0002']
     let attempts = 0
+    const upload = new File(['ok'], 'retry.txt', { type: 'text/plain' })
+    const receivedFiles: Array<readonly File[]> = []
     const { value } = controller(
       {
         port: port({
-          submitExcuse: async (command, _files, key) => {
+          submitExcuse: async (command, files, key) => {
+            receivedFiles.push(files)
             sent.push({ key, comment: command.comment ?? '' })
             attempts += 1
             if (attempts < 3) {
@@ -732,7 +826,9 @@ describe('RequestsController', () => {
       lessonIds: ['lesson-1'],
       reason: 'OTHER',
       comment: 'Есть пояснение',
-      files: [],
+      files: [
+        { id: 'retry-file', name: upload.name, size: upload.size, type: upload.type, file: upload },
+      ],
     }
 
     await expect(value.submitExcuse(payload)).rejects.toThrow('network response lost')
@@ -749,6 +845,8 @@ describe('RequestsController', () => {
       value.submitExcuse({ ...payload, comment: 'Изменённый текст' }),
     ).resolves.toBeTruthy()
     expect(sent[2]?.key).toBe('request-key-0002')
+    expect(receivedFiles).toHaveLength(3)
+    for (const files of receivedFiles) expect(files[0]).toBe(upload)
   })
 })
 

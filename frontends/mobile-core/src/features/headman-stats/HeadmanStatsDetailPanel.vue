@@ -216,6 +216,25 @@ defineExpose({ focus });
 
       <section
         class="headman-stats-detail__section"
+        aria-label="Рейтинг студента"
+      >
+        <h3>Рейтинг группы</h3>
+        <p v-if="!detail.rank">
+          Сервер не передал рейтинг студента.
+        </p>
+        <p v-else-if="detail.rank.visibility === 'HIDDEN'">
+          Рейтинг скрыт для этой истории.
+        </p>
+        <p v-else-if="detail.rank.available">
+          {{ detail.rank.position }} из {{ detail.rank.participantCount }}
+        </p>
+        <p v-else>
+          Нет данных для рейтинга.
+        </p>
+      </section>
+
+      <section
+        class="headman-stats-detail__section"
         aria-label="Посещаемость по предметам и типам занятий"
       >
         <h3>Предметы и типы занятий</h3>

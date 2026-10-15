@@ -82,7 +82,9 @@ public final class TeacherApiController implements TeacherApi {
             String dateTo,
             String page,
             String pageSize,
-            boolean pastOnly) {
+            boolean pastOnly,
+            boolean includeMetrics,
+            String metricsStudentId) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(
@@ -95,7 +97,9 @@ public final class TeacherApiController implements TeacherApi {
                                 parseOptionalDate(dateTo),
                                 parsePage(page, "page", 0),
                                 parsePage(pageSize, "pageSize", 100),
-                                pastOnly));
+                                pastOnly,
+                                includeMetrics,
+                                metricsStudentId == null ? null : parseId(metricsStudentId)));
     }
 
     @Override

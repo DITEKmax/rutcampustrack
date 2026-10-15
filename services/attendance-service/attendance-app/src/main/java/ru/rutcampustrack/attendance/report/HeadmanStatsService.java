@@ -139,6 +139,15 @@ public class HeadmanStatsService {
     private final RequestContext requestContext;
     private final Clock clock;
     private final HeadmanApprovedTicketResolver approvedTicketResolver;
+    private ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService
+            studentProjection;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureStudentRank(
+            ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService
+                    service) {
+        studentProjection = service;
+    }
 
     public HeadmanStatsService(
             AcademicGrpcClient academicGrpcClient,
@@ -854,7 +863,46 @@ public class HeadmanStatsService {
                         : accumulator.lateTickets.toCounts(),
                 accumulator == null
                         ? new TicketCounts(0, 0, 0)
-                        : accumulator.excuseTickets.toCounts());
+                        : accumulator.excuseTickets.toCounts(),
+                targetRank(capture, studentId));
+    }
+
+    private HeadmanStatsStudentDetailResponse.Rank targetRank(
+            CalculationCapture capture, long studentId) {
+        if (!capture.scope.hasStudentRankScope()) return null;
+        if (studentProjection == null || capture.context.semesterId() == null) {
+            throw new AcademicServiceUnavailableException("Target rank calculation unavailable");
+        }
+        var rankScope = capture.scope.getStudentRankScope();
+        ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService
+                        .Rank
+                rank;
+        try {
+            rank =
+                    studentProjection.rankForHeadman(
+                            rankScope,
+                            studentId,
+                            capture.context.semesterId(),
+                            capture.context.groupId());
+        } catch (
+                ru.rutcampustrack.attendance.report.studentprojection.StudentProjectionException
+                        unavailable) {
+            throw new ReportExportUnavailableException("Target rank calculation unavailable");
+        }
+        var fresh =
+                requireScope(capture.context.groupId(), capture.context.semesterId(), studentId);
+        if (!fresh.hasStudentRankScope() || !fresh.getStudentRankScope().equals(rankScope)) {
+            throw new AcademicServiceUnavailableException("Target rank authority changed");
+        }
+        return new HeadmanStatsStudentDetailResponse.Rank(
+                rank.position(),
+                rank.participantCount(),
+                rank.available(),
+                rankScope.getRankVisibility()
+                                == ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN
+                        ? HeadmanStatsStudentDetailResponse.Visibility.HIDDEN
+                        : HeadmanStatsStudentDetailResponse.Visibility.VISIBLE);
     }
 
     private StatsData calculate(

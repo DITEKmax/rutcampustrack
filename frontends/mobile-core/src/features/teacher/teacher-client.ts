@@ -111,6 +111,8 @@ interface TeacherJournalQueryBase {
   readonly page?: number
   readonly pageSize?: number
   readonly pastOnly?: boolean
+  readonly includeMetrics?: boolean
+  readonly metricsStudentId?: number | undefined
 }
 
 export type TeacherJournalQuery = TeacherJournalQueryBase &
@@ -143,6 +145,19 @@ export function toTeacherJournalReportRequest(
   }
 }
 
+export interface TeacherJournalLessonMetrics {
+  readonly lessonId: number
+  readonly present: TeacherStatsMetric
+  readonly presentOrExcused: TeacherStatsMetric
+  readonly excused: TeacherStatsMetric
+  readonly absent: TeacherStatsMetric
+}
+export interface TeacherJournalMetrics {
+  readonly students: readonly TeacherStatsStudent[]
+  readonly series: readonly TeacherJournalLessonMetrics[]
+  readonly selectedStudentId: number | null
+  readonly serverNow: string
+}
 export interface TeacherJournalResponse {
   readonly lessons: readonly TeacherDayLesson[]
   readonly students: readonly TeacherJournalStudent[]
@@ -151,6 +166,7 @@ export interface TeacherJournalResponse {
   readonly pageSize: number
   readonly totalLessons: number
   readonly hasMore: boolean
+  readonly metrics?: TeacherJournalMetrics | null
 }
 
 export type TeacherExportFormatCode = ReportDownloadFormat
@@ -402,6 +418,12 @@ export class TeacherApi {
       throw new RangeError('lessonTypes must contain one to three values')
     }
     lessonTypes.forEach((lessonType) => assertText(lessonType, 'lessonType'))
+    if (query.includeMetrics !== undefined && typeof query.includeMetrics !== 'boolean')
+      throw new RangeError('includeMetrics must be boolean')
+    if (query.metricsStudentId !== undefined) {
+      assertPositiveInteger(query.metricsStudentId, 'metricsStudentId')
+      if (query.includeMetrics !== true) throw new RangeError('metricsStudentId requires metrics')
+    }
     const period = journalPeriod(query.dateFrom, query.dateTo)
     const page = query.page ?? 0
     const pageSize = query.pageSize ?? 100
@@ -414,6 +436,10 @@ export class TeacherApi {
       page: String(page),
       pageSize: String(pageSize),
     })
+    if (query.includeMetrics !== undefined)
+      params.set('includeMetrics', String(query.includeMetrics))
+    if (query.metricsStudentId !== undefined)
+      params.set('metricsStudentId', String(query.metricsStudentId))
     for (const lessonType of lessonTypes) params.append('lessonType', lessonType)
     if (query.pastOnly !== undefined) {
       if (typeof query.pastOnly !== 'boolean') throw new RangeError('pastOnly must be boolean')
@@ -855,6 +881,49 @@ function normalizeJournal(value: unknown): TeacherJournalResponse {
     pageSize: pageSizeValue(record.pageSize, 'journal.pageSize'),
     totalLessons: nonNegativeInteger(record.totalLessons, 'journal.totalLessons'),
     hasMore: requiredBoolean(record.hasMore, 'journal.hasMore'),
+    metrics: record.metrics == null ? null : normalizeJournalMetrics(record.metrics),
+  }
+}
+
+function normalizeJournalMetrics(value: unknown): TeacherJournalMetrics {
+  const record = requiredRecord(value)
+  if (!Array.isArray(record.students) || !Array.isArray(record.series))
+    throw new Error('Метрики журнала недоступны.')
+  const students = record.students.map(normalizeStatsStudent)
+  const series = record.series.map((value) => {
+    const point = requiredRecord(value)
+    return {
+      lessonId: positiveInteger(point.lessonId, 'journal.metrics.lessonId'),
+      present: normalizeStatsMetric(point.present),
+      presentOrExcused: normalizeStatsMetric(point.presentOrExcused),
+      excused: normalizeStatsMetric(point.excused),
+      absent: normalizeStatsMetric(point.absent),
+    }
+  })
+  if (
+    new Set(students.map((row) => row.studentId)).size !== students.length ||
+    new Set(series.map((point) => point.lessonId)).size !== series.length
+  )
+    throw new Error('Метрики журнала несогласованы.')
+  const selectedStudentId =
+    record.selectedStudentId == null
+      ? null
+      : positiveInteger(record.selectedStudentId, 'journal.metrics.studentId')
+  if (selectedStudentId !== null && !students.some((row) => row.studentId === selectedStudentId))
+    throw new Error('Студент недоступен в журнале.')
+  for (const row of [...students, ...series]) {
+    if (
+      [row.presentOrExcused, row.excused, row.absent].some(
+        (metric) => metric.denominator !== row.present.denominator,
+      )
+    )
+      throw new Error('Знаменатели метрик журнала несогласованы.')
+  }
+  return {
+    students,
+    series,
+    selectedStudentId,
+    serverNow: requiredString(record.serverNow, 'journal.metrics.serverNow'),
   }
 }
 

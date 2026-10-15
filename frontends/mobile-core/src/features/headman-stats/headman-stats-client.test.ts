@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { headmanStatsFixtureResponse } from '../../dev/headman-stats-fixtures'
+import {
+  headmanStatsFixtureResponse,
+  headmanStatsFixtureDetail,
+} from '../../dev/headman-stats-fixtures'
 import { validateTicketRequest } from '../../shared/report-download-client'
 import {
   HeadmanStatsApi,
@@ -32,6 +35,32 @@ const statsQuery: HeadmanStatsExportQuery = {
 }
 
 describe('headman statistics downloads', () => {
+  it('retains authoritative target rank and rejects malformed or hidden peer metadata', async () => {
+    let rank: unknown = { position: 2, participantCount: 7, available: true, visibility: 'VISIBLE' }
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async () =>
+        new Response(
+          JSON.stringify({ ...headmanStatsFixtureDetail('overview-autumn', 11, 7), rank }),
+        ),
+    })
+    const read = () =>
+      api.studentDetail(11, { semesterId: 7, latePage: 0, excusePage: 0, size: 20 })
+    expect((await read()).rank).toEqual(rank)
+    for (rank of [undefined, null]) expect((await read()).rank).toBeNull()
+    rank = { position: null, participantCount: 0, available: false, visibility: 'HIDDEN' }
+    expect((await read()).rank).toEqual(rank)
+    rank = { position: null, participantCount: 3, available: false, visibility: 'VISIBLE' }
+    expect((await read()).rank).toEqual(rank)
+    for (rank of [
+      { position: 0, participantCount: 7, available: true, visibility: 'VISIBLE' },
+      { position: 8, participantCount: 7, available: true, visibility: 'VISIBLE' },
+      { position: null, participantCount: 1, available: false, visibility: 'HIDDEN' },
+      { position: null, participantCount: 0, available: false, visibility: 'UNKNOWN' },
+    ])
+      await expect(read()).rejects.toThrow('некорректные подробности')
+  })
+
   it('retains submitted reason order and distinguishes unavailable from empty or malformed counts', async () => {
     let reasonCounts: unknown = [
       { code: 'ILLNESS', label: 'Болезнь', count: 3 },

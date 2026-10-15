@@ -729,6 +729,50 @@ public class StudentAttendanceProjectionService {
         return rankedCohort(scope, ownId, ownLessons, subjects, semesterId).ownRank();
     }
 
+    /** Internal rank calculation for a target already admitted by live own-group authority. */
+    public Rank rankForHeadman(
+            StudentProjectionScopeResponse scope, long studentId, long semesterId, long groupId) {
+        if (scope == null
+                || scope.getStudentId() != studentId
+                || scope.getSemesterId() != semesterId
+                || scope.hasRankGroupId() && scope.getRankGroupId() != groupId
+                || scope.getOwnMembershipSegmentsList().stream()
+                        .anyMatch(segment -> segment.getGroupId() != groupId)
+                || scope.getSubjectsList().stream()
+                        .anyMatch(subject -> subject.getGroupId() != groupId)
+                || scope.getRankSubjectsList().stream()
+                        .anyMatch(subject -> subject.getGroupId() != groupId)) {
+            throw StudentProjectionException.invalidRoster("Headman target rank scope mismatch");
+        }
+        if (scope.getRankVisibility()
+                == StudentProjectionRankVisibility.STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN) {
+            if (scope.getRankEligible()
+                    || scope.hasRankGroupId()
+                    || scope.getActiveRosterUserIdsCount() != 0
+                    || scope.getRankSubjectsCount() != 0) {
+                throw StudentProjectionException.invalidRoster(
+                        "Hidden target rank contains a cohort");
+            }
+            return new Rank(null, 0, false);
+        }
+        if (scope.getRankVisibility()
+                        != StudentProjectionRankVisibility
+                                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE
+                || scope.getRankEligible() != scope.hasRankGroupId()) {
+            throw StudentProjectionException.invalidRoster("Unknown target rank visibility");
+        }
+        if (!scope.getRankEligible()) {
+            if (scope.getActiveRosterUserIdsCount() != 0 || scope.getRankSubjectsCount() != 0) {
+                throw StudentProjectionException.invalidRoster(
+                        "Unavailable target rank contains a cohort");
+            }
+            return new Rank(null, 0, false);
+        }
+        var subjects = subjectMap(scope);
+        var lessons = loadLessons(scope, semesterId, subjects, null, Set.of());
+        return rankedCohort(scope, studentId, lessons, subjects, semesterId).ownRank();
+    }
+
     private RankedCohort rankedCohort(
             StudentProjectionScopeResponse scope,
             long ownId,

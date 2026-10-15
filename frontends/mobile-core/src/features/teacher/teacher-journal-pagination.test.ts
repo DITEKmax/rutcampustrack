@@ -1,4 +1,12 @@
-import { createRenderer, h, markRaw, nextTick, shallowReactive, type App } from 'vue'
+import {
+  createRenderer,
+  defineComponent,
+  h,
+  markRaw,
+  nextTick,
+  shallowReactive,
+  type App,
+} from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherJournalScreen from './TeacherJournalScreen.vue'
 import type { TeacherApi, TeacherJournalQuery, TeacherJournalResponse } from './teacher-client'
@@ -6,7 +14,31 @@ import type {
   ReportDownloadPort,
   ReportDownloadTicketRequest,
 } from '../../shared/report-download-client'
-vi.mock('../headman-stats/HeadmanStatsSelect.vue', () => ({ default: { render: () => null } }))
+vi.mock('../headman-stats/HeadmanStatsSelect.vue', () => ({
+  default: defineComponent({
+    props: {
+      label: { type: String, default: '' },
+      modelValue: { type: String, default: '' },
+      options: { type: Array, default: () => [] },
+    },
+    emits: ['update:modelValue'],
+    setup(props, { emit }) {
+      return () =>
+        h(
+          'button',
+          {
+            'aria-label': props.label,
+            onClick: () => {
+              const values = props.options as { value: string }[]
+              const current = values.findIndex((value) => value.value === props.modelValue)
+              emit('update:modelValue', values[(current + 1) % values.length]?.value)
+            },
+          },
+          props.label,
+        )
+    },
+  }),
+}))
 class Node {
   children: Node[] = []
   parent: Node | null = null
@@ -26,6 +58,9 @@ class Node {
     }
     this.children.forEach(walk)
     return result
+  }
+  getBoundingClientRect(): { width: number } {
+    return { width: 360 }
   }
   focus(): void {}
   close(): void {}
@@ -111,6 +146,21 @@ function response(subjectId = 3, name = 'Анна'): TeacherJournalResponse {
     totalLessons: 1,
     hasMore: false,
     serverNow: '2026-10-09T12:00:00Z',
+    metrics: {
+      students: [
+        {
+          studentId: 4,
+          displayName: name,
+          present: { numerator: 0, denominator: 1, percent: 0 },
+          presentOrExcused: { numerator: 1, denominator: 1, percent: 100 },
+          excused: { numerator: 1, denominator: 1, percent: 100 },
+          absent: { numerator: 0, denominator: 1, percent: 0 },
+        },
+      ],
+      series: [],
+      selectedStudentId: null,
+      serverNow: '2026-10-09T12:00:00Z',
+    },
     lessons: [
       {
         id: 30,
@@ -196,6 +246,7 @@ function mount(
         query: state.query,
         active: state.active,
         subjectOptions: subjects,
+        semester: { id: 7, name: 'Осень', dateFrom: '2026-09-01', dateTo: '2027-01-31' },
         reportDownload: options.report ?? null,
         'onUpdate-query': (query: TeacherJournalQuery) => {
           state.query = query
@@ -210,6 +261,116 @@ function mount(
   return { root, state, calls, manual }
 }
 describe('teacher journal context and navigation', () => {
+  it('renders server Table and Chart metrics, with selected-student reads fenced against late results', async () => {
+    vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) })
+    const present = { numerator: 1, denominator: 4, percent: 25 }
+    const combined = { numerator: 3, denominator: 4, percent: 75 }
+    const excused = { numerator: 2, denominator: 4, percent: 50 }
+    const absent = { numerator: 1, denominator: 4, percent: 25 }
+    const row = {
+      studentId: 4,
+      displayName: 'Анна',
+      present,
+      presentOrExcused: combined,
+      excused,
+      absent,
+    }
+    const envelope = (selectedStudentId: number | null, percent = 25) => ({
+      students: [row],
+      series: [
+        {
+          lessonId: 30,
+          present: { ...present, percent },
+          presentOrExcused: combined,
+          excused,
+          absent,
+        },
+      ],
+      selectedStudentId,
+      serverNow: '2026-10-09T12:00:00Z',
+    })
+    let release!: (value: TeacherJournalResponse) => void
+    const view = mount({
+      initialTypes: ['lecture'],
+      journal: async (query) => {
+        if (query.metricsStudentId === 4)
+          return new Promise((resolve) => {
+            release = resolve
+          })
+        return { ...response(), metrics: envelope(null) }
+      },
+    })
+    await settle()
+    // The only cell is EXCUSED: these values cannot come from counting that cell.
+    expect(text(view.root)).toContain('25 %')
+    expect(text(view.root)).toContain('+ и у: 75 %')
+    click(view.root, 'Показать график')
+    await settle()
+    expect(
+      find(
+        view.root,
+        (node) =>
+          node.props.role === 'img' &&
+          String(node.props['aria-label']).includes('присутствия 25 %'),
+      ),
+    ).toBeDefined()
+    click(view.root, 'Студент')
+    await settle()
+    expect(view.calls.at(-1)).toMatchObject({
+      metricsStudentId: 4,
+      includeMetrics: true,
+      page: 0,
+      pageSize: 1,
+    })
+    expect(text(view.root)).toContain('Загружаем метрики графика')
+    click(view.root, 'Студент')
+    await settle()
+    release({ ...response(), metrics: envelope(4, 90) })
+    await settle()
+    expect(
+      find(
+        view.root,
+        (node) =>
+          node.props.role === 'img' &&
+          String(node.props['aria-label']).includes('присутствия 90 %'),
+      ),
+    ).toBeUndefined()
+    expect(
+      find(
+        view.root,
+        (node) =>
+          node.props.role === 'img' &&
+          String(node.props['aria-label']).includes('присутствия 25 %'),
+      ),
+    ).toBeDefined()
+    view.state.active = false
+    await settle()
+    expect(find(view.root, (node) => node.props.role === 'img')).toBeUndefined()
+    view.state.active = true
+    await settle()
+    expect(
+      find(
+        view.root,
+        (node) =>
+          node.props.role === 'img' &&
+          String(node.props['aria-label']).includes('присутствия 25 %'),
+      ),
+    ).toBeDefined()
+    click(view.root, 'Показать таблицу')
+    await settle()
+    expect(text(view.root)).toContain('+ и у: 75 %')
+  })
+  it('keeps missing server metrics unavailable instead of recomputing from cells', async () => {
+    const view = mount({
+      initialTypes: ['lecture'],
+      journal: async () => ({ ...response(), metrics: null }),
+    })
+    await settle()
+    expect(
+      find(view.root, (node) => node.props['aria-label'] === 'Присутствия: данные недоступны'),
+    ).toBeDefined()
+    expect(text(view.root)).not.toContain('100 %')
+  })
   it('invalidates an in-flight report after navigating away from a retained journal', async () => {
     let release!: (value: 'accepted') => void
     let active!: () => boolean

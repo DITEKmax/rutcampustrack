@@ -469,12 +469,79 @@ function toggleType(code: string): void {
             ]"
             :key="item.label"
           >
-            <span>{{ item.label }}</span><strong>{{ headmanStatsPercent(item.metric) }}</strong><progress
+            <span>{{ item.label }}</span><strong>{{ headmanStatsPercent(item.metric) }}</strong><small>{{ item.metric.numerator }} из {{ item.metric.denominator }}</small><progress
               :value="item.metric.denominator ? (item.metric.percent ?? 0) : 0"
               max="100"
               :aria-label="item.label"
             />
           </div>
+        </section>
+        <section
+          class="headman-stats-mobile__card"
+          aria-label="Рейтинг студента"
+        >
+          <h2>Рейтинг группы</h2>
+          <p v-if="!detail.rank">
+            Сервер не передал рейтинг студента.
+          </p>
+          <p v-else-if="detail.rank.visibility === 'HIDDEN'">
+            Рейтинг скрыт для этой истории.
+          </p>
+          <p v-else-if="detail.rank.available">
+            {{ detail.rank.position }} из {{ detail.rank.participantCount }}
+          </p>
+          <p v-else>
+            Нет данных для рейтинга.
+          </p>
+        </section>
+        <section
+          class="headman-stats-mobile__card"
+          aria-label="Посещаемость по предметам и типам занятий"
+        >
+          <h2>Предметы и типы занятий</h2>
+          <p v-if="!detail.subjects.length">
+            Нет завершённых занятий по предметам.
+          </p>
+          <details
+            v-for="detailSubject in detail.subjects"
+            :key="detailSubject.subjectId"
+            :data-subject-id="detailSubject.subjectId"
+          >
+            <summary>{{ detailSubject.subjectName }}</summary>
+            <dl class="headman-stats-mobile__ticket-cards">
+              <div
+                v-for="item in [
+                  { label: '«+»', metric: detailSubject.metrics.present },
+                  { label: '«+ и у»', metric: detailSubject.metrics.presentOrExcused },
+                  { label: '«у»', metric: detailSubject.metrics.excused },
+                  { label: '«н»', metric: detailSubject.metrics.absent },
+                ]"
+                :key="item.label"
+              >
+                <dt>{{ item.label }}</dt><dd>{{ item.metric.numerator }} из {{ item.metric.denominator }} · {{ headmanStatsPercent(item.metric) }}</dd>
+              </div>
+            </dl>
+            <div
+              v-for="type in detailSubject.lessonTypes"
+              :key="type.code"
+              :data-lesson-type="type.code"
+            >
+              <h3>{{ type.label }}</h3>
+              <dl>
+                <div
+                  v-for="item in [
+                    { label: '«+»', metric: type.metrics.present },
+                    { label: '«+ и у»', metric: type.metrics.presentOrExcused },
+                    { label: '«у»', metric: type.metrics.excused },
+                    { label: '«н»', metric: type.metrics.absent },
+                  ]"
+                  :key="item.label"
+                >
+                  <dt>{{ item.label }}</dt><dd>{{ item.metric.numerator }} из {{ item.metric.denominator }} · {{ headmanStatsPercent(item.metric) }}</dd>
+                </div>
+              </dl>
+            </div>
+          </details>
         </section>
         <section class="headman-stats-mobile__card">
           <h2>Статусы и тикеты</h2><div class="headman-stats-mobile__status-cards">

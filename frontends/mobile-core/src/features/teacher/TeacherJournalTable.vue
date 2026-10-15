@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { TeacherJournalCell, TeacherJournalResponse } from './teacher-client';
-import { journalCounts, journalMark, journalPercent } from './teacher-journal-model';
+import { journalMark, journalMetricPercent, journalMetricLabel } from './teacher-journal-model';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
 const props = defineProps<{ journal: TeacherJournalResponse; showLessonTypes: boolean }>();
 const emit = defineEmits<{
@@ -15,14 +15,11 @@ const lessons = computed(() =>
       (lesson.status === 'CANCELLED' && lesson.cancelled),
   ),
 );
-const lessonIds = computed(
-  () => new Set(lessons.value.filter((lesson) => !lesson.cancelled).map((lesson) => lesson.id)),
-);
 const rows = computed(() =>
   props.journal.students.map((student) => ({
     ...student,
     cellsById: new Map(student.cells.map((cell) => [cell.lessonId, cell])),
-    counts: journalCounts(student.cells, lessonIds.value),
+    metrics: props.journal.metrics?.students.find((row) => row.studentId === student.studentId),
   })),
 );
 function symbol(cell: TeacherJournalCell | undefined): string {
@@ -112,23 +109,26 @@ function date(value: string): string {
           </th><td class="teacher-journal__percent">
             <span
               class="teacher-journal__present"
-              :aria-label="`Присутствия: ${student.counts.present} из ${student.counts.denominator}`"
+              :aria-label="journalMetricLabel('Присутствия', student.metrics?.present)"
             ><span
               class="teacher-journal__metric-mark teacher-journal__metric-mark--present"
               aria-hidden="true"
-            />{{ journalPercent(student.counts.present, student.counts.denominator) }}</span><span
+            />{{ journalMetricPercent(student.metrics?.present) }}</span><span
+              class="teacher-journal__present"
+              :aria-label="journalMetricLabel('Присутствия и уважительные причины', student.metrics?.presentOrExcused)"
+            >+ и у: {{ journalMetricPercent(student.metrics?.presentOrExcused) }}</span><span
               class="teacher-journal__excused"
-              :aria-label="`Уважительные причины: ${student.counts.excused} из ${student.counts.denominator}`"
+              :aria-label="journalMetricLabel('Уважительные причины', student.metrics?.excused)"
             ><span
               class="teacher-journal__metric-mark teacher-journal__metric-mark--excused"
               aria-hidden="true"
-            />{{ journalPercent(student.counts.excused, student.counts.denominator) }}</span><span
+            />{{ journalMetricPercent(student.metrics?.excused) }}</span><span
               class="teacher-journal__absent"
-              :aria-label="`Отсутствия: ${student.counts.absent} из ${student.counts.denominator}`"
+              :aria-label="journalMetricLabel('Отсутствия', student.metrics?.absent)"
             ><span
               class="teacher-journal__metric-mark teacher-journal__metric-mark--absent"
               aria-hidden="true"
-            />{{ journalPercent(student.counts.absent, student.counts.denominator) }}</span>
+            />{{ journalMetricPercent(student.metrics?.absent) }}</span>
           </td><td
             v-for="lesson in lessons"
             :key="lesson.id"

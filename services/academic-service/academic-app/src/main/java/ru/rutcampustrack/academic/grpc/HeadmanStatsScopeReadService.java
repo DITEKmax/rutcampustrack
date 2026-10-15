@@ -3,6 +3,9 @@ package ru.rutcampustrack.academic.grpc;
 import io.grpc.Status;
 import java.util.Comparator;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.rutcampustrack.academic.studentprojection.StudentProjectionScope;
+import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,7 @@ public class HeadmanStatsScopeReadService {
     private final SemesterRepository semesters;
     private final JdbcTemplate jdbc;
     private final StudentGroupHistoryRepository history;
+    private final StudentProjectionScopeService studentProjection;
 
     public HeadmanStatsScopeReadService(
             AssistantPermissionAuthority authority,
@@ -28,6 +32,18 @@ public class HeadmanStatsScopeReadService {
             SemesterRepository semesters,
             JdbcTemplate jdbc,
             StudentGroupHistoryRepository history) {
+        this(authority, groups, semesters, jdbc, history, null);
+    }
+
+    @Autowired
+    public HeadmanStatsScopeReadService(
+            AssistantPermissionAuthority authority,
+            GroupRepository groups,
+            SemesterRepository semesters,
+            JdbcTemplate jdbc,
+            StudentGroupHistoryRepository history,
+            StudentProjectionScopeService studentProjection) {
+        this.studentProjection = studentProjection;
         this.authority = authority;
         this.groups = groups;
         this.semesters = semesters;
@@ -161,7 +177,55 @@ public class HeadmanStatsScopeReadService {
                     response.setMembershipTotal(result.getLong("total"));
                 },
                 groupId);
+        if (request.hasStudentId() && selected != null && studentProjection != null) {
+            response.setStudentRankScope(
+                    toRankProto(
+                            studentProjection.resolveHeadmanRank(
+                                    selected.getId(), request.getStudentId(), groupId)));
+        }
         return response.build();
+    }
+
+    private static StudentProjectionScopeResponse toRankProto(StudentProjectionScope scope) {
+        var result =
+                StudentProjectionScopeResponse.newBuilder()
+                        .setStudentId(scope.studentId())
+                        .setSemesterId(scope.semesterId())
+                        .setDateFrom(scope.dateFrom().toString())
+                        .setDateTo(scope.dateTo().toString())
+                        .setTerminalReadOnly(scope.terminalReadOnly())
+                        .setServerDate(scope.serverDate().toString())
+                        .setRankVisibility(
+                                scope.rankVisibility()
+                                                == StudentProjectionScope.RankVisibility.HIDDEN
+                                        ? StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN
+                                        : StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
+                        .setRankEligible(scope.rankEligible())
+                        .addAllActiveRosterUserIds(scope.activeRosterUserIds());
+        if (scope.rankGroupId() != null) result.setRankGroupId(scope.rankGroupId());
+        for (var subject : scope.subjects()) result.addSubjects(toSubjectProto(subject));
+        for (var subject : scope.rankSubjects()) result.addRankSubjects(toSubjectProto(subject));
+        for (var segment : scope.ownMembershipSegments()) {
+            result.addOwnMembershipSegments(
+                    StudentProjectionMembershipSegment.newBuilder()
+                            .setGroupId(segment.groupId())
+                            .setDateFrom(segment.dateFrom().toString())
+                            .setDateUntilExclusive(segment.dateUntilExclusive().toString())
+                            .addAllSubjectIds(segment.subjectIds()));
+        }
+        return result.build();
+    }
+
+    private static AcademicSubjectInfo toSubjectProto(StudentProjectionScope.Subject subject) {
+        return AcademicSubjectInfo.newBuilder()
+                .setSubjectId(subject.subjectId())
+                .setGroupId(subject.groupId())
+                .setSubjectName(subject.name())
+                .setSubjectType(subject.type())
+                .addAllLessonTypes(subject.lessonTypes())
+                .build();
     }
 
     private static HeadmanStatsSemester toProto(Semester value) {

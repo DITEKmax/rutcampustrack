@@ -516,6 +516,7 @@ class HeadmanStatsServiceTest {
                 .isZero(); // request belongs to the other subject
 
         var detail = service.studentDetail(1L, 0, 0, 20);
+        assertThat(detail.rank()).isNull(); // A legacy scope never invents a rank from row order.
         assertThat(detail.metrics().present().numerator()).isEqualTo(2);
         assertThat(detail.metrics().present().denominator()).isEqualTo(3);
         assertThat(detail.metrics().presentOrExcused().numerator()).isEqualTo(3);
@@ -611,6 +612,55 @@ class HeadmanStatsServiceTest {
                                 .class);
         assertThatThrownBy(() -> service.studentDetail(1L, 0, 0, 20))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void targetRankMapsHiddenScopeAndRechecksAuthorityBeforeReturningDetail() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.getGroupMembers(10L))
+                .thenReturn(GroupMembersResponse.getDefaultInstance());
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), TO.toString()))
+                .thenReturn(LessonsResponse.getDefaultInstance());
+        var hidden =
+                ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse.newBuilder()
+                        .setStudentId(1L)
+                        .setSemesterId(1L)
+                        .setRankVisibility(
+                                ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                        .build();
+        var admitted = scope(TO).toBuilder().setStudentRankScope(hidden).build();
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null, 1L)).thenReturn(admitted);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L, 1L)).thenReturn(admitted);
+        service.configureStudentRank(
+                new ru.rutcampustrack.attendance.report.studentprojection
+                        .StudentAttendanceProjectionService(
+                        attendanceReadPort, academicGrpcClient, scheduleGrpcClient, CLOCK));
+        var detail = service.studentDetail(1L, 0, 0, 20);
+        assertThat(detail.rank().visibility())
+                .isEqualTo(
+                        ru.rutcampustrack.attendance.contract.dto.report
+                                .HeadmanStatsStudentDetailResponse.Visibility.HIDDEN);
+        assertThat(detail.rank().position()).isNull();
+        assertThat(detail.rank().participantCount()).isZero();
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L, 1L))
+                .thenThrow(new AccessDeniedException("Current VIEW_STATS revoked"));
+        assertThatThrownBy(() -> service.studentDetail(1L, 0, 0, 20))
+                .isInstanceOf(AccessDeniedException.class);
+        var foreign =
+                hidden.toBuilder()
+                        .setRankGroupId(20L)
+                        .setRankEligible(true)
+                        .setRankVisibility(
+                                ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
+                        .build();
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null, 1L))
+                .thenReturn(scope(TO).toBuilder().setStudentRankScope(foreign).build());
+        assertThatThrownBy(() -> service.studentDetail(1L, 0, 0, 20))
+                .isInstanceOf(
+                        ru.rutcampustrack.attendance.exception.ReportExportUnavailableException
+                                .class);
     }
 
     private void stubTrendData() {

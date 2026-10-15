@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,7 +22,11 @@ public record HeadmanStatsStudentDetailResponse(
         EmptyState emptyState,
         HeadmanStatsResponse.Sources sources,
         HeadmanStatsResponse.TicketCounts lateCheckin,
-        HeadmanStatsResponse.TicketCounts excuse) {
+        HeadmanStatsResponse.TicketCounts excuse,
+        @Schema(
+                        types = {"object", "null"},
+                        implementation = Rank.class)
+                Rank rank) {
     public HeadmanStatsStudentDetailResponse {
         context = Objects.requireNonNull(context, "context");
         student = Objects.requireNonNull(student, "student");
@@ -34,6 +39,59 @@ public record HeadmanStatsStudentDetailResponse(
         sources = Objects.requireNonNull(sources, "sources");
         lateCheckin = Objects.requireNonNull(lateCheckin, "lateCheckin");
         excuse = Objects.requireNonNull(excuse, "excuse");
+    }
+
+    public record Rank(
+            @Schema(
+                            types = {"integer", "null"},
+                            format = "int32")
+                    Integer position,
+            int participantCount,
+            boolean available,
+            Visibility visibility) {
+        public Rank {
+            Objects.requireNonNull(visibility, "visibility");
+            if (participantCount < 0
+                    || available
+                            && (position == null || position < 1 || position > participantCount)
+                    || !available && position != null
+                    || visibility == Visibility.HIDDEN && (available || participantCount != 0)) {
+                throw new IllegalArgumentException("Invalid target rank");
+            }
+        }
+    }
+
+    public enum Visibility {
+        VISIBLE,
+        HIDDEN
+    }
+
+    /** Compatible pre-rank constructor; absent rank means the server did not supply it. */
+    public HeadmanStatsStudentDetailResponse(
+            HeadmanStatsResponse.Context context,
+            Student student,
+            Metrics metrics,
+            List<SubjectMetrics> subjects,
+            List<WeekMetrics> weeks,
+            TicketPage<LateCheckinTicket> lateCheckins,
+            TicketPage<ExcuseTicketEntry> excuses,
+            EmptyState emptyState,
+            HeadmanStatsResponse.Sources sources,
+            HeadmanStatsResponse.TicketCounts lateCheckin,
+            HeadmanStatsResponse.TicketCounts excuse) {
+        this(
+                context,
+                student,
+                metrics,
+                subjects,
+                weeks,
+                lateCheckins,
+                excuses,
+                emptyState,
+                sources,
+                lateCheckin,
+                excuse,
+                null);
     }
 
     /**

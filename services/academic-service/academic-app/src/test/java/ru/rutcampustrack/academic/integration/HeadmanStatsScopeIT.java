@@ -143,6 +143,64 @@ class HeadmanStatsScopeIT extends AbstractAcademicIntegrationTest {
         assertDenied(() -> service.read(assistantActor, request), Status.Code.PERMISSION_DENIED);
     }
 
+    @Test
+    void admittedTargetRankUsesCurrentStudentCohortAndRevocationStillDeniesTheRead() {
+        long groupId = group(), foreignGroup = group();
+        long headman = student(groupId, "active"),
+                target = student(groupId, "active"),
+                peer = student(groupId, "active");
+        long suspended = student(groupId, "suspended"), foreign = student(foreignGroup, "active");
+        jdbc.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
+                headman,
+                groupId);
+        LocalDate from =
+                jdbc.queryForObject(
+                        "SELECT COALESCE(max(date_to), CURRENT_DATE) + 366 FROM semesters",
+                        LocalDate.class);
+        long semester =
+                jdbc.queryForObject(
+                        "INSERT INTO semesters (name,date_from,date_to,is_active,is_archived,created_at) VALUES (?, ?, ?, false, true, NOW()) RETURNING id",
+                        Long.class,
+                        "Target rank " + UUID.randomUUID(),
+                        from,
+                        from.plusDays(20));
+        for (long user : new long[] {target, peer, suspended, foreign}) {
+            jdbc.update(
+                    "INSERT INTO student_group_history (user_id,group_id,joined_at,left_at,created_at) VALUES (?, ?, DATE '2000-01-01', NULL, NOW())",
+                    user,
+                    user == foreign ? foreignGroup : groupId);
+        }
+        var actor = claims(headman, "HEADMAN", groupId);
+        var request =
+                HeadmanStatsScopeRequest.newBuilder()
+                        .setGroupId(groupId)
+                        .setSemesterId(semester)
+                        .setStudentId(target)
+                        .build();
+        var rank = service.read(actor, request).getStudentRankScope();
+        assertThat(rank.getStudentId()).isEqualTo(target);
+        assertThat(rank.getSemesterId()).isEqualTo(semester);
+        assertThat(rank.getRankGroupId()).isEqualTo(groupId);
+        assertThat(rank.getRankEligible()).isTrue();
+        assertThat(rank.getActiveRosterUserIdsList()).containsExactly(target, peer);
+        assertThat(rank.getOwnMembershipSegmentsList())
+                .allMatch(segment -> segment.getGroupId() == groupId);
+        var suspendedRank =
+                service.read(actor, request.toBuilder().setStudentId(suspended).build())
+                        .getStudentRankScope();
+        assertThat(suspendedRank.getRankEligible()).isFalse();
+        assertThat(suspendedRank.getActiveRosterUserIdsList()).isEmpty();
+        assertDenied(
+                () -> service.read(actor, request.toBuilder().setStudentId(foreign).build()),
+                Status.Code.NOT_FOUND);
+        jdbc.update(
+                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='headman'",
+                headman);
+        entityManager.clear();
+        assertDenied(() -> service.read(actor, request), Status.Code.PERMISSION_DENIED);
+    }
+
     private long group() {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         return jdbc.queryForObject(

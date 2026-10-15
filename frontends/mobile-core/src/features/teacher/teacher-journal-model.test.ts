@@ -74,6 +74,34 @@ function page(
   }
 }
 describe('completed teacher journal history', () => {
+  it('keeps full-context metrics from page zero without later-page overwrite or cell arithmetic', async () => {
+    const metric = { numerator: 2, denominator: 3, percent: 66.66666666666667 }
+    const metrics = {
+      students: [],
+      series: [
+        { lessonId: 1, present: metric, presentOrExcused: metric, excused: metric, absent: metric },
+      ],
+      selectedStudentId: null,
+      serverNow: '2026-10-09T00:00:00Z',
+    }
+    const calls: TeacherJournalQuery[] = []
+    const result = await loadJournalPages(
+      {
+        journal: async (value) => {
+          calls.push(value)
+          return value.page === 0
+            ? { ...page(0, [1], [], true), metrics }
+            : { ...page(1, [2], [], false), metrics: null }
+        },
+      },
+      query,
+      () => true,
+    )
+    expect(calls.map((value) => value.includeMetrics)).toEqual([true, false])
+    expect(result?.metrics).toBe(metrics)
+    expect(result?.metrics?.series[0]?.present.percent).toBe(metric.percent)
+    expect(result?.lessons.map((value) => value.id)).toEqual([1, 2])
+  })
   it('unions pages and historical students/cells, replacing repeated IDs without truncating former members', async () => {
     const pages = [
       page(

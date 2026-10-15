@@ -53,6 +53,7 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
     @Autowired private TestRestTemplate restTemplate;
 
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private ru.rutcampustrack.attendance.report.ReportService reportService;
 
     @Autowired private InternalJwtTestFactory internalJwtTestFactory;
 
@@ -509,5 +510,77 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.attendanceRecordEntryList").isArray())
                 .andExpect(jsonPath("$._embedded.attendanceRecordEntryList.length()").value(2));
+    }
+
+    @Test
+    void teacherJournalMetricsReadPersistedMarksAndExcludeCancelledAndFutureLessons() {
+        long teacherId = 200L;
+        when(academicGrpcClient.getCurrentTeacherSubjects(teacherId))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse.newBuilder()
+                                .addSubjects(
+                                        ru.rutcampustrack.academic.grpc.TeacherSubjectInfo
+                                                .newBuilder()
+                                                .setGroupId(GROUP_ID)
+                                                .setSubjectId(SUBJECT_ID))
+                                .build());
+        List<Long> ids = List.of(1L, 2L, 3L, 4L);
+        when(scheduleGrpcClient.getLessonsByIds(ids))
+                .thenReturn(
+                        ids.stream()
+                                .map(
+                                        id ->
+                                                ru.rutcampustrack.schedule.grpc.LessonInfo
+                                                        .newBuilder()
+                                                        .setLessonId(id)
+                                                        .setGroupId(GROUP_ID)
+                                                        .setSubjectId(SUBJECT_ID)
+                                                        .setSemesterId(SEMESTER_ID)
+                                                        .setAssignmentId(900L)
+                                                        .setTeacherId(teacherId)
+                                                        .setLessonType("lecture")
+                                                        .setDate("2026-04-01")
+                                                        .setStartsAt("2026-04-01T08:00:00")
+                                                        .setStatus(
+                                                                id == 3
+                                                                        ? "cancelled"
+                                                                        : id == 4
+                                                                                ? "planned"
+                                                                                : "closed")
+                                                        .build())
+                                .toList());
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .setSemesterId(SEMESTER_ID)
+                                .setAsOfDate("2026-04-01")
+                                .addStudents(
+                                        StudentInfo.newBuilder()
+                                                .setUserId(STUDENT_USER_ID)
+                                                .setDisplayName("Студент"))
+                                .build());
+        insertAttendance(1L, STUDENT_USER_ID, AttendanceStatus.PRESENT);
+        insertAttendance(2L, STUDENT_USER_ID, AttendanceStatus.FREE_ATTENDANCE);
+        insertAttendance(3L, STUDENT_USER_ID, AttendanceStatus.ABSENT);
+        var result = reportService.getTeacherJournalMetrics(ids, teacherId, STUDENT_USER_ID);
+        assertThat(result.students())
+                .singleElement()
+                .satisfies(
+                        row -> {
+                            assertThat(row.present())
+                                    .isEqualTo(
+                                            new ru.rutcampustrack.attendance.report.ReportService
+                                                    .TeacherMetric(1, 2, 50));
+                            assertThat(row.presentOrExcused())
+                                    .isEqualTo(
+                                            new ru.rutcampustrack.attendance.report.ReportService
+                                                    .TeacherMetric(2, 2, 100));
+                        });
+        assertThat(result.series())
+                .extracting(
+                        ru.rutcampustrack.attendance.report.ReportService
+                                        .TeacherJournalLessonMetrics
+                                ::lessonId)
+                .containsExactly(1L, 2L);
     }
 }

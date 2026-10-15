@@ -586,6 +586,55 @@ class StudentProjectionScopeServiceTest {
         assertThat(query.rosterCalls).isZero();
     }
 
+    @Test
+    void headmanTargetUsesSameRankPolicyWithoutImpersonatingStudentSession() {
+        FakeQuery query = baseQuery();
+        query.assignments =
+                List.of(assignment(701L, 501L, 10L, LocalDate.of(2026, 9, 1), null, "LECTURE"));
+        query.subjects.put(501L, subject(501L, "Математика", "LECTURE", 10L));
+        var resolver = service(query, at("2026-09-15T10:00:00Z"));
+        var own = resolver.resolve(SEMESTER_ID, claims("ACTIVE", false, 10L));
+        int sessionCalls = query.sessionCalls;
+        // The target has no session to borrow. Own-entry authority must still reject it.
+        query.session = Optional.empty();
+        var target = resolver.resolveHeadmanRank(SEMESTER_ID, STUDENT_ID, 10L);
+        assertThat(target).isEqualTo(own);
+        assertThat(query.sessionCalls).isEqualTo(sessionCalls);
+        assertThatThrownBy(() -> resolver.resolve(SEMESTER_ID, claims("ACTIVE", false, 10L)))
+                .isInstanceOf(StudentProjectionException.class);
+    }
+
+    @Test
+    void headmanTargetNeverReadsForeignCohortAndPreservesTransferredHistoryHiddenPolicy() {
+        FakeQuery query = baseQuery();
+        query.authority =
+                Optional.of(
+                        new StudentProjectionQuery.AuthoritySnapshot(
+                                STUDENT_ID,
+                                7L,
+                                "ACTIVE",
+                                List.of(
+                                        new StudentProjectionQuery.RoleGrantSnapshot(
+                                                11L, "STUDENT", "ACTIVE", 20L))));
+        query.history =
+                List.of(
+                        history(1L, 10L, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 9, 10)),
+                        history(2L, 20L, LocalDate.of(2026, 9, 10), null));
+        var resolver = service(query, at("2026-09-15T10:00:00Z"));
+        var target = resolver.resolveHeadmanRank(SEMESTER_ID, STUDENT_ID, 10L);
+        assertThat(target.rankVisibility()).isEqualTo(StudentProjectionScope.RankVisibility.HIDDEN);
+        assertThat(target.rankGroupId()).isNull();
+        assertThat(target.rankEligible()).isFalse();
+        assertThat(target.activeRosterUserIds()).isEmpty();
+        assertThat(target.ownMembershipSegments()).allMatch(segment -> segment.groupId() == 10L);
+        assertThat(query.rosterCalls).isZero();
+        var past =
+                service(query, at("2026-10-15T10:00:00Z"))
+                        .resolveHeadmanRank(SEMESTER_ID, STUDENT_ID, 10L);
+        assertThat(past.rankVisibility()).isEqualTo(StudentProjectionScope.RankVisibility.HIDDEN);
+        assertThat(query.rosterCalls).isZero();
+    }
+
     private static StudentProjectionScopeService service(FakeQuery query, Clock clock) {
         return new StudentProjectionScopeService(query, clock);
     }

@@ -410,6 +410,32 @@ public final class TeacherReadFacade {
             int page,
             int pageSize,
             boolean pastOnly) {
+        return journal(
+                semesterId,
+                groupId,
+                subjectId,
+                lessonTypes,
+                dateFrom,
+                dateTo,
+                page,
+                pageSize,
+                pastOnly,
+                false,
+                null);
+    }
+
+    public TeacherApiModels.JournalResponse journal(
+            long semesterId,
+            long groupId,
+            long subjectId,
+            List<String> lessonTypes,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            int page,
+            int pageSize,
+            boolean pastOnly,
+            boolean includeMetrics,
+            Long metricsStudentId) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0
                 || groupId <= 0
@@ -421,6 +447,9 @@ public final class TeacherReadFacade {
                     HttpStatus.BAD_REQUEST,
                     ProblemCode.INVALID_REQUEST,
                     "Некорректный контекст журнала");
+        }
+        if (metricsStudentId != null && (!includeMetrics || metricsStudentId <= 0)) {
+            throw invalidStats("Некорректный выбор студента для графика");
         }
         List<String> selectedTypes = journalTypes(lessonTypes);
 
@@ -463,17 +492,29 @@ public final class TeacherReadFacade {
                                         .thenComparingLong(LessonResponse::getId))
                         .toList();
 
+        if (includeMetrics && concrete.size() > 5_000) {
+            throw invalidStats("Слишком много занятий для статистики журнала");
+        }
         long offset = (long) page * pageSize;
         int start = offset >= concrete.size() ? concrete.size() : (int) offset;
         int end = Math.min(concrete.size(), start + pageSize);
         List<LessonResponse> pageLessons = concrete.subList(start, end);
-        if (pageLessons.isEmpty()) {
+        if (pageLessons.isEmpty() && !includeMetrics) {
             return new TeacherApiModels.JournalResponse(
                     List.of(), List.of(), Instant.now(), page, pageSize, concrete.size(), false);
         }
         List<Long> ids = pageLessons.stream().map(LessonResponse::getId).toList();
         TeacherJournalResponse response =
-                pastOnly ? attendance.teacherJournal(ids, true) : attendance.teacherJournal(ids);
+                includeMetrics
+                        ? attendance.teacherJournal(
+                                ids,
+                                pastOnly,
+                                true,
+                                concrete.stream().map(LessonResponse::getId).toList(),
+                                metricsStudentId)
+                        : pastOnly
+                                ? attendance.teacherJournal(ids, true)
+                                : attendance.teacherJournal(ids);
         return new TeacherApiModels.JournalResponse(
                 response.getLessonsList().stream().map(TeacherReadFacade::dayLesson).toList(),
                 response.getStudentsList().stream().map(TeacherReadFacade::journalStudent).toList(),
@@ -481,7 +522,26 @@ public final class TeacherReadFacade {
                 page,
                 pageSize,
                 concrete.size(),
-                end < concrete.size());
+                end < concrete.size(),
+                response.hasMetrics() ? journalMetrics(response.getMetrics()) : null);
+    }
+
+    private static TeacherApiModels.JournalMetrics journalMetrics(
+            ru.rutcampustrack.teacher.grpc.TeacherJournalMetrics value) {
+        return new TeacherApiModels.JournalMetrics(
+                value.getStudentsList().stream().map(TeacherReadFacade::statsStudent).toList(),
+                value.getSeriesList().stream()
+                        .map(
+                                point ->
+                                        new TeacherApiModels.JournalLessonMetrics(
+                                                Long.toString(point.getLessonId()),
+                                                metric(point.getPresent()),
+                                                metric(point.getPresentOrExcused()),
+                                                metric(point.getExcused()),
+                                                metric(point.getAbsent())))
+                        .toList(),
+                value.hasSelectedStudentId() ? Long.toString(value.getSelectedStudentId()) : null,
+                parseInstant(value.getServerNow()));
     }
 
     private static boolean completedHistoryLesson(LessonResponse lesson, Instant now) {

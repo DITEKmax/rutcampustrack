@@ -19,6 +19,7 @@ type NotificationRequestView =
 const props = withDefaults(
   defineProps<{
     bucket: RequestBucket;
+    openCount?: number | null;
     requests: readonly RequestDetail[];
     loading: boolean;
     error: string | null;
@@ -33,6 +34,7 @@ const props = withDefaults(
     notificationTarget?: NotificationRequestView | null;
   }>(),
   {
+    openCount: null,
     retrying: false,
     cancellingId: null,
     readOnly: false,
@@ -56,6 +58,16 @@ const emit = defineEmits<{
 
 const isArchive = computed(() => props.bucket === 'archive');
 const isNotificationTarget = computed(() => props.notificationTarget !== null);
+const openTabLabel = computed(() =>
+  !props.offline &&
+  props.access === 'allowed' &&
+  (isArchive.value || !props.loading) &&
+  typeof props.openCount === 'number' &&
+  Number.isSafeInteger(props.openCount) &&
+  props.openCount >= 0
+    ? `Открытые (${props.openCount})`
+    : 'Открытые',
+);
 const accessBlocked = computed(
   () => props.access === 'forbidden' || (!isArchive.value && props.access === 'no-active-semester'),
 );
@@ -192,7 +204,7 @@ function onTabKeydown(event: KeyboardEvent): void {
           :tabindex="!isArchive ? 0 : -1"
           @click="emit('selectBucket', 'open')"
         >
-          Открытые
+          {{ openTabLabel }}
         </button>
         <button
           class="requests-tab"

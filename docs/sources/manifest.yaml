@@ -59612,5 +59612,20 @@
     "supersedes": [
       "Canonical JS-SYSTEM-16:899 stored incremental aggregate strategy only; correctness/authorization/server metrics retained"
     ]
+  },
+  "delivery_subject_deletion_scope_20261015": {
+    "source_ids": [
+      "owner:cloud-validation-Q025-20261015",
+      "owner:cloud-validation-Q026-20261015"
+    ],
+    "canonical_path": "docs/product/decisions/2026-10-15-subject-deletion-semester-and-mixed-excuse.md",
+    "status": "accepted owner decisions D029/D030",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T21:25:11.147945+00:00",
+    "sha256": "67d3541d58e5ccfe14a58f71f76c11b810a618f24777d0b5a6fe79e66c927069",
+    "supersedes": [
+      "Q025 intended cross-semester identity premise",
+      "Q026 unresolved mixed-subject EXCUSE branch"
+    ]
   }
 }

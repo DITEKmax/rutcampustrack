@@ -265,6 +265,46 @@ public class TeacherAttendanceReadGrpcServiceTest {
     }
 
     @Test
+    void journalMetricsPresenceDistinguishesKnownEmptyFromLegacyAndRejectsInvalidSelection() {
+        ReportService report = mock(ReportService.class);
+        var service =
+                new TeacherAttendanceReadGrpcService(
+                        report,
+                        mock(ScheduleGrpcClient.class),
+                        mock(AcademicGrpcClient.class),
+                        mock(ExcuseRepository.class),
+                        mock(RequestAttachmentRepository.class),
+                        Clock.fixed(Instant.parse("2026-04-03T09:00:00Z"), ZoneOffset.UTC));
+        when(report.getTeacherJournalMetrics(List.of(), 71L, null))
+                .thenReturn(
+                        new ReportService.TeacherJournalMetrics(
+                                List.of(), List.of(), null, Instant.parse("2026-04-03T09:00:00Z")));
+        RecordingObserver<TeacherJournalResponse> empty = new RecordingObserver<>();
+        teacherContext(71L)
+                .run(
+                        () ->
+                                service.getTeacherJournal(
+                                        TeacherJournalRequest.newBuilder()
+                                                .setIncludeMetrics(true)
+                                                .build(),
+                                        empty));
+        assertThat(empty.error).isNull();
+        assertThat(empty.value.hasMetrics()).isTrue();
+        assertThat(empty.value.getMetrics().getSeriesList()).isEmpty();
+        RecordingObserver<TeacherJournalResponse> invalid = new RecordingObserver<>();
+        teacherContext(71L)
+                .run(
+                        () ->
+                                service.getTeacherJournal(
+                                        TeacherJournalRequest.newBuilder()
+                                                .setMetricsStudentId(101L)
+                                                .build(),
+                                        invalid));
+        assertThat(io.grpc.Status.fromThrowable(invalid.error).getCode())
+                .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
+    }
+
+    @Test
     void journalReadsMixedLessonTypesButRejectsMixedContextsAndKeepsAutomaticAbsenceMark() {
         ReportService report = mock(ReportService.class);
         ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);

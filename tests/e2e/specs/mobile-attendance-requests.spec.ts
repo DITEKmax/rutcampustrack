@@ -225,6 +225,10 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     '/api/v1/student/requests?bucket=OPEN&page=0&size=50',
   );
   const originalOpenIds = openBeforeExcuse.content.map((row: { id: string }) => row.id).sort();
+  const assertOpenCount = async (count: number) => {
+    await expect(page.getByRole('tab', { name: `Открытые (${count})`, exact: true })).toBeVisible();
+  };
+  await assertOpenCount(openBeforeExcuse.totalElements);
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
     'base64',
@@ -280,6 +284,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
       .getByRole('article')
       .filter({ has: page.locator(`[id="request-title-${detail.summary.id}"]`) });
     await expect(card.getByText('На рассмотрении', { exact: true })).toBeVisible();
+    await assertOpenCount(openBeforeExcuse.totalElements + 1);
     return detail.summary.id;
   };
 
@@ -348,9 +353,13 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   expect((await cancelledReply.json()).summary.status).toBe('CANCELLED');
   await expect(cancelledCard).toHaveCount(0);
   assertExcuseLessonFree(await options());
+  await assertOpenCount(openBeforeExcuse.totalElements);
   await page.getByRole('tab', { name: 'Архив', exact: true }).click();
   await expect(cancelledCard.getByText('Отменена', { exact: true })).toBeVisible();
-  await page.getByRole('tab', { name: 'Открытые', exact: true }).click();
+  await assertOpenCount(openBeforeExcuse.totalElements);
+  await page
+    .getByRole('tab', { name: `Открытые (${openBeforeExcuse.totalElements})`, exact: true })
+    .click();
 
   const rejectedComment = 'Синтетическая причина для отклоняемой заявки';
   await openExcuseForm(rejectedComment);
@@ -376,7 +385,10 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   await expect(
     rejectedCard.getByRole('button', { name: 'Отменить заявку', exact: true }),
   ).toHaveCount(0);
-  await page.getByRole('tab', { name: 'Открытые', exact: true }).click();
+  await assertOpenCount(openBeforeExcuse.totalElements);
+  await page
+    .getByRole('tab', { name: `Открытые (${openBeforeExcuse.totalElements})`, exact: true })
+    .click();
   assertExcuseLessonFree(await options());
   const openAfterExcuse = await student.call(
     'GET',
@@ -467,6 +479,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
       true,
     );
   expect((await options()).budget).toMatchObject({ limit: 5, used: 4, remaining: 1 });
+  await assertOpenCount(openBeforeExcuse.totalElements + 1);
   // End D019 student submission.
 
   await page.getByRole('button', { name: 'Подать', exact: true }).click();
@@ -740,6 +753,159 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   expect((await today()).attendance).toMatchObject({ status: 'PRESENT', source: 'LATE_CHECKIN' });
   expect((await options()).budget).toEqual(exhausted);
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
+
+  // One accepted HEADMAN archive filter uses these original own tickets and coverage date.
+  await page.getByRole('button', { name: 'Архив', exact: true }).click();
+  const archiveMain = page.locator('main.headman-requests[data-request-view="archive"]');
+  await expect(archiveMain).toBeVisible();
+  await page.getByRole('button', { name: 'Поиск и период', exact: true }).click();
+  await page.getByLabel('ФИО', { exact: true }).fill(dataset.student.displayName);
+  await page.getByLabel('Период от', { exact: true }).fill(yesterday);
+  await page.getByLabel('Период до', { exact: true }).fill(yesterday);
+  const [filteredReply] = await Promise.all([
+    page.waitForResponse((reply) => {
+      const url = new URL(reply.url());
+      return (
+        reply.request().method() === 'GET' &&
+        url.pathname === '/api/attendance/requests' &&
+        url.searchParams.get('bucket') === 'ARCHIVE' &&
+        url.searchParams.get('studentName') === dataset.student.displayName &&
+        url.searchParams.get('coverageDateFrom') === yesterday &&
+        url.searchParams.get('coverageDateTo') === yesterday &&
+        url.searchParams.get('page') === '0' &&
+        url.searchParams.get('size') === '20'
+      );
+    }),
+    page.getByRole('button', { name: 'Применить', exact: true }).click(),
+  ]);
+  expect(filteredReply.status()).toBe(200);
+  const filtered = await filteredReply.json();
+  const expectedArchiveIds = [cancelledExcuseId, rejectedExcuseId, multipleExcuseId].sort();
+  expect(
+    filtered.page === 0 &&
+      filtered.totalElements === expectedArchiveIds.length &&
+      filtered.content.length === expectedArchiveIds.length &&
+      JSON.stringify(filtered.content.map((row: { id: string }) => row.id).sort()) ===
+        JSON.stringify(expectedArchiveIds) &&
+      filtered.content.every(
+        (row: { studentId: number; kind: string; coverageStart: string; coverageEnd: string }) =>
+          row.studentId === dataset.student.id &&
+          row.kind === 'EXCUSE' &&
+          row.coverageStart <= yesterday &&
+          row.coverageEnd >= yesterday,
+      ),
+  ).toBe(true);
+  await expect(archiveMain.locator('[data-request-id]')).toHaveCount(expectedArchiveIds.length);
+  expect(
+    JSON.stringify(
+      await archiveMain
+        .locator('[data-request-id]')
+        .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-request-id')).sort()),
+    ) === JSON.stringify(expectedArchiveIds),
+  ).toBe(true);
+  // Restore the original queue context before its unchanged logout and student archive assertions.
+  await page.getByRole('button', { name: 'Поиск и период', exact: true }).click();
+  await page.getByLabel('ФИО', { exact: true }).fill('');
+  await page.getByLabel('Период от', { exact: true }).fill('');
+  await page.getByLabel('Период до', { exact: true }).fill('');
+  await page.getByRole('button', { name: 'Применить', exact: true }).click();
+  await page.getByRole('button', { name: /^Все(?: \d+)?$/ }).click();
+  // End one actual archive filter witness.
+
+  // HEADMAN33: this same student's canonical rank and subject/type counts reach the real drilldown.
+  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+  const [statsReply] = await Promise.all([
+    page.waitForResponse(
+      (reply) =>
+        reply.request().method() === 'POST' &&
+        new URL(reply.url()).pathname === '/api/attendance/reports/headman/stats/query',
+    ),
+    page.getByRole('button', { name: 'Статистика группы', exact: true }).click(),
+  ]);
+  expect(statsReply.status()).toBe(200);
+  const stats = await statsReply.json();
+  expect(
+    stats.context.groupId === dataset.group.id && stats.context.semesterId === dataset.semester.id,
+  ).toBe(true);
+  const statsStudent = stats.rows.find(
+    (row: { studentId: number }) => row.studentId === dataset.student.id,
+  );
+  expect(statsStudent?.displayName === dataset.student.displayName).toBe(true);
+  const detailPath = `/api/attendance/reports/headman/stats/students/${dataset.student.id}/detail`;
+  const [detailReply] = await Promise.all([
+    page.waitForResponse((reply) => {
+      const url = new URL(reply.url());
+      return (
+        reply.request().method() === 'GET' &&
+        url.pathname === detailPath &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        url.searchParams.get('latePage') === '0' &&
+        url.searchParams.get('excusePage') === '0' &&
+        url.searchParams.get('size') === '20'
+      );
+    }),
+    page
+      .getByRole('region', { name: 'Студенты группы', exact: true })
+      .getByRole('button', {
+        name: new RegExp('^' + statsStudent.displayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+      })
+      .click(),
+  ]);
+  expect(detailReply.status()).toBe(200);
+  const detail = await detailReply.json();
+  expect(
+    detail.student.id === dataset.student.id &&
+      detail.context.groupId === dataset.group.id &&
+      detail.context.semesterId === dataset.semester.id,
+  ).toBe(true);
+  const ownStats = await student.call(
+    'GET',
+    `/api/v1/student/statistics?semesterId=${dataset.semester.id}`,
+  );
+  expect(
+    detail.rank?.visibility === 'VISIBLE' &&
+      detail.rank.available === true &&
+      detail.rank.position === ownStats.ownRank.position &&
+      detail.rank.participantCount === ownStats.ownRank.participantCount &&
+      ownStats.ownRank.available === true,
+  ).toBe(true);
+  await expect(page.getByRole('region', { name: 'Рейтинг студента', exact: true })).toContainText(
+    `${detail.rank.position} из ${detail.rank.participantCount}`,
+  );
+  await expect(page.locator('.headman-stats-mobile__personal > div > small')).toHaveText(
+    [detail.metrics.present, detail.metrics.presentOrExcused].map(
+      (metric: { numerator: number; denominator: number }) =>
+        `${metric.numerator} из ${metric.denominator}`,
+    ),
+  );
+  const detailSubject = detail.subjects.find(
+    (item: { subjectId: number }) => item.subjectId === dataset.subject.id,
+  );
+  expect(detailSubject !== undefined && detailSubject.metrics.present.denominator > 0).toBe(true);
+  const subjectCard = page
+    .getByRole('region', { name: 'Посещаемость по предметам и типам занятий', exact: true })
+    .locator(`details[data-subject-id="${dataset.subject.id}"]`);
+  await subjectCard.locator('summary').click();
+  await expect(subjectCard.locator('summary')).toHaveText(detailSubject.subjectName);
+  const lecture = detailSubject.lessonTypes.find(
+    (type: { code: string }) => type.code === 'LECTURE',
+  );
+  expect(lecture !== undefined && lecture.metrics.present.denominator > 0).toBe(true);
+  for (const [scope, metrics] of [
+    [subjectCard.locator(':scope > dl'), detailSubject.metrics],
+    [subjectCard.locator('[data-lesson-type="LECTURE"] > dl'), lecture.metrics],
+  ] as const) {
+    const counts = await scope.locator('dd').allTextContents();
+    expect(counts.map((value) => value.trim().split(' · ')[0])).toEqual(
+      ['present', 'presentOrExcused', 'excused', 'absent'].map(
+        (kind) => `${metrics[kind].numerator} из ${metrics[kind].denominator}`,
+      ),
+    );
+  }
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Студенты группы', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  // End HEADMAN33; original logout and all following student/history assertions remain unchanged.
   await logoutPwa(page);
   await loginPwa(page, dataset.student);
   await expect(page.getByRole('button', { name: 'Отмечено', exact: true })).toBeVisible();

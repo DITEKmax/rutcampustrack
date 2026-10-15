@@ -125,6 +125,8 @@ let calendarRevision = 0;
 let nextRevision = 0;
 let dayRevision = 0;
 const dayLoading = ref(false);
+const readIntent = ref<'current' | 'archive' | null>(null);
+const dayLoaded = ref(false);
 let detailRevision = 0;
 let disposed = false;
 const retryLocked = computed(() => createIntent.value !== null || editIntent.value !== null);
@@ -174,7 +176,10 @@ const calendarDays = computed(() =>
   view.value === 'wizard' ? homeworkMonth(monthDate.value) : homeworkWeek(selectedDate.value),
 );
 const dateItems = computed(() =>
-  homeworks.value.filter((item) => item.lessonDate === selectedDate.value),
+  homeworks.value.filter(
+    (item) =>
+      item.lessonDate === selectedDate.value && item.archived === (readIntent.value === 'archive'),
+  ),
 );
 const eligibleLessons = computed(() =>
   lessonType.value === null ||
@@ -370,6 +375,7 @@ function reportError(cause: unknown, revision: number): void {
   ) {
     denied.value = true;
     homeworks.value = [];
+    dayLoaded.value = false;
     detail.value = null;
     clearDraft();
     view.value = 'calendar';
@@ -408,6 +414,8 @@ async function load(): Promise<void> {
   error.value = null;
   notice.value = null;
   homeworks.value = [];
+  dayLoaded.value = false;
+  dayLoading.value = false;
   lessons.value = [];
   subjects.value = [];
   detail.value = null;
@@ -432,9 +440,11 @@ async function load(): Promise<void> {
     semester.value = active;
     subjects.value = available.filter((item) => item.groupId === groupId);
     semesterOptions.value = semesters.map((item) => ({ ...item }));
-    await loadDayHomeworks(selectedDate.value);
-    await loadCalendar(selectedDate.value, false);
-    if (!disposed && revision === ownerRevision && props.initialCreate) openCreate();
+    if (props.initialCreate) openCreate();
+    else if (readIntent.value !== null) {
+      await loadDayHomeworks(selectedDate.value);
+      if (!disposed && revision === ownerRevision) await loadCalendar(selectedDate.value, false);
+    }
   } catch (cause) {
     reportError(cause, revision);
   } finally {
@@ -478,6 +488,14 @@ async function loadCalendar(value: string, month: boolean): Promise<void> {
       calendarLoading.value = false;
   }
 }
+function selectReadIntent(intent: 'current' | 'archive'): void {
+  if (props.offline || denied.value || loading.value) return;
+  readIntent.value = intent;
+  error.value = null;
+  notice.value = null;
+  void loadDayHomeworks(selectedDate.value);
+  void loadCalendar(selectedDate.value, false);
+}
 function selectRootDate(value: string): void {
   selectedDate.value = value;
   void loadCalendar(value, false);
@@ -497,9 +515,12 @@ async function loadDayHomeworks(date: string): Promise<void> {
   const owner = ownerRevision;
   const run = ++dayRevision;
   const readSemester = homeworkSemesterForDate(date, semesterOptions.value);
+  const intent = readIntent.value;
   homeworks.value = [];
+  dayLoaded.value = false;
   dayLoading.value = false;
-  if (!api || group === null || !readSemester || props.offline || denied.value) return;
+  if (!api || group === null || !readSemester || intent === null || props.offline || denied.value)
+    return;
   dayLoading.value = true;
   const current = () =>
     !disposed &&
@@ -508,11 +529,15 @@ async function loadDayHomeworks(date: string): Promise<void> {
     api === props.api &&
     group === props.groupId &&
     date === selectedDate.value &&
+    intent === readIntent.value &&
     !props.offline &&
     !denied.value;
   try {
-    const items = await readPublishedHomeworks(api, group, readSemester.id, current);
-    if (current() && items !== null) homeworks.value = items;
+    const items = await readPublishedHomeworks(api, group, readSemester.id, current, intent);
+    if (current() && items !== null) {
+      homeworks.value = items;
+      dayLoaded.value = true;
+    }
   } catch (cause) {
     if (current()) reportError(cause, owner);
   } finally {
@@ -829,6 +854,7 @@ async function primaryAction(): Promise<void> {
     const items = await api.listHomeworks(props.groupId!, semester.value!.id);
     if (disposed || owner !== ownerRevision) return;
     homeworks.value = items;
+    readIntent.value = 'current';
     selectedDate.value = chosenDate.value;
     clearDraft();
     view.value = 'calendar';
@@ -937,6 +963,7 @@ watch(
       props.readOnly,
     ] as const,
   () => {
+    readIntent.value = null;
     void load();
   },
   { immediate: true, flush: 'sync' },
@@ -949,17 +976,19 @@ watchHeadmanHomeworkAvailability({
     dayRevision += 1;
     calendarRevision += 1;
     dayLoading.value = false;
+    dayLoaded.value = false;
     calendarLoading.value = false;
   },
   loadContext: () => {
     void load();
   },
   refreshReads: () => {
-    void loadDayHomeworks(selectedDate.value);
-    void loadCalendar(
-      view.value === 'wizard' ? monthDate.value : selectedDate.value,
-      view.value === 'wizard',
-    );
+    if (readIntent.value !== null) void loadDayHomeworks(selectedDate.value);
+    if (readIntent.value !== null || view.value !== 'calendar')
+      void loadCalendar(
+        view.value === 'wizard' ? monthDate.value : selectedDate.value,
+        view.value === 'wizard',
+      );
   },
 });
 
@@ -1039,12 +1068,35 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
       class="headman-homework__state"
       role="status"
     >
-      Загружаем задания…
+      Загружаем раздел…
     </p>
     <template
       v-else-if="!denied && !offline && api && subjectsApi && groupId !== null && userId !== null"
     >
       <template v-if="view === 'calendar'">
+        <button
+          class="headman-homework__secondary"
+          type="button"
+          :aria-pressed="readIntent === 'current'"
+          @click="selectReadIntent('current')"
+        >
+          Посмотреть актуальные
+        </button>
+        <button
+          class="headman-homework__secondary"
+          type="button"
+          :aria-pressed="readIntent === 'archive'"
+          @click="selectReadIntent('archive')"
+        >
+          Открыть архив
+        </button>
+        <p
+          v-if="readIntent === null"
+          class="headman-homework__state"
+          role="status"
+        >
+          Выбери действие: выдать ДЗ, посмотреть актуальные или открыть архив.
+        </p>
         <p
           v-if="dayLoading"
           role="status"
@@ -1057,7 +1109,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           message="Выдать новое задание можно в активном семестре. Предыдущие задания доступны по выбранной дате в календаре."
         />
         <section
-          v-if="semesterOptions.length > 0"
+          v-if="readIntent !== null && semesterOptions.length > 0"
           class="headman-homework__calendar"
           aria-label="Неделя домашних заданий"
         >
@@ -1100,7 +1152,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           </div>
         </section>
         <h2
-          v-if="semesterOptions.length > 0"
+          v-if="readIntent !== null && semesterOptions.length > 0"
           class="headman-homework__day-title"
         >
           {{ formatDate(selectedDate) }}
@@ -1116,7 +1168,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           <span aria-hidden="true">＋</span>Выдать ДЗ
         </button>
         <p
-          v-if="semesterOptions.length > 0 && !dayLoading && !error && dateItems.length === 0"
+          v-if="dayLoaded && !dayLoading && !error && dateItems.length === 0"
           class="headman-homework__state"
         >
           На этот день заданий нет.

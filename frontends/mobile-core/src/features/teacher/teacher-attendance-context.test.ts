@@ -382,3 +382,51 @@ describe('teacher attendance context ownership', () => {
     expect(requests.length).toBe(before)
   })
 })
+
+describe('journal metric boundary', () => {
+  it('keeps known empty distinct from unavailable and rejects malformed authoritative triples', async () => {
+    let metrics: unknown = null
+    const calls: URL[] = []
+    const client = new TeacherApi({
+      accessToken: () => null,
+      fetcher: async (input) => {
+        calls.push(new URL(String(input), 'http://fixture.test'))
+        return json({
+          lessons: [],
+          students: [],
+          serverNow: '2026-10-08T12:00:00Z',
+          page: 0,
+          pageSize: 1,
+          totalLessons: 0,
+          hasMore: false,
+          metrics,
+        })
+      },
+    })
+    const query: TeacherJournalQuery = {
+      semesterId: 7,
+      groupId: 1,
+      subjectId: 11,
+      lessonTypes: ['lecture'],
+      pageSize: 1,
+      includeMetrics: true,
+    }
+    expect((await client.journal(query)).metrics).toBeNull()
+    metrics = {
+      students: [],
+      series: [],
+      selectedStudentId: null,
+      serverNow: '2026-10-08T12:00:00Z',
+    }
+    expect((await client.journal(query)).metrics?.series).toEqual([])
+    expect(calls[0]?.searchParams.get('includeMetrics')).toBe('true')
+    metrics = {
+      ...(metrics as object),
+      series: [{ lessonId: '1', present: { numerator: 2, denominator: 1, percent: 200 } }],
+    }
+    await expect(client.journal(query)).rejects.toThrow()
+    expect(() => client.journal({ ...query, includeMetrics: false, metricsStudentId: 4 })).toThrow(
+      RangeError,
+    )
+  })
+})

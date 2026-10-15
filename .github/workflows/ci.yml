@@ -662,7 +662,7 @@ jobs:
                   assert hashlib.sha256(student_test).hexdigest() == '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'
                   student_production = app / 'src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java'
                   student_current = student_production.read_bytes()
-                  assert hashlib.sha256(student_current).hexdigest() == 'ec64e55e50dcc099663c63d24aeac7fccef37bd8ad807e13101dedc9f69b9866'
+                  assert hashlib.sha256(student_current).hexdigest() == '42c7e17cce3bcd18d5f344785d33b01aba30fea8dd33ee7813574d0ca86aa564'
                   student_anchor = (b'        long groupId = scope.getRankGroupId();\n'
                                     b'        if (claims.groupId() == null\n'
                                     b'                || claims.groupId() <= 0\n'
@@ -671,7 +671,7 @@ jobs:
                   student_changed = student_anchor.replace(b'                || groupId != claims.groupId()\n', b'')
                   assert student_current.count(student_anchor) == 1
                   student_negative = student_current.replace(student_anchor, student_changed)
-                  assert hashlib.sha256(student_negative).hexdigest() == '154a566d1887cb241c7542a3893bcf6afefc61ad3bd0824c9b87884b90b4f7d3'
+                  assert hashlib.sha256(student_negative).hexdigest() == 'e0c7186f97e80107bc11fd0467191f09c68cc47a5f19a65d1e7c760c0cc620ef'
                   assert student_negative.replace(student_changed, student_anchor) == student_current
                   student_lines = student_test.decode().splitlines()
                   assert student_lines[451].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
@@ -1728,6 +1728,310 @@ jobs:
           path: |
             build/ci-test-outcomes/auth-service/openapi-generated/auth.json
             build/ci-test-outcomes/auth-service/openapi-generated/generation.safe.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Generate the official Attendance OpenAPI candidate after an exact snapshot drift
+        id: attendance-openapi-candidate
+        if: ${{ !cancelled() && matrix.service.name == 'attendance-service' && steps.java-tests.outcome == 'failure' }}
+        timeout-minutes: 8
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_ATTENDANCE_OPENAPI'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          import xml.etree.ElementTree as ET
+
+          def decode(raw):
+              def pairs(items):
+                  value = {}
+                  for key, item in items:
+                      assert key not in value
+                      value[key] = item
+                  return value
+              return json.loads(raw, object_pairs_hook=pairs,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+
+          package = 'ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT'
+          method = 'apiDocsMatchesSnapshot'
+          app = pathlib.Path('services/attendance-service/attendance-app')
+          test_source = app / 'src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java'
+          test_sha = 'f7f908c97355eb58786f6da1273a66943a897122c68f7f401c1e01ce0a77126a'
+          source = test_source.read_bytes()
+          assert hashlib.sha256(source).hexdigest() == test_sha
+          assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
+          lines = source.decode().splitlines()
+          target = '                .isEqualTo(expected);'
+          assert lines.count(target) == 1
+          expected_line = lines.index(target) + 1
+          report = pathlib.Path('build/ci-test-outcomes/attendance-service/integrationTest/safe-outcomes.json')
+          if not report.is_file() or not 0 < report.stat().st_size <= 33554432:
+              raise SystemExit(0)
+          value = decode(report.read_bytes())
+          if value.get('collection') != 'RESULTS':
+              raise SystemExit(0)
+          meta = value['metadata']
+          checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert (meta['checkoutSha'] == checkout
+                  and meta['prHeadSha'] == os.environ['RCT_CI_PR_HEAD_SHA']
+                  and meta['service'] == 'attendance-service' and meta['task'] == 'integrationTest'
+                  and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'failure'
+                  and meta['runId'] == os.environ['GITHUB_RUN_ID']
+                  and meta['runAttempt'] == os.environ['GITHUB_RUN_ATTEMPT'])
+          selected = [case for case in value['cases']
+                      if case.get('classname') == package and case.get('method') == method]
+          if not selected:
+              raise SystemExit(0)
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == test_source.as_posix()
+                  and case['sourceSha256'] == test_sha)
+          if case['status'] != 'FAILED':
+              raise SystemExit(0)
+          result = app / ('build/test-results/integrationTest/TEST-' + package + '.xml')
+          assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
+          raw = result.read_bytes()
+          assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+          suite = ET.fromstring(raw)
+          cases = suite.findall('testcase')
+          if (suite.tag != 'testsuite' or suite.get('name') != package or len(cases) != 1
+                  or cases[0].get('classname') != package or cases[0].get('name') != method + '()'
+                  or {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  != {'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}):
+              raise SystemExit(0)
+          native_case = cases[0]
+          if native_case.findall('error') or native_case.findall('skipped') or len(native_case.findall('failure')) != 1:
+              raise SystemExit(0)
+          failure = native_case.find('failure')
+          if failure.get('type') not in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}:
+              raise SystemExit(0)
+          named_lines = re.findall(
+              r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+              + re.escape(package + '.' + method)
+              + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+          if named_lines != [str(expected_line)]:
+              raise SystemExit(0)
+          wrapper = pathlib.Path('gradlew')
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', 'gradlew']) == b'100644\n'
+          wrapper_head = subprocess.check_output(['git', 'show', 'HEAD:gradlew'])
+          wrapper_sha = hashlib.sha256(wrapper_head).hexdigest()
+          assert wrapper_sha == 'c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0'
+          wrapper_mode = wrapper.stat().st_mode & 0o7777
+          assert wrapper_mode in {0o644, 0o755}
+
+          def verify_wrapper():
+              assert wrapper.is_file() and not wrapper.is_symlink()
+              assert wrapper.stat().st_mode & 0o7777 == wrapper_mode
+              assert 0 < wrapper.stat().st_size <= 1048576
+              assert hashlib.sha256(wrapper.read_bytes()).hexdigest() == wrapper_sha
+
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          baseline = {path for path in subprocess.check_output(
+              ['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0') if path}
+          assert baseline in (set(), {b'gradlew'})
+          if baseline:
+              assert wrapper_mode == 0o755
+          subprocess.run(
+              ['./gradlew', ':services:attendance-service:attendance-app:integrationTest', '--no-daemon',
+               '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
+              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, timeout=360, check=True)
+          snapshot = pathlib.Path('docs/openapi/attendance.json')
+          assert not snapshot.is_symlink() and snapshot.is_file() and 0 < snapshot.stat().st_size <= 2097152
+          payload = snapshot.read_bytes()
+          generated = decode(payload)
+          assert (type(generated) is dict and set(generated) == {'openapi', 'info', 'tags', 'paths', 'components'}
+                  and generated['openapi'] == '3.1.0' and type(generated['info']) is dict
+                  and all(type(generated['info'].get(key)) is str for key in ('title', 'version'))
+                  and type(generated['tags']) is list and all(type(tag) is dict for tag in generated['tags'])
+                  and type(generated['paths']) is dict and generated['paths']
+                  and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
+                  and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
+          changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
+          assert {path for path in changed if path} == baseline | {b'docs/openapi/attendance.json'}
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', snapshot.as_posix()]) == b'100644\n'
+          assert snapshot.stat().st_mode & 0o7777 == 0o644
+          assert payload != subprocess.check_output(['git', 'show', 'HEAD:' + snapshot.as_posix()])
+          output = pathlib.Path('build/ci-test-outcomes/attendance-service/openapi-generated')
+          output.mkdir(mode=0o700, parents=True, exist_ok=False)
+          shutil.copyfile(snapshot, output / 'attendance.json')
+          proof = {'schemaVersion': 1, 'state': 'OFFICIAL_ATTENDANCE_OPENAPI_GENERATED',
+                   'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'], 'checkoutSha': checkout,
+                   'runId': os.environ['GITHUB_RUN_ID'], 'runAttempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                   'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
+                   'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
+                   'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
+                   'trackedChanges': sorted(path.decode('ascii') for path in changed if path),
+                   'preexistingWrapperModeChange': baseline == {b'gradlew'}, 'wrapperSourceSha256': wrapper_sha,
+                   'ordinaryFailurePreserved': True}
+          (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
+              target_output.write('generated=true\n')
+          PY_ATTENDANCE_OPENAPI
+
+      - name: Upload the official Attendance OpenAPI candidate
+        if: ${{ !cancelled() && steps.attendance-openapi-candidate.outputs.generated == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: attendance-openapi-generated-${{ github.run_attempt }}
+          path: |
+            build/ci-test-outcomes/attendance-service/openapi-generated/attendance.json
+            build/ci-test-outcomes/attendance-service/openapi-generated/generation.safe.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Generate the official Schedule OpenAPI candidate after an exact snapshot drift
+        id: schedule-openapi-candidate
+        if: ${{ !cancelled() && matrix.service.name == 'schedule-service' && steps.java-tests.outcome == 'failure' }}
+        timeout-minutes: 8
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_SCHEDULE_OPENAPI'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          import xml.etree.ElementTree as ET
+
+          def decode(raw):
+              def pairs(items):
+                  value = {}
+                  for key, item in items:
+                      assert key not in value
+                      value[key] = item
+                  return value
+              return json.loads(raw, object_pairs_hook=pairs,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+
+          package = 'ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT'
+          method = 'apiDocsMatchesSnapshot'
+          app = pathlib.Path('services/schedule-service/schedule-app')
+          test_source = app / 'src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java'
+          test_sha = 'a5bb0d935eee38b31f168e8e2ff7f4735aedf90910241835cd746a6f88f5fa1c'
+          source = test_source.read_bytes()
+          assert hashlib.sha256(source).hexdigest() == test_sha
+          assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
+          lines = source.decode().splitlines()
+          target = '                .isEqualTo(expected);'
+          assert lines.count(target) == 1
+          expected_line = lines.index(target) + 1
+          report = pathlib.Path('build/ci-test-outcomes/schedule-service/integrationTest/safe-outcomes.json')
+          if not report.is_file() or not 0 < report.stat().st_size <= 33554432:
+              raise SystemExit(0)
+          value = decode(report.read_bytes())
+          if value.get('collection') != 'RESULTS':
+              raise SystemExit(0)
+          meta = value['metadata']
+          checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert (meta['checkoutSha'] == checkout
+                  and meta['prHeadSha'] == os.environ['RCT_CI_PR_HEAD_SHA']
+                  and meta['service'] == 'schedule-service' and meta['task'] == 'integrationTest'
+                  and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'failure'
+                  and meta['runId'] == os.environ['GITHUB_RUN_ID']
+                  and meta['runAttempt'] == os.environ['GITHUB_RUN_ATTEMPT'])
+          selected = [case for case in value['cases']
+                      if case.get('classname') == package and case.get('method') == method]
+          if not selected:
+              raise SystemExit(0)
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == test_source.as_posix()
+                  and case['sourceSha256'] == test_sha)
+          if case['status'] != 'FAILED':
+              raise SystemExit(0)
+          result = app / ('build/test-results/integrationTest/TEST-' + package + '.xml')
+          assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
+          raw = result.read_bytes()
+          assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+          suite = ET.fromstring(raw)
+          cases = suite.findall('testcase')
+          if (suite.tag != 'testsuite' or suite.get('name') != package or len(cases) != 1
+                  or cases[0].get('classname') != package or cases[0].get('name') != method + '()'
+                  or {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  != {'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}):
+              raise SystemExit(0)
+          native_case = cases[0]
+          if native_case.findall('error') or native_case.findall('skipped') or len(native_case.findall('failure')) != 1:
+              raise SystemExit(0)
+          failure = native_case.find('failure')
+          if failure.get('type') not in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}:
+              raise SystemExit(0)
+          named_lines = re.findall(
+              r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+              + re.escape(package + '.' + method)
+              + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+          if named_lines != [str(expected_line)]:
+              raise SystemExit(0)
+          wrapper = pathlib.Path('gradlew')
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', 'gradlew']) == b'100644\n'
+          wrapper_head = subprocess.check_output(['git', 'show', 'HEAD:gradlew'])
+          wrapper_sha = hashlib.sha256(wrapper_head).hexdigest()
+          assert wrapper_sha == 'c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0'
+          wrapper_mode = wrapper.stat().st_mode & 0o7777
+          assert wrapper_mode in {0o644, 0o755}
+
+          def verify_wrapper():
+              assert wrapper.is_file() and not wrapper.is_symlink()
+              assert wrapper.stat().st_mode & 0o7777 == wrapper_mode
+              assert 0 < wrapper.stat().st_size <= 1048576
+              assert hashlib.sha256(wrapper.read_bytes()).hexdigest() == wrapper_sha
+
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          baseline = {path for path in subprocess.check_output(
+              ['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0') if path}
+          assert baseline in (set(), {b'gradlew'})
+          if baseline:
+              assert wrapper_mode == 0o755
+          subprocess.run(
+              ['./gradlew', ':services:schedule-service:schedule-app:integrationTest', '--no-daemon',
+               '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
+              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, timeout=360, check=True)
+          snapshot = pathlib.Path('docs/openapi/schedule.json')
+          assert not snapshot.is_symlink() and snapshot.is_file() and 0 < snapshot.stat().st_size <= 2097152
+          payload = snapshot.read_bytes()
+          generated = decode(payload)
+          assert (type(generated) is dict and set(generated) == {'openapi', 'info', 'tags', 'paths', 'components'}
+                  and generated['openapi'] == '3.1.0' and type(generated['info']) is dict
+                  and all(type(generated['info'].get(key)) is str for key in ('title', 'version'))
+                  and type(generated['tags']) is list and all(type(tag) is dict for tag in generated['tags'])
+                  and type(generated['paths']) is dict and generated['paths']
+                  and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
+                  and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
+          changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
+          assert {path for path in changed if path} == baseline | {b'docs/openapi/schedule.json'}
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', snapshot.as_posix()]) == b'100644\n'
+          assert snapshot.stat().st_mode & 0o7777 == 0o644
+          assert payload != subprocess.check_output(['git', 'show', 'HEAD:' + snapshot.as_posix()])
+          output = pathlib.Path('build/ci-test-outcomes/schedule-service/openapi-generated')
+          output.mkdir(mode=0o700, parents=True, exist_ok=False)
+          shutil.copyfile(snapshot, output / 'schedule.json')
+          proof = {'schemaVersion': 1, 'state': 'OFFICIAL_SCHEDULE_OPENAPI_GENERATED',
+                   'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'], 'checkoutSha': checkout,
+                   'runId': os.environ['GITHUB_RUN_ID'], 'runAttempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                   'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
+                   'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
+                   'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
+                   'trackedChanges': sorted(path.decode('ascii') for path in changed if path),
+                   'preexistingWrapperModeChange': baseline == {b'gradlew'}, 'wrapperSourceSha256': wrapper_sha,
+                   'ordinaryFailurePreserved': True}
+          (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
+              target_output.write('generated=true\n')
+          PY_SCHEDULE_OPENAPI
+
+      - name: Upload the official Schedule OpenAPI candidate
+        if: ${{ !cancelled() && steps.schedule-openapi-candidate.outputs.generated == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-openapi-generated-${{ github.run_attempt }}
+          path: |
+            build/ci-test-outcomes/schedule-service/openapi-generated/schedule.json
+            build/ci-test-outcomes/schedule-service/openapi-generated/generation.safe.json
           if-no-files-found: error
           retention-days: 7
 

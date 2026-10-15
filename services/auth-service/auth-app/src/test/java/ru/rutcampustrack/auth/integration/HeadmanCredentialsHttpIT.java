@@ -774,7 +774,7 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
         return jdbc.queryForObject(
                 "INSERT INTO groups(name) VALUES (?) RETURNING id",
                 Long.class,
-                "credential-it-" + UUID.randomUUID());
+                "credential-it-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16));
     }
 
     private long user(long group, boolean headman, String initial) {

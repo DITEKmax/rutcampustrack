@@ -62,7 +62,34 @@ public interface TeacherApi {
             @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") String page,
             @RequestParam(defaultValue = "100") String pageSize,
-            @RequestParam(defaultValue = "false") boolean pastOnly);
+            @RequestParam(defaultValue = "false") boolean pastOnly,
+            @RequestParam(defaultValue = "false") boolean includeMetrics,
+            @RequestParam(required = false) String metricsStudentId);
+
+    /** Source compatibility for existing Java callers; HTTP defaults remain unchanged. */
+    default ResponseEntity<JournalResponse> journal(
+            String semesterId,
+            String groupId,
+            String subjectId,
+            List<String> lessonTypes,
+            String dateFrom,
+            String dateTo,
+            String page,
+            String pageSize,
+            boolean pastOnly) {
+        return journal(
+                semesterId,
+                groupId,
+                subjectId,
+                lessonTypes,
+                dateFrom,
+                dateTo,
+                page,
+                pageSize,
+                pastOnly,
+                false,
+                null);
+    }
 
     @Operation(summary = "Server-supported teacher journal export formats")
     @GetMapping("/journal/export/formats")

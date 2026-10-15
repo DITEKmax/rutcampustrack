@@ -14748,6 +14748,20 @@
       "sha256": "c94a0e898dfe4c9d7e1ef0bb2c94d3e197a7082810289c2704d6a0794a745be6",
       "status": "accepted owner decision D028",
       "source_identity": "Main chat exact owner answer recorded 2026-10-15T19:59:41.591452+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q025-20261015",
+      "path": "docs/product/decisions/2026-10-15-subject-deletion-semester-and-mixed-excuse.md",
+      "sha256": "67d3541d58e5ccfe14a58f71f76c11b810a618f24777d0b5a6fe79e66c927069",
+      "status": "accepted owner decision D029",
+      "source_identity": "Main chat exact owner answer recorded 2026-10-15T21:25:11.147945+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q026-20261015",
+      "path": "docs/product/decisions/2026-10-15-subject-deletion-semester-and-mixed-excuse.md",
+      "sha256": "67d3541d58e5ccfe14a58f71f76c11b810a618f24777d0b5a6fe79e66c927069",
+      "status": "accepted owner decision D030",
+      "source_identity": "Main chat exact owner answer recorded 2026-10-15T21:25:11.147945+00:00"
     }
   ],
   "research_receipt": {

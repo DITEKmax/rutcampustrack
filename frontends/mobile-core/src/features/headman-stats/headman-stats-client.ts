@@ -294,7 +294,15 @@ export interface HeadmanStatsExcuseEntry {
   readonly lessons: readonly HeadmanStatsExcuseLesson[]
 }
 
+export interface HeadmanStatsTargetRank {
+  readonly position: number | null
+  readonly participantCount: number
+  readonly available: boolean
+  readonly visibility: 'VISIBLE' | 'HIDDEN'
+}
+
 export interface HeadmanStatsStudentDetailResponse {
+  readonly rank?: HeadmanStatsTargetRank | null
   readonly context: HeadmanStatsContext
   readonly student: { readonly id: number; readonly displayName: string }
   readonly metrics: HeadmanStatsPersonalMetrics
@@ -1052,6 +1060,7 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
   const lateCheckins = normalizeTicketPage(record.lateCheckins, normalizeLateCheckinEntry)
   const excuses = normalizeTicketPage(record.excuses, normalizeExcuseEntry)
   const emptyState = stringValue(record.emptyState)
+  const rank = record.rank == null ? null : normalizeTargetRank(record.rank)
   const sources = record.sources == null ? null : normalizePersonalSources(record.sources)
   const lateCheckin = record.lateCheckin == null ? null : normalizeTicketCounts(record.lateCheckin)
   const excuse = record.excuse == null ? null : normalizeTicketCounts(record.excuse)
@@ -1065,6 +1074,7 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
     lateCheckins === null ||
     excuses === null ||
     !isStudentDetailEmptyState(emptyState) ||
+    (record.rank != null && rank === null) ||
     (record.sources != null && sources === null) ||
     (record.lateCheckin != null && lateCheckin === null) ||
     (record.excuse != null && excuse === null)
@@ -1074,6 +1084,7 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
   return {
     context,
     student: { id: studentId, displayName: stringValue(studentRecord.displayName) ?? '' },
+    rank,
     metrics,
     sources,
     lateCheckin,
@@ -1083,6 +1094,30 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
     lateCheckins,
     excuses,
     emptyState,
+  }
+}
+
+function normalizeTargetRank(value: unknown): HeadmanStatsTargetRank | null {
+  const rank = asRecord(value)
+  if (
+    !rank ||
+    typeof rank.available !== 'boolean' ||
+    !['VISIBLE', 'HIDDEN'].includes(String(rank.visibility))
+  )
+    return null
+  const participantCount = nonnegativeInteger(rank.participantCount)
+  const position = rank.position === null ? null : positiveInteger(rank.position)
+  if (
+    participantCount === null ||
+    (rank.available ? position === null || position > participantCount : rank.position !== null) ||
+    (rank.visibility === 'HIDDEN' && (rank.available || participantCount !== 0))
+  )
+    return null
+  return {
+    position,
+    participantCount,
+    available: rank.available,
+    visibility: rank.visibility as 'VISIBLE' | 'HIDDEN',
   }
 }
 

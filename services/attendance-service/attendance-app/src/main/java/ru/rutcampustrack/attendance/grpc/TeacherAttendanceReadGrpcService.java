@@ -51,6 +51,8 @@ import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherGroupStats;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalMetrics;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalLessonMetrics;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
@@ -188,9 +190,52 @@ public final class TeacherAttendanceReadGrpcService
             StreamObserver<TeacherJournalResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
-            responseObserver.onNext(
-                    readTeacherJournal(
-                            claims.userId(), request.getLessonIdsList(), request.getPastOnly()));
+            if (!request.getIncludeMetrics()
+                            && (!request.getAggregateLessonIdsList().isEmpty()
+                                    || request.hasMetricsStudentId())
+                    || request.hasMetricsStudentId() && request.getMetricsStudentId() <= 0) {
+                throw new BadRequestException("Invalid journal metrics selection");
+            }
+            TeacherJournalResponse response =
+                    request.getIncludeMetrics() && request.getLessonIdsList().isEmpty()
+                            ? TeacherJournalResponse.newBuilder()
+                                    .setServerNow(clock.instant().toString())
+                                    .build()
+                            : readTeacherJournal(
+                                    claims.userId(),
+                                    request.getLessonIdsList(),
+                                    request.getPastOnly());
+            if (request.getIncludeMetrics()) {
+                if (!request.getAggregateLessonIdsList().containsAll(request.getLessonIdsList())) {
+                    throw new BadRequestException("Display lessons are outside metrics context");
+                }
+                var value =
+                        reportService.getTeacherJournalMetrics(
+                                request.getAggregateLessonIdsList(),
+                                claims.userId(),
+                                request.hasMetricsStudentId()
+                                        ? request.getMetricsStudentId()
+                                        : null);
+                TeacherJournalMetrics.Builder metrics =
+                        TeacherJournalMetrics.newBuilder()
+                                .addAllStudents(
+                                        value.students().stream()
+                                                .map(this::toStudentStats)
+                                                .toList())
+                                .setServerNow(value.serverNow().toString());
+                if (value.selectedStudentId() != null)
+                    metrics.setSelectedStudentId(value.selectedStudentId());
+                for (var point : value.series())
+                    metrics.addSeries(
+                            TeacherJournalLessonMetrics.newBuilder()
+                                    .setLessonId(point.lessonId())
+                                    .setPresent(toMetric(point.present()))
+                                    .setPresentOrExcused(toMetric(point.presentOrExcused()))
+                                    .setExcused(toMetric(point.excused()))
+                                    .setAbsent(toMetric(point.absent())));
+                response = response.toBuilder().setMetrics(metrics).build();
+            }
+            responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));

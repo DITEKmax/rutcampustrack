@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -32,7 +31,6 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
     @Autowired TestRestTemplate restTemplate;
 
     @Test
-    @DisplayName("M11 G3: /api-docs matches committed snapshot")
     void apiDocsMatchesSnapshot() throws IOException {
         String actual = normalizeLineEndings(fetchAndNormalize());
 

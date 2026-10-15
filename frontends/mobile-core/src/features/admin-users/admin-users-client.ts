@@ -88,6 +88,8 @@ export interface UpdateAdminRoleInput {
 }
 
 export interface UpdateAdminUserProfileInput {
+  /** Positive Telegram ID; omission preserves the existing binding. */
+  readonly telegramId?: number
   readonly lastName?: string
   readonly firstName?: string
   /** An empty string clears the patronymic. */
@@ -526,6 +528,7 @@ function normalizeRoleInput(input: UpdateAdminRoleInput): UpdateAdminRoleInput {
 
 function normalizeProfileInput(input: UpdateAdminUserProfileInput): UpdateAdminUserProfileInput {
   const payload: {
+    telegramId?: number
     lastName?: string
     firstName?: string
     middleName?: string
@@ -537,6 +540,8 @@ function normalizeProfileInput(input: UpdateAdminUserProfileInput): UpdateAdminU
     payload.middleName = profileOptionalText(input.middleName, 128, 'middleName')
   if (input.employeeNumber !== undefined)
     payload.employeeNumber = profileOptionalText(input.employeeNumber, 32, 'employeeNumber')
+  if (input.telegramId !== undefined)
+    payload.telegramId = positiveInteger(input.telegramId, 'telegramId')
   if (Object.keys(payload).length === 0) throw new RangeError('Изменения профиля не заданы')
   return payload
 }

@@ -66556,6 +66556,531 @@
         "next_reviewed_integrations.58def_D022_Source_diagnosis_and_GO.sourcePlan.governing",
         "next_reviewed_integrations.58def_D022_independent_review_Root_integration.review.governing"
       ]
+    },
+    "0c19716_actual_publication": {
+      "utc": "2026-10-15T11:16:02.011329+00:00",
+      "parent": "58defa29fe6bd28127c196038f26e3d32c8340c2",
+      "head": "0c19716c7eaa27840659a5690f8828410380bd5e",
+      "sourceCount": 11,
+      "docsCount": 15,
+      "inventory": [
+        ".github/workflows/ci.yml",
+        "docs/product/decisions/2026-10-15-homework-nonauthor-delete.md",
+        "docs/sources/manifest.yaml",
+        "docs/validation/cloud-20261011/CURRENT.md",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.sha256",
+        "docs/validation/cloud-20261011/attempts.ndjson",
+        "docs/validation/cloud-20261011/boundary-scenarios.csv",
+        "docs/validation/cloud-20261011/decisions.md",
+        "docs/validation/cloud-20261011/questions.md",
+        "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/remaining-execution-queue.json",
+        "docs/validation/cloud-20261011/resources.md",
+        "docs/validation/cloud-20261011/scenarios.csv",
+        "docs/validation/cloud-20261011/source-ledger.json",
+        "docs/validation/cloud-20261011/verified-cases.csv",
+        "frontends/mobile-core/src/features/homework/HeadmanHomeworkScreen.vue",
+        "scripts/test-application-recovery.py",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+        "tests/e2e/fixtures/application-recovery.spec.ts",
+        "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+        "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+        "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+        "tests/e2e/specs/mobile-homework-lifecycle.spec.ts"
+      ],
+      "phases": [
+        {
+          "phase": "restage",
+          "seconds": 0.311,
+          "nativeExit": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "phase": "configured-checks",
+          "seconds": 7.331,
+          "nativeExit": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "phase": "commit",
+          "seconds": 0.412,
+          "nativeExit": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "phase": "range-gitleaks",
+          "seconds": 1.222,
+          "nativeExit": 0,
+          "allOwnedReaped": true
+        },
+        {
+          "phase": "real-push",
+          "seconds": 3.94,
+          "nativeExit": 0,
+          "allOwnedReaped": true
+        }
+      ],
+      "realGitReadback": "0c19716c7eaa27840659a5690f8828410380bd5e",
+      "officialPRReadback": {
+        "number": 2,
+        "head": "0c19716c7eaa27840659a5690f8828410380bd5e",
+        "draft": true,
+        "state": "open",
+        "baseRef": "main",
+        "baseSha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "merged": false,
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2"
+      },
+      "receipt": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/58def-eleven-publish-02.safe.json",
+      "gates": "Newexacthead gate IDs/results/actualcheckout notyetread; c80soleobserver next. Previous58def receipts retaintheir producer.",
+      "actual": "D022UI/PG/RPC/newD019/D020/promotion/L06 commands pendinggenuineordinaryCI. No DONE/prodready.",
+      "metadataCheckCorrection": "InitialconfiguredGitleaks twilioAPI falsepositive SK+verifiedpubliccontracthash in2governingvalues fixedbyname/hashseparator; rulesunchanged, failurepreserved. Corrected6hooks normalcommit/rangeGitleaks/realpush PASS."
+    },
+    "0c19716_initial_official_gates": {
+      "utc": "2026-10-15T11:18:58.552466+00:00",
+      "observer": "c80",
+      "producer": "0c19716c7eaa27840659a5690f8828410380bd5e",
+      "currentOfficialProducerTree": "389dc316fb6996a20a81446ba07fcd7b45a75da2",
+      "runs": [
+        {
+          "id": 38725909640,
+          "name": "CI",
+          "event": "pull_request",
+          "head_sha": "0c19716c7eaa27840659a5690f8828410380bd5e",
+          "run_attempt": 1,
+          "status": "queued",
+          "conclusion": null,
+          "created_at": "2026-10-15T11:14:22Z",
+          "updated_at": "2026-10-15T11:14:22Z"
+        },
+        {
+          "id": 38725909602,
+          "name": "Coverage",
+          "event": "pull_request",
+          "head_sha": "0c19716c7eaa27840659a5690f8828410380bd5e",
+          "run_attempt": 1,
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-15T11:14:22Z",
+          "updated_at": "2026-10-15T11:16:50Z"
+        },
+        {
+          "id": 38725909613,
+          "name": "Security",
+          "event": "pull_request",
+          "head_sha": "0c19716c7eaa27840659a5690f8828410380bd5e",
+          "run_attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-15T11:14:22Z",
+          "updated_at": "2026-10-15T11:16:48Z"
+        },
+        {
+          "id": 38725909632,
+          "name": "OpenAPI Drift Guard",
+          "event": "pull_request",
+          "head_sha": "0c19716c7eaa27840659a5690f8828410380bd5e",
+          "run_attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-15T11:14:22Z",
+          "updated_at": "2026-10-15T11:16:13Z"
+        }
+      ],
+      "actualCheckout": {
+        "state": "NOT_YET_AVAILABLE",
+        "reason": "Browser checkout notexecuted; officialCIartifactlistempty; no candidate/producer inferredasactualcheckout."
+      },
+      "browserJob": 116391585235,
+      "academicJob": 116391585297,
+      "qualification": "Officialproducer tree/parent not actualPRcheckout; no currentnewbrowser/Academic outcome yet."
+    },
+    "0c19716_PR_body_updated": {
+      "utc": "2026-10-15T11:18:58.552466+00:00",
+      "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "head": "0c19716c7eaa27840659a5690f8828410380bd5e",
+      "chars": 5119,
+      "result": "OfficialupdateSUCCESS draft/open/main/unmerged; D022Source-ready/notnative, current/previousproducer receipts and500/OTP/NAVpendingexplicit."
+    },
+    "0c19716_ADMIN20_CI_recovery_URL_Source_dependency": {
+      "utc": "2026-10-15T11:18:58.552466+00:00",
+      "author": "c84",
+      "source": "infra/local-stand/compose.yml AUTH_PASSWORD_RESET_URL default https://localhost:18514/app/password-reset vs ordinary E2E_BASE_URL https://localhost:8443",
+      "status": "Sourceconfigmismatch hypothesis, actualcomposedoverride confirmation c80pending; not runtime/productFAIL",
+      "constraint": "UseactualreturnedrecoveryURL/own-origin guard, no testURLrewrite/local18514/privateenvchanges. Ifconfirmed, minimalCI-onlyAuthenv override insolec80nextconfigpackage."
+    },
+    "0c19716_ADMIN20_exact_CI_recovery_URL_Source_GO": {
+      "utc": "2026-10-15T11:19:54.501944+00:00",
+      "author": "c80 soleCI/configwriter",
+      "correction": "E2E docker-compose independently definesAuth; doesNOTinheritlocal18514. CurrentE2E+clock+workflow has NOAUTH_PASSWORD_RESET_URL binding; AdminPasswordResetService @Value defaultsEMPTY/trustedRecoveryUrl, so Source predicts unusable issueLink, not inherited18514. No runtimeFAIL yet.",
+      "go": "ONE additive services.auth-service.environment.AUTH_PASSWORD_RESET_URL=https://localhost:8443/app/password-reset in tests/e2e/infra/docker-compose.clock-fixture.yml. ExistingnormalCIalreadycombinesoverlay; preserveallotherkeys/clock/gates/localhost18514/privateenv.",
+      "checks": "ExactYamlsemanticdiff/singlebinding; targetexistingparser/configchecks withoutreadingrealenv/secrets; actualnextordinaryCI genuineADMINissueLink→returnedURL/reset/replacement. No testURLrewrite/logger/API/newproductrule.",
+      "scope": "Required synthetic testenvironment configuration foracceptedexistingrecovery action, not productionconfiguration or manualdeploy."
+    },
+    "0c19716_ADMIN20_overlay_reviewed_Root_integration": {
+      "utc": "2026-10-15T11:21:35.560868+00:00",
+      "author": "c80 soleconfigwriter",
+      "sourceInventory": [
+        {
+          "sourceRef": "tests/e2e/infra/docker-compose.clock-fixture.yml",
+          "preimage": "ef73aee6aade53fdccf41fb9678ff3dc01454319425c000ed491e9531a6e3085",
+          "sha256": "0ddac2d90ba83e09be366153f11912d942f7471395c562a58599e74dc8e93f0e"
+        }
+      ],
+      "RootReview": "Exact3addedlines Authenvironment public8443 recoveryURL only; noAuthclock/entrypoint/mount, local18514/privateenv/returnedtestURL unchanged. ExistingE2Ebaseallotherkeys preserved byYAMLsemanticmerge+wholeinverse.",
+      "checks": "AuthorYaml/semanticmap/inverse/mergedbaseconfigPASS, Rootindependentlyexactdiff; no localDocker/configresolve/secretread/runtime",
+      "actual": "NextADMIN20realissueLink/reset/login stillNOT_RUN. RootWIPnotpushedyet; currentproducer0c retainsprioroverlay untilnextcoherentadminpackage."
+    },
+    "0c19716_D022_AssertJ_test_API_defect_GO": {
+      "utc": "2026-10-15T11:26:41.792579+00:00",
+      "severity": "P2 test-compilation blocker",
+      "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+      "preimage": "60b0f971bfe4ce1406ecd67616dbbefc632f085e6b4910ac34e23aa9a819a32e",
+      "observation": "New1255 calls startsWithElementsOf(before). Root javap of actual cachedAssertJ3.27.7 ListAssert/FactoryBasedNavigableListAssert/AbstractListAssert/AbstractCollectionAssert/AbstractIterableAssert/AbstractAssert shows NOsuchmethod; supported publicfinal startsWith(ELEMENT...) only. JDK21 path /workspace/rct-cloud-setup/jdk21.",
+      "actualCI": "CurrentAcademicunit andchanged-regression stagesFAIL beforeordinaryIT; exactsmallclosedprimaries c80pending. Sourcecompilerdefect confirmed, fullcurrentnativecause notyetasserted.",
+      "authorGO": "c87 sameauthor ONE assertion APIcorrection preserving exacthistoryprefix+size oracle, e.g startsWith(before.toArray(String[]::new)); other3packetSource unchanged. CanonicalGJF +tinyrealJavac oldmethodRED/correctmethodGREEN using cachedrealAssertJ; actualselectedfulltestcompile ifavailable withoutnewGradle/DB/heavy. No newframework/Sourcecopies/capraise.",
+      "review": "Independenttargetedonehunk recheck of preservedoracle, no fullD022redo. GenuinePGafter/sensitivity stillpending."
+    },
+    "0c19716_profile_auth_parent_existing_join": {
+      "utc": "2026-10-15T11:28:13.748732+00:00",
+      "reviewer": "c85 independent read-only",
+      "outcome": {
+        "status": "BOUNDED_EXISTING_PROOF_JOIN_COMPLETE",
+        "selectedModel": "gpt-6.1-sol",
+        "selectedEffort": "high",
+        "actualModelEffort": "UNKNOWN",
+        "governing": "TASK67b700e / D018/D020/D015",
+        "currentPublished": "0c19716c7eaa27840659a5690f8828410380bd5e",
+        "newParentRecommendation": {
+          "JS-STUDENT-WEB-09": {
+            "recommendation": "PASS_COMPOSED",
+            "accepted": "Canonical965/current accepted text: current+new password, mandatory old password validation, success terminates every session including current and returns login; ready Vue equivalent permitted by TASK3, no new Angular/web claim.",
+            "actual": "58def AuthA349 WHOLEPASSED3594ms/error0, run38716175708/artifact11964366756/checkout1a212afd12868ab3f7110ca6a193c3323ff8b0ce/test44f4f9f5950a4cc0294bcbcbb31d819cbd5af85865a029993676f5ea18398947: actual current/new/confirm UI ->HTTP204 ->login/no protected navigation/no refresh cookie; original and peer bearer401; old-password login401; replacement password fresh session and own PASSWORD_CHANGED history.",
+            "complements": "Root58def_actual_finite_parent_independent_join accepted JS-SYSTEM04/CLIENT-FE-AUTH05 plus P10/ca3d wrong-current/hash/initial-clear/atomic-all-session-revoke/password.changed proofs; proof levels/producers retained.",
+            "sourceCompatibility": "Current SecurityScreen a91ccd/Profile3f6a/AuthServicee336 unchanged from actual58def. Exact AuthA tail from own profile read through end of case remains byte-identical in new current15b21 (tail SHA59d7e6ca11860cc1272cc4ffc7cbdc67fabfa5a226c118eb39c0377be72f1722). New D020 login insertion not thereby executed."
+          },
+          "JS-STUDENT-25": {
+            "recommendation": "RETAIN_UNKNOWN_NARROW_REMAINING_CLAUSES",
+            "closedClauses": "AuthA349 proves own FIO/group/TelegramID text/no editable controls, two own sessions/current marker, own LOGIN history and password-change history, required old-password security flow, D018 light/dark/system selection+reload persistence/system-media resolution on sole Appearance demo while rest stays dark. Existing AUTH04 actual logout-all/revoke/late-response and Q10 preferences proofs remain separately accepted. Source SecurityScreen permits password showing/paste and current shared owner clearing.",
+            "oneDefiniteRemainingAcceptedOperation": "Authenticated settings QR DEVICE_LINK issuance/TTL/confirmation/status and transfer onto a second device (or an exact accepted disposition of that operation). Current QrLoginFlowIT actual admission/replay/revoke proof concerns guest LOGIN; it is not device binding.",
+            "exactSourceFork": "Canonical825 names mobile-client QR binding; wire108:57 DeviceLinkQr explicitly distinct from QrLoginPanel,108:73 records missing device-link API; Oct2 decision:7 defers LOGIN mobile scanning/confirmation and:9 expressly says current package implements LOGIN without automatically expanding DEVICE_LINK. No exact accepted DEVICE_LINK deferral/exclusion pointer found in this bounded join; absence alone is not authorization to exclude it.",
+            "delegatedRightsQualification": "Canonical825/108:29,60,143 requires conditional readonly delegated-rights set. Actual helper capability/action paths + current More→Assistant gating establish operation authorization, not automatically that readonly settings presentation. Later accepted figma-spec-mobile:487 says reuse Profile/Settings; no explicit equivalent-carrier replacement found here. Retain within same existing JS25 row as source/presentation qualification; do not create a new matrix row, role crossproduct, test or owner question from this join.",
+            "limits": "Do not mark a confirmed product bug solely from this evidence join. Do not silently narrow parent to CLIENT-FE-AUTH05 or treat Source/guest-QR proof as device-link actual."
+          }
+        },
+        "retainedRows": {
+          "CLIENT-FE-AUTH-01/02/03/04/05/06": "Keep existing PASS with original producers/levels:232 password/cookie and current source qualification;3647 explicit role/stale409/unconfirmed logout/late callback;ce94307b CORS/rotation/reload and true HTTP expiry2d86;4058 session revocation;58def AuthA security;aa37 ResetB510 and ca3d purpose/expiry/attempts/single-use/revocation. No new crossproduct or whole native claim.",
+          "JS-SYSTEM-01/02/03/04/11/13": "Existing qualified PASS retained. SYSTEM11 current Q10 preference/readback save actual does not invent notification settings in future desktop web. SYSTEM13 QR login UI deferral and backend native proofs retained separately from JS25 DeviceLink.",
+          "JS-SYSTEM-14": "Remain UNKNOWN only D020 fresh mandatory-context loading/controlled failure/recovery boundary. New15b21/e9d8 sequence Source-approved, actual NOT_RUN. Separate context responses accepted; no combined endpoint requirement.",
+          "CLIENT-FE-NOTIFY-01": "Existing58def HW4 actual +Q10 retained proofs cover genuine unread filter/read-all/preferences save+server readback+reload. No notification-native/OS delivery or whole JS25 device-link claim."
+        },
+        "evidenceRefs": [
+          "current4065#next_reviewed_integrations.58def_actual_finite_parent_independent_join",
+          "current4065#next_reviewed_integrations.58def_three_Auth_parent_existing_proof_join",
+          "current4065#next_reviewed_integrations.3647_actual_role_first3_webkit",
+          "current4065#next_reviewed_integrations.ce943_CORS75_actual_native_PASS",
+          "current4065#next_reviewed_integrations.ce943_Auth_HTTP_expiry_actual",
+          "current4065#next_reviewed_integrations.f2a258_four_family_independent_join",
+          "current4065#next_reviewed_integrations.aa37_Q10_existing_six_row_independent_acceptance",
+          "current4065#next_reviewed_integrations.f6b2_Q03_main_family_binding"
+        ],
+        "sourcePins": [
+          {
+            "sourceRef": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+            "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/docs/wireframes/student/108-student-settings.md",
+            "sha256": "cd95a9641447ee8d6c6afa6291a0fa09722584a1e611693d91984335d2d3a0c2"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-qr-login-backend-now.md",
+            "sha256": "65b7bcd35de77f4903f5eb3eeb7b90d7f3db78b7258a1107b9dd761713a0727b"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/docs/product/decisions/2026-10-15-mobile-theme-staged-validation.md",
+            "sha256": "c239d2bfa4cb5f7a2ee521847ac8085fa82d7c6e89b2c883de7d5fa395f304ed"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/docs/product/decisions/2026-10-15-login-context-separation.md",
+            "sha256": "727fb99bbd5d6180286a13c6ffb62b1fc3bd35556584ba84aab0a5ee925283ee"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/docs/design/figma-spec-mobile.md",
+            "sha256": "5441988a30d7d211140a06cb010731a59564a1e90fc87ad3ba4c9d8f082c51d1"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+            "sha256": "3f6a2d54a7aa4ab8d7a94e6ee4cb66626e2df3b930ab4a5c3d9adedd2ec9d76c"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+            "sha256": "a91ccd277a1736b6510e3b14c7c2daf2c45cb44614022bf670b0b47914d78c65"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+            "sha256": "d198de554786dd2b4554f25147bbdf14f9aa8030abc01ee1a83014af6156b0d0"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/profile/SessionsScreen.vue",
+            "sha256": "3d764bd4de83ebab607bc1e3c99fff00ee83609ba4a8cfb6ac0c4689765246eb"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue",
+            "sha256": "3a5cd6c1711b6d93d0bf9977e5386849ab936de83fea903f4f8b84ac14424b5b"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/profile/MoreScreen.vue",
+            "sha256": "96d03df625896e4d5362fc178e745e427425fb9d7a8d965e2d16a9102fdf4b33"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/frontends/mobile-core/src/features/headman-group/AssistantActionsScreen.vue",
+            "sha256": "ad86963ac5df2c505f99bf7d082cfe2ee0b4661cde4a34e20abfcf4bffb09a70"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+            "sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a"
+          },
+          {
+            "sourceRef": "/workspace/rutcampustrack/tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+            "sha256": "15b21fffb98868c813f63bebc700906342e48ca08fde72dcc80a33b4c61b95e1"
+          }
+        ],
+        "checks": "READ_ONLY_ACCEPTED_SOURCE_AND_EXISTING_SAFE_RECEIPTS_ONLY",
+        "runtime": "NOT_RUN",
+        "limits": [
+          "Current ResetB cleanupFAIL is not wholePASS and does not erase earlier aa37 qualified wholePASS.",
+          "D015 native Telegram/provider/OS and D021 Safari owner acceptance remain OWNER_MANUAL_PENDING, not Cloud PASS or blocker.",
+          "No test/run/artifact/log/network read, source/Git/shared matrix/docs change or new report registry. Only existing own receipt key added. B013/B014/B015 remain frozen."
+        ]
+      },
+      "meaning": "ONE JS-STUDENT-WEB09 composedPASS. JSSTUDENT25 onlyremainingDeviceLinkQr/readonlydelegatedrights carrier, no implicitLOGINdeferral/equivalence. D020initialnewsequence andcurrentResetBcleanup separatepending."
+    },
+    "0c19716_ADMIN20_21_22_seven_file_Source_ready": {
+      "utc": "2026-10-15T11:28:13.748732+00:00",
+      "author": "c84",
+      "state": "FROZEN_INDEPENDENT_REVIEW_PENDING_ACTUAL_NOT_RUN",
+      "outcomeRef": "c84 existing .dashboard-daily-growth.safe.json#admin20_21_22SourcePlan58def",
+      "sourceInventory": [
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+          "sha256": "3dbf7641e7ac6b24281f8a895659e83d1dde619efc855aa47d0ce966d16b1864"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+          "sha256": "f8a8bda7ccc80f8cdfa7ba99756d8fe67e86e23200d717b5f2460463cc7a62f1"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+          "sha256": "2cb236141420e97628e8535f33b0281d4fcb1c45fc66675d3e90b4c5a458740a"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/admin-users-client.test.ts",
+          "sha256": "50989ac61b8c82e8de437d31aece3c27b91712c41d7a1b657d66501535e5064c"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.vue",
+          "sha256": "87a7ead1b7c49b1a9324f194c4b90165b51b607d3302500ffc2b0be93f5662ff"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.test.ts",
+          "sha256": "cfa7c8902e0a695fc6858c56a9245c171550b19017070f7b4f6e8dfef8371803"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+          "sha256": "0a1cb1b84e18b3024fb67739ea5e30e6d81f0b1f5c9b5f1fcf435c09992e412a"
+        }
+      ],
+      "checks": "31targetedVitestPASS; canonicalVueTSC/E2ETSC/parser/SFC/transpile0; addedlint0, existingDashboard18warnings unchanged. OldSFC4FAIL/1PASS precisefield/fractions, restored5PASS. Exactoldtests/screens/client/E2E602b inverse, caps/title/originalrights/session/cleanup retained. Initialformatter/type/helperfailures preservedby author.",
+      "dependency": "Rootreviewedclockoverlay0ddac actualAuthpublic8443; returnedURL/ownorigin guard unchanged",
+      "actual": "No nativebrowser/API/provideracceptance yet."
+    },
+    "0c19716_ADMIN_and_AssertJ_reviewed_Root_integration": {
+      "utc": "2026-10-15T11:33:37.532738+00:00",
+      "authorAdmin": "c84",
+      "authorAPI": "c87",
+      "reviewer": "c85 independent APPROVE_SOURCE_ONLY noP1P2",
+      "sourceInventory": [
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+          "preimage": "97fed56752fa218ca757efb511bd75321fc6d4ebe2b79ea38e6e0db8b7475aae",
+          "sha256": "3dbf7641e7ac6b24281f8a895659e83d1dde619efc855aa47d0ce966d16b1864"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+          "preimage": "4207450ca6a535be7befa6c49a73b4586ff8aedfe5fa7821774fa97db98b9968",
+          "sha256": "f8a8bda7ccc80f8cdfa7ba99756d8fe67e86e23200d717b5f2460463cc7a62f1"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+          "preimage": "0e79e114cce35c3d0a3f43647381c61d4eb290c00c7ac3adf03bb8a2dc3023a5",
+          "sha256": "2cb236141420e97628e8535f33b0281d4fcb1c45fc66675d3e90b4c5a458740a"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-users/admin-users-client.test.ts",
+          "preimage": "a1894bd2dbef877a8069c9b32cfefb48bd3371ab95bc13f690b0c3a2b1f3d66b",
+          "sha256": "50989ac61b8c82e8de437d31aece3c27b91712c41d7a1b657d66501535e5064c"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.vue",
+          "preimage": "ed60a6b06fb701549737b0be8daf2ff1ed5e15a26993a2de67d8a28a8f807a86",
+          "sha256": "87a7ead1b7c49b1a9324f194c4b90165b51b607d3302500ffc2b0be93f5662ff"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.test.ts",
+          "preimage": "59401c6681719d5dcd5cd5d6d797540325cba187c658e9fac862a6a9968c030f",
+          "sha256": "cfa7c8902e0a695fc6858c56a9245c171550b19017070f7b4f6e8dfef8371803"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+          "preimage": "602be2e464832c70ce3e8289652d2e772f157e71b578ab791944a678c7662152",
+          "sha256": "0a1cb1b84e18b3024fb67739ea5e30e6d81f0b1f5c9b5f1fcf435c09992e412a"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+          "preimage": "60b0f971bfe4ce1406ecd67616dbbefc632f085e6b4910ac34e23aa9a819a32e",
+          "sha256": "2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd"
+        }
+      ],
+      "adminReview": {
+        "verdict": "APPROVE_SOURCE_ONLY",
+        "findings": [],
+        "selectedModel": "gpt-6.1-sol",
+        "selectedEffort": "high",
+        "actualModelEffort": "UNKNOWN",
+        "baseline": "0c19716c7eaa27840659a5690f8828410380bd5e",
+        "sourcePins": [
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "sha256": "3dbf7641e7ac6b24281f8a895659e83d1dde619efc855aa47d0ce966d16b1864"
+          },
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+            "sha256": "f8a8bda7ccc80f8cdfa7ba99756d8fe67e86e23200d717b5f2460463cc7a62f1"
+          },
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "sha256": "2cb236141420e97628e8535f33b0281d4fcb1c45fc66675d3e90b4c5a458740a"
+          },
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/admin-users/admin-users-client.test.ts",
+            "sha256": "50989ac61b8c82e8de437d31aece3c27b91712c41d7a1b657d66501535e5064c"
+          },
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.vue",
+            "sha256": "87a7ead1b7c49b1a9324f194c4b90165b51b607d3302500ffc2b0be93f5662ff"
+          },
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.test.ts",
+            "sha256": "cfa7c8902e0a695fc6858c56a9245c171550b19017070f7b4f6e8dfef8371803"
+          },
+          {
+            "sourceRef": "/workspace/rct-worktrees/lesson-493-fixture-20261014/tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+            "sha256": "0a1cb1b84e18b3024fb67739ea5e30e6d81f0b1f5c9b5f1fcf435c09992e412a"
+          }
+        ],
+        "review": [
+          {
+            "site": "AdminUsersScreen.vue:1068/1125/2035",
+            "assessment": "Existing teacher editor only, USERS_MANAGE plus protected ADMIN-target guard. Sparse telegramId iff changed; original null maps empty; positive safe integer required, clear is explicit unavailable rather than null unlink. Existing unknownMutation/load/saving/owner-generation/selection fences retained. No creator/role/credentials permission expansion; existing recovery requires separate credential grant. Server UserService.patchUser751/882 accepts sparse field under live target authorization; role-edit API not substituted."
+          },
+          {
+            "site": "admin-users-client.ts:527",
+            "assessment": "Omission preserves existing binding and unrelated profile fields; present invalid/noninteger/nonpositive/unsafe/null rejected. Existing response normalizer fails unknown malformed types safely. Added client and actual SFC tests use existing carriers, validate current full/limited-management authority, invalid/clear refusal and reopen."
+          },
+          {
+            "site": "AdminDashboardScreen.vue:388",
+            "assessment": "Adds actual N/D only for AVAILABLE known geo counts using existing number formatter, preserves unavailable/history unknown and zero denominator with no made-up percent. Existing lower activity today/all_time comparison contract and upper scale-growth independence unchanged. Added SFC controls cover known/zero/unavailable across periods."
+          },
+          {
+            "site": "cloud-accepted-admin-grants.spec.ts:153/302/514",
+            "assessment": "Same FULL120s existing carrier, new own unbound teacher; actual GUI sparse Telegram PATCH and authoritative readback/reopen exactID/login/employee/name/roles. Own actual activity endpoint today/all_time/today payload/status/cards/fraction/comparison assertion; no mock availability or numeric daily comparison fabricated."
+          },
+          {
+            "site": "cloud-accepted-admin-grants.spec.ts:559",
+            "assessment": "Existing authorized recovery alternative issues actual201 link; only RAM boolean assertions on secret link, exact own origin/target/expiry/displayed link. New isolated context follows returned URL unchanged, consumes fragment, actual complete204, replacement password login exact recovered TEACHER. Original ADMIN page/session and foreign-feature observer independent and retained. Context finally closes with fixed soft cleanup failure preserving primary. Existing90s positive-login retry cutoff and120s case retained; original owned-target access cleanup unchanged."
+          }
+        ],
+        "testQuality": "Reused author31 targeted Vitest, canonical VueTSC/E2ETSC/lint/parser, meaningful actual oldSFC4FAIL1PASS->restored5PASS. This is component/client sensitivity; no native browser/API/provider claim. Original title/old LIMITED case/rights/session/cleanup oracles retained by author exact inverse. No mandatory permission-by-operation crossproduct or new framework.",
+        "runtime": "NOT_RUN",
+        "limits": [
+          "Genuine new browser/API/recovery and current final CI remain pending; Source approval only.",
+          "Root reviewed own8443 reset URL clock overlay separately; test follows actual issued URL without rewrite.",
+          "No backend/API/schema/newrule/newdesign change; D015 native Telegram/provider acceptance separate.",
+          "Read-only exact source/diff/accepted primary checks only; no native/tests/network/artifact fetch or Source/Git/common docs edits. B013/B014/B015 frozen."
+        ]
+      },
+      "AssertJRecheck": {
+        "verdict": "APPROVE_SOURCE_ONLY_P2_CLOSED",
+        "sourceRef": "/tmp/rct-auth-f545-20261015/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+        "sha256": "2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd",
+        "scope": "Only AssertJ chain line1255; formatting wraps hasSize(before.size()+1), startsWithElementsOf(before) replaced by supported startsWith(before.toArray(String[]::new)). Ordered exact prefix plus exactly one appended event preserved. All later actor/schema/replay/revoke assertions unchanged. Author cached javac old missing-methodRED/newGREEN qualified as API compatibility only; native PG/browser/sensitivity still NOT_RUN."
+      },
+      "checks": "Admin31Vitest/canonicalVueTSC/E2ETSC/SFC/parser/lint/noaddedwarnings, oldUI4FAIL1PASS→restored5PASS; API actualcachedJDK21/AssertJ oldjavacmissingmethodRED1→corrected0/GJF/inverse/allownedreaped. FullPG/nativeactualNOT_RUN.",
+      "actual": "Nativecurrent0cAcademiccompiler CANNOT_FIND_SYMBOL1255 confirms testgate; no newproductfailure. CorrectedAPIoracleprefix+exactappend unchanged. RootWIP9Source inclalreadyreviewed0ddaCIURL config, nextcoherentpush."
+    },
+    "0c19716_actual_checkout_and_Academic_compile_gate": {
+      "utc": "2026-10-15T11:33:37.532738+00:00",
+      "observer": "c80 strictprimaries +singleofficialRAMlogclosedprojection",
+      "producer": "0c19716c7eaa27840659a5690f8828410380bd5e",
+      "actualCheckout": "baf22f93e73b2e9f7dc628f59087969169f7c392",
+      "parents": [
+        "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "0c19716c7eaa27840659a5690f8828410380bd5e"
+      ],
+      "tree": "389dc316fb6996a20a81446ba07fcd7b45a75da2",
+      "artifact": 11967403787,
+      "unit": "11967778332 strictNO_RESULTS; officialjob116391585196 log52866B RAM-only publicSourceHomeworkEditLifecycleIT.java1255 CANNOT_FIND_SYMBOL repeatedtwice/NOothercompilerlocations. NewmethodnonexistentstartsWithElementsOf confirmedcompilegate.",
+      "integration": "11968542816 strictNO_RESULTS ordinaryITskipped, qualitystagefailedbeforeordinary; no PG result inferred.",
+      "gates": "CI38725909640running/browserinstall; Coverage38725909602FAILAcademic116391585015step8 causeunread, notautomaticallyunitcause; Sec/OpenAPIcurrentSUCCESS. No cancel/replay."
+    },
+    "0c19716_teacher_existing_parent_acceptance": {
+      "utc": "2026-10-15T11:33:37.532738+00:00",
+      "reviewer": "c86 independent boundedread-only",
+      "PASS_COMPOSED": {
+        "JS-TEACHER-01": "aa37 actualToday→lesson/catalog→group+subject→historicaljournal, read-only/foreignno-write",
+        "JS-TEACHER-04": "aa37 actualticketcard author/reason/decision/genuinePNGpreview+openedBloballbytes+ownAPI, returncontext, manualno-ticket explanation",
+        "JS-TEACHER-08": "aa37 read-onlyscope/operations/foreign403/404/nodisclosure actualsamecase",
+        "JS-TEACHER-12": "aa37 relevantjournal/ticket/read-only mobileacceptedclauses actualsamecase",
+        "JS-TEACHER-11": "f6b2_three_client_family_independent_binding.CLIENT-FE-MAP-01 +canonical396–398 SAME MapScreen; f545 actual38667616528/art11944250013 whole103/Source843e +later45e; D004legend/D015native qualified",
+        "JS-TEACHER-07": "S657 run38329143416 exacta908/498d/46fc SourceMethod domainserialization all3models DOCX/HTML/XLSX actualvalues/order/denominator, PDF/PNG adaptersmockedexplicitly; distinctconverterrisk real62df renderer/nativePDF-PNG controls +genuine6172 selectedteacherHTMLjob/file736/art11937244952. No3template×PDFbrowserclaim"
+      },
+      "aa37Primary": "run38705100947/art11958598975/aa37a49c SourceRealm d925d72e mixedcase448WHOLEPASS/error0; exactteacherblock808–1139 retained",
+      "qualification": "Originalproducers/sourcelevels retained; no newruntime/Sourceaudit/new tests/frozenproofborrowing.",
+      "remaining": {
+        "JS-TEACHER-02": "Samelecture twoallowedgroup contexts separately notpositiveforeigndenial; existingdomain/assignmentread scope, no streamaggregate/newUI",
+        "JS-TEACHER-03": "Domainmixedtypes/+n/pendingauto/historyblank proved; onlycurrentVuepending-ticket/autoabsence/cancelled presentation binding missing, no all-statusbrowsermatrix",
+        "JS-TEACHER-06/09/13/14": "SharedVue group→statistics→selectedgroupstudents/actualmetrics+lessoncount/defaultPRESENT%ascending/oneusersortdrill andjournalnavigation; backendnonempty503restore alreadyactualf6b2 sufficient",
+        "JS-TEACHER-10": "Onlyprevious/nextday andcancelledrow nonnavigation/order behavior; exactTodayfields alreadyaa37actual",
+        "JS-TEACHER-05/15": "DependexistingADMIN20/21 actualbinding/recovery; acceptedbridge/OTP/domainproof retained, no duplicaterole/providercampaign"
+      }
+    },
+    "0c19716_DeviceLink_Q021_source_fork": {
+      "utc": "2026-10-15T11:35:27.239840+00:00",
+      "source": "CanonicalJSSTUDENT25:825 /wire108:57+73 /datedOct2QRdecision7+9",
+      "sourceInventory": [
+        {
+          "sourceRef": "docs/wireframes/student/108-student-settings.md",
+          "sha256": "cd95a9641447ee8d6c6afa6291a0fa09722584a1e611693d91984335d2d3a0c2"
+        },
+        {
+          "sourceRef": "docs/product/decisions/2026-10-02-qr-login-backend-now.md",
+          "sha256": "65b7bcd35de77f4903f5eb3eeb7b90d7f3db78b7258a1107b9dd761713a0727b"
+        }
+      ],
+      "finding": "Explicitdifferentauthenticated-device-transfer feature, acceptedwire leavesAPI/securityprotocol unresolved. GuestQRlogin doesnotdecide it; noacceptedexplicitcurrentdeferral. Q021 asks ONLY thisscope.",
+      "constraints": "Do notbuildspeculativetoken-transfer protocol; existingordinarylogin/serverQR/revoke/readonlyrights independent. No newauthpermissionrequest or nativeprovider requirement."
+    },
+    "0c19716_next_nine_source_publication_ready": {
+      "utc": "2026-10-15T11:37:03.099369+00:00",
+      "scope": "ExistingAdminteacherTelegrambinding +absolutegeo metric +genuineRecoveryUIwitness, syntheticpublicrecoveryURL, confirmedtestAPIcompilefix. NineSource reviewed/targetedchecks complete, actualnextgatesrequired.",
+      "main": "3908 unchanged, designatedbranch only/draftPR",
+      "currentUsefulCI": "0cCIstillrunningbrowser install; no cancel command or concurrency change. CurrentCoverageFAILcauseunread, unit javac1255 confirmed; newhead separatelytracked.",
+      "knownPublicHashMetadataSeparated": 0,
+      "blocking_questions": "Q020adminreport/Q021distinctDeviceLink only dependentparts, other work continues."
     }
   }
 }

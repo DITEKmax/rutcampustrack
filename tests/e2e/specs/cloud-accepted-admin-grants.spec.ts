@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { Request, Response, TestInfo } from '@playwright/test';
 import {
   test,
@@ -151,6 +151,35 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
   const targetBefore = await dataset.admin.call('GET', targetPath);
   const before = await dataset.admin.call('GET', accessPath);
   expect(before.assigned).toBe(false);
+  // ADMIN20/21: one separate owned unbound teacher serves both accepted operations.
+  const teacherBefore = await dataset.admin.call(
+    'POST',
+    '/api/academic/users',
+    {
+      lastName: `Проверка${randomBytes(5).toString('hex')}`,
+      firstName: 'Синтетика',
+      middleName: null,
+      role: 'TEACHER',
+      employeeNumber: `E2E-${randomUUID().slice(0, 20)}`,
+      telegramId: null,
+      groupId: null,
+    },
+    [201],
+  );
+  expect(
+    Number.isSafeInteger(teacherBefore.id) &&
+      teacherBefore.id > 0 &&
+      teacherBefore.telegramId === null &&
+      typeof teacherBefore.login === 'string' &&
+      teacherBefore.roles.some(
+        (role: { role: string; status: string }) =>
+          role.role === 'TEACHER' && role.status === 'ACTIVE',
+      ),
+    'Own teacher exists without a Telegram binding',
+  ).toBe(true);
+  const teacherPath = `/api/academic/users/${teacherBefore.id}`;
+  const teacherTelegramId = 8_000_000_000 + randomBytes(4).readUInt32BE(0);
+  // End ADMIN20/21 own teacher.
   const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
   expect(retryRemainingMs, 'Positive ADMIN login retry budget remains').toBeGreaterThan(0);
   const { session } = await loginPwa(page, actor, {
@@ -201,6 +230,17 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
   page.on('request', observeFeatureStart);
   try {
     const statsLoaded = http(page, '/api/academic/dashboard/stats', 'GET');
+    // ADMIN22: arm the genuine initial activity read before entering the dashboard.
+    const activityReply = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/academic/dashboard/activity' &&
+        url.searchParams.get('period') === 'today' &&
+        url.searchParams.get('bucket') === 'day' &&
+        response.request().method() === 'GET'
+      );
+    });
+    // End ADMIN22 initial read.
     const selected = await selectRole(page, 'Администратор');
     expect(selected.session.activeRole).toBe('ADMIN');
     expect(adminAdmitted).toBe(true);
@@ -260,6 +300,104 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       await expect(row.locator('dd > span')).toHaveText(formatCount(count));
       await expect(row.locator('.admin-dashboard-screen__delta')).toHaveText(expectedGrowth);
     }
+    // ADMIN22: each actual period payload must be represented by the existing metric cards.
+    type ActivityMetric = {
+      state: 'AVAILABLE' | 'UNAVAILABLE' | 'INSUFFICIENT_HISTORY';
+      value: number | null;
+      percent: number | null;
+      numerator: number | null;
+      denominator: number | null;
+      comparison: {
+        state: string;
+        absoluteDelta: number | null;
+        percentPointDelta: number | null;
+      } | null;
+    };
+    type Activity = {
+      period: string;
+      bucket: string;
+      summary: { metrics: Record<string, ActivityMetric> };
+    };
+    const assertActivity = async (response: Response, period: 'today' | 'all_time') => {
+      expect(response.status()).toBe(200);
+      const activity = (await response.json()) as Activity;
+      expect(
+        activity.period === period && activity.bucket === 'day',
+        'Actual selected activity period',
+      ).toBe(true);
+      const integer = new Intl.NumberFormat('ru-RU');
+      const decimal = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+      for (const code of [
+        'positiveMarks',
+        'geoMarks',
+        'mapOpens',
+        'requests',
+        'homeworkPublications',
+      ]) {
+        const metric = activity.summary.metrics[code];
+        expect(['AVAILABLE', 'UNAVAILABLE', 'INSUFFICIENT_HISTORY']).toContain(metric.state);
+        const row = page.locator(`[data-admin-activity-metric="${code}"]`);
+        await expect(row).toHaveAttribute('data-state', metric.state);
+        const measured =
+          metric.state === 'AVAILABLE' &&
+          (code === 'geoMarks' ? metric.percent !== null : metric.value !== null);
+        const expected = !measured
+          ? '—'
+          : code === 'geoMarks'
+            ? `${decimal.format(metric.percent!)}%`
+            : integer.format(metric.value!);
+        await expect(row.locator('dd > span')).toHaveText(expected);
+        const fraction = row.locator('dd > small').filter({ hasText: ' из ' });
+        if (code === 'geoMarks' && metric.state === 'AVAILABLE') {
+          expect(
+            Number.isSafeInteger(metric.numerator) && Number.isSafeInteger(metric.denominator),
+            'Actual geo absolute counts are known',
+          ).toBe(true);
+          await expect(fraction).toHaveText(
+            `${integer.format(metric.numerator!)} из ${integer.format(metric.denominator!)}`,
+          );
+        } else await expect(fraction).toHaveCount(0);
+        const delta =
+          period === 'today' && measured && metric.comparison?.state === 'AVAILABLE'
+            ? code === 'geoMarks'
+              ? metric.comparison.percentPointDelta
+              : metric.comparison.absoluteDelta
+            : null;
+        const deltaText =
+          delta === null
+            ? '—'
+            : `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${decimal.format(Math.abs(delta))}${code === 'geoMarks' ? '%' : ''}`;
+        await expect(row.locator('.admin-dashboard-screen__delta')).toHaveText(deltaText);
+        if (delta !== null)
+          await expect(row.locator('.admin-dashboard-screen__delta')).toHaveAttribute(
+            'aria-label',
+            /относительно вчера/,
+          );
+      }
+      await expect(
+        page.getByRole('button', {
+          name: period === 'today' ? 'Сегодня' : 'Всё время',
+          exact: true,
+        }),
+      ).toHaveAttribute('aria-pressed', 'true');
+    };
+    await assertActivity(await activityReply, 'today');
+    for (const period of ['all_time', 'today'] as const) {
+      const next = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          url.pathname === '/api/academic/dashboard/activity' &&
+          url.searchParams.get('period') === period &&
+          url.searchParams.get('bucket') === 'day' &&
+          response.request().method() === 'GET'
+        );
+      });
+      await page
+        .getByRole('button', { name: period === 'today' ? 'Сегодня' : 'Всё время', exact: true })
+        .click();
+      await assertActivity(await next, period);
+    }
+    // End ADMIN22 activity witness.
     const foreignScreens = page.locator(
       '.today-shell, .semester-screen, .attendance-screen, .headman-home, .headman-journal, .headman-group, .headman-actions, .teacher-feature-owner',
     );
@@ -374,6 +512,116 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
           role.role === 'ADMIN' && role.status === 'ACTIVE',
       ),
     ).toBe(false);
+    // ADMIN21: bind the existing own teacher with a partial profile edit and authoritative readback.
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(teacherBefore.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${teacherBefore.id}"]`).click();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users.getByLabel('Telegram ID', { exact: true }).fill(String(teacherTelegramId));
+    const bindingSaved = http(page, teacherPath, 'PATCH');
+    await users.getByRole('button', { name: 'Сохранить данные', exact: true }).click();
+    const bindingResponse = await bindingSaved;
+    expect(bindingResponse.status()).toBe(200);
+    const bindingInput = bindingResponse.request().postDataJSON();
+    expect(
+      Object.keys(bindingInput).length === 1 && bindingInput.telegramId === teacherTelegramId,
+      'Binding sends only the intended Telegram field',
+    ).toBe(true);
+    const bound = await dataset.admin.call('GET', teacherPath);
+    expect(
+      bound.id === teacherBefore.id &&
+        bound.telegramId === teacherTelegramId &&
+        bound.login === teacherBefore.login &&
+        bound.employeeNumber === teacherBefore.employeeNumber &&
+        bound.lastName === teacherBefore.lastName &&
+        bound.firstName === teacherBefore.firstName &&
+        bound.middleName === teacherBefore.middleName &&
+        JSON.stringify(bound.roles) === JSON.stringify(teacherBefore.roles),
+      'Binding preserves the teacher account and unrelated profile data',
+    ).toBe(true);
+    await expect(users.getByText('Данные пользователя сохранены.', { exact: true })).toBeVisible();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    expect(
+      (await users.getByLabel('Telegram ID', { exact: true }).inputValue()) ===
+        String(teacherTelegramId),
+      'Reopened teacher editor retains the binding',
+    ).toBe(true);
+    // End ADMIN21 binding witness.
+
+    // ADMIN20: issue the existing recovery alternative, then use it in an independent owner context.
+    await users.getByRole('button', { name: 'Восстановить доступ', exact: true }).click();
+    const issuedReply = http(
+      page,
+      `/api/auth/admin/users/${teacherBefore.id}/password-reset-link`,
+      'POST',
+    );
+    await users.getByRole('button', { name: 'Создать ссылку восстановления', exact: true }).click();
+    const issuedResponse = await issuedReply;
+    expect(issuedResponse.status()).toBe(201);
+    const issued = await issuedResponse.json();
+    expect(
+      typeof issued.url === 'string' &&
+        new URL(issued.url).origin === origin &&
+        new URL(issued.url).pathname.endsWith('/password-reset') &&
+        Date.parse(issued.expiresAt) > Date.now(),
+      'Own recovery link has the authoritative public target and unexpired lifetime',
+    ).toBe(true);
+    expect(
+      (await users.locator('.recovery-link-panel__field input[readonly]').inputValue()) ===
+        issued.url,
+      'The administrator sees the issued one-time link',
+    ).toBe(true);
+    const browser = page.context().browser();
+    expect(Boolean(browser), 'Existing browser carrier is available').toBe(true);
+    const recoveryContext = await browser!.newContext({ baseURL: origin, ignoreHTTPSErrors: true });
+    try {
+      const recoveryPage = await recoveryContext.newPage();
+      await recoveryPage.goto(issued.url);
+      await expect(
+        recoveryPage.getByRole('heading', { name: 'Задай новый пароль', exact: true }),
+      ).toBeVisible();
+      expect(new URL(recoveryPage.url()).hash === '', 'Recovery consumes its secret fragment').toBe(
+        true,
+      );
+      const replacementPassword = `Reset-${randomUUID()}!1`;
+      await recoveryPage.getByLabel('Новый пароль', { exact: true }).fill(replacementPassword);
+      await recoveryPage
+        .getByLabel('Повтори новый пароль', { exact: true })
+        .fill(replacementPassword);
+      const completed = http(recoveryPage, '/api/auth/password-reset/complete', 'POST');
+      await recoveryPage.getByRole('button', { name: 'Сохранить пароль', exact: true }).click();
+      expect((await completed).status()).toBe(204);
+      await expect(
+        recoveryPage.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+      ).toBeVisible();
+      const remainingMs = Math.floor(retryCutoffMs - performance.now());
+      expect(remainingMs, 'Replacement login retains the original positive budget').toBeGreaterThan(
+        0,
+      );
+      const replacement = await loginPwa(
+        recoveryPage,
+        {
+          login: teacherBefore.login,
+          password: replacementPassword,
+          role: 'TEACHER',
+          expectedLandingPath: '/app/',
+        },
+        { retryUntilMs: Date.now() + Math.min(65000, remainingMs) },
+      );
+      expect(
+        replacement.session.userId === String(teacherBefore.id) &&
+          replacement.session.activeRole === 'TEACHER',
+        'Replacement credential admits the exact recovered teacher',
+      ).toBe(true);
+    } finally {
+      await recoveryContext.close().catch(() => {
+        expect.soft(false, 'Own recovery browser context cleanup failed').toBe(true);
+      });
+    }
+    // End ADMIN20 recovery witness.
     const currentSession = await page.request.get('/api/auth/session', {
       headers: { Authorization: `Bearer ${selected.accessToken}` },
     });

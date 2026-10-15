@@ -144,6 +144,43 @@ function failure(status: number, code = ''): AdminUsersApiError {
   } as never)
 }
 describe('role editor and current profile load', () => {
+  it.each(['recovery', 'limited-manage'])(
+    'binds an existing teacher through the current profile editor with %s authority',
+    async (state) => {
+      const { client, accessClient, authority } = createAdminUsersReviewApis(state)
+      const original = { ...(await client.getUser(3)), telegramId: null, initialPassword: null }
+      let current: Awaited<ReturnType<typeof client.getUser>> = original
+      vi.spyOn(client, 'getUser').mockImplementation(async () => current)
+      const update = vi.spyOn(client, 'updateProfile').mockImplementation(async (_id, input) => {
+        current = { ...current, ...input }
+        return current
+      })
+      const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+      await flush()
+      await click(nodes(root).find((node) => node.props['data-user-id'] === 3)!)
+      await click(button(root, 'Редактировать данные'))
+      const field = () =>
+        nodes(root).find((node) => node.tag === 'input' && node.props.inputmode === 'numeric')!
+      expect(field().value).toBe('')
+      await input(field(), '0')
+      await submit(root)
+      expect(update).not.toHaveBeenCalled()
+      await input(field(), '987654321')
+      await submit(root)
+      expect(update.mock.calls[0]!.slice(0, 2)).toEqual([3, { telegramId: 987654321 }])
+      expect(current.roles).toEqual(original.roles)
+      expect(current.employeeNumber).toBe(original.employeeNumber)
+      expect(current.initialPassword).toBeNull()
+      expect(text(root)).toContain('987654321')
+      await click(button(root, 'Редактировать данные'))
+      expect(field().value).toBe('987654321')
+      await input(field(), '')
+      await submit(root)
+      expect(update).toHaveBeenCalledTimes(1)
+      expect(text(root)).toContain('Отвязка через эту форму недоступна')
+    },
+  )
+
   it('never loses a typed teacher number when the pending profile read finishes', async () => {
     const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
     const original = await client.getUser(1)

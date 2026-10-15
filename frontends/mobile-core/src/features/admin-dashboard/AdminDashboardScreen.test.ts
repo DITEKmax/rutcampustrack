@@ -92,6 +92,47 @@ function mount(client: AdminDashboardClient): {
   return { root, props, app }
 }
 describe('dashboard event invalidation lifecycle', () => {
+  it.each(['ready', 'geo-zero', 'unavailable'] as const)(
+    'shows truthful absolute geo counts across activity periods for %s',
+    async (variant) => {
+      const getActivity = vi.fn(async (period: 'today' | 'all_time') =>
+        createAdminActivityFixture(period, 'day', variant),
+      )
+      const { root } = mount({
+        getStats: async () => stats(17),
+        getActivity,
+      } as unknown as AdminDashboardClient)
+      await flush()
+      const descendants = (node: Element): Element[] => [
+        node,
+        ...node.children.flatMap(descendants),
+      ]
+      const geo = () =>
+        descendants(root).find((node) => node.props['data-admin-activity-metric'] === 'geoMarks')!
+      const assertGeo = (period: 'today' | 'all_time') => {
+        const metric = createAdminActivityFixture(period, 'day', variant).summary.metrics.geoMarks
+        if (metric.state === 'AVAILABLE') {
+          const number = new Intl.NumberFormat('ru-RU')
+          expect(text(geo())).toContain(
+            `${number.format(metric.numerator!)} из ${number.format(metric.denominator!)}`,
+          )
+          if (metric.denominator === 0) expect(text(geo())).not.toContain('%')
+        } else {
+          expect(text(geo())).not.toContain(' из ')
+          expect(text(geo())).not.toContain('%')
+        }
+      }
+      assertGeo('today')
+      const allTime = descendants(root).find(
+        (node) => node.tag === 'button' && text(node).trim() === 'Всё время',
+      )!
+      ;(allTime.props.onClick as () => void)()
+      await flush()
+      assertGeo('all_time')
+      expect(getActivity.mock.calls.at(-1)?.[0]).toBe('all_time')
+    },
+  )
+
   it('keeps scale growth visible across activity periods and makes older missing history explicit', async () => {
     const known = {
       ...stats(17),

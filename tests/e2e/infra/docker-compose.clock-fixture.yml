@@ -8,6 +8,9 @@ x-teaching-clock-mount: &teaching-clock-mount
   bind:
     create_host_path: false
 services:
+  auth-service:
+    environment:
+      AUTH_PASSWORD_RESET_URL: https://localhost:8443/app/password-reset
   academic-service:
     volumes:
       - *teaching-clock-mount

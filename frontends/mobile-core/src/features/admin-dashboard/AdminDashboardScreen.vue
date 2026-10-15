@@ -385,6 +385,17 @@ onBeforeUnmount(() => {
                 >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span
               >
               <small
+                v-if="
+                  code === 'geoMarks' &&
+                    activity.summary.metrics[code].state === 'AVAILABLE' &&
+                    activity.summary.metrics[code].numerator !== null &&
+                    activity.summary.metrics[code].denominator !== null
+                "
+              >
+                {{ formatCount(activity.summary.metrics[code].numerator!) }} из
+                {{ formatCount(activity.summary.metrics[code].denominator!) }}
+              </small>
+              <small
                 class="admin-dashboard-screen__delta"
                 :data-tone="adminActivityDelta(activity.summary.metrics[code], code).tone"
                 :aria-label="adminActivityDelta(activity.summary.metrics[code], code).description"

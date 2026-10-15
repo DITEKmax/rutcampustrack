@@ -1671,7 +1671,12 @@
         "JS-HEADMAN-38",
         "JS-TEACHER-01",
         "JS-TEACHER-09",
-        "JS-TEACHER-14"
+        "JS-TEACHER-14",
+        "JS-TEACHER-02",
+        "JS-TEACHER-03",
+        "JS-TEACHER-06",
+        "JS-TEACHER-10",
+        "JS-TEACHER-13"
       ],
       "research_ids": [
         "P01",
@@ -1922,7 +1927,8 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "Contract/IT participant responses can be mocked. Closing keeps future lessons teacherless only when actual Schedule participant readback agrees. N+1 count1/10/50 source inspection is optional measurement, not a defect or SLA.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_teacher_parent_residuals_ref": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.0c19716_teacher_existing_parent_acceptance"
     },
     {
       "id": "ACADEMIC-HOMEWORK",
@@ -3647,7 +3653,12 @@
         "JS-STUDENT-14",
         "JS-STUDENT-17",
         "JS-STUDENT-19",
-        "JS-ADMIN-12"
+        "JS-ADMIN-12",
+        "JS-TEACHER-02",
+        "JS-TEACHER-09",
+        "JS-TEACHER-10",
+        "JS-TEACHER-13",
+        "JS-TEACHER-14"
       ],
       "research_ids": [
         "P02",
@@ -4030,7 +4041,8 @@
           "owner": "c86 read-only source resolution",
           "check": "Determine acceptedcurrent carrier/disposition/operationalprocedure; no speculativeendpoint/screen/implicitexclusion."
         }
-      ]
+      ],
+      "current_teacher_parent_residuals_ref": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.0c19716_teacher_existing_parent_acceptance"
     },
     {
       "id": "ATTENDANCE-PARTICIPANTS",
@@ -7118,6 +7130,16 @@
         "tests/e2e/REAL-MOBILE.md",
         "tests/e2e/specs/auth-token-lifecycle.spec.ts",
         "tests/e2e/specs/mini-app.spec.ts"
+      ],
+      "current_teacher_parent_residuals_ref": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.0c19716_teacher_existing_parent_acceptance",
+      "source_story_ids": [
+        "JS-TEACHER-02",
+        "JS-TEACHER-03",
+        "JS-TEACHER-06",
+        "JS-TEACHER-09",
+        "JS-TEACHER-10",
+        "JS-TEACHER-13",
+        "JS-TEACHER-14"
       ]
     },
     {
@@ -7204,6 +7226,9 @@
           "owner": "c84 Sourceplan",
           "check": "One genuineexistingdashboardtoggle/readback, no event×period×rolecrossproduct."
         }
+      ],
+      "current_teacher_auth_shared_dependencies": [
+        "JS-TEACHER-05/15 reuseADMIN20/21 actualbinding/recovery; no separateprovider/authcampaign."
       ]
     },
     {

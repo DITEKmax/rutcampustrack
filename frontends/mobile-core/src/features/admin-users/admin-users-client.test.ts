@@ -44,6 +44,28 @@ describe('AdminUsersClient.updateProfile', () => {
     expect(JSON.parse(String(capturedInit?.body))).not.toHaveProperty('groupId')
   })
 
+  it('binds only the supplied positive Telegram ID without replacing unrelated profile fields', async () => {
+    const payloads: unknown[] = []
+    const client = new AdminUsersClient({
+      accessToken: () => 'admin-token',
+      fetcher: async (_input, init) => {
+        payloads.push(JSON.parse(String(init?.body)))
+        return new Response(
+          JSON.stringify({ ...userResponse, role: 'TEACHER', telegramId: 987654321 }),
+          { status: 200 },
+        )
+      },
+    })
+    await expect(client.updateProfile(42, { telegramId: 987654321 })).resolves.toMatchObject({
+      id: 42,
+      telegramId: 987654321,
+    })
+    expect(payloads).toEqual([{ telegramId: 987654321 }])
+    for (const telegramId of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1])
+      expect(() => client.updateProfile(42, { telegramId })).toThrow()
+    expect(payloads).toHaveLength(1)
+  })
+
   it('trims required names and rejects an empty or overlong required name', async () => {
     const client = new AdminUsersClient({
       accessToken: () => null,

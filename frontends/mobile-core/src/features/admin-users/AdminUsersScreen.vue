@@ -612,6 +612,7 @@ const profileLastName = ref('');
 const profileFirstName = ref('');
 const profileMiddleName = ref('');
 const profileEmployeeNumber = ref('');
+const profileTelegramId = ref('');
 const editorRole = ref<Exclude<AdminManagedRole, 'HEADMAN'>>('STUDENT');
 const editorStatus = ref<AdminRoleStatus>('ACTIVE');
 const editorGroupId = ref('');
@@ -1068,6 +1069,7 @@ async function beginProfileEdit(): Promise<void> {
     profileFirstName.value = fresh.firstName;
     profileMiddleName.value = fresh.middleName ?? '';
     profileEmployeeNumber.value = fresh.employeeNumber ?? '';
+    profileTelegramId.value = fresh.telegramId === null ? '' : String(fresh.telegramId);
     syncEditorFromUser(fresh);
   } catch (cause) {
     if (
@@ -1124,7 +1126,20 @@ async function updateProfile(): Promise<void> {
     firstName?: string;
     middleName?: string;
     employeeNumber?: string;
+    telegramId?: number;
   } = {};
+  if (
+    profileHasTeacherRole.value &&
+    profileTelegramId.value.trim() !==
+      (original.telegramId === null ? '' : String(original.telegramId))
+  ) {
+    try {
+      input.telegramId = parsePositive(profileTelegramId.value, 'telegramId');
+    } catch {
+      error.value = 'Укажи корректный Telegram ID. Отвязка через эту форму недоступна.';
+      return;
+    }
+  }
   if (lastName !== original.lastName) input.lastName = lastName;
   if (firstName !== original.firstName) input.firstName = firstName;
   if (middleName !== (original.middleName ?? '')) input.middleName = middleName;
@@ -2021,8 +2036,16 @@ onBeforeUnmount(() => {
           :required="profileHasTeacherRole"
           maxlength="32"
           autocomplete="off"
+        ></label><label
+          v-if="profileHasTeacherRole"
+          class="admin-users-field"
+        ><span>Telegram ID</span><input
+          v-model="profileTelegramId"
+          inputmode="numeric"
+          pattern="[0-9]+"
+          autocomplete="off"
         ></label><div
-          v-if="selectedUser.telegramId"
+          v-else-if="selectedUser.telegramId"
           class="admin-users-field"
         >
           <span>Telegram ID</span><p>{{ selectedUser.telegramId }}</p>

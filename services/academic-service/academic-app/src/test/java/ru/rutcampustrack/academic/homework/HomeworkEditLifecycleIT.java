@@ -1252,7 +1252,9 @@ class HomeworkEditLifecycleIT {
         assertThat(service.history(homework.getId(), PageRequest.of(0, 10)).getContent())
                 .isEqualTo(history);
         List<String> archivedActions = actions(homework);
-        assertThat(archivedActions).hasSize(before.size() + 1).startsWithElementsOf(before);
+        assertThat(archivedActions)
+                .hasSize(before.size() + 1)
+                .startsWith(before.toArray(String[]::new));
         String action = archivedActions.getLast();
         assertThat(
                         ru.rutcampustrack.academic.events.EventSchemaValidator.validate(

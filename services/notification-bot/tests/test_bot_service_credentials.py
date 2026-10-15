@@ -4,6 +4,7 @@ import base64
 from types import SimpleNamespace
 
 import pytest
+
 from bot.grpc_client.bot_service_credentials import (
     ACADEMIC_SERVICE,
     BotCredentialTransportUnavailable,
@@ -160,6 +161,7 @@ async def test_attendance_real_tls_accepts_own_ca_and_metadata_but_rejects_wrong
     from pathlib import Path
 
     import grpc
+
     from bot.grpc_client import attendance_pb2, attendance_pb2_grpc
     from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { TestInfo } from '@playwright/test';
+import type { Request, TestInfo } from '@playwright/test';
 import {
   test,
   expect,
@@ -41,7 +41,30 @@ test('VIEW_STATS renders own group but grants neither marking, roster export nor
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   expect(permissions.status()).toBe(200);
-  expect(assistantPermissionCodes(await permissions.json())).toEqual(['VIEW_STATS']);
+  const ownPermissionOptions = await permissions.json();
+  expect(assistantPermissionCodes(ownPermissionOptions)).toEqual(['VIEW_STATS']);
+  // Same logged-in helper: profile is a readonly view of exact own capabilities.
+  let groupWideAssistantRead = false;
+  const observePermissionScope = (request: Request) => {
+    if (
+      request.method() === 'GET' &&
+      new URL(request.url()).pathname === '/api/academic/assistants'
+    )
+      groupWideAssistantRead = true;
+  };
+  page.on('request', observePermissionScope);
+  try {
+    await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+    const rights = page.getByRole('region', { name: 'Дополнительные права', exact: true });
+    await expect(rights).toBeVisible();
+    await expect(rights.getByRole('listitem')).toHaveText(
+      ownPermissionOptions.map((option: { label: string }) => option.label),
+    );
+    await expect(rights.locator('input, button, [role="switch"]')).toHaveCount(0);
+    expect(groupWideAssistantRead).toBe(false);
+  } finally {
+    page.off('request', observePermissionScope);
+  }
   const loaded = http(page, '/api/attendance/reports/headman/stats/query', 'POST');
   await openAssistant(page, 'Статистика группы');
   const response = await loaded;
@@ -157,6 +180,16 @@ test('VIEW_STATS renders own group but grants neither marking, roster export nor
   await page.reload();
   await page.getByRole('button', { name: 'Ещё', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Действия помощника', exact: true })).toHaveCount(
+    0,
+  );
+  const revokedPermissions = await dataset.request.get('/api/academic/assistants/me/permissions', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  expect(revokedPermissions.status()).toBe(200);
+  expect(await revokedPermissions.json()).toEqual([]);
+  await revokedPermissions.dispose();
+  await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Дополнительные права', exact: true })).toHaveCount(
     0,
   );
 });

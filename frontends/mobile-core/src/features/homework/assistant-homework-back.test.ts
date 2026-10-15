@@ -1,10 +1,26 @@
 /// <reference types="vite/client" />
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { compile, createRenderer, h, nextTick, shallowReactive, ssrContextKey, type App } from 'vue'
+import {
+  compile,
+  createRenderer,
+  h,
+  nextTick,
+  onBeforeUnmount,
+  shallowReactive,
+  shallowRef,
+  ssrContextKey,
+  type App,
+} from 'vue'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import HeadmanScheduleScreen from '../schedule/HeadmanScheduleScreen.vue'
 import scheduleSource from '../schedule/HeadmanScheduleScreen.vue?raw'
 import HeadmanHomeworkScreen from './HeadmanHomeworkScreen.vue'
+import AssistantActionsScreen from '../headman-group/AssistantActionsScreen.vue'
+import assistantActionsSource from '../headman-group/AssistantActionsScreen.vue?raw'
+import AssistantHomeworkScreen from './AssistantHomeworkScreen.vue'
+import assistantHomeworkSource from './AssistantHomeworkScreen.vue?raw'
+import { createMobileNavigationStack, nestedRoute, rootRoute } from '../../shared/navigation'
+import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
 import type { HeadmanSubjectsApi } from '../headman-subjects/headman-subjects-client'
 import homeworkSource from './HeadmanHomeworkScreen.vue?raw'
 import MobileShell from '../../shared/components/MobileShell.vue'
@@ -33,6 +49,8 @@ import {
 for (const [component, source] of [
   [HeadmanScheduleScreen, scheduleSource],
   [HeadmanHomeworkScreen, homeworkSource],
+  [AssistantActionsScreen, assistantActionsSource],
+  [AssistantHomeworkScreen, assistantHomeworkSource],
   [MobileShell, shellSource],
   [MobileBottomNav, navSource],
   [HeadmanMoreScreen, moreSource],
@@ -650,6 +668,200 @@ describe('homework mutation across real parent navigation and form', () => {
       await screen.click('Домашнее задание')
       await screen.back()
       expect(text(screen.root)).toContain('Конструктор расписания')
+    },
+  )
+})
+
+// Reuse the real shell, assistant parent and form: the stack is the only
+// difference in the old missing-wiring counterexample below.
+async function mountAssistantBack(editing: boolean, wired: boolean) {
+  vi.stubGlobal('Document', class {})
+  vi.stubGlobal('ShadowRoot', class {})
+  const navigation = createMobileNavigationStack(rootRoute('more'))
+  navigation.push(nestedRoute('more', 'more/assistant', 'task'))
+  const route = shallowRef(navigation.current)
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
+  const existing: HeadmanManagedHomework = {
+    id: 91,
+    bindingId: 501,
+    requestKey: null,
+    title: 'Исходное ДЗ',
+    description: '',
+    link: null,
+    subjectId: 88,
+    groupId: 7,
+    semesterId: 12,
+    publishedBy: 99,
+    lessonDate: today,
+    lessonNumber: 1,
+    lessonType: 'LECTURE',
+    bindingMode: 'LESSON',
+    revision: 4,
+    archived: false,
+  }
+  let response = deferred<HeadmanHomeworkCreateResult | HeadmanManagedHomework>()
+  const creates: {
+    input: HeadmanHomeworkCreateInput
+    receipt: HeadmanHomeworkPublicationReceipt | null
+  }[] = []
+  const edits: HeadmanHomeworkUpdateInput[] = []
+  const api = {
+    activeSemester: async () => ({
+      id: 12,
+      name: 'Семестр',
+      dateFrom: null,
+      dateTo: null,
+      active: true,
+    }),
+    listHomeworks: async () => (editing ? [existing] : []),
+    listSubjects: async () => [{ id: 88, name: 'Предмет' }],
+    createHomework: (
+      input: HeadmanHomeworkCreateInput,
+      receipt: HeadmanHomeworkPublicationReceipt | null,
+    ) => {
+      creates.push({ input, receipt })
+      return response.promise
+    },
+    updateHomework: (_id: number, input: HeadmanHomeworkUpdateInput) => {
+      edits.push(input)
+      return response.promise
+    },
+  } as unknown as HeadmanHomeworkApi
+  const journalApi = {
+    listLessons: async () => [
+      {
+        id: 300,
+        groupId: 7,
+        subjectId: 88,
+        date: today,
+        status: 'PLANNED',
+        lessonNumber: 1,
+        startTime: '23:00',
+        endTime: '23:59',
+        room: null,
+        lessonType: 'LECTURE',
+        occurrenceId: '700',
+        occurrenceRevision: '1',
+        current: true,
+        transferOperationId: null,
+        transferState: null,
+      },
+    ],
+  } as unknown as HeadmanJournalApi
+  const root = node('root')
+  const app = renderer.createApp({
+    setup() {
+      const stop = navigation.subscribe(() => {
+        route.value = navigation.current
+      })
+      onBeforeUnmount(stop)
+      return () =>
+        h(
+          MobileShell,
+          { navigation, navItems: createStudentNavigationItems(), host: { backOwner: 'product' } },
+          {
+            default: () =>
+              route.value.id === 'more/assistant'
+                ? h(AssistantActionsScreen, {
+                    navigation: wired ? navigation : null,
+                    permissions: ['MANAGE_HOMEWORK'],
+                    groupId: 7,
+                    userId: 41,
+                    homeworkApi: api,
+                    journalApi,
+                    statsApi: null,
+                    requestsApi: null,
+                  })
+                : h('p', 'More root'),
+          },
+        )
+    },
+  })
+  app.provide(ssrContextKey, { modules: new Set() })
+  apps.push(app)
+  app.mount(root)
+  const click = async (label: string) => {
+    const button = nodes(root).find((n) => n.tag === 'button' && text(n).trim() === label)
+    expect(button, label).toBeDefined()
+    expect(button!.props.disabled).not.toBe(true)
+    ;(button!.props.onClick as () => void)()
+    await settle()
+  }
+  const submit = async () => {
+    const form = nodes(root).find((n) => n.tag === 'form')!
+    ;(form.props.onSubmit as (event: { preventDefault: () => void }) => void)({
+      preventDefault: () => undefined,
+    })
+    await settle()
+  }
+  await settle()
+  await click('Домашние задания')
+  await click(editing ? 'Изменить' : 'Добавить')
+  const titleField = () =>
+    nodes(root).find((n) => n.tag === 'input' && n.props.maxlength === '255')!
+  ;(titleField().props['onUpdate:modelValue'] as (value: string) => void)('Сохранить этот вариант')
+  await settle()
+  return {
+    navigation,
+    root,
+    click,
+    submit,
+    titleField,
+    creates,
+    edits,
+    existing,
+    response: () => response,
+    nextResponse: () => {
+      response = deferred<HeadmanHomeworkCreateResult | HeadmanManagedHomework>()
+      return response
+    },
+  }
+}
+
+describe('assistant parent Back preserves guarded homework', () => {
+  it.each([false, true])(
+    'retains pending/uncertain identity and allows settled Back: edit=%s',
+    async (editing) => {
+      const missing = await mountAssistantBack(editing, false)
+      await missing.submit()
+      await missing.click('Назад')
+      expect(missing.navigation.current.id).toBe('more')
+      expect(nodes(missing.root).some((n) => n.tag === 'form')).toBe(false)
+      missing
+        .response()
+        .resolve(editing ? missing.existing : { state: 'ACTIVE', homework: missing.existing })
+      await settle()
+
+      const screen = await mountAssistantBack(editing, true)
+      await screen.submit()
+      await screen.click('Назад')
+      expect(screen.navigation.current.id).toBe('more/assistant')
+      expect(screen.titleField().value).toBe('Сохранить этот вариант')
+      const receipt = {
+        homeworkId: '91',
+        bindingId: '501',
+        requestKey: screen.creates[0]?.input.requestKey ?? '',
+      }
+      if (editing) screen.response().reject(new TypeError('synthetic lost edit response'))
+      else screen.response().resolve({ state: 'PENDING', receipt })
+      await settle()
+      await screen.click('Назад')
+      expect(screen.navigation.current.id).toBe('more/assistant')
+      expect(screen.titleField().value).toBe('Сохранить этот вариант')
+      screen.nextResponse()
+      await screen.submit()
+      if (editing) expect(screen.edits[1]).toBe(screen.edits[0])
+      else {
+        expect(screen.creates[1]!.input).toBe(screen.creates[0]!.input)
+        expect(screen.creates[1]!.receipt).toEqual(receipt)
+      }
+      screen
+        .response()
+        .resolve(editing ? screen.existing : { state: 'ACTIVE', homework: screen.existing })
+      await settle()
+      await screen.click('Назад')
+      expect(screen.navigation.current.id).toBe('more')
+      expect(nodes(screen.root).some((n) => n.tag === 'form')).toBe(false)
     },
   )
 })

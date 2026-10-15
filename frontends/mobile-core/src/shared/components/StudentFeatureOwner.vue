@@ -35,7 +35,10 @@ import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vu
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
 import MoreScreen from '../../features/profile/MoreScreen.vue';
 import AssistantActionsScreen from '../../features/headman-group/AssistantActionsScreen.vue';
-import type { HeadmanAssistantPermission } from '../../features/headman-group/headman-group-client';
+import type {
+  HeadmanAssistantPermission,
+  HeadmanPermissionOption,
+} from '../../features/headman-group/headman-group-client';
 import type { HeadmanJournalApi } from '../../features/headman-journal/headman-journal-client';
 import type { HeadmanRequestsApi } from '../../features/headman-requests/headman-requests-client';
 import type { HeadmanStatsApi } from '../../features/headman-stats/headman-stats-client';
@@ -133,6 +136,7 @@ const props = withDefaults(
     acquireCheckinCommand: () => Promise<StudentCheckinCommand>;
     openMaterial: (url: string, item: StudentHomeworkItem) => void;
     assistantPermissions?: readonly HeadmanAssistantPermission[];
+    assistantPermissionOptions?: readonly HeadmanPermissionOption[];
     assistantJournalApi?: HeadmanJournalApi | null;
     assistantStatsApi?: HeadmanStatsApi | null;
     assistantRequestsApi?: HeadmanRequestsApi | null;
@@ -161,6 +165,7 @@ const props = withDefaults(
     profileRoleSelect: undefined,
     themeController: null,
     assistantPermissions: () => [],
+    assistantPermissionOptions: () => [],
     assistantJournalApi: null,
     assistantStatsApi: null,
     assistantRequestsApi: null,
@@ -982,6 +987,19 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view;
 const publishProfileView = profilePublication.publish;
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, offline.value));
+const profilePermissionOptions = computed(() =>
+  !offline.value &&
+  !props.readOnly &&
+  !profileOwnerStatus.value &&
+  profileView.value.snapshot?.activeRole === 'STUDENT' &&
+  !profileView.value.snapshot.readOnly &&
+  profileView.value.snapshot.userId === scope.value?.userId &&
+  profileView.value.snapshot.sessionId === scope.value?.sessionId &&
+  profileView.value.snapshot.sessionVersion === scope.value?.sessionVersion &&
+  profileView.value.snapshot.rolesVersion === scope.value?.rolesVersion
+    ? props.assistantPermissionOptions
+    : [],
+);
 const homeRoleSwitchDisabled = computed(
   () => offline.value || props.profilePort === null || scope.value === null,
 );
@@ -2301,6 +2319,7 @@ defineExpose({ openNotificationAction });
     <ProfileScreen
       v-if="route.kind === 'root'"
       :snapshot="profileView.snapshot"
+      :delegated-permissions="profilePermissionOptions"
       :loading="profileView.snapshotStatus === 'loading'"
       :error="profileView.snapshotError"
       :theme="resolvedTheme"
@@ -2376,7 +2395,7 @@ defineExpose({ openNotificationAction });
     :active-id="'more'"
     :host="host"
   >
-    <template #back>
+    <template #back="{ visible, onBack }">
       <span
         v-if="
           route.id === 'more/statistics' ||
@@ -2392,6 +2411,14 @@ defineExpose({ openNotificationAction });
         hidden
         aria-hidden="true"
       />
+      <button
+        v-else-if="visible && route.id === 'more/assistant'"
+        class="mobile-shell__back"
+        type="button"
+        @click="onBack"
+      >
+        Назад
+      </button>
     </template>
     <MoreScreen
       v-if="route.kind === 'root'"
@@ -2416,6 +2443,7 @@ defineExpose({ openNotificationAction });
     />
     <AssistantActionsScreen
       v-else-if="route.id === 'more/assistant'"
+      :navigation="navigation"
       :permissions="assistantPermissions ?? []"
       :group-id="scope?.groupId ? Number(scope.groupId) : null"
       :journal-api="assistantJournalApi ?? null"

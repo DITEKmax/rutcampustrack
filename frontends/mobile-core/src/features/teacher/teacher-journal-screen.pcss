@@ -219,6 +219,31 @@
   color: var(--rct-color-status-on-fill);
   background: var(--rct-color-status-absent-fill);
 }
+.teacher-journal__mark[data-auto-absent='true'] .teacher-journal__cell-circle {
+  border: var(--rct-border-hairline) solid var(--rct-color-text-muted);
+  color: var(--rct-color-text-secondary);
+  background: transparent;
+}
+.teacher-journal__mark[data-pending-ticket='true'] {
+  block-size: auto;
+  min-block-size: var(--rct-control-min-touch);
+  gap: var(--rct-space-1);
+}
+.teacher-journal__pending {
+  display: block;
+  color: var(--rct-color-warning-text);
+  font-size: var(--rct-font-size-micro);
+  font-weight: var(--rct-font-weight-regular);
+}
+.teacher-journal__mark--cancelled .teacher-journal__cell-circle {
+  color: var(--rct-color-text-muted);
+  background: transparent;
+}
+.teacher-journal__cancelled-label {
+  display: block;
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-micro);
+}
 .teacher-journal__mark--none {
   color: var(--rct-color-text-secondary);
 }

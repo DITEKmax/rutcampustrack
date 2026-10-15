@@ -424,6 +424,7 @@ jobs:
           reports = app / 'build/reports/integrationTest'
           current = {}
           additional = None
+          audit = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -498,6 +499,41 @@ jobs:
                       'counterexampleSourceSha256': hashlib.sha256(identity_negative).hexdigest(),
                       'ruleFrame': identity_package + '.' + identity_method + '(RestApiIT.java:' + str(identity_line) + ')'}
 
+                  audit_source = app / 'src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java'
+                  audit_test = audit_source.read_bytes()
+                  assert hashlib.sha256(audit_test).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
+                  audit_oracle = b'        assertThat(payload.path("actor").path("user_id").asLong()).isEqualTo(actor);\n'
+                  assert audit_test.count(audit_oracle) == 1
+                  audit_line = audit_test[:audit_test.index(audit_oracle)].count(b'\n') + 1
+                  assert audit_line == 1265
+                  audit_production = app / 'src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java'
+                  audit_current = audit_production.read_bytes()
+                  assert hashlib.sha256(audit_current).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
+                  audit_anchor = (b'            HomeworkActionRecordedEvent.publish(\n'
+                                  b'                    events,\n'
+                                  b'                    "HOMEWORK_ARCHIVED",\n'
+                                  b'                    homework,\n'
+                                  b'                    actualActorId,\n'
+                                  b'                    actorRole,\n'
+                                  b'                    before,\n'
+                                  b'                    java.time.OffsetDateTime.now());\n')
+                  assert audit_current.count(audit_anchor) == 1
+                  audit_negative = audit_current.replace(
+                      audit_anchor, audit_anchor.replace(b'                    actualActorId,\n',
+                                                        b'                    homework.getPublishedBy(),\n'))
+                  assert hashlib.sha256(audit_negative).hexdigest() == '22148473e411301f556b8b4ca0acf742c0fa1b70fc8198fcd0294ba9e720e1d8'
+                  audit = {'package': 'ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT',
+                           'method': 'nonAuthorAssistantDeletePreservesCreatorHistoryAndActualActorOutboxOnReplay',
+                           'source': audit_source, 'production': audit_production}
+                  replacements[audit_production] = audit_negative
+                  proof['auditRule'] = {
+                      'counterexample': 'MANUAL_ARCHIVE_ACTOR_REPLACED_WITH_CREATOR',
+                      'testMethod': audit['package'] + '.' + audit['method'],
+                      'testSourceSha256': hashlib.sha256(audit_test).hexdigest(),
+                      'productionSourceSha256': hashlib.sha256(audit_current).hexdigest(),
+                      'counterexampleSourceSha256': hashlib.sha256(audit_negative).hexdigest(),
+                      'ruleFrame': audit['package'] + '.' + audit['method'] + '(HomeworkEditLifecycleIT.java:' + str(audit_line) + ')'}
+
               elif service == 'notification-service':
                   package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
                   method = 'webPush503LeavesInboxReadableAndRetriesOnceWithoutDuplicatingHistoryOrDelivery'
@@ -540,9 +576,11 @@ jobs:
               selectors = ['--tests', package + '.' + method]
               if additional is not None:
                   selectors += ['--tests', additional['package'] + '.' + additional['method']]
+              if audit is not None:
+                  selectors += ['--tests', audit['package'] + '.' + audit['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
-                                        '--no-daemon', *selectors],
+                                        '--no-daemon', *(['--no-build-cache'] if audit is not None else []), *selectors],
                                        stdout=log, stderr=subprocess.STDOUT, timeout=360)
               proof['nativeExit'] = run.returncode
               assert run.returncode != 0
@@ -647,6 +685,42 @@ jobs:
                                        expectedIdentityEqual=True, observedIdentityEqual=False,
                                        tests=1, failures=1, errors=0, skipped=0,
                                        restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+              if audit is not None:
+                  audit_result = results / ('TEST-' + audit['package'] + '.xml')
+                  assert audit_result.is_file() and 0 < audit_result.stat().st_size <= 33554432
+                  audit_data = audit_result.read_bytes()
+                  assert b'<!DOCTYPE' not in audit_data.upper() and b'<!ENTITY' not in audit_data.upper()
+                  audit_suite = ET.fromstring(audit_data)
+                  assert audit_suite.tag == 'testsuite' and audit_suite.get('name') == audit['package']
+                  assert {key: audit_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  audit_cases = audit_suite.findall('testcase')
+                  assert len(audit_cases) == 1
+                  audit_case = audit_cases[0]
+                  assert audit_case.get('classname') == audit['package'] and audit_case.get('name') == audit['method'] + '()'
+                  assert not audit_case.findall('error') and not audit_case.findall('skipped') and len(audit_case.findall('failure')) == 1
+                  audit_failure = audit_case.find('failure')
+                  assert audit_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  audit_message = audit_failure.get('message', '').removeprefix(audit_failure.get('type') + ': ')
+                  audit_values = re.fullmatch(r'\s*expected:\s*([1-9][0-9]{0,18})(L?)\s+but was:\s*([1-9][0-9]{0,18})(L?)\s*', audit_message)
+                  assert audit_values is not None
+                  expected_actor, expected_suffix, observed_actor, observed_suffix = audit_values.groups()
+                  assert expected_suffix == observed_suffix
+                  assert 0 < int(expected_actor) <= 9223372036854775807 and 0 < int(observed_actor) <= 9223372036854775807
+                  assert expected_actor != observed_actor
+                  audit_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(audit['package'] + '.' + audit['method'])
+                      + r'\(HomeworkEditLifecycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', audit_failure.text or '')
+                  audit_rule = proof['auditRule']
+                  audit_rule['namedMethodFrameCount'] = len(audit_named_lines)
+                  audit_rule['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(audit_rule['ruleFrame']) + r'[ \t]*$', audit_failure.text or ''))
+                  assert audit_rule['namedMethodFrameCount'] == 1 and audit_rule['expectedRuleFrameMatched']
+                  audit_rule.update(state='EXPECTED_RULE_FAILURE', expectedActorDiffersFromObservedCreator=True,
+                                    tests=1, failures=1, errors=0, skipped=0,
+                                    restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
               proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
                            restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
           finally:
@@ -657,6 +731,10 @@ jobs:
               if additional is not None and current:
                   assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
                   proof['additionalRule']['sourceRestoredExact'] = True
+              if audit is not None and current:
+                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
+                  assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
+                  proof['auditRule']['sourceRestoredExact'] = True
               if service == 'notification-service' and current:
                   proof['sourceRestoredExact'] = True
               if service == 'academic-service' and current:

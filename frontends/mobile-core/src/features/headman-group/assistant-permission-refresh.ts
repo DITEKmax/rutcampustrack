@@ -6,11 +6,13 @@ import { HeadmanHomeworkApiError } from '../homework/headman-homework-client'
 
 export type AssistantPermissionRefreshReason = 'forbidden' | 'foreground'
 
-export interface AssistantPermissionRefresherOptions {
+export interface AssistantPermissionRefresherOptions<Permission = HeadmanAssistantPermission> {
   currentGeneration(): number
   currentOwnerKey(): string | null
-  load(generation: number, ownerKey: string): Promise<readonly HeadmanAssistantPermission[]>
-  apply(permissions: readonly HeadmanAssistantPermission[]): void
+  load(generation: number, ownerKey: string): Promise<readonly Permission[]>
+  apply(permissions: readonly Permission[]): void
+  /** Hide a previously verified readout before an actual refresh, including failures. */
+  invalidate?(): void
   now?: () => number
   foregroundCooldownMs?: number
 }
@@ -29,7 +31,9 @@ interface RefreshTimestamp {
 }
 
 /** Coalesces safe refreshes and prevents stale or late responses from changing permissions. */
-export function createAssistantPermissionRefresher(options: AssistantPermissionRefresherOptions) {
+export function createAssistantPermissionRefresher<Permission = HeadmanAssistantPermission>(
+  options: AssistantPermissionRefresherOptions<Permission>,
+) {
   const now = options.now ?? Date.now
   const foregroundCooldownMs = options.foregroundCooldownMs ?? 30_000
   let flight: RefreshFlight | null = null
@@ -62,6 +66,7 @@ export function createAssistantPermissionRefresher(options: AssistantPermissionR
     const started: RefreshTimestamp = { generation, ownerKey, at: now() }
     if (reason === 'foreground') lastForeground = started
     const requestId = ++latestRequestId
+    options.invalidate?.()
 
     const promise = Promise.resolve()
       .then(() => options.load(generation, ownerKey))

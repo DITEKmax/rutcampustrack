@@ -511,6 +511,87 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                         planned));
         assertThat(io.grpc.Status.fromThrowable(planned.error).getCode())
                 .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
+        // CANCELLED belongs to completed history only once its physical Moscow end has elapsed.
+        LessonResponse cancelled =
+                lesson(101L, 12L, 71L).toBuilder()
+                        .setDate("2025-12-02")
+                        .setStatus("cancelled")
+                        .setEndTime("11:00")
+                        .build();
+        when(schedule.getLessonById(101L)).thenReturn(cancelled);
+        when(report.getTeacherLessonAttendance(101L, 71L))
+                .thenReturn(
+                        new LessonAttendanceResponse(
+                                101L,
+                                33L,
+                                22L,
+                                "2025-12-02",
+                                9L,
+                                "CANCELLED",
+                                false,
+                                List.of(missing)));
+        var ended = new RecordingObserver<TeacherJournalResponse>();
+        teacherContext(71L)
+                .run(
+                        () ->
+                                service.getTeacherJournal(
+                                        TeacherJournalRequest.newBuilder()
+                                                .addLessonIds(101L)
+                                                .setPastOnly(true)
+                                                .build(),
+                                        ended));
+        assertThat(ended.error).isNull();
+        assertThat(ended.value.getLessonsList())
+                .singleElement()
+                .satisfies(
+                        lesson -> {
+                            assertThat(lesson.getCancelled()).isTrue();
+                            assertThat(lesson.getStatus()).isEqualTo("cancelled");
+                        });
+        assertThat(ended.value.getStudents(0).getCellsList())
+                .singleElement()
+                .satisfies(
+                        cell -> {
+                            assertThat(cell.getStatus()).isEmpty();
+                            assertThat(cell.getSymbol()).isEmpty();
+                            assertThat(cell.getRecordPresent()).isFalse();
+                            assertThat(cell.getAutoAbsent()).isFalse();
+                            assertThat(cell.getPendingTicket()).isFalse();
+                            assertThat(cell.getTicketId()).isEmpty();
+                        });
+        for (String status : List.of("cancelled", "active", "planned", "unknown")) {
+            when(schedule.getLessonById(101L))
+                    .thenReturn(
+                            cancelled.toBuilder()
+                                    .setStatus(status)
+                                    .setEndTime("11:00:00.000000001")
+                                    .build());
+            var future = new RecordingObserver<TeacherJournalResponse>();
+            teacherContext(71L)
+                    .run(
+                            () ->
+                                    service.getTeacherJournal(
+                                            TeacherJournalRequest.newBuilder()
+                                                    .addLessonIds(101L)
+                                                    .setPastOnly(true)
+                                                    .build(),
+                                            future));
+            assertThat(io.grpc.Status.fromThrowable(future.error).getCode())
+                    .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
+        }
+        when(schedule.getLessonById(101L)).thenReturn(cancelled.toBuilder().setEndTime("").build());
+        var invalidTime = new RecordingObserver<TeacherJournalResponse>();
+        teacherContext(71L)
+                .run(
+                        () ->
+                                service.getTeacherJournal(
+                                        TeacherJournalRequest.newBuilder()
+                                                .addLessonIds(101L)
+                                                .setPastOnly(true)
+                                                .build(),
+                                        invalidTime));
+        assertThat(io.grpc.Status.fromThrowable(invalidTime.error).getCode())
+                .isEqualTo(io.grpc.Status.Code.UNAVAILABLE);
     }
 
     private static LessonAttendanceResponse attendance(long lessonId) {

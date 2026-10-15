@@ -9,9 +9,15 @@ const emit = defineEmits<{
   'open-manual-excuse': [lessonId: number, studentId: number];
 }>();
 const lessons = computed(() =>
-  props.journal.lessons.filter((lesson) => lesson.status === 'CLOSED' && !lesson.cancelled),
+  props.journal.lessons.filter(
+    (lesson) =>
+      (lesson.status === 'CLOSED' && !lesson.cancelled) ||
+      (lesson.status === 'CANCELLED' && lesson.cancelled),
+  ),
 );
-const lessonIds = computed(() => new Set(lessons.value.map((lesson) => lesson.id)));
+const lessonIds = computed(
+  () => new Set(lessons.value.filter((lesson) => !lesson.cancelled).map((lesson) => lesson.id)),
+);
 const rows = computed(() =>
   props.journal.students.map((student) => ({
     ...student,
@@ -36,6 +42,11 @@ function label(cell: TeacherJournalCell | undefined): string {
             ? 'Нет данных'
             : 'Нет строки списка на эту дату';
   return cell?.pendingTicket ? `${value}; заявление ожидает решения` : value;
+}
+function description(cell: TeacherJournalCell | undefined): string | undefined {
+  return cell?.autoAbsent && journalMark(cell) === 'absent'
+    ? 'Отсутствие отмечено автоматически при закрытии пары'
+    : undefined;
 }
 function open(cell: TeacherJournalCell | undefined, studentId: number): void {
   if (!cell || journalMark(cell) !== 'excused') return;
@@ -78,8 +89,13 @@ function date(value: string): string {
             v-for="lesson in lessons"
             :key="lesson.id"
             scope="col"
+            :data-cancelled="lesson.cancelled"
+            :title="lesson.cancellationReason ?? undefined"
           >
-            <time :datetime="lesson.date">{{ date(lesson.date) }}</time><span>{{ teacherLessonTypeLabel(lesson.lessonType) }}</span><span class="teacher-journal__sr">{{ lesson.lessonNumber }}-я пара</span>
+            <time :datetime="lesson.date">{{ date(lesson.date) }}</time><span>{{ teacherLessonTypeLabel(lesson.lessonType) }}</span><span class="teacher-journal__sr">{{ lesson.lessonNumber }}-я пара</span><span
+              v-if="lesson.cancelled"
+              class="teacher-journal__cancelled-label"
+            >Отменена</span>
           </th>
         </tr>
       </thead>
@@ -117,10 +133,20 @@ function date(value: string): string {
             v-for="lesson in lessons"
             :key="lesson.id"
           >
-            <button
-              v-if="journalMark(student.cellsById.get(lesson.id)) === 'excused'"
+            <span
+              v-if="lesson.cancelled"
+              class="teacher-journal__mark teacher-journal__mark--cancelled"
+              aria-label="Отменена"
+            ><span
+              class="teacher-journal__cell-circle"
+              aria-hidden="true"
+            >—</span></span><button
+              v-else-if="journalMark(student.cellsById.get(lesson.id)) === 'excused'"
               type="button"
               class="teacher-journal__mark teacher-journal__mark--excused"
+              :data-pending-ticket="Boolean(student.cellsById.get(lesson.id)?.pendingTicket)"
+              :aria-description="description(student.cellsById.get(lesson.id))"
+              :title="description(student.cellsById.get(lesson.id))"
               :aria-label="`${student.displayName}: ${label(student.cellsById.get(lesson.id))}, ${date(lesson.date)}, ${teacherLessonTypeLabel(lesson.lessonType)}`"
               @click="open(student.cellsById.get(lesson.id), student.studentId)"
             >
@@ -128,15 +154,29 @@ function date(value: string): string {
                 class="teacher-journal__cell-circle"
                 aria-hidden="true"
               >у</span>
+              <span
+                v-if="student.cellsById.get(lesson.id)?.pendingTicket"
+                class="teacher-journal__pending"
+                aria-hidden="true"
+              >Ожидает решения</span>
             </button><span
               v-else
               class="teacher-journal__mark"
               :class="`teacher-journal__mark--${journalMark(student.cellsById.get(lesson.id)) ?? 'none'}`"
+              :data-auto-absent="Boolean(description(student.cellsById.get(lesson.id)))"
+              :data-pending-ticket="Boolean(student.cellsById.get(lesson.id)?.pendingTicket)"
+              :aria-description="description(student.cellsById.get(lesson.id))"
+              :title="description(student.cellsById.get(lesson.id))"
               :aria-label="label(student.cellsById.get(lesson.id))"
             ><span
-              class="teacher-journal__cell-circle"
-              aria-hidden="true"
-            >{{ symbol(student.cellsById.get(lesson.id)) }}</span></span>
+               class="teacher-journal__cell-circle"
+               aria-hidden="true"
+             >{{ symbol(student.cellsById.get(lesson.id)) }}</span>
+              <span
+                v-if="student.cellsById.get(lesson.id)?.pendingTicket"
+                class="teacher-journal__pending"
+                aria-hidden="true"
+              >Ожидает решения</span></span>
           </td>
         </tr>
       </tbody>

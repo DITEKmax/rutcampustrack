@@ -277,6 +277,60 @@ class StudentEnumProjectionHttpGrpcIT {
             assertThat(json.readTree(detail.getBody()).path("reason").asText()).isEqualTo(reason);
             assertForwardedIdentity();
         }
+
+        // Retired domain-only reasons and unknown wire values cannot become student commands.
+        var beforeRejected = REQUEST.get();
+        for (String reason : java.util.List.of("FREE_ATTENDANCE", "EXEMPTION", "UNKNOWN_REASON")) {
+            EXCUSE_COMMAND.set(null);
+            var headers = new HttpHeaders();
+            headers.set(
+                    "X-Internal-Token",
+                    JWT.validToken(
+                            701L,
+                            UUID.fromString("77777777-7777-4777-8777-777777777777"),
+                            1L,
+                            1L,
+                            "STUDENT",
+                            "ACTIVE",
+                            41L,
+                            false,
+                            false));
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.set("Idempotency-Key", "reason-rejected-" + reason);
+            var partHeaders = new HttpHeaders();
+            partHeaders.setContentType(MediaType.APPLICATION_JSON);
+            var parts = new LinkedMultiValueMap<String, Object>();
+            parts.add(
+                    "request",
+                    new HttpEntity<>(
+                            json.writeValueAsString(
+                                    java.util.Map.of(
+                                            "lessonIds",
+                                            java.util.List.of("1001"),
+                                            "reason",
+                                            reason,
+                                            "comment",
+                                            "retained reason")),
+                            partHeaders));
+            var rejected =
+                    http.postForEntity(
+                            REQUEST_PATH + "/excuse",
+                            new HttpEntity<>(parts, headers),
+                            String.class);
+            assertThat(rejected.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(rejected.getHeaders().getContentType()).isNotNull();
+            assertThat(
+                            rejected.getHeaders()
+                                    .getContentType()
+                                    .isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                    .isTrue();
+            assertThat(rejected.getHeaders().getCacheControl()).contains("no-store");
+            assertThat(json.readTree(rejected.getBody()).path("code").asText())
+                    .isEqualTo("INVALID_REQUEST");
+            assertThat(EXCUSE_COMMAND.get()).isNull();
+            assertThat(REQUEST.get()).isEqualTo(beforeRejected);
+        }
+        // End retired/unknown public reason refusal.
     }
 
     @ParameterizedTest

@@ -7,6 +7,9 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +40,7 @@ import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescr
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
@@ -77,6 +81,7 @@ public final class TeacherAttendanceReadGrpcService
     private final ExcuseRepository excuseRepository;
     private final RequestAttachmentRepository attachmentRepository;
     private final Clock clock;
+    private final Clock educationalClock;
     private final TeacherAttendanceExportService exportService;
     private final TeacherStatsExportService statsExportService;
 
@@ -98,7 +103,6 @@ public final class TeacherAttendanceReadGrpcService
                 null);
     }
 
-    @Autowired
     public TeacherAttendanceReadGrpcService(
             ReportService reportService,
             ScheduleGrpcClient scheduleGrpcClient,
@@ -108,12 +112,36 @@ public final class TeacherAttendanceReadGrpcService
             Clock clock,
             TeacherAcademicGrpcClient teacherAcademicGrpcClient,
             DocumentRendererGrpcClient documentRendererGrpcClient) {
+        this(
+                reportService,
+                scheduleGrpcClient,
+                academicGrpcClient,
+                excuseRepository,
+                attachmentRepository,
+                clock,
+                teacherAcademicGrpcClient,
+                documentRendererGrpcClient,
+                new EducationalTime(clock));
+    }
+
+    @Autowired
+    public TeacherAttendanceReadGrpcService(
+            ReportService reportService,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            ExcuseRepository excuseRepository,
+            RequestAttachmentRepository attachmentRepository,
+            Clock clock,
+            TeacherAcademicGrpcClient teacherAcademicGrpcClient,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            EducationalTime educationalTime) {
         this.reportService = reportService;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.academicGrpcClient = academicGrpcClient;
         this.excuseRepository = excuseRepository;
         this.attachmentRepository = attachmentRepository;
         this.clock = clock;
+        this.educationalClock = educationalTime.clock();
         this.exportService =
                 new TeacherAttendanceExportService(
                         reportService,
@@ -192,14 +220,15 @@ public final class TeacherAttendanceReadGrpcService
                     .withDescription("lesson_ids must contain 1..100 positive ids")
                     .asRuntimeException();
         }
+        Instant teachingNow = educationalClock.instant();
         List<LessonRoster> rosters = new ArrayList<>();
         for (Long lessonId : lessonIds) {
             LessonAttendanceResponse attendance =
                     reportService.getTeacherLessonAttendance(lessonId, teacherId);
             LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-            if (pastOnly && !"closed".equalsIgnoreCase(lesson.getStatus())) {
+            if (pastOnly && !completedHistoryLesson(lesson, teachingNow)) {
                 throw Status.INVALID_ARGUMENT
-                        .withDescription("past_only requires CLOSED lessons")
+                        .withDescription("past_only requires completed history lessons")
                         .asRuntimeException();
             }
             Map<Long, TicketMarker> markers = ticketMarkers(lessonId);
@@ -210,7 +239,11 @@ public final class TeacherAttendanceReadGrpcService
                                         TeacherRosterEntry value =
                                                 toRosterEntry(
                                                         entry, markers.get(entry.getUserId()));
-                                        return pastOnly && !value.getRecordPresent()
+                                        return pastOnly
+                                                        && "closed"
+                                                                .equalsIgnoreCase(
+                                                                        lesson.getStatus())
+                                                        && !value.getRecordPresent()
                                                 ? value.toBuilder()
                                                         .setStatus("absent")
                                                         .setSymbol("н")
@@ -289,6 +322,22 @@ public final class TeacherAttendanceReadGrpcService
                 .addAllStudents(resultStudents)
                 .setServerNow(clock.instant().toString())
                 .build();
+    }
+
+    private static boolean completedHistoryLesson(LessonResponse lesson, Instant now) {
+        if ("closed".equalsIgnoreCase(lesson.getStatus())) return true;
+        if (!"cancelled".equalsIgnoreCase(lesson.getStatus())) return false;
+        try {
+            Instant ended =
+                    LocalDate.parse(lesson.getDate())
+                            .atTime(LocalTime.parse(lesson.getEndTime()))
+                            .atZone(ZoneId.of("Europe/Moscow"))
+                            .toInstant();
+            return !ended.isAfter(now);
+        } catch (RuntimeException invalidTiming) {
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned invalid cancelled lesson timing");
+        }
     }
 
     @Override

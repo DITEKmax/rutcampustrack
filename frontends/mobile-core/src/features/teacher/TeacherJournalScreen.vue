@@ -116,7 +116,9 @@ const completedJournal = computed<TeacherJournalResponse | null>(() =>
     ? {
         ...state.value,
         lessons: state.value.lessons.filter(
-          (lesson) => lesson.status === 'CLOSED' && !lesson.cancelled,
+          (lesson) =>
+            (lesson.status === 'CLOSED' && !lesson.cancelled) ||
+            (lesson.status === 'CANCELLED' && lesson.cancelled),
         ),
       }
     : null,
@@ -139,7 +141,9 @@ const canExport = computed(() =>
     props.api &&
       effectiveQuery.value &&
       selectedTypes.value.length &&
-      completedJournal.value?.lessons.length &&
+      completedJournal.value?.lessons.some(
+        (lesson) => lesson.status === 'CLOSED' && !lesson.cancelled,
+      ) &&
       !loading.value &&
       !error.value &&
       !formatsLoading.value &&

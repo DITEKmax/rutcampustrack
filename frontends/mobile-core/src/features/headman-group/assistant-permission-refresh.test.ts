@@ -6,7 +6,7 @@ import {
   isAssistantCapabilityForbiddenError,
   isAssistantPermissionReadForbidden,
 } from './assistant-permission-refresh'
-import type { HeadmanAssistantPermission } from './headman-group-client'
+import type { HeadmanAssistantPermission, HeadmanPermissionOption } from './headman-group-client'
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -114,6 +114,33 @@ describe('assistant permission refresh ownership', () => {
 
     await expect(pending).resolves.toBe(false)
     expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('invalidates readonly labels on a failed current refresh and publishes only recovered own options', async () => {
+    const response = deferred<readonly HeadmanPermissionOption[]>()
+    const own = [{ code: 'VIEW_STATS' as const, label: 'Просматривать статистику' }]
+    let visible: readonly HeadmanPermissionOption[] | null = own
+    const apply = vi.fn((permissions: readonly HeadmanPermissionOption[]) => {
+      visible = permissions
+    })
+    const load = vi.fn().mockReturnValueOnce(response.promise).mockResolvedValueOnce([])
+    const refresher = createAssistantPermissionRefresher<HeadmanPermissionOption>({
+      currentGeneration: () => 1,
+      currentOwnerKey: () => 'student-a:group-1',
+      load,
+      invalidate: () => {
+        visible = null
+      },
+      apply,
+    })
+    const pending = refresher.refresh('forbidden')
+    expect(visible).toBeNull()
+    response.reject(new HeadmanGroupApiError(new Response(null, { status: 503 }), null))
+    await expect(pending).rejects.toBeInstanceOf(HeadmanGroupApiError)
+    expect(visible).toBeNull()
+    expect(apply).not.toHaveBeenCalled()
+    expect(await refresher.refresh('forbidden')).toBe(true)
+    expect(visible).toEqual([])
   })
 
   it('treats homework 403 as capability denial and permission-list 403 as operational', () => {

@@ -272,6 +272,97 @@ describe('teacher journal context and navigation', () => {
     expect(text(view.root)).toContain('Новый контекст')
     expect(text(view.root)).not.toContain('Устаревшая строка')
   })
+  it('distinguishes automatic absence and a pending statement without adding mark actions', async () => {
+    const original = response()
+    const absent = {
+      ...original.students[0]!.cells[0]!,
+      status: 'absent',
+      symbol: 'н',
+      ticketId: null,
+      excuseType: null,
+    }
+    const view = mount({
+      initialTypes: ['lecture'],
+      journal: async () => ({
+        ...original,
+        students: [
+          { studentId: 4, displayName: 'Автоматически', cells: [{ ...absent, autoAbsent: true }] },
+          { studentId: 5, displayName: 'Вручную', cells: [{ ...absent, autoAbsent: false }] },
+          {
+            studentId: 6,
+            displayName: 'На рассмотрении',
+            cells: [{ ...absent, autoAbsent: true, pendingTicket: true }],
+          },
+        ],
+      }),
+    })
+    await settle()
+    const automatic = find(
+      view.root,
+      (item) =>
+        item.props['aria-label'] === 'Отсутствовал' && item.props['data-auto-absent'] === true,
+    )
+    const manual = find(
+      view.root,
+      (item) =>
+        item.props['aria-label'] === 'Отсутствовал' && item.props['data-auto-absent'] === false,
+    )
+    const pending = find(
+      view.root,
+      (item) => item.props['aria-label'] === 'Отсутствовал; заявление ожидает решения',
+    )
+    expect(automatic?.props['aria-description']).toBe(
+      'Отсутствие отмечено автоматически при закрытии пары',
+    )
+    expect(manual?.props['aria-description']).toBeUndefined()
+    expect(pending?.props['aria-description']).toBe(automatic?.props['aria-description'])
+    expect(text(pending!)).toContain('Ожидает решения')
+    for (const status of [automatic, manual, pending]) {
+      expect(status?.tag).toBe('span')
+      expect(status?.props.onClick).toBeUndefined()
+    }
+    expect(view.manual).toEqual([])
+  })
+  it('shows an inert cancelled column without counting its marks or future lessons', async () => {
+    const original = response()
+    const lesson = original.lessons[0]!
+    const cell = original.students[0]!.cells[0]!
+    const view = mount({
+      initialTypes: ['lecture'],
+      journal: async () => ({
+        ...original,
+        lessons: [
+          lesson,
+          { ...lesson, id: 31, status: 'CANCELLED', cancelled: true, cancellationReason: 'Отмена' },
+          { ...lesson, id: 32, status: 'PLANNED' },
+        ],
+        students: [
+          {
+            ...original.students[0]!,
+            cells: [
+              cell,
+              { ...cell, lessonId: 31, ticketId: 'cancelled-ticket' },
+              { ...cell, lessonId: 32, status: 'absent' },
+            ],
+          },
+        ],
+      }),
+    })
+    await settle()
+    expect(text(view.root)).toContain('Отменена')
+    const cancelled = find(view.root, (item) => item.props['aria-label'] === 'Отменена')
+    expect(cancelled?.tag).toBe('span')
+    expect(cancelled?.props.onClick).toBeUndefined()
+    expect(text(cancelled!)).toBe('—')
+    expect(
+      find(view.root, (item) => item.props['aria-label'] === 'Уважительные причины: 1 из 1'),
+    ).toBeDefined()
+    expect(
+      find(view.root, (item) => item.props['aria-label'] === 'Отсутствия: 0 из 1'),
+    ).toBeDefined()
+    expect(find(view.root, (item) => item.props['aria-label'] === 'Отсутствовал')).toBeUndefined()
+    expect(view.manual).toEqual([])
+  })
   it('opens a manual excuse with exact historical lesson/student context', async () => {
     const view = mount({ initialTypes: ['lecture'] })
     await settle()

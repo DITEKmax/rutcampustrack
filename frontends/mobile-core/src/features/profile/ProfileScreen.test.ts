@@ -32,3 +32,47 @@ describe('own profile Telegram metadata', () => {
     },
   )
 })
+
+describe('own delegated rights readout', () => {
+  it('renders the supplied own labels as readonly escaped text', async () => {
+    const html = await renderToString(
+      createSSRApp(ProfileScreen, {
+        snapshot,
+        delegatedPermissions: [
+          { code: 'VIEW_STATS', label: 'Просматривать статистику' },
+          { code: 'MANAGE_HOMEWORK', label: '<img src=x onerror=alert(1)>' },
+        ],
+      }),
+    )
+    const region = html.match(
+      /<section[^>]*aria-label="Дополнительные права"[\s\S]*?<\/section>/,
+    )?.[0]
+    expect(region).toBeDefined()
+    expect(region).toContain('Просматривать статистику')
+    expect(region).toContain('&lt;img src=x onerror=alert(1)&gt;')
+    expect(region).not.toMatch(/<(?:input|button|img)\b|role="switch"/)
+  })
+
+  it.each([
+    ['empty', snapshot, []],
+    [
+      'headman authority',
+      { ...snapshot, activeRole: 'HEADMAN' as const },
+      [{ code: 'VIEW_STATS' as const, label: 'Просматривать статистику' }],
+    ],
+    [
+      'readonly authority',
+      { ...snapshot, readOnly: true },
+      [{ code: 'VIEW_STATS' as const, label: 'Просматривать статистику' }],
+    ],
+  ])('hides the whole delegated block for %s', async (_, profile, permissions) => {
+    const html = await renderToString(
+      createSSRApp(ProfileScreen, {
+        snapshot: profile,
+        delegatedPermissions: permissions,
+      }),
+    )
+    expect(html).not.toContain('Дополнительные права')
+    expect(html).not.toContain('Просматривать статистику')
+  })
+})

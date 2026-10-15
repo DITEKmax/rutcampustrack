@@ -129,19 +129,14 @@
   {
     "id": "L08",
     "family_id": "RESEARCH-L08",
-    "disposition": "DIFFERENT_VALID_SHARED_SCHEMA_SOURCE_CONFIRMED",
-    "parent_runtime_status": "UNKNOWN",
+    "disposition": "ADEQUATE_DIFFERENT_VALID_SHARED_SCHEMA",
+    "parent_runtime_status": "PASS_NARROW_COMPOSED",
     "blocking_additional_architecture_or_metric_required": false,
     "accepted_correctness_oracles_required": true,
-    "remaining_queue_ids": [
-      "AUTH-SESSION",
-      "ACADEMIC-CACHE-DTO",
-      "MIGRATIONS",
-      "SCHEMA-OWNER-L08"
-    ],
+    "remaining_queue_ids": [],
     "accepted_partial_child_ids": [],
     "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
-    "repo_evidence_and_limits": "Bothprodconfigs academic_db; AcademicFlywaytrue/Authfalse andHibernatevalidate. Academic single migrationpipeline owns sharedschema; Auth credential/session JDBC and Academic grants sharelockedlocaltransactions. Owner/consumer manifest+atomic+upgradeactualchecks stillrequired; noDBsplit/Saga/2PC.",
+    "repo_evidence_and_limits": "Existing MainRESEARCH-L08 PASS remains: AcademicsoleFlyway/Authdisabled, exactsharedtuple/rollback native657 plus retainedV56→57 upgrade andV57ownershipsupplement; V58onlydashboardtable. No DBsplit/Saga/2PC obligation. LaterMIGRATIONS/finalgates separate. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ed226cd_public_retired_schema_existing_evidence_join",
     "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
   },
   {

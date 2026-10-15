@@ -6827,13 +6827,14 @@
     {
       "id": "SCHEMA-OWNER-L08",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
-      "remaining_observable_oracle": "Single Academic Flyway pipeline owns users/role_grants/auth_sessions/reset/QR tables and shared schema migrations; Auth Flyway disabled. Preserve safe table/column owner-consumer manifest and actual atomic credentials/grants/session rollback/concurrency and synthetic upgrade.",
+      "remaining_observable_oracle": "NONE for accepted narrow schema-owner/localatomicity disposition; latestV58/final gates separate MIGRATIONS criterion.",
       "known_assertion_candidates": [],
       "proposed_commands_NOT_EXECUTED": [],
       "missing_oracle": "Exact observable state above; source/fixture existence does not prove execution. Use existing current templates/harness below, extending only uncovered accepted criterion.",
-      "actual_runtime_this_receipt": "NOT_RUN"
+      "actual_runtime_this_receipt": "REUSED_EXACT_NAMED_PASS_COMPOSED",
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ed226cd_public_retired_schema_existing_evidence_join"
     },
     {
       "id": "DASHBOARD-ACTIVITY",
@@ -6863,11 +6864,33 @@
       "priority": 1,
       "status": "UNKNOWN",
       "required": true,
-      "remaining_observable_oracle": "Current public catalog/create/mark reject FREE_ATTENDANCE and unknown enum typed4xx/no DB/outbox changes; legacy create410; historical row retained with compatible mapping. Positive freeattendancefeature excluded, not this denial.",
+      "remaining_observable_oracle": "Forbidden FREE_ATTENDANCE/unknown request-enum input through CURRENT public EXCUSE-create admission must produce typed4xx and no forwarded mutation/no durable ticket/attendance/outbox delta. Current JSON enum excludes FREE, and domain refusal is nativePASS, but no existing exact executed public decoder negative was found in the bounded retained proofs; supported-submission HTTP/unknown-upstream503 are different risks. Keep only this boundary UNKNOWN, not broad catalog/history/domain or all roles/formats. No new run/test/framework requested or executed by reviewer.",
       "known_assertion_candidates": [],
       "proposed_commands_NOT_EXECUTED": [],
       "missing_oracle": "Exact observable state above; source/fixture existence does not prove execution. Use existing current templates/harness below, extending only uncovered accepted criterion.",
-      "actual_runtime_this_receipt": "NOT_RUN"
+      "actual_runtime_this_receipt": "NOT_RUN",
+      "proved_components": [
+        {
+          "criterion": "Current catalog and domain refusal",
+          "producer": "ce943075e29b1e9df766eacdf7fd4fd84ba2ff05/run38697167187/checkoutb289b435989c84fe071c06e54e5c3c48b492be23",
+          "actual": "c80 currentCe943Primary.reports.attendanceReasonDomain artifact11954547282; StudentRequestDomainIT.commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict uniqueSOURCE_METHOD PASSED exactcurrent473f025e9570ac15e57d33029f6a4f0eb201286bab6bc307c552f63021394c6e. Four accepted catalog options, seven legacy supported create/detail/cancel-history reasons, FREE_ATTENDANCE/EXEMPTION BadRequest and no ticket-count growth. 657 same method did NOT yet contain later additions and is not credited for them."
+        },
+        {
+          "criterion": "Public current catalog transport",
+          "producer": "samece943/run38697167187/checkoutb289",
+          "actual": "Rootce943_BFF_reason_HTTP_actual artifact11954972640 uniqueSOURCE_METHOD StudentEnumProjectionHttpGrpcIT.acceptedReasonOptionsAndAllSupportedSubmissionsCrossSignedHttpAndGrpc PASSED exactcurrent8f8ffa022ba03bbbc9c0dd85c327973557eb27e1d1bf78989a8a63fff0b5b0d0. Real HTTP/signedgRPC with controlled upstream, exact four options and seven supported submissions; upstream DB not claimed."
+        },
+        {
+          "criterion": "Retired legacy HTTP410/no effects and history compatibility",
+          "producer": "657 exact SOURCE_METHOD cases in evidence array",
+          "actual": "Legacy checkin410 retains prior mark and no effects; retired create410 does not persist/change ticket. EnumSerialization raw free_attendance/late_checkin typed roundtrip current a6fbc exact; approvalChangesFreeAttendanceToExcused method exact byte-retained across current changed wholeDomain file (spanSHA8c00080311ac8f3b8812edee383e1823bdd91c668f2daff4e29e71453c8912f3). This legacy compatibility does not re-enable new feature."
+        },
+        {
+          "criterion": "Manual mark closed allowlist wiring",
+          "actual": "657 MarkingIT.mark_cancelledStatus_returns400 uniqueSOURCE_METHOD PASSED, real MockMvc/Mongo empty after400. Exact method retained (spanSHAdd634038dd54b9d757a9f224dd4667d641df5776d11d4857dbb7d0d824687bda); current MarkingService ALLOWED_STATUSES only PRESENT/ABSENT/EXCUSED, same early guard rejects FREE before writes/event path. This is qualified composition, not an actually observed FREE HTTP400."
+        }
+      ],
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ed226cd_public_retired_schema_existing_evidence_join"
     },
     {
       "id": "EXPORT-ASYNC-CORE",
@@ -7717,7 +7740,7 @@
         ],
         "package": "Q03",
         "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[10]",
-        "classification": "UNKNOWN_PROOF_GAP",
+        "classification": "PASS_FINITE_D020_ACTUAL_BROWSER",
         "existingCaseIds": [
           "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
           "CASE-HOST-V5-ADMIN-ADMISSION-REGISTRY"
@@ -7728,11 +7751,12 @@
           "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.bb5_D020_context_assembly_existing_evidence_join"
         ],
         "sufficientOrPartial": "Neutral bootstrap/explicit selection and login/session/profile200 are adequate; canonical required payload fields/active-semester shape need exact field assertions.",
-        "missingAction": "ONEfreshsuccessfulactualPWAlogin→heldmandatoryowncontext withno prior snapshot/owner→no protected UI/navigation/commands→failcontext→stillnonoperational/error→removefault/retrygenuinecontext→ownscreen. Existinglatefeed/logoutstartwithalreadyactivatedowner do notprovefirstloadinginterval. TMA Sourcecompatibility no roles×endpoints×engines requirement.",
-        "recommendedWholeResidualStatus": "UNKNOWN",
+        "missingAction": "NONE fornewD020initialcontextsequence; broadBOUNDARY01crossviewfamilyseparate.",
+        "recommendedWholeResidualStatus": "PASS",
         "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings.",
         "ownerDecision": "D020 Q016 ANSWERED: tokenlogin+separatecontext accepted; noAPIexpansion",
-        "sourceQualifiedExisting": "232login/profile+explicitADMIN;6172signedTMA736/950/1763; a8cChromiumoffline/reconnect/latefeed;3647failedlogout+stalerole retainedoriginalproducers. CurrentApp7e92PWA/49058TMA awaitgenerationboundcontextbeforeactivation; no productbugfound."
+        "sourceQualifiedExisting": "232login/profile+explicitADMIN;6172signedTMA736/950/1763; a8cChromiumoffline/reconnect/latefeed;3647failedlogout+stalerole retainedoriginalproducers. CurrentApp7e92PWA/49058TMA awaitgenerationboundcontextbeforeactivation; no productbugfound.",
+        "actual_closure": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ed226cd_D020_actual_initial_context_closure"
       },
       {
         "existingResidualIndex": 11,

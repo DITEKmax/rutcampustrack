@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import type { MobileNavigationStack } from '../../shared/navigation';
 import AssistantHomeworkScreen from '../homework/AssistantHomeworkScreen.vue';
 import type { HeadmanHomeworkApi } from '../homework/headman-homework-client';
 import HeadmanJournalScreen from '../headman-journal/HeadmanJournalScreen.vue';
@@ -15,6 +16,7 @@ import './assistant-actions-screen.pcss';
 const props = withDefaults(
   defineProps<{
     permissions: readonly HeadmanAssistantPermission[];
+    navigation?: MobileNavigationStack | null;
     groupId: number | null;
     journalApi: HeadmanJournalApi | null;
     statsApi: HeadmanStatsApi | null;
@@ -26,6 +28,7 @@ const props = withDefaults(
     readOnly?: boolean;
   }>(),
   {
+    navigation: null,
     offline: false,
     readOnly: false,
     reportDownload: null,
@@ -195,6 +198,7 @@ watch(
   />
   <AssistantHomeworkScreen
     v-else-if="surface === 'homework'"
+    :navigation="navigation"
     :api="homeworkApi"
     :journal-api="journalApi"
     :group-id="groupId"

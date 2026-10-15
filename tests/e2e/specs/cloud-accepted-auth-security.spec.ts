@@ -328,14 +328,11 @@ function ownedOtpReceiver(info: TestInfo) {
       if (!attempted) return;
       const existing = await call('GET', queuePath, [200, 404], undefined, 4000, true);
       if (existing.status === 404) return;
-      requireOwned(
-        existing.body?.name === queue &&
-          existing.body.durable === false &&
-          existing.body.auto_delete === false &&
-          existing.body.exclusive === false &&
-          existing.body.consumers === 0,
-        'Only the exact owned OTP queue may be removed',
-      );
+      requireOwned(existing.body?.name === queue, 'Owned OTP queue name must match');
+      requireOwned(existing.body.durable === false, 'Owned OTP queue must be non-durable');
+      requireOwned(existing.body.auto_delete === false, 'Owned OTP queue must not auto-delete');
+      requireOwned(existing.body.exclusive === false, 'Owned OTP queue must not be exclusive');
+      requireOwned(existing.body.consumers === 0, 'Owned OTP queue must have no consumers');
       await call('DELETE', `${queuePath}?if-unused=true`, [204, 404], undefined, 4000, true);
     },
   };

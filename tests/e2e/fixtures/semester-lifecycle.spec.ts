@@ -2467,8 +2467,18 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         typeof reason === 'string' && reason.startsWith(rpcPrefix)
           ? reason.slice(rpcPrefix.length)
           : '';
-      if (/^Status\{code=UNAVAILABLE(?:,|})/.test(rpc))
+      if (/^Status\{code=UNAVAILABLE(?:,|})/.test(rpc)) {
+        if (
+          rpc.startsWith(
+            'Status{code=UNAVAILABLE, description=Academic archive authority could not be verified, cause=',
+          )
+        )
+          requireValue(
+            false,
+            'Initial archive retryable Schedule reports unverified Academic archive authority',
+          );
         requireValue(false, 'Initial archive retryable Schedule RPC unavailable');
+      }
       if (/^Status\{code=DEADLINE_EXCEEDED(?:,|})/.test(rpc))
         requireValue(false, 'Initial archive retryable Schedule RPC deadline');
       if (/^Status\{code=INTERNAL(?:,|})/.test(rpc))

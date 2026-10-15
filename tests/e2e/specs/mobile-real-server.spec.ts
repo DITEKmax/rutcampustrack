@@ -77,6 +77,7 @@ const it = test.extend<{
     foreignLessonId: number;
     foreignRequestId: string;
     foreignAttachmentId: string;
+    assistantActor: Awaited<ReturnType<typeof admit>>;
   };
 }>({
   teacherJournalSeed: [
@@ -105,6 +106,7 @@ const it = test.extend<{
         [201, 200],
         { 'Idempotency-Key': randomUUID() },
       );
+      const assistantActor = await admit(dataset.request, dataset.assistant, 'STUDENT');
       const png = Buffer.from(
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
         'base64',
@@ -231,6 +233,7 @@ const it = test.extend<{
         foreignLessonId: Number(foreignLesson.physicalLessonId),
         foreignRequestId: foreignRequest.summary.id,
         foreignAttachmentId: foreignRequest.attachments[0].id,
+        assistantActor,
       });
     },
     { timeout: 180000 },
@@ -1137,6 +1140,399 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     const ownFileStillReadable = await page.request.get(teacherAttachmentPath, { headers });
     expect(ownFileStillReadable.status()).toBe(200);
     expect((await ownFileStillReadable.body()).equals(journalSeed.png)).toBe(true);
+
+    // These additional reads run only after every original teacher/attachment/rights oracle.
+    const assistantRow = table.locator('tbody tr').filter({
+      has: page.getByRole('rowheader', { name: dataset.assistant.displayName, exact: true }),
+    });
+    const automatic = assistantRow.getByLabel('Отсутствовал', { exact: true });
+    await expect(automatic).toHaveAttribute('data-auto-absent', 'true');
+    await expect(automatic).toHaveAttribute(
+      'aria-description',
+      'Отсутствие отмечено автоматически при закрытии пары',
+    );
+    const pendingKey = randomUUID();
+    let pendingId: string | undefined;
+    let contrastLessonId: number | undefined;
+    let originalCancelAttempted = false;
+    let pastCancelAttempted = false;
+    try {
+      const submitted = await dataset.request.post('/api/v1/student/requests/excuse', {
+        headers: { ...journalSeed.assistantActor.headers(), 'Idempotency-Key': pendingKey },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(journalSeed.lessonId)],
+                reason: 'OTHER',
+                comment: 'Синтетическое заявление ожидает решения',
+              }),
+            ),
+          },
+        },
+      });
+      expect(submitted.status()).toBe(200);
+      const pending = await submitted.json();
+      pendingId = pending.summary.id;
+      expect(typeof pendingId).toBe('string');
+      expect(pending.summary.status).toBe('PENDING');
+
+      await page.getByRole('button', { name: 'Статистика', exact: true }).click();
+      await page.getByRole('button', { name: 'Группа', exact: true }).click();
+      await page.getByRole('option', { name: groupName, exact: true }).click();
+      await page.getByRole('button', { name: 'Предмет', exact: true }).click();
+      await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
+      await page.getByRole('button', { name: 'По студентам', exact: true }).click();
+      const statsRead = (sort: string) =>
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/stats' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(dataset.group.id) &&
+            url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+            url.searchParams.get('scope') === 'students' &&
+            url.searchParams
+              .getAll('lessonType')
+              .map((type) => type.toUpperCase())
+              .join() === 'LECTURE' &&
+            url.searchParams.getAll('sort').join() === sort
+          );
+        });
+      const [statsResponse] = await Promise.all([
+        statsRead('present'),
+        page.getByRole('button', { name: 'Лекция', exact: true }).click(),
+      ]);
+      expect(statsResponse.status()).toBe(200);
+      const stats = await statsResponse.json();
+      expect(stats.lessonsCount).toBe(1);
+      expect(stats.students).toHaveLength(expectedNames.length);
+      expect(
+        stats.students
+          .map((row: { displayName: string }) => row.displayName)
+          .sort((a: string, b: string) => a.localeCompare(b, 'ru')),
+      ).toEqual(expectedNames);
+      await expect(
+        page.getByRole('heading', { name: 'Студенты · Пар учтено: 1', exact: true }),
+      ).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Сортировка', exact: true })).toContainText(
+        'Присутствия: сначала ниже',
+      );
+      const cards = page.locator('.teacher-stats__card');
+      for (const row of stats.students) {
+        const isAbsent = row.studentId === String(dataset.assistant.id);
+        expect(row.present).toEqual({ numerator: 0, denominator: 1, percent: 0 });
+        expect(row.presentOrExcused).toEqual({
+          numerator: isAbsent ? 0 : 1,
+          denominator: 1,
+          percent: isAbsent ? 0 : 100,
+        });
+        expect(row.excused).toEqual(row.presentOrExcused);
+        expect(row.absent).toEqual({
+          numerator: isAbsent ? 1 : 0,
+          denominator: 1,
+          percent: isAbsent ? 100 : 0,
+        });
+        const card = cards.filter({
+          has: page.getByRole('heading', { name: row.displayName, exact: true }),
+        });
+        for (const [index, metric] of [
+          row.present,
+          row.presentOrExcused,
+          row.excused,
+          row.absent,
+        ].entries()) {
+          await expect(card.locator('dd').nth(index)).toHaveText(
+            `${metric.percent} % · ${metric.numerator}/${metric.denominator}`,
+          );
+        }
+      }
+      await page.getByRole('button', { name: 'Сортировка', exact: true }).click();
+      const [sortedResponse] = await Promise.all([
+        statsRead('-absent'),
+        page.getByRole('option', { name: 'Отсутствия: сначала выше', exact: true }).click(),
+      ]);
+      expect(sortedResponse.status()).toBe(200);
+      const sorted = await sortedResponse.json();
+      expect(sorted.students[0].studentId).toBe(String(dataset.assistant.id));
+      expect(
+        sorted.students.map((row: { absent: { percent: number } }) => row.absent.percent),
+      ).toEqual([100, 0, 0]);
+      await expect(cards.getByRole('heading')).toHaveText(
+        sorted.students.map((row: { displayName: string }) => row.displayName),
+      );
+
+      await page.getByRole('button', { name: 'Открыть журнал', exact: true }).click();
+      const [pendingJournal] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/v1/teacher/journal' &&
+            response.request().method() === 'GET',
+        ),
+        page
+          .locator('.teacher-journal')
+          .getByRole('button', { name: 'Лекция', exact: true })
+          .click(),
+      ]);
+      expect(pendingJournal.status()).toBe(200);
+      const pendingCell = (await pendingJournal.json()).students
+        .find((row: { studentId: string }) => row.studentId === String(dataset.assistant.id))
+        .cells.find((cell: { lessonId: string }) => cell.lessonId === String(journalSeed.lessonId));
+      expect(pendingCell).toMatchObject({
+        status: 'absent',
+        autoAbsent: true,
+        pendingTicket: true,
+        ticketId: pendingId,
+      });
+      const pendingMark = assistantRow.getByLabel('Отсутствовал; заявление ожидает решения', {
+        exact: true,
+      });
+      await expect(pendingMark).toHaveAttribute('data-auto-absent', 'true');
+      await expect(pendingMark).toContainText('Ожидает решения');
+      expect(await pendingMark.evaluate((element) => element.tagName)).toBe('SPAN');
+      await expect(assistantRow.getByRole('button')).toHaveCount(0);
+      const cancelledRequest = await journalSeed.assistantActor.call(
+        'POST',
+        `/api/v1/student/requests/${pendingId}/cancel`,
+      );
+      expect(cancelledRequest.summary.status).toBe('CANCELLED');
+      pendingId = undefined;
+
+      const ownPastLessons = await dataset.headmanActor.call(
+        'GET',
+        `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${journalSeed.date}&dateTo=${journalSeed.date}&size=100`,
+      );
+      const pastBefore = (
+        ownPastLessons._embedded?.lessonResponseList ?? ownPastLessons.content
+      ).find((lesson: { id: number }) => Number(lesson.id) === journalSeed.lessonId);
+      expect(pastBefore).toMatchObject({
+        id: journalSeed.lessonId,
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        status: 'CLOSED',
+        current: true,
+      });
+      expect(pastBefore.revision).toBeGreaterThan(0);
+      pastCancelAttempted = true;
+      // The native cancellation DTO is reason-only; the server locks and validates current ownership.
+      const pastCancelled = await dataset.headmanActor.call(
+        'PATCH',
+        `/api/schedule/lessons/${journalSeed.lessonId}/cancel`,
+        { reason: 'Синтетическая отмена прошедшей пары' },
+      );
+      expect(pastCancelled).toMatchObject({ id: journalSeed.lessonId, status: 'CANCELLED' });
+      expect(pastCancelled.revision).toBeGreaterThan(pastBefore.revision);
+      await page
+        .locator('.teacher-journal')
+        .getByRole('button', { name: 'Лекция', exact: true })
+        .click();
+      const [cancelledJournal] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/journal' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(dataset.group.id) &&
+            url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+            url.searchParams.get('pastOnly') === 'true'
+          );
+        }),
+        page
+          .locator('.teacher-journal')
+          .getByRole('button', { name: 'Лекция', exact: true })
+          .click(),
+      ]);
+      expect(cancelledJournal.status()).toBe(200);
+      const cancelledJournalData = await cancelledJournal.json();
+      expect(cancelledJournalData.lessons).toHaveLength(1);
+      expect(cancelledJournalData.lessons[0]).toMatchObject({
+        id: String(journalSeed.lessonId),
+        status: 'cancelled',
+        cancelled: true,
+        date: journalSeed.date,
+      });
+      await expect(table.locator('thead th[data-cancelled="true"]')).toContainText('Отменена');
+      await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+      await expect(table.getByLabel('Отменена', { exact: true })).toHaveCount(expectedNames.length);
+      await expect(table.getByRole('button')).toHaveCount(0);
+      for (const metric of ['Присутствия', 'Уважительные причины', 'Отсутствия']) {
+        await expect(table.getByLabel(`${metric}: 0 из 0`, { exact: true })).toHaveCount(
+          expectedNames.length,
+        );
+      }
+      await expect(table.getByLabel('Отсутствовал', { exact: true })).toHaveCount(0);
+
+      const contrast = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: dataset.subject.id,
+          assignmentId: dataset.subject.assignments[0].id,
+          date: dataset.tomorrow,
+          lessonNumber: 2,
+          classroom: 'Синтетическая следующая пара',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      contrastLessonId = Number(contrast.physicalLessonId);
+      originalCancelAttempted = true;
+      await dataset.headmanActor.call(
+        'PATCH',
+        `/api/schedule/lessons/${future.physicalLessonId}/cancel`,
+        { reason: 'Синтетическая отмена для просмотра преподавателем' },
+      );
+      await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+      const dayRead = (date: string) =>
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/day' &&
+            url.searchParams.get('date') === date &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id)
+          );
+        });
+      const [tomorrowResponse] = await Promise.all([
+        dayRead(dataset.tomorrow),
+        page.getByRole('button', { name: 'Следующий день', exact: true }).click(),
+      ]);
+      expect(tomorrowResponse.status()).toBe(200);
+      const tomorrow = await tomorrowResponse.json();
+      expect(tomorrow.date).toBe(dataset.tomorrow);
+      expect(tomorrow.lessons.map((lesson: { id: string }) => lesson.id)).toEqual([
+        String(future.physicalLessonId),
+        String(contrastLessonId),
+      ]);
+      expect(tomorrow.lessons[0].cancelled).toBe(true);
+      expect(tomorrow.lessons[1].cancelled).toBe(false);
+      expect(tomorrow.lessons[0].startsAt < tomorrow.lessons[1].startsAt).toBe(true);
+      const home = page.getByRole('main', { name: 'Сегодня у преподавателя', exact: true });
+      await expect(home.locator('[data-lesson-id]')).toHaveCount(2);
+      expect(
+        await home
+          .locator('[data-lesson-id]')
+          .evaluateAll((elements) =>
+            elements.map((element) => element.getAttribute('data-lesson-id')),
+          ),
+      ).toEqual([String(future.physicalLessonId), String(contrastLessonId)]);
+      const cancelledCard = home.locator(`article[data-lesson-id="${future.physicalLessonId}"]`);
+      await expect(cancelledCard).toContainText('Отменена');
+      await expect(cancelledCard).toContainText(
+        'Синтетическая отмена для просмотра преподавателем',
+      );
+      await expect(cancelledCard).not.toHaveAttribute('data-teacher-action');
+      await expect(cancelledCard.getByRole('button')).toHaveCount(0);
+      await cancelledCard.click();
+      await expect(home).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Пара', exact: true })).toHaveCount(0);
+      await expect(
+        home.locator(`[data-teacher-action="lesson-open"][data-lesson-id="${contrastLessonId}"]`),
+      ).toBeVisible();
+      const [todayAgain] = await Promise.all([
+        dayRead(dataset.today),
+        page.getByRole('button', { name: 'Предыдущий день', exact: true }).click(),
+      ]);
+      expect(todayAgain.status()).toBe(200);
+      expect((await todayAgain.json()).lessons.map((lesson: { id: string }) => lesson.id)).toEqual([
+        String(id),
+      ]);
+      const [yesterdayResponse] = await Promise.all([
+        dayRead(journalSeed.date),
+        page.getByRole('button', { name: 'Предыдущий день', exact: true }).click(),
+      ]);
+      expect(yesterdayResponse.status()).toBe(200);
+      expect(
+        (await yesterdayResponse.json()).lessons.map((lesson: { id: string }) => lesson.id),
+      ).toEqual([String(journalSeed.lessonId)]);
+      await expect(home.locator(`[data-lesson-id="${journalSeed.lessonId}"]`)).toBeVisible();
+    } finally {
+      const cleanup = await Promise.allSettled([
+        ...(pendingId
+          ? [
+              journalSeed.assistantActor.call(
+                'POST',
+                `/api/v1/student/requests/${pendingId}/cancel`,
+              ),
+            ]
+          : []),
+        ...(originalCancelAttempted
+          ? [
+              dataset.headmanActor.call(
+                'PATCH',
+                `/api/schedule/lessons/${future.physicalLessonId}/restore`,
+              ),
+            ]
+          : []),
+        ...(contrastLessonId
+          ? [
+              dataset.headmanActor.call(
+                'PATCH',
+                `/api/schedule/lessons/${contrastLessonId}/cancel`,
+                { reason: 'Синтетическая завершённая проверка дня' },
+              ),
+            ]
+          : []),
+      ]);
+      // Restoration keeps physical identity and history; cancelled attendance/tickets are not resurrected.
+      if (pastCancelAttempted) {
+        try {
+          const restored = await dataset.headmanActor.call(
+            'PATCH',
+            `/api/schedule/lessons/${journalSeed.lessonId}/restore`,
+          );
+          expect(restored).toMatchObject({
+            id: journalSeed.lessonId,
+            groupId: dataset.group.id,
+            subjectId: dataset.subject.id,
+            current: true,
+          });
+          expect(restored.status).not.toBe('CANCELLED');
+          await expect
+            .poll(
+              async () => {
+                const report = await dataset.headmanActor.call(
+                  'GET',
+                  `/api/attendance/reports/lesson/${journalSeed.lessonId}`,
+                );
+                return [dataset.student.id, dataset.headman.id, dataset.assistant.id].every(
+                  (studentId) => {
+                    const row = report.entries.find(
+                      (entry: { userId: number }) => Number(entry.userId) === studentId,
+                    );
+                    return (
+                      row &&
+                      !['present', 'excused'].includes(row.status) &&
+                      row.excuseType == null &&
+                      row.attachmentId == null
+                    );
+                  },
+                );
+              },
+              {
+                timeout: 5000,
+                message: 'Owned cancelled marks are not resurrected by physical restore',
+              },
+            )
+            .toBe(true);
+        } catch {
+          expect
+            .soft(false, 'Owned past lesson physical restore and no-resurrection check completed')
+            .toBe(true);
+        }
+      }
+      expect
+        .soft(
+          cleanup.every((result) => result.status === 'fulfilled'),
+          'Owned teacher witness cleanup completed',
+        )
+        .toBe(true);
+    }
   });
 
   test('STUDENT helper marks with its capability and revocation denies the same effect', async ({

@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -271,6 +273,9 @@ class TeacherReadFacadeTest {
                                 .setSemesterDateFrom("2026-09-01")
                                 .setSemesterDateTo("2026-09-30")
                                 .build());
+        Clock teachingClock = org.mockito.Mockito.mock(Clock.class);
+        Instant ended = Instant.parse("2026-09-10T07:30:00Z");
+        when(teachingClock.instant()).thenReturn(ended.minusNanos(1));
         LessonResponse closed =
                 lesson(101L, "2026-09-10", 1, "09:00").toBuilder()
                         .setAssignedTeacherId(88L)
@@ -285,16 +290,53 @@ class TeacherReadFacadeTest {
                                                 .setDate("2026-09-01")
                                                 .setStatus("PLANNED"))
                                 .addLessons(closed.toBuilder().setId(103L).setStatus("CANCELLED"))
+                                .addLessons(
+                                        closed.toBuilder()
+                                                .setId(105L)
+                                                .setStatus("CANCELLED")
+                                                .setEndTime("10:31"))
+                                .addLessons(closed.toBuilder().setId(106L).setStatus("ACTIVE"))
+                                .addLessons(closed.toBuilder().setId(107L).setStatus("UNKNOWN"))
                                 .addLessons(closed)
                                 .addLessons(closed.toBuilder().setId(104L))
                                 .build());
         when(attendance.teacherJournal(List.of(104L), true)).thenReturn(journalResponse(104L));
-        var result =
-                new TeacherReadFacade(requestContext, academic, schedule, attendance)
-                        .journal(9L, 33L, 22L, List.of("lecture"), null, null, 1, 1, true);
+        var facade =
+                new TeacherReadFacade(
+                        requestContext, academic, schedule, attendance, teachingClock);
+        var result = facade.journal(9L, 33L, 22L, List.of("lecture"), null, null, 1, 1, true);
         assertThat(result.totalLessons()).isEqualTo(2);
         assertThat(result.hasMore()).isFalse();
         assertThat(result.lessons()).extracting(value -> value.id()).containsExactly("104");
+        when(teachingClock.instant()).thenReturn(ended);
+        var cancelledResponse = journalResponse(103L).toBuilder();
+        cancelledResponse.setLessons(
+                0,
+                cancelledResponse.getLessons(0).toBuilder()
+                        .setStatus("CANCELLED")
+                        .setCancelled(true));
+        when(attendance.teacherJournal(List.of(103L), true)).thenReturn(cancelledResponse.build());
+        var cancelledPage =
+                facade.journal(9L, 33L, 22L, List.of("lecture"), null, null, 1, 1, true);
+        assertThat(cancelledPage.totalLessons()).isEqualTo(3);
+        assertThat(cancelledPage.hasMore()).isTrue();
+        assertThat(cancelledPage.lessons())
+                .singleElement()
+                .satisfies(
+                        lesson -> {
+                            assertThat(lesson.id()).isEqualTo("103");
+                            assertThat(lesson.cancelled()).isTrue();
+                        });
+        var lastPage = facade.journal(9L, 33L, 22L, List.of("lecture"), null, null, 2, 1, true);
+        assertThat(lastPage.totalLessons()).isEqualTo(3);
+        assertThat(lastPage.hasMore()).isFalse();
+        assertThat(lastPage.lessons()).extracting(value -> value.id()).containsExactly("104");
+        verify(attendance, never()).teacherJournal(List.of(105L), true);
+        when(teachingClock.instant()).thenReturn(ended.plusSeconds(60));
+        when(attendance.teacherJournal(List.of(105L), true)).thenReturn(journalResponse(105L));
+        var newlyEnded = facade.journal(9L, 33L, 22L, List.of("lecture"), null, null, 3, 1, true);
+        assertThat(newlyEnded.totalLessons()).isEqualTo(4);
+        assertThat(newlyEnded.lessons()).extracting(value -> value.id()).containsExactly("105");
     }
 
     private static TeacherAssignment assignment(long assignmentId, long teacherId) {

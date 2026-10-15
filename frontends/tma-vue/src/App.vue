@@ -68,7 +68,7 @@ import {
   type HeadmanHomeworkApi,
   type HeadmanSubjectsApi,
   type HeadmanStatsApi,
-  type HeadmanAssistantPermission,
+  type HeadmanPermissionOption,
   type ProfilePort,
   type ProfileRole,
   type ProfileSnapshot,
@@ -137,7 +137,11 @@ const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null);
 const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null);
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null);
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null);
-const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([]);
+const assistantPermissionOptions = shallowRef<readonly HeadmanPermissionOption[]>([]);
+const assistantPermissions = computed(() =>
+  assistantPermissionOptions.value.map((option) => option.code),
+);
+const assistantPermissionsVerified = ref(false);
 const adminAccessApi = shallowRef<AdminAccessClient | null>(null);
 const adminAccessActionsApi = shallowRef<AdminAccessClient | null>(null);
 const adminAuthority = shallowRef<AdminAccessProfile | null>(null);
@@ -403,7 +407,7 @@ function currentAssistantOwnerKey(): string | null {
   return ownerKey.value;
 }
 
-const assistantPermissionRefresher = createAssistantPermissionRefresher({
+const assistantPermissionRefresher = createAssistantPermissionRefresher<HeadmanPermissionOption>({
   currentGeneration: () => sessionOwner.currentGeneration(),
   currentOwnerKey: currentAssistantOwnerKey,
   load: async (generation, expectedOwnerKey) => {
@@ -417,16 +421,20 @@ const assistantPermissionRefresher = createAssistantPermissionRefresher({
     }
     const groupId = current.group?.id ? Number(current.group.id) : null;
     if (groupId === null || !Number.isSafeInteger(groupId) || groupId <= 0) return [];
-    const permissions = (
-      await sessionOwner.createHeadmanGroupApi(currentFetcher()).listMyPermissions()
-    ).map((option) => option.code);
+    const permissions = await sessionOwner
+      .createHeadmanGroupApi(currentFetcher())
+      .listMyPermissions();
     if (!sessionOwner.isCurrent(generation) || currentAssistantOwnerKey() !== expectedOwnerKey) {
       throw new StaleSessionGenerationError();
     }
     return permissions;
   },
+  invalidate: () => {
+    assistantPermissionsVerified.value = false;
+  },
   apply: (permissions) => {
-    assistantPermissions.value = permissions;
+    assistantPermissionOptions.value = permissions;
+    assistantPermissionsVerified.value = true;
   },
 });
 
@@ -759,7 +767,7 @@ async function fetchAssistantCapabilities(
   statsApi: HeadmanStatsApi;
   requestsApi: HeadmanRequestsApi;
   homeworkApi: HeadmanHomeworkApi;
-  permissions: readonly HeadmanAssistantPermission[];
+  permissions: readonly HeadmanPermissionOption[];
 }> {
   const groupApi = sessionOwner.createHeadmanGroupApi(currentFetcher());
   const journalApi = sessionOwner.createHeadmanJournalApi(currentFetcher());
@@ -767,10 +775,10 @@ async function fetchAssistantCapabilities(
   const requestsApi = sessionOwner.createHeadmanRequestsApi(currentFetcher());
   const homeworkApi = sessionOwner.createHeadmanHomeworkApi(currentFetcher());
   const groupId = studentSession.group?.id ? Number(studentSession.group.id) : null;
-  let permissions: readonly HeadmanAssistantPermission[] = [];
+  let permissions: readonly HeadmanPermissionOption[] = [];
   if (groupId !== null && Number.isSafeInteger(groupId) && groupId > 0) {
     try {
-      permissions = (await groupApi.listMyPermissions()).map((option) => option.code);
+      permissions = await groupApi.listMyPermissions();
     } catch (cause) {
       if (!isAssistantPermissionReadForbidden(cause) || isAuthDenied(cause)) throw cause;
     }
@@ -855,7 +863,8 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   assistantStatsApi.value = null;
   assistantRequestsApi.value = null;
   assistantHomeworkApi.value = null;
-  assistantPermissions.value = [];
+  assistantPermissionOptions.value = [];
+  assistantPermissionsVerified.value = false;
   adminAccessApi.value = null;
   adminAccessActionsApi.value = null;
   adminMapClient.value = null;
@@ -1062,7 +1071,8 @@ async function bootstrap(): Promise<void> {
       assistantStatsApi.value = assistant.statsApi;
       assistantRequestsApi.value = assistant.requestsApi;
       assistantHomeworkApi.value = assistant.homeworkApi;
-      assistantPermissions.value = assistant.permissions;
+      assistantPermissionOptions.value = assistant.permissions;
+      assistantPermissionsVerified.value = true;
       api.value = needsFreshOwner ? candidate.api : api.value;
       session.value = candidate.session;
       scope.value = nextScope;
@@ -1174,7 +1184,8 @@ async function selectRole(
       assistantStatsApi.value = assistant.statsApi;
       assistantRequestsApi.value = assistant.requestsApi;
       assistantHomeworkApi.value = assistant.homeworkApi;
-      assistantPermissions.value = assistant.permissions;
+      assistantPermissionOptions.value = assistant.permissions;
+      assistantPermissionsVerified.value = true;
       api.value = candidateApi;
       session.value = candidateSession;
       scope.value = studentFeatureScope(candidateSession, selection.generation);
@@ -1674,6 +1685,7 @@ onBeforeUnmount(() => {
     :unread-count="notificationUnread.count"
     :on-logout="logout"
     :assistant-permissions="assistantPermissions"
+    :assistant-permission-options="assistantPermissionsVerified ? assistantPermissionOptions : []"
     :assistant-journal-api="assistantJournalApi"
     :assistant-stats-api="assistantStatsApi"
     :assistant-requests-api="assistantRequestsApi"

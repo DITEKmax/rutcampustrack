@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { HeadmanPermissionOption } from '../headman-group/headman-group-client';
 import type {
   ProfileRequestError,
   ProfileResolvedTheme,
@@ -18,6 +19,7 @@ import './profile-screen.pcss';
 const props = withDefaults(
   defineProps<{
     snapshot: ProfileSnapshot | null;
+    delegatedPermissions?: readonly HeadmanPermissionOption[];
     loading?: boolean;
     error?: ProfileRequestError | null;
     onRetry?: (() => void | Promise<void>) | undefined;
@@ -29,6 +31,7 @@ const props = withDefaults(
     theme?: ProfileResolvedTheme;
   }>(),
   {
+    delegatedPermissions: () => [],
     loading: false,
     error: null,
     onRetry: undefined,
@@ -135,6 +138,22 @@ function logout(): void {
               }}
             </p>
           </div>
+        </section>
+
+        <section
+          v-if="snapshot.activeRole === 'STUDENT' && !snapshot.readOnly && delegatedPermissions.length"
+          class="profile-permissions"
+          aria-label="Дополнительные права"
+        >
+          <h2>Дополнительные права</h2>
+          <ul>
+            <li
+              v-for="permission in delegatedPermissions"
+              :key="permission.code"
+            >
+              {{ permission.label }}
+            </li>
+          </ul>
         </section>
 
         <nav aria-label="Настройки профиля">

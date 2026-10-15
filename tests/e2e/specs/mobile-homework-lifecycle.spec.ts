@@ -1519,6 +1519,8 @@ isolated(
       await revokedReplay.dispose();
       expect(await author.call('GET', `${headmanPath}?archived=true`)).toEqual(helperDeleted);
       expect(await author.call('GET', `${headmanPath}/history?size=100`)).toEqual(headmanHistory);
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
       await logoutPwa(page);
     } finally {
       try {

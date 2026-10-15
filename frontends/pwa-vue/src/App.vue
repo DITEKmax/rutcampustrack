@@ -80,7 +80,7 @@ import {
   type HeadmanHomeworkApi,
   type HeadmanSubjectsApi,
   type HeadmanStatsApi,
-  type HeadmanAssistantPermission,
+  type HeadmanPermissionOption,
   type AdminSemesterClient,
   type AdminDashboardClient,
   type AdminGroupsClient,
@@ -187,7 +187,11 @@ const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null);
 const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null);
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null);
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null);
-const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([]);
+const assistantPermissionOptions = shallowRef<readonly HeadmanPermissionOption[]>([]);
+const assistantPermissions = computed(() =>
+  assistantPermissionOptions.value.map((option) => option.code),
+);
+const assistantPermissionsVerified = ref(false);
 const adminAccessApi = shallowRef<AdminAccessClient | null>(null);
 const adminAccessActionsApi = shallowRef<AdminAccessClient | null>(null);
 const adminAuthority = shallowRef<AdminAccessProfile | null>(null);
@@ -535,7 +539,7 @@ function currentAssistantOwnerKey(): string | null {
   return ownerKey.value;
 }
 
-const assistantPermissionRefresher = createAssistantPermissionRefresher({
+const assistantPermissionRefresher = createAssistantPermissionRefresher<HeadmanPermissionOption>({
   currentGeneration: () => auth.currentGeneration(),
   currentOwnerKey: currentAssistantOwnerKey,
   load: async (generation, expectedOwnerKey) => {
@@ -549,16 +553,18 @@ const assistantPermissionRefresher = createAssistantPermissionRefresher({
     }
     const groupId = current.group?.id ? Number(current.group.id) : null;
     if (groupId === null || !Number.isSafeInteger(groupId) || groupId <= 0) return [];
-    const permissions = (
-      await auth.createHeadmanGroupApi(currentFetcher()).listMyPermissions()
-    ).map((option) => option.code);
+    const permissions = await auth.createHeadmanGroupApi(currentFetcher()).listMyPermissions();
     if (!auth.isCurrent(generation) || currentAssistantOwnerKey() !== expectedOwnerKey) {
       throw new StaleSessionGenerationError();
     }
     return permissions;
   },
+  invalidate: () => {
+    assistantPermissionsVerified.value = false;
+  },
   apply: (permissions) => {
-    assistantPermissions.value = permissions;
+    assistantPermissionOptions.value = permissions;
+    assistantPermissionsVerified.value = true;
   },
 });
 
@@ -942,7 +948,8 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   assistantStatsApi.value = null;
   assistantRequestsApi.value = null;
   assistantHomeworkApi.value = null;
-  assistantPermissions.value = [];
+  assistantPermissionOptions.value = [];
+  assistantPermissionsVerified.value = false;
   adminAccessApi.value = null;
   adminAccessActionsApi.value = null;
   adminMapClient.value = null;
@@ -1019,7 +1026,8 @@ function invalidateOwnerSynchronously(
   assistantStatsApi.value = null;
   assistantRequestsApi.value = null;
   assistantHomeworkApi.value = null;
-  assistantPermissions.value = [];
+  assistantPermissionOptions.value = [];
+  assistantPermissionsVerified.value = false;
   adminAccessApi.value = null;
   adminAccessActionsApi.value = null;
   adminMapClient.value = null;
@@ -1154,7 +1162,7 @@ async function fetchStudentCandidate(
   assistantStatsApi: HeadmanStatsApi;
   assistantRequestsApi: HeadmanRequestsApi;
   assistantHomeworkApi: HeadmanHomeworkApi;
-  assistantPermissions: readonly HeadmanAssistantPermission[];
+  assistantPermissions: readonly HeadmanPermissionOption[];
 } | null> {
   if (profile.activeRole !== 'STUDENT') return null;
   const candidateApi = auth.createApi(currentFetcher());
@@ -1165,10 +1173,10 @@ async function fetchStudentCandidate(
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher());
   const candidateHomeworkApi = auth.createHeadmanHomeworkApi(currentFetcher());
   const groupId = candidateSession.group?.id ? Number(candidateSession.group.id) : null;
-  let permissions: readonly HeadmanAssistantPermission[] = [];
+  let permissions: readonly HeadmanPermissionOption[] = [];
   if (groupId !== null && Number.isSafeInteger(groupId) && groupId > 0) {
     try {
-      permissions = (await candidateGroupApi.listMyPermissions()).map((option) => option.code);
+      permissions = await candidateGroupApi.listMyPermissions();
     } catch (cause) {
       if (!isAssistantPermissionReadForbidden(cause) || isConfirmedOnlineAuthDenial(cause))
         throw cause;
@@ -1282,7 +1290,7 @@ type StudentCandidate = {
   assistantStatsApi: HeadmanStatsApi;
   assistantRequestsApi: HeadmanRequestsApi;
   assistantHomeworkApi: HeadmanHomeworkApi;
-  assistantPermissions: readonly HeadmanAssistantPermission[];
+  assistantPermissions: readonly HeadmanPermissionOption[];
 };
 
 async function activateCandidate(candidate: StudentCandidate): Promise<void> {
@@ -1378,7 +1386,8 @@ async function activateCandidate(candidate: StudentCandidate): Promise<void> {
   assistantStatsApi.value = candidate.assistantStatsApi;
   assistantRequestsApi.value = candidate.assistantRequestsApi;
   assistantHomeworkApi.value = candidate.assistantHomeworkApi;
-  assistantPermissions.value = candidate.assistantPermissions;
+  assistantPermissionOptions.value = candidate.assistantPermissions;
+  assistantPermissionsVerified.value = true;
   session.value = candidate.session;
   scope.value = nextScope;
   if (!sameOwner || profilePort.value === null) {
@@ -2491,6 +2500,7 @@ onBeforeUnmount(() => {
     :profile-port="profilePort"
     :profile-role-select="selectRole"
     :assistant-permissions="assistantPermissions"
+    :assistant-permission-options="assistantPermissionsVerified ? assistantPermissionOptions : []"
     :assistant-journal-api="assistantJournalApi"
     :assistant-stats-api="assistantStatsApi"
     :assistant-requests-api="assistantRequestsApi"

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.mobilebff.teacher;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.SubjectInfo;
@@ -27,6 +29,7 @@ import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignment;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
@@ -76,16 +79,42 @@ public final class TeacherReadFacade {
     private final MobileAcademicClient academic;
     private final MobileScheduleClient schedule;
     private final MobileAttendanceClient attendance;
+    private final Clock educationalClock;
 
     public TeacherReadFacade(
             MobileRequestContext requestContext,
             MobileAcademicClient academic,
             MobileScheduleClient schedule,
             MobileAttendanceClient attendance) {
+        this(
+                requestContext,
+                academic,
+                schedule,
+                attendance,
+                Clock.system(ZoneId.of("Europe/Moscow")));
+    }
+
+    @Autowired
+    public TeacherReadFacade(
+            MobileRequestContext requestContext,
+            MobileAcademicClient academic,
+            MobileScheduleClient schedule,
+            MobileAttendanceClient attendance,
+            EducationalTime educationalTime) {
+        this(requestContext, academic, schedule, attendance, educationalTime.clock());
+    }
+
+    TeacherReadFacade(
+            MobileRequestContext requestContext,
+            MobileAcademicClient academic,
+            MobileScheduleClient schedule,
+            MobileAttendanceClient attendance,
+            Clock educationalClock) {
         this.requestContext = requestContext;
         this.academic = academic;
         this.schedule = schedule;
         this.attendance = attendance;
+        this.educationalClock = educationalClock;
     }
 
     public TeacherApiModels.SemesterResponse semester() {
@@ -404,6 +433,7 @@ public final class TeacherReadFacade {
                         dateFrom,
                         dateTo);
         LessonsResponse scheduled = schedule.lessons(groupId, semesterId, range.from(), range.to());
+        Instant teachingNow = educationalClock.instant();
         List<LessonResponse> concrete =
                 scheduled.getLessonsList().stream()
                         .filter(lesson -> lesson.getId() > 0)
@@ -419,9 +449,7 @@ public final class TeacherReadFacade {
                                                                                 lesson
                                                                                         .getLessonType())))
                         .filter(lesson -> inRange(lesson, range))
-                        .filter(
-                                lesson ->
-                                        !pastOnly || "closed".equalsIgnoreCase(lesson.getStatus()))
+                        .filter(lesson -> !pastOnly || completedHistoryLesson(lesson, teachingNow))
                         .sorted(
                                 Comparator.comparing(LessonResponse::getDate)
                                         .thenComparing(
@@ -450,6 +478,21 @@ public final class TeacherReadFacade {
                 pageSize,
                 concrete.size(),
                 end < concrete.size());
+    }
+
+    private static boolean completedHistoryLesson(LessonResponse lesson, Instant now) {
+        if ("closed".equalsIgnoreCase(lesson.getStatus())) return true;
+        if (!"cancelled".equalsIgnoreCase(lesson.getStatus())) return false;
+        try {
+            Instant ended =
+                    LocalDate.parse(lesson.getDate())
+                            .atTime(LocalTime.parse(lesson.getEndTime()))
+                            .atZone(ZoneId.of("Europe/Moscow"))
+                            .toInstant();
+            return !ended.isAfter(now);
+        } catch (RuntimeException invalidTiming) {
+            throw incompleteCatalog();
+        }
     }
 
     public TeacherApiModels.ExportFormatsResponse journalExportFormats() {

@@ -59546,5 +59546,60 @@
     "supersedes": [
       "Unresolved nonauthor homework DELETE rule only"
     ]
+  },
+  "delivery_teacher_attendance_current_subject_scope_20261015": {
+    "source_id": "owner:cloud-validation-Q022-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-teacher-attendance-current-subject-scope.md",
+    "status": "accepted owner decision D023",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T13:05:58.831909+00:00",
+    "sha256": "573af7f8267f417d52a6ffbad170432d1a73a2d7316f39cbacd3ba3295fdfb91",
+    "supersedes": [
+      "Q022 unresolved product fork only; detailed scope in canonical decision"
+    ]
+  },
+  "delivery_qr_web_login_and_mobile_admission_20261015": {
+    "source_id": "owner:cloud-validation-Q021-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-qr-web-login-and-mobile-admission.md",
+    "status": "accepted owner decision D024",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T13:05:58.831909+00:00",
+    "sha256": "b2e33c1820690dfb924df2a155878d96d9354cd54b3ac0bfc7dc98345a256485",
+    "supersedes": [
+      "Q021 unresolved product fork only; detailed scope in canonical decision"
+    ]
+  },
+  "delivery_admin_attendance_report_in_current_scope_20261015": {
+    "source_id": "owner:cloud-validation-Q020-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-admin-attendance-report-in-current-scope.md",
+    "status": "accepted owner decision D025",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T13:05:58.831909+00:00",
+    "sha256": "eed3e3561c324746308698dfd71368b3ac4e353f9ea8167a78a2eafde435e12e",
+    "supersedes": [
+      "Q020 unresolved product fork only; detailed scope in canonical decision"
+    ]
+  },
+  "delivery_admin_attendance_report_screen_20261015": {
+    "source_id": "owner:cloud-validation-Q023-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-admin-attendance-report-screen.md",
+    "status": "accepted owner decision D026",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T13:10:09.499816+00:00",
+    "sha256": "2d2d0fdeef0cde6e7255a9c54fa82ac686021d8e159b091dedf6f0aa3a3b0e27",
+    "supersedes": [
+      "Q023 dependent product fork; details in canonical"
+    ]
+  },
+  "delivery_admin_attendance_report_access_20261015": {
+    "source_id": "owner:cloud-validation-Q024-20261015",
+    "canonical_path": "docs/product/decisions/2026-10-15-admin-attendance-report-access.md",
+    "status": "accepted owner decision D027",
+    "decision_owner": "repository owner",
+    "received_utc": "2026-10-15T13:10:09.499816+00:00",
+    "sha256": "9cc891c478b4fe7f9cf1879781bc2ad624da6cef5df964fa11b73aa0ddd253a4",
+    "supersedes": [
+      "Q024 dependent product fork; details in canonical"
+    ]
   }
 }

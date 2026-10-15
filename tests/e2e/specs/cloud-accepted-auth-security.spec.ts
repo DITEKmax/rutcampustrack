@@ -332,6 +332,18 @@ function ownedOtpReceiver(info: TestInfo) {
       requireOwned(existing.body.durable === false, 'Owned OTP queue must be non-durable');
       requireOwned(existing.body.auto_delete === false, 'Owned OTP queue must not auto-delete');
       requireOwned(existing.body.exclusive === false, 'Owned OTP queue must not be exclusive');
+      requireOwned(
+        Object.hasOwn(existing.body, 'consumers'),
+        'Owned OTP queue consumer count is absent',
+      );
+      requireOwned(
+        typeof existing.body.consumers === 'number',
+        'Owned OTP queue consumer count is not numeric',
+      );
+      requireOwned(
+        Number.isSafeInteger(existing.body.consumers) && existing.body.consumers >= 0,
+        'Owned OTP queue consumer count is not a nonnegative safe integer',
+      );
       requireOwned(existing.body.consumers === 0, 'Owned OTP queue must have no consumers');
       await call('DELETE', `${queuePath}?if-unused=true`, [204, 404], undefined, 4000, true);
     },

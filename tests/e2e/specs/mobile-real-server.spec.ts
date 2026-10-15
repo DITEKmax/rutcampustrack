@@ -1179,7 +1179,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       expect(typeof pendingId).toBe('string');
       expect(pending.summary.status).toBe('PENDING');
 
-      await page.getByRole('button', { name: 'Статистика', exact: true }).click();
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'Итоги', exact: true }).click();
       await page.getByRole('button', { name: 'Группа', exact: true }).click();
       await page.getByRole('option', { name: groupName, exact: true }).click();
       await page.getByRole('button', { name: 'Предмет', exact: true }).click();
@@ -1387,6 +1388,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         `/api/schedule/lessons/${future.physicalLessonId}/cancel`,
         { reason: 'Синтетическая отмена для просмотра преподавателем' },
       );
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
       await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
       const dayRead = (date: string) =>
         page.waitForResponse((response) => {

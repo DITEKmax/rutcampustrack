@@ -13,6 +13,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByTelegramId(Long telegramId);
 
+    @Query(
+            value =
+                    "SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id = :id AND role = 'admin' AND status = 'active')",
+            nativeQuery = true)
+    boolean hasActiveAdminGrant(@Param("id") Long id);
+
     @Transactional
     @Modifying
     @Query(

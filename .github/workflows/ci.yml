@@ -405,7 +405,7 @@ jobs:
           retention-days: 7
 
       - name: Verify changed data regressions reject their counterexamples
-        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service' || matrix.service.name == 'notification-service'
+        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service' || matrix.service.name == 'notification-service' || matrix.service.name == 'auth-service'
         timeout-minutes: 8
         env:
           RCT_CI_SERVICE: ${{ matrix.service.name }}
@@ -417,7 +417,7 @@ jobs:
           import xml.etree.ElementTree as ET
 
           service = os.environ['RCT_CI_SERVICE']
-          assert service in {'schedule-service', 'attendance-service', 'academic-service', 'notification-service'}
+          assert service in {'schedule-service', 'attendance-service', 'academic-service', 'notification-service', 'auth-service'}
           app = pathlib.Path('services') / service / (service.removesuffix('-service') + '-app')
           private = pathlib.Path(tempfile.mkdtemp(prefix='changed-domain-red-', dir=os.environ['RUNNER_TEMP']))
           results = app / 'build/test-results/integrationTest'
@@ -534,6 +534,39 @@ jobs:
                       'counterexampleSourceSha256': hashlib.sha256(audit_negative).hexdigest(),
                       'ruleFrame': audit['package'] + '.' + audit['method'] + '(HomeworkEditLifecycleIT.java:' + str(audit_line) + ')'}
 
+              elif service == 'auth-service':
+                  package = 'ru.rutcampustrack.auth.integration.AuthOtpFlowIT'
+                  method = 'ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin'
+                  test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java'
+                  auth_test = test_source.read_bytes()
+                  assert hashlib.sha256(auth_test).hexdigest() == 'd6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176'
+                  auth_oracle = b'        assertThat(delivered == null).isTrue();\n'
+                  assert auth_test.count(auth_oracle) == 1
+                  rule_line = auth_test[:auth_test.index(auth_oracle)].count(b'\n') + 1
+                  assert rule_line == 432
+                  auth_repository = app / 'src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java'
+                  assert hashlib.sha256(auth_repository.read_bytes()).hexdigest() == 'b67e309784a8d5d3fe581246f703c811d9294acb602566e67f2aa842317deb9d'
+                  previous = 'dbf964286a2199cc6b6f13d1c98696723b9b87b4'
+                  paths = {
+                      app / 'src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java': (
+                          'cc8b5b39b7a1eafbba3a69144a22a019cde58183ec290ebbd5e54188f347eae7',
+                          '249b9a76d519ab977fd2e8d11f2e3d304f4bfa1d4652de98e5139795b3d0d93b'),
+                      app / 'src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java': (
+                          '5b13be4b6c4ed895b5b83a4f3c305fba460a4718ef6e7eee1cf21b2f925815a6',
+                          'b5cef648221489390b9c2d2746bb5791a75dd1e2858d91001cf952226c5779b7'),
+                  }
+                  with (private / 'fetch.private.log').open('wb') as log:
+                      subprocess.run(['git', 'fetch', '--quiet', '--no-tags', '--depth=1', 'origin', previous],
+                                     stdout=log, stderr=subprocess.STDOUT, timeout=60, check=True)
+                  replacements = {}
+                  for path, (current_sha, previous_sha) in paths.items():
+                      assert hashlib.sha256(path.read_bytes()).hexdigest() == current_sha
+                      previous_source = subprocess.check_output(['git', 'show', previous + ':' + path.as_posix()], timeout=30)
+                      assert 0 < len(previous_source) <= 1048576 and hashlib.sha256(previous_source).hexdigest() == previous_sha
+                      replacements[path] = previous_source
+                  proof.update(counterexample='PREVIOUS_ACTIVE_ADMIN_PASSWORD_RESET_AUTHORITY',
+                               previousRevision=previous,
+                               ruleFrame=package + '.' + method + '(AuthOtpFlowIT.java:' + str(rule_line) + ')')
               elif service == 'notification-service':
                   package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
                   method = 'webPush503LeavesInboxReadableAndRetriesOnceWithoutDuplicatingHistoryOrDelivery'
@@ -580,7 +613,7 @@ jobs:
                   selectors += ['--tests', audit['package'] + '.' + audit['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
-                                        '--no-daemon', *(['--no-build-cache'] if audit is not None else []), *selectors],
+                                        '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' else []), *selectors],
                                        stdout=log, stderr=subprocess.STDOUT, timeout=360)
               proof['nativeExit'] = run.returncode
               assert run.returncode != 0
@@ -631,6 +664,23 @@ jobs:
                                     failure.text or ''))
                   assert proof['namedMethodFrameCount'] == 1 and proof['expectedRuleFrameMatched']
                   proof.update(affectedRows=1, expectedRetentionEqual=True, observedRetentionEqual=False)
+              elif service == 'auth-service':
+                  assert suite.tag == 'testsuite' and suite.get('name') == package
+                  assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  assert case.get('classname') == package
+                  message = message.removeprefix(failure.get('type') + ': ')
+                  assert re.fullmatch(r'\s*Expecting value to be true but was false\s*', message)
+                  named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(package + '.' + method)
+                      + r'\(AuthOtpFlowIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+                  proof['namedMethodFrameCount'] = len(named_lines)
+                  proof['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(proof['ruleFrame']) + r'[ \t]*$', failure.text or ''))
+                  assert proof['namedMethodFrameCount'] == 1 and proof['expectedRuleFrameMatched']
+                  proof.update(expectedNoOtpDelivery=True, observedNoOtpDelivery=False)
               elif service == 'notification-service':
                   assert suite.tag == 'testsuite' and suite.get('name') == package
                   assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
@@ -735,6 +785,10 @@ jobs:
                   assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
                   proof['auditRule']['sourceRestoredExact'] = True
+              if service == 'auth-service' and current:
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == 'd6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176'
+                  assert hashlib.sha256(auth_repository.read_bytes()).hexdigest() == 'b67e309784a8d5d3fe581246f703c811d9294acb602566e67f2aa842317deb9d'
+                  proof['sourceRestoredExact'] = True
               if service == 'notification-service' and current:
                   proof['sourceRestoredExact'] = True
               if service == 'academic-service' and current:
@@ -751,7 +805,7 @@ jobs:
           PY_DOMAIN_RED
 
       - name: Upload safe changed-domain regression proof
-        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service' || matrix.service.name == 'notification-service')
+        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service' || matrix.service.name == 'notification-service' || matrix.service.name == 'auth-service')
         uses: actions/upload-artifact@v4
         with:
           name: changed-domain-regression-safe-${{ matrix.service.name }}-${{ github.run_attempt }}
@@ -2206,7 +2260,7 @@ jobs:
           def classify(payload, config):
               stage = config[6]
               if len(payload) > LIMIT or len(payload.splitlines()) > 200:
-                  return output('UNAVAILABLE', stage)
+                  return output('UNAVAILABLE_LOG_FORMAT', stage)
               frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
                                  + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
               throwable = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
@@ -2240,7 +2294,7 @@ jobs:
                   kinds = throwable.findall(stack)
                   matches.append(CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN')
               if unusable:
-                  return output('UNAVAILABLE', stage)
+                  return output('UNAVAILABLE_LOG_FORMAT', stage)
               if len(matches) > 1:
                   return output('AMBIGUOUS', stage)
               return output('UNIQUE', stage, matches[0]) if matches else output('ABSENT', stage)
@@ -2275,6 +2329,7 @@ jobs:
               return decode(raw)
 
           def collect(config):
+              global result
               deadline, remaining_bytes = time.monotonic() + 15, LIMIT
               def remaining():
                   seconds = deadline - time.monotonic()
@@ -2316,16 +2371,23 @@ jobs:
                   if decode(call(['docker', 'inspect', '--format', template, cid])) != [cid, 'rct-e2e', config[5], True]:
                       raise ValueError('Owned service changed')
               verify()
+              result = output('UNAVAILABLE_LOG_CAPTURE', config[6])
               payload = call(['docker', 'logs', '--since', '180s', '--tail', '200', cid], True)
+              result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
               verify()
               return payload
 
-          result = output('UNAVAILABLE', 'UNKNOWN')
+          result = output('UNAVAILABLE_PRIVATE_INPUT', 'UNKNOWN')
           try:
               config = STAGES[os.environ['RCT_HTTP500_DIAGNOSTIC_STAGE']]
-              result = output('UNAVAILABLE', config[6])
-              if is_target_failure(load_failure(config), config):
-                  result = classify(collect(config), config)
+              result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
+              failure = load_failure(config)
+              result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
+              if is_target_failure(failure, config):
+                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
+                  payload = collect(config)
+                  result = output('UNAVAILABLE_LOG_FORMAT', config[6])
+                  result = classify(payload, config)
           except Exception:
               pass
           print(json.dumps(result, sort_keys=True))

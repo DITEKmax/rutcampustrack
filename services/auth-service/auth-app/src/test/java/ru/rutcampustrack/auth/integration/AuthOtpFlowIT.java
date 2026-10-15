@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.HexFormat;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +56,8 @@ import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.event.AuthOutboxCleanupJob;
 import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
 import ru.rutcampustrack.auth.events.EventSchemaValidator;
+import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
@@ -110,6 +115,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Autowired private OutboxStorage outboxStorage;
     @Autowired private OutboxEventSender outboxSender;
     @Autowired private PlatformTransactionManager transactionManager;
+    @Autowired private CredentialSessionTransactionPort credentialTransactions;
     private long passwordChangedEventCountBeforeTest;
 
     @BeforeEach
@@ -393,6 +399,157 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 cleanUnicodePasswordActors(changeUser, resetUser);
             } catch (RuntimeException | AssertionError cleanupFailure) {
                 if (primaryFailure != null) primaryFailure.addSuppressed(cleanupFailure);
+                else throw cleanupFailure;
+            }
+        }
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin() throws Exception {
+        String suffix = UUID.randomUUID().toString();
+        String adminLogin = "reset-admin-" + suffix;
+        String studentLogin = "reset-student-" + suffix;
+        long admin = seedUnicodePasswordActor(adminLogin, 810000000001L);
+        Long student = null;
+        Throwable primary = null;
+        try {
+            activateOnlyAdminGrant(admin);
+            loginUser(adminLogin, "password");
+            List<Object> before = unicodePasswordState(admin);
+            ResponseEntity<JsonNode> requested = requestOwnedReset(Map.of("login", adminLogin));
+            String challenge = requested.getBody().path("challengeId").asText();
+            String code = ownedResetCode(challenge);
+            Message delivered = rabbitTemplate.receive(TEST_QUEUE, 100);
+            ResponseEntity<JsonNode> verified = verifyOwnedReset(challenge, code);
+            // Exercise the unsafe old implementation through completion before asserting denial.
+            ResponseEntity<JsonNode> completed = null;
+            if (verified.getStatusCode() == HttpStatus.OK
+                    && verified.getBody() != null
+                    && verified.getBody().hasNonNull("resetTicket")) {
+                completed = completeOwnedReset(verified.getBody().path("resetTicket").asText());
+            }
+            assertThat(delivered == null).isTrue();
+            assertThat(verified.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(verified.getBody() != null && !verified.getBody().has("resetTicket"))
+                    .isTrue();
+            assertThat(completed == null || completed.getStatusCode() != HttpStatus.NO_CONTENT)
+                    .isTrue();
+            assertThat(unicodePasswordState(admin).equals(before)).isTrue();
+
+            ResponseEntity<JsonNode> alias = requestOwnedReset(Map.of("telegramId", 810000000001L));
+            ResponseEntity<JsonNode> unknown =
+                    requestOwnedReset(Map.of("login", "missing-" + suffix));
+            assertThat(
+                            alias.getBody().size() == requested.getBody().size()
+                                    && unknown.getBody().size() == requested.getBody().size())
+                    .isTrue();
+            assertThat(rabbitTemplate.receive(TEST_QUEUE, 100) == null).isTrue();
+            assertThat(unicodePasswordState(admin).equals(before)).isTrue();
+
+            // The same public flow remains usable for an ordinary current non-ADMIN account.
+            student = seedUnicodePasswordActor(studentLogin, 810000000002L);
+            loginUser(studentLogin, "password");
+            ResponseEntity<JsonNode> positive = requestOwnedReset(Map.of("login", studentLogin));
+            String positiveChallenge = positive.getBody().path("challengeId").asText();
+            JsonNode event =
+                    objectMapper.readTree(receiveWithRetry(TEST_QUEUE).getBody()).path("payload");
+            assertThat(
+                            event.path("challenge_id").asText().equals(positiveChallenge)
+                                    && event.path("purpose").asText().equals("password_reset"))
+                    .isTrue();
+            ResponseEntity<JsonNode> ticket =
+                    verifyOwnedReset(positiveChallenge, event.path("code").asText());
+            assertThat(ticket.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(ticket.getBody() != null && ticket.getBody().hasNonNull("resetTicket"))
+                    .isTrue();
+            assertThat(
+                            completeOwnedReset(ticket.getBody().path("resetTicket").asText())
+                                    .getStatusCode())
+                    .isEqualTo(HttpStatus.NO_CONTENT);
+            assertUnicodePasswordCommitted(student, "AdminBoundaryReset42!", "password");
+            assertThat(unicodePasswordState(admin).equals(before)).isTrue();
+        } catch (Exception | AssertionError failure) {
+            primary = failure;
+            throw failure;
+        } finally {
+            try {
+                cleanUnicodePasswordActors(admin, student);
+            } catch (RuntimeException | AssertionError cleanupFailure) {
+                if (primary != null) primary.addSuppressed(cleanupFailure);
+                else throw cleanupFailure;
+            }
+        }
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void adminActivationInvalidatesPendingOtpAndResetTicketWithoutEffects() throws Exception {
+        String suffix = UUID.randomUUID().toString();
+        String otpLogin = "reset-pending-otp-" + suffix;
+        String ticketLogin = "reset-pending-ticket-" + suffix;
+        long otpUser = seedUnicodePasswordActor(otpLogin, 810000000003L);
+        Long ticketUser = null;
+        Throwable primary = null;
+        try {
+            loginUser(otpLogin, "password");
+            ResponseEntity<JsonNode> otp = requestOwnedReset(Map.of("login", otpLogin));
+            String challenge = otp.getBody().path("challengeId").asText();
+            JsonNode otpEvent =
+                    objectMapper.readTree(receiveWithRetry(TEST_QUEUE).getBody()).path("payload");
+            assertThat(otpEvent.path("challenge_id").asText().equals(challenge)).isTrue();
+            activateOnlyAdminGrant(otpUser);
+            List<Object> otpBefore = unicodePasswordState(otpUser);
+            ResponseEntity<JsonNode> denied =
+                    verifyOwnedReset(challenge, otpEvent.path("code").asText());
+            assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.GONE);
+            assertThat(denied.getBody() != null && !denied.getBody().has("resetTicket")).isTrue();
+            assertThat(unicodePasswordState(otpUser).equals(otpBefore)).isTrue();
+
+            ticketUser = seedUnicodePasswordActor(ticketLogin, 810000000004L);
+            loginUser(ticketLogin, "password");
+            ResponseEntity<JsonNode> request = requestOwnedReset(Map.of("login", ticketLogin));
+            String ticketChallenge = request.getBody().path("challengeId").asText();
+            JsonNode ticketEvent =
+                    objectMapper.readTree(receiveWithRetry(TEST_QUEUE).getBody()).path("payload");
+            assertThat(ticketEvent.path("challenge_id").asText().equals(ticketChallenge)).isTrue();
+            ResponseEntity<JsonNode> verified =
+                    verifyOwnedReset(ticketChallenge, ticketEvent.path("code").asText());
+            assertThat(verified.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(verified.getBody() != null && verified.getBody().hasNonNull("resetTicket"))
+                    .isTrue();
+            String ticket = verified.getBody().path("resetTicket").asText();
+            activateOnlyAdminGrant(ticketUser);
+            List<Object> ticketBefore = unicodePasswordState(ticketUser);
+            assertThat(completeOwnedReset(ticket).getStatusCode()).isEqualTo(HttpStatus.GONE);
+            assertThat(unicodePasswordState(ticketUser).equals(ticketBefore)).isTrue();
+
+            // The transaction boundary independently rejects promotion after an outer precheck.
+            long promotedUser = ticketUser;
+            assertThatThrownBy(
+                            () ->
+                                    credentialTransactions.issuePasswordResetTicket(
+                                            promotedUser,
+                                            new CredentialSessionTransactionPort.CredentialHash(
+                                                    resetChallengeHash(
+                                                            UUID.randomUUID().toString())),
+                                            Instant.now().plusSeconds(120)))
+                    .isInstanceOfSatisfying(
+                            AuthSessionException.class,
+                            error ->
+                                    assertThat(error.code())
+                                            .isEqualTo(AuthSessionException.Code.ROLE_NOT_GRANTED));
+            assertThat(unicodePasswordState(ticketUser).equals(ticketBefore)).isTrue();
+            assertThat(unicodePasswordState(otpUser).equals(otpBefore)).isTrue();
+            assertThat(rabbitTemplate.receive(TEST_QUEUE, 100) == null).isTrue();
+        } catch (Exception | AssertionError failure) {
+            primary = failure;
+            throw failure;
+        } finally {
+            try {
+                cleanUnicodePasswordActors(otpUser, ticketUser);
+            } catch (RuntimeException | AssertionError cleanupFailure) {
+                if (primary != null) primary.addSuppressed(cleanupFailure);
                 else throw cleanupFailure;
             }
         }
@@ -1159,6 +1316,72 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                 });
         assertThat(userId != null).isTrue();
         return userId;
+    }
+
+    private void activateOnlyAdminGrant(long userId) {
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            jdbc.queryForObject(
+                                    "SELECT id FROM users WHERE id = ? FOR UPDATE",
+                                    Long.class,
+                                    userId);
+                            assertThat(
+                                            jdbc.update(
+                                                    "UPDATE user_role_grants SET role = 'admin', updated_at = NOW() WHERE user_id = ?",
+                                                    userId))
+                                    .isEqualTo(1);
+                            assertThat(
+                                            jdbc.update(
+                                                    "UPDATE users SET role = CAST('admin' AS user_role), roles_version = roles_version + 1, updated_at = NOW() WHERE id = ?",
+                                                    userId))
+                                    .isEqualTo(1);
+                        });
+    }
+
+    private ResponseEntity<JsonNode> requestOwnedReset(Map<String, ?> identifier) {
+        ResponseEntity<JsonNode> response =
+                restTemplate.postForEntity(
+                        "/auth/password-reset/request", identifier, JsonNode.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(hasNoStoreDirective(response.getHeaders().getCacheControl())).isTrue();
+        assertThat(
+                        response.getBody() != null
+                                && response.getBody().size() == 2
+                                && response.getBody().path("challengeId").asText().length() == 32
+                                && response.getBody().path("ttlSeconds").asInt() == 120)
+                .isTrue();
+        return response;
+    }
+
+    private ResponseEntity<JsonNode> verifyOwnedReset(String challenge, String code) {
+        return restTemplate.postForEntity(
+                "/auth/password-reset/verify",
+                Map.of("challengeId", challenge, "code", code),
+                JsonNode.class);
+    }
+
+    private ResponseEntity<JsonNode> completeOwnedReset(String ticket) {
+        return restTemplate.postForEntity(
+                "/auth/password-reset/complete",
+                Map.of("resetTicket", ticket, "newPassword", "AdminBoundaryReset42!"),
+                JsonNode.class);
+    }
+
+    private String ownedResetCode(String challenge) throws Exception {
+        String code =
+                redisTemplate
+                        .opsForValue()
+                        .get("password_reset:challenge:" + resetChallengeHash(challenge) + ":code");
+        assertThat(code != null && !code.isBlank()).isTrue();
+        return code;
+    }
+
+    private String resetChallengeHash(String challenge) throws Exception {
+        return HexFormat.of()
+                .formatHex(
+                        MessageDigest.getInstance("SHA-256")
+                                .digest(challenge.getBytes(StandardCharsets.UTF_8)));
     }
 
     private ResponseEntity<JsonNode> unicodePasswordPost(

@@ -9,7 +9,7 @@
     {
       "id": "AUTH-SESSION",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "criterion": "live session admission, role selection, refresh/revoke, atomic security events",
       "remaining_observable_oracle": "Real selected-role/multirole login, refresh one winner/conflict, cookie attributes and foreign-session isolation, grant/password revoke/restart/authority outage; durable state+outbox rollback. Client admission separate.",
@@ -341,7 +341,9 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "Real PostgreSQL/HTTP for JDBC/session IT; upstream authority may be mocked in service IT; current PWA/TMA navigation still requires real client path.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_disposition": "PASS_COMPOSED independently joined exact finite original named actuals/currentSource-compatible consumers; native D015/DeviceLinkQ021/final gates separate. No newrun.",
+      "rootReceipt": "current-4065-real-push-readback.safe.json#next_reviewed_integrations.dbf9642_auth_three_existing_independent_join"
     },
     {
       "id": "AUTH-PASSWORD-OTP",
@@ -585,7 +587,7 @@
     {
       "id": "AUTH-QR-TMA",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "criterion": "guest QR isolated proofs/expiry/single winner/replay, signed TMA24h fresh authority admission",
       "remaining_observable_oracle": "Reuse accepted TMA malformed/window/reuse and QR safe-error children. Remaining guest proof ownership, authenticated approver/current grants, one exchange winner/expired proof/revoked issuer, rate/body bounds and current TMA parser tamper/duplicates; actual host separate.",
@@ -759,7 +761,9 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "QrLoginFlowIT real HTTP/PG/Redis; TmaIT positive replay matches D003 but revoked binding/account path must be selected separately. No real Telegram client/provider from HTTP alone.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_disposition": "PASS_COMPOSED independently joined exact finite original named actuals/currentSource-compatible consumers; native D015/DeviceLinkQ021/final gates separate. No newrun.",
+      "rootReceipt": "current-4065-real-push-readback.safe.json#next_reviewed_integrations.dbf9642_auth_three_existing_independent_join"
     },
     {
       "id": "AUTH-WS-TICKET",
@@ -1106,12 +1110,18 @@
         },
         {
           "id": "JS-ADMIN-12 / JS-ADMIN-14",
-          "state": "SOURCE_DISPOSITION_UNRESOLVED",
-          "missing": "12acceptedavg-group-semester butundecidedADMINcarrier;14lostADMIN explicitlyexternaloperation, no productresetUI. Exactdated/release/operatorSource resolution c86pending.",
-          "owner": "c86 read-only source resolution",
-          "check": "Determine acceptedcurrent carrier/disposition/operationalprocedure; no speculativeendpoint/screen/implicitexclusion."
+          "state": "ACCEPTED_IMPLEMENTATION_AND_NATIVE_PENDING",
+          "missing": "D025–D027 fully resolve12; c85/c87 implementing accepted screen/read/export. ADMIN14 source fix independentAPPROVE and Rootintegrated, native RED/restore/GREEN pending ordinaryCI.",
+          "owner": "c85/c87 Adminreport; c79 frozenAuth14/c80 CI",
+          "check": "One real report/5-format path + live grant negative; exact ADMIN14 targeted native quality and ordinary IT."
         }
-      ]
+      ],
+      "current_D025_D027_report": {
+        "status": "GAP_IMPLEMENTATION_IN_PROGRESS",
+        "owner": "c85 backend/contracts; c87 shared UI",
+        "missing": "Accepted dashboard group attendance screen + live FULL/LIMITED DASHBOARD_VIEW + canonical metric/filter/no-data + five async formats/revocation actual checks",
+        "ownerQuestion": "NONE"
+      }
     },
     {
       "id": "ACADEMIC-GROUPS",
@@ -6067,7 +6077,7 @@
     {
       "id": "MIGRATIONS",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS",
       "required": true,
       "criterion": "clean schema/checksum and preserved historical model/proto/enum mapping",
       "remaining_observable_oracle": "Disposable clean and synthetic historical upgrade schemas/indices/constraints/sequence values, stable enum roundtrip/unknown/null/legacy+new consumers. Single Academic Flyway owner for shared Auth schema; no repair/clean to conceal failures.",
@@ -6424,7 +6434,9 @@
       "baseline_map_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "existing_source_map": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
       "verification_limits": "Module migration IT source assertions differ; no production migration or repair. New enum converters need same wire/DB meaning and unknown/null/locale cases, separately current security author tests.",
-      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof."
+      "run_admission": "Root assigns isolated resources/lease, supported launcher, stable revision. First reconcile existing actual selected receipts; execute only uncovered/change-dependent oracles. XML nonempty/no skips required; failOnNoMatchingTests=false is not proof.",
+      "current_disposition": "PASS_COMPOSED finite clean/selected historical upgrade/schema/indices/sequence/stable mapping criterion by independently reviewed original S657/0648/874/62df/ed actuals. Current11pins verified; current V58 fresh+V56→V58 exactnamedPASS. No new runtime/current wholeAcademic gate or production/recovery readiness claim.",
+      "rootReceipt": "current-4065-real-push-readback.safe.json#next_reviewed_integrations.dbf9642_MIGRATIONS_existing_actual_independent_closure"
     },
     {
       "id": "HEALTH-OUTAGE",
@@ -6862,9 +6874,9 @@
     {
       "id": "PUBLIC-RETIRED-NEGATIVE",
       "priority": 1,
-      "status": "UNKNOWN",
+      "status": "PASS_COMPOSED",
       "required": true,
-      "remaining_observable_oracle": "Forbidden FREE_ATTENDANCE/unknown request-enum input through CURRENT public EXCUSE-create admission must produce typed4xx and no forwarded mutation/no durable ticket/attendance/outbox delta. Current JSON enum excludes FREE, and domain refusal is nativePASS, but no existing exact executed public decoder negative was found in the bounded retained proofs; supported-submission HTTP/unknown-upstream503 are different risks. Keep only this boundary UNKNOWN, not broad catalog/history/domain or all roles/formats. No new run/test/framework requested or executed by reviewer.",
+      "remaining_observable_oracle": "NONE for retained finite current public forbidden reason/unknown JSON admission; catalog/domain/legacy410 proofs retained.",
       "known_assertion_candidates": [],
       "proposed_commands_NOT_EXECUTED": [],
       "missing_oracle": "Exact observable state above; source/fixture existence does not prove execution. Use existing current templates/harness below, extending only uncovered accepted criterion.",
@@ -6890,7 +6902,8 @@
           "actual": "657 MarkingIT.mark_cancelledStatus_returns400 uniqueSOURCE_METHOD PASSED, real MockMvc/Mongo empty after400. Exact method retained (spanSHAdd634038dd54b9d757a9f224dd4667d641df5776d11d4857dbb7d0d824687bda); current MarkingService ALLOWED_STATUSES only PRESENT/ABSENT/EXCUSED, same early guard rejects FREE before writes/event path. This is qualified composition, not an actually observed FREE HTTP400."
         }
       ],
-      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ed226cd_public_retired_schema_existing_evidence_join"
+      "evidence": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.dbf9642_actual_publicForbiddenReasonHttpGrpcNamed",
+      "qualification": "Exact18537857method182/art11974210451 genuine HTTP400/noforward/noeffect. No finalgates or production claim."
     },
     {
       "id": "EXPORT-ASYNC-CORE",
@@ -7045,7 +7058,16 @@
         "SYSTEM14/BOUNDARY01": "BLOCKED_Q016 responseassemblyonly",
         "E13-S2": "cookieattrs/clear/no-requiredCSRF closed; CORS07b actualnewwitnesspending"
       },
-      "existing_proof_qualification": "ExistingretainedCloudauth/role/TMA/offline clauses accepted; no reset/profile/OTP clientrun inferred frombackendtests"
+      "existing_proof_qualification": "ExistingretainedCloudauth/role/TMA/offline clauses accepted; no reset/profile/OTP clientrun inferred frombackendtests",
+      "current_D024_residual": {
+        "status": "GAP_IMPLEMENTATION_PENDING",
+        "owner": "c79 after Teacher freeze; c87 Apps sole writer",
+        "missing": [
+          "PWA login OTP actual existing protocol carrier",
+          "PWA/TMA incoming browser LOGIN QR preview and explicit approve/reject current authenticated carrier"
+        ],
+        "retained": "Old password/QR server actual proofs retained; no outgoing profile DeviceLink required. Native device D015 owner pending."
+      }
     },
     {
       "id": "CLIENT-STUDENT-GEO-REQUESTS",

@@ -14703,6 +14703,41 @@
       "sha256": "ed6c1f670e444c605dddc73345553f56380bcff9b54d2587f320172b9d9ec814",
       "status": "accepted owner decision D022",
       "source_identity": "Main chat exact owner answer received 2026-10-15T10:24:21.207843+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q022-20261015",
+      "path": "docs/product/decisions/2026-10-15-teacher-attendance-current-subject-scope.md",
+      "sha256": "573af7f8267f417d52a6ffbad170432d1a73a2d7316f39cbacd3ba3295fdfb91",
+      "status": "accepted owner decision D023",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T13:05:58.831909+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q021-20261015",
+      "path": "docs/product/decisions/2026-10-15-qr-web-login-and-mobile-admission.md",
+      "sha256": "b2e33c1820690dfb924df2a155878d96d9354cd54b3ac0bfc7dc98345a256485",
+      "status": "accepted owner decision D024",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T13:05:58.831909+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q020-20261015",
+      "path": "docs/product/decisions/2026-10-15-admin-attendance-report-in-current-scope.md",
+      "sha256": "eed3e3561c324746308698dfd71368b3ac4e353f9ea8167a78a2eafde435e12e",
+      "status": "accepted owner decision D025",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T13:05:58.831909+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q023-20261015",
+      "path": "docs/product/decisions/2026-10-15-admin-attendance-report-screen.md",
+      "sha256": "2d2d0fdeef0cde6e7255a9c54fa82ac686021d8e159b091dedf6f0aa3a3b0e27",
+      "status": "accepted owner decision D026",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T13:10:09.499816+00:00"
+    },
+    {
+      "id": "owner:cloud-validation-Q024-20261015",
+      "path": "docs/product/decisions/2026-10-15-admin-attendance-report-access.md",
+      "sha256": "9cc891c478b4fe7f9cf1879781bc2ad624da6cef5df964fa11b73aa0ddd253a4",
+      "status": "accepted owner decision D027",
+      "source_identity": "Main chat exact owner answer received 2026-10-15T13:10:09.499816+00:00"
     }
   ],
   "research_receipt": {

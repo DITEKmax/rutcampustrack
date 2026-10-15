@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
+import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -308,23 +309,47 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         if (userId <= 0) {
             throw new IllegalArgumentException("userId must be positive");
         }
-        return inTransaction(
-                () -> {
-                    if (findUser(userId, true) == null) {
-                        return false;
-                    }
-                    // Issue and completion both lock this user before ticket rows. A failed insert
-                    // rolls back the supersede; a waiting completion rechecks used_at under its
-                    // ticket lock.
-                    jdbcTemplate.update(SUPERSEDE_PASSWORD_RESET_TICKETS_SQL, userId);
-                    return jdbcTemplate.update(
-                                    INSERT_PASSWORD_RESET_TICKET_SQL,
-                                    userId,
-                                    ticketHash.value(),
-                                    timestamp(expiresAt))
-                            == 1;
-                },
-                () -> false);
+        PasswordResetTicketIssue outcome =
+                inTransaction(
+                        () -> {
+                            if (findUser(userId, true) == null) {
+                                return PasswordResetTicketIssue.UNAVAILABLE;
+                            }
+                            if (hasActiveAdminGrant(userId)) return PasswordResetTicketIssue.DENIED;
+                            // Issue and completion both lock this user before ticket rows. A failed
+                            // insert
+                            // rolls back the supersede; a waiting completion rechecks used_at under
+                            // its
+                            // ticket lock.
+                            jdbcTemplate.update(SUPERSEDE_PASSWORD_RESET_TICKETS_SQL, userId);
+                            return jdbcTemplate.update(
+                                                    INSERT_PASSWORD_RESET_TICKET_SQL,
+                                                    userId,
+                                                    ticketHash.value(),
+                                                    timestamp(expiresAt))
+                                            == 1
+                                    ? PasswordResetTicketIssue.ISSUED
+                                    : PasswordResetTicketIssue.UNAVAILABLE;
+                        },
+                        () -> PasswordResetTicketIssue.UNAVAILABLE);
+        if (outcome == PasswordResetTicketIssue.DENIED) {
+            throw new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
+        }
+        return outcome == PasswordResetTicketIssue.ISSUED;
+    }
+
+    private enum PasswordResetTicketIssue {
+        ISSUED,
+        DENIED,
+        UNAVAILABLE
+    }
+
+    private boolean hasActiveAdminGrant(long userId) {
+        return findGrants(userId).stream()
+                .anyMatch(
+                        grant ->
+                                grant.role() == AuthRole.ADMIN
+                                        && grant.status() == RoleStatus.ACTIVE);
     }
 
     @Override
@@ -730,7 +755,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         }
 
         long userId = userIds.getFirst();
-        if (findUser(userId, true) == null) {
+        if (findUser(userId, true) == null || hasActiveAdminGrant(userId)) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
         List<Long> lockedTickets =

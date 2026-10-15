@@ -8,6 +8,12 @@ import {
   registerPrivateSuite,
 } from '../fixtures/cloud-accepted-support';
 import { loginPwa } from '../fixtures/pwa-auth';
+import {
+  classifySafeFailure,
+  discardReportedFailureHint,
+  safeFailureAnnotation,
+  safeFailureDiagnostics,
+} from '../fixtures/safe-reporter';
 
 registerPrivateSuite();
 
@@ -23,106 +29,144 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
   page,
   dataset,
 }, info) => {
-  const retryCutoffMs =
-    (loginStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
-  const user = await dataset.user('STUDENT', dataset.otherGroup.id);
-  await dataset.admin.call('PUT', `/api/academic/groups/${dataset.otherGroup.id}/headman`, {
-    studentId: user.id,
-    expectedHeadmanId: null,
-  });
-  await dataset.admin.call('PUT', `/api/academic/users/${user.id}/roles/TEACHER`, {
-    status: 'ACTIVE',
-    employeeNumber: `E2E-${randomUUID().slice(0, 20)}`,
-  });
-  const profile = await dataset.admin.call('GET', `/api/academic/users/${user.id}/admin-access`);
-  await dataset.admin.call('PUT', `/api/academic/users/${user.id}/admin-access`, {
-    mode: 'FULL',
-    permissions: [],
-    expectedVersion: profile.version,
-  });
-  const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
-  expect(retryRemainingMs, 'Positive login retry budget remains').toBeGreaterThan(0);
-  const { accessToken, session } = await loginPwa(page, user, {
-    retryUntilMs: Date.now() + Math.min(65000, retryRemainingMs),
-  });
-  expect(session.activeRole).toBe('STUDENT');
-  expect(
-    session.roles
-      .filter((grant) => grant.selectable)
-      .map((grant) => grant.role)
-      .sort(),
-  ).toEqual(['ADMIN', 'HEADMAN', 'STUDENT', 'TEACHER']);
-  const helper = await dataset.user('STUDENT', dataset.otherGroup.id);
-  const command = {
-    groupId: dataset.otherGroup.id,
-    studentId: helper.id,
-    permissions: ['VIEW_STATS'],
-  };
-  const denied = await dataset.request.post('/api/academic/assistants', {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    data: command,
-  });
-  expect(denied.status()).toBe(403);
-  const headman = await selectRole(page, 'Староста');
-  expect(headman.session.activeRole).toBe('HEADMAN');
-  const assistants = await dataset.request.get(
-    `/api/academic/assistants?groupId=${dataset.otherGroup.id}&size=100`,
-    {
-      headers: { Authorization: `Bearer ${headman.accessToken}` },
-    },
-  );
-  expect(assistants.status()).toBe(200);
-  const list = await assistants.json();
-  const grants = list._embedded?.assistantResponseList ?? list.content ?? [];
-  expect(grants.some((grant: { studentId: number }) => grant.studentId === helper.id)).toBe(false);
-  const assigned = await dataset.request.post('/api/academic/assistants', {
-    headers: { Authorization: `Bearer ${headman.accessToken}` },
-    data: command,
-  });
-  expect(assigned.status()).toBe(201);
-  const assignedGrant = await assigned.json();
-  const stale = await dataset.request.put('/api/auth/session/active-role', {
-    headers: { Authorization: `Bearer ${headman.accessToken}` },
-    data: { role: 'ADMIN', expectedSessionVersion: session.sessionVersion },
-  });
-  expect(stale.status()).toBe(409);
-  expect((await stale.json()).extras.code).toBe('SESSION_VERSION_CONFLICT');
-  expect((await reloadSession(page)).activeRole).toBe('HEADMAN');
-  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
-  const ownAssistants = page.waitForResponse((response) => {
-    const url = new URL(response.url());
-    return (
-      url.pathname === '/api/academic/assistants' &&
-      url.searchParams.get('groupId') === String(dataset.otherGroup.id) &&
-      response.request().method() === 'GET'
+  let phase: 'SETUP' | 'LOGIN' | 'HEADMAN_STALE' | 'GROUP_PROFILE_ADMIN' = 'SETUP';
+  try {
+    const retryCutoffMs =
+      (loginStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
+    const user = await dataset.user('STUDENT', dataset.otherGroup.id);
+    await dataset.admin.call('PUT', `/api/academic/groups/${dataset.otherGroup.id}/headman`, {
+      studentId: user.id,
+      expectedHeadmanId: null,
+    });
+    await dataset.admin.call('PUT', `/api/academic/users/${user.id}/roles/TEACHER`, {
+      status: 'ACTIVE',
+      employeeNumber: `E2E-${randomUUID().slice(0, 20)}`,
+    });
+    const profile = await dataset.admin.call('GET', `/api/academic/users/${user.id}/admin-access`);
+    await dataset.admin.call('PUT', `/api/academic/users/${user.id}/admin-access`, {
+      mode: 'FULL',
+      permissions: [],
+      expectedVersion: profile.version,
+    });
+    phase = 'LOGIN';
+    const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
+    expect(retryRemainingMs, 'Positive login retry budget remains').toBeGreaterThan(0);
+    const { accessToken, session } = await loginPwa(page, user, {
+      retryUntilMs: Date.now() + Math.min(65000, retryRemainingMs),
+    });
+    expect(session.activeRole).toBe('STUDENT');
+    expect(
+      session.roles
+        .filter((grant) => grant.selectable)
+        .map((grant) => grant.role)
+        .sort(),
+    ).toEqual(['ADMIN', 'HEADMAN', 'STUDENT', 'TEACHER']);
+    phase = 'HEADMAN_STALE';
+    const helper = await dataset.user('STUDENT', dataset.otherGroup.id);
+    const command = {
+      groupId: dataset.otherGroup.id,
+      studentId: helper.id,
+      permissions: ['VIEW_STATS'],
+    };
+    const denied = await dataset.request.post('/api/academic/assistants', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data: command,
+    });
+    expect(denied.status()).toBe(403);
+    const headman = await selectRole(page, 'Староста');
+    expect(headman.session.activeRole).toBe('HEADMAN');
+    const assistants = await dataset.request.get(
+      `/api/academic/assistants?groupId=${dataset.otherGroup.id}&size=100`,
+      {
+        headers: { Authorization: `Bearer ${headman.accessToken}` },
+      },
     );
-  });
-  await page.getByRole('button', { name: 'Группа', exact: true }).click();
-  const ownResponse = await ownAssistants;
-  expect(ownResponse.status()).toBe(200);
-  const ownCatalog = await ownResponse.json();
-  const ownGrants = ownCatalog._embedded?.assistantResponseList ?? ownCatalog.content ?? [];
-  const retained = ownGrants.find((grant: { id: number }) => grant.id === assignedGrant.id);
-  expect(retained).toMatchObject({
-    id: assignedGrant.id,
-    studentId: helper.id,
-    groupId: dataset.otherGroup.id,
-    active: true,
-  });
-  expect(retained.permissions).toEqual(['VIEW_STATS']);
-  const group = page.locator('.headman-group');
-  const member = group.locator(`[data-member-id="${helper.id}"]`);
-  await expect(member).toContainText(helper.displayName);
-  await expect(member).toContainText('Помощник старосты');
-  await group.getByRole('button', { name: 'Назад', exact: true }).click();
-  await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
-  const admin = await selectRole(page, 'Администратор');
-  expect(admin.session.activeRole).toBe('ADMIN');
-  expect((await reloadSession(page)).activeRole).toBe('ADMIN');
-  await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
-  await expect(
-    page.getByRole('button', { name: 'Создать пользователя', exact: true }),
-  ).toBeVisible();
+    expect(assistants.status()).toBe(200);
+    const list = await assistants.json();
+    const grants = list._embedded?.assistantResponseList ?? list.content ?? [];
+    expect(grants.some((grant: { studentId: number }) => grant.studentId === helper.id)).toBe(
+      false,
+    );
+    const assigned = await dataset.request.post('/api/academic/assistants', {
+      headers: { Authorization: `Bearer ${headman.accessToken}` },
+      data: command,
+    });
+    expect(assigned.status()).toBe(201);
+    const assignedGrant = await assigned.json();
+    const stale = await dataset.request.put('/api/auth/session/active-role', {
+      headers: { Authorization: `Bearer ${headman.accessToken}` },
+      data: { role: 'ADMIN', expectedSessionVersion: session.sessionVersion },
+    });
+    expect(stale.status()).toBe(409);
+    expect((await stale.json()).extras.code).toBe('SESSION_VERSION_CONFLICT');
+    expect((await reloadSession(page)).activeRole).toBe('HEADMAN');
+    phase = 'GROUP_PROFILE_ADMIN';
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    const ownAssistants = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/academic/assistants' &&
+        url.searchParams.get('groupId') === String(dataset.otherGroup.id) &&
+        response.request().method() === 'GET'
+      );
+    });
+    await page.getByRole('button', { name: 'Группа', exact: true }).click();
+    const ownResponse = await ownAssistants;
+    expect(ownResponse.status()).toBe(200);
+    const ownCatalog = await ownResponse.json();
+    const ownGrants = ownCatalog._embedded?.assistantResponseList ?? ownCatalog.content ?? [];
+    const retained = ownGrants.find((grant: { id: number }) => grant.id === assignedGrant.id);
+    expect(retained).toMatchObject({
+      id: assignedGrant.id,
+      studentId: helper.id,
+      groupId: dataset.otherGroup.id,
+      active: true,
+    });
+    expect(retained.permissions).toEqual(['VIEW_STATS']);
+    const group = page.locator('.headman-group');
+    const member = group.locator(`[data-member-id="${helper.id}"]`);
+    await expect(member).toContainText(helper.displayName);
+    await expect(member).toContainText('Помощник старосты');
+    await group.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+    const admin = await selectRole(page, 'Администратор');
+    expect(admin.session.activeRole).toBe('ADMIN');
+    expect((await reloadSession(page)).activeRole).toBe('ADMIN');
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Создать пользователя', exact: true }),
+    ).toBeVisible();
+  } catch (error) {
+    // Preserve the original closed cause before the fixed phase wrapper is sanitized.
+    const diagnostic = classifySafeFailure(error);
+    const previous = safeFailureDiagnostics(info.annotations);
+    const coreCount = previous.filter((item) => !item.cause.startsWith('REPORTED_')).length;
+    if (
+      coreCount < 8 &&
+      !previous.some(
+        (item) => item.cause === diagnostic.cause && item.httpStatus === diagnostic.httpStatus,
+      ) &&
+      (previous.length < 8 || discardReportedFailureHint(info.annotations)) &&
+      info.annotations.length < 32
+    ) {
+      info.annotations.push({
+        type: safeFailureAnnotation,
+        description: `${diagnostic.cause}:${diagnostic.httpStatus}`,
+      });
+    }
+    switch (phase) {
+      case 'SETUP':
+        throw new Error('Four-grant setup failed', { cause: error });
+      case 'LOGIN':
+        throw new Error('Four-grant login failed', { cause: error });
+      case 'HEADMAN_STALE':
+        throw new Error('Four-grant headman and stale-role check failed', { cause: error });
+      case 'GROUP_PROFILE_ADMIN':
+        throw new Error('Four-grant group profile and administrator check failed', {
+          cause: error,
+        });
+    }
+  }
 });
 
 // CLIENT-FE-AUTH-04: a failed logout cannot reopen a locally closed owner,

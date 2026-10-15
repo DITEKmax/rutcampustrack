@@ -163,3 +163,22 @@ Choices A apply selectedlight/dark/system now (recommendedcanonicalexpectedbehav
 ## Q022 — Lesson measure for teacher cross-group summary
 
 2026-10-15T11:52:59.499701+00:00: PENDING_OWNER. Canonical JS-TEACHER06/14 and wire1234.3 say all MY pairs per group; accepted2026-09-23/Oct6 explicitly broaden group history reading, and existing selectedgroup stats intentionally count historicalother-teacher lessons. Read authority and measure are different; no explicitnewunscopedGROUPSmeasure found. Choices A allpastnoncancelled readable lessons in each currentauthorized group (recommended consistency with existingselectedstats/fullhistory); B onlylessons physicallyassigned tothisteacher. Onlynewall-own-groups comparison/itsmeasure dependsanswer; existingselectedreads/exports, ownscope/currentgrantchecks, journal/day/profile/nativeCI continue. No subject-namecrossgroupidentity/clientfanoutaverage/newendpoint inferred.
+
+2026-10-15T13:05:58.831909+00:00: Q022 ANSWERED / D023: Teacher attendance is scoped by current group and subject. Exact answer and scope: docs/product/decisions/2026-10-15-teacher-attendance-current-subject-scope.md.
+
+2026-10-15T13:05:58.831909+00:00: Q021 ANSWERED / D024: QR approves browser-web login; mobile admission remains separate. Exact answer and scope: docs/product/decisions/2026-10-15-qr-web-login-and-mobile-admission.md.
+
+2026-10-15T13:05:58.831909+00:00: Q020 ANSWERED / D025: Include the administrator group-semester attendance report now. Exact answer and scope: docs/product/decisions/2026-10-15-admin-attendance-report-in-current-scope.md.
+
+
+## Q023 — ADMIN attendance report screen and contents
+
+PENDING_OWNER 2026-10-15T13:07:53.604981+00:00. D025 includes JS-ADMIN-12 now but requires separate agreement. Proposed current PWA/TMA dashboard entry→read-only «Посещаемость групп»: semester selector, group search/sort, group/attendance%/counted lessons/+absent+excused counts, existing accepted calculation excludes canceled lessons; no-data distinct from0%; existing five-format export; no canceled redzone/threshold. Choices accept proposed screen/contents (recommended) or owner changes. Only this new report carrier/model depends; other work continues.
+
+## Q024 — ADMIN attendance report access
+
+PENDING_OWNER 2026-10-15T13:07:53.604981+00:00. Proposed FULL and current LIMITED DASHBOARD_VIEW, server current read/export/download checks/revoke denial, group totals only/no student personal data; alternative FULL only. No new grant code or silent permission expansion. Depends only newD025 report.
+
+2026-10-15T13:10:09.499816+00:00: Q023 ANSWERED / D026: Administrator group attendance screen and report contents. Canonical docs/product/decisions/2026-10-15-admin-attendance-report-screen.md.
+
+2026-10-15T13:10:09.499816+00:00: Q024 ANSWERED / D027: Administrator group attendance report authorization. Canonical docs/product/decisions/2026-10-15-admin-attendance-report-access.md.

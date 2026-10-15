@@ -224,6 +224,7 @@ public final class PasswordResetService {
                                 && requestedUser.getId() != null
                                 && requestedUser.getTelegramId() != null
                                 && requestedUser.getTelegramId() > 0
+                                && !hasActiveAdminGrant(requestedUser.getId())
                         ? requestedUser
                         : null;
         if (user == null) {
@@ -303,17 +304,25 @@ public final class PasswordResetService {
         }
 
         User user = findUserById(userId);
-        if (user == null) {
+        if (user == null || hasActiveAdminGrant(userId)) {
             throw otpExpired();
         }
         String resetTicket = randomToken(32);
         Instant now = clock.instant();
         int expiresInSeconds = otpProperties.ttlSeconds();
-        boolean ticketSaved =
-                sessionLifecycle.issuePasswordResetTicket(
-                        userId,
-                        new CredentialSessionTransactionPort.CredentialHash(sha256(resetTicket)),
-                        now.plusSeconds(expiresInSeconds));
+        boolean ticketSaved;
+        try {
+            ticketSaved =
+                    sessionLifecycle.issuePasswordResetTicket(
+                            userId,
+                            new CredentialSessionTransactionPort.CredentialHash(
+                                    sha256(resetTicket)),
+                            now.plusSeconds(expiresInSeconds));
+        } catch (AuthSessionException exception) {
+            // A grant may activate after the precheck. Preserve database unavailability separately.
+            if (exception.code() == AuthSessionException.Code.ROLE_NOT_GRANTED) throw otpExpired();
+            throw exception;
+        }
         if (!ticketSaved) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
@@ -346,6 +355,15 @@ public final class PasswordResetService {
     private User findUserById(long userId) {
         try {
             return userRepository.findById(userId).orElse(null);
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+    }
+
+    private boolean hasActiveAdminGrant(long userId) {
+        try {
+            return userRepository.hasActiveAdminGrant(userId);
         } catch (DataAccessException exception) {
             throw new AuthSessionException(
                     AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);

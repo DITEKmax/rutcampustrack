@@ -14051,12 +14051,12 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "numberOfElements" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -14290,6 +14290,32 @@
           }
         }
       },
+      "DashboardDailyGrowthResponse" : {
+        "type" : "object",
+        "description" : "Суточный прирост карточек масштаба к концу вчерашнего дня Europe/Moscow",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "AVAILABLE", "UNKNOWN_HISTORY" ]
+          },
+          "baselineDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "studentsDelta" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "teachersDelta" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupsDelta" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "EntityModelDashboardStatsResponse" : {
         "type" : "object",
         "properties" : {
@@ -14311,6 +14337,9 @@
           },
           "activeSemesterName" : {
             "type" : "string"
+          },
+          "dailyGrowth" : {
+            "$ref" : "#/components/schemas/DashboardDailyGrowthResponse"
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"

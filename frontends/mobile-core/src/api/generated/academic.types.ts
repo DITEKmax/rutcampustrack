@@ -2909,9 +2909,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
@@ -3007,6 +3007,19 @@ export interface components {
             id?: number;
             name?: string;
         };
+        /** @description Суточный прирост карточек масштаба к концу вчерашнего дня Europe/Moscow */
+        DashboardDailyGrowthResponse: {
+            /** @enum {string} */
+            status?: "AVAILABLE" | "UNKNOWN_HISTORY";
+            /** Format: date */
+            baselineDate?: string;
+            /** Format: int64 */
+            studentsDelta?: number;
+            /** Format: int64 */
+            teachersDelta?: number;
+            /** Format: int64 */
+            groupsDelta?: number;
+        };
         EntityModelDashboardStatsResponse: {
             /** Format: int64 */
             totalStudents?: number;
@@ -3017,6 +3030,7 @@ export interface components {
             /** Format: int64 */
             activeGroups?: number;
             activeSemesterName?: string;
+            dailyGrowth?: components["schemas"]["DashboardDailyGrowthResponse"];
             _links?: components["schemas"]["Links"];
         };
         Comparison: {

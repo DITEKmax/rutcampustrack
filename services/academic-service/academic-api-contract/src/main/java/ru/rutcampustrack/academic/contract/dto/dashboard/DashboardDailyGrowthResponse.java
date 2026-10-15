@@ -9,9 +9,18 @@ import java.util.Objects;
 public record DashboardDailyGrowthResponse(
         Status status,
         LocalDate baselineDate,
-        Long studentsDelta,
-        Long teachersDelta,
-        Long groupsDelta) {
+        @Schema(
+                        types = {"integer", "null"},
+                        format = "int64")
+                Long studentsDelta,
+        @Schema(
+                        types = {"integer", "null"},
+                        format = "int64")
+                Long teachersDelta,
+        @Schema(
+                        types = {"integer", "null"},
+                        format = "int64")
+                Long groupsDelta) {
     public enum Status {
         AVAILABLE,
         UNKNOWN_HISTORY

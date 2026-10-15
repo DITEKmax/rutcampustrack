@@ -1,12 +1,58 @@
 import { randomUUID } from 'node:crypto';
+import { createServer } from 'node:http';
 import { execFileSync } from 'node:child_process';
-import type { Page, Request, Response, TestInfo } from '@playwright/test';
-import { test, expect, admit, selectPwaRole, type MobileDataset } from '../fixtures/mobile-dataset';
+import type { BrowserContext, Page, Request, Response, TestInfo } from '@playwright/test';
+import {
+  test as mobileTest,
+  expect,
+  admit,
+  selectPwaRole,
+  type MobileDataset,
+} from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
 import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
 import { datasetHttpFailure } from '../fixtures/safe-reporter';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
+
+// This opt-in fixture gets Playwright's independent teardown budget even when its body times out.
+const test = mobileTest.extend<{
+  directCacheControl: {
+    context: BrowserContext;
+    server: ReturnType<typeof createServer> | undefined;
+  };
+}>({
+  directCacheControl: [
+    async ({ browser }, use) => {
+      const owned = {
+        context: await browser.newContext({ serviceWorkers: 'allow' }),
+        server: undefined as ReturnType<typeof createServer> | undefined,
+      };
+      try {
+        await use(owned);
+      } finally {
+        const failures: unknown[] = [];
+        if (owned.server?.listening) {
+          owned.server.closeAllConnections();
+          try {
+            await new Promise<void>((resolve, reject) =>
+              owned.server!.close((error) => (error ? reject(error) : resolve())),
+            );
+          } catch (error) {
+            failures.push(error);
+          }
+        }
+        try {
+          await owned.context.close();
+        } catch (error) {
+          failures.push(error);
+        }
+        if (failures.length) throw failures[0];
+      }
+    },
+    { timeout: 10000 },
+  ],
+});
 
 // Generated credentials stay in memory; browser traces can capture login POSTs.
 // Existing mandatory auth-smoke artifact policy remains unchanged.
@@ -3493,4 +3539,180 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await second.dispose();
     }
   });
+});
+
+// Engine/emulation control only; this cannot replace production PWA offline acceptance.
+test('WebKit direct cached document survives emulated offline reload control', async ({
+  directCacheControl,
+}) => {
+  const shellPath = '/rct-offline-control/';
+  const workerPath = `${shellPath}sw.js`;
+  const cacheName = 'rct-direct-cache-control-v1';
+  const shell =
+    '<!DOCTYPE html><html><head></head><body><main>Direct cached offline control</main></body></html>';
+  const worker = `
+const cacheName = ${JSON.stringify(cacheName)};
+const shellURL = new URL('./', self.location.href).href;
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(cacheName)
+    .then(cache => cache.put(shellURL, new Response(${JSON.stringify(shell)}, {
+      status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    })))
+    .then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', event => {
+  if (event.request.mode !== 'navigate' || event.request.url !== shellURL) return;
+  event.respondWith(caches.open(cacheName).then(cache => cache.match(shellURL)).then(cached => {
+    if (!cached) throw new Error('Control cached document missing');
+    return cached;
+  }));
+});
+`;
+  let handlerFailed = false;
+  const server = createServer((request, response) => {
+    try {
+      if (request.method === 'GET' && request.url === shellPath) {
+        response.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        response.end(shell);
+      } else if (request.method === 'GET' && request.url === workerPath) {
+        response.writeHead(200, {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        response.end(worker);
+      } else {
+        response.writeHead(404);
+        response.end();
+      }
+    } catch {
+      handlerFailed = true;
+      response.destroy();
+    }
+  });
+  server.on('error', () => {
+    handlerFailed = true;
+  });
+  directCacheControl.server = server;
+  const context = directCacheControl.context;
+  let controlPage: Page | undefined;
+  let bodyFailed = false;
+  let bodyError: unknown;
+  const cleanupErrors: unknown[] = [];
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const address = server.address();
+    expect(address !== null && typeof address !== 'string').toBe(true);
+    if (address === null || typeof address === 'string') throw new Error('Control address missing');
+    const origin = `http://127.0.0.1:${address.port}`;
+    const shellURL = `${origin}${shellPath}`;
+    controlPage = await context.newPage();
+    const initial = await controlPage.goto(shellURL, { waitUntil: 'load', timeout: 10000 });
+    expect(initial?.status()).toBe(200);
+    expect(await controlPage.evaluate(() => window.isSecureContext)).toBe(true);
+    await controlPage.evaluate(
+      async ({ workerPath, shellPath }) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            navigator.serviceWorker
+              .register(workerPath, { scope: shellPath })
+              .then(() => navigator.serviceWorker.ready),
+            new Promise<never>((_, reject) => {
+              timer = setTimeout(
+                () => reject(new Error('Control worker admission timed out')),
+                5000,
+              );
+            }),
+          ]);
+        } finally {
+          clearTimeout(timer);
+        }
+      },
+      { workerPath, shellPath },
+    );
+    await expect
+      .poll(() => controlPage!.evaluate(() => navigator.serviceWorker.controller?.state), {
+        timeout: 10000,
+      })
+      .toBe('activated');
+    expect(
+      await controlPage.evaluate(
+        async ({ cacheName, shellURL, shell }) => {
+          const cached = await (await caches.open(cacheName)).match(shellURL);
+          return cached?.status === 200 && (await cached.text()) === shell;
+        },
+        { cacheName, shellURL, shell },
+      ),
+    ).toBe(true);
+    const online = await controlPage.reload({ waitUntil: 'load', timeout: 10000 });
+    expect(online?.status()).toBe(200);
+    expect(online?.fromServiceWorker()).toBe(true);
+    await expect(controlPage.getByRole('main')).toHaveText('Direct cached offline control');
+    expect(await controlPage.content()).toBe(shell);
+    await controlPage.evaluate(() => {
+      Object.defineProperty(window, '__rctDirectCacheOldDocument', {
+        value: true,
+        configurable: true,
+      });
+    });
+    await context.setOffline(true);
+    const offline = await controlPage.reload({ waitUntil: 'load', timeout: 10000 });
+    expect(offline?.status()).toBe(200);
+    expect(offline?.fromServiceWorker()).toBe(true);
+    expect(
+      await controlPage.evaluate(
+        () =>
+          !Object.prototype.hasOwnProperty.call(window, '__rctDirectCacheOldDocument') &&
+          document.readyState === 'complete',
+      ),
+    ).toBe(true);
+    await expect(controlPage.getByRole('main')).toHaveText('Direct cached offline control');
+    expect(await controlPage.content()).toBe(shell);
+  } catch (error) {
+    bodyFailed = true;
+    bodyError = error;
+  } finally {
+    if (context) {
+      try {
+        await context.setOffline(false);
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+      if (controlPage && !controlPage.isClosed()) {
+        try {
+          await controlPage.evaluate(
+            async ({ shellPath, cacheName }) => {
+              const ownScope = new URL(shellPath, location.origin).href;
+              const registration = await navigator.serviceWorker.getRegistration(ownScope);
+              if (registration?.scope === ownScope) await registration.unregister();
+              await caches.delete(cacheName);
+            },
+            { shellPath, cacheName },
+          );
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      }
+    }
+    if (server.listening) {
+      server.closeAllConnections();
+      try {
+        await new Promise<void>((resolve, reject) =>
+          server.close((error) => (error ? reject(error) : resolve())),
+        );
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+    }
+  }
+  expect.soft(handlerFailed, 'DIRECT_CACHE_CONTROL_HTTP_HANDLER_FAILED').toBe(false);
+  expect.soft(cleanupErrors.length === 0, 'DIRECT_CACHE_CONTROL_CLEANUP_FAILED').toBe(true);
+  if (bodyFailed) throw bodyError;
 });

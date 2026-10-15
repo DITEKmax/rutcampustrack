@@ -64,7 +64,7 @@ export default defineConfig<{}, { teachingInstant: Date | undefined }>({
         grep: workerLifecycle
           ? /(?:production worker update activates through the update gate and retains a warm launch|synthetic installation prompt handles dismissed unavailable and accepted outcomes|synthetic iOS installation instructions dismiss persistently without a native prompt)$/
           : webkitSubset
-            ? /(?:another live session revokes the browser session and recovery exposes login only|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account)$/
+            ? /(?:another live session revokes the browser session and recovery exposes login only|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|WebKit direct cached document survives emulated offline reload control)$/
             : roleLogout
               ? /(?:SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions|four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted|unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted|FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted|own profile security changes password and replacement login rejects old authority @cloud-accepted|password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted)$/
               : adminLifecycle

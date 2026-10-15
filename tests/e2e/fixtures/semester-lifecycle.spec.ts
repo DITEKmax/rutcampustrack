@@ -2,9 +2,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
-import { expect, type APIRequestContext } from '@playwright/test';
+import { expect, type APIRequestContext, type Response } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
-import { Actor, MobileDataset, admit } from './mobile-dataset';
+import { Actor, MobileDataset, admit, selectPwaRole } from './mobile-dataset';
+import { loginPwa } from './pwa-auth';
 import { TEST_USERS } from './users';
 import { retainFirstDatasetHttpFailure } from './safe-reporter';
 
@@ -370,9 +371,11 @@ async function inactiveStudentHistory(request: APIRequestContext, student: Actor
 
 test('FULL admin archives and restores the disposable CI semester through real participants', async ({
   playwright,
+  page,
 }, info) => {
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
+  const browserLoginCutoff = performance.now() + 270000;
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
   requireValue(
     run && isAbsolute(run),
@@ -798,10 +801,68 @@ test('FULL admin archives and restores the disposable CI semester through real p
       beforeHomework,
       'Restore changed homework contents',
     );
-    const current = await admin.call('PATCH', `/api/academic/semesters/${ownSemesterId}/activate`);
+    // The original activation command now comes from the real FULL-admin Vue controls.
+    // Keep the educational fixture clock unchanged; the UI uses the browser's Moscow date.
+    const browserDate = await page.evaluate(() => {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(new Date());
+      const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
+      return `${part('year')}-${part('month')}-${part('day')}`;
+    });
+    requireValue(
+      inactive.dateFrom <= browserDate && inactive.dateTo >= browserDate,
+      'Owned activation semester must also cover the real browser Moscow date',
+    );
+    const remainingLoginMs = Math.floor(browserLoginCutoff - performance.now());
+    requireValue(remainingLoginMs > 0, 'Browser activation login must retain recovery time');
+    const browserAdmin = await loginPwa(page, TEST_USERS.admin, {
+      retryUntilMs: Date.now() + Math.min(65000, remainingLoginMs),
+    });
+    requireValue(
+      browserAdmin.session.userId === admin.session.userId,
+      'Browser activation must use the same owned FULL administrator',
+    );
+    if (browserAdmin.session.activeRole !== 'ADMIN') await selectPwaRole(page, 'Администратор');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Семестры', exact: true }).click();
+    const ownCard = page.locator(`[data-semester-id="${ownSemesterId}"]`);
+    await expect(ownCard).toBeVisible();
+    await expect(ownCard.getByRole('img', { name: 'Неактивный', exact: true })).toBeVisible();
+    await ownCard.getByRole('button', { name: 'Сделать текущим', exact: true }).click();
+    const activationPath = `/api/academic/semesters/${ownSemesterId}/activate`;
+    const activationMatch = (response: Response) =>
+      new URL(response.url()).pathname === activationPath &&
+      response.request().method() === 'PATCH';
+    let observedActivation: Response | undefined;
+    const observeActivation = (response: Response) => {
+      if (activationMatch(response)) observedActivation ??= response;
+    };
+    page.on('response', observeActivation);
+    let current: Row;
+    try {
+      await page.getByRole('button', { name: 'Подтвердить активацию', exact: true }).click();
+      const response = observedActivation ?? (await page.waitForResponse(activationMatch));
+      requireValue(response.status() === 200, 'Vue semester activation must succeed');
+      current = await response.json();
+    } finally {
+      page.off('response', observeActivation);
+    }
     requireValue(
       current.active === true && current.archived === false,
       'Explicit activation must restore current semester authority',
+    );
+    const activeAfterUi = (await semesters(admin)).filter((row) => row.active === true);
+    requireValue(
+      activeAfterUi.length === 1 && Number(activeAfterUi[0].id) === ownSemesterId,
+      'Vue activation must leave exactly its owned semester current',
+    );
+    await expect(ownCard.getByRole('img', { name: 'Активный', exact: true })).toBeVisible();
+    await expect(ownCard.getByRole('button', { name: 'Сделать текущим', exact: true })).toHaveCount(
+      0,
     );
     equal(
       history(await student.call('GET', historyPath)),

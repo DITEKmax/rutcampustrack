@@ -628,6 +628,49 @@ jobs:
               case = cases[0]
               assert not case.findall('error') and not case.findall('skipped') and len(case.findall('failure')) == 1
               failure = case.find('failure')
+              if service == 'auth-service':
+                  assert suite.tag == 'testsuite' and suite.get('name') == package
+                  assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  assert case.get('classname') == package
+                  auth_failure_categories = {
+                      'org.opentest4j.AssertionFailedError': 'ASSERTION',
+                      'java.lang.AssertionError': 'ASSERTION',
+                      'ru.rutcampustrack.auth.session.AuthSessionException': 'AUTH_SESSION',
+                      'ru.rutcampustrack.auth.exception.PasswordResetException': 'PASSWORD_RESET',
+                      'ru.rutcampustrack.auth.exception.OtpExpiredException': 'OTP_EXPIRED',
+                      'ru.rutcampustrack.auth.exception.OtpRateLimitException': 'OTP_RATE_LIMIT',
+                      'java.lang.IllegalStateException': 'ILLEGAL_STATE',
+                      'java.lang.IllegalArgumentException': 'ILLEGAL_ARGUMENT',
+                      'java.lang.NullPointerException': 'NULL_POINTER',
+                      'java.lang.ExceptionInInitializerError': 'INITIALIZER',
+                      'java.lang.NoClassDefFoundError': 'CLASS_INITIALIZATION',
+                      'org.testcontainers.containers.ContainerLaunchException': 'CONTAINER_START',
+                      'org.rnorth.ducttape.RetryCountExceededException': 'CONTAINER_RETRY',
+                      'org.springframework.amqp.AmqpConnectException': 'AMQP_CONNECT',
+                      'org.springframework.amqp.AmqpIOException': 'AMQP_IO',
+                      'org.springframework.dao.DataAccessException': 'DATABASE',
+                      'org.postgresql.util.PSQLException': 'DATABASE',
+                      'org.springframework.web.client.ResourceAccessException': 'HTTP_TRANSPORT',
+                      'org.springframework.web.client.RestClientException': 'HTTP_CONVERSION',
+                      'org.springframework.web.client.UnknownContentTypeException': 'HTTP_CONVERSION',
+                      'org.springframework.http.converter.HttpMessageConversionException': 'HTTP_CONVERSION',
+                      'org.springframework.http.converter.HttpMessageNotReadableException': 'HTTP_CONVERSION',
+                      'org.springframework.jdbc.BadSqlGrammarException': 'DATABASE',
+                      'org.springframework.dao.EmptyResultDataAccessException': 'DATABASE',
+                      'org.springframework.dao.DataIntegrityViolationException': 'DATABASE',
+                  }
+                  proof['failureCategory'] = auth_failure_categories.get(failure.get('type'), 'OTHER')
+                  auth_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(package + '.' + method)
+                      + r'\(AuthOtpFlowIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+                  proof['namedMethodFrameCount'] = len(auth_named_lines)
+                  proof['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(proof['ruleFrame']) + r'[ \t]*$', failure.text or ''))
+                  if len(auth_named_lines) == 1:
+                      proof['observedNamedMethodLine'] = int(auth_named_lines[0])
               assert failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
               message = failure.get('message', '')
               if service == 'schedule-service':

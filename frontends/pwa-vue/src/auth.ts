@@ -263,6 +263,16 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     return { ...token, generation: nextGeneration }
   }
 
+  async function loginOtp(input: { code: string }): Promise<PwaAuthLoginResult> {
+    const generation = currentGeneration()
+    const token = await client.loginOtp(input)
+    assertCurrent(generation)
+    const nextGeneration = clear()
+    setExplicitLogoutState(null)
+    accessToken.value = token.accessToken
+    return { ...token, generation: nextGeneration }
+  }
+
   async function getSessionFor(generation: number): Promise<ProfileSnapshot> {
     assertCurrent(generation)
     const snapshot = await client.getSnapshot()
@@ -502,7 +512,45 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
       return value
     }
 
+    async function requireBrowserApprovalContext(): Promise<void> {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false)
+        throw new Error('Подключись к сети')
+      const expected = knownProfileGeneration === generation ? knownProfile : null
+      const profile = await guarded(() => client.getSnapshot())
+      if (!expected || authAuthorityIdentity(expected) !== authAuthorityIdentity(profile)) {
+        clear()
+        notifyInvalidation('authority-changed')
+        throw new StaleSessionGenerationError()
+      }
+      rememberProfile(profile, generation)
+      if (
+        !profile.activeRole ||
+        profile.readOnly ||
+        !profile.roles.some(
+          (grant) =>
+            grant.role === profile.activeRole &&
+            grant.status === 'ACTIVE' &&
+            grant.selectable &&
+            !grant.readOnly,
+        )
+      )
+        throw new Error('Подтверди текущую роль')
+    }
+
     return {
+      browserLoginApproval: {
+        isOnline: () =>
+          generation === currentGeneration() &&
+          (typeof navigator === 'undefined' || navigator.onLine !== false),
+        preview: async (proof) => {
+          await requireBrowserApprovalContext()
+          return guarded(() => client.previewBrowserLogin(proof))
+        },
+        decide: async (proof, decision) => {
+          await requireBrowserApprovalContext()
+          return guarded(() => client.decideBrowserLogin(proof, decision))
+        },
+      },
       getSnapshot: async () => {
         const snapshot = await guarded(() => client.getSnapshot())
         const telegramId =
@@ -687,6 +735,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     refresh,
     refreshFor,
     login,
+    loginOtp,
     getSessionFor,
     selectRoleFor,
     createApi,

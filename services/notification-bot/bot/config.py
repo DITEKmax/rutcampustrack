@@ -52,6 +52,8 @@ class Settings(BaseSettings):
     # Attendance request attachment gRPC (bot-only shared-secret boundary)
     attendance_grpc_host: str = "attendance-service"
     attendance_grpc_port: int = 19093
+    attendance_grpc_tls_enabled: bool = False
+    attendance_grpc_tls_ca_path: str = ""
 
     # Auth Service HTTP (direct, not through Gateway — per D-06)
     auth_service_host: str = "auth-service"

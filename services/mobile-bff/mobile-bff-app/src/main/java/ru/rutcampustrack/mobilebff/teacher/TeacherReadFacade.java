@@ -211,6 +211,7 @@ public final class TeacherReadFacade {
         if (semesterId <= 0) throw invalidStats("semesterId должен быть положительным");
         TeacherSubjectsResponse current = academic.currentTeacherSubjects(claims.userId());
         Map<Long, String> groupNames = currentTeacherGroups(current);
+        Set<TeacherSubjectKey> allowedSubjects = currentTeacherSubjectKeys(current);
         List<TeacherApiModels.StatsSubjectOption> taught = taughtSubjects(current);
         DateRange period = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         List<TeacherApiModels.CatalogGroup> groups =
@@ -240,6 +241,8 @@ public final class TeacherReadFacade {
                 LocalDate date = catalogDate(lesson.getDate());
                 if (date.isBefore(period.from()) || date.isAfter(period.to()))
                     throw incompleteCatalog();
+                if (!allowedSubjects.contains(
+                        new TeacherSubjectKey(groupId, lesson.getSubjectId()))) continue;
                 LessonResponse previous = lessons.putIfAbsent(lesson.getId(), lesson);
                 if (previous != null && !previous.equals(lesson)) throw incompleteCatalog();
             }
@@ -421,7 +424,8 @@ public final class TeacherReadFacade {
         }
         List<String> selectedTypes = journalTypes(lessonTypes);
 
-        if (!currentTeacherGroupIds(claims).contains(groupId)) {
+        if (!currentTeacherSubjectKeys(claims)
+                .contains(new TeacherSubjectKey(groupId, subjectId))) {
             throw new MobileBffException(
                     HttpStatus.NOT_FOUND,
                     ProblemCode.OUT_OF_SCOPE,
@@ -532,7 +536,8 @@ public final class TeacherReadFacade {
                         .findFirst()
                         .orElseThrow(() -> invalidExport("Неизвестный формат журнала"));
         List<String> selectedTypes = journalTypes(lessonTypes);
-        if (!currentTeacherGroupIds(claims).contains(groupId)) {
+        if (!currentTeacherSubjectKeys(claims)
+                .contains(new TeacherSubjectKey(groupId, subjectId))) {
             throw new MobileBffException(
                     HttpStatus.NOT_FOUND,
                     ProblemCode.OUT_OF_SCOPE,
@@ -649,8 +654,22 @@ public final class TeacherReadFacade {
                     ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Сервис экспорта статистики вернул некорректный файл");
         }
+        String scopeHash = response.getTeacherScopeHash();
+        boolean unscoped =
+                request.getScope() == TeacherStatsScope.TEACHER_STATS_GROUPS
+                        && request.getGroupId() == 0
+                        && request.getSubjectId() == 0;
+        if (unscoped && !scopeHash.matches("[0-9a-f]{64}")) {
+            throw new MobileBffException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Сервис экспорта статистики вернул неполные полномочия");
+        }
         return new Download(
-                filename, response.getContentType(), response.getContent().toByteArray());
+                filename,
+                response.getContentType(),
+                response.getContent().toByteArray(),
+                unscoped ? scopeHash : null);
     }
 
     private TeacherStatsRequest statsRequest(
@@ -666,11 +685,16 @@ public final class TeacherReadFacade {
             throw invalidStats("semesterId должен быть положительным");
         }
         TeacherStatsScope scope = parseStatsScope(scopeValue);
-        if (selectedGroupId == null
-                || selectedGroupId <= 0
-                || selectedSubjectId == null
-                || selectedSubjectId <= 0) {
-            throw invalidStats("Для статистики нужны группа и предмет");
+        boolean allGroups =
+                scope == TeacherStatsScope.TEACHER_STATS_GROUPS
+                        && selectedGroupId == null
+                        && selectedSubjectId == null;
+        if (!allGroups
+                && (selectedGroupId == null
+                        || selectedGroupId <= 0
+                        || selectedSubjectId == null
+                        || selectedSubjectId <= 0)) {
+            throw invalidStats("Для выбранной статистики нужны группа и предмет");
         }
         if (lessonTypes == null
                 || lessonTypes.isEmpty()
@@ -688,8 +712,13 @@ public final class TeacherReadFacade {
                 .anyMatch(type -> !Set.of("lecture", "practice", "lab").contains(type))) {
             throw invalidStats("Неизвестный тип занятия");
         }
-        Set<Long> activeGroupIds = currentTeacherGroupIds(claims);
-        if (!activeGroupIds.contains(selectedGroupId)) {
+        TeacherSubjectsResponse authority = academic.currentTeacherSubjects(claims.userId());
+        Set<TeacherSubjectKey> allowedSubjects = currentTeacherSubjectKeys(authority);
+        Set<Long> activeGroupIds = currentTeacherGroups(authority).keySet();
+        if (activeGroupIds.isEmpty()
+                || !allGroups
+                        && !allowedSubjects.contains(
+                                new TeacherSubjectKey(selectedGroupId, selectedSubjectId))) {
             throw new MobileBffException(
                     HttpStatus.NOT_FOUND,
                     ProblemCode.OUT_OF_SCOPE,
@@ -697,7 +726,10 @@ public final class TeacherReadFacade {
         }
         DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         Map<Long, LessonResponse> concreteById = new HashMap<>();
-        for (Long groupId : List.of(selectedGroupId)) {
+        for (Long groupId :
+                (allGroups
+                        ? activeGroupIds.stream().sorted().toList()
+                        : List.of(selectedGroupId))) {
             LessonsResponse scheduled =
                     schedule.lessons(groupId, semesterId, range.from(), range.to());
             if (scheduled == null) throw incompleteCatalog();
@@ -712,8 +744,16 @@ public final class TeacherReadFacade {
                         || !inRange(lesson, range)) {
                     throw incompleteCatalog();
                 }
+                if (!allowedSubjects.contains(
+                        new TeacherSubjectKey(groupId, lesson.getSubjectId()))) continue;
+                if (!Set.of("lecture", "practice", "lab")
+                                .contains(lesson.getLessonType().toLowerCase(Locale.ROOT))
+                        || !Set.of("planned", "active", "closed", "cancelled", "transferred")
+                                .contains(lesson.getStatus().toLowerCase(Locale.ROOT)))
+                    throw incompleteCatalog();
                 LessonResponse previous = concreteById.putIfAbsent(lesson.getId(), lesson);
                 if (previous != null && !previous.equals(lesson)) throw incompleteCatalog();
+                if (concreteById.size() > 5_000) throw incompleteCatalog();
             }
         }
 
@@ -738,6 +778,24 @@ public final class TeacherReadFacade {
         if (selectedGroupId != null) request.setGroupId(selectedGroupId);
         if (selectedSubjectId != null) request.setSubjectId(selectedSubjectId);
         return request.build();
+    }
+
+    private record TeacherSubjectKey(long groupId, long subjectId) {}
+
+    private Set<TeacherSubjectKey> currentTeacherSubjectKeys(InternalJwtClaims claims) {
+        return currentTeacherSubjectKeys(academic.currentTeacherSubjects(claims.userId()));
+    }
+
+    private static Set<TeacherSubjectKey> currentTeacherSubjectKeys(
+            TeacherSubjectsResponse current) {
+        currentTeacherGroups(current);
+        return taughtSubjects(current).stream()
+                .map(
+                        subject ->
+                                new TeacherSubjectKey(
+                                        Long.parseLong(subject.groupId()),
+                                        Long.parseLong(subject.subjectId())))
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     private Set<Long> currentTeacherGroupIds(InternalJwtClaims claims) {
@@ -1255,5 +1313,10 @@ public final class TeacherReadFacade {
 
     private record DateRange(LocalDate from, LocalDate to) {}
 
-    public record Download(String filename, String contentType, byte[] bytes) {}
+    public record Download(
+            String filename, String contentType, byte[] bytes, String teacherScopeHash) {
+        public Download(String filename, String contentType, byte[] bytes) {
+            this(filename, contentType, bytes, null);
+        }
+    }
 }

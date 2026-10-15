@@ -140,6 +140,92 @@ class ExportJobsIT {
                 null);
     }
 
+    @Test
+    void groupAttendanceRequiresOnlyLiveDashboardAndRevocationProtectsEveryStoredSurface() {
+        var report =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.ADMIN_GROUP_ATTENDANCE,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        new IssueReportDownloadTicketRequest.AdminGroupAttendanceParameters(
+                                "1", "", "GROUP_NAME", "ASC", ReportDownloadFormat.HTML));
+        jdbc.update(
+                "UPDATE admin_access_profiles SET mode='LIMITED',permissions=ARRAY['GROUPS_VIEW']"
+                        + " WHERE user_id=?",
+                actor.userId());
+        assertThatThrownBy(
+                        () ->
+                                tx.execute(
+                                        ignored ->
+                                                jobs.enqueue(
+                                                        actor,
+                                                        new Create(UUID.randomUUID(), report))))
+                .isInstanceOfSatisfying(
+                        AdminAccessException.class,
+                        error -> assertThat(error.getStatusCode().value()).isEqualTo(403));
+        assertThat(count("SELECT count(*) FROM auth_export_jobs")).isZero();
+        jdbc.update(
+                "UPDATE admin_access_profiles SET permissions=ARRAY['DASHBOARD_VIEW'] WHERE"
+                        + " user_id=?",
+                actor.userId());
+        UUID request = UUID.randomUUID();
+        Status queued = tx.execute(ignored -> jobs.enqueue(actor, new Create(request, report)));
+        assertThat(tx.execute(ignored -> jobs.enqueue(actor, new Create(request, report))).jobId())
+                .isEqualTo(queued.jobId());
+        Claim claimed = claim();
+        assertThat(claimed.authority().report().kind())
+                .isEqualTo(ReportDownloadKind.ADMIN_GROUP_ATTENDANCE);
+        var completed =
+                new Complete(
+                        claimed.leaseId(),
+                        "<html>group totals only</html>".getBytes(StandardCharsets.UTF_8),
+                        "text/html",
+                        2,
+                        false);
+        tx.execute(ignored -> jobs.complete(claimed.jobId(), completed));
+        tx.execute(ignored -> jobs.complete(claimed.jobId(), completed));
+        assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.READY);
+        assertThat(jobs.file(actor, queued.jobId()).content()).isEqualTo(completed.content());
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " target_type='ADMIN_GROUP_ATTENDANCE'"))
+                .isEqualTo(1);
+        jdbc.update(
+                "UPDATE admin_access_profiles SET permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
+                actor.userId());
+        for (Runnable operation :
+                List.<Runnable>of(
+                        () -> jobs.status(actor, queued.jobId()),
+                        () -> jobs.file(actor, queued.jobId()),
+                        () -> jobs.ticket(actor, queued.jobId()),
+                        () ->
+                                tx.execute(
+                                        ignored ->
+                                                jobs.enqueue(
+                                                        actor,
+                                                        new Create(UUID.randomUUID(), report))))) {
+            assertThatThrownBy(operation::run)
+                    .isInstanceOfSatisfying(
+                            AdminAccessException.class,
+                            error -> assertThat(error.getStatusCode().value()).isEqualTo(403));
+        }
+        assertThat(count("SELECT count(*) FROM auth_export_jobs")).isEqualTo(1);
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " target_type='ADMIN_GROUP_ATTENDANCE'"))
+                .isEqualTo(1);
+    }
+
     private Status enqueue() {
         return tx.execute(ignored -> jobs.enqueue(actor, new Create(UUID.randomUUID(), users())));
     }

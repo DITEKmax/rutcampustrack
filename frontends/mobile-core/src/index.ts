@@ -133,3 +133,6 @@ export * from './features/notifications/notifications-v2-models'
 export * from './features/notifications/notifications-v2-client'
 export * from './features/notifications/notifications-actions'
 export * from './features/notifications/notifications-launch'
+
+export * from './features/admin-attendance/admin-attendance-client'
+export { default as AdminAttendanceScreen } from './features/admin-attendance/AdminAttendanceScreen.vue'

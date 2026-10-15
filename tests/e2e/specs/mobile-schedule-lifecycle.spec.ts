@@ -388,7 +388,8 @@ async function fillSlot(page: Page, dataset: MobileDataset, labels: string[], ro
 test('HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile', async ({
   page,
   scenario: dataset,
-}) => {
+  teachingInstant,
+}, info) => {
   expect(dataset.semester.dateFrom < dataset.today).toBe(true);
   const day = new Date(`${dataset.semester.dateFrom}T12:00:00Z`).getUTCDay() || 7;
   const dayLabel = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'][day - 1]!;
@@ -403,6 +404,200 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
   expect(weeks.length === 2 && new Set(weeks.map((week) => week.weekType)).size === 2).toBe(true);
   await loginPwa(page, dataset.headman);
   await selectRole(page, 'Староста');
+
+  // HEADMAN11/12/13: own new subject, real per-type teacher lookup and save.
+  const extraTeacher = await dataset.user('TEACHER');
+  const subjectName = `Синтетический предмет ${randomUUID()}`;
+  const subjectScreen = page.locator('.headman-subjects');
+  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+  await page.getByRole('button', { name: 'Предметы', exact: true }).click();
+  await page.getByRole('button', { name: 'Добавить предмет', exact: true }).click();
+  await subjectScreen.getByLabel('Название', { exact: true }).fill(subjectName);
+  for (const label of ['Лекция', 'Лаб.'])
+    await subjectScreen
+      .locator('.headman-subjects__types')
+      .getByRole('button', { name: label, exact: true })
+      .click();
+  const teacherLabels = new Map<number, string>();
+  const selections = [
+    { type: 'LECTURE', label: 'Лекция', teacher: dataset.teacher, staffSearch: true },
+    { type: 'LAB', label: 'Лабораторная', teacher: dataset.teacher, staffSearch: false },
+    { type: 'LAB', label: 'Лабораторная', teacher: extraTeacher, staffSearch: false },
+  ] as const;
+  for (const [index, selection] of selections.entries()) {
+    if (index < 2) {
+      const section = subjectScreen.locator('.headman-subjects__assignment').filter({
+        has: page.getByRole('heading', { name: selection.label, exact: true }),
+      });
+      await section.getByRole('button', { name: 'Не назначен', exact: true }).click();
+    } else {
+      await subjectScreen
+        .getByRole('button', { name: 'Добавить преподавателя', exact: true })
+        .click();
+      await subjectScreen
+        .locator('.headman-subjects__types')
+        .getByRole('button', { name: 'Лаб.', exact: true })
+        .click();
+    }
+    const search = subjectScreen.getByRole('searchbox', {
+      name: 'ФИО или табельный номер',
+      exact: true,
+    });
+    const lookup = (query: string) =>
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === '/api/academic/users/teachers/search' &&
+          url.searchParams.get('search') === query
+        );
+      });
+    const byName = lookup(selection.teacher.displayName);
+    await search.fill(selection.teacher.displayName);
+    const found = await byName;
+    expect(found.status()).toBe(200);
+    const candidates: { id: number; fullName: string; employeeNumber: string | null }[] =
+      (await found.json())._embedded?.teacherLookupResponseList ?? [];
+    const ownTeacher = candidates.filter((candidate) => candidate.id === selection.teacher.id);
+    expect(
+      ownTeacher.length === 1 &&
+        typeof ownTeacher[0]!.fullName === 'string' &&
+        ownTeacher[0]!.fullName.length > 0,
+      'Teacher name lookup includes exactly the own durable identity',
+    ).toBe(true);
+    const chosen = ownTeacher[0]!;
+    teacherLabels.set(chosen.id, chosen.fullName);
+    if (selection.staffSearch) {
+      expect(
+        typeof chosen.employeeNumber === 'string' && chosen.employeeNumber.length > 0,
+        'Own teacher exposes the accepted staff lookup identifier',
+      ).toBe(true);
+      const byStaff = lookup(chosen.employeeNumber!);
+      await search.fill(chosen.employeeNumber!);
+      const staff = await byStaff;
+      expect(staff.status()).toBe(200);
+      const exactStaff: { id: number; employeeNumber: string }[] =
+        (await staff.json())._embedded?.teacherLookupResponseList ?? [];
+      expect(
+        exactStaff.length === 1 &&
+          exactStaff[0]!.id === chosen.id &&
+          exactStaff[0]!.employeeNumber === chosen.employeeNumber,
+        'Staff lookup resolves exactly the same own teacher',
+      ).toBe(true);
+    }
+    await expect(
+      subjectScreen.getByRole('status').filter({ hasText: 'Ищем преподавателей…' }),
+    ).toHaveCount(0);
+    await subjectScreen
+      .locator('.headman-subjects__teacher-options button')
+      .filter({
+        has: page.getByText(chosen.fullName, { exact: true }),
+      })
+      .click();
+    await subjectScreen.getByLabel('Начало назначения', { exact: true }).fill(dataset.today);
+    await subjectScreen
+      .getByRole('button', { name: 'Добавить преподавателя', exact: true })
+      .click();
+  }
+  const assignmentKey = (assignment: {
+    teacherId: number;
+    semesterId: number;
+    lessonType: string;
+    validFrom: string;
+    validUntilExclusive: string | null;
+  }) =>
+    JSON.stringify([
+      assignment.teacherId,
+      assignment.semesterId,
+      assignment.lessonType,
+      assignment.validFrom,
+      assignment.validUntilExclusive,
+    ]);
+  const expectedAssignments = selections
+    .map(({ type, teacher }) =>
+      assignmentKey({
+        teacherId: teacher.id,
+        semesterId: dataset.semester.id,
+        lessonType: type,
+        validFrom: dataset.today,
+        validUntilExclusive: null,
+      }),
+    )
+    .sort();
+  const subjectCreated = http(page, '/api/academic/subjects', 'POST');
+  await subjectScreen.getByRole('button', { name: 'Сохранить изменения', exact: true }).click();
+  const savedSubjectResponse = await subjectCreated;
+  expect(savedSubjectResponse.status()).toBe(201);
+  const submittedSubject = savedSubjectResponse.request().postDataJSON();
+  expect(
+    submittedSubject.name === subjectName &&
+      JSON.stringify([...submittedSubject.lessonTypes].sort()) ===
+        JSON.stringify(['LAB', 'LECTURE']) &&
+      JSON.stringify(submittedSubject.initialAssignments.map(assignmentKey).sort()) ===
+        JSON.stringify(expectedAssignments),
+    'Real UI create carries exactly the two types and three type-specific assignments',
+  ).toBe(true);
+  const savedSubject = await savedSubjectResponse.json();
+  const savedSubjectId = savedSubject.id;
+  expect(
+    Number.isSafeInteger(savedSubjectId) &&
+      savedSubjectId > 0 &&
+      savedSubject.groupId === dataset.group.id,
+    'Real subject creation returns a new own-group identity',
+  ).toBe(true);
+  const authoritativeSubject = await dataset.headmanActor.call(
+    'GET',
+    `/api/academic/subjects/${savedSubjectId}`,
+    undefined,
+    [200],
+    { 'Cache-Control': 'no-store' },
+  );
+  expect(
+    authoritativeSubject.id === savedSubjectId &&
+      authoritativeSubject.name === subjectName &&
+      authoritativeSubject.groupId === dataset.group.id &&
+      JSON.stringify([...authoritativeSubject.lessonTypes].sort()) ===
+        JSON.stringify(['LAB', 'LECTURE']) &&
+      JSON.stringify(authoritativeSubject.assignments.map(assignmentKey).sort()) ===
+        JSON.stringify(expectedAssignments) &&
+      new Set(authoritativeSubject.assignments.map((assignment: { id: number }) => assignment.id))
+        .size === 3 &&
+      authoritativeSubject.assignments.every(
+        (assignment: { id: number }) => Number.isSafeInteger(assignment.id) && assignment.id > 0,
+      ),
+    'Authoritative read retains exact teacher-by-type dates and distinct assignment identities',
+  ).toBe(true);
+  await expect(subjectScreen).toHaveAttribute('data-subject-view', 'list');
+  await subjectScreen.locator(`[data-subject-id="${savedSubjectId}"]`).click();
+  await expect(subjectScreen).toHaveAttribute('data-subject-detail-ready', 'true');
+  for (const [label, pressed] of [
+    ['Лекция', 'true'],
+    ['Практика', 'false'],
+    ['Лаб.', 'true'],
+  ] as const)
+    await expect(
+      subjectScreen
+        .locator('.headman-subjects__types')
+        .getByRole('button', { name: label, exact: true }),
+    ).toHaveAttribute('aria-pressed', pressed);
+  for (const [label, ids] of [
+    ['Лекция', [dataset.teacher.id]],
+    ['Лабораторная', [dataset.teacher.id, extraTeacher.id]],
+  ] as const) {
+    const section = subjectScreen.locator('.headman-subjects__assignment').filter({
+      has: page.getByRole('heading', { name: label, exact: true }),
+    });
+    const labels = await section.locator('.headman-subjects__teacher').allTextContents();
+    expect(
+      labels.length === ids.length &&
+        ids.every((id) => labels.some((label) => label.includes(teacherLabels.get(id)!))),
+      'Reopened subject displays exactly the saved teachers for each selected type',
+    ).toBe(true);
+  }
+  await subjectScreen.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(subjectScreen).toHaveAttribute('data-subject-view', 'list');
+  await subjectScreen.getByRole('button', { name: 'Назад', exact: true }).click();
+  // End HEADMAN11/12/13 subject witness; original builder dataset remains intact.
   await page.getByRole('button', { name: 'Ещё', exact: true }).click();
   await page.getByRole('button', { name: 'Конструктор расписания', exact: true }).click();
   await page.getByRole('tab', { name: dayLabel, exact: true }).click();
@@ -773,6 +968,124 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
   expect(archivedHomework.archived === true && archivedHomework.id === historical.homeworkId).toBe(
     true,
   );
+
+  // HEADMAN13: ordinary STUDENT sees only genuine available lecture cards.
+  const studentBrowser = page.context().browser();
+  expect(studentBrowser !== null, 'Student statistics requires the existing browser').toBe(true);
+  const studentViewport = page.viewportSize();
+  const studentContext = await studentBrowser!.newContext({
+    baseURL: new URL(page.url()).origin,
+    ignoreHTTPSErrors: info.project.use.ignoreHTTPSErrors === true,
+    ...(studentViewport ? { viewport: studentViewport } : {}),
+    timezoneId: 'Europe/Moscow',
+    serviceWorkers: 'block',
+  });
+  try {
+    const studentPage = await studentContext.newPage();
+    if (
+      process.env.RCT_E2E_REMAINING5 === 'true' &&
+      process.env.RCT_E2E_ADMIN_LIFECYCLE !== 'true'
+    ) {
+      expect(teachingInstant !== undefined, 'Student uses the same admitted teaching instant').toBe(
+        true,
+      );
+      await studentPage.clock.install({ time: teachingInstant! });
+    }
+    const studentLogin = await loginPwa(studentPage, dataset.student);
+    expect(
+      studentLogin.session.userId === String(dataset.student.id) &&
+        studentLogin.session.activeRole === 'STUDENT',
+      'Statistics browser admits the existing ordinary student before headman replacement',
+    ).toBe(true);
+    await studentPage.getByRole('button', { name: 'Ещё', exact: true }).click();
+    const overviewLoaded = studentPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === '/api/v1/student/statistics' &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id)
+      );
+    });
+    await studentPage.getByRole('button', { name: 'Статистика', exact: true }).click();
+    const overviewResponse = await overviewLoaded;
+    expect(overviewResponse.status()).toBe(200);
+    const overview = await overviewResponse.json();
+    expect(
+      overview.subjects.filter(
+        (subject: { id: string; name: string }) =>
+          String(subject.id) === String(dataset.subject.id) &&
+          subject.name === dataset.subject.name,
+      ).length === 1,
+      'Own overview contains the unchanged lesson-bearing subject',
+    ).toBe(true);
+    const subjectSummary = studentPage
+      .locator('.statistics-subject-summary')
+      .filter({ hasText: dataset.subject.name });
+    await expect(subjectSummary).toBeVisible();
+    const detailLoaded = studentPage.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname === `/api/v1/student/statistics/subjects/${dataset.subject.id}` &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        url.searchParams.get('range') === 'weeks'
+      );
+    });
+    await subjectSummary.click();
+    const detailResponse = await detailLoaded;
+    expect(detailResponse.status()).toBe(200);
+    const detail = await detailResponse.json();
+    expect(
+      String(detail.subjectId) === String(dataset.subject.id) &&
+        detail.name === dataset.subject.name &&
+        JSON.stringify(detail.availableTypes) === JSON.stringify(['LECTURE']) &&
+        detail.typeCards.length === 1 &&
+        detail.typeCards[0].type === 'LECTURE' &&
+        detail.typeCards[0].metrics.held > 0,
+      'Real student detail contains exactly the available lesson-bearing lecture type',
+    ).toBe(true);
+    await expect(
+      studentPage.getByRole('heading', { level: 1, name: dataset.subject.name, exact: true }),
+    ).toBeVisible();
+    const cards = studentPage.locator('.statistics-type-card');
+    await expect(cards).toHaveCount(1);
+    const visibleLecture = studentPage.locator('.statistics-type-card[data-type="LECTURE"]');
+    await expect(visibleLecture).toBeVisible();
+    await expect(
+      studentPage.locator(
+        '.statistics-type-card[data-type="LAB"], .statistics-type-card[data-type="PRACTICE"]',
+      ),
+    ).toHaveCount(0);
+    await expect(studentPage.getByRole('group', { name: 'Типы пар', exact: true })).toHaveCount(0);
+    const metrics = detail.typeCards[0].metrics;
+    expect(
+      (await visibleLecture.getByRole('heading').textContent())?.trim() ===
+        `Пар ${metrics.held}/${metrics.planned}`,
+      'Lecture heading uses real held and planned counts',
+    ).toBe(true);
+    for (const [kind, label] of [
+      ['present', 'присутствие'],
+      ['excused', 'уважительная причина'],
+      ['absent', 'отсутствие'],
+    ] as const) {
+      const metric = metrics[kind];
+      const percent = metric.percent === null ? '—' : `${Math.round(metric.percent)}%`;
+      const rendered = await visibleLecture
+        .locator(`.statistics-type-card__metric--${kind}`)
+        .textContent();
+      expect(
+        rendered?.replace(/\s+/g, ' ').trim() === `${percent} ${label}, ${metric.count}`,
+        'Lecture visible percentage and count match the same authoritative card',
+      ).toBe(true);
+    }
+    await studentPage.getByRole('button', { name: 'Назад к статистике', exact: true }).click();
+    await expect(subjectSummary).toBeVisible();
+  } finally {
+    await studentContext.close().catch(() => {
+      expect.soft(false, 'Own student statistics context cleanup failed').toBe(true);
+    });
+  }
+  // End ordinary STUDENT witness before the original live authority replacement.
 
   // Revocation after a real preview cannot turn a retained editor into authority.
   await slot.click();

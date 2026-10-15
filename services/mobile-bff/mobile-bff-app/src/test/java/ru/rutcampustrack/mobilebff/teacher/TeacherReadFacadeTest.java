@@ -368,7 +368,15 @@ class TeacherReadFacadeTest {
                                 null,
                                 false,
                                 false));
-        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.currentTeacherSubjects(71L))
+                .thenReturn(
+                        currentGroup(33L, "УИТ-311").toBuilder()
+                                .setSubjects(
+                                        0,
+                                        currentGroup(33L, "УИТ-311").getSubjects(0).toBuilder()
+                                                .setSubjectId(23L)
+                                                .setSubjectName("Физика"))
+                                .build());
         when(academic.teacherAssignmentsForSemester(9L))
                 .thenReturn(
                         TeacherAssignmentsResponse.newBuilder()
@@ -391,6 +399,7 @@ class TeacherReadFacadeTest {
                                 .addLessons(historical)
                                 .addLessons(lecture)
                                 .addLessons(historical)
+                                .addLessons(lesson(103L, "2026-09-02", 1, "09:00:00"))
                                 .build());
         when(academic.teacherCatalogSubjects(List.of(23L)))
                 .thenReturn(
@@ -424,7 +433,7 @@ class TeacherReadFacadeTest {
                 .singleElement()
                 .satisfies(
                         option -> {
-                            assertThat(option.subjectId()).isEqualTo("22");
+                            assertThat(option.subjectId()).isEqualTo("23");
                             assertThat(option.lessonTypes()).containsExactly("lecture");
                         });
         verify(academic).currentTeacherSubjects(71L);
@@ -528,7 +537,7 @@ class TeacherReadFacadeTest {
         return TeacherSubjectsResponse.newBuilder()
                 .addSubjects(
                         TeacherSubjectInfo.newBuilder()
-                                .setAssignmentId(14L)
+                                .setAssignmentId(14L + groupId)
                                 .setSemesterId(10L)
                                 .setSubjectId(22L)
                                 .setSubjectName("Математика")
@@ -841,6 +850,11 @@ class TeacherReadFacadeTest {
         when(academic.currentTeacherSubjects(71L))
                 .thenReturn(
                         currentGroup(33L, "УИТ-311").toBuilder()
+                                .addSubjects(
+                                        currentGroup(33L, "УИТ-311").getSubjects(0).toBuilder()
+                                                .setAssignmentId(100L)
+                                                .setSubjectId(23L)
+                                                .setSubjectName("Физика"))
                                 .addAllSubjects(currentGroup(44L, "УИТ-312").getSubjectsList())
                                 .build());
         when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
@@ -896,6 +910,212 @@ class TeacherReadFacadeTest {
                         org.mockito.ArgumentMatchers.anyLong(),
                         org.mockito.ArgumentMatchers.any(),
                         org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void allGroupsStatsAndExportCollectOnlyCurrentAssignedSubjectsAcrossCompleteSemester() {
+        searchContext();
+        when(academic.currentTeacherSubjects(71L))
+                .thenReturn(
+                        currentGroup(33L, "УИТ-311").toBuilder()
+                                .addAllSubjects(currentGroup(44L, "УИТ-312").getSubjectsList())
+                                .build());
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(
+                                        lesson(101L, "2026-09-02", 1, "09:00").toBuilder()
+                                                .setAssignedTeacherId(72L))
+                                .addLessons(
+                                        lesson(102L, "2026-09-02", 2, "10:40").toBuilder()
+                                                .setSubjectId(23L))
+                                .addLessons(
+                                        lesson(103L, "2026-09-03", 1, "09:00").toBuilder()
+                                                .setLessonType("lab"))
+                                .build());
+        when(schedule.lessons(44L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(
+                                        lesson(201L, "2026-09-02", 1, "09:00").toBuilder()
+                                                .setGroupId(44L))
+                                .build());
+        when(attendance.teacherStats(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(
+                        ru.rutcampustrack.teacher.grpc.TeacherStatsResponse.newBuilder()
+                                .setSemesterId(9L)
+                                .build());
+        when(attendance.exportTeacherStats(
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.eq("html")))
+                .thenReturn(
+                        ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse.newBuilder()
+                                .setTeacherScopeHash("a".repeat(64))
+                                .setFileName("stats.html")
+                                .setContentType("text/html; charset=UTF-8")
+                                .setContent(
+                                        com.google.protobuf.ByteString.copyFromUtf8(
+                                                "synthetic-html"))
+                                .build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        facade.stats(
+                9L,
+                "groups",
+                null,
+                null,
+                List.of("lecture", "lab"),
+                List.of("-present"),
+                List.of("groupName~УИТ"));
+        var download =
+                facade.exportStats(
+                        9L,
+                        "groups",
+                        null,
+                        null,
+                        List.of("lecture", "lab"),
+                        List.of("-present"),
+                        List.of("groupName~УИТ"),
+                        "html");
+        assertThat(download.teacherScopeHash()).isEqualTo("a".repeat(64));
+        var read =
+                org.mockito.ArgumentCaptor.forClass(
+                        ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        var export =
+                org.mockito.ArgumentCaptor.forClass(
+                        ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        verify(attendance).teacherStats(read.capture());
+        verify(attendance)
+                .exportTeacherStats(export.capture(), org.mockito.ArgumentMatchers.eq("html"));
+        assertThat(read.getValue()).isEqualTo(export.getValue());
+        assertThat(read.getValue().getGroupId()).isZero();
+        assertThat(read.getValue().getSubjectId()).isZero();
+        assertThat(read.getValue().getLessonIdsList()).containsExactly(101L, 201L, 103L);
+        assertThat(read.getValue().getLessonTypesList()).containsExactly("lecture", "lab");
+        when(attendance.exportTeacherStats(
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.eq("html")))
+                .thenReturn(
+                        ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse.newBuilder()
+                                .setFileName("stats.html")
+                                .setContentType("text/html; charset=UTF-8")
+                                .setContent(
+                                        com.google.protobuf.ByteString.copyFromUtf8(
+                                                "synthetic-html"))
+                                .build());
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () ->
+                                facade.exportStats(
+                                        9L,
+                                        "groups",
+                                        null,
+                                        null,
+                                        List.of("lecture", "lab"),
+                                        List.of(),
+                                        List.of(),
+                                        "html"))
+                .isInstanceOf(MobileBffException.class);
+    }
+
+    @Test
+    void unassignedSubjectInCurrentGroupCannotReadSelectedJournalStatsOrExportEvenWhenEmpty() {
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                71L,
+                                UUID.randomUUID(),
+                                1L,
+                                1L,
+                                "TEACHER",
+                                "ACTIVE",
+                                null,
+                                false,
+                                false));
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        assertThatThrownBy(
+                        () ->
+                                facade.journal(
+                                        9L, 33L, 23L, List.of("lecture"), null, null, 0, 100, true))
+                .isInstanceOfSatisfying(
+                        MobileBffException.class,
+                        e -> assertThat(e.status()).isEqualTo(HttpStatus.NOT_FOUND));
+        assertThatThrownBy(
+                        () ->
+                                facade.exportJournal(
+                                        9L,
+                                        33L,
+                                        23L,
+                                        List.of("lecture"),
+                                        null,
+                                        null,
+                                        "html",
+                                        true,
+                                        null))
+                .isInstanceOfSatisfying(
+                        MobileBffException.class,
+                        e -> assertThat(e.status()).isEqualTo(HttpStatus.NOT_FOUND));
+        for (String scope : List.of("students", "groups")) {
+            assertThatThrownBy(
+                            () ->
+                                    facade.stats(
+                                            9L,
+                                            scope,
+                                            33L,
+                                            23L,
+                                            List.of("lecture"),
+                                            List.of(),
+                                            List.of()))
+                    .isInstanceOfSatisfying(
+                            MobileBffException.class,
+                            e -> assertThat(e.status()).isEqualTo(HttpStatus.NOT_FOUND));
+            assertThatThrownBy(
+                            () ->
+                                    facade.exportStats(
+                                            9L,
+                                            scope,
+                                            33L,
+                                            23L,
+                                            List.of("lecture"),
+                                            List.of(),
+                                            List.of(),
+                                            "html"))
+                    .isInstanceOfSatisfying(
+                            MobileBffException.class,
+                            e -> assertThat(e.status()).isEqualTo(HttpStatus.NOT_FOUND));
+        }
+        verifyNoInteractions(schedule, attendance);
+        verify(academic, never())
+                .teacherAssignmentsForSemester(org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    @Test
+    void allGroupsRejectsOverCapWithoutForwardingAPartialAggregate() {
+        searchContext();
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addAllLessons(
+                                        java.util.stream.LongStream.rangeClosed(1, 5001)
+                                                .mapToObj(
+                                                        id -> lesson(id, "2026-09-02", 1, "09:00"))
+                                                .toList())
+                                .build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        assertThatThrownBy(
+                        () ->
+                                facade.stats(
+                                        9L,
+                                        "groups",
+                                        null,
+                                        null,
+                                        List.of("lecture"),
+                                        List.of(),
+                                        List.of()))
+                .isInstanceOfSatisfying(
+                        MobileBffException.class,
+                        e -> assertThat(e.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        verifyNoInteractions(attendance);
     }
 
     private void searchContext() {

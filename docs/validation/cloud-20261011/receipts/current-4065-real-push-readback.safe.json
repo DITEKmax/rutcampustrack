@@ -74696,12 +74696,37 @@
           "path": "services/notification-bot/tests/test_bot_service_credentials.py",
           "sourceRef": "ROOT_9a67060_CURRENT_EXISTING_SOURCE",
           "preimageSha256": "89afa08c158ef861de08f005f310d6634142e54b4a3e3ef457522691cc7728dd",
-          "sha256": "06cc8890031c7dfeeb67cf5dcb2b3a577e64e010f4875f382c5c04b4257140d0"
+          "sha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4"
         }
       ],
       "checks": "AST4/line120/oldtestprefixinverse; five closedfakeIOSourcecontrols0/.706s16MB allreaped; pytestRuffnotavailable/notrun; realTLShandshakependingordinaryCI",
       "scope": "ExistingAttendanceClient securechannel/rootCA/nooverride/nofallback; appendkwargs preserve3spositional/cap24MiB/secretmetadata/close/bootstrap",
-      "noNativePASS": true
+      "noNativePASS": true,
+      "bundleSha256": "033e122f61d31e63efffbd4eff8e72527041667ae41b614b8190cb3b02bd6dd7",
+      "realTransportAddition": {
+        "state": "SOURCE_READY_ACTUAL_NOT_RUN",
+        "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+        "case": "test_attendance_real_tls_accepts_own_ca_and_metadata_but_rejects_wrong_trust_and_hostname",
+        "declarationLine": 156,
+        "oldSha256": "06cc8890031c7dfeeb67cf5dcb2b3a577e64e010f4875f382c5c04b4257140d0",
+        "sha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4",
+        "singleCaseInverseExact": true,
+        "threeProductionFilesUnchanged": true,
+        "existingSeamAssessment": "test_academic_client only mockedTLS; np01_bridge_runner actualTLS invokes Academic RPC, no retained exact Python Attendance TLS proof",
+        "risk": "Python grpc.aio constructor/stub/server compatibility, actual root trust and hostname validation/metadata plus no effect on rejection",
+        "positive": "ephemeral secure127.0.0.1 listener/localhostSAN, actual resolve+fetch return fixed body after exact synthetic metadata; positive same-client call after negatives",
+        "negative": "wrongCA and IP hostname absent SAN each actual AioRpcError.UNAVAILABLE, same handler effect count unchanged",
+        "cleanup": "ephemeral cert TempDir cleanup, individual bounded clientclose/serverstop/servertermination finally; primary and cleanup errors preserved via groups",
+        "bounds": "openssl2x5s;serverstart2s;wholeRPCexercise12s;3clientclose≤2s each;serverstop/termination≤2s each;no persistentport/key/dependency",
+        "pythonAst": true,
+        "lineLength120": true,
+        "pytestActual": "NOT_RUN_LOCAL_GRPC_ABSENT_NO_INSTALL_OR_SKIP",
+        "ruff": "NOT_RUN_NO_KNOWN_EXECUTABLE",
+        "actualTLSHandshake": "NOT_RUN_NORMAL_BOT_PYTEST_CI_REQUIRED",
+        "noDomainClaim": "Loopback only, no AttendanceJava/DB/Auth provider/product/runtime readiness proof"
+      },
+      "review": "PENDING_ONE_COHERENT_TLS_CONFIG_AND_BOT_REVIEW",
+      "native": "NOT_RUN grpc absent locally; actualpytest/TLS normalCI later, no install/skip"
     },
     "HEADMAN_11_12_13_existing_client_extension_GO": {
       "utc": "2026-10-15T14:15:59.269837+00:00",
@@ -75001,6 +75026,1747 @@
       "rootReview": "Opened35lineoriginaldiff+8knownSpring/JDBCadditions. 43Auth-onlylines fixedSourceFQN→closedcategory; oneexistingnativeXML suite/class/1test/fail1/error0skip0 beforeprojection, Sourcepinnedunique methodline+fixed432match. No rawtypes/messages/stacks/body. Existing native assertiontype/boolean432fullmessage/semanticRED/finallybyte-restoration/caps unchanged. Newdiagnosticcannotqualifyunexpectedtype asRED. NoTLS hunks.",
       "newNative": "PENDING_NEXT_ORDINARY_CI",
       "uncommittedFeatureInventoryCount": 50
+    },
+    "9a67060_Auth_CI_only_publication_b460bc2": {
+      "utc": "2026-10-15T14:24:37.612058+00:00",
+      "status": "PUSHED_EXACT_READBACK_VERIFIED",
+      "parent": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+      "head": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "inventory": [
+        ".github/workflows/ci.yml",
+        "docs/validation/cloud-20261011/CURRENT.md",
+        "docs/validation/cloud-20261011/attempts.ndjson",
+        "docs/validation/cloud-20261011/defects.md",
+        "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+        "docs/validation/cloud-20261011/resources.md",
+        "docs/validation/cloud-20261011/scenarios.csv"
+      ],
+      "featureSourcesUnstaged": 50,
+      "phases": [
+        {
+          "label": "diff-check",
+          "seconds": 0.334,
+          "nativeExit": 0,
+          "allReaped": true
+        },
+        {
+          "label": "stage",
+          "seconds": 0.457,
+          "nativeExit": 0,
+          "allReaped": true
+        },
+        {
+          "label": "configured-checks",
+          "seconds": 3.156,
+          "nativeExit": 0,
+          "allReaped": true
+        },
+        {
+          "label": "commit",
+          "seconds": 0.784,
+          "nativeExit": 0,
+          "allReaped": true
+        },
+        {
+          "label": "range-gitleaks",
+          "seconds": 1.155,
+          "nativeExit": 0,
+          "allReaped": true
+        },
+        {
+          "label": "real-push",
+          "seconds": 3.018,
+          "nativeExit": 0,
+          "allReaped": true
+        }
+      ],
+      "readback": {
+        "utc": "2026-10-15T14:24:37.612058+00:00",
+        "local": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+        "actualGitRemote": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+        "officialPRHead": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+        "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "draft": true,
+        "state": "open",
+        "base": "main",
+        "merged": false
+      },
+      "actualCheckout_Gates": "PENDING_NEW_EXACT_HEAD",
+      "preservedSource": "all50featureworkingbytes rechecked aftercommit; onlyCI1+docs6committed",
+      "receipt": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/9a-auth-diagnostic-publish-01.safe.json"
+    },
+    "D024_author_partial_checks_and_Auth_oldflow_hypothesis": {
+      "utc": "2026-10-15T14:26:38.561907+00:00",
+      "status": "AUTHOR_FINISHING_FROZEN_PACKET_NATIVE_PENDING",
+      "scope": "c79product9/tests5/E2Etails2 plusc87host4 coordinated",
+      "checks": "Auth/session generation tests138PASS +newQRrenderer7PASS; E2EcurrentRAMTSC0/outside2tailinverse0. FullscopedVue Node640MiBOOM29.46s/ownedpeak830.5MB/allreaped, notSourceerror/nottypePASS. Narrowstockcontroller/domainTS planned, fullVue/buildmandatoryordinaryCI.",
+      "oldAuthHypothesis": "Read-only conditionaloldcomplete430→completeOwnedReset1364 TestRestTemplate JsonNode maythrowtransport/conversion; ordinarydomain4xx5xx returnsresponse. EarliergrantSQL/login/JDBC/Redis/AMQP can alsofail. No unavoidableSourceexception found; nativeactualtype/cause UNKNOWN, noJavachanges. c80newclosedproducerdiagnostic publishedb460.",
+      "actual": "OTP/QRrealbrowserNOT_RUN/oldcaps120s60s180s unchanged"
+    },
+    "D023_READY_author_partial_checks": {
+      "utc": "2026-10-15T14:26:38.561907+00:00",
+      "status": "AUTHOR_FINISHING_FROZEN_PACKET",
+      "checks": "GJF/parser20Java0; cachedstockprotoc3.25.8 temporary /tmp regulargeneratedcompileinput/no trackedmanualgen; cachedjavacowned21paths+readonlyAdmin/APIcontext0 15.581s449MB/allreaped. Earlierclasspaths/importsetupfail retained andcorrected.",
+      "fixture": "Owncurrent-date semester inside freshPG only, temporarilyseedactivedeactivate andrestoreoriginalIDfinally/retaininactiveownhistory/no triggerbypass/clockoverride/sharedstand. Cleanupprimarypreservation underauthorfinalcheck.",
+      "native": "NoJUnit/PGHTTP/browserPASS claimed; independentcoherentreview afterfreeze."
+    },
+    "HEADMAN_11_12_13_onecase_Source_ready": {
+      "utc": "2026-10-15T14:26:56.399776+00:00",
+      "status": "C86_APPROVE_ROOT_INTEGRATED_UNCOMMITTED_NATIVE_PENDING",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#headmanThreeClientWitness",
+      "sourceRef": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+      "preimageSha256": "fcd3ed9c22d61dd5a8c880f3f2b77b3dacc947331ff16cbc902e92cbd5290965",
+      "sha256": "bd1618df13277de9c52e37009ed34339ab8f84c3711e6b98876f686a574a1616",
+      "checks": "Canonicalformat/parser/transpile/currentRootRAMTSC0/exactoldbodyinverse, 4.736s386MB/allreaped942604; ownpriorf39backuppreserved, c84WIPuntouched",
+      "meaningful": "GenuineUI2types+3typedteachers name/staffsearch/save201exactinitialAssignments/readback/reopen; genuineordinaryexistingSTUDENT LECTURE-onlydetail/nofakeLAB0 beforeoldpromotion/revoke, ownedcontextfinally",
+      "native": "NOT_RUN original240s/fixture180 unchanged/setup500barrier preserved",
+      "review": {
+        "utc": "2026-10-15T14:29:53.838040+00:00",
+        "reviewer": "c86",
+        "verdict": "NO_P1_P2",
+        "critical": "ExactUI2types+3dateboundassignments/IDnotname; response→readonlyreopen; ordinaryStudentbeforepromotion/ownfinally/oldsubjecthistoryfinal403 unchanged. 240s180s/2casebodies preserved. ActualNOT_RUN."
+      },
+      "rootIntegration": {
+        "sourceRef": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+        "preimageSha256": "fcd3ed9c22d61dd5a8c880f3f2b77b3dacc947331ff16cbc902e92cbd5290965",
+        "sha256": "bd1618df13277de9c52e37009ed34339ab8f84c3711e6b98876f686a574a1616"
+      }
+    },
+    "D024_fresh_review_assignment": {
+      "utc": "2026-10-15T14:29:53.838040+00:00",
+      "reviewer": "c88_mobile_auth_review",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedEffort": "high",
+      "fork_turns": "none",
+      "actualModelEffort": "UNKNOWN",
+      "scope": "Independentreadonlycoherent20Authclient/host/test package after c79frozeninventory; no Source/nativewrites",
+      "benefit": "Parallel critical OTPQRsecurity review vsTeacherREADY/TLS, activecapacity7inclRoot respected"
+    },
+    "Admin_directed_Attendance_TLS_config_Source_ready": {
+      "utc": "2026-10-15T14:29:53.838040+00:00",
+      "status": "FROZEN_PENDING_COHERENT_C86_REVIEW",
+      "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current9a67060Primary.directedAdminRpcTlsConfigSource",
+      "sourcePins": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "9f0ec4ed30fafc8fb3d6eb03f19c4bc5e1e7557007ba4aecf925668c64f151b0",
+          "sha256": "d033e9a7c7c8aca33ee4ba7a50dcf9cd9a89990630ffd7d9c457d28b762d1ab9"
+        },
+        {
+          "path": "docker-compose.e2e.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "8bba7f200d8ebfc7dc288cdcb289c2c3b5994dae79c53277ba7ea98a8af67460",
+          "sha256": "a48904046749633f831fddeaf936d2bcd0ff387fd112122d047a4ae128169813"
+        },
+        {
+          "path": "infra/local-stand/compose.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "c4a832758858ea3124cbb40c1c3cb6147c50e4c5196d9b0719f64cfa6897ee4e",
+          "sha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd"
+        },
+        {
+          "path": "tests/e2e/infra/scripts/generate-test-certs.sh",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "02bfcc8dabadd714a9c04cd7b486bc1557de992d979eea7451f9a2cbded18d1c",
+          "sha256": "f3a5714d95d0408669fb63c0eabc2bde07727cee4c72aabc52e06aa54d9f0b16"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/resources/application.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+          "sha256": "c171ddc23a35353a8a7da0b13174104d32a89f686178c1aedcb5c29c313f7e8e"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/resources/application-prod.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "1f92753b135eb589c017b68850f4ab2060aa8519db23500cfdc4d98c28f8a9cc",
+          "sha256": "152653732e0754404a6c5e085745d6f2a8619300138f4a7f8319391bc7f7d338"
+        },
+        {
+          "path": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "e32a5e8bbd6a06d5abe63411ddc8bf3267f97cdfe22944a54c84cbdc87bab6e9",
+          "sha256": "c23eacaa240a9ddc7277f6a4e90a6e6058ae96e884d9c02293a537fad38c3425"
+        },
+        {
+          "path": "services/attendance-service/attendance-app/src/main/resources/application-prod.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "db8d9a066bdeb3056f605dd725d89de46089d9532b7d6f56076e7033a9255f1e",
+          "sha256": "462b13a1e0418e333b9c872f7fd079b7ce00bde7c56aa9050563cd59ceddfcff"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/main/resources/application-prod.yml",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "3e68e50e0419917f57744f898339e80373dea06b9005417290421763e71c9667",
+          "sha256": "fdffca227b347221a57a2d27213940f83a40d315ca3c8385577db48e0432a17d"
+        },
+        {
+          "path": "services/attendance-service/attendance-app/Dockerfile",
+          "sourceRef": "C80_DIRECTED_ATTENDANCE_TLS_SOURCE_READY",
+          "preimageSha256": "2f6fb940e38ad9b225346073261b4c0834269c0ffc4900ee46040f6da62a20d5",
+          "sha256": "e4710255aa749f06ab34d8eb599f01a5e75456fe947189dc7007a5784537c7ab"
+        }
+      ],
+      "checks": "Wholebyteinverse/exactYAMLsemanticdelta0;64Bashrun/19PythonAST/certscriptbash-n0/exit0allreaped97259",
+      "native": "NOT_RUN; noenv/privatecert/volume/standactions. DockernewUID10003 explicitchoice, allactual3callers whenapplicable/e2eBotabsentnotadded."
+    },
+    "D023_READY_P1_twentyone_Source_ready": {
+      "utc": "2026-10-15T14:29:53.838040+00:00",
+      "status": "INDEPENDENT_SOURCE_APPROVED_PENDING_ROOT_INTEGRATION_NATIVE",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#teacherReadyExportAuthorityD023Plan.implementation",
+      "bundleSha256": "31730a9a20d3cb765b2cdffeecadcdb933ebf8b3287f8ae974c5eda3908c4357",
+      "checks": "20Javaformat/parser0/cachedstockprotoc-temp+wholejavac234classes0/final2targets0;80oldtestbodies+statmathinverse/Adminauditbytes+dispatchtokens exact; allreaped",
+      "native": "JUnit/PGHTTP/Redis/Browser/typedprovenance actual NOT_RUN",
+      "semantics": "ConservativefullS producerhash→freshCmatch→atomicidentityREADYbytes→freshcapturedsubset allREADYsurfaces; selectedBcontrol retainedafteronlyAassignmentclosure. CommonAdminpreimages preserved. ActualP1notclosedbeforeacceptance.",
+      "review": {
+        "utc": "2026-10-15T14:38:38.729834+00:00",
+        "reviewer": "c85",
+        "verdict": "APPROVE_SOURCE_ONLY_NO_P1_P2",
+        "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/browser-final-review.safe.json#teacherReadyD023P1IndependentReview",
+        "critical": "All21pins; fullSprovenancehash/freshCmatch/atomicREADYbytes/currentselected+capturedsubsetallsurfaces; exactAcademiccurrentpredicate; onlyAclosure/Bstilllive/testcleanup meaningful; oldAdminunchangedalreadyc86reviewed, no selfreviewcredit",
+        "native": "NOT_RUN actualPGHTTP/qualitycontrolledREDrestoreGREEN required"
+      }
+    },
+    "b460bc2_initial_primary_progress": {
+      "utc": "2026-10-15T14:29:53.838040+00:00",
+      "head": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "CI": 38750933338,
+      "Coverage": 38750933347,
+      "Security": {
+        "run": 38750933364,
+        "conclusion": "SUCCESS"
+      },
+      "OpenAPI": {
+        "run": 38750933363,
+        "conclusion": "SUCCESS"
+      },
+      "Auth": "job116476820097quality11FAIL/newcloseddiagnosticartifact11982235874/983B/source9f0; strictcauseconsumer pendingc80/no guessedcause",
+      "old9a": "AcademicIT116462519154SUCCESS metadataonly; usefulbrowsercontinues"
+    },
+    "b460bc2_Auth_seed_database_actual": {
+      "artifact": 11982235874,
+      "run": 38750933338,
+      "producer": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "digest": "sha256:251fd73f568afda0765c786399c9dc922fbb63962ddfac3149e953d8e756fcff",
+      "bytes": 983,
+      "proof": {
+        "schemaVersion": 1,
+        "producerHeadSha": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+        "checkoutSha": "c639fb1f85bc64732ecd465f4ef1334e1081dc6e",
+        "service": "auth-service",
+        "state": "UNEXPECTED_RED_RESULT",
+        "phase": "XML_RULE",
+        "counterexample": "PREVIOUS_ACTIVE_ADMIN_PASSWORD_RESET_AUTHORITY",
+        "previousRevision": "dbf964286a2199cc6b6f13d1c98696723b9b87b4",
+        "ruleFrame": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT.ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin(AuthOtpFlowIT.java:432)",
+        "testMethod": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT.ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin",
+        "testSourceSha256": "d6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176",
+        "nativeExit": 1,
+        "failureCategory": "DATABASE",
+        "namedMethodFrameCount": 1,
+        "expectedRuleFrameMatched": false,
+        "observedNamedMethodLine": 413,
+        "sourceRestoredExact": true
+      },
+      "sourcePins": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "9f0ec4ed30fafc8fb3d6eb03f19c4bc5e1e7557007ba4aecf925668c64f151b0"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "d6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "cc8b5b39b7a1eafbba3a69144a22a019cde58183ec290ebbd5e54188f347eae7"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "5b13be4b6c4ed895b5b83a4f3c305fba460a4718ef6e7eee1cf21b2f925815a6"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "b67e309784a8d5d3fe581246f703c811d9294acb602566e67f2aa842317deb9d"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "cc8b5b39b7a1eafbba3a69144a22a019cde58183ec290ebbd5e54188f347eae7",
+          "kind": "restoredSourceSha256"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+          "sourceRef": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+          "sha256": "5b13be4b6c4ed895b5b83a4f3c305fba460a4718ef6e7eee1cf21b2f925815a6",
+          "kind": "restoredSourceSha256"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+          "sourceRef": "dbf964286a2199cc6b6f13d1c98696723b9b87b4",
+          "sha256": "249b9a76d519ab977fd2e8d11f2e3d304f4bfa1d4652de98e5139795b3d0d93b",
+          "kind": "counterexampleSourceSha256"
+        },
+        {
+          "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+          "sourceRef": "dbf964286a2199cc6b6f13d1c98696723b9b87b4",
+          "sha256": "b5cef648221489390b9c2d2746bb5791a75dd1e2858d91001cf952226c5779b7",
+          "kind": "counterexampleSourceSha256"
+        }
+      ],
+      "relevantAuthAdmin14CounterexampleRED": false,
+      "ordinarySameMethodGreen": "PENDING_OR_SKIPPED_SEPARATE_NAMED_ORDINARY_RESULT_REQUIRED",
+      "rawLogsOrXML": false,
+      "qualification": "Only current exact Source-declared closed phase/native diagnostic; no semantic RED when absent and no GREEN from metadata.",
+      "cause": "UNKNOWN",
+      "staticSourceFailureFrame": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+        "line": 413,
+        "category": "DATABASE",
+        "causalDatabaseSubtype": "UNKNOWN"
+      }
+    },
+    "9a67060_actual_currentRole6": {
+      "state": "EXACT_STRICT_PRIMARY_READ",
+      "producer": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+      "run": 38746815996,
+      "artifact": 11979879903,
+      "digest": "sha256:cf3a3bc031d8bb4e21cd6fae09cfedaf6ec23418221061d2d8a2f0f12413d9f8",
+      "bytes": 568,
+      "members": {
+        "safe-results.json": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "cloud-accepted-admin-grants.spec.ts",
+              "line": 110,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 4889,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-auth-security.spec.ts",
+              "line": 354,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3010,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-auth-security.spec.ts",
+              "line": 820,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 1337,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "cloud-accepted-auth-security.spec.ts",
+                  "line": 335
+                }
+              ]
+            },
+            {
+              "file": "cloud-accepted-role-authority.spec.ts",
+              "line": 28,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 2304,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "cloud-accepted-role-authority.spec.ts",
+              "line": 174,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 1214,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 3774,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 1670,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        }
+      },
+      "diagnosticSchema": {
+        "safe-results.json": [
+          {
+            "caseCode": "FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "own profile security changes password and replacement login rejects old authority @cloud-accepted",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ]
+      },
+      "sourcePins": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "d08e6d7b52b08d4fc8e81440d8311b493220361f369b86f30e6352c62e8c354e"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "429fefcff447d758bd6ca156badbcc47bb45764e4918b745b26d342eb01894f6"
+        },
+        {
+          "path": "tests/e2e/fixtures/safe-reporter.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4"
+        },
+        {
+          "path": "tests/e2e/playwright.real-mobile.config.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "666355d2362b7f88595af8f4dbf45cdd6e5e5dfbc8782cf999a266b06a72ab48"
+        },
+        {
+          "path": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "0a1cb1b84e18b3024fb67739ea5e30e6d81f0b1f5c9b5f1fcf435c09992e412a"
+        },
+        {
+          "path": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "2492bd4de6384496b1effa6f25977f99fe70af1d75f1265c4238e2d2e746c188"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "3c23b0225b9828caf7d290259638aa19852d63110989f79964b870fe4187d73f"
+        },
+        {
+          "path": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "1587162f7d8d5a7f561582bae17e48de98e059ae849d84774a2ed418c91e0989"
+        }
+      ],
+      "exactDeclarations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 3774,
+          "title": "SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions",
+          "project": "chromium",
+          "call": "test",
+          "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+        },
+        {
+          "file": "cloud-accepted-role-authority.spec.ts",
+          "sourcePath": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+          "title": "four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted",
+          "project": "chromium",
+          "call": "test",
+          "line": 28
+        },
+        {
+          "file": "cloud-accepted-role-authority.spec.ts",
+          "sourcePath": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+          "title": "unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted",
+          "project": "chromium",
+          "call": "test",
+          "line": 174
+        },
+        {
+          "file": "cloud-accepted-admin-grants.spec.ts",
+          "sourcePath": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+          "title": "FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted",
+          "project": "chromium",
+          "call": "test",
+          "line": 110
+        },
+        {
+          "sourcePath": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "file": "cloud-accepted-auth-security.spec.ts",
+          "line": 354,
+          "call": "test",
+          "title": "own profile security changes password and replacement login rejects old authority @cloud-accepted",
+          "project": "chromium"
+        },
+        {
+          "sourcePath": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "file": "cloud-accepted-auth-security.spec.ts",
+          "line": 820,
+          "call": "test",
+          "title": "password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted",
+          "project": "chromium"
+        }
+      ],
+      "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/homework/strict-browser-schema.py",
+      "schemaOriginalSha256": "bb021efbdc4af9bafe5102321e3cef94bd972481677ce3889246449ea79a9520",
+      "schemaSpecializedSha256": "dfe9b45220207272f84d01befdd6860ffe510153b5772336553c281cb46dcc24",
+      "qualification": "Current ce943 exact complete identity/project sets; existing accepted caps/status/privacy/digestCRC preserved (exact8 equality specialization only when currentRemaining8). Whole cases only, no family/native/production promotion. Reported frames do not alone establish product cause.",
+      "cause": "UNKNOWN",
+      "staticFailureSource": {
+        "file": "cloud-accepted-auth-security.spec.ts",
+        "line": 335,
+        "sourcePredicate": "Object.hasOwn(existing.body,consumers)",
+        "closedMeaning": "OWN_QUEUE_CONSUMERS_FIELD_ABSENT",
+        "queueIdentityValues": "NOT_READ_OR_OUTPUT"
+      }
+    },
+    "9a67060_actual_currentFirst3": {
+      "state": "EXACT_STRICT_PRIMARY_READ",
+      "producer": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+      "run": 38746815996,
+      "artifact": 11979609710,
+      "digest": "sha256:7a01493ba666f3792522a6b50df55ae1feb851e885b4c0873f8d21028f072d6a",
+      "bytes": 3692,
+      "members": {
+        "artifacts/safe-results.json": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 448,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 3104,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 497,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 15121,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 1540,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 1888,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        }
+      },
+      "diagnosticSchema": {
+        "artifacts/safe-results.json": [
+          {
+            "caseCode": "STUDENT",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HEADMAN",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          },
+          {
+            "caseCode": "HELPER",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ]
+      },
+      "observationEnd": {
+        "STUDENT": {
+          "events": [
+            {
+              "caseCode": "STUDENT",
+              "phase": "END",
+              "facts": {
+                "testStatus": "passed",
+                "diagnosticCompleted": true,
+                "droppedEventCount": 0
+              }
+            }
+          ],
+          "droppedEventCount": 0
+        },
+        "HEADMAN": {
+          "events": [
+            {
+              "caseCode": "HEADMAN",
+              "phase": "END",
+              "facts": {
+                "testStatus": "passed",
+                "diagnosticCompleted": true,
+                "droppedEventCount": 40
+              }
+            }
+          ],
+          "droppedEventCount": 40
+        },
+        "HELPER": {
+          "events": [
+            {
+              "caseCode": "HELPER",
+              "phase": "END",
+              "facts": {
+                "testStatus": "passed",
+                "diagnosticCompleted": true,
+                "droppedEventCount": 0
+              }
+            }
+          ],
+          "droppedEventCount": 0
+        }
+      },
+      "observedHttpFailures": {
+        "STUDENT": [],
+        "HEADMAN": [],
+        "HELPER": []
+      },
+      "sourcePins": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "d08e6d7b52b08d4fc8e81440d8311b493220361f369b86f30e6352c62e8c354e"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "429fefcff447d758bd6ca156badbcc47bb45764e4918b745b26d342eb01894f6"
+        },
+        {
+          "path": "tests/e2e/fixtures/first3-observer.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "c665056b6af8f2b8467ff335e57606a10d3885c7cf25bbff2ca761eeca274072"
+        },
+        {
+          "path": "tests/e2e/fixtures/safe-reporter.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "3c23b0225b9828caf7d290259638aa19852d63110989f79964b870fe4187d73f"
+        }
+      ],
+      "exactDeclarations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 448,
+          "title": "STUDENT completion persists and another group cannot mutate the homework",
+          "project": "chromium",
+          "call": "test",
+          "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+        },
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 497,
+          "title": "HEADMAN marks the real roster and TEACHER reads without acquiring write permission",
+          "project": "chromium",
+          "call": "it",
+          "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+        },
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 1540,
+          "title": "STUDENT helper marks with its capability and revocation denies the same effect",
+          "project": "chromium",
+          "call": "test",
+          "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+        }
+      ],
+      "schemaSource": "/workspace/scratch/rct-validation/ci_edb_closed_read/first3/strict-browser-schema.py",
+      "schemaOriginalSha256": "c92e6aff404db34d863aeb6dff72f98ea1bb95dd342911ed6f48fcccbdf0ac69",
+      "schemaSpecializedSha256": "df4335db44c41a1b2c865ff01dd908411cd8e3671a59e89259f11e5e5403c05b",
+      "qualification": "Current f2a258 exact complete3 identities/project and4member observer schema; original caps/status/privacy/digestCRC preserved. END/HTTPfailures only saved, no raw logs/HTML/screenshots. Whole cases only, no family/native/production promotion. Reported frames do not alone establish cause.",
+      "cause": "UNKNOWN"
+    },
+    "9a67060_actual_currentReconciliation": {
+      "state": "EXACT_STRICT_PRIMARY_READ",
+      "producer": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+      "run": 38746815996,
+      "artifact": 11982110965,
+      "digest": "sha256:024a2f30b54647e0eade4f6e2222be002e9acf00b67d6e5689acf7897b6d6ad6",
+      "bytes": 868,
+      "members": {
+        "artifacts/safe-results.json": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "semester-lifecycle.spec.ts",
+              "line": 1654,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 75809,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "UNKNOWN",
+                  "httpStatus": 0
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "semester-lifecycle.spec.ts",
+                  "line": 2480
+                }
+              ]
+            }
+          ]
+        },
+        "reconciliation.safe.json": {
+          "schema": "semester-reconciliation.v1",
+          "phase": "PENDING_ARCHIVE",
+          "configuredListenerAttempts": 3,
+          "measuredListenerAttempts": "UNKNOWN",
+          "exactDlqEnvelope": true,
+          "pendingBeforeReplay": false,
+          "appliedAfterReplay": false,
+          "sameArchiveCompleted": false,
+          "duplicateBusinessUnchanged": false,
+          "recoveryPublishAttempted": false,
+          "duplicateAttempted": false,
+          "retainedDlqCopies": "UNKNOWN",
+          "restorationSucceeded": false,
+          "clockUnchanged": true,
+          "cleanupOutcome": "FAILED"
+        }
+      },
+      "diagnosticSchema": {
+        "artifacts/safe-results.json": [
+          {
+            "caseCode": "FULL admin reconciles one exact stranded close before archive completion",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "reconciliation.safe.json": "EXACT_PUBLISHED_CI8EEAF_CLOSED_V1_NO_PRIVATE_FIELDS"
+      },
+      "sourcePins": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "d08e6d7b52b08d4fc8e81440d8311b493220361f369b86f30e6352c62e8c354e"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "429fefcff447d758bd6ca156badbcc47bb45764e4918b745b26d342eb01894f6"
+        },
+        {
+          "path": "tests/e2e/fixtures/safe-reporter.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "5378f6fe97ddbb62c4dda063005ca65420fc7121f64ac92de3b9705bc35014e4"
+        },
+        {
+          "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce"
+        },
+        {
+          "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "sourceRef": "9a67060fab300d7f480a9bd5276d853cd4d41020",
+          "sha256": "a6ed701a1c85dff3179f142663459eabf8d1cee66ff90cc45f177fd336677965"
+        }
+      ],
+      "exactDeclarations": [
+        {
+          "sourcePath": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "file": "semester-lifecycle.spec.ts",
+          "title": "FULL admin reconciles one exact stranded close before archive completion",
+          "project": "chromium",
+          "line": 1654,
+          "call": "test"
+        }
+      ],
+      "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/semester-three-member/strict-browser-schema.py",
+      "schemaOriginalSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
+      "schemaSpecializedSha256": "c5a9b2fc708c2ae8dba4ac4ebb630bcd4cd4e1501d31b7cfc470731565df9a6b",
+      "qualification": "Currentf6b2 exact complete identity/project sets; existing accepted caps/status/privacy/digestCRC preserved (exact8 equality specialization only when currentRemaining8). Whole cases only, no family/native/production promotion. Reported frames do not alone establish product cause.",
+      "cause": "UNKNOWN",
+      "staticFailureSource": {
+        "file": "semester-lifecycle.spec.ts",
+        "line": 2480,
+        "closedMeaning": "INITIAL_ARCHIVE_SCHEDULE_RPC_UNAVAILABLE",
+        "underlyingCause": "UNKNOWN"
+      }
+    },
+    "Auth_ADMIN14_fixture_length_cause_and_correction": {
+      "utc": "2026-10-15T14:38:38.729834+00:00",
+      "status": "SOURCE_CAUSE_ESTABLISHED_CORRECTION_FROZEN_NATIVE_PENDING",
+      "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "preimageSha256": "d6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176",
+      "sha256": "e7d9f964bf2ce61299cd6bafb13e82b7a5ac254a3e43e21952feb10b6de643ef",
+      "actual": "b460DATABASE/uniqueSourceframe413 seed before intended432, actualSQLsubtypeunobserved",
+      "cause": "Canonical V1 users.login VARCHAR32 no laterwidening; four newfixturelogins48/50/54/57 necessarilyinvalid. Existing20hexsuffixpattern produces32/31/30/30 after5variablestatements. Testfixturedefect, not productpasswordpolicy.",
+      "checks": "GJF/parser/cached1classjavac/lengthuniqueness/exactinverse0/8.515s352MB/allreaped; everyassert/cleanup/helperSQL/oldtests/productionunchanged; meaningfulbool432same",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.admin14OrdinaryResetSourcePlanDbf9642.fixtureLoginLengthCorrection",
+      "rootReview": "Rootopenedexact5variablestatementsdiff; established20charhexsuffix/prefixesallVARCHAR32; no helperSQL/oldtests/assert/effect/cleanup/prodchanges; line432booleanexact. ReuseindependentpriorAuth4review+authoradequatechecks; nofullreviewneededforsyntheticfixturelength.",
+      "rootIntegration": "EXACT_E7D9_COPIED_UNCOMMITTED_NATIVE_PENDING"
+    },
+    "D024_independent_twentyfile_review": {
+      "utc": "2026-10-15T14:38:38.729834+00:00",
+      "reviewer": "c88_mobile_auth_review",
+      "status": "APPROVE_F1_SOURCE_CLOSED_NATIVE_PENDING",
+      "all20FrozenHashesVerified": true,
+      "finding": {
+        "severity": "P2",
+        "sourceRef": "frontends/mobile-core/src/features/profile/BrowserLoginApprovalForm.vue",
+        "sha256": "60d51d4178738797a9c980df03105613d1292534bb60ad183565f46cab913761",
+        "line": 65,
+        "issue": "expiresAt displayonly; pendingproof remainsactionablepastdeadline/lateexpiredpreview publishes. ServerrequireUnexpiredprevents authbypass.",
+        "correction": "Discardexpiredlatepreview; deadlineinvalidate/clearRAMproof/cleanup; syncdecideexpirycheck forpausedtimer; focusedexistingrendererclockcontrols. No newTTL/API."
+      },
+      "other": "Admission/bootstrap/purpose/currentauthority/explicitdecision/sourcepreservation clear; native/fullVuebuildpending",
+      "expiryRecheck": {
+        "utc": "2026-10-15T14:47:46.866636+00:00",
+        "reviewer": "c88",
+        "status": "F1_ONE_SETTLEMENT_EDGE_REMAINS",
+        "formSha256": "68c5ab6bf4ebd654813ac882e84fd8811756d1a5dbd3bef9dc17736393cb2e0f",
+        "testSha256": "28e2ebc57eba453330a5b85885daff384bc3b0288a32ee42d139e03fdd40cb19",
+        "closed": "Expiredlatepreview/deadlinetimerclearproofinput/terminalproof/syncbeforedecide correct, fourclockcontrols added",
+        "remaining": "Withtimerspaused, decision resolvesaftercaptureddeadline beforetimer: settlement publishesconfirmed/rejected andclearstimer. Existingexpirycallbackwouldinvalidateit inunpausedcase; synchronouspost-await/catchdeadlinecheck neededforconsistentexpiry/staleresultpolicy. Servermayhavecommittedvalidlyearlier, noauthbypass.",
+        "rootRuling": "GO minimal sameF1 postawait/catchcaptureddeadlineguard+existingdeferredfakeclockcontrol, no newpolicy/TTL/serverAPI/fullreview."
+      },
+      "settlementFinal": {
+        "utc": "2026-10-15T14:54:59.987142+00:00",
+        "reviewer": "c88",
+        "formSha256": "b116eb788859fa2c4949ee5b34bac37d0d2e18ab4fe54c9f76014da49843587e",
+        "testSha256": "200b8cf3fc48844c587921ec3f4c26bbe7fa41a89de79a4bfcda061150c78458",
+        "verdict": "NoopenP1P2; expirybefore/afterdecision+catchcaptureddeadline; pausedtimerreplycannotpublish; proofinputcleared;14renderer/scopedVue0 reused/nativepending"
+      }
+    },
+    "Admin_directed_TLS_Bot_review": {
+      "utc": "2026-10-15T14:38:38.729834+00:00",
+      "reviewer": "c86",
+      "status": "SOURCE_APPROVED_MASK_P2_CLOSED_NATIVE_PENDING",
+      "finding": {
+        "severity": "P2",
+        "sourceRef": ".github/workflows/ci.yml",
+        "sha256": "d033e9a7c7c8aca33ee4ba7a50dcf9cd9a89990630ffd7d9c457d28b762d1ab9",
+        "line": 1575,
+        "issue": "GITHUB_ENVnewgeneratedservicecredentialwithoutadd-mask mayappear laterstepenvheaders; no actualleak/readclaimed",
+        "correction": "GenerateonceRAM→GitHubadd-masksamevalue beforeappendGITHUB_ENV/no tracing/plainvalueecho; targetedrecheck onehunk"
+      },
+      "otherwise": "All14Sourcepins/trust/allcallers/newUID10003/key600/protocolprops/BotrealTLSloopbackcleanupclear. Actualhandshakepytest/Ruff/fullCIpending",
+      "targetedRecheck": {
+        "utc": "2026-10-15T14:47:46.866636+00:00",
+        "reviewer": "c86",
+        "sha256": "ae5ccb9ab66901c7f000b195dee27ede9547c5e2d39e13eef45a1f15f62662ea",
+        "result": "MasksamefreshvaluebeforeGITHUB_ENV. Onlyother2pinliteralstesthashe7d9 matchRootand432unchanged. Exactinverse returnsd033; other13unchanged/nativeTLSpytestfullCIpending."
+      }
+    },
+    "9a67060_additional_finite_actuals": {
+      "utc": "2026-10-15T14:38:38.729834+00:00",
+      "FIRST3": "Whole3PASS11979609710 exact3c23; HEADMAN/TEACHER journal path nowPASS, dropped40observer retained noabsenceclaim",
+      "ROLE6": "5PASS inclfourgrants/SUSPENDED, ResetBFAILconsumersabsentframe335 from11979879903; do not call priorracecauseclosed/flaky ononePASS",
+      "reconciliation": "11982110965 RPCUNAVAILABLE2480 initialarchive/restorationfalse/cleanupFAILED blocksdownstream; no unchangedrerunwithoutnewcausalevidence",
+      "gates": "CI38746815996FAIL/Coverage38746816192FAILAuthjob116462517455step8causeUNKNOWN; Security/OpenAPISUCCESS; b460CI/Covrunning"
+    },
+    "D023_READY_P1_twentyone_Root_integration": {
+      "utc": "2026-10-15T14:40:36.914842+00:00",
+      "revision": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "state": "INTEGRATED_UNCOMMITTED_INDEPENDENT_SOURCE_APPROVED_NATIVE_PENDING",
+      "inventory": [
+        {
+          "sourceRef": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/teacher/TeacherReportScope.java",
+          "preimage": null,
+          "sha256": "0834ae3717850c9e137fa03c282a9bcf212820ba69842615ca18167bfc7eef5e",
+          "operation": "Created"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/TeacherReportAuthorityJdbc.java",
+          "preimage": null,
+          "sha256": "7dbf890d1ea4ba58eab89b26bd1090f29105e66d10e15d987d9b38685ae90027",
+          "operation": "Created"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+          "preimage": "6191a6b378f4e7ce40dbcdd7659d054244817422e04ca1edcfea349ae01bab35",
+          "sha256": "0c01725aaed3d38de40aa41dddb89d5ed9ef09e0b62c7a0331707e7c8dcfdbea",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportService.java",
+          "preimage": "da547558fb1dadb7d4928ac93f27d56dd917db16b7828a1603ecc08bd5fb9040",
+          "sha256": "04802483934543ebc385dca75a920c33905edf4d0815576e72fe39a6a2a21aab",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java",
+          "preimage": "a773895a145c53b6c465f84984e7379c920a517460703bd97a62cb7868a4f709",
+          "sha256": "8678043ed178a10cc44b23620f7d0d956eff701f6a4b9b1f27b4070bb799a4c0",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "proto/teacher_reads.proto",
+          "preimage": "9fd80356a0557c3f6b72e693219360a4c2049a1dc8bd8e0a62eeaca87d4e2fb2",
+          "sha256": "e920346b2c4a17f0fc05a749969772eb367d3de153c5f38a2b212e7d4cb6e46c",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherApiController.java",
+          "preimage": "3c70d227cac635f830556365f5e0d198199920d670a155fc45b7872212c83cd8",
+          "sha256": "a9d26c2848474f4daac80aa3fcd245c2f2db99d8b8b3848230e73aeb940cef37",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+          "preimage": "7ca2801ab22c3473369d5248180493a059176b4cc5c2b1f104b44f68fd791d07",
+          "sha256": "c8c9b35a74251817387bfa44ffd0970c36f9b6c7e9f32c600446657d1d1e2682",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
+          "preimage": "206da4448703c19eb3325fd0172ac76515bf4638326d09233d44ad97e7bf4eab",
+          "sha256": "5ae31b7f09f1ac9bc7dd8025d3e6d182b69316277113895f8ea0de216a797a8e",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+          "preimage": "d17c09be2728c2f17d6555e66568b7453d7db0c4b46c16f8cf95fbf315d1e5ff",
+          "sha256": "0217a849db598f43ff3236c562c96cc8d77ffdee29cc0b1fd2678a897adc1c98",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+          "preimage": "9f82d9c24c12c6b32c8e2c4fe9300642c60a91922e98b0667640b70e81428a86",
+          "sha256": "edfade439a5c3ab1d8994648a284c47bd294115eaf72479fcf683e6164693aa6",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+          "preimage": "74bde2984441c1ccadd87ff90521e72158f74fc70274a026734db115fba9179b",
+          "sha256": "9260928bab55b804b6685105eaab8a3c66c2058a5312d7c3a8dc83ce70ac20e0",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+          "preimage": "b1756f8a99921d7859dca06e711e0799d9cf4a43c2c2e2560011f3f76d5693b8",
+          "sha256": "a39f532ca36c6cd681d501dc0ecec5ddb77b0b3b2e7785f282c181c7b2f0412e",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+          "preimage": "4e01fb560ca22a49dd983f745a9f8d63adf2110c0229f9098283132543999b22",
+          "sha256": "7a6092bdd02222d8f841588de98d3d5b47f2beb134e1bec451a61b022a57a167",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+          "preimage": "c2cf11bd1d53bb58f9c0302dbf558b05e8c4f8cef36f8adbc07e2b76f4ecc241",
+          "sha256": "876a52eb68f0a5a3385019d14a59a0aaef46f993f1a3d8a692fff86c60e15510",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "preimage": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d",
+          "sha256": "51abf1298e036ce5b5ce1c3dac7cdcec7d8786b4d4c839cd75e5512a317fc812",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+          "preimage": "90a38ac52c3c34dd3335936307df015a8c7e66391ac5e365b8b7d15f6d51e77e",
+          "sha256": "7747bbdec6cc541e78dd7df40679579e0cda2f6ed335eca0f6ebcf8be3b872e8",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+          "preimage": "0e965805d50a577819f33a8b654a5a075d6544b34ab4e04b3051c6e9ddfd68fe",
+          "sha256": "e29385ceffbccd451f83fa12533482f623d6677e9d8009073787693d7d95bb9f",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacadeTest.java",
+          "preimage": "4dd0d9b8d8e3796ec0158515f8e959b27b50a0dfbb6ffad65b8840b2462ec212",
+          "sha256": "eb57b7a7b859811843b3ce75a25dafc8c01c6bee29c90cab5147dae32f4930b5",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+          "preimage": "924ba32d95fbb1b133ab6060e93318548a7c705c72347a5cf4c1708cfba4cae1",
+          "sha256": "0ad9f7a0306695cdda8fe777b1169bbbf0c3539203f199ec03677324cc0b24c4",
+          "operation": "Modified"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+          "preimage": "05cc000d380e3a885e74a39de64841469685b4d61ad5c580af26c398a70d1501",
+          "sha256": "90d33894e426b785c4ec06812b32363f6c4ae3b6d1b11472616957ab83e445ab",
+          "operation": "Modified"
+        }
+      ],
+      "review": "c85all21exactAPPROVE_SOURCE_ONLY; actualPGHTTP/nativequalityrequiredbeforeP1closed",
+      "oldAdmin": "Alloverlappreimagesexact/frozenAdminauditanddispatchpreserved"
+    },
+    "b460bc2_current_Root_feature_Source_checkpoint": {
+      "utc": "2026-10-15T15:04:47.998251+00:00",
+      "state": "UNCOMMITTED_NOT_PUSHED",
+      "count": 97,
+      "currentPins": [
+        {
+          "sourceRef": ".github/workflows/ci.yml",
+          "sha256": "ae5ccb9ab66901c7f000b195dee27ede9547c5e2d39e13eef45a1f15f62662ea"
+        },
+        {
+          "sourceRef": "docker-compose.e2e.yml",
+          "sha256": "a48904046749633f831fddeaf936d2bcd0ff387fd112122d047a4ae128169813"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-attendance/AdminAttendanceScreen.test.ts",
+          "sha256": "f5a73201c1ee0a2483d1edd6396e3b5342d796e51b6afd9a19a3270ceb5785f9"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-attendance/AdminAttendanceScreen.vue",
+          "sha256": "584fe1a987b7df419e75dd452d05ab84a1efbf979d3a0126bec03ae183fbbd7c"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-attendance/admin-attendance-client.test.ts",
+          "sha256": "0243cb5e7ffc5ef7d08b79c39fef7eb9eeb236df7885e66f97b46833bd97a11c"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-attendance/admin-attendance-client.ts",
+          "sha256": "7ecf0f9f1dfda83a163cb73cbd2b38b23bc7fc65760c6f8561ea0c3a81173fb6"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-attendance/admin-attendance-screen.pcss",
+          "sha256": "db3f385fab9e730587db9eabe7028b34817337bb8e5a1f1e4b11318208f070cb"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-dashboard/AdminDashboardScreen.vue",
+          "sha256": "374c50b9da9ca25800a5b000f80a3776457ad54c6037c992218c2742e01b5855"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/BrowserLoginApprovalForm.vue",
+          "sha256": "b116eb788859fa2c4949ee5b34bac37d0d2e18ab4fe54c9f76014da49843587e"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/ProfileScreen.test.ts",
+          "sha256": "ca73eb6bcea6f85e2137c2869d4a661ee01ddd71309718f2712cadb7f8c62db1"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+          "sha256": "64697e9b1c5681176ad6136c2ba620e5d09af354f1cfbc18af3f949f3ec280f0"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/SecurityScreen.test.ts",
+          "sha256": "200b8cf3fc48844c587921ec3f4c26bbe7fa41a89de79a4bfcda061150c78458"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/browser-login-approval.ts",
+          "sha256": "34f36d4acf06297549bdbcc56239d66b5e5525a6a8133b439302a8a081b40ad7"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/profile-types.ts",
+          "sha256": "67f6a210d2580b70fc946facd0606fe2756b9eef8c0b454c2708a24359e49d0a"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+          "sha256": "fda9b024742f30dd608de401bdb3548000cd5a2742348034c88200ffbce9bcf3"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-client.ts",
+          "sha256": "cd44b23b0568b03b16d6869dee89cec6bffab44a9c64c418c67b0e50e0f510f2"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-stats-route.ts",
+          "sha256": "2b9fdb7f29d0883f2e02116c24dc3ffff0217db80398fe51ac4ce70fb0aa412b"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/teacher/teacher-stats-screen.test.ts",
+          "sha256": "1342d39547fda639be402bbb558dc6a32627ff4ac2033c349e244d5166aa6805"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/index.ts",
+          "sha256": "4df6ca96634aef5ffff1c765895bbf3caeb31638040c0b24d64af2cd1eb36149"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/admin-attendance-selector.test.ts",
+          "sha256": "ed8c8dbe8f5e37089c1835b212f5836531df78a31260388075f1b4d88ab0d632"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/admin-authority.test.ts",
+          "sha256": "a365282dc1813d50ec1cb012fb93ea5ffbde69ab6ba5930c40f9ceafacea8a93"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/admin-navigation.ts",
+          "sha256": "c967b427559f8146aed334ff1fca5f1dd61207c7430035149190e942cfb007bc"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/components/AdminProfileOwner.vue",
+          "sha256": "5f06ee87ed35755c756bcc4f97150e99896a66f7b60097e44587556ff8641ca1"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "sha256": "92abb3f36de1969db36e32577cd845ce87e4d048488c9fbbb01495c424985997"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+          "sha256": "0b869b0d24fd1bc216517bf1042e048fc0193962d6667144890d1860f30db59a"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/report-download-client.ts",
+          "sha256": "ec2bfb88076a80aac2f288cf2120eb6a87b86571a195dced000aad94aee06c74"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/App.vue",
+          "sha256": "4575aa197f7f082b37d10556cd004cb038bdb3469a0038427db019c44fd500fb"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/LoginScreen.vue",
+          "sha256": "aa057806835cb6c20b3c2f63fafdb82a0e57ec64e1f82b711650a20b2c29c5a5"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth-client.test.ts",
+          "sha256": "0d55e376758cd64da0017eae7b8982e6772b1ea86f2334d4aa429b1eb95b59d3"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth-client.ts",
+          "sha256": "c78feba34327708df23555843c8bbf8559897e53c51a03f0edb187f44d3d87e1"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth.test.ts",
+          "sha256": "87bdb4047da3b4cd4de1ceaad71fce6f0b90307999649c96086b4bdf686de47a"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth.ts",
+          "sha256": "a2daa9540166ca4d2a453f2a32a63b59961b669b4f539845fd32d7a31960e83d"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/login-screen.pcss",
+          "sha256": "6541f66ca674dc89ed499831ddf38cf0e621f26a4b5505e1b41d86a4e16a81b8"
+        },
+        {
+          "sourceRef": "frontends/tma-vue/src/App.vue",
+          "sha256": "1766725999cde3cbb2b3316e7c0860b4e84b68878f52e3339bf39f5421d88fc3"
+        },
+        {
+          "sourceRef": "frontends/tma-vue/src/tma-auth.test.ts",
+          "sha256": "0a9924978817da4fdc3671a582332689183ca61561da1efc972083592c444d61"
+        },
+        {
+          "sourceRef": "frontends/tma-vue/src/tma-session.ts",
+          "sha256": "32ce6204090916ca47318bb1d43fb83ff1444694df7eb806a35288cde56d65c2"
+        },
+        {
+          "sourceRef": "infra/local-stand/compose.yml",
+          "sha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd"
+        },
+        {
+          "sourceRef": "proto/attendance.proto",
+          "sha256": "184a75e979447f1cecaf732f2c44f7deb4ae9f693488118c1682ad29e87ebb45"
+        },
+        {
+          "sourceRef": "proto/teacher_reads.proto",
+          "sha256": "e920346b2c4a17f0fc05a749969772eb367d3de153c5f38a2b212e7d4cb6e46c"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/AdminAttendanceReportApi.java",
+          "sha256": "0f4fcc917e6f7090f006cc87a1c8beca3ef633bfcacbb17d09d8b171c3fedd7d"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/adminattendance/AdminAttendanceReportModels.java",
+          "sha256": "a88bb60b3038dff0e225c54db54fa1014732fc38d4183ec0db3c09c817c638b3"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceExportService.java",
+          "sha256": "634b3b029851c814f9ac76325817bf5a614c06b59d1c9fd27142cf4f91ebe5bf"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReadRepository.java",
+          "sha256": "a5b724f779a3750d78242136422cf2fd1830731c945c8d42c05d358337214364"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportAdvice.java",
+          "sha256": "964f090ac40061f40a488c518015d27f2ac73b208cff9e53b559c2a02a63a8b4"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportController.java",
+          "sha256": "3eb8b21a92242f923c5523d996e6b0ba094452557ee86dc8ea21c5b91b883023"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportService.java",
+          "sha256": "6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/adminattendance/AttendanceAdminGroupStatsClient.java",
+          "sha256": "6882436c2b34fb7b69c8ef6174780caf37c1456e161bc266e8bfffdb608d7ec9"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/resources/application-prod.yml",
+          "sha256": "152653732e0754404a6c5e085745d6f2a8619300138f4a7f8319391bc7f7d338"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/resources/application.yml",
+          "sha256": "c171ddc23a35353a8a7da0b13174104d32a89f686178c1aedcb5c29c313f7e8e"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java",
+          "sha256": "0f517796a0cc3e308d842a82c91a8b971fe925da62ac0a63ccd5541699e1833a"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
+          "sha256": "5ae31b7f09f1ac9bc7dd8025d3e6d182b69316277113895f8ea0de216a797a8e"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+          "sha256": "c8c9b35a74251817387bfa44ffd0970c36f9b6c7e9f32c600446657d1d1e2682"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+          "sha256": "7747bbdec6cc541e78dd7df40679579e0cda2f6ed335eca0f6ebcf8be3b872e8"
+        },
+        {
+          "sourceRef": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+          "sha256": "e29385ceffbccd451f83fa12533482f623d6677e9d8009073787693d7d95bb9f"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/Dockerfile",
+          "sha256": "e4710255aa749f06ab34d8eb599f01a5e75456fe947189dc7007a5784537c7ab"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcIdentity.java",
+          "sha256": "78ff4e53d379599dd93105c8816bd3d63b5d548c427a2f43d4098e8c0970b0bb"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcIdentityInterceptor.java",
+          "sha256": "8bffe7896ee8ff4cfa868a9bc68aacbc208624b465f5a4921c195d4b4f962a8b"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsGrpcService.java",
+          "sha256": "aad7d1772497c2d8bea2969432cb5ec423cada7a0b48f2d9153a013454275b6c"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/AdminGroupStatsReadService.java",
+          "sha256": "95744a68cbc8c06b5feeb615fe64a958ff948dd912a64e1bb0cb8adfc9d4c868"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+          "sha256": "0c01725aaed3d38de40aa41dddb89d5ed9ef09e0b62c7a0331707e7c8dcfdbea"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportService.java",
+          "sha256": "04802483934543ebc385dca75a920c33905edf4d0815576e72fe39a6a2a21aab"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application-prod.yml",
+          "sha256": "462b13a1e0418e333b9c872f7fd079b7ce00bde7c56aa9050563cd59ceddfcff"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+          "sha256": "c23eacaa240a9ddc7277f6a4e90a6e6058ae96e884d9c02293a537fad38c3425"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AdminGroupStatsIdentityTest.java",
+          "sha256": "2ff5a74b1f69245539afcc217ab2a5a9e1eb8640b80968496d4443bc61aff8c4"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/AdminGroupStatsDataIT.java",
+          "sha256": "c2e2a8d2bbb2c3106b8234cd4fdd5ff9c8752c778287dade8ae6de38c433f050"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+          "sha256": "0ad9f7a0306695cdda8fe777b1169bbbf0c3539203f199ec03677324cc0b24c4"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+          "sha256": "90d33894e426b785c4ec06812b32363f6c4ae3b6d1b11472616957ab83e445ab"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+          "sha256": "69a122048fc77952af6b2310bf1ab6d55fde8613d945daaa9c852046352cb1ec"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+          "sha256": "7a6092bdd02222d8f841588de98d3d5b47f2beb134e1bec451a61b022a57a167"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+          "sha256": "e19839702d978de35b8e1f0d96ae810ebd01b12d4c8d3ed49962fc6cc23c8127"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+          "sha256": "208ffaa8843eb0f01eb2ecbf41f12e952dfd59719e2bcfec002cb97941ef7482"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+          "sha256": "edfade439a5c3ab1d8994648a284c47bd294115eaf72479fcf683e6164693aa6"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+          "sha256": "0217a849db598f43ff3236c562c96cc8d77ffdee29cc0b1fd2678a897adc1c98"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+          "sha256": "c57404372172ad7c21c00c9a198df32e8de6a7200b4a7aec145f997e15b8bedd"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/TeacherReportAuthorityJdbc.java",
+          "sha256": "7dbf890d1ea4ba58eab89b26bd1090f29105e66d10e15d987d9b38685ae90027"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+          "sha256": "9260928bab55b804b6685105eaab8a3c66c2058a5312d7c3a8dc83ce70ac20e0"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+          "sha256": "a39f532ca36c6cd681d501dc0ecec5ddb77b0b3b2e7785f282c181c7b2f0412e"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AdminAttendanceSelectorTest.java",
+          "sha256": "646c22ede074f813223e14f4abeab8901f5165961656b4df8da6351ea242d35b"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+          "sha256": "027ec0635f784172abfe387a4cd14fb89fee5e6b995b02202ef3b3d29716fa3b"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sha256": "e7d9f964bf2ce61299cd6bafb13e82b7a5ac254a3e43e21952feb10b6de643ef"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+          "sha256": "876a52eb68f0a5a3385019d14a59a0aaef46f993f1a3d8a692fff86c60e15510"
+        },
+        {
+          "sourceRef": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+          "sha256": "51abf1298e036ce5b5ce1c3dac7cdcec7d8786b4d4c839cd75e5512a317fc812"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherApiController.java",
+          "sha256": "a9d26c2848474f4daac80aa3fcd245c2f2db99d8b8b3848230e73aeb940cef37"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java",
+          "sha256": "8678043ed178a10cc44b23620f7d0d956eff701f6a4b9b1f27b4070bb799a4c0"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/resources/application-prod.yml",
+          "sha256": "fdffca227b347221a57a2d27213940f83a40d315ca3c8385577db48e0432a17d"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacadeTest.java",
+          "sha256": "eb57b7a7b859811843b3ce75a25dafc8c01c6bee29c90cab5147dae32f4930b5"
+        },
+        {
+          "sourceRef": "services/notification-bot/bot/__main__.py",
+          "sha256": "d6cc1c6e0d7771045679f4b4986ca395dd739fcffb2f9978451906bc94eb4664"
+        },
+        {
+          "sourceRef": "services/notification-bot/bot/config.py",
+          "sha256": "ee98fbd5aec71ae5086542577aea685b3c301f1cdc9794445422d4da023e286c"
+        },
+        {
+          "sourceRef": "services/notification-bot/bot/grpc_client/attendance_client.py",
+          "sha256": "c622e9fc957d08dab83c454f7a69f5fa9108c7f59dacdf6e93a0330e0e059054"
+        },
+        {
+          "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
+          "sha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4"
+        },
+        {
+          "sourceRef": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/teacher/TeacherReportScope.java",
+          "sha256": "0834ae3717850c9e137fa03c282a9bcf212820ba69842615ca18167bfc7eef5e"
+        },
+        {
+          "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "sha256": "13bc0cdf2aa4130c67ee0d97ef81d2622cee43a4dae0b82e02bc24600e36e4df"
+        },
+        {
+          "sourceRef": "tests/e2e/infra/scripts/generate-test-certs.sh",
+          "sha256": "f3a5714d95d0408669fb63c0eabc2bde07727cee4c72aabc52e06aa54d9f0b16"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+          "sha256": "05567e9d27afb6c9b85ce03a216a7908b9901f757b092483aa2b3421fa598853"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sha256": "f6ba4f9757cbc141bf344b64a56f293f33f5b115efc8064d2b4ad3f2a3a2674a"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "fcaded8bb93668614cc34f8d683992942e4301d4cbd6f862c75bdef04b90f5d9"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+          "sha256": "bd1618df13277de9c52e37009ed34339ab8f84c3711e6b98876f686a574a1616"
+        }
+      ],
+      "pendingIntegration": [],
+      "rootActiveProcess": null,
+      "published": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53"
+    },
+    "Admin_directed_TLS_Bot_fourteen_Root_integration": {
+      "utc": "2026-10-15T14:49:34.116547+00:00",
+      "revision": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "state": "INTEGRATED_UNCOMMITTED_SOURCE_APPROVED_NATIVE_PENDING",
+      "inventory": [
+        {
+          "sourceRef": ".github/workflows/ci.yml",
+          "preimage": "9f0ec4ed30fafc8fb3d6eb03f19c4bc5e1e7557007ba4aecf925668c64f151b0",
+          "sha256": "ae5ccb9ab66901c7f000b195dee27ede9547c5e2d39e13eef45a1f15f62662ea",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/.github/workflows/ci.yml"
+        },
+        {
+          "sourceRef": "docker-compose.e2e.yml",
+          "preimage": "8bba7f200d8ebfc7dc288cdcb289c2c3b5994dae79c53277ba7ea98a8af67460",
+          "sha256": "a48904046749633f831fddeaf936d2bcd0ff387fd112122d047a4ae128169813",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/docker-compose.e2e.yml"
+        },
+        {
+          "sourceRef": "infra/local-stand/compose.yml",
+          "preimage": "c4a832758858ea3124cbb40c1c3cb6147c50e4c5196d9b0719f64cfa6897ee4e",
+          "sha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/infra/local-stand/compose.yml"
+        },
+        {
+          "sourceRef": "tests/e2e/infra/scripts/generate-test-certs.sh",
+          "preimage": "02bfcc8dabadd714a9c04cd7b486bc1557de992d979eea7451f9a2cbded18d1c",
+          "sha256": "f3a5714d95d0408669fb63c0eabc2bde07727cee4c72aabc52e06aa54d9f0b16",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/tests/e2e/infra/scripts/generate-test-certs.sh"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/resources/application.yml",
+          "preimage": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+          "sha256": "c171ddc23a35353a8a7da0b13174104d32a89f686178c1aedcb5c29c313f7e8e",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/services/academic-service/academic-app/src/main/resources/application.yml"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/resources/application-prod.yml",
+          "preimage": "1f92753b135eb589c017b68850f4ab2060aa8519db23500cfdc4d98c28f8a9cc",
+          "sha256": "152653732e0754404a6c5e085745d6f2a8619300138f4a7f8319391bc7f7d338",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/services/academic-service/academic-app/src/main/resources/application-prod.yml"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+          "preimage": "e32a5e8bbd6a06d5abe63411ddc8bf3267f97cdfe22944a54c84cbdc87bab6e9",
+          "sha256": "c23eacaa240a9ddc7277f6a4e90a6e6058ae96e884d9c02293a537fad38c3425",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/services/attendance-service/attendance-app/src/main/resources/application.yml"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application-prod.yml",
+          "preimage": "db8d9a066bdeb3056f605dd725d89de46089d9532b7d6f56076e7033a9255f1e",
+          "sha256": "462b13a1e0418e333b9c872f7fd079b7ce00bde7c56aa9050563cd59ceddfcff",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/services/attendance-service/attendance-app/src/main/resources/application-prod.yml"
+        },
+        {
+          "sourceRef": "services/mobile-bff/mobile-bff-app/src/main/resources/application-prod.yml",
+          "preimage": "3e68e50e0419917f57744f898339e80373dea06b9005417290421763e71c9667",
+          "sha256": "fdffca227b347221a57a2d27213940f83a40d315ca3c8385577db48e0432a17d",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/services/mobile-bff/mobile-bff-app/src/main/resources/application-prod.yml"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/Dockerfile",
+          "preimage": "2f6fb940e38ad9b225346073261b4c0834269c0ffc4900ee46040f6da62a20d5",
+          "sha256": "e4710255aa749f06ab34d8eb599f01a5e75456fe947189dc7007a5784537c7ab",
+          "from": "/workspace/rct-worktrees/renderer-outage-874-20261014/services/attendance-service/attendance-app/Dockerfile"
+        },
+        {
+          "sourceRef": "services/notification-bot/bot/config.py",
+          "preimage": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+          "sha256": "ee98fbd5aec71ae5086542577aea685b3c301f1cdc9794445422d4da023e286c",
+          "from": "/workspace/rct-worktrees/client-final-browser-874-20261014/services/notification-bot/bot/config.py"
+        },
+        {
+          "sourceRef": "services/notification-bot/bot/__main__.py",
+          "preimage": "a9062d012bfd5c89d64588e6b496cb7b348e23afd6d2c4cfd45f0e68e2b21636",
+          "sha256": "d6cc1c6e0d7771045679f4b4986ca395dd739fcffb2f9978451906bc94eb4664",
+          "from": "/workspace/rct-worktrees/client-final-browser-874-20261014/services/notification-bot/bot/__main__.py"
+        },
+        {
+          "sourceRef": "services/notification-bot/bot/grpc_client/attendance_client.py",
+          "preimage": "f4b2b3d0953e1865f1338d1ead438172e98a883d01ba73150f2480d4e16bdef4",
+          "sha256": "c622e9fc957d08dab83c454f7a69f5fa9108c7f59dacdf6e93a0330e0e059054",
+          "from": "/workspace/rct-worktrees/client-final-browser-874-20261014/services/notification-bot/bot/grpc_client/attendance_client.py"
+        },
+        {
+          "sourceRef": "services/notification-bot/tests/test_bot_service_credentials.py",
+          "preimage": "89afa08c158ef861de08f005f310d6634142e54b4a3e3ef457522691cc7728dd",
+          "sha256": "ed670fea06d16952dff1f1d7b2ceaafec59e82dbb2c3c1a09d73fa0e5b2537a4",
+          "from": "/workspace/rct-worktrees/client-final-browser-874-20261014/services/notification-bot/tests/test_bot_service_credentials.py"
+        }
+      ],
+      "review": "c86coherent14 +targetedmask/e7d9pinsAPPROVE",
+      "actual": "TLSJava+Python/grpcio/pytest/Ruff/fullCI NOT_RUN; token/provisiononlyfutureCI, localstand/privateenv/certs/volumeuntouched"
+    },
+    "OTP_cleanup_missing_stats_readiness_Source_ready": {
+      "utc": "2026-10-15T14:49:34.116547+00:00",
+      "status": "C86_APPROVE_SOURCE_ONLY_PENDING_ROOT_INTEGRATION_NATIVE",
+      "sourceRef": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+      "preimageSha256": "5605f0ad2857d641d727779f7de0d7685a60706f1c7dbc3bb383c02a8d0060ce",
+      "sha256": "f6ba4f9757cbc141bf344b64a56f293f33f5b115efc8064d2b4ad3f2a3a2674a",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/outcome.safe.json#otpConsumerReadinessCorrection",
+      "sourceBasis": "OfficialRabbit3.13.7 immutablequeueformat lacksconsumers; sampledETSlookupmay[]/periodiccollector. Actual9aabsentfield isprimary; exactrunningpatch/samplingcause UNKNOWN.",
+      "correction": "Missingonlyboundedreadiness25s underexisting30sfixture; eachGETownidentity+name/flags+strictemptyargs; presentbad/nonzeroimmediatedeny; knownsafe0→sameatomicif-unused; permanentmissingFAIL/noDELETE. Old404gone retained/no countdefault",
+      "checks": "ActualcloseSourceASTcontrols missing→0/constantmissing/9bad/6metadata+identity/noattempted404; format/parser/currentRootTSC/inverseoutsideclose0/3.936s362MB/allreaped; caps4s16KiB32KiB/main120unchanged",
+      "native": "NOT_RUN no broker/browser/productPASS",
+      "review": {
+        "utc": "2026-10-15T14:54:59.987142+00:00",
+        "reviewer": "c86",
+        "result": "One25sdeadlinebeforeinflightsettle/GETtimeclamped/remainingpositiveDELETE/old30sfixture; allownership+strictknown0+atomicif-unused preserved, absentonlywait/permanentmissingFAIL; noSourceoutsideclosechanged; realResetBstillFAILuntilnextactual."
+      }
+    },
+    "Semester_initial_RPC_existing_path_diagnostic_GO": {
+      "utc": "2026-10-15T14:54:59.987142+00:00",
+      "status": "SOURCE_PLAN_ASSIGN_C84",
+      "basis": "Repeated9a/dbfSourcea6edinitialPOSTarchiveUNAVAILABLE2480/PENDING_ARCHIVE/restorationfalse no retainedcause. Current500collectorfalsebydesign; absentreverseprefixnotdirecttransportproof. OriginalPOSTbodyblockingReason RAM available; coordinatortruncatesoriginalexceptionmessage1000/no logger.",
+      "scope": "c84 existingtests/e2e/fixtures/semester-lifecycle.spec.ts smallclosedcategory Sourceplan fromoriginalPOSTreason/currentoperationfields beforethrow; no newHTTP/logcollector/relaxedbarrier/oracle/role/deploy. OnlySourceknowncause literals/fixedenum, neverrawreason/class/token/body. Unknown/absentUNKNOWN; keepFAIL/PENDING_ARCHIVE/restorationfalse. Extra sharedreporter/schema identifyminimalowner/inventorybeforeedit, noB015identityloosening.",
+      "goal": "Nextgenuinerun retainspositivewhy directTLS/refused orreverseauthority onlyifevidenceactuallymatches/noabsenceinference.",
+      "parallel": "c84firstboundednewPGfixtureloginlengthaudit vsactualVARCHAR32newAuthbug; no unrelatedsuite/research/newfunction.",
+      "currentPlan": "c84 semesterInitialRpcClosedCategoryPlan one existing fixture, fixed positive TLS/refused Source markers with UNKNOWN fallback; original whole FAIL/restorationfalse retained. Root Source GO granted; native cause UNKNOWN."
+    },
+    "Teacher_P1_fixture_bounded_SQL_text_audit": {
+      "state": "SOURCE_ONLY_PASS_NO_CHANGE",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#fixtureSqlTextBoundAudit",
+      "login": "31<=32",
+      "actualPG": "NOT_RUN"
+    },
+    "D024_twentyfile_with_OTP_cleanup_Root_integration": {
+      "utc": "2026-10-15T15:01:32.993315+00:00",
+      "revision": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "state": "INTEGRATED_UNCOMMITTED_SOURCE_APPROVED_NATIVE_PENDING",
+      "inventory": [
+        {
+          "sourceRef": "frontends/pwa-vue/src/LoginScreen.vue",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/LoginScreen.vue",
+          "sha256": "aa057806835cb6c20b3c2f63fafdb82a0e57ec64e1f82b711650a20b2c29c5a5",
+          "preimageSha256": "ffc2b9df1240c0e0a2e456a4e9e80e020ed4d4ded6bf47a40466bc0b115c535c"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/login-screen.pcss",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/login-screen.pcss",
+          "sha256": "6541f66ca674dc89ed499831ddf38cf0e621f26a4b5505e1b41d86a4e16a81b8",
+          "preimageSha256": "93bcfee3e00546105fe4c043e2ee16ee299154622a1917b4728ce5af3ac80ab2"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth-client.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/auth-client.ts",
+          "sha256": "c78feba34327708df23555843c8bbf8559897e53c51a03f0edb187f44d3d87e1",
+          "preimageSha256": "186e4bc5f3ede0f9326d222e1d83c1ada5ad18c6b8b0bdd9ad1b3ac1914694e8"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/auth.ts",
+          "sha256": "a2daa9540166ca4d2a453f2a32a63b59961b669b4f539845fd32d7a31960e83d",
+          "preimageSha256": "6d4a915ce4fa1e1b479215d7c9bb1bae61624e5752ddefc40aacb7485e3b1e1c"
+        },
+        {
+          "sourceRef": "frontends/tma-vue/src/tma-session.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/tma-vue/src/tma-session.ts",
+          "sha256": "32ce6204090916ca47318bb1d43fb83ff1444694df7eb806a35288cde56d65c2",
+          "preimageSha256": "2d17f02ab06c19fc6e2823d97b3e76cec7a6f71db672c993293b81791d156b41"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/profile-types.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/profile/profile-types.ts",
+          "sha256": "67f6a210d2580b70fc946facd0606fe2756b9eef8c0b454c2708a24359e49d0a",
+          "preimageSha256": "ca1092d1f71f8115f1e9b457587d8769ea755d396bd835c520e1eea69bdf3b3c"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+          "sha256": "64697e9b1c5681176ad6136c2ba620e5d09af354f1cfbc18af3f949f3ec280f0",
+          "preimageSha256": "17849cfc7a287348528eadad0dd2f3aacb88947203674e0c089ad296b71a4b30"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/browser-login-approval.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/profile/browser-login-approval.ts",
+          "sha256": "34f36d4acf06297549bdbcc56239d66b5e5525a6a8133b439302a8a081b40ad7",
+          "preimageSha256": null
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/BrowserLoginApprovalForm.vue",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/profile/BrowserLoginApprovalForm.vue",
+          "sha256": "b116eb788859fa2c4949ee5b34bac37d0d2e18ab4fe54c9f76014da49843587e",
+          "preimageSha256": null
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth-client.test.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/auth-client.test.ts",
+          "sha256": "0d55e376758cd64da0017eae7b8982e6772b1ea86f2334d4aa429b1eb95b59d3",
+          "preimageSha256": "f5fe76a0f508760d98d5ef8d95716dfa3670b046f8684935accd3fca31018a01"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/auth.test.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/pwa-vue/src/auth.test.ts",
+          "sha256": "87bdb4047da3b4cd4de1ceaad71fce6f0b90307999649c96086b4bdf686de47a",
+          "preimageSha256": "81de69be8ebdd02540b60ab93a1ff1bc3a5ac0dc291d62ca7072350ffa2999ec"
+        },
+        {
+          "sourceRef": "frontends/tma-vue/src/tma-auth.test.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/tma-vue/src/tma-auth.test.ts",
+          "sha256": "0a9924978817da4fdc3671a582332689183ca61561da1efc972083592c444d61",
+          "preimageSha256": "6854274ee23f842404b7fb03cdc07e805db181fee05d10c3d8b64482bb935bbb"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/ProfileScreen.test.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/profile/ProfileScreen.test.ts",
+          "sha256": "ca73eb6bcea6f85e2137c2869d4a661ee01ddd71309718f2712cadb7f8c62db1",
+          "preimageSha256": "400f5fad1fe36a1521eb2c4ed28655f6a9c3245cde43806aa0dcea06434f650c"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/profile/SecurityScreen.test.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/frontends/mobile-core/src/features/profile/SecurityScreen.test.ts",
+          "sha256": "200b8cf3fc48844c587921ec3f4c26bbe7fa41a89de79a4bfcda061150c78458",
+          "preimageSha256": "06629d03aff06bee149cf1f1d7dac69dd5185cfdf5e7efa42dd8f8172ee35b5f"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "from": "/tmp/rct-auth-f545-20261015/tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sha256": "f6ba4f9757cbc141bf344b64a56f293f33f5b115efc8064d2b4ad3f2a3a2674a",
+          "preimageSha256": "1587162f7d8d5a7f561582bae17e48de98e059ae849d84774a2ed418c91e0989"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "from": "/workspace/rct-worktrees/request-enum-874-20261014/tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "fcaded8bb93668614cc34f8d683992942e4301d4cbd6f862c75bdef04b90f5d9",
+          "preimageSha256": "2e755b0db83ea316827dbe90826f706245216d9244d9dfd74d04aaf30a39178f"
+        },
+        {
+          "sourceRef": "frontends/pwa-vue/src/App.vue",
+          "sha256": "4575aa197f7f082b37d10556cd004cb038bdb3469a0038427db019c44fd500fb",
+          "preimageSha256": "9f923637ef71faded96c758a344d9f1513e5d0c2d5ad41e369ac294b0964a9fd",
+          "from": "/tmp/rct-auth-f545-20261015/frontends/pwa-vue/src/App.vue"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "sha256": "92abb3f36de1969db36e32577cd845ce87e4d048488c9fbbb01495c424985997",
+          "preimageSha256": "a75903a1a1799abc10b2eed52b90e977b8ee2d7869b8be22c0a48a666c8b84d6",
+          "from": "/tmp/rct-auth-f545-20261015/frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+          "sha256": "0b869b0d24fd1bc216517bf1042e048fc0193962d6667144890d1860f30db59a",
+          "preimageSha256": "904a7cca3736cad2dff52f7bcf4cae410ed242cb092fd6ef50b49bf4c52c120b",
+          "from": "/tmp/rct-auth-f545-20261015/frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/shared/components/AdminProfileOwner.vue",
+          "sha256": "5f06ee87ed35755c756bcc4f97150e99896a66f7b60097e44587556ff8641ca1",
+          "preimageSha256": "f012a1c6c7d195fe0048f88c92b5868a5f6c0bb61df33186f7b640a62bf4534b",
+          "from": "/tmp/rct-auth-f545-20261015/frontends/mobile-core/src/shared/components/AdminProfileOwner.vue"
+        }
+      ],
+      "review": "c88 coherent20/finalF1 APPROVE; c86 OTP-close-only successor APPROVE",
+      "actual": "Auth client/control/scoped type checks PASS; fullhostVue OOM qualified; native browser/ordinary fullbuild NOT_RUN. Old actual ResetB FAIL retained; no assumed actual broker cause."
+    },
+    "Semester_initial_RPC_onefixture_Root_review_integration": {
+      "utc": "2026-10-15T15:04:47.998251+00:00",
+      "state": "ROOT_FOCUSED_SOURCE_APPROVED_INTEGRATED_NATIVE_PENDING",
+      "reviewer": "Root independent of author c84;15line checking-only fixed Source markers no serializedrawreason, inverse verified",
+      "inventory": [
+        {
+          "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "preimageSha256": "a6ed701a1c85dff3179f142663459eabf8d1cee66ff90cc45f177fd336677965",
+          "sha256": "13bc0cdf2aa4130c67ee0d97ef81d2622cee43a4dae0b82e02bc24600e36e4df"
+        }
+      ],
+      "checks": "author14 meaningful branch controls/formatter/parser/RootoverlayTSC PASS/allownedreaped; Root exact insertion inverse/positive-only matching and existing closed Source-frame carrier verified",
+      "actual": "underlyingRPCcauseUNKNOWN, samewholeFAIL/barriers/restorationfalse retained; no runtimePASS/productfix",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#semesterInitialRpcClosedCategoryPlan.implementation",
+      "frames": {
+        "reverse": 2476,
+        "TLS_HANDSHAKE_MARKER": 2486,
+        "TLS_RECORD_MARKER": 2488,
+        "CONNECTION_REFUSED_MARKER": 2494,
+        "UNKNOWN_UNAVAILABLE": 2495
+      }
+    },
+    "b460bc2_terminal_gates_checkpoint": {
+      "utc": "2026-10-15T15:04:47.998251+00:00",
+      "head": "b460bc280bb4e2264a2db3cea0e48d31fb1b3d53",
+      "actualCheckout": "c639fb1f85bc64732ecd465f4ef1334e1081dc6e",
+      "checkoutTree": "cba0675e99848110d3b9b214d645cb4caa418f75",
+      "CI": {
+        "run": 38750933338,
+        "conclusion": "FAILURE"
+      },
+      "Coverage": {
+        "run": 38750933347,
+        "conclusion": "FAILURE",
+        "onlyFailedService": "Auth step8",
+        "otherCoverageJobs": 8,
+        "otherCoverageJobsSuccess": true
+      },
+      "Security": {
+        "run": 38750933364,
+        "conclusion": "SUCCESS"
+      },
+      "OpenAPI": {
+        "run": 38750933363,
+        "conclusion": "SUCCESS"
+      },
+      "source": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#currentB460bc2Primary.terminalCheckpoint",
+      "qualification": "not receipts for next revision; new7 Admin/Teacher IT methods selected automatically by normal integrationTest, nativepending"
     }
   }
 }

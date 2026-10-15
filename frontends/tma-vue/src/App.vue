@@ -14,6 +14,9 @@ import {
   AdminMapScreen,
   AdminMapStatisticsScreen,
   AdminDashboardScreen,
+  AdminAttendanceClient,
+  AdminDashboardApiError,
+  AdminAttendanceScreen,
   AdminSemesterApiError,
   AdminSemesterScreen,
   AdminGroupsApiError,
@@ -148,6 +151,7 @@ const adminAuthority = shallowRef<AdminAccessProfile | null>(null);
 const adminAuthorityStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
 const adminAuthorityOwner = createAdminAuthorityOwner();
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null);
+const adminAttendanceApi = shallowRef<AdminAttendanceClient | null>(null);
 const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null);
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null);
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null);
@@ -222,6 +226,7 @@ const authView = ref<
   | 'map'
   | 'admin-more'
   | 'admin-home'
+  | 'admin-attendance'
   | 'admin-map'
   | 'admin-map-statistics'
   | 'admin-semesters'
@@ -251,6 +256,10 @@ watch(authView, () => {
 const adminHomeViewVisible = computed(
   () => authView.value === 'admin-home' && adminCanNavigate(adminAuthority.value, 'home'),
 );
+const adminAttendanceViewVisible = computed(
+  () =>
+    authView.value === 'admin-attendance' && adminCanNavigate(adminAuthority.value, 'attendance'),
+);
 const adminMapViewVisible = computed(
   () => authView.value === 'admin-map' && adminCanNavigate(adminAuthority.value, 'map'),
 );
@@ -277,6 +286,7 @@ const stopAdminAuthority = adminAuthorityOwner.subscribe((snapshot) => {
   if (profile.value?.activeRole !== 'ADMIN') return;
   if (snapshot.status === 'loading' || snapshot.status === 'error') {
     adminAccessActionsApi.value = null;
+    adminAttendanceApi.value = null;
     adminDashboardApi.value = null;
     adminUsersApi.value = null;
     adminGroupsApi.value = null;
@@ -307,6 +317,21 @@ const stopAdminAuthority = adminAuthorityOwner.subscribe((snapshot) => {
     };
     adminAccessActionsApi.value = sessionOwner.createAdminAccessApi(fetcher, assertAuthority);
     adminDashboardApi.value = sessionOwner.createAdminDashboardApi(fetcher, assertAuthority);
+    adminAttendanceApi.value = adminCanNavigate(snapshot.profile, 'attendance')
+      ? new AdminAttendanceClient({
+          accessToken: () => {
+            assertAuthority();
+            return sessionOwner.accessToken.value;
+          },
+          assertCurrent: assertAuthority,
+          onUnauthorized: async () => {
+            assertAuthority();
+            await sessionOwner.authenticateFor(generation);
+            assertAuthority();
+          },
+          fetcher,
+        })
+      : null;
     adminUsersApi.value = sessionOwner.createAdminUsersApi(fetcher, assertAuthority);
     adminGroupsApi.value = sessionOwner.createAdminGroupsApi(fetcher, assertAuthority);
     adminSemesterApi.value = sessionOwner.createAdminSemesterApi(fetcher, assertAuthority);
@@ -363,6 +388,7 @@ const featureVisible = computed(
     teacherApi.value !== null ||
     mapViewVisible.value ||
     adminHomeViewVisible.value ||
+    adminAttendanceViewVisible.value ||
     adminMapViewVisible.value ||
     adminMapStatisticsViewVisible.value ||
     adminSemesterViewVisible.value ||
@@ -725,6 +751,7 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof HeadmanGroupApiError) return cause.response.status;
   if (cause instanceof AdminAccessApiError) return cause.response.status;
   if (cause instanceof AdminSemesterApiError) return cause.response.status;
+  if (cause instanceof AdminDashboardApiError) return cause.response.status;
   if (cause instanceof AdminGroupsApiError) return cause.response.status;
   if (cause instanceof AdminUsersApiError) return cause.response.status;
   return null;
@@ -870,6 +897,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   adminMapClient.value = null;
   adminAuthorityOwner.bind(null, null);
   adminSemesterApi.value = null;
+  adminAttendanceApi.value = null;
   adminDashboardApi.value = null;
   adminUsersApi.value = null;
   adminGroupsApi.value = null;
@@ -926,15 +954,17 @@ function navigateAdmin(route: AdminRoleRoute): void {
         ? 'admin-profile'
         : route === 'home'
           ? 'admin-home'
-          : route === 'map'
-            ? 'admin-map'
-            : route === 'map-statistics'
-              ? 'admin-map-statistics'
-              : route === 'semesters'
-                ? 'admin-semesters'
-                : route === 'users'
-                  ? 'admin-users'
-                  : 'admin-groups';
+          : route === 'attendance'
+            ? 'admin-attendance'
+            : route === 'map'
+              ? 'admin-map'
+              : route === 'map-statistics'
+                ? 'admin-map-statistics'
+                : route === 'semesters'
+                  ? 'admin-semesters'
+                  : route === 'users'
+                    ? 'admin-users'
+                    : 'admin-groups';
 }
 
 function openAdminRoleSwitch(): void {
@@ -1490,6 +1520,27 @@ onBeforeUnmount(() => {
       theme="dark"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
+      @open-attendance="navigateAdmin('attendance')"
+    />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminAttendanceViewVisible && adminAttendanceApi"
+    :authority="adminAuthority"
+    active="attendance"
+    :task="true"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="navigateAdmin('home')"
+  >
+    <AdminAttendanceScreen
+      :key="`admin-attendance-${ownerRevision}`"
+      :online="!offline && !profile?.readOnly"
+      :client="adminAttendanceApi"
+      :authority="adminAuthority"
+      :report-download="reportDownload"
+      :show-back="host.backOwner === 'product'"
+      @back="navigateAdmin('home')"
+      @owner-error="onOwnerError"
     />
   </AdminShell>
   <AdminShell

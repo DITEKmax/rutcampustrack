@@ -57,7 +57,15 @@ public final class TeacherStatsExportService {
         ExportFormat format = ExportFormat.from(formatCode);
         // This is the exact authoritative stats aggregation used by GetTeacherStats:
         // it checks current group authority, dated rosters, CLOSED lessons, filters and sort.
-        ReportService.TeacherStatsResult stats = reportService.getTeacherStats(query, teacherId);
+        boolean unscoped =
+                query.scope() == ReportService.TeacherStatsScope.GROUPS
+                        && query.groupId() == 0
+                        && query.subjectId() == 0;
+        var authorized =
+                unscoped ? reportService.getAuthorizedTeacherStats(query, teacherId) : null;
+        ReportService.TeacherStatsResult stats =
+                unscoped ? authorized.stats() : reportService.getTeacherStats(query, teacherId);
+        String scopeHash = unscoped ? authorized.scope().sha256() : "";
         TeacherStatsExportModel model = buildModel(query, stats);
         byte[] content =
                 switch (format) {
@@ -96,6 +104,7 @@ public final class TeacherStatsExportService {
                 .setContent(com.google.protobuf.ByteString.copyFrom(content))
                 .setFileName(filename)
                 .setContentType(format.contentType)
+                .setTeacherScopeHash(scopeHash)
                 .build();
     }
 
@@ -120,13 +129,27 @@ public final class TeacherStatsExportService {
                 query.scope() == ReportService.TeacherStatsScope.GROUPS
                         ? TeacherStatsExportModel.Scope.GROUPS
                         : TeacherStatsExportModel.Scope.STUDENTS;
-        GroupResponse group = academic.getGroup(query.groupId());
-        if (group == null || group.getId() != query.groupId() || group.getName().isBlank()) {
-            throw new AcademicServiceUnavailableException(
-                    "Academic returned incomplete selected-group metadata");
+        boolean allGroups =
+                scope == TeacherStatsExportModel.Scope.GROUPS
+                        && query.groupId() == 0
+                        && query.subjectId() == 0;
+        List<String> groupLabels;
+        String subjectLabel;
+        if (allGroups) {
+            groupLabels =
+                    stats.groups().stream()
+                            .map(ReportService.TeacherGroupStats::groupName)
+                            .toList();
+            subjectLabel = "Предметы с текущим назначением преподавателя";
+        } else {
+            GroupResponse group = academic.getGroup(query.groupId());
+            if (group == null || group.getId() != query.groupId() || group.getName().isBlank()) {
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned incomplete selected-group metadata");
+            }
+            groupLabels = List.of(group.getName());
+            subjectLabel = selectedSubjectLabel(query, stats, semester, group.getName());
         }
-        List<String> groupLabels = List.of(group.getName());
-        String subjectLabel = selectedSubjectLabel(query, stats, semester, group.getName());
         List<TeacherStatsExportModel.Row> rows;
         if (scope == TeacherStatsExportModel.Scope.STUDENTS) {
             rows =

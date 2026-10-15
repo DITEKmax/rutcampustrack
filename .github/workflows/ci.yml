@@ -539,7 +539,7 @@ jobs:
                   method = 'ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin'
                   test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java'
                   auth_test = test_source.read_bytes()
-                  assert hashlib.sha256(auth_test).hexdigest() == 'd6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176'
+                  assert hashlib.sha256(auth_test).hexdigest() == 'e7d9f964bf2ce61299cd6bafb13e82b7a5ac254a3e43e21952feb10b6de643ef'
                   auth_oracle = b'        assertThat(delivered == null).isTrue();\n'
                   assert auth_test.count(auth_oracle) == 1
                   rule_line = auth_test[:auth_test.index(auth_oracle)].count(b'\n') + 1
@@ -829,7 +829,7 @@ jobs:
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
                   proof['auditRule']['sourceRestoredExact'] = True
               if service == 'auth-service' and current:
-                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == 'd6a42176226dc7715549f3213c1461d52b727dec9ab172c043a115baef6b6176'
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == 'e7d9f964bf2ce61299cd6bafb13e82b7a5ac254a3e43e21952feb10b6de643ef'
                   assert hashlib.sha256(auth_repository.read_bytes()).hexdigest() == 'b67e309784a8d5d3fe581246f703c811d9294acb602566e67f2aa842317deb9d'
                   proof['sourceRestoredExact'] = True
               if service == 'notification-service' and current:
@@ -1569,6 +1569,14 @@ jobs:
           RCT_E2E_SYNTHETIC_SEED: 'true'
         run: |
           umask 077
+          python3 - <<'PY_ATTENDANCE_SERVICE_TOKEN'
+          import os, secrets
+
+          token = secrets.token_urlsafe(32)
+          print('::add-mask::' + token)
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN=' + token + '\n')
+          PY_ATTENDANCE_SERVICE_TOKEN
           {
             printf 'RCT_E2E_TEACHING_CLOCK_DIR=%s\n' "$RCT_E2E_TEACHING_CLOCK_DIR"
             printf 'RCT_FOCUS3_RUN=%s\n' "$RCT_FOCUS3_RUN"

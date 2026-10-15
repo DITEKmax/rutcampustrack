@@ -8,6 +8,7 @@ import type { MobileBottomNavItems, MobileRootRouteId } from './navigation'
 
 export type AdminRoleRoute =
   | 'home'
+  | 'attendance'
   | 'map'
   | 'map-statistics'
   | 'semesters'
@@ -16,6 +17,7 @@ export type AdminRoleRoute =
   | 'more'
   | 'profile'
 export function adminRootId(active: AdminRoleRoute): MobileRootRouteId {
+  if (active === 'attendance') return 'admin-home'
   if (active === 'profile') return 'profile'
   if (
     active === 'map' ||
@@ -43,7 +45,7 @@ export function adminCanNavigate(
   if (route === 'profile') return true
   if (!profile?.assigned || !profile.mode) return false
   const has = (code: string): boolean => profile.permissions.includes(code)
-  if (route === 'home') return has('DASHBOARD_VIEW')
+  if (route === 'home' || route === 'attendance') return has('DASHBOARD_VIEW')
   if (route === 'users') return has('USERS_VIEW')
   if (route === 'groups') return has('GROUPS_VIEW')
   if (route === 'semesters') return has('SEMESTERS_VIEW')

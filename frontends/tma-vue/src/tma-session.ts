@@ -1,4 +1,9 @@
 import {
+  decodeBrowserLoginPreview,
+  decodeBrowserLoginStatus,
+} from '../../mobile-core/src/features/profile/browser-login-approval'
+import type { BrowserLoginProof } from '../../mobile-core/src/features/profile/browser-login-approval'
+import {
   createGenerationBoundHeadmanLessonActionsApi,
   type HeadmanLessonActionsApi,
 } from '../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
@@ -450,7 +455,51 @@ export function useTmaSession(options: TmaSessionOptions) {
     generation = currentGeneration(),
     profileOptions: TmaProfilePortOptions = {},
   ): ProfilePort {
+    async function browserApprovalRequest(
+      proof: BrowserLoginProof,
+      decision?: 'CONFIRM' | 'REJECT',
+    ) {
+      assertCurrent(generation)
+      if (typeof navigator !== 'undefined' && navigator.onLine === false)
+        throw new Error('Подключись к сети')
+      if (knownProfileGeneration !== generation || !knownProfile)
+        throw new StaleSessionGenerationError()
+      const response = await profileResponse('/api/auth/session', generation, {}, 'profile')
+      const value = await generationResult(generation, () =>
+        profileJson<TmaCurrentSession>(response, 'profile'),
+      )
+      const profile = adaptProfile(value)
+      rememberProfile(profile, generation)
+      if (
+        !profile.activeRole ||
+        profile.readOnly ||
+        !profile.roles.some(
+          (grant) =>
+            grant.role === profile.activeRole &&
+            grant.status === 'ACTIVE' &&
+            grant.selectable &&
+            !grant.readOnly,
+        )
+      )
+        throw new Error('Подтверди текущую роль')
+      const result = await profileResponse(
+        decision ? '/api/auth/qr/decision' : '/api/auth/qr/preview',
+        generation,
+        { method: 'POST', body: JSON.stringify(decision ? { ...proof, decision } : proof) },
+        'browser-login',
+      )
+      return generationResult(generation, () => profileJson<unknown>(result, 'browser-login'))
+    }
     return {
+      browserLoginApproval: {
+        isOnline: () =>
+          generation === currentGeneration() &&
+          (typeof navigator === 'undefined' || navigator.onLine !== false),
+        preview: async (proof) =>
+          decodeBrowserLoginPreview(await browserApprovalRequest(proof), proof),
+        decide: async (proof, decision) =>
+          decodeBrowserLoginStatus(await browserApprovalRequest(proof, decision), proof),
+      },
       getSnapshot: async () => {
         const response = await profileResponse('/api/auth/session', generation, {}, 'profile')
         const value = await generationResult(generation, () =>

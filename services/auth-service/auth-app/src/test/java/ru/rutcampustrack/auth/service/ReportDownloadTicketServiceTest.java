@@ -406,7 +406,8 @@ class ReportDownloadTicketServiceTest {
                 clock,
                 new SecureRandom(),
                 academic,
-                mock(AdminAccessJdbcAuthority.class));
+                mock(AdminAccessJdbcAuthority.class),
+                mock(ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.class));
     }
 
     private static SessionPrincipal principal() {

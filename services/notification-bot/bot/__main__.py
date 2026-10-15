@@ -115,7 +115,11 @@ async def create_clients():
     auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
     attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
     attendance_request_client = AttendanceRequestGrpcClient(
-        config.attendance_grpc_host, config.attendance_grpc_port, config.grpc_secret
+        config.attendance_grpc_host,
+        config.attendance_grpc_port,
+        config.grpc_secret,
+        tls_enabled=config.attendance_grpc_tls_enabled,
+        tls_ca_path=config.attendance_grpc_tls_ca_path,
     )
     academic_http_client = AcademicHttpClient(base_url=config.api_gateway_url)
 

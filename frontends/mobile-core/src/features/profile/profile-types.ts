@@ -1,3 +1,5 @@
+import type { BrowserLoginApprovalPort } from './browser-login-approval'
+
 export type ProfileRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
 export type ProfileRoleStatus =
   | 'ACTIVE'
@@ -161,6 +163,7 @@ export function ownProfileTelegramId(
 }
 
 export interface ProfilePort {
+  browserLoginApproval?: BrowserLoginApprovalPort
   getSnapshot(): Promise<ProfileSnapshot>
   selectRole(input: {
     role: ProfileRole

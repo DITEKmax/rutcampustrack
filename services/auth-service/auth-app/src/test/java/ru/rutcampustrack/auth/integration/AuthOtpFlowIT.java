@@ -407,9 +407,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Test
     @Timeout(value = 30, unit = TimeUnit.SECONDS)
     void ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin() throws Exception {
-        String suffix = UUID.randomUUID().toString();
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         String adminLogin = "reset-admin-" + suffix;
-        String studentLogin = "reset-student-" + suffix;
+        String studentLogin = "reset-user-" + suffix;
         long admin = seedUnicodePasswordActor(adminLogin, 810000000001L);
         Long student = null;
         Throwable primary = null;
@@ -485,9 +485,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Test
     @Timeout(value = 30, unit = TimeUnit.SECONDS)
     void adminActivationInvalidatesPendingOtpAndResetTicketWithoutEffects() throws Exception {
-        String suffix = UUID.randomUUID().toString();
-        String otpLogin = "reset-pending-otp-" + suffix;
-        String ticketLogin = "reset-pending-ticket-" + suffix;
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        String otpLogin = "reset-otp-" + suffix;
+        String ticketLogin = "reset-tkt-" + suffix;
         long otpUser = seedUnicodePasswordActor(otpLogin, 810000000003L);
         Long ticketUser = null;
         Throwable primary = null;

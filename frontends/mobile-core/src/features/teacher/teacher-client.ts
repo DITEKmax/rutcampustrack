@@ -635,8 +635,11 @@ function createTeacherStatsQueryParams(query: TeacherStatsQuery): URLSearchParam
   assertPositiveInteger(query.semesterId, 'semesterId')
   if (query.scope !== 'students' && query.scope !== 'groups')
     throw new RangeError('scope is invalid')
-  assertPositiveInteger(query.groupId ?? 0, 'groupId')
-  assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+  const allGroups = query.scope === 'groups' && query.groupId == null && query.subjectId == null
+  if (!allGroups) {
+    assertPositiveInteger(query.groupId ?? 0, 'groupId')
+    assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+  }
   if (!query.lessonTypes?.length) throw new RangeError('select at least one lessonType')
   const params = new URLSearchParams({
     semesterId: String(query.semesterId),

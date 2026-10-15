@@ -752,3 +752,71 @@ describe('TMA own-profile Telegram ID', () => {
     expect(session.accessToken.value).toBeNull()
   })
 })
+
+describe('D024 TMA incoming browser approval owner', () => {
+  it('rejects changed current grants before sending an incoming decision', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'mobile-token' }))
+      .mockResolvedValueOnce(Response.json(currentSession('3')))
+      .mockResolvedValueOnce(Response.json(currentSession('4')))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    await session.getProfileFor(session.currentGeneration())
+    const port = session.createProfilePort().browserLoginApproval!
+    await expect(
+      port.decide(
+        {
+          purpose: 'LOGIN',
+          challengeId: '00000000-0000-4000-8000-000000000077',
+          approvalToken: 'a'.repeat(43),
+        },
+        'REJECT',
+      ),
+    ).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(fetcher.mock.calls.map((call) => call[0])).toEqual([
+      '/api/auth/tma',
+      '/api/auth/session',
+      '/api/auth/session',
+    ])
+    expect(port.isOnline()).toBe(false)
+  })
+})
+
+it('D024 sends the incoming proof only after fresh TMA context and preserves explicit rejection', async () => {
+  const proof = {
+    purpose: 'LOGIN' as const,
+    challengeId: '00000000-0000-4000-8000-000000000042',
+    approvalToken: 'a'.repeat(43),
+  }
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json({ accessToken: 'mobile-token' }))
+    .mockResolvedValueOnce(Response.json(currentSession('3')))
+    .mockResolvedValueOnce(Response.json(currentSession('3')))
+    .mockResolvedValueOnce(
+      Response.json({
+        challengeId: proof.challengeId,
+        status: 'rejected',
+        expiresAt: '2026-10-15T00:02:00Z',
+      }),
+    )
+  const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+  await session.authenticate()
+  await session.getProfileFor(session.currentGeneration())
+  const port = session.createProfilePort().browserLoginApproval!
+  await expect(port.decide(proof, 'REJECT')).resolves.toMatchObject({ status: 'rejected' })
+  expect(fetcher.mock.calls.map((call) => call[0])).toEqual([
+    '/api/auth/tma',
+    '/api/auth/session',
+    '/api/auth/session',
+    '/api/auth/qr/decision',
+  ])
+  expect(JSON.parse(String(fetcher.mock.calls[3]?.[1]?.body))).toEqual({
+    ...proof,
+    decision: 'REJECT',
+  })
+  expect(new Headers(fetcher.mock.calls[3]?.[1]?.headers).get('Authorization')).toBe(
+    'Bearer mobile-token',
+  )
+})

@@ -643,3 +643,253 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     }
   }
 });
+
+// D026/D027: real LIMITED report-only admission, filtered data and async delivery.
+test('FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  test.setTimeout(120000);
+  const cutoff = (retryStartedAt.get(info) ?? performance.now()) + 90000;
+  const group = await dataset.admin.call(
+    'POST',
+    '/api/academic/groups/registry',
+    {
+      alphabeticCode: [...randomBytes(4)]
+        .map((byte) => 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ'[byte % 27])
+        .join(''),
+      numericCode: `1${10 + (randomBytes(1)[0] % 90)}`,
+      trainingDurationYears: 4,
+    },
+    [201],
+  );
+  expect(
+    typeof group.name === 'string' && group.name.length > 0,
+    'Own empty group has a report name',
+  ).toBe(true);
+  const user = await dataset.user('ADMIN');
+  const accessPath = `/api/academic/users/${user.id}/admin-access`;
+  const before = await dataset.admin.call('GET', accessPath);
+  const remaining = Math.floor(cutoff - performance.now());
+  expect(remaining, 'Positive report login retry budget remains').toBeGreaterThan(0);
+  await loginPwa(page, user, { retryUntilMs: Date.now() + Math.min(65000, remaining) });
+  await selectRole(page, 'Администратор');
+  const reportPath = '/api/academic/admin/attendance';
+  let registryCalled = false;
+  const observe = (request: Request) => {
+    const path = new URL(request.url()).pathname;
+    if (
+      request.method() === 'GET' &&
+      ['/api/academic/semesters', '/api/academic/groups', '/api/academic/groups/registry'].includes(
+        path,
+      )
+    )
+      registryCalled = true;
+  };
+  page.on('request', observe);
+  try {
+    const readOwnedReport = async () => {
+      const semesters = http(page, `${reportPath}/semesters`, 'GET');
+      const initial = http(page, reportPath, 'GET');
+      await page.getByRole('button', { name: 'Посещаемость групп', exact: true }).click();
+      expect((await semesters).status()).toBe(200);
+      expect((await initial).status()).toBe(200);
+      await expect(
+        page.getByRole('heading', { name: 'Посещаемость групп', exact: true }),
+      ).toBeVisible();
+      for (const [label, value, key] of [
+        ['Сортировка', 'COUNTED_LESSONS', 'sort'],
+        ['Порядок', 'DESC', 'direction'],
+      ] as const) {
+        const changed = page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            url.pathname === reportPath &&
+            url.searchParams.get(key) === value &&
+            response.request().method() === 'GET'
+          );
+        });
+        await page.getByLabel(label, { exact: true }).selectOption(value);
+        expect((await changed).status()).toBe(200);
+      }
+      await page.getByLabel('Найти группу', { exact: true }).fill(group.name);
+      const filtered = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          url.pathname === reportPath &&
+          url.searchParams.get('search') === group.name &&
+          response.request().method() === 'GET'
+        );
+      });
+      await page.getByRole('button', { name: 'Найти', exact: true }).click();
+      const response = await filtered;
+      expect(response.status()).toBe(200);
+      const report = await response.json();
+      expect(
+        report.rows.length === 1 && String(report.rows[0].groupId) === String(group.id),
+        'Only the own filtered group is returned',
+      ).toBe(true);
+      const row = report.rows[0];
+      expect(
+        row.dataState === 'NO_DATA' &&
+          row.opportunities === 0 &&
+          row.presentPercent === null &&
+          row.presentOrExcusedPercent === null,
+        'An empty own group has no denominator, not zero attendance',
+      ).toBe(true);
+      const visibleRow = page.locator(`.admin-attendance-screen [data-group-id="${group.id}"]`);
+      await expect(visibleRow).toContainText(group.name);
+      await expect(visibleRow.getByText('Нет данных', { exact: true })).toHaveCount(2);
+      const numbers = [row.countedLessons, row.presentCount, row.absentCount, row.excusedCount].map(
+        (value) => new Intl.NumberFormat('ru-RU').format(value),
+      );
+      expect(
+        await visibleRow
+          .locator('td')
+          .allTextContents()
+          .then(
+            (cells) =>
+              JSON.stringify(cells.slice(2).map((value) => value.trim())) ===
+              JSON.stringify(numbers),
+          ),
+        'Visible counts are the real server counts',
+      ).toBe(true);
+
+      return report;
+    };
+    const report = await readOwnedReport();
+    const formats = http(page, `${reportPath}/formats`, 'GET');
+    await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
+    const catalogue = await formats;
+    expect(catalogue.status()).toBe(200);
+    expect((await catalogue.json()).map((item: { code: string }) => item.code).sort()).toEqual([
+      'docx',
+      'html',
+      'pdf',
+      'png',
+      'xlsx',
+    ]);
+    let lastJobId = '';
+    const downloadOwnedReport = async (
+      format: 'html' | 'docx' | 'xlsx' | 'pdf' | 'png',
+      currentReport: { semester: { id: string }; sort: string; direction: string },
+    ) => {
+      await page.getByLabel(/^Формат выгрузки/).selectOption(format);
+      const created = http(page, '/api/auth/export-jobs', 'POST');
+      const issued = page.waitForResponse(
+        (result) =>
+          /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(result.url()).pathname) &&
+          result.request().method() === 'POST',
+      );
+      const saved = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'Скачать', exact: true }).click();
+      const job = await created;
+      expect(job.status()).toBe(202);
+      const selector = job.request().postDataJSON().report;
+      expect(
+        selector.kind === 'ADMIN_GROUP_ATTENDANCE' &&
+          selector.adminGroupAttendance.semesterId === currentReport.semester.id &&
+          selector.adminGroupAttendance.search === group.name &&
+          selector.adminGroupAttendance.sort === currentReport.sort &&
+          selector.adminGroupAttendance.direction === currentReport.direction &&
+          selector.adminGroupAttendance.format === format &&
+          !Object.hasOwn(selector.adminGroupAttendance, 'page') &&
+          !Object.hasOwn(selector.adminGroupAttendance, 'size'),
+        'Async export uses the complete current filtered report',
+      ).toBe(true);
+      lastJobId = (await job.json()).jobId;
+      expect((await issued).status()).toBe(200);
+      const download = await saved;
+      expect(await download.failure()).toBeNull();
+      expect(
+        download.suggestedFilename().endsWith(format === 'png' ? '.zip' : '.' + format),
+        'Real report filename matches the selected format',
+      ).toBe(true);
+      const stream = await download.createReadStream();
+      expect(stream !== null, 'Genuine report download is readable').toBe(true);
+      const chunks: Buffer[] = [];
+      let size = 0;
+      for await (const part of stream!) {
+        const bytes = Buffer.from(part);
+        size += bytes.length;
+        expect(
+          size <= 20 * 1024 * 1024,
+          'Own generated report remains within the existing stored-file bound',
+        ).toBe(true);
+        chunks.push(bytes);
+      }
+      const content = Buffer.concat(chunks);
+      expect(content.length > 0, 'Real generated report contains bytes').toBe(true);
+      if (format === 'html') {
+        const html = content.toString('utf8');
+        expect(
+          html.includes(group.name) &&
+            !html.includes(dataset.group.name) &&
+            (html.match(/<tbody>[\s\S]*?<\/tbody>/)?.[0].match(/<tr>/g)?.length ?? 0) === 1,
+          'Downloaded HTML contains exactly the filtered group',
+        ).toBe(true);
+        expect(
+          !html.includes(user.password) && !/Telegram ID|password-reset/i.test(html),
+          'Group report contains no credentials or Telegram identity',
+        ).toBe(true);
+      } else if (format === 'pdf') {
+        expect(
+          content.subarray(0, 5).toString('ascii') === '%PDF-' &&
+            content.includes(Buffer.from('%%EOF')),
+          'Real renderer produced a PDF document',
+        ).toBe(true);
+      } else {
+        const member =
+          format === 'docx' ? 'word/document.xml' : format === 'xlsx' ? 'xl/workbook.xml' : '.png';
+        expect(
+          content.length >= 4 &&
+            content.readUInt32LE(0) === 0x04034b50 &&
+            content.includes(Buffer.from(member)),
+          'Real generated archive contains its declared report format',
+        ).toBe(true);
+      }
+      await expect(page.getByRole('button', { name: 'Скачать', exact: true })).toBeEnabled();
+    };
+    for (const format of ['html', 'docx', 'xlsx', 'pdf', 'png'] as const)
+      await downloadOwnedReport(format, report);
+    const limited = await dataset.admin.call('PUT', accessPath, {
+      mode: 'LIMITED',
+      permissions: ['DASHBOARD_VIEW'],
+      expectedVersion: before.version,
+    });
+    const limitedRefresh = await page.request.post('/api/auth/refresh');
+    expect(limitedRefresh.status()).toBe(200);
+    await page.reload();
+    const limitedReport = await readOwnedReport();
+    expect(
+      limitedReport.rows.length === 1 && String(limitedReport.rows[0].groupId) === String(group.id),
+      'Current dashboard-only administrator reads the same filtered own group',
+    ).toBe(true);
+    const limitedFormats = http(page, `${reportPath}/formats`, 'GET');
+    await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
+    expect((await limitedFormats).status()).toBe(200);
+    await downloadOwnedReport('html', limitedReport);
+    expect(registryCalled, 'Report does not borrow registry permissions').toBe(false);
+    await dataset.admin.call('PUT', accessPath, {
+      mode: 'LIMITED',
+      permissions: ['USERS_VIEW'],
+      expectedVersion: limited.version,
+    });
+    const refresh = await page.request.post('/api/auth/refresh');
+    expect(refresh.status()).toBe(200);
+    const currentHeaders = { Authorization: `Bearer ${(await refresh.json()).accessToken}` };
+    for (const path of [
+      reportPath + `?semesterId=${report.semester.id}`,
+      `${reportPath}/semesters`,
+      `/api/auth/export-jobs/${lastJobId}`,
+    ])
+      expect((await page.request.get(path, { headers: currentHeaders })).status()).toBe(403);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Посещаемость групп', exact: true })).toHaveCount(
+      0,
+    );
+    await expect(page.locator('.admin-attendance-screen')).toHaveCount(0);
+  } finally {
+    page.off('request', observe);
+  }
+});

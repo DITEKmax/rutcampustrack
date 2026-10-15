@@ -2542,7 +2542,8 @@ class StudentRequestDomainIT {
                                         new AttachmentInput(
                                                 "proof.pdf", "application/pdf", proof))));
         ExcuseTicket ticket = excuseRepository.findById(submitted.summary().id()).orElseThrow();
-        // A retained mixed ticket must expose only lessons in currently authorized groups.
+        // A retained mixed ticket exposes only current group+subject authority, including
+        // historical replacement lessons.
         ticket.setLessonIds(List.of(lessonId, foreignLessonId));
         excuseRepository.save(ticket);
         RequestAttachmentDocument attachment =
@@ -2573,7 +2574,7 @@ class StudentRequestDomainIT {
                                         TeacherSubjectInfo.newBuilder()
                                                 .setGroupId(GROUP_ID)
                                                 .setAssignmentId(503L)
-                                                .setSubjectId(2000L)
+                                                .setSubjectId(historical.getSubjectId())
                                                 .setSemesterId(SEMESTER_ID)
                                                 .setLessonType("PRACTICE")
                                                 .setValidFrom("2026-09-08")
@@ -2650,6 +2651,44 @@ class StudentRequestDomainIT {
                 .run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, download));
         assertThat(download.error).isNull();
         assertThat(download.value.getData().toByteArray()).isEqualTo(proof);
+
+        // Keeping the group assignment while losing this subject must not expose its ticket or
+        // bytes.
+        when(academicGrpcClient.getCurrentTeacherSubjects(activeTeacher))
+                .thenReturn(
+                        TeacherSubjectsResponse.newBuilder()
+                                .addSubjects(
+                                        TeacherSubjectInfo.newBuilder()
+                                                .setGroupId(GROUP_ID)
+                                                .setSubjectId(historical.getSubjectId() + 1))
+                                .build());
+        RecordingTeacherObserver<TeacherLessonResponse> unassignedLesson =
+                new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher)
+                .run(
+                        () ->
+                                reader.getTeacherLesson(
+                                        TeacherLessonRequest.newBuilder()
+                                                .setLessonId(lessonId)
+                                                .build(),
+                                        unassignedLesson));
+        assertThat(unassignedLesson.value).isNull();
+        assertThat(Status.fromThrowable(unassignedLesson.error).getCode())
+                .isEqualTo(Status.Code.PERMISSION_DENIED);
+        RecordingTeacherObserver<TeacherExcuseResponse> unassignedCard =
+                new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher)
+                .run(() -> reader.getTeacherExcuse(cardRequest, unassignedCard));
+        assertThat(unassignedCard.value).isNull();
+        assertThat(Status.fromThrowable(unassignedCard.error).getCode())
+                .isEqualTo(Status.Code.NOT_FOUND);
+        RecordingTeacherObserver<TeacherAttachmentDownload> unassignedBytes =
+                new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher)
+                .run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, unassignedBytes));
+        assertThat(unassignedBytes.value).isNull();
+        assertThat(Status.fromThrowable(unassignedBytes.error).getCode())
+                .isEqualTo(Status.Code.NOT_FOUND);
 
         RecordingTeacherObserver<TeacherExcuseResponse> deniedCard =
                 new RecordingTeacherObserver<>();

@@ -1,6 +1,6 @@
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import ProfileScreen from './ProfileScreen.vue'
 import { DEFAULT_PASSWORD_POLICY, type ProfileSnapshot } from './profile-types'
 
@@ -75,4 +75,28 @@ describe('own delegated rights readout', () => {
     expect(html).not.toContain('Дополнительные права')
     expect(html).not.toContain('Просматривать статистику')
   })
+})
+
+describe('D024 live profile incoming login entry', () => {
+  it.each(['ready', 'readonly', 'bootstrap', 'offline', 'loading'] as const)(
+    'gates the entry for %s authority',
+    async (mode) => {
+      const port = { isOnline: () => mode !== 'offline', preview: vi.fn(), decide: vi.fn() }
+      const html = await renderToString(
+        createSSRApp(ProfileScreen, {
+          snapshot: {
+            ...snapshot,
+            readOnly: mode === 'readonly',
+            activeRole: mode === 'bootstrap' ? null : 'STUDENT',
+          },
+          loading: mode === 'loading',
+          browserLoginApproval: port,
+        }),
+      )
+      expect(html.includes('Вход в браузере')).toBe(mode === 'ready')
+      expect(html).not.toContain('Данные QR для входа')
+      expect(port.preview).not.toHaveBeenCalled()
+      expect(port.decide).not.toHaveBeenCalled()
+    },
+  )
 })

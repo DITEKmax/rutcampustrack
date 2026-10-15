@@ -24,7 +24,8 @@ public record StoredReportDownloadTicket(
         boolean readOnly,
         IssueReportDownloadTicketRequest report,
         Instant expiresAt,
-        UUID exportJobId) {
+        UUID exportJobId,
+        ru.rutcampustrack.shared.security.teacher.TeacherReportScope teacherScope) {
     public static final int CURRENT_SCHEMA_VERSION = 1;
 
     public StoredReportDownloadTicket {
@@ -77,6 +78,56 @@ public record StoredReportDownloadTicket(
                 report,
                 expiresAt,
                 null);
+    }
+
+    public StoredReportDownloadTicket(
+            int schemaVersion,
+            long userId,
+            UUID sessionId,
+            long sessionVersion,
+            long rolesVersion,
+            AuthRole role,
+            RoleStatus status,
+            Long groupId,
+            boolean headman,
+            boolean readOnly,
+            IssueReportDownloadTicketRequest report,
+            Instant expiresAt,
+            UUID exportJobId) {
+        this(
+                schemaVersion,
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                headman,
+                readOnly,
+                report,
+                expiresAt,
+                exportJobId,
+                null);
+    }
+
+    public StoredReportDownloadTicket withTeacherScope(
+            ru.rutcampustrack.shared.security.teacher.TeacherReportScope scope) {
+        return new StoredReportDownloadTicket(
+                schemaVersion,
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                headman,
+                readOnly,
+                report,
+                expiresAt,
+                exportJobId,
+                scope);
     }
 
     public SessionPrincipal principal() {

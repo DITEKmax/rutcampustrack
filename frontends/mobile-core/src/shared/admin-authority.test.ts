@@ -21,6 +21,11 @@ describe('current admin authority isolation', () => {
   it('fails closed for absent authority and uses the first effective permitted destination', () => {
     expect(firstAdminRoute(null)).toBe('profile')
     expect(adminCanNavigate(null, 'home')).toBe(false)
+    expect(adminCanNavigate(null, 'attendance')).toBe(false)
+    expect(adminCanNavigate(authority(1, ['DASHBOARD_VIEW']), 'attendance')).toBe(true)
+    expect(adminCanNavigate(authority(1, ['GROUPS_VIEW', 'SEMESTERS_VIEW']), 'attendance')).toBe(
+      false,
+    )
     expect(
       createAdminNavigationItems(null)
         .filter((item) => !item.disabled)

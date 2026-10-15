@@ -191,8 +191,10 @@ public class ExportJobService extends AbstractEventPublisher {
     public Status complete(UUID id, Complete completed) {
         lock(id);
         Job job = load(id);
-        if (job.state == State.READY && Objects.equals(job.leaseId, completed.leaseId()))
+        if (job.state == State.READY && Objects.equals(job.leaseId, completed.leaseId())) {
+            authorize(job.identity.principal(), job);
             return response(job);
+        }
         requireLease(job, completed.leaseId());
         boolean full = job.requiresFull || completed.requiresFull();
         authority.admit(
@@ -210,15 +212,23 @@ public class ExportJobService extends AbstractEventPublisher {
                 || completed.content().length > MAX_BYTES) {
             throw error(HttpStatus.BAD_REQUEST, "Некорректный результат выгрузки");
         }
+        var captured =
+                authority.captureTeacherScope(
+                        job.identity.principal(),
+                        job.identity.report(),
+                        completed.teacherScopeHash());
+        var completedIdentity = job.identity.withTeacherScope(captured);
         jdbc.update(
-                "UPDATE auth_export_jobs SET state='ready',content=?,content_type=?,row_count=?,requires_full=?,lease_until=NULL,error_code=NULL WHERE job_id=?",
+                "UPDATE auth_export_jobs SET state='ready',identity=?::jsonb,content=?,content_type=?,row_count=?,requires_full=?,lease_until=NULL,error_code=NULL WHERE job_id=?",
+                json(completedIdentity),
                 completed.content(),
                 completed.contentType(),
                 completed.rowCount(),
                 full,
                 id);
         if (job.identity.report().kind() == ReportDownloadKind.ADMIN_USERS
-                || job.identity.report().kind() == ReportDownloadKind.ADMIN_GROUPS) {
+                || job.identity.report().kind() == ReportDownloadKind.ADMIN_GROUPS
+                || job.identity.report().kind() == ReportDownloadKind.ADMIN_GROUP_ATTENDANCE) {
             jdbc.update(
                     "INSERT INTO audit_log(user_id,action,target_type,extras,succeeded,created_at) VALUES (?,'registry.export',?,?::jsonb,TRUE,NOW())",
                     job.identity.userId(),
@@ -264,6 +274,7 @@ public class ExportJobService extends AbstractEventPublisher {
         if (!actor.equals(job.identity.principal()))
             throw error(HttpStatus.FORBIDDEN, "Доступ изменился");
         authority.admit(actor, job.identity.report(), job.identity.expiresAt(), job.requiresFull);
+        if (job.state == State.READY) authority.requireReady(job.identity);
     }
 
     private Job load(UUID id) {

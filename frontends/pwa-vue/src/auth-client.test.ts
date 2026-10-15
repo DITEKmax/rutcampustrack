@@ -376,3 +376,81 @@ describe('own-profile Telegram binding projection', () => {
     },
   )
 })
+
+describe('D024 code-only OTP and incoming browser proof', () => {
+  it('uses only the OTP verify DTO, cookie admission and the normal token decoder', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(response({ accessToken: 'otp-memory-token', expiresIn: 3600 }))
+    const client = createAuthClient({ fetcher })
+    expect(() => client.loginOtp({ code: '１２３４５６' })).toThrow(AuthPayloadError)
+    expect(fetcher).not.toHaveBeenCalled()
+    await expect(client.loginOtp({ code: '123456' })).resolves.toMatchObject({
+      accessToken: 'otp-memory-token',
+    })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('/api/auth/otp/verify-by-code')
+    expect(fetcher.mock.calls[0]?.[1]?.credentials).toBe('include')
+    expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual({ code: '123456' })
+  })
+  it('rejects unknown, URL and outgoing-device proofs without exposing them in errors', async () => {
+    const { parseBrowserLoginProof } = await import(
+      '../../mobile-core/src/features/profile/browser-login-approval'
+    )
+    const raw = {
+      version: 1,
+      purpose: 'LOGIN',
+      challengeId: sessionId,
+      approvalToken: 'a'.repeat(43),
+    }
+    expect(parseBrowserLoginProof(JSON.stringify(raw))).toEqual({
+      purpose: 'LOGIN',
+      challengeId: sessionId,
+      approvalToken: raw.approvalToken,
+    })
+    for (const value of [
+      'https://invalid.test/login',
+      JSON.stringify({ ...raw, purpose: 'DEVICE_LINK' }),
+      JSON.stringify({ ...raw, version: 2 }),
+      JSON.stringify({ ...raw, issuerSecret: 'private' }),
+    ]) {
+      expect(() => parseBrowserLoginProof(value)).toThrow('Данные входа в браузере некорректны')
+    }
+  })
+  it('binds preview/status to the same LOGIN challenge and keeps explicit decision separate', async () => {
+    const proof = {
+      purpose: 'LOGIN' as const,
+      challengeId: sessionId,
+      approvalToken: 'a'.repeat(43),
+    }
+    const preview = {
+      challengeId: sessionId,
+      purpose: 'LOGIN',
+      status: 'pending',
+      browserLabel: 'Синтетический браузер',
+      issuedAt: '2026-10-15T00:00:00Z',
+      expiresAt: '2026-10-15T00:02:00Z',
+      warning: 'Проверь свой вход',
+    }
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(response(preview))
+      .mockResolvedValueOnce(response({ ...preview, status: 'confirmed' }))
+      .mockResolvedValueOnce(response({ ...preview, purpose: 'DEVICE_LINK' }))
+    const client = createAuthClient({ fetcher, accessToken: () => 'mobile-memory-token' })
+    await expect(client.previewBrowserLogin(proof)).resolves.toMatchObject({ status: 'pending' })
+    expect(fetcher).toHaveBeenCalledOnce()
+    await expect(client.decideBrowserLogin(proof, 'CONFIRM')).resolves.toMatchObject({
+      status: 'confirmed',
+    })
+    expect(JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body))).toEqual({
+      ...proof,
+      decision: 'CONFIRM',
+    })
+    expect(new Headers(fetcher.mock.calls[1]?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer mobile-memory-token',
+    )
+    await expect(client.previewBrowserLogin(proof)).rejects.toThrow(
+      'Данные входа в браузере некорректны',
+    )
+  })
+})

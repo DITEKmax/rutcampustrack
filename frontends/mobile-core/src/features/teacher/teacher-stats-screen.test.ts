@@ -1,10 +1,15 @@
 import { createRenderer, h, markRaw, nextTick, type App } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherStatsScreen from './TeacherStatsScreen.vue'
-import { TeacherApi, createGenerationBoundTeacherApi } from './teacher-client'
+import {
+  TeacherApi,
+  createGenerationBoundTeacherApi,
+  toTeacherStatsReportSelector,
+} from './teacher-client'
 import {
   teacherStatsQueryForContext,
   readTeacherStatsContext,
+  readRecoverableTeacherStatsContext,
   teacherStatsContextParams,
 } from './teacher-stats-route'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
@@ -127,6 +132,7 @@ function harness(
     route?: string
     assignedOnly?: boolean
     noData?: boolean
+    multipleSubjects?: boolean
   } = {},
 ) {
   const location = {
@@ -162,6 +168,15 @@ function harness(
   let holdSearch = false
   let releaseSearch: (() => void) | null = null
   let failSearch = false
+  const currentCatalog = options.multipleSubjects
+    ? {
+        ...catalog,
+        subjectOptions: [
+          ...subjectOptions,
+          { ...subjectOptions[0]!, subjectId: '5', subjectName: 'Алгоритмы' },
+        ],
+      }
+    : catalog
   const api = new TeacherApi({
     accessToken: () => null,
     fetcher: async (input) => {
@@ -172,7 +187,7 @@ function harness(
             ? { ...catalog, groups: [], subjectOptions: [] }
             : options.assignedOnly
               ? { ...catalog, subjectOptions: [], taughtSubjectOptions: subjectOptions }
-              : catalog,
+              : currentCatalog,
         )
         if (delayCatalog) {
           delayCatalog = false
@@ -307,14 +322,16 @@ function harness(
   }
 }
 async function chooseContext(root: Node, chooseType = true): Promise<void> {
-  click(root, 'Группа')
-  await settle()
-  click(root, 'ИКБО-01-24')
-  await settle()
-  click(root, 'Предмет')
-  await settle()
-  click(root, 'Программирование')
-  await settle()
+  if (find(root, (item) => item.props['aria-label'] === 'Группа')) {
+    click(root, 'Группа')
+    await settle()
+    click(root, 'ИКБО-01-24')
+    await settle()
+    click(root, 'Предмет')
+    await settle()
+    click(root, 'Программирование')
+    await settle()
+  }
   if (chooseType) {
     click(root, 'Лекция')
     await settle()
@@ -347,7 +364,8 @@ describe('teacher statistics selectors and races', () => {
     fixture.releaseCatalog()
     await settle()
     expect(
-      find(fixture.root, (item) => item.props['aria-label'] === 'Группа')?.props.disabled,
+      find(fixture.root, (item) => item.tag === 'button' && text(item).trim() === 'По студентам')
+        ?.props.disabled,
     ).toBe(false)
     click(fixture.root, 'По студентам')
     await settle()
@@ -422,6 +440,7 @@ describe('teacher statistics selectors and races', () => {
     click(fixture.root, 'По студентам')
     await settle()
     expect(fixture.queries).toHaveLength(1)
+    await chooseContext(fixture.root, false)
     click(fixture.root, 'Лекция')
     await settle()
     expect(fixture.queries.at(-1)?.get('scope')).toBe('students')
@@ -454,6 +473,7 @@ describe('teacher statistics selectors and races', () => {
     await settle()
     click(fixture.root, 'По студентам')
     await settle()
+    await chooseContext(fixture.root, false)
     click(fixture.root, 'Лекция')
     await settle()
     expect(fixture.queries.at(-1)?.get('scope')).toBe('students')
@@ -472,39 +492,104 @@ describe('teacher statistics selectors and races', () => {
     await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
   })
-  it('requires a complete explicit context in both scopes and clears metrics on parent changes', async () => {
-    const fixture = harness()
+  it('loads the authorized groups hub without selecting a pair and requires explicit subject drilldown', async () => {
+    const fixture = harness({ multipleSubjects: true })
     await settle()
     expect(fixture.queries).toHaveLength(0)
-    await chooseContext(fixture.root, false)
-    expect(fixture.queries).toHaveLength(0)
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Группа')).toBeUndefined()
     click(fixture.root, 'Лекция')
     await settle()
-    expect(fixture.queries.at(-1)?.get('groupId')).toBe('2')
-    expect(fixture.queries.at(-1)?.get('subjectId')).toBe('3')
-    expect(fixture.queries.at(-1)?.getAll('lessonType')).toEqual(['lecture'])
-    const before = fixture.queries.length
-    click(fixture.root, 'Группа')
-    await settle()
-    const groupOption = find(
+    expect(fixture.queries).toHaveLength(1)
+    expect(fixture.queries[0]?.get('scope')).toBe('groups')
+    expect(fixture.queries[0]?.has('groupId')).toBe(false)
+    expect(fixture.queries[0]?.has('subjectId')).toBe(false)
+    expect(fixture.queries[0]?.getAll('sort')).toEqual(['present'])
+    const group = find(
       fixture.root,
-      (node) => node.props.role === 'option' && node.props['aria-label'] === 'ИКБО-01-24',
+      (node) =>
+        node.tag === 'button' && text(node).includes('ИКБО-01-24') && text(node).includes('2 пар'),
     )!
-    ;(groupOption.props.onClick as () => void)()
+    ;(group.props.onClick as () => void)()
     await settle()
-    expect(fixture.queries).toHaveLength(before)
+    expect(fixture.queries).toHaveLength(1)
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Предмет')).toBeDefined()
     expect(find(fixture.root, (node) => node.props.class === 'teacher-stats__card')).toBeUndefined()
-    click(fixture.root, 'По студентам')
-    await settle()
-    expect(fixture.queries).toHaveLength(before)
     click(fixture.root, 'Предмет')
     await settle()
+    expect(
+      find(
+        fixture.root,
+        (node) => node.props.role === 'option' && node.props['aria-label'] === 'Алгоритмы',
+      ),
+    ).toBeDefined()
+    expect(
+      find(
+        fixture.root,
+        (node) => node.props.role === 'option' && node.props['aria-label'] === 'Программирование',
+      ),
+    ).toBeDefined()
     click(fixture.root, 'Программирование')
     await settle()
-    expect(fixture.queries).toHaveLength(before)
+    expect(fixture.queries).toHaveLength(1)
     click(fixture.root, 'Лекция')
     await settle()
     expect(fixture.queries.at(-1)?.get('scope')).toBe('students')
+    expect(fixture.queries.at(-1)?.get('groupId')).toBe('2')
+    expect(fixture.queries.at(-1)?.get('subjectId')).toBe('3')
+    const before = fixture.queries.length
+    click(fixture.root, 'Группа')
+    await settle()
+    const option = find(
+      fixture.root,
+      (node) => node.props.role === 'option' && node.props['aria-label'] === 'ИКБО-01-24',
+    )!
+    ;(option.props.onClick as () => void)()
+    await settle()
+    expect(fixture.queries).toHaveLength(before)
+    expect(find(fixture.root, (node) => node.props.class === 'teacher-stats__card')).toBeUndefined()
+    click(fixture.root, 'По моим группам')
+    await settle()
+    expect(fixture.queries.at(-1)?.get('scope')).toBe('groups')
+    expect(fixture.queries.at(-1)?.getAll('lessonType')).toEqual(['lecture'])
+  })
+  it('uses the same absent-pair scope for routes and exports while rejecting partial or unscoped students', async () => {
+    const fixture = harness()
+    await settle()
+    const query = { semesterId: 7, scope: 'groups' as const, lessonTypes: ['lecture'] }
+    await fixture.api.stats(query)
+    await fixture.api.exportStats(query, 'html')
+    expect(fixture.exports[0]?.has('groupId')).toBe(false)
+    expect(fixture.exports[0]?.has('subjectId')).toBe(false)
+    expect(toTeacherStatsReportSelector(query, 'html')).toEqual({ ...query, format: 'html' })
+    const context = readTeacherStatsContext(
+      new URLSearchParams({
+        teacherStats: '1',
+        teacherStatsSemester: '7',
+        teacherStatsScope: 'groups',
+        teacherStatsType: 'lecture',
+      }),
+    )!
+    expect(teacherStatsQueryForContext(context)).toMatchObject(query)
+    expect(teacherStatsContextParams(context).has('teacherStatsGroup')).toBe(false)
+    for (const malformed of [
+      'teacherStatsGroup=0&teacherStatsSubject=0',
+      'teacherStatsGroup=NaN',
+      'teacherStatsGroup=2',
+      'teacherStatsSubject=3',
+      'teacherStatsScope=unknown',
+    ]) {
+      const params = new URLSearchParams(`teacherStats=1&teacherStatsSemester=7&${malformed}`)
+      expect(readRecoverableTeacherStatsContext(params).context).toBeNull()
+    }
+    const sent = fixture.queries.length
+    expect(() => fixture.api.stats({ ...query, groupId: 2 })).toThrow(RangeError)
+    expect(() => fixture.api.stats({ ...query, subjectId: 3 })).toThrow(RangeError)
+    expect(() => fixture.api.stats({ ...query, scope: 'students' })).toThrow(RangeError)
+    expect(() => fixture.api.stats({ ...query, lessonTypes: [] })).toThrow(RangeError)
+    expect(fixture.queries).toHaveLength(sent)
+    await fixture.api.stats({ ...query, groupId: 2, subjectId: 3 })
+    expect(fixture.queries.at(-1)?.get('groupId')).toBe('2')
+    expect(fixture.queries.at(-1)?.get('subjectId')).toBe('3')
   })
   it('searches independently, discards older replies and selects only a group from a student result', async () => {
     const fixture = harness()
@@ -574,6 +659,8 @@ describe('teacher statistics selectors and races', () => {
     const fixture = harness({ route: `?${params}` })
     await settle()
     expect(fixture.queries).toHaveLength(1)
+    expect(fixture.queries[0]?.has('groupId')).toBe(false)
+    expect(fixture.queries[0]?.has('subjectId')).toBe(false)
     expect(fixture.queries[0]?.getAll('filter')).toEqual(['present>=25'])
     expect(fixture.queries[0]?.getAll('sort')).toEqual(['-absent'])
   })
@@ -628,7 +715,7 @@ describe('teacher statistics selectors and races', () => {
     await expect(invalid.search(7, 'Анна')).rejects.toThrow('идентификатор')
   })
   it.each(['groups', 'students'] as const)(
-    'allows assigned subjects without scheduled lessons in %s only after explicit complete choice',
+    'allows assigned subjects without scheduled lessons in %s after its required choice',
     async (scope) => {
       const fixture = harness({ assignedOnly: true, noData: true })
       await settle()
@@ -646,8 +733,8 @@ describe('teacher statistics selectors and races', () => {
       await settle()
       expect(fixture.queries).toHaveLength(1)
       expect(fixture.queries[0]?.get('scope')).toBe(scope)
-      expect(fixture.queries[0]?.get('groupId')).toBe('2')
-      expect(fixture.queries[0]?.get('subjectId')).toBe('3')
+      expect(fixture.queries[0]?.get('groupId')).toBe(scope === 'students' ? '2' : null)
+      expect(fixture.queries[0]?.get('subjectId')).toBe(scope === 'students' ? '3' : null)
       expect(fixture.queries[0]?.getAll('lessonType')).toEqual(['lecture'])
       expect(text(fixture.root)).not.toContain('Статистика недоступна')
       if (scope === 'groups') expect(text(fixture.root)).toContain('0 пар')

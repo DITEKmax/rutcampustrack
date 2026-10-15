@@ -33,7 +33,11 @@ public record IssueReportDownloadTicketRequest(
         @Valid HeadmanGroupCompositionParameters headmanGroupComposition,
         @Valid HeadmanSubjectJournalParameters headmanSubjectJournal,
         @Valid AdminUsersParameters adminUsers,
-        @Valid AdminGroupsParameters adminGroups) {
+        @Valid AdminGroupsParameters adminGroups,
+        @com.fasterxml.jackson.annotation.JsonInclude(
+                        com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                @Valid
+                AdminGroupAttendanceParameters adminGroupAttendance) {
     private static final int MAX_PARAMETER_VALUES = 20;
     private static final int MAX_PARAMETER_LENGTH = 128;
 
@@ -53,6 +57,7 @@ public record IssueReportDownloadTicketRequest(
                     case HEADMAN_SUBJECT_JOURNAL -> headmanSubjectJournal;
                     case ADMIN_USERS -> adminUsers;
                     case ADMIN_GROUPS -> adminGroups;
+                    case ADMIN_GROUP_ATTENDANCE -> adminGroupAttendance;
                 };
         long count =
                 java.util.stream.Stream.of(
@@ -65,7 +70,8 @@ public record IssueReportDownloadTicketRequest(
                                 headmanGroupComposition,
                                 headmanSubjectJournal,
                                 adminUsers,
-                                adminGroups)
+                                adminGroups,
+                                adminGroupAttendance)
                         .filter(Objects::nonNull)
                         .count();
         if (selected == null || count != 1) return false;
@@ -73,8 +79,37 @@ public record IssueReportDownloadTicketRequest(
             case TEACHER_JOURNAL -> teacherJournal.isLessonIdValid();
             case HEADMAN_STATS_TREND -> headmanStatsTrend.isConsistent();
             case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition.format() != null;
+            case ADMIN_GROUP_ATTENDANCE -> adminGroupAttendance.isConsistent();
             default -> true;
         };
+    }
+
+    /** Existing selectors retain their constructors and wire representation. */
+    public IssueReportDownloadTicketRequest(
+            ReportDownloadKind kind,
+            TeacherJournalParameters teacherJournal,
+            TeacherStatsParameters teacherStats,
+            HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
+            HeadmanWeeklySelectedParameters headmanWeeklySelected,
+            HeadmanStatsParameters headmanStats,
+            HeadmanStatsTrendParameters headmanStatsTrend,
+            HeadmanGroupCompositionParameters headmanGroupComposition,
+            HeadmanSubjectJournalParameters headmanSubjectJournal,
+            AdminUsersParameters adminUsers,
+            AdminGroupsParameters adminGroups) {
+        this(
+                kind,
+                teacherJournal,
+                teacherStats,
+                headmanWeeklyCurrent,
+                headmanWeeklySelected,
+                headmanStats,
+                headmanStatsTrend,
+                headmanGroupComposition,
+                headmanSubjectJournal,
+                adminUsers,
+                adminGroups,
+                null);
     }
 
     public IssueReportDownloadTicketRequest(
@@ -261,6 +296,13 @@ public record IssueReportDownloadTicketRequest(
                 appendSorts(canonical, adminUsers.sorts());
                 append(canonical, adminUsers.format().code());
             }
+            case ADMIN_GROUP_ATTENDANCE -> {
+                append(canonical, adminGroupAttendance.semesterId());
+                append(canonical, adminGroupAttendance.search());
+                append(canonical, adminGroupAttendance.sort());
+                append(canonical, adminGroupAttendance.direction());
+                append(canonical, adminGroupAttendance.format().code());
+            }
             case ADMIN_GROUPS -> {
                 append(canonical, adminGroups.status());
                 append(canonical, adminGroups.search());
@@ -299,6 +341,7 @@ public record IssueReportDownloadTicketRequest(
                     case HEADMAN_SUBJECT_JOURNAL -> "headman-subject-journal";
                     case ADMIN_USERS -> "admin-users";
                     case ADMIN_GROUPS -> "admin-groups";
+                    case ADMIN_GROUP_ATTENDANCE -> "admin-group-attendance";
                 };
         String extension =
                 kind == ReportDownloadKind.HEADMAN_STATS_TREND
@@ -326,6 +369,7 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_SUBJECT_JOURNAL -> headmanSubjectJournal.format();
             case ADMIN_USERS -> adminUsers.format();
             case ADMIN_GROUPS -> adminGroups.format();
+            case ADMIN_GROUP_ATTENDANCE -> adminGroupAttendance.format();
         };
     }
 
@@ -375,6 +419,45 @@ public record IssueReportDownloadTicketRequest(
             @NotNull ReportDownloadFormat format) {
         public AdminGroupsParameters {
             sorts = immutable(sorts);
+        }
+    }
+
+    public record AdminGroupAttendanceParameters(
+            @NotBlank @Pattern(regexp = "[1-9][0-9]{0,18}") String semesterId,
+            @NotNull @Size(max = 200) String search,
+            @NotBlank
+                    @Pattern(
+                            regexp =
+                                    "GROUP_NAME|PRESENT_PERCENT|PRESENT_OR_EXCUSED_PERCENT|COUNTED_LESSONS|PRESENT|ABSENT|EXCUSED")
+                    String sort,
+            @NotBlank @Pattern(regexp = "ASC|DESC") String direction,
+            @NotNull ReportDownloadFormat format) {
+        public AdminGroupAttendanceParameters {
+            if (search != null) search = search.trim();
+        }
+
+        @JsonIgnore
+        public boolean isConsistent() {
+            return isSemesterIdValid()
+                    && search != null
+                    && search.length() <= 200
+                    && sort != null
+                    && sort.matches(
+                            "GROUP_NAME|PRESENT_PERCENT|PRESENT_OR_EXCUSED_PERCENT|COUNTED_LESSONS|PRESENT|ABSENT|EXCUSED")
+                    && ("ASC".equals(direction) || "DESC".equals(direction))
+                    && format != null;
+        }
+
+        @AssertTrue(message = "Semester identity must be a positive long")
+        @JsonIgnore
+        public boolean isSemesterIdValid() {
+            try {
+                return semesterId != null
+                        && semesterId.matches("[1-9][0-9]{0,18}")
+                        && Long.parseLong(semesterId) > 0;
+            } catch (NumberFormatException invalid) {
+                return false;
+            }
         }
     }
 

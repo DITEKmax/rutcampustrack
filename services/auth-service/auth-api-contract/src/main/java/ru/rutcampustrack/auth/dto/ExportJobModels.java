@@ -54,7 +54,19 @@ public final class ExportJobModels {
             @NotNull @Size(min = 1, max = 20 * 1024 * 1024) byte[] content,
             @NotBlank String contentType,
             @Min(0) int rowCount,
-            boolean requiresFull) {
+            boolean requiresFull,
+            @io.swagger.v3.oas.annotations.media.Schema(types = {"string", "null"})
+                    @Pattern(regexp = "[0-9a-f]{64}")
+                    String teacherScopeHash) {
+        public Complete(
+                UUID leaseId,
+                byte[] content,
+                String contentType,
+                int rowCount,
+                boolean requiresFull) {
+            this(leaseId, content, contentType, rowCount, requiresFull, null);
+        }
+
         @Override
         public String toString() {
             return "ExportComplete[bytes=" + (content == null ? 0 : content.length) + "]";

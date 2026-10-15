@@ -32,6 +32,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
 import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
+import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
 import ru.rutcampustrack.gateway.clientip.TrustedClientIpResolver;
 
@@ -281,7 +282,12 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                         : request.contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(dispatch.body());
         return requestSpec
-                .exchangeToMono(response -> handleDownstreamResponse(response, dispatch))
+                .exchangeToMono(
+                        response ->
+                                handleDownstreamResponse(
+                                        response,
+                                        dispatch,
+                                        unscopedTeacherStats(redemption.report())))
                 .timeout(Duration.ofMillis(properties.getTimeoutMillis()))
                 .onErrorMap(
                         DataBufferLimitException.class,
@@ -294,8 +300,17 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                                         HttpStatus.SERVICE_UNAVAILABLE, error));
     }
 
+    private static boolean unscopedTeacherStats(IssueReportDownloadTicketRequest report) {
+        return report.kind() == ReportDownloadKind.TEACHER_STATS
+                && report.teacherStats() != null
+                && report.teacherStats().groupId() == null
+                && report.teacherStats().subjectId() == null
+                && ("groups".equalsIgnoreCase(report.teacherStats().scope())
+                        || "group".equalsIgnoreCase(report.teacherStats().scope()));
+    }
+
     private Mono<GeneratedFile> handleDownstreamResponse(
-            ClientResponse response, Dispatch dispatch) {
+            ClientResponse response, Dispatch dispatch, boolean requireTeacherScope) {
         if (!response.statusCode().is2xxSuccessful())
             return response.releaseBody()
                     .then(
@@ -317,6 +332,17 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                             Mono.error(
                                     new ReportDownloadResponseException(
                                             HttpStatus.PAYLOAD_TOO_LARGE)));
+        String teacherScopeHash =
+                requireTeacherScope
+                        ? response.headers().asHttpHeaders().getFirst("X-Export-Teacher-Scope-Hash")
+                        : null;
+        if (requireTeacherScope
+                && (teacherScopeHash == null || !teacherScopeHash.matches("[0-9a-f]{64}")))
+            return response.releaseBody()
+                    .then(
+                            Mono.error(
+                                    new ReportDownloadResponseException(
+                                            HttpStatus.SERVICE_UNAVAILABLE)));
         final int rows;
         final boolean full;
         try {
@@ -358,7 +384,11 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                                 buffer.read(bytes);
                                 return Mono.just(
                                         new GeneratedFile(
-                                                bytes, dispatch.expectedMediaType(), rows, full));
+                                                bytes,
+                                                dispatch.expectedMediaType(),
+                                                rows,
+                                                full,
+                                                teacherScopeHash));
                             } finally {
                                 DataBufferUtils.release(buffer);
                             }
@@ -366,7 +396,16 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
     }
 
     public record GeneratedFile(
-            byte[] content, String contentType, int rowCount, boolean requiresFull) {
+            byte[] content,
+            String contentType,
+            int rowCount,
+            boolean requiresFull,
+            String teacherScopeHash) {
+        public GeneratedFile(
+                byte[] content, String contentType, int rowCount, boolean requiresFull) {
+            this(content, contentType, rowCount, requiresFull, null);
+        }
+
         @Override
         public String toString() {
             return "GeneratedExport[bytes=" + content.length + "]";
@@ -558,6 +597,16 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                         "/academic/registry-exports/users",
                         query,
                         report.adminUsers(),
+                        expectedMediaType,
+                        filename);
+            }
+            case ADMIN_GROUP_ATTENDANCE -> {
+                yield new Dispatch(
+                        Backend.ACADEMIC,
+                        HttpMethod.POST,
+                        "/academic/admin/attendance/export",
+                        query,
+                        report.adminGroupAttendance(),
                         expectedMediaType,
                         filename);
             }

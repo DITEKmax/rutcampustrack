@@ -321,31 +321,121 @@ function ownedOtpReceiver(info: TestInfo) {
       }
       throw new Error('Own reset OTP was not delivered within its bound');
     },
+    async receiveLogin(telegramId: number) {
+      const end = performance.now() + 30000;
+      let messages = 0;
+      for (let polls = 0; polls < 120 && performance.now() < end; polls += 1) {
+        const result = await call(
+          'POST',
+          `${queuePath}/get`,
+          [200],
+          { count: 1, ackmode: 'ack_requeue_false', encoding: 'auto', truncate: 8192 },
+          end - performance.now(),
+        );
+        requireOwned(!closing, 'Owned OTP receiver is closing');
+        requireOwned(
+          Array.isArray(result.body) && result.body.length <= 1,
+          'Owned OTP queue response shape is invalid',
+        );
+        for (const message of result.body) {
+          messages += 1;
+          requireOwned(
+            messages <= 64 &&
+              message.payload_encoding === 'string' &&
+              typeof message.payload === 'string' &&
+              Buffer.byteLength(message.payload) <= 8192,
+            'Owned OTP queue delivery exceeds its bound',
+          );
+          let event: Record<string, any>;
+          try {
+            event = JSON.parse(message.payload);
+          } catch {
+            throw new Error('Owned OTP event is malformed');
+          }
+          requireOwned(
+            event !== null && typeof event === 'object' && !Array.isArray(event),
+            'Owned OTP event shape is invalid',
+          );
+          if (
+            event.event_type !== 'otp.requested' ||
+            event.source !== 'auth-service' ||
+            event.payload?.purpose !== 'login' ||
+            event.payload?.telegram_id !== telegramId
+          )
+            continue;
+          requireOwned(
+            Number.isSafeInteger(event.payload.ttl_seconds) &&
+              event.payload.ttl_seconds > 0 &&
+              !Object.hasOwn(event.payload, 'challenge_id') &&
+              !Object.hasOwn(event.payload, 'attempts_remaining') &&
+              typeof event.payload.code === 'string' &&
+              /^[0-9]{6}$/.test(event.payload.code),
+            'Owned login OTP contract is invalid',
+          );
+          return {
+            code: event.payload.code as string,
+          };
+        }
+        const remaining = end - performance.now();
+        if (remaining > 0) await delay(Math.min(250, remaining));
+      }
+      throw new Error('Own login OTP was not delivered within its bound');
+    },
     async close() {
       closing = true;
+      // Leave teardown overhead inside the existing separately awaited 30s fixture slot.
+      const end = performance.now() + 25000;
       // The original caller still owns its result; cleanup independently settles its I/O.
       if (inFlight) await Promise.allSettled([inFlight]);
       if (!attempted) return;
-      const existing = await call('GET', queuePath, [200, 404], undefined, 4000, true);
-      if (existing.status === 404) return;
-      requireOwned(existing.body?.name === queue, 'Owned OTP queue name must match');
-      requireOwned(existing.body.durable === false, 'Owned OTP queue must be non-durable');
-      requireOwned(existing.body.auto_delete === false, 'Owned OTP queue must not auto-delete');
-      requireOwned(existing.body.exclusive === false, 'Owned OTP queue must not be exclusive');
-      requireOwned(
-        Object.hasOwn(existing.body, 'consumers'),
-        'Owned OTP queue consumer count is absent',
-      );
-      requireOwned(
-        typeof existing.body.consumers === 'number',
-        'Owned OTP queue consumer count is not numeric',
-      );
-      requireOwned(
-        Number.isSafeInteger(existing.body.consumers) && existing.body.consumers >= 0,
-        'Owned OTP queue consumer count is not a nonnegative safe integer',
-      );
-      requireOwned(existing.body.consumers === 0, 'Owned OTP queue must have no consumers');
-      await call('DELETE', `${queuePath}?if-unused=true`, [204, 404], undefined, 4000, true);
+      for (;;) {
+        const remaining = Math.floor(end - performance.now());
+        requireOwned(remaining > 0, 'Owned OTP queue cleanup deadline expired');
+        const existing = await call('GET', queuePath, [200, 404], undefined, remaining, true);
+        if (existing.status === 404) return;
+        requireOwned(existing.body?.name === queue, 'Owned OTP queue name must match');
+        requireOwned(existing.body.durable === false, 'Owned OTP queue must be non-durable');
+        requireOwned(existing.body.auto_delete === false, 'Owned OTP queue must not auto-delete');
+        requireOwned(existing.body.exclusive === false, 'Owned OTP queue must not be exclusive');
+        requireOwned(
+          existing.body.arguments !== null &&
+            typeof existing.body.arguments === 'object' &&
+            !Array.isArray(existing.body.arguments) &&
+            Object.keys(existing.body.arguments).length === 0,
+          'Owned OTP queue declared arguments must remain empty',
+        );
+        // Management counts are sampled: wait only for absence, never infer zero.
+        if (!Object.hasOwn(existing.body, 'consumers')) {
+          const waitRemaining = Math.floor(end - performance.now());
+          requireOwned(waitRemaining > 0, 'Owned OTP queue consumer count is absent');
+          await delay(Math.min(250, waitRemaining));
+          continue;
+        }
+        requireOwned(
+          Object.hasOwn(existing.body, 'consumers'),
+          'Owned OTP queue consumer count is absent',
+        );
+        requireOwned(
+          typeof existing.body.consumers === 'number',
+          'Owned OTP queue consumer count is not numeric',
+        );
+        requireOwned(
+          Number.isSafeInteger(existing.body.consumers) && existing.body.consumers >= 0,
+          'Owned OTP queue consumer count is not a nonnegative safe integer',
+        );
+        requireOwned(existing.body.consumers === 0, 'Owned OTP queue must have no consumers');
+        const deleteRemaining = Math.floor(end - performance.now());
+        requireOwned(deleteRemaining > 0, 'Owned OTP queue cleanup deadline expired');
+        await call(
+          'DELETE',
+          `${queuePath}?if-unused=true`,
+          [204, 404],
+          undefined,
+          deleteRemaining,
+          true,
+        );
+        return;
+      }
     },
   };
 }
@@ -819,6 +909,7 @@ test('own profile security changes password and replacement login rejects old au
 
 test('password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted', async ({
   page,
+  request: issuer,
   dataset,
   otpRecipient: recipient,
 }, info) => {
@@ -932,5 +1023,154 @@ test('password recovery consumes its own delivered OTP and admits the replacemen
     replacement.session.userId === String(user.id) && replacement.session.activeRole === 'STUDENT',
     'Replacement password admits the exact reset owner',
   ).toBe(true);
+  await logoutPwa(page);
+
+  // D024: reuse the same real owner and mailbox; the login code never comes from HTTP.
+  const otpRequest = await dataset.admin.request.post('/api/auth/otp/request', {
+    data: { telegramId: user.telegramId },
+  });
+  try {
+    expect(otpRequest.status(), 'Own login OTP request is accepted').toBe(204);
+  } finally {
+    await otpRequest.dispose();
+  }
+  const loginCode = await recipient.receiveLogin(user.telegramId);
+  await page.getByRole('tab', { name: 'Код из Telegram', exact: true }).click();
+  await page.getByLabel('Код для входа', { exact: true }).fill(loginCode.code);
+  const [otpAdmitted, otpCurrent, ownScope] = await Promise.all([
+    http(page, '/api/auth/otp/verify-by-code', 'POST'),
+    http(page, '/api/auth/session', 'GET'),
+    http(page, '/api/v1/student/session', 'GET'),
+    page.getByRole('button', { name: 'Войти', exact: true }).click(),
+  ]);
+  expect(
+    otpAdmitted.status() === 200 && otpCurrent.status() === 200 && ownScope.status() === 200,
+    'Real OTP admission loads mandatory own context',
+  ).toBe(true);
+  const otpToken = (await otpAdmitted.json()).accessToken;
+  const otpSession = await otpCurrent.json();
+  const studentScope = await ownScope.json();
+  expect(
+    typeof otpToken === 'string' &&
+      otpSession.userId === String(user.id) &&
+      otpSession.activeRole === 'STUDENT' &&
+      String(studentScope.user.id) === String(user.id) &&
+      String(studentScope.group.id) === String(dataset.otherGroup.id),
+    'OTP selects the same own current scope',
+  ).toBe(true);
+  await expect(
+    page.getByRole('navigation', { name: 'Основная навигация', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+  await page.getByRole('button', { name: 'Вход в браузере', exact: true }).click();
+  let targetToken: string | null = null;
+  let qrFailed = false;
+  try {
+    const issued = await issuer.post('/api/auth/qr/challenges', { data: { purpose: 'LOGIN' } });
+    let challenge;
+    try {
+      expect(issued.status()).toBe(200);
+      challenge = await issued.json();
+    } finally {
+      await issued.dispose();
+    }
+    expect(
+      typeof challenge.qrPayload === 'string',
+      'Owned issuer receives an opaque QR payload',
+    ).toBe(true);
+    await page.getByLabel('Данные QR для входа', { exact: true }).fill(challenge.qrPayload);
+    const [preview] = await Promise.all([
+      http(page, '/api/auth/qr/preview', 'POST'),
+      page.getByRole('button', { name: 'Проверить вход', exact: true }).click(),
+    ]);
+    expect(preview.status()).toBe(200);
+    const previewed = await preview.json();
+    expect(
+      previewed.challengeId === challenge.challengeId &&
+        previewed.purpose === 'LOGIN' &&
+        previewed.status === 'pending',
+      'Mobile previews the exact pending browser challenge',
+    ).toBe(true);
+    const [decision] = await Promise.all([
+      http(page, '/api/auth/qr/decision', 'POST'),
+      page.getByRole('button', { name: 'Подтвердить вход', exact: true }).click(),
+    ]);
+    expect(decision.status()).toBe(200);
+    expect((await decision.json()).status === 'confirmed').toBe(true);
+    await expect(page.getByRole('status')).toHaveText('Вход в браузере подтверждён');
+    const exchanged = await issuer.post('/api/auth/qr/exchange', {
+      data: {
+        purpose: 'LOGIN',
+        issuerId: challenge.issuerId,
+        issuerSecret: challenge.issuerSecret,
+        challengeId: challenge.challengeId,
+      },
+    });
+    try {
+      expect(exchanged.status()).toBe(200);
+      targetToken = (await exchanged.json()).accessToken;
+    } finally {
+      await exchanged.dispose();
+    }
+    expect(typeof targetToken === 'string', 'Approved target receives its own session').toBe(true);
+    const target = await issuer.get('/api/auth/session', {
+      headers: { Authorization: `Bearer ${targetToken}` },
+    });
+    try {
+      expect(target.status()).toBe(200);
+      const targetSession = await target.json();
+      expect(
+        targetSession.userId === String(user.id) &&
+          targetSession.sessionId !== otpSession.sessionId,
+        'QR target is the same user in a distinct concurrent session',
+      ).toBe(true);
+    } finally {
+      await target.dispose();
+    }
+    const source = await page.request.get('/api/auth/session', {
+      headers: { Authorization: `Bearer ${otpToken}` },
+    });
+    try {
+      expect(source.status()).toBe(200);
+      expect(
+        (await source.json()).sessionId === otpSession.sessionId,
+        'Mobile session survives target admission',
+      ).toBe(true);
+    } finally {
+      await source.dispose();
+    }
+    expect(
+      await page.evaluate(
+        (secrets: string[]) =>
+          [...Object.values(localStorage), ...Object.values(sessionStorage)].every((value) =>
+            secrets.every((secret) => !value.includes(secret)),
+          ),
+        [otpToken, JSON.parse(challenge.qrPayload).approvalToken, challenge.issuerSecret],
+      ),
+      'Admission proofs stay out of web storage',
+    ).toBe(true);
+  } catch (error) {
+    qrFailed = true;
+    throw error;
+  } finally {
+    try {
+      if (targetToken) {
+        const signedOut = await issuer.post('/api/auth/logout', {
+          headers: { Authorization: `Bearer ${targetToken}` },
+        });
+        try {
+          expect(signedOut.status(), 'Only the owned QR target is signed out').toBe(204);
+        } finally {
+          await signedOut.dispose();
+        }
+      }
+    } catch (error) {
+      if (qrFailed) expect.soft(false, 'OWN_QR_TARGET_LOGOUT_FAILED').toBe(true);
+      else throw error;
+    } finally {
+      await issuer.dispose();
+    }
+  }
+  await page.getByRole('button', { name: 'Закрыть', exact: true }).click();
   await logoutPwa(page);
 });

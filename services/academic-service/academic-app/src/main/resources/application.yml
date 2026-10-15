@@ -81,6 +81,8 @@ grpc:
     secret: ${GRPC_SECRET:}
   service-identity:
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
+    academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
+    attendance-authority: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}
     schedule-to-academic-token: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:}
     # Optional bot-only identity; protected RPCs deny access while unconfigured.
     bot-to-academic-token: ${BOT_TO_ACADEMIC_SERVICE_TOKEN:}

@@ -21,7 +21,7 @@ class ExportJobWorkerTest {
                 .thenReturn(
                         Mono.just(
                                 new ReportDownloadTicketDownloadFilter.GeneratedFile(
-                                        new byte[] {1}, "text/html", 3, true)));
+                                        new byte[] {1}, "text/html", 3, true, "a".repeat(64))));
         when(auth.completeExport(eq(claim.jobId()), any())).thenReturn(Mono.empty());
         StepVerifier.create(new ExportJobWorker(auth, reports).runOne()).verifyComplete();
         verify(auth)
@@ -32,7 +32,10 @@ class ExportJobWorkerTest {
                                         result.leaseId().equals(claim.leaseId())
                                                 && result.rowCount() == 3
                                                 && result.requiresFull()
-                                                && result.content().length == 1));
+                                                && result.content().length == 1
+                                                && "a"
+                                                        .repeat(64)
+                                                        .equals(result.teacherScopeHash())));
         verify(auth, never()).failExport(any(), any());
     }
 

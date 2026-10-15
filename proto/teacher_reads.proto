@@ -37,6 +37,7 @@ message TeacherStatsExportRequest {
 }
 
 message TeacherStatsExportResponse {
+  string teacher_scope_hash = 4;
   bytes content = 1;
   string file_name = 2;
   string content_type = 3;

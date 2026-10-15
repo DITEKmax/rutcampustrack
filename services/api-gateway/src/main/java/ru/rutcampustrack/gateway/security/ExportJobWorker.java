@@ -60,7 +60,8 @@ public class ExportJobWorker {
                                                 file.content(),
                                                 file.contentType(),
                                                 file.rowCount(),
-                                                file.requiresFull())))
+                                                file.requiresFull(),
+                                                file.teacherScopeHash())))
                 .onErrorResume(
                         failure ->
                                 auth.failExport(

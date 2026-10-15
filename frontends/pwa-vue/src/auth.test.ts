@@ -1008,3 +1008,44 @@ describe('PWA own-profile Telegram ID', () => {
     auth.dispose()
   })
 })
+
+describe('D024 generation-bound mobile admissions', () => {
+  it('discards a late OTP login after authority was cleared', async () => {
+    let resolve!: (value: Response) => void
+    const fetcher = vi.fn<typeof fetch>().mockReturnValue(
+      new Promise<Response>((done) => {
+        resolve = done
+      }),
+    )
+    const auth = usePwaAuth({ fetcher })
+    const pending = auth.loginOtp({ code: '123456' })
+    const rejected = expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    auth.clear()
+    resolve(response({ accessToken: 'late-otp-token' }))
+    await rejected
+    expect(auth.accessToken.value).toBeNull()
+  })
+  it('requires fresh identical current authority before every explicit browser decision', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(response({ accessToken: 'mobile-token' }))
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(response({ ...profile, sessionVersion: '99' }))
+    const auth = usePwaAuth({ fetcher })
+    const admitted = await auth.loginOtp({ code: '123456' })
+    await auth.getSessionFor(admitted.generation)
+    const port = auth.createProfilePort().browserLoginApproval!
+    await expect(
+      port.decide(
+        { purpose: 'LOGIN', challengeId: profile.sessionId, approvalToken: 'a'.repeat(43) },
+        'CONFIRM',
+      ),
+    ).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(fetcher.mock.calls.map((call) => call[0])).toEqual([
+      '/api/auth/otp/verify-by-code',
+      '/api/auth/session',
+      '/api/auth/session',
+    ])
+    expect(port.isOnline()).toBe(false)
+  })
+})

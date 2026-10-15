@@ -195,6 +195,8 @@ public final class TeacherApiController implements TeacherApi {
                 ContentDisposition.attachment()
                         .filename(download.filename(), StandardCharsets.UTF_8)
                         .build());
+        if (download.teacherScopeHash() != null)
+            headers.set("X-Export-Teacher-Scope-Hash", download.teacherScopeHash());
         headers.setCacheControl(CacheControl.noStore());
         return new ResponseEntity<>(
                 download.bytes(), headers, org.springframework.http.HttpStatus.OK);

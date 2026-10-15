@@ -20,6 +20,16 @@ import type {
   operations as authOperations,
 } from '../../mobile-core/src/api/generated/auth'
 
+import {
+  decodeBrowserLoginPreview,
+  decodeBrowserLoginStatus,
+} from '../../mobile-core/src/features/profile/browser-login-approval'
+import type {
+  BrowserLoginProof,
+  BrowserLoginPreview,
+  BrowserLoginStatus,
+} from '../../mobile-core/src/features/profile/browser-login-approval'
+
 type AuthSchemas = authComponents['schemas']
 type GeneratedTokenResponse = AuthSchemas['TokenResponse']
 type GeneratedCurrentSessionResponse = AuthSchemas['CurrentSessionResponse']
@@ -112,6 +122,12 @@ export class AuthProtocolError extends AuthRequestError {
 
 export interface AuthClient {
   login(input: AuthLoginInput): Promise<AuthToken>
+  loginOtp(input: { code: string }): Promise<AuthToken>
+  previewBrowserLogin(proof: BrowserLoginProof): Promise<BrowserLoginPreview>
+  decideBrowserLogin(
+    proof: BrowserLoginProof,
+    decision: 'CONFIRM' | 'REJECT',
+  ): Promise<BrowserLoginStatus>
   refresh(): Promise<AuthToken>
   getSnapshot(): Promise<ProfileSnapshot>
   getOwnTelegramId(userId: string): Promise<string | null | undefined>
@@ -142,6 +158,41 @@ export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
       }
       return requestToken('login', '/api/auth/login', input, fetcher, accessToken)
     },
+    loginOtp: (input) => {
+      if (!/^[0-9]{6}$/u.test(input.code))
+        throw new AuthPayloadError('login-otp', 'Введи шестизначный код')
+      return requestToken(
+        'login-otp',
+        '/api/auth/otp/verify-by-code',
+        { code: input.code },
+        fetcher,
+        accessToken,
+      )
+    },
+    previewBrowserLogin: async (proof) =>
+      decodeBrowserLoginPreview(
+        await requestJson<unknown>(
+          'browser-login-preview',
+          '/api/auth/qr/preview',
+          'POST',
+          proof,
+          fetcher,
+          accessToken,
+        ),
+        proof,
+      ),
+    decideBrowserLogin: async (proof, decision) =>
+      decodeBrowserLoginStatus(
+        await requestJson<unknown>(
+          'browser-login-decision',
+          '/api/auth/qr/decision',
+          'POST',
+          { ...proof, decision },
+          fetcher,
+          accessToken,
+        ),
+        proof,
+      ),
     refresh: () => requestToken('refresh', '/api/auth/refresh', undefined, fetcher, accessToken),
     getSnapshot: async () => {
       const value = await requestJson<GeneratedCurrentSessionResponse>(
@@ -269,7 +320,7 @@ function pagePath(path: string, input?: ProfilePageRequest): string {
 async function requestToken(
   operation: string,
   path: string,
-  body: AuthLoginInput | undefined,
+  body: AuthLoginInput | { code: string } | undefined,
   fetcher: typeof fetch,
   accessToken: () => string | null,
 ): Promise<AuthToken> {
@@ -728,6 +779,8 @@ function authErrorMessage(
   problem: AuthProblem | null,
   causeValue: unknown,
 ): string {
+  if (operation === 'login-otp' && (status === 401 || status === 410))
+    return 'Код недействителен или истёк. Получи новый код в Telegram'
   if (problem?.detail || problem?.title)
     return problem.detail ?? problem.title ?? 'Ошибка авторизации'
   if (problem?.code === 'NETWORK' || causeValue instanceof TypeError)

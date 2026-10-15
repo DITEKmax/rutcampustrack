@@ -63,6 +63,10 @@ export function readRecoverableTeacherStatsContext(params = readSearchParams()):
     const notice = 'Параметры статистики в адресе некорректны. Отбор восстановлен по умолчанию.'
     const scope = params?.get(SCOPE_KEY)
     if (!params || (scope !== 'students' && scope !== 'groups')) return { context: null, notice }
+    if (params.has(GROUP_KEY) !== params.has(SUBJECT_KEY)) return { context: null, notice }
+    for (const key of [GROUP_KEY, SUBJECT_KEY]) {
+      if (params.has(key) && !positiveInteger(params.get(key))) return { context: null, notice }
+    }
     const recoveredParams = new URLSearchParams(params)
     for (const key of [
       TYPE_KEY,
@@ -78,7 +82,12 @@ export function readRecoverableTeacherStatsContext(params = readSearchParams()):
     // Recover criteria only when the selected context itself is valid. IDs
     // remain a request to the server, never proof of access to another group.
     return {
-      context: context?.semesterId && context.groupId && context.subjectId ? context : null,
+      context:
+        context?.semesterId &&
+        ((context.groupId && context.subjectId) ||
+          (context.scope === 'groups' && context.groupId === null && context.subjectId === null))
+          ? context
+          : null,
       notice,
     }
   }
@@ -132,13 +141,18 @@ export function teacherStatsQueryForContext(
   context: TeacherStatsRouteContext,
 ): TeacherStatsQuery | null {
   validateCriteria(context)
-  if (!context.semesterId || !context.groupId || !context.subjectId || !context.lessonTypes.length)
+  const allGroups =
+    context.scope === 'groups' && context.groupId === null && context.subjectId === null
+  if (
+    !context.semesterId ||
+    (!allGroups && (!context.groupId || !context.subjectId)) ||
+    !context.lessonTypes.length
+  )
     return null
   return {
     semesterId: context.semesterId,
     scope: context.scope,
-    groupId: context.groupId,
-    subjectId: context.subjectId,
+    ...(allGroups ? {} : { groupId: context.groupId!, subjectId: context.subjectId! }),
     lessonTypes: [...context.lessonTypes],
     sorts: context.sorts.map((sort) => ({ ...sort })),
     filters: context.filters.map((filter) => ({ ...filter })),
@@ -159,7 +173,16 @@ export function readTeacherStatsContext(
   params = readSearchParams(),
 ): TeacherStatsRouteContext | null {
   if (!params || params.get(ACTIVE_KEY) !== '1') return null
-  const scope = params.get(SCOPE_KEY) === 'students' ? 'students' : 'groups'
+  const scopeValue = params.get(SCOPE_KEY)
+  if (scopeValue !== null && scopeValue !== 'students' && scopeValue !== 'groups')
+    throw new RangeError('Проверь контекст статистики в адресе.')
+  if (params.has(GROUP_KEY) !== params.has(SUBJECT_KEY))
+    throw new RangeError('Проверь контекст статистики в адресе.')
+  for (const key of [GROUP_KEY, SUBJECT_KEY]) {
+    if (params.has(key) && !positiveInteger(params.get(key)))
+      throw new RangeError('Проверь контекст статистики в адресе.')
+  }
+  const scope = scopeValue === 'students' ? 'students' : 'groups'
   const currentCriteria = params.get(CRITERIA_KEY) === '1'
   const sortValues = params.getAll(SORT_KEY)
   const context: TeacherStatsRouteContext = {

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import BrowserLoginApprovalForm from './BrowserLoginApprovalForm.vue';
+import type { BrowserLoginApprovalPort } from './browser-login-approval';
 import type { HeadmanPermissionOption } from '../headman-group/headman-group-client';
 import type {
   ProfileRequestError,
@@ -19,6 +21,7 @@ import './profile-screen.pcss';
 const props = withDefaults(
   defineProps<{
     snapshot: ProfileSnapshot | null;
+    browserLoginApproval?: BrowserLoginApprovalPort | null;
     delegatedPermissions?: readonly HeadmanPermissionOption[];
     loading?: boolean;
     error?: ProfileRequestError | null;
@@ -32,6 +35,7 @@ const props = withDefaults(
   }>(),
   {
     delegatedPermissions: () => [],
+    browserLoginApproval: null,
     loading: false,
     error: null,
     onRetry: undefined,
@@ -43,6 +47,20 @@ const props = withDefaults(
     theme: 'dark',
   },
 );
+
+const approvalOpen = ref(false);
+const approvalAvailable = computed(
+  () =>
+    !!props.browserLoginApproval &&
+    !!props.snapshot?.activeRole &&
+    !props.snapshot.readOnly &&
+    !props.loading &&
+    !props.error &&
+    props.browserLoginApproval.isOnline(),
+);
+watch([() => props.snapshot, () => props.browserLoginApproval, approvalAvailable], () => {
+  approvalOpen.value = false;
+});
 
 const rows = [
   { route: 'role-switch', label: 'Сменить роль', icon: profileRoleSwitch },
@@ -154,6 +172,25 @@ function logout(): void {
               {{ permission.label }}
             </li>
           </ul>
+        </section>
+
+        <section
+          v-if="approvalAvailable && browserLoginApproval"
+          aria-label="Вход в браузере"
+        >
+          <BrowserLoginApprovalForm
+            v-if="approvalOpen"
+            :port="browserLoginApproval"
+            @close="approvalOpen = false"
+          />
+          <button
+            v-else
+            class="profile-secondary-button"
+            type="button"
+            @click="approvalOpen = true"
+          >
+            Вход в браузере
+          </button>
         </section>
 
         <nav aria-label="Настройки профиля">

@@ -157,6 +157,82 @@ class TeacherStatsExportServiceTest {
         }
     }
 
+    @Test
+    void unscopedGroupsExportUsesServerRowsAndNeverFetchesAnAbsentSelection() {
+        ReportService report = mock(ReportService.class);
+        AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
+        TeacherAcademicGrpcClient teacherAcademic = mock(TeacherAcademicGrpcClient.class);
+        DocumentRendererGrpcClient renderer = mock(DocumentRendererGrpcClient.class);
+        when(teacherAcademic.fullSemesterAssignments(SEMESTER_ID))
+                .thenReturn(
+                        TeacherAssignmentsResponse.newBuilder()
+                                .setSemesterDateFrom("2026-01-01")
+                                .setSemesterDateTo("2026-06-30")
+                                .build());
+        var query =
+                new ReportService.TeacherStatsQuery(
+                        List.of(),
+                        ReportService.TeacherStatsScope.GROUPS,
+                        0,
+                        0,
+                        List.of("lecture"),
+                        List.of(),
+                        List.of(),
+                        SEMESTER_ID);
+        var original = stats(ReportService.TeacherStatsScope.GROUPS);
+        var zero = new ReportService.TeacherMetric(0, 0, 0);
+        var rows =
+                List.of(
+                        original.groups().getFirst(),
+                        new ReportService.TeacherGroupStats(
+                                GROUP_ID + 1, "Пустая группа", 0, zero, zero, zero, zero));
+        when(report.getAuthorizedTeacherStats(query, TEACHER_ID))
+                .thenReturn(
+                        new ReportService.AuthorizedTeacherStats(
+                                new ReportService.TeacherStatsResult(
+                                        original.scope(),
+                                        original.semesterId(),
+                                        original.periodFrom(),
+                                        original.periodTo(),
+                                        original.lessonsCount(),
+                                        List.of(),
+                                        rows,
+                                        original.subjectOptions(),
+                                        original.serverNow()),
+                                ru.rutcampustrack.shared.security.teacher.TeacherReportScope.of(
+                                        List.of(
+                                                new ru.rutcampustrack.shared.security.teacher
+                                                        .TeacherReportScope.Tuple(
+                                                        GROUP_ID, SUBJECT_ID),
+                                                new ru.rutcampustrack.shared.security.teacher
+                                                        .TeacherReportScope.Tuple(
+                                                        GROUP_ID + 1, SUBJECT_ID)))));
+        var response =
+                new TeacherStatsExportService(report, academic, teacherAcademic, renderer)
+                        .export(query, TEACHER_ID, "html");
+        assertThat(response.getTeacherScopeHash())
+                .isEqualTo(
+                        ru.rutcampustrack.shared.security.teacher.TeacherReportScope.of(
+                                        List.of(
+                                                new ru.rutcampustrack.shared.security.teacher
+                                                        .TeacherReportScope.Tuple(
+                                                        GROUP_ID + 1, SUBJECT_ID),
+                                                new ru.rutcampustrack.shared.security.teacher
+                                                        .TeacherReportScope.Tuple(
+                                                        GROUP_ID, SUBJECT_ID)))
+                                .sha256());
+        String html = response.getContent().toStringUtf8();
+        assertThat(html)
+                .contains(
+                        "УИТ-311",
+                        "Пустая группа",
+                        "Предметы с текущим назначением преподавателя",
+                        "— (0/0)")
+                .doesNotContain("/ 0.0%</td>", "А&amp;Б");
+        assertThat(html.indexOf("УИТ-311</th>")).isLessThan(html.indexOf("Пустая группа</th>"));
+        org.mockito.Mockito.verifyNoInteractions(academic, renderer);
+    }
+
     private static ReportService.TeacherStatsQuery query(ReportService.TeacherStatsScope scope) {
         return new ReportService.TeacherStatsQuery(
                 List.of(101L, 102L),

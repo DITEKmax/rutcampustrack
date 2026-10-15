@@ -180,9 +180,11 @@ let disposed = false;
 const groups = computed(() => authorizedGroups.value);
 const subjects = computed(() => subjectsForGroup(selectedGroupId.value));
 const types = computed(() =>
-  selectedGroupId.value && selectedSubjectId.value
-    ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
-    : [],
+  scope.value === 'groups'
+    ? lessonTypesForContext(null, null)
+    : selectedGroupId.value && selectedSubjectId.value
+      ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
+      : [],
 );
 const groupRows = computed(() => displayedStats.value?.groups ?? []);
 const studentRows = computed(() => displayedStats.value?.students ?? []);
@@ -279,7 +281,7 @@ function chooseDirectoryGroup(id: string): void {
     directoryResult.value = null;
     return;
   }
-  changeGroup(id);
+  openGroup(Number(id));
 }
 
 async function loadContext(): Promise<void> {
@@ -358,13 +360,16 @@ async function loadStatsForRevision(current: number): Promise<void> {
     const response = await api.stats(query);
     if (!isCurrent(current)) return;
     const currentAssignmentOptions = catalogSubjectOptions.value.filter(
-      (option) => option.groupId === query.groupId,
+      (option) => query.groupId == null || option.groupId === query.groupId,
     );
     const responseOptions = mergeSubjectOptions(currentAssignmentOptions, response.subjectOptions);
-    authorizedSubjectOptions.value = [
-      ...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId),
-      ...responseOptions,
-    ];
+    authorizedSubjectOptions.value =
+      query.groupId == null
+        ? responseOptions
+        : [
+            ...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId),
+            ...responseOptions,
+          ];
     stats.value = response;
     statsQuery.value = query;
   } catch (cause) {
@@ -380,8 +385,10 @@ async function loadStatsForRevision(current: number): Promise<void> {
 function currentStatsQuery(): TeacherStatsQuery | null {
   if (
     !contextReady.value ||
-    !groups.value.some((group) => group.id === selectedGroupId.value) ||
-    !subjects.value.some((subject) => subject.id === selectedSubjectId.value) ||
+    groups.value.length === 0 ||
+    (scope.value === 'students' &&
+      (!groups.value.some((group) => group.id === selectedGroupId.value) ||
+        !subjects.value.some((subject) => subject.id === selectedSubjectId.value))) ||
     !selectedTypes.value.length ||
     selectedTypes.value.some((type) => !types.value.includes(type))
   )
@@ -413,9 +420,10 @@ function restoreContext(semesterId: number): void {
   )
     ? saved.subjectId
     : null;
-  selectedTypes.value = selectedSubjectId.value
-    ? saved.lessonTypes.filter((type) => types.value.includes(type))
-    : [];
+  selectedTypes.value =
+    scope.value === 'groups' || selectedSubjectId.value
+      ? saved.lessonTypes.filter((type) => types.value.includes(type))
+      : [];
   sorts.value = saved.sorts.map((sort) => ({ ...sort }));
   scopeMemory.value[scope.value].filters = saved.filters.map((filter) => ({ ...filter }));
   for (const filter of saved.filters) {
@@ -432,8 +440,8 @@ function currentRouteContext(): TeacherStatsRouteContext {
   return {
     semesterId: props.semesterId,
     scope: scope.value,
-    groupId: selectedGroupId.value,
-    subjectId: selectedSubjectId.value,
+    groupId: scope.value === 'groups' ? null : selectedGroupId.value,
+    subjectId: scope.value === 'groups' ? null : selectedSubjectId.value,
     lessonTypes: selectedTypes.value,
     search: '',
     sorts: sorts.value,
@@ -476,7 +484,7 @@ function changeSubject(rawValue: string): void {
 }
 
 function clearChildCriteria(): void {
-  for (const memory of Object.values(scopeMemory.value)) memory.lessonTypes = [];
+  scopeMemory.value.students.lessonTypes = [];
 }
 
 function toggleType(type: string): void {
@@ -597,8 +605,10 @@ function columnLabel(column: string): string {
 }
 
 function openGroup(groupId: number): void {
-  const group = groups.value.find((value) => value.id === groupId);
-  if (group) emit('open-group', groupId, group.name);
+  if (!canChooseContext.value || !groups.value.some((value) => value.id === groupId)) return;
+  scope.value = 'students';
+  // A group summary spans distinct authorized subjects; never infer one by its name.
+  changeGroup(String(groupId));
 }
 
 function openJournal(): void {
@@ -827,6 +837,7 @@ function isCurrent(requestRevision: number): boolean {
       </button>
     </div>
     <section
+      v-if="scope === 'students'"
       class="teacher-stats__context"
       aria-label="Выбор контекста"
     >
@@ -1016,7 +1027,9 @@ function isCurrent(requestRevision: number): boolean {
       class="teacher-stats__state"
       role="status"
     >
-      Выбери группу, предмет и хотя бы один тип занятия.
+      {{ scope === 'groups'
+        ? 'Выбери хотя бы один тип занятия. Учитываем только твои предметы в доступных группах.'
+        : 'Выбери группу, предмет и хотя бы один тип занятия.' }}
     </p>
     <template v-else-if="displayedStats">
       <h2 class="teacher-stats__results-title">

@@ -823,6 +823,11 @@ defineExpose({ openNotificationAction });
         <ProfileScreen
           v-if="route.id === 'profile'"
           :snapshot="profileView.snapshot"
+          :browser-login-approval="
+            !offline && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
+              ? profilePort?.browserLoginApproval ?? null
+              : null
+          "
           :loading="profileView.snapshotStatus === 'loading'"
           :error="profileView.snapshotError"
           :theme="resolvedTheme"

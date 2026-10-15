@@ -2319,6 +2319,11 @@ defineExpose({ openNotificationAction });
     <ProfileScreen
       v-if="route.kind === 'root'"
       :snapshot="profileView.snapshot"
+      :browser-login-approval="
+        !offline && !readOnly && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
+          ? profilePort?.browserLoginApproval ?? null
+          : null
+      "
       :delegated-permissions="profilePermissionOptions"
       :loading="profileView.snapshotStatus === 'loading'"
       :error="profileView.snapshotError"

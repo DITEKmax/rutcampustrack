@@ -55,6 +55,7 @@ public final class ReportDownloadTicketService {
     private final ObjectMapper objectMapper;
     private final AcademicAssistantPermissionClient academicAssistantPermissionClient;
     private final AdminAccessJdbcAuthority admins;
+    private final ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc teachers;
     private final Clock clock;
     private final SecureRandom secureRandom;
 
@@ -76,7 +77,8 @@ public final class ReportDownloadTicketService {
                 Clock.systemUTC(),
                 new SecureRandom(),
                 academicAssistantPermissionClient,
-                new AdminAccessJdbcAuthority(jdbc));
+                new AdminAccessJdbcAuthority(jdbc),
+                new ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc(jdbc));
     }
 
     ReportDownloadTicketService(
@@ -89,6 +91,31 @@ public final class ReportDownloadTicketService {
             SecureRandom secureRandom,
             AcademicAssistantPermissionClient academicAssistantPermissionClient,
             AdminAccessJdbcAuthority admins) {
+        this(
+                ticketStore,
+                authService,
+                jwtService,
+                issuerProperties,
+                objectMapper,
+                clock,
+                secureRandom,
+                academicAssistantPermissionClient,
+                admins,
+                null);
+    }
+
+    ReportDownloadTicketService(
+            ReportDownloadTicketStore ticketStore,
+            AuthService authService,
+            JwtService jwtService,
+            InternalIssuerProperties issuerProperties,
+            ObjectMapper objectMapper,
+            Clock clock,
+            SecureRandom secureRandom,
+            AcademicAssistantPermissionClient academicAssistantPermissionClient,
+            AdminAccessJdbcAuthority admins,
+            ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc teachers) {
+        this.teachers = teachers;
         this.ticketStore = Objects.requireNonNull(ticketStore, "ticketStore");
         this.authService = Objects.requireNonNull(authService, "authService");
         this.jwtService = Objects.requireNonNull(jwtService, "jwtService");
@@ -125,6 +152,11 @@ public final class ReportDownloadTicketService {
             java.util.UUID exportJobId,
             Instant jobExpiresAt) {
         Objects.requireNonNull(principal, "principal");
+        if (report != null
+                && report.kind() == ReportDownloadKind.ADMIN_GROUP_ATTENDANCE
+                && exportJobId == null) {
+            throw new InvalidReportDownloadTicketRequestException();
+        }
         if (report == null || !report.isParametersConsistent()) {
             throw new InvalidReportDownloadTicketRequestException();
         }
@@ -141,6 +173,7 @@ public final class ReportDownloadTicketService {
             requireCurrentHeadman(selectedRole);
         }
 
+        requireTeacherJob(principal, report, exportJobId);
         String sessionDigest = digest(principal.userId() + ":" + principal.sessionId());
         if (!storeCall(
                 () -> ticketStore.allowIssue(sessionDigest, MAX_ISSUES_PER_SESSION, TICKET_TTL))) {
@@ -246,6 +279,7 @@ public final class ReportDownloadTicketService {
         if (stored.report().kind() == ReportDownloadKind.HEADMAN_GROUP_COMPOSITION) {
             requireCurrentHeadman(snapshot.activeRole());
         }
+        requireTeacherJob(stored.principal(), stored.report(), stored.exportJobId());
         Instant freshNow = clock.instant();
         if (!freshNow.isBefore(stored.expiresAt())) {
             return Optional.empty();
@@ -310,6 +344,7 @@ public final class ReportDownloadTicketService {
                 if (role.role() != AuthRole.TEACHER)
                     throw new SessionAdmissionException(
                             SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+                teacherAuthority().requireSelection(principal, report);
             }
             case HEADMAN_GROUP_COMPOSITION -> requireCurrentHeadman(role);
             case HEADMAN_WEEKLY_CURRENT,
@@ -322,7 +357,7 @@ public final class ReportDownloadTicketService {
                             SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
                 requireCurrentViewStats(snapshot, role);
             }
-            case ADMIN_USERS, ADMIN_GROUPS -> {
+            case ADMIN_USERS, ADMIN_GROUPS, ADMIN_GROUP_ATTENDANCE -> {
                 if (role.role() != AuthRole.ADMIN)
                     throw new SessionAdmissionException(
                             SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
@@ -346,6 +381,33 @@ public final class ReportDownloadTicketService {
                         snapshot, issuedAt, expiry, hash, capabilityExpiry);
         return new ReportDownloadTicketRedemptionResponse(
                 admission(snapshot, token, expiry), capabilityExpiry, hash, report);
+    }
+
+    private ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc teacherAuthority() {
+        if (teachers == null)
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+        return teachers;
+    }
+
+    private void requireTeacherJob(
+            SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report,
+            java.util.UUID id) {
+        if (ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.teacher(report))
+            teacherAuthority().requireReadyJob(principal, report, id);
+    }
+
+    public ru.rutcampustrack.shared.security.teacher.TeacherReportScope captureTeacherScope(
+            SessionPrincipal principal, IssueReportDownloadTicketRequest report, String hash) {
+        return ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.teacher(report)
+                ? teacherAuthority().capture(principal, report, hash)
+                : null;
+    }
+
+    public void requireReadyTeacher(StoredReportDownloadTicket identity) {
+        if (ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.teacher(identity.report()))
+            teacherAuthority().requireReady(identity);
     }
 
     private String serialize(StoredReportDownloadTicket stored) {

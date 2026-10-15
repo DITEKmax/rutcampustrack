@@ -715,6 +715,15 @@ public class ReportService {
      * authority.
      */
     public TeacherStatsResult getTeacherStats(TeacherStatsQuery query, long teacherId) {
+        return getAuthorizedTeacherStats(query, teacherId).stats();
+    }
+
+    public record AuthorizedTeacherStats(
+            TeacherStatsResult stats,
+            ru.rutcampustrack.shared.security.teacher.TeacherReportScope scope) {}
+
+    public AuthorizedTeacherStats getAuthorizedTeacherStats(
+            TeacherStatsQuery query, long teacherId) {
         validateTeacherStatsQuery(query, teacherId);
         List<Long> requestedLessonIds =
                 query.lessonIds() == null
@@ -733,16 +742,18 @@ public class ReportService {
         if (teacherAuthority == null) {
             throw new AccessDeniedException("Teacher assignment authority is unavailable");
         }
+        Set<TeacherStatsSubjectKey> allowedSubjects = currentTeacherSubjectKeys(teacherAuthority);
         Set<Long> activeGroupIds =
-                teacherAuthority.getSubjectsList().stream()
-                        .filter(info -> info != null && info.getGroupId() > 0)
-                        .map(TeacherSubjectInfo::getGroupId)
+                allowedSubjects.stream()
+                        .map(TeacherStatsSubjectKey::groupId)
                         .collect(Collectors.toSet());
-        if (activeGroupIds.isEmpty()) {
-            throw new AccessDeniedException("Teacher is not active in a group");
-        }
-        if (!activeGroupIds.contains(query.groupId())) {
-            throw new AccessDeniedException("Teacher is not active in the selected group");
+        boolean allGroups = allTeacherGroups(query);
+        if (activeGroupIds.isEmpty()
+                || !allGroups
+                        && !allowedSubjects.contains(
+                                new TeacherStatsSubjectKey(query.groupId(), query.subjectId()))) {
+            throw new AccessDeniedException(
+                    "Teacher is not active in the selected group and subject");
         }
 
         List<LessonInfo> authoritativeLessons =
@@ -775,6 +786,10 @@ public class ReportService {
             }
             semesterId = responseSemesterId;
         }
+        for (LessonInfo lesson : authoritativeLessons) {
+            authorizeTeacherStatsLesson(lesson, teacherAuthority);
+            requireStatsLessonStatus(lesson);
+        }
         List<TeacherStatsSubjectOption> subjectOptions =
                 buildSubjectOptions(authoritativeLessons, teacherAuthority);
         List<LessonInfo> lessons = new ArrayList<>(requestedLessonIds.size());
@@ -789,14 +804,14 @@ public class ReportService {
             }
             authorizeTeacherStatsLesson(lesson, teacherAuthority);
             LocalDate date = parseLessonDate(lesson.getDate());
-            if (lesson.getGroupId() != query.groupId()) {
+            if (!allGroups && lesson.getGroupId() != query.groupId()) {
                 throw new AccessDeniedException(
                         "Teacher stats lesson is outside the selected context");
             }
-            // The request may carry the complete selected-group batch so the
-            // response can expose every readable subject option. Only the
-            // chosen subject contributes statistics in either scope.
-            if (lesson.getSubjectId() != query.subjectId()) {
+            // Selected queries may carry other currently authorized subjects for
+            // options; only the selection contributes. Unscoped GROUPS counts all
+            // current group+subject pairs, including historical replacement lessons.
+            if (!allGroups && lesson.getSubjectId() != query.subjectId()) {
                 continue;
             }
             if (!requestedTypes.isEmpty()
@@ -811,9 +826,115 @@ public class ReportService {
             periodTo = periodTo == null || date.isAfter(periodTo) ? date : periodTo;
         }
 
+        AttendanceAggregation aggregation =
+                aggregateAttendance(
+                        lessons, allGroups ? activeGroupIds : Set.of(query.groupId()), !allGroups);
+        Map<Long, StudentStatsAccumulator> students = aggregation.students();
+        Map<Long, GroupStatsAccumulator> groups = aggregation.groups();
+
+        Map<Long, String> groupNames = new java.util.HashMap<>();
+        for (Long groupId : groups.keySet()) {
+            GroupResponse group = academicGrpcClient.getGroup(groupId);
+            String groupName = group == null ? null : group.getName();
+            if (group == null
+                    || group.getId() != groupId
+                    || groupName == null
+                    || groupName.isBlank()) {
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned an incomplete group response for " + groupId);
+            }
+            groupNames.put(groupId, groupName);
+        }
+
+        List<TeacherStudentStats> studentRows =
+                students.values().stream()
+                        .map(StudentStatsAccumulator::toResult)
+                        .filter(row -> matchesFilters(row, query.filters()))
+                        .sorted((left, right) -> compareStudents(left, right, query.sorts()))
+                        .toList();
+        List<TeacherGroupStats> groupRows =
+                groups.values().stream()
+                        .map(group -> group.toResult(groupNames.getOrDefault(group.groupId, "")))
+                        .filter(row -> matchesFilters(row, query.filters()))
+                        .sorted((left, right) -> compareGroups(left, right, query.sorts()))
+                        .toList();
+        return new AuthorizedTeacherStats(
+                new TeacherStatsResult(
+                        query.scope(),
+                        semesterId,
+                        periodFrom,
+                        periodTo,
+                        lessons.size(),
+                        studentRows,
+                        groupRows,
+                        subjectOptions,
+                        clock.instant()),
+                ru.rutcampustrack.shared.security.teacher.TeacherReportScope.of(
+                        allowedSubjects.stream()
+                                .map(
+                                        pair ->
+                                                new ru.rutcampustrack.shared.security.teacher
+                                                        .TeacherReportScope.Tuple(
+                                                        pair.groupId(), pair.subjectId()))
+                                .toList()));
+    }
+
+    /**
+     * Internal calculation only: callers must establish current authority and complete snapshots.
+     */
+    List<GroupAttendanceTotals> aggregateAuthorizedGroups(
+            long semesterId, Set<Long> seededGroupIds, List<LessonInfo> exactAuthoritativeLessons) {
+        if (semesterId <= 0
+                || seededGroupIds == null
+                || exactAuthoritativeLessons == null
+                || seededGroupIds.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new BadRequestException("Invalid authorized group aggregation scope");
+        }
+        Set<Long> ids = new java.util.HashSet<>();
+        List<LessonInfo> completed = new ArrayList<>();
+        for (LessonInfo lesson : exactAuthoritativeLessons) {
+            if (lesson == null
+                    || lesson.getLessonId() <= 0
+                    || !ids.add(lesson.getLessonId())
+                    || lesson.getSemesterId() != semesterId
+                    || !seededGroupIds.contains(lesson.getGroupId())) {
+                throw new ScheduleServiceUnavailableException(
+                        "Incomplete authorized lesson snapshots");
+            }
+            requireStatsLessonStatus(lesson);
+            parseLessonDate(lesson.getDate());
+            if (isCompleted(lesson) && !isCancelled(lesson)) completed.add(lesson);
+        }
+        return aggregateAttendance(completed, seededGroupIds, false).groups().values().stream()
+                .map(
+                        group ->
+                                new GroupAttendanceTotals(
+                                        group.groupId,
+                                        group.lessonsCount,
+                                        group.counter.presentMetric(),
+                                        group.counter.presentOrExcusedMetric(),
+                                        group.counter.excusedMetric(),
+                                        group.counter.absentMetric()))
+                .toList();
+    }
+
+    record GroupAttendanceTotals(
+            long groupId,
+            int lessonsCount,
+            TeacherMetric present,
+            TeacherMetric presentOrExcused,
+            TeacherMetric excused,
+            TeacherMetric absent) {}
+
+    private record AttendanceAggregation(
+            Map<Long, StudentStatsAccumulator> students, Map<Long, GroupStatsAccumulator> groups) {}
+
+    private AttendanceAggregation aggregateAttendance(
+            List<LessonInfo> lessons, Set<Long> groupIds, boolean collectStudents) {
         Map<Long, StudentStatsAccumulator> students = new java.util.LinkedHashMap<>();
         Map<Long, GroupStatsAccumulator> groups = new java.util.LinkedHashMap<>();
-        groups.put(query.groupId(), new GroupStatsAccumulator(query.groupId()));
+        for (Long groupId : groupIds.stream().sorted().toList())
+            groups.put(groupId, new GroupStatsAccumulator(groupId));
         List<AttendanceRecord> attendanceRecords =
                 lessons.isEmpty()
                         ? List.of()
@@ -852,11 +973,14 @@ public class ReportService {
                             "Academic returned an invalid student identity");
                 }
                 StudentStatsAccumulator student =
-                        students.computeIfAbsent(
-                                member.getUserId(),
-                                ignored ->
-                                        new StudentStatsAccumulator(
-                                                member.getUserId(), member.getDisplayName()));
+                        collectStudents
+                                ? students.computeIfAbsent(
+                                        member.getUserId(),
+                                        ignored ->
+                                                new StudentStatsAccumulator(
+                                                        member.getUserId(),
+                                                        member.getDisplayName()))
+                                : null;
                 AttendanceRecord record = records.get(member.getUserId());
                 // Closed lessons normally have an AUTO_SCHEDULER ABSENT record.
                 // Treat a missing historical mark as ABSENT so the denominator is
@@ -865,60 +989,51 @@ public class ReportService {
                         record == null || record.status() == null
                                 ? AttendanceStatus.ABSENT
                                 : record.status();
-                student.counter.add(status);
+                if (student != null) student.counter.add(status);
                 group.counter.add(status);
             }
         }
 
-        Map<Long, String> groupNames = new java.util.HashMap<>();
-        for (Long groupId : groups.keySet()) {
-            GroupResponse group = academicGrpcClient.getGroup(groupId);
-            String groupName = group == null ? null : group.getName();
-            if (group == null
-                    || group.getId() != groupId
-                    || groupName == null
-                    || groupName.isBlank()) {
-                throw new AcademicServiceUnavailableException(
-                        "Academic returned an incomplete group response for " + groupId);
-            }
-            groupNames.put(groupId, groupName);
-        }
+        return new AttendanceAggregation(students, groups);
+    }
 
-        List<TeacherStudentStats> studentRows =
-                students.values().stream()
-                        .map(StudentStatsAccumulator::toResult)
-                        .filter(row -> matchesFilters(row, query.filters()))
-                        .sorted((left, right) -> compareStudents(left, right, query.sorts()))
-                        .toList();
-        List<TeacherGroupStats> groupRows =
-                groups.values().stream()
-                        .map(group -> group.toResult(groupNames.getOrDefault(group.groupId, "")))
-                        .filter(row -> matchesFilters(row, query.filters()))
-                        .sorted((left, right) -> compareGroups(left, right, query.sorts()))
-                        .toList();
-        return new TeacherStatsResult(
-                query.scope(),
-                semesterId,
-                periodFrom,
-                periodTo,
-                lessons.size(),
-                studentRows,
-                groupRows,
-                subjectOptions,
-                clock.instant());
+    private static boolean allTeacherGroups(TeacherStatsQuery query) {
+        return query.scope() == TeacherStatsScope.GROUPS
+                && query.groupId() == 0
+                && query.subjectId() == 0;
+    }
+
+    private static void requireStatsLessonStatus(LessonInfo lesson) {
+        if (!Set.of("planned", "active", "closed", "cancelled", "transferred")
+                        .contains(normalize(lesson.getStatus()))
+                || !Set.of("lecture", "practice", "lab")
+                        .contains(normalize(lesson.getLessonType()))) {
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned an unknown lesson status or type");
+        }
+    }
+
+    private static Set<TeacherStatsSubjectKey> currentTeacherSubjectKeys(
+            TeacherSubjectsResponse response) {
+        if (response == null)
+            throw new AccessDeniedException("Teacher assignment authority is unavailable");
+        Set<TeacherStatsSubjectKey> result = new java.util.HashSet<>();
+        for (TeacherSubjectInfo subject : response.getSubjectsList()) {
+            if (subject.getGroupId() <= 0 || subject.getSubjectId() <= 0)
+                throw new AccessDeniedException("Teacher assignment authority is incomplete");
+            result.add(new TeacherStatsSubjectKey(subject.getGroupId(), subject.getSubjectId()));
+        }
+        return Set.copyOf(result);
     }
 
     private List<TeacherStatsSubjectOption> buildSubjectOptions(
             List<LessonInfo> lessons, TeacherSubjectsResponse response) {
-        Set<Long> activeGroupIds =
-                response.getSubjectsList().stream()
-                        .filter(info -> info != null && info.getGroupId() > 0)
-                        .map(TeacherSubjectInfo::getGroupId)
-                        .collect(Collectors.toSet());
+        Set<TeacherStatsSubjectKey> allowedSubjects = currentTeacherSubjectKeys(response);
         Map<TeacherStatsSubjectKey, Set<String>> lessonTypes = new java.util.HashMap<>();
         for (LessonInfo lesson : lessons) {
             if (lesson == null
-                    || !activeGroupIds.contains(lesson.getGroupId())
+                    || !allowedSubjects.contains(
+                            new TeacherStatsSubjectKey(lesson.getGroupId(), lesson.getSubjectId()))
                     || lesson.getSubjectId() <= 0
                     || lesson.getLessonType() == null
                     || lesson.getLessonType().isBlank()) {
@@ -973,11 +1088,9 @@ public class ReportService {
                 || lesson.getLessonType().isBlank()) {
             throw new AccessDeniedException("Teacher cannot read this lesson");
         }
-        if (response == null
-                || response.getSubjectsList().stream()
-                        .noneMatch(
-                                info -> info != null && info.getGroupId() == lesson.getGroupId())) {
-            throw new AccessDeniedException("Teacher is not active in this group");
+        if (!currentTeacherSubjectKeys(response)
+                .contains(new TeacherStatsSubjectKey(lesson.getGroupId(), lesson.getSubjectId()))) {
+            throw new AccessDeniedException("Teacher is not active in this group and subject");
         }
     }
 
@@ -998,7 +1111,7 @@ public class ReportService {
         if (query == null || query.scope() == null || teacherId <= 0) {
             throw new BadRequestException("Invalid teacher stats query");
         }
-        if (query.groupId() <= 0 || query.subjectId() <= 0) {
+        if (!allTeacherGroups(query) && (query.groupId() <= 0 || query.subjectId() <= 0)) {
             throw new BadRequestException("Stats require group and subject");
         }
         if (query.lessonTypes() == null
@@ -1156,6 +1269,8 @@ public class ReportService {
 
     private static boolean matchesMetric(TeacherMetric metric, TeacherStatsFilter filter) {
         if (metric == null) return true;
+        if (metric.denominator() == 0
+                && (filter.minPercent() != null || filter.maxPercent() != null)) return false;
         return (filter.minPercent() == null || metric.percent() >= filter.minPercent())
                 && (filter.maxPercent() == null || metric.percent() <= filter.maxPercent());
     }
@@ -1182,10 +1297,15 @@ public class ReportService {
             TeacherGroupStats left, TeacherGroupStats right, List<TeacherStatsSort> sorts) {
         if (sorts != null) {
             for (TeacherStatsSort sort : sorts) {
+                TeacherMetric lm = left.metric(sort.column()), rm = right.metric(sort.column());
+                if (lm != null && rm != null && (lm.denominator() == 0) != (rm.denominator() == 0))
+                    return lm.denominator() == 0 ? 1 : -1;
                 int result = compareColumn(left, right, sort.column());
                 if (result != 0) return sort.descending() ? -result : result;
             }
         }
+        if ((left.present().denominator() == 0) != (right.present().denominator() == 0))
+            return left.present().denominator() == 0 ? 1 : -1;
         int result = compareColumn(left, right, "present");
         return result != 0 ? result : Long.compare(left.groupId(), right.groupId());
     }
@@ -1480,7 +1600,7 @@ public class ReportService {
                 throw new AccessDeniedException("Отсутствует право VIEW_STATS");
             }
         } else if (role == UserRole.TEACHER) {
-            authorizeTeacherGroup(groupId, requestContext.getUserId());
+            authorizeTeacherSubject(groupId, subjectId, requestContext.getUserId());
         } else {
             throw new AccessDeniedException("Access denied");
         }
@@ -1513,9 +1633,9 @@ public class ReportService {
     }
 
     /**
-     * Reusable concrete-lesson gate for the dedicated teacher read boundary. Current active group
-     * authority grants read access to the whole group, while the immutable Schedule snapshot
-     * supplies historical lesson data.
+     * Reusable concrete-lesson gate for the dedicated teacher read boundary. Current active
+     * group+subject authority grants historical access within that subject, while the immutable
+     * Schedule snapshot supplies historical lesson data.
      */
     public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
         if (lesson == null
@@ -1530,18 +1650,17 @@ public class ReportService {
                 || teacherId == null) {
             throw new AccessDeniedException("Teacher cannot read this lesson");
         }
-        authorizeTeacherGroup(lesson.getGroupId(), teacherId);
+        authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
     }
 
-    private void authorizeTeacherGroup(long groupId, long teacherId) {
-        if (groupId <= 0 || teacherId <= 0) {
-            throw new AccessDeniedException("Teacher is not active in this group");
-        }
-        TeacherSubjectsResponse response = academicGrpcClient.getCurrentTeacherSubjects(teacherId);
-        if (response == null
-                || response.getSubjectsList().stream()
-                        .noneMatch(info -> info != null && info.getGroupId() == groupId)) {
-            throw new AccessDeniedException("Teacher is not active in this group");
+    private void authorizeTeacherSubject(long groupId, long subjectId, long teacherId) {
+        if (groupId <= 0
+                || subjectId <= 0
+                || teacherId <= 0
+                || !currentTeacherSubjectKeys(
+                                academicGrpcClient.getCurrentTeacherSubjects(teacherId))
+                        .contains(new TeacherStatsSubjectKey(groupId, subjectId))) {
+            throw new AccessDeniedException("Teacher is not active in this group and subject");
         }
     }
 

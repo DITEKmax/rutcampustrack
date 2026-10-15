@@ -116,6 +116,22 @@ export interface AdminGroupsReportSelector {
   readonly sorts?: readonly RegistryReportSort[]
   readonly format: ReportDownloadFormat
 }
+export type AdminGroupAttendanceSort =
+  | 'GROUP_NAME'
+  | 'PRESENT_PERCENT'
+  | 'PRESENT_OR_EXCUSED_PERCENT'
+  | 'COUNTED_LESSONS'
+  | 'PRESENT'
+  | 'ABSENT'
+  | 'EXCUSED'
+export interface AdminGroupAttendanceReportSelector {
+  readonly semesterId: string
+  readonly search: string
+  readonly sort: AdminGroupAttendanceSort
+  readonly direction: 'ASC' | 'DESC'
+  readonly format: ReportDownloadFormat
+}
+
 export type ExportJobState = NonNullable<AuthContract['schemas']['Status']['state']>
 export type ExportStateListener = (state: ExportJobState) => void
 export function exportStateLabel(state: ExportJobState): string {
@@ -221,6 +237,13 @@ export type ReportDownloadTicketRequest =
       readonly adminGroups: AdminGroupsReportSelector
       readonly headmanSubjectJournal?: never
       readonly adminUsers?: never
+    })
+  | (LegacySelectorExclusions & {
+      readonly kind: 'ADMIN_GROUP_ATTENDANCE'
+      readonly adminGroupAttendance: AdminGroupAttendanceReportSelector
+      readonly headmanSubjectJournal?: never
+      readonly adminUsers?: never
+      readonly adminGroups?: never
     })
 
 export interface ReportDownloadTicket {
@@ -474,6 +497,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_SUBJECT_JOURNAL: 'headmanSubjectJournal',
     ADMIN_USERS: 'adminUsers',
     ADMIN_GROUPS: 'adminGroups',
+    ADMIN_GROUP_ATTENDANCE: 'adminGroupAttendance',
   }
   const expectedSelector = selectorByKind[request.kind]
   const actualSelectors = Object.keys(record).filter(
@@ -532,6 +556,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_SUBJECT_JOURNAL: ['subjectId', 'lessonTypes', 'weekStarts', 'format'],
     ADMIN_USERS: ['search', 'role', 'status', 'roleStatus', 'sorts', 'format'],
     ADMIN_GROUPS: ['status', 'search', 'course', 'studyMode', 'educationLevel', 'sorts', 'format'],
+    ADMIN_GROUP_ATTENDANCE: ['semesterId', 'search', 'sort', 'direction', 'format'],
   }
   if (Object.keys(selector).some((key) => !allowedSelectorFields[request.kind].includes(key))) {
     throw new RangeError('У отчёта есть неподдерживаемые параметры.')
@@ -549,6 +574,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_SUBJECT_JOURNAL: ['subjectId', 'lessonTypes', 'format'],
     ADMIN_USERS: ['format'],
     ADMIN_GROUPS: ['format'],
+    ADMIN_GROUP_ATTENDANCE: ['semesterId', 'search', 'sort', 'direction', 'format'],
   }
   if (
     requiredSelectorFields[request.kind].some(
@@ -597,6 +623,27 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
           (!isStringList(selector.weekStarts, 0, 64, 10) || !selector.weekStarts.every(isIsoDate)))
       )
         throw new RangeError('Проверь предмет, типы пар и недели.')
+      break
+    case 'ADMIN_GROUP_ATTENDANCE':
+      if (
+        typeof selector.semesterId !== 'string' ||
+        !/^[1-9][0-9]{0,18}$/.test(selector.semesterId) ||
+        (selector.semesterId.length === 19 && selector.semesterId > '9223372036854775807') ||
+        typeof selector.search !== 'string' ||
+        selector.search.length > 200 ||
+        typeof selector.sort !== 'string' ||
+        ![
+          'GROUP_NAME',
+          'PRESENT_PERCENT',
+          'PRESENT_OR_EXCUSED_PERCENT',
+          'COUNTED_LESSONS',
+          'PRESENT',
+          'ABSENT',
+          'EXCUSED',
+        ].includes(selector.sort) ||
+        (selector.direction !== 'ASC' && selector.direction !== 'DESC')
+      )
+        throw new RangeError('Проверь семестр, поиск и порядок отчёта.')
       break
     case 'ADMIN_USERS':
     case 'ADMIN_GROUPS':
@@ -765,6 +812,8 @@ export function reportFormat(request: ReportDownloadTicketRequest): ReportDownlo
       return request.adminUsers.format
     case 'ADMIN_GROUPS':
       return request.adminGroups.format
+    case 'ADMIN_GROUP_ATTENDANCE':
+      return request.adminGroupAttendance.format
   }
 }
 

@@ -24,6 +24,15 @@ public class ExportReportAuthority {
         this.admins = admins;
     }
 
+    public ru.rutcampustrack.shared.security.teacher.TeacherReportScope captureTeacherScope(
+            SessionPrincipal principal, IssueReportDownloadTicketRequest report, String hash) {
+        return tickets.captureTeacherScope(principal, report, hash);
+    }
+
+    public void requireReady(ru.rutcampustrack.auth.service.StoredReportDownloadTicket identity) {
+        tickets.requireReadyTeacher(identity);
+    }
+
     public boolean requiresFull(
             SessionPrincipal principal, IssueReportDownloadTicketRequest report) {
         var profile = RegistryExportAdmission.requireCurrent(admins, principal, report.kind());

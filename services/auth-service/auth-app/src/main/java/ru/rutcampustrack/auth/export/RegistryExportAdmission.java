@@ -17,6 +17,7 @@ public final class RegistryExportAdmission {
                 switch (kind) {
                     case ADMIN_USERS -> "USERS_VIEW";
                     case ADMIN_GROUPS -> "GROUPS_VIEW";
+                    case ADMIN_GROUP_ATTENDANCE -> "DASHBOARD_VIEW";
                     default -> null;
                 };
         if (permission == null) return null;

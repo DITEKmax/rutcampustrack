@@ -33,7 +33,11 @@ const props = defineProps<{
   theme?: 'dark' | 'light' | 'system';
   invalidationRevision?: number;
 }>();
-const emit = defineEmits<{ 'owner-error': [error: unknown]; 'open-role-switch': [] }>();
+const emit = defineEmits<{
+  'owner-error': [error: unknown];
+  'open-role-switch': [];
+  'open-attendance': [];
+}>();
 const period = ref<AdminActivityPeriod>('today');
 const bucket = ref<AdminActivityBucket>('day');
 const metricCode = ref<AdminActivityMetricCode>('positiveMarks');
@@ -162,7 +166,7 @@ onBeforeUnmount(() => {
           :src="chevronIcon"
           alt=""
           aria-hidden="true"
-        />
+        >
       </button>
       <NotificationsEntryButton
         v-if="onNotifications"
@@ -171,7 +175,9 @@ onBeforeUnmount(() => {
       />
     </div>
     <header class="admin-dashboard-screen__header">
-      <h1 id="admin-dashboard-title"> Обзор </h1>
+      <h1 id="admin-dashboard-title">
+        Обзор
+      </h1>
     </header>
     <p
       v-if="loading"
@@ -201,24 +207,18 @@ onBeforeUnmount(() => {
       aria-label="Активные аккаунты и группы"
     >
       <div class="admin-dashboard-screen__stat">
-        <dt>Студенты</dt
-        ><dd>
-          <span>{{ formatCount(stats.totalStudents) }}</span
-          ><small class="admin-dashboard-screen__delta">{{ scaleGrowth('studentsDelta') }}</small>
+        <dt>Студенты</dt><dd>
+          <span>{{ formatCount(stats.totalStudents) }}</span><small class="admin-dashboard-screen__delta">{{ scaleGrowth('studentsDelta') }}</small>
         </dd>
       </div>
       <div class="admin-dashboard-screen__stat">
-        <dt>Преподаватели</dt
-        ><dd>
-          <span>{{ formatCount(stats.totalTeachers) }}</span
-          ><small class="admin-dashboard-screen__delta">{{ scaleGrowth('teachersDelta') }}</small>
+        <dt>Преподаватели</dt><dd>
+          <span>{{ formatCount(stats.totalTeachers) }}</span><small class="admin-dashboard-screen__delta">{{ scaleGrowth('teachersDelta') }}</small>
         </dd>
       </div>
       <div class="admin-dashboard-screen__stat">
-        <dt>Группы</dt
-        ><dd>
-          <span>{{ formatCount(stats.activeGroups) }}</span
-          ><small class="admin-dashboard-screen__delta">{{ scaleGrowth('groupsDelta') }}</small>
+        <dt>Группы</dt><dd>
+          <span>{{ formatCount(stats.activeGroups) }}</span><small class="admin-dashboard-screen__delta">{{ scaleGrowth('groupsDelta') }}</small>
         </dd>
       </div>
     </dl>
@@ -229,12 +229,22 @@ onBeforeUnmount(() => {
       Студенты и преподаватели считаются по ролям. Один аккаунт может иметь несколько ролей,
       поэтому сумма этих показателей не является числом уникальных аккаунтов.
     </p>
+    <div class="admin-dashboard-screen__period">
+      <button
+        type="button"
+        @click="emit('open-attendance')"
+      >
+        Посещаемость групп
+      </button>
+    </div>
     <section
       class="admin-dashboard-screen__activity"
       aria-labelledby="admin-dashboard-activity-title"
       :aria-busy="activityLoading"
     >
-      <h2 id="admin-dashboard-activity-title"> Активность </h2>
+      <h2 id="admin-dashboard-activity-title">
+        Активность
+      </h2>
       <div
         class="admin-dashboard-screen__period"
         role="group"
@@ -339,7 +349,7 @@ onBeforeUnmount(() => {
                 :src="checkIcon"
                 alt=""
                 aria-hidden="true"
-              />
+              >
             </button>
           </div>
         </MobileToolsSheet>
@@ -373,17 +383,15 @@ onBeforeUnmount(() => {
             :data-admin-activity-metric="code"
             :data-state="activity.summary.metrics[code].state"
           >
-            <dt>{{ adminActivityLabels[code] }}</dt
-            ><dd>
+            <dt>{{ adminActivityLabels[code] }}</dt><dd>
               <span
                 :aria-label="
                   activity.summary.metrics[code].state === 'AVAILABLE' &&
-                  !(code === 'geoMarks' && activity.summary.metrics[code].percent === null)
+                    !(code === 'geoMarks' && activity.summary.metrics[code].percent === null)
                     ? undefined
                     : 'Данные недоступны'
                 "
-                >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span
-              >
+              >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span>
               <small
                 v-if="
                   code === 'geoMarks' &&
@@ -399,8 +407,7 @@ onBeforeUnmount(() => {
                 class="admin-dashboard-screen__delta"
                 :data-tone="adminActivityDelta(activity.summary.metrics[code], code).tone"
                 :aria-label="adminActivityDelta(activity.summary.metrics[code], code).description"
-                >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small
-              >
+              >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small>
             </dd>
           </div>
         </dl>

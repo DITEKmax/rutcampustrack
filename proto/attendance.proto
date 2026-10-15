@@ -5,6 +5,34 @@ package rutcampustrack.attendance;
 option java_multiple_files = true;
 option java_package = "ru.rutcampustrack.attendance.grpc";
 
+// Aggregate-only administrator report. The caller is Academic over authenticated
+// TLS, with a directed service credential AND a live signed ADMIN identity.
+service AttendanceAdminGroupStatsGrpcService {
+  rpc GetGroupSemesterStats (AdminGroupStatsQuery) returns (AdminGroupStatsSnapshot);
+}
+message AdminGroupStatsQuery {
+  int64 semester_id = 1;
+  string date_from = 2;
+  string date_to = 3;
+  repeated int64 group_ids = 4;
+}
+message AdminGroupAttendanceTotals {
+  int64 group_id = 1;
+  int64 counted_lessons = 2;
+  int64 present = 3;
+  int64 excused = 4;
+  int64 absent = 5;
+  int64 opportunities = 6;
+  optional double present_percent = 7;
+  optional double present_or_excused_percent = 8;
+}
+message AdminGroupStatsSnapshot {
+  int64 semester_id = 1;
+  string date_from = 2;
+  string date_to = 3;
+  repeated AdminGroupAttendanceTotals groups = 4;
+}
+
 // Aggregate-only ADMIN read. Signed identity is re-authorized against Academic
 // DASHBOARD_VIEW for every call; arbitrary caller-selected ranges are forbidden.
 service AttendanceAdminActivityGrpcService {

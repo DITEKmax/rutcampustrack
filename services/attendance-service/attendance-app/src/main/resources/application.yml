@@ -36,6 +36,8 @@ grpc:
     max-inbound-message-size: 25165824
   auth:
     secret: ${GRPC_SECRET:}
+  service-identity:
+    academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
   client:
     schedule-service:
       address: dns:///schedule-service:19092

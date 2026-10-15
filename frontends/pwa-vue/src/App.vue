@@ -14,6 +14,9 @@ import {
   AdminMapScreen,
   AdminMapStatisticsScreen,
   AdminDashboardScreen,
+  AdminAttendanceClient,
+  AdminDashboardApiError,
+  AdminAttendanceScreen,
   AdminSemesterApiError,
   AdminSemesterScreen,
   AdminGroupsApiError,
@@ -198,6 +201,7 @@ const adminAuthority = shallowRef<AdminAccessProfile | null>(null);
 const adminAuthorityStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
 const adminAuthorityOwner = createAdminAuthorityOwner();
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null);
+const adminAttendanceApi = shallowRef<AdminAttendanceClient | null>(null);
 const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null);
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null);
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null);
@@ -297,6 +301,7 @@ const authView = ref<
   | 'map'
   | 'admin-more'
   | 'admin-home'
+  | 'admin-attendance'
   | 'admin-map'
   | 'admin-map-statistics'
   | 'admin-semesters'
@@ -351,6 +356,10 @@ watch(authView, () => {
 const adminHomeViewVisible = computed(
   () => authView.value === 'admin-home' && adminCanNavigate(adminAuthority.value, 'home'),
 );
+const adminAttendanceViewVisible = computed(
+  () =>
+    authView.value === 'admin-attendance' && adminCanNavigate(adminAuthority.value, 'attendance'),
+);
 const adminMapViewVisible = computed(
   () => authView.value === 'admin-map' && adminCanNavigate(adminAuthority.value, 'map'),
 );
@@ -377,6 +386,7 @@ const stopAdminAuthority = adminAuthorityOwner.subscribe((snapshot) => {
   if (authSnapshot.value?.activeRole !== 'ADMIN') return;
   if (snapshot.status === 'loading' || snapshot.status === 'error') {
     adminAccessActionsApi.value = null;
+    adminAttendanceApi.value = null;
     adminDashboardApi.value = null;
     adminUsersApi.value = null;
     adminGroupsApi.value = null;
@@ -407,6 +417,21 @@ const stopAdminAuthority = adminAuthorityOwner.subscribe((snapshot) => {
     };
     adminAccessActionsApi.value = auth.createAdminAccessApi(fetcher, assertAuthority);
     adminDashboardApi.value = auth.createAdminDashboardApi(fetcher, assertAuthority);
+    adminAttendanceApi.value = adminCanNavigate(snapshot.profile, 'attendance')
+      ? new AdminAttendanceClient({
+          accessToken: () => {
+            assertAuthority();
+            return auth.accessToken.value;
+          },
+          assertCurrent: assertAuthority,
+          onUnauthorized: async () => {
+            assertAuthority();
+            await auth.refreshFor(generation);
+            assertAuthority();
+          },
+          fetcher,
+        })
+      : null;
     adminUsersApi.value = auth.createAdminUsersApi(fetcher, assertAuthority);
     adminGroupsApi.value = auth.createAdminGroupsApi(fetcher, assertAuthority);
     adminSemesterApi.value = auth.createAdminSemesterApi(fetcher, assertAuthority);
@@ -450,6 +475,7 @@ const featureVisible = computed(
     teacherApi.value !== null ||
     mapViewVisible.value ||
     adminHomeViewVisible.value ||
+    adminAttendanceViewVisible.value ||
     adminMapViewVisible.value ||
     adminMapStatisticsViewVisible.value ||
     adminSemesterViewVisible.value ||
@@ -583,6 +609,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof HeadmanSubjectsApiError) return error.response.status;
   if (error instanceof AdminAccessApiError) return error.response.status;
   if (error instanceof AdminSemesterApiError) return error.response.status;
+  if (error instanceof AdminDashboardApiError) return error.response.status;
   if (error instanceof AdminGroupsApiError) return error.response.status;
   if (error instanceof AdminUsersApiError) return error.response.status;
   return null;
@@ -955,6 +982,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   adminMapClient.value = null;
   adminAuthorityOwner.bind(null, null);
   adminSemesterApi.value = null;
+  adminAttendanceApi.value = null;
   adminDashboardApi.value = null;
   adminUsersApi.value = null;
   adminGroupsApi.value = null;
@@ -1033,6 +1061,7 @@ function invalidateOwnerSynchronously(
   adminMapClient.value = null;
   adminAuthorityOwner.bind(null, null);
   adminSemesterApi.value = null;
+  adminAttendanceApi.value = null;
   adminDashboardApi.value = null;
   adminUsersApi.value = null;
   adminGroupsApi.value = null;
@@ -1494,15 +1523,17 @@ function navigateAdmin(route: AdminRoleRoute): void {
         ? 'admin-profile'
         : route === 'home'
           ? 'admin-home'
-          : route === 'map'
-            ? 'admin-map'
-            : route === 'map-statistics'
-              ? 'admin-map-statistics'
-              : route === 'semesters'
-                ? 'admin-semesters'
-                : route === 'users'
-                  ? 'admin-users'
-                  : 'admin-groups';
+          : route === 'attendance'
+            ? 'admin-attendance'
+            : route === 'map'
+              ? 'admin-map'
+              : route === 'map-statistics'
+                ? 'admin-map-statistics'
+                : route === 'semesters'
+                  ? 'admin-semesters'
+                  : route === 'users'
+                    ? 'admin-users'
+                    : 'admin-groups';
 }
 
 function openAdminRoleSwitch(): void {
@@ -1693,13 +1724,15 @@ function asProfileError(error: unknown): ProfileRequestError {
   );
 }
 
-async function submitLogin(input: { login: string; password: string }): Promise<void> {
+async function submitLogin(
+  input: { login: string; password: string } | { code: string },
+): Promise<void> {
   if (authLoading.value) return;
   authLoading.value = true;
   authError.value = null;
   bootstrapError.value = null;
   try {
-    const result = await auth.login(input);
+    const result = 'code' in input ? await auth.loginOtp(input) : await auth.login(input);
     logoutNotice.value = null;
     const profile = await auth.getSessionFor(result.generation);
     authSnapshot.value = profile;
@@ -2211,6 +2244,7 @@ onBeforeUnmount(() => {
       :error="authError"
       :notice="passwordRecoveryNotice"
       @submit="submitLogin"
+      @submit-otp="submitLogin"
       @open-recovery="openPasswordRecovery"
     />
   </template>
@@ -2314,6 +2348,27 @@ onBeforeUnmount(() => {
       theme="dark"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
+      @open-attendance="navigateAdmin('attendance')"
+    />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminAttendanceViewVisible && adminAttendanceApi"
+    :authority="adminAuthority"
+    active="attendance"
+    :task="true"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="navigateAdmin('home')"
+  >
+    <AdminAttendanceScreen
+      :key="`admin-attendance-${ownerRevision}`"
+      :online="!offline && !readOnly"
+      :client="adminAttendanceApi"
+      :authority="adminAuthority"
+      :report-download="reportDownload"
+      :show-back="host.backOwner === 'product'"
+      @back="navigateAdmin('home')"
+      @owner-error="onOwnerError"
     />
   </AdminShell>
   <AdminShell

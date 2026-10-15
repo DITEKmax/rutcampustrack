@@ -851,6 +851,79 @@ class ReportDownloadTicketDownloadFilterTest {
         }
     }
 
+    @Test
+    void unscopedTeacherGenerationRequiresAndPreservesProvenanceHashBeforeReturningBytes() {
+        WireMockServer bff = server();
+        bff.start();
+        try {
+            var report =
+                    new IssueReportDownloadTicketRequest(
+                            ReportDownloadKind.TEACHER_STATS,
+                            null,
+                            new IssueReportDownloadTicketRequest.TeacherStatsParameters(
+                                    2L,
+                                    "groups",
+                                    null,
+                                    null,
+                                    List.of("lecture"),
+                                    List.of(),
+                                    List.of(),
+                                    ReportDownloadFormat.HTML),
+                            null,
+                            null,
+                            null);
+            var filter =
+                    new ReportDownloadTicketDownloadFilter(
+                            mock(InternalJwtIssuerClient.class),
+                            mock(InternalJwtIssuerFilter.class),
+                            properties(bff.baseUrl()),
+                            allowedAttemptRateLimiter(),
+                            WebClient.builder().baseUrl(bff.baseUrl()).build(),
+                            mock(WebClient.class));
+            var route =
+                    com.github.tomakehurst.wiremock.client.WireMock.get(
+                                    com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo(
+                                            "/api/v1/teacher/stats/export"))
+                            .withQueryParam("scope", equalTo("groups"))
+                            .withQueryParam("groupId", absent())
+                            .withQueryParam("subjectId", absent());
+            for (String hash : new String[] {null, "partial"}) {
+                var response =
+                        aResponse()
+                                .withStatus(200)
+                                .withHeader(HttpHeaders.CONTENT_TYPE, "text/html")
+                                .withBody("owned");
+                if (hash != null) response.withHeader("X-Export-Teacher-Scope-Hash", hash);
+                bff.stubFor(route.willReturn(response));
+                StepVerifier.create(
+                                filter.generate(
+                                        redemption(report), UUID.randomUUID(), UUID.randomUUID()))
+                        .expectErrorMatches(
+                                error ->
+                                        "GENERATION_FAILED"
+                                                .equals(
+                                                        ReportDownloadTicketDownloadFilter
+                                                                .failureCode(error)))
+                        .verify();
+            }
+            bff.stubFor(
+                    route.willReturn(
+                            aResponse()
+                                    .withStatus(200)
+                                    .withHeader(HttpHeaders.CONTENT_TYPE, "text/html")
+                                    .withHeader("X-Export-Teacher-Scope-Hash", "a".repeat(64))
+                                    .withBody("owned")));
+            var generated =
+                    filter.generate(redemption(report), UUID.randomUUID(), UUID.randomUUID())
+                            .block();
+            assertEquals("a".repeat(64), generated.teacherScopeHash());
+            assertArrayEquals(
+                    "owned".getBytes(java.nio.charset.StandardCharsets.UTF_8), generated.content());
+        } finally {
+            bff.stop();
+        }
+    }
+
     private static WireMockServer server() {
         return new WireMockServer(
                 com.github.tomakehurst.wiremock.core.WireMockConfiguration.options().dynamicPort());

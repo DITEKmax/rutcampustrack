@@ -79,6 +79,14 @@ const it = test.extend<{
     foreignAttachmentId: string;
     assistantActor: Awaited<ReturnType<typeof admit>>;
   };
+  teacherGroupsSeed: {
+    groupId: number;
+    groupName: string;
+    subjectId: number;
+    lessonId: number;
+    headmanId: number;
+    headmanName: string;
+  };
 }>({
   teacherJournalSeed: [
     async ({ activeHeadmanDataset: dataset }, use) => {
@@ -235,6 +243,235 @@ const it = test.extend<{
         foreignAttachmentId: foreignRequest.attachments[0].id,
         assistantActor,
       });
+    },
+    { timeout: 180000 },
+  ],
+  teacherGroupsSeed: [
+    async ({ dataset }, use, info) => {
+      const setupDeadline = performance.now() + 170000;
+      const setupRemaining = (cap: number) =>
+        Math.max(1, Math.min(cap, setupDeadline - performance.now()));
+      const teacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
+      const catalogPath = `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`;
+      const scope = (catalog: Record<string, any>) =>
+        JSON.stringify({
+          groups: catalog.groups.map((row: { id: string }) => row.id).sort(),
+          pairs: [
+            ...new Set(
+              [...catalog.taughtSubjectOptions, ...catalog.subjectOptions].map(
+                (row: { groupId: string; subjectId: string }) => `${row.groupId}:${row.subjectId}`,
+              ),
+            ),
+          ].sort(),
+        });
+      const beforeScope = scope(await teacher.call('GET', catalogPath));
+      const alphabeticCode = String(dataset.group.alphabeticCode);
+      const numericCode = '311';
+      const name = `${alphabeticCode}-${numericCode}`;
+      for (const status of ['ACTIVE', 'DRAFT', 'ARCHIVED']) {
+        const registry = await dataset.admin.call(
+          'GET',
+          `/api/academic/groups/registry?status=${status}&search=${encodeURIComponent(alphabeticCode)}&size=100`,
+        );
+        expect(registry.totalPages <= 1 && registry.items.length === registry.totalElements).toBe(
+          true,
+        );
+        expect(
+          registry.items.some(
+            (row: { alphabeticCode: string; numericCode: string; name: string }) =>
+              (row.alphabeticCode === alphabeticCode && row.numericCode === numericCode) ||
+              row.name === name ||
+              row.name.startsWith(`${name} (`),
+          ),
+        ).toBe(false);
+      }
+      const group = await dataset.admin.call(
+        'POST',
+        '/api/academic/groups/registry',
+        { alphabeticCode, numericCode, trainingDurationYears: 4 },
+        [201],
+      );
+      expect(group.id !== dataset.group.id && group.id !== dataset.otherGroup.id).toBe(true);
+      const headman = await dataset.user('STUDENT', group.id);
+      await dataset.admin.call('PUT', `/api/academic/groups/${group.id}/headman`, {
+        studentId: headman.id,
+        expectedHeadmanId: null,
+      });
+      const headmanActor = await admit(dataset.request, headman, 'HEADMAN');
+      // Capture the subject before any shared teacher scope can change, including a lost response.
+      const subject = await headmanActor.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: dataset.subject.name,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [],
+        },
+        [201],
+      );
+      expect(subject.id !== dataset.subject.id).toBe(true);
+      const date = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+        .toISOString()
+        .slice(0, 10);
+      expect(dataset.semester.dateFrom <= date && date <= dataset.semester.dateTo).toBe(true);
+      let assignmentAttempted = false;
+      let failed = false;
+      let assignmentId: number | undefined;
+      const assignmentForSubject = async () => {
+        const current = await headmanActor.call('GET', `/api/academic/subjects/${subject.id}`);
+        return current.assignments?.find(
+          (row: { teacherId: number; semesterId: number; lessonType: string }) =>
+            Number(row.teacherId) === dataset.teacher.id &&
+            Number(row.semesterId) === dataset.semester.id &&
+            row.lessonType === 'LECTURE',
+        );
+      };
+      try {
+        assignmentAttempted = true;
+        await headmanActor.call(
+          'POST',
+          `/api/academic/subjects/${subject.id}/teachers/${dataset.teacher.id}`,
+          {
+            semesterId: dataset.semester.id,
+            lessonType: 'LECTURE',
+            validFrom: dataset.semester.dateFrom,
+            validUntilExclusive: null,
+          },
+          [201],
+        );
+        await expect
+          .poll(
+            async () => {
+              const assignment = await assignmentForSubject();
+              if (assignment) {
+                assignmentId = Number(assignment.id);
+                expect(
+                  assignment.validFrom <= date &&
+                    (assignment.validUntilExclusive == null ||
+                      date < assignment.validUntilExclusive),
+                ).toBe(true);
+              }
+              return assignmentId != null;
+            },
+            {
+              timeout: setupRemaining(60000),
+              message: 'Second own group assignment becomes published',
+            },
+          )
+          .toBe(true);
+        const lesson = await headmanActor.call(
+          'POST',
+          '/api/schedule/one-off-lessons',
+          {
+            groupId: group.id,
+            subjectId: subject.id,
+            assignmentId,
+            date,
+            lessonNumber: 2,
+            classroom: 'Синтетическая вторая группа',
+          },
+          [201, 200],
+          { 'Idempotency-Key': randomUUID() },
+        );
+        await expect
+          .poll(
+            async () => {
+              const report = await headmanActor.call(
+                'GET',
+                `/api/attendance/reports/lesson/${lesson.physicalLessonId}`,
+              );
+              return (
+                report.lessonStatus === 'CLOSED' &&
+                report.entries.length === 1 &&
+                Number(report.entries[0].userId) === headman.id &&
+                report.entries[0].status === 'absent'
+              );
+            },
+            {
+              timeout: setupRemaining(150000),
+              intervals: [1000],
+              message: 'Second own group lesson closes with its sole roster member',
+            },
+          )
+          .toBe(true);
+        await use({
+          groupId: Number(group.id),
+          groupName: group.name,
+          subjectId: Number(subject.id),
+          lessonId: Number(lesson.physicalLessonId),
+          headmanId: headman.id,
+          headmanName: headman.displayName,
+        });
+      } catch (error) {
+        failed = true;
+        throw error;
+      } finally {
+        try {
+          if (assignmentAttempted) {
+            // Recover only this known owned subject after an accepted/lost assignment response.
+            if (assignmentId == null)
+              await expect
+                .poll(
+                  async () => {
+                    const assignment = await assignmentForSubject();
+                    assignmentId = assignment == null ? undefined : Number(assignment.id);
+                    return assignmentId != null;
+                  },
+                  { timeout: 30000, message: 'Recover only the second own assignment for cleanup' },
+                )
+                .toBe(true);
+            const parts = new Intl.DateTimeFormat('en-CA', {
+              timeZone: 'Europe/Moscow',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            }).formatToParts(new Date());
+            const part = (key: string) => parts.find((value) => value.type === key)!.value;
+            const cutoff = `${part('year')}-${part('month')}-${part('day')}`;
+            expect(dataset.semester.dateFrom <= cutoff && cutoff <= dataset.semester.dateTo).toBe(
+              true,
+            );
+            const closeKey = randomUUID();
+            await expect
+              .poll(
+                async () => {
+                  const response = await dataset.request.delete(
+                    `/api/academic/assignments/${assignmentId}?validUntilExclusive=${cutoff}`,
+                    {
+                      headers: { ...headmanActor.headers(), 'Idempotency-Key': closeKey },
+                      timeout: 10000,
+                    },
+                  );
+                  try {
+                    expect([204, 503]).toContain(response.status());
+                    return response.status() === 204;
+                  } finally {
+                    await response.dispose();
+                  }
+                },
+                {
+                  timeout: 30000,
+                  message: 'Close only the second own assignment with its original command',
+                },
+              )
+              .toBe(true);
+          }
+          // Original suspension/reactivation can invalidate the earlier token; admit afresh.
+          const currentTeacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
+          await expect
+            .poll(
+              async () => scope(await currentTeacher.call('GET', catalogPath)) === beforeScope,
+              { timeout: 10000, message: 'Original teacher group and subject scope is restored' },
+            )
+            .toBe(true);
+          // Retain the new group's legitimate member, lesson and closed assignment history.
+        } catch (cleanupError) {
+          if (failed || info.status !== info.expectedStatus)
+            expect.soft(false, 'TEACHER_OWN_GROUP_SCOPE_RESTORE_FAILED').toBe(true);
+          else throw cleanupError;
+        }
+      }
     },
     { timeout: 180000 },
   ],
@@ -1181,11 +1418,11 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 
       await page.getByRole('button', { name: 'Назад', exact: true }).click();
       await page.getByRole('button', { name: 'Итоги', exact: true }).click();
+      await page.getByRole('button', { name: 'По студентам', exact: true }).click();
       await page.getByRole('button', { name: 'Группа', exact: true }).click();
       await page.getByRole('option', { name: groupName, exact: true }).click();
       await page.getByRole('button', { name: 'Предмет', exact: true }).click();
       await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
-      await page.getByRole('button', { name: 'По студентам', exact: true }).click();
       const statsRead = (sort: string) =>
         page.waitForResponse((response) => {
           const url = new URL(response.url());
@@ -1699,9 +1936,10 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(401);
   });
 
-  test('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', async ({
+  it('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', async ({
     page,
     dataset,
+    teacherGroupsSeed: secondGroup,
   }) => {
     const proof = syntheticInitData(dataset.teacher.telegramId);
     await installTelegramHost(page, proof, { observeDownloads: true });
@@ -1851,6 +2089,168 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     } finally {
       await file.dispose();
     }
+    // D023/JS-TEACHER-02: same genuine TMA owner, two currently authorized groups.
+    for (const student of [dataset.student, dataset.headman, dataset.assistant]) {
+      await expect(page.locator('.teacher-roster')).toContainText(student.displayName);
+    }
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Итоги', exact: true }).click();
+    const groupsRead = (sort: string) =>
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === '/api/v1/teacher/stats' &&
+          url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+          url.searchParams.get('scope') === 'groups' &&
+          !url.searchParams.has('groupId') &&
+          !url.searchParams.has('subjectId') &&
+          url.searchParams.getAll('lessonType').join().toUpperCase() === 'LECTURE' &&
+          url.searchParams.getAll('sort').join() === sort
+        );
+      });
+    const [groupsResponse] = await Promise.all([
+      groupsRead('present'),
+      page.getByRole('button', { name: 'Лекция', exact: true }).click(),
+    ]);
+    expect(groupsResponse.status()).toBe(200);
+    const groupsStats = await groupsResponse.json();
+    expect(groupsStats.groups.map((row: { groupId: string }) => row.groupId).sort()).toEqual(
+      [String(dataset.group.id), String(secondGroup.groupId)].sort(),
+    );
+    expect(
+      groupsStats.groups.some(
+        (row: { groupId: string }) => row.groupId === String(dataset.otherGroup.id),
+      ),
+    ).toBe(false);
+    expect(
+      groupsStats.groups.find(
+        (row: { groupId: string }) => row.groupId === String(secondGroup.groupId),
+      ),
+    ).toMatchObject({ lessonsCount: 1, absent: { numerator: 1, denominator: 1, percent: 100 } });
+    const cards = page.locator('.teacher-stats__card');
+    const assertGroupMetrics = async (data: typeof groupsStats) => {
+      await expect(cards.locator('.teacher-stats__row-name')).toHaveText(
+        data.groups.map((row: { groupName: string }) => row.groupName),
+      );
+      await expect(cards.locator('.teacher-stats__lesson-count')).toHaveText(
+        data.groups.map((row: { lessonsCount: number }) => `${row.lessonsCount} пар`),
+      );
+      for (const row of data.groups) {
+        const card = cards.filter({ has: page.getByText(row.groupName, { exact: true }) });
+        for (const [key, label] of [
+          ['present', 'Присутствия'],
+          ['presentOrExcused', 'Присутствия и уважительные причины'],
+          ['excused', 'Уважительные причины'],
+          ['absent', 'Отсутствия'],
+        ] as const) {
+          const metric = row[key];
+          await expect(
+            card
+              .locator('dl > div')
+              .filter({ has: page.getByLabel(label, { exact: true }) })
+              .locator('dd'),
+          ).toHaveText(
+            metric.denominator === 0
+              ? 'нет данных'
+              : `${new Intl.NumberFormat('ru', { maximumFractionDigits: 1 }).format(metric.percent)} % · ${metric.numerator}/${metric.denominator}`,
+          );
+        }
+      }
+    };
+    await assertGroupMetrics(groupsStats);
+    await page.getByRole('button', { name: 'Сортировка', exact: true }).click();
+    const [sortedGroups] = await Promise.all([
+      groupsRead('-absent'),
+      page.getByRole('option', { name: 'Отсутствия: сначала выше', exact: true }).click(),
+    ]);
+    expect(sortedGroups.status()).toBe(200);
+    await assertGroupMetrics(await sortedGroups.json());
+    for (const selected of [
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        groupName: groupsStats.groups.find(
+          (row: { groupId: string }) => row.groupId === String(dataset.group.id),
+        ).groupName,
+        studentIds: [dataset.student.id, dataset.headman.id, dataset.assistant.id],
+        lessonId: null,
+      },
+      { ...secondGroup, studentIds: [secondGroup.headmanId] },
+    ]) {
+      const card = cards.filter({ has: page.getByText(selected.groupName, { exact: true }) });
+      await card.getByRole('button').click();
+      await expect(page.getByRole('button', { name: 'Предмет', exact: true })).toContainText(
+        'Выбери предмет',
+      );
+      await expect(page.locator('.teacher-stats__card')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Предмет', exact: true }).click();
+      await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
+      const selectedRead = (pathname: string) =>
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === pathname &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(selected.groupId) &&
+            url.searchParams.get('subjectId') === String(selected.subjectId)
+          );
+        });
+      const [studentResponse] = await Promise.all([
+        selectedRead('/api/v1/teacher/stats'),
+        page.getByRole('button', { name: 'Лекция', exact: true }).click(),
+      ]);
+      expect(studentResponse.status()).toBe(200);
+      const studentStats = await studentResponse.json();
+      expect(studentStats.scope).toBe('students');
+      if (studentStats.lessonsCount > 0)
+        expect(
+          studentStats.students.map((row: { studentId: string }) => row.studentId).sort(),
+        ).toEqual(selected.studentIds.map(String).sort());
+      else expect(selected.groupId).toBe(dataset.group.id);
+      await page.getByRole('button', { name: 'Открыть журнал', exact: true }).click();
+      const [journalResponse] = await Promise.all([
+        selectedRead('/api/v1/teacher/journal'),
+        page
+          .locator('.teacher-journal')
+          .getByRole('button', { name: 'Лекция', exact: true })
+          .click(),
+      ]);
+      expect(journalResponse.status()).toBe(200);
+      const journal = await journalResponse.json();
+      expect(
+        journal.lessons.every(
+          (row: { groupId: string; subjectId: string }) =>
+            row.groupId === String(selected.groupId) &&
+            row.subjectId === String(selected.subjectId),
+        ),
+      ).toBe(true);
+      if (selected.lessonId != null) {
+        expect(journal.lessons.map((row: { id: string }) => row.id)).toEqual([
+          String(selected.lessonId),
+        ]);
+        expect(journal.students.map((row: { studentId: string }) => row.studentId)).toEqual(
+          selected.studentIds.map(String),
+        );
+        expect(journal.students[0].cells[0]).toMatchObject({ status: 'absent', autoAbsent: true });
+        await expect(page.locator('.teacher-journal__table tbody th[scope="row"]')).toHaveText([
+          secondGroup.headmanName,
+        ]);
+      } else if (journal.lessons.length === 0) {
+        expect(journal.students).toEqual([]);
+        await expect(
+          page.getByRole('status').filter({ hasText: 'В выбранных занятиях нет студентов.' }),
+        ).toBeVisible();
+      } else {
+        expect(journal.students.map((row: { studentId: string }) => row.studentId).sort()).toEqual(
+          selected.studentIds.map(String).sort(),
+        );
+      }
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'По моим группам', exact: true }).click();
+      await expect(cards).toHaveCount(2);
+    }
     await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
       status: 'SUSPENDED',
     });
@@ -1915,6 +2315,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
   test('D003 signed HEADMAN TMA marks an isolated own-group roster row', async ({
     page,
+    request: issuer,
     activeHeadmanDataset: dataset,
   }) => {
     // The worker owns this disposable group; this case adds its own member and
@@ -2003,6 +2404,81 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
       ),
     ).toBe(true);
     expect(knownMarks(after.entries)).toEqual(knownMarks(before.entries));
+
+    // D024: the same signed mobile owner explicitly rejects a browser LOGIN proof.
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+    await page.getByRole('button', { name: 'Вход в браузере', exact: true }).click();
+    try {
+      const issued = await issuer.post('/api/auth/qr/challenges', { data: { purpose: 'LOGIN' } });
+      let challenge;
+      try {
+        expect(issued.status()).toBe(200);
+        challenge = await issued.json();
+      } finally {
+        await issued.dispose();
+      }
+      expect(
+        typeof challenge.qrPayload === 'string',
+        'Owned browser receives an opaque LOGIN proof',
+      ).toBe(true);
+      await page.getByLabel('Данные QR для входа', { exact: true }).fill(challenge.qrPayload);
+      const [preview] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/qr/preview' &&
+            response.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'Проверить вход', exact: true }).click(),
+      ]);
+      expect(preview.status()).toBe(200);
+      const previewed = await preview.json();
+      expect(
+        previewed.challengeId === challenge.challengeId &&
+          previewed.purpose === 'LOGIN' &&
+          previewed.status === 'pending',
+        'TMA previews the exact pending browser proof',
+      ).toBe(true);
+      const [decision] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/qr/decision' &&
+            response.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'Отклонить вход', exact: true }).click(),
+      ]);
+      expect(decision.status()).toBe(200);
+      expect((await decision.json()).status === 'rejected').toBe(true);
+      await expect(page.getByRole('status')).toHaveText('Вход в браузере отклонён');
+      const denied = await issuer.post('/api/auth/qr/exchange', {
+        data: {
+          purpose: 'LOGIN',
+          issuerId: challenge.issuerId,
+          issuerSecret: challenge.issuerSecret,
+          challengeId: challenge.challengeId,
+        },
+      });
+      try {
+        expect(denied.status(), 'Rejected browser cannot exchange the proof').toBe(410);
+      } finally {
+        await denied.dispose();
+      }
+      const source = await page.request.get('/api/auth/session');
+      try {
+        expect(source.status()).toBe(200);
+        const currentOwner = await source.json();
+        expect(
+          String(currentOwner.userId) === String(dataset.headman.id) &&
+            currentOwner.sessionId === session.sessionId &&
+            currentOwner.activeRole === 'HEADMAN',
+          'Original signed owner remains current',
+        ).toBe(true);
+      } finally {
+        await source.dispose();
+      }
+    } finally {
+      await issuer.dispose();
+    }
   });
 });
 

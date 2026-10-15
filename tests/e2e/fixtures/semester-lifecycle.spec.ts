@@ -2477,6 +2477,21 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             false,
             'Initial archive retryable Schedule reports unverified Academic archive authority',
           );
+        if (
+          rpc.includes('javax.net.ssl.SSLHandshakeException:') ||
+          rpc.includes(
+            'io.netty.handler.ssl.ReferenceCountedOpenSslEngine$OpenSslHandshakeException:',
+          )
+        )
+          requireValue(false, 'Initial archive retryable Schedule RPC TLS handshake marker');
+        if (rpc.includes('io.netty.handler.ssl.NotSslRecordException:'))
+          requireValue(false, 'Initial archive retryable Schedule RPC TLS record marker');
+        if (
+          (rpc.includes('java.net.ConnectException:') ||
+            rpc.includes('io.netty.channel.AbstractChannel$AnnotatedConnectException:')) &&
+          rpc.includes('Connection refused')
+        )
+          requireValue(false, 'Initial archive retryable Schedule RPC connection refused marker');
         requireValue(false, 'Initial archive retryable Schedule RPC unavailable');
       }
       if (/^Status\{code=DEADLINE_EXCEEDED(?:,|})/.test(rpc))

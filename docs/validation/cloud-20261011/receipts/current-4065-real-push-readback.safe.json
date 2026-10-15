@@ -61953,6 +61953,583 @@
       "review": "c85History1+BothCIguards APPROVE0; c86Map2 coherentAPPROVE0; sourcechecks/inversesPASS",
       "qualification": "ActualnewMapAdminUI/historyreason/guardstockgenerationNOT_RUN; actualce943expiry/reason proofs retained independently; no samechanged-testPASSborrowed",
       "parallel": "c79 groupUI stillsourcewriter ownWT, notpublicationbarrier; no Rootprocess/heavy; currentce943CIcontinues/no cancellation"
+    },
+    "45e028_actual_publication": {
+      "utc": "2026-10-15T07:40:34.810102+00:00",
+      "head": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+      "parent": "ce943075e29b1e9df766eacdf7fd4fd84ba2ff05",
+      "actualRemote": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+      "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "officialPR": {
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "head": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+        "base": "main",
+        "baseSha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "mergeCommit": "9a6a71c6fc81371d4f41a671e99875ef0935079c"
+      },
+      "phases": {
+        "configuredSixSeconds": 2.174,
+        "commitSeconds": 0.393,
+        "rangeGitleaksSeconds": 0.878,
+        "realPushSeconds": 3.348,
+        "allNativeExit0": true,
+        "allOwnedReaped": true
+      },
+      "scope": "4reviewedSource+7existingtaskdocs, no groupUIWIP/foreignfiles included",
+      "safe": "/workspace/scratch/rct-validation/root_Q04_Q15_publish/874-next-merged-checks/ce943-next4-publish-01.safe.json",
+      "actualCheckout": "NOT_YET_PROVED; officialcandidate9a6a71c6fc81371d4f41a671e99875ef0935079c isnotreceipt",
+      "currentGates": "WAITING_INITIAL_METADATA, oldce943actuals distinct; no new generation/browserclaim",
+      "next": "c80 observes45actualcheckout/schema and retainsusefulce943role6/F3/WK/nativeS2 reads; c79independentgroupUI"
+    },
+    "ce943_browser_checkpoint_pre_admission": {
+      "utc": "2026-10-15T07:40:34.810102+00:00",
+      "run": 38697167187,
+      "head": "ce943075e29b1e9df766eacdf7fd4fd84ba2ff05",
+      "job": 116296370752,
+      "smokeStep15": "SUCCESS notnamedCORSproofyet",
+      "FIRST3Step16": "FAIL",
+      "FIRST3Artifact": 11955636422,
+      "WebkitStep21": "FAIL",
+      "WebkitArtifact": 11955591697,
+      "ROLE6Step27": "FAIL",
+      "ROLE6Artifact": 11956265948,
+      "ROLE6Bytes": 546,
+      "pending": "c80 exactsixbody/sourcepins first; rawcauseNOT_YET_READ; one admittedfixedCORS75 native9recordprojection fromsameofficialjob log noidentityloosening/B015target",
+      "geoStep29": "RUNNINGatcheckpoint"
+    },
+    "ce943_ROLE6_new_Auth_actual_FAIL": {
+      "utc": "2026-10-15T07:42:35.903030+00:00",
+      "head": "ce943075e29b1e9df766eacdf7fd4fd84ba2ff05",
+      "checkout": "b289b435989c84fe071c06e54e5c3c48b492be23",
+      "run": 38697167187,
+      "job": 116296370752,
+      "artifact": 11956265948,
+      "bytes": 546,
+      "state": "OLD4PASS_NEW_AUTH2FAIL_CAUSE_UNKNOWN",
+      "existingFour": "ADMIN110/role22+130/SUSPENDED3221 allPASSED",
+      "AuthA": {
+        "sourceLine": 345,
+        "durationMs": 6373,
+        "errorCount": 1,
+        "frame": 345,
+        "reportedCause": "UNKNOWN/declarationonly"
+      },
+      "AuthB": {
+        "sourceLine": 506,
+        "durationMs": 2483,
+        "errorCount": 1,
+        "frame": 506,
+        "reportedCause": "UNKNOWN/declarationonly"
+      },
+      "SourceDigest": "c23c1e7927c2067b13f79d8fad7b382fbc3cfa06625ee1c7f4a493cb4ea41a7f",
+      "interpretation": "newactualFAIL notyetproduct/fixture/teardown classified; no contradictoryallAuthPASS frombackendHTTP test",
+      "reader": "strictsame6Source/digestCRC/caps/native0/.743s/allreaped895351",
+      "next": "sameauthorc87 bounded Source commonsetup/failurehint plan; do notrerununchanged orrelaxassertions"
+    },
+    "ce943_PNG_single_request_observer_disagreement": {
+      "utc": "2026-10-15T07:44:11.515650+00:00",
+      "producer": "ce943075e29b1e9df766eacdf7fd4fd84ba2ff05",
+      "checkout": "b289b435989c84fe071c06e54e5c3c48b492be23",
+      "run": 38697167187,
+      "artifact": 11955636422,
+      "teacherCase": 448,
+      "actual": [
+        "originalPWbodyeq1004FAIL",
+        "CAPTURE_EMPTY1005",
+        "SOLE_MATCH1066",
+        "CAPTURED_FETCH1069",
+        "CONTENT_LENGTH_MATCH1078"
+      ],
+      "observed": "exactoneownPNGrequest/capturedsameRequestidentity/fetch/headerlengthfixture; openedUIBlobbytes and directAPIbytes matchfixture, oraclespassed beforehints. Nooverflow/SW/nonPNG/lengthmismatchhint",
+      "classification": "OBSERVER_DISAGREEMENT; underlyingPWemptycauseUNKNOWN/notproductcorruption",
+      "next": "c86 independentSource proof ifsinglefetch-responseblob-openedURL chain validates genuineclientbyteoracle replacement; no unchangedrerun/relaxactualclientintegrity",
+      "otherCurrent": "student399/helper1155PASS; WKlive1299PASS/warm1994FAIL7sameINTERNALoldDocument/fallback andneutral2442FAILreload2700; CORSofficiallogNOT_FOUNDwhilejobrunning→retryonlyterminal/newavailability",
+      "ownership": "c79 soleRealmwriter, c87 AuthnewFAILboundedSourceplan, Root sharedstate/Git"
+    },
+    "45e_group_UI_Source_ready": {
+      "utc": "2026-10-15T07:46:23.678777+00:00",
+      "writer": "c79",
+      "WT": "/workspace/rct-worktrees/request-enum-874-20261014",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "preimage": "0b91f5d79132226f1efe546393e6a9c342bf921b787a877f34c2bbe5cf7233e6",
+      "postimage": "5c5401109dc16aa4fc1bc63639af2a068776166c8d9fa741fb0cc20600b9a8d0",
+      "change": "+168 tail only/no removals; realAdmin3fields create→201/fullnativepayload/DRAFTUI/authoritativereadback; ownexactfullfields/freshID/emptyroster archivecleanup, noDELETE, retainedarchivedhistory",
+      "checks": "oldwholefileinverseexact/formatter/parser/transpile/RootRAMoverlayTSC0/6.262s/445837312B/allreaped895487; prior7.015PASSretained",
+      "runtime": "NOT_RUN",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.adminGroupCreateClientCe943.implementation",
+      "next": "sameauthorPNG oraclecorrection thenoneindependentc86 boundedgroup+PNGreview"
+    },
+    "45e_PNG_oracle_correction_independent_Source_GO": {
+      "utc": "2026-10-15T07:46:23.678777+00:00",
+      "reviewer": "c86",
+      "inputSource": "0b91f5d79132226f1efe546393e6a9c342bf921b787a877f34c2bbe5cf7233e6",
+      "actualEvidence": "ce943_PNG_single_request_observer_disagreement artifact11955636422",
+      "conclusion": "actualsameoneauthorizedrequest→productionresponse.blob unchanged→validatedcurrentownerBlobURL→openedUI exactbytes; PWbufferempty doesnotrepresentobservedclientbytes. UnderlyingprotocolcausenameUNKNOWN/notneeded fororacleclassification. No unassociatedsecondfetch/cache/transformation/syntheticreplacement",
+      "productionPins": [
+        "teacher-client.ts0382acc59c35501e47d8eeb901c0e66a8c0c83e0c478afbf1582d4a7108d7ac9",
+        "teacher-attachment-preview.ts89ee6143d907c16cc315cbe4664045d21ae09712e0279b3abf7b3d9a68750a4d",
+        "TeacherAttachmentPreview.vue9ed70bc0d86f4cae6fbfd58317a5c55a7423fd19a03553ecaaafd838ad4cd1fd"
+      ],
+      "GO": "c79 soleexistingRealmwriter afterfrozenGroup5c54: removeONLYPWbodyread/softbodyequals/emptyencodingprobes +completedpassiveSet/listener/5booleaninstrumentation. Retainresponsepath/GET/status200/MIME/nativepreview/hardopenedUIBlobeverybyte/harddirectAPIPNG/foreigndenial/manualexplanation/privacy/context/allotheroracles. One concisewhycomment ifhelpful; no newsuite/fetch/timeout/skip/productchanges. One finalindependentc86 coherentbounded2hunkreview, sourceinverse/format/TSC enough beforeactualwholecase.",
+      "qualification": "correctedwholecasePASS stillNOT_RUN; exactlyoneGET isdiagnostic association notnewpermanentproductrequirement"
+    },
+    "45e_Auth_failure_frame_Source_GO": {
+      "utc": "2026-10-15T07:46:23.678777+00:00",
+      "author": "c87",
+      "confirmed": "artifact-privacy.ts publicSpecs omits cloud-accepted-auth-security.spec.ts; reportedSpecLocation alwaysfallsbackdeclaration345/506. Sourcecounterexample explainsopaquehints, NOTactualAuthfailures",
+      "GO": "solewriterextend ONEexactknownnewspec literal in existingpublicSpecs; AuthspecrequireOwned sameError/class/message with captureStackTrace helperomission (existingpattern) foractualcaller. Existingprivacycontrols +oneactualnewfileadmission control using syntheticmarkers; no schema/stage/cap/allowall/rawerror expansion/framework/production/API/config edits. No OTPconstructorclaimforboth: CaseAdoesnotrequestotpRecipient. No unchangednative rerun.",
+      "next": "boundedchecks/currentprivacycontrols thenindependentc85 targetedadmissionreview andnextcoherentpackage"
+    },
+    "45e_group_PNG_coherent_Source_ready": {
+      "utc": "2026-10-15T07:50:45.432903+00:00",
+      "writer": "c79",
+      "WT": "/workspace/rct-worktrees/request-enum-874-20261014",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "preimage": "0b91f5d79132226f1efe546393e6a9c342bf921b787a877f34c2bbe5cf7233e6",
+      "postimage": "d925d72e3a458a8c2553f8f0b00ae522551b14319199d2b3919bdae58050afb4",
+      "groupTail": "exact168lines5c54preserved; realUI create/DRAFT+authoritative readback/exactownarchivecleanup; noDELETE/clock/actor/config mutation",
+      "PNG": "onlyPWbodyread/softcaptureprobes/completedrequestSet+5hints removed afteractualsameRequest protocol/UIcounterexample; allhardresponse/status/MIME/nativepreview/openedUIeverybyte/directAPI/rights/manualexplanation/returnoraclesretained; underlyingprotocolcauseUNKNOWN",
+      "checks": "PNGinverse5c54 andgroup168exact/oldhardtokens/formatter/parser/transpile/RootRAMoverlayTSC0/6.114s/451784704B/allreaped896016",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.adminGroupCreateClientCe943.coherentPngCorrection",
+      "review": "pendingonec86 coherentGroup+PNGtargetedreview",
+      "browser": "NOT_RUN"
+    },
+    "45e_initial_current_gates_checkout": {
+      "utc": "2026-10-15T07:50:45.432903+00:00",
+      "head": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+      "event": "pull_request",
+      "attempt": 1,
+      "runs": {
+        "CI": 38700114152,
+        "Coverage": 38700114187,
+        "Security": 38700114153,
+        "OpenAPI": 38700114362
+      },
+      "initialStates": {
+        "CI": "RUNNING",
+        "Coverage": "RUNNING",
+        "Security": "SUCCESS",
+        "OpenAPI": "SUCCESS"
+      },
+      "actualCheckout": {
+        "artifact": 11955473387,
+        "sha": "9a6a71c6fc81371d4f41a671e99875ef0935079c",
+        "tree": "f8474c63c8dc7573f21e74d53676d8596b8d8ae8",
+        "officialParents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b"
+        ],
+        "producerTreeEqual": true
+      },
+      "BFF": {
+        "job": 116305990281,
+        "ordinaryIT": "FAIL",
+        "stockGenerationStep21": "SUCCESS",
+        "uploadStep22": "SUCCESS",
+        "artifact": 11955542973,
+        "bytes": 11213,
+        "digest": "sha256:c7aa34b55ccf781f013a92f85e23b9a283f1853b27f526ffcb01d2ee204009c9",
+        "body": "PENDING_STRICT_ADMISSION; noJSON/typeclaimyet"
+      },
+      "observerReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current45e028Primary"
+    },
+    "45e_BFF_official_schema_Root_admission": {
+      "utc": "2026-10-15T07:52:09.365098+00:00",
+      "observer": "c80",
+      "producer": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+      "checkout": "9a6a71c6fc81371d4f41a671e99875ef0935079c",
+      "tree": "f8474c63c8dc7573f21e74d53676d8596b8d8ae8",
+      "run": 38700114152,
+      "job": 116305990281,
+      "artifact": 11955542973,
+      "artifactBytes": 11213,
+      "artifactDigest": "sha256:c7aa34b55ccf781f013a92f85e23b9a283f1853b27f526ffcb01d2ee204009c9",
+      "publicJson": {
+        "path": "docs/openapi/mobile-bff.json",
+        "preimage": "169a08a4fbaff89d435212ac6a7450f735313c1ed49120565ffe68b6b9d2bc4e",
+        "postimage": "d438812a43a332dbc11bd5fab92848b61e6cd7a3a722d512191875d59e32a139",
+        "bytes": 132374,
+        "savedOriginal": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/mobile-bff-generated-45e028.json",
+        "rootExactCopy": true
+      },
+      "producerProof": "strict2members/CRC/16keys/source708879+CIb7b6/nativeassertframe132/ordinaryfailurepreserved/exactcurrentcheckout; trackedChanges exactlypublicschema+gradlew; knownwrappermodechangeTRUE/bytesc074 exact",
+      "reader": "native0/.730s/allreaped896117",
+      "state": "OFFICIAL_ORIGINAL_JSON_ADMITTED_ROOT_WIP_NOT_PUSHED",
+      "next": "c79 soleBFFschema/types owner stockgenerate:types/check exactactualJSON, semanticdiff andsufficientconsumerTypechecks, no handJSON/types; Academicownerc84 separate"
+    },
+    "45e_group_PNG_Root_integration": {
+      "utc": "2026-10-15T07:54:54.793395+00:00",
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "preimage": "0b91f5d79132226f1efe546393e6a9c342bf921b787a877f34c2bbe5cf7233e6",
+      "postimage": "d925d72e3a458a8c2553f8f0b00ae522551b14319199d2b3919bdae58050afb4",
+      "review": "c86 independentcoherentGroup+PNG APPROVE noP1P2; boundedownarchival/preflightalltabs/freshID/fullfields/emptyroster; acceptedUI3fields/readback; allhardUI/APIPNG/rights/privacy preserved",
+      "checks": "PNGinverse5c54 andgroup168exact/oldhardtokens/formatter/parser/transpile/RootRAMoverlayTSC0/6.114s/451784704B/allreaped896016",
+      "state": "EXACT_REVIEWED_ROOT_WIP_NOT_PUSHED",
+      "actualBrowser": "NOT_RUN"
+    },
+    "ce943_reconciliation_and_helper_current_FAIL": {
+      "utc": "2026-10-15T07:54:54.793395+00:00",
+      "producer": "ce943075e29b1e9df766eacdf7fd4fd84ba2ff05",
+      "checkout": "b289b435989c84fe071c06e54e5c3c48b492be23",
+      "run": 38697167187,
+      "earlyReconciliation": {
+        "artifact": 11956257495,
+        "status": "FAIL",
+        "durationMs": 125476,
+        "frame": 1757,
+        "actualAssertion": "requireValue(operation.operationId && operation.operationState===PENDING) afterarchivePOST accepts200/202/503",
+        "phase": "PENDING_ARCHIVE",
+        "finallySnapshot": {
+          "exactDlqEnvelope": true,
+          "recoveryPublishAttempted": true,
+          "appliedAfterReplay": true,
+          "retainedDlqCopies": 1,
+          "sameArchiveCompleted": false,
+          "duplicateAttempted": false,
+          "pendingBeforeReplay": false,
+          "restorationSucceeded": true,
+          "clockUnchanged": true,
+          "cleanup": "PASSED"
+        },
+        "limits": "finallysnapshotnotproofearlierreplay/pending/order; actualarchiveHTTPstatus/body/stateUNKNOWN; sourceguard0c42 allowedprogressbutnotoverallPASS; assignment43correctlyadmitted"
+      },
+      "helper": {
+        "artifact": 11955718625,
+        "oldFour": "PASS",
+        "ongoingCase": 468,
+        "status": "FAIL",
+        "durationMs": 3092,
+        "frame": 698,
+        "actualAssertion": "finalcleanupFailed===false",
+        "cause": "whichcleanupcommand/statusUNKNOWN; finallycanmaskbodyfailure; no wholeongoingPASS"
+      },
+      "next": "c79 boundedearlyarchive response-contract Sourceafterstocktypes; c84 samehelperauthor boundedcleanupcause/preservemainerror viaexistingpublicframes; do notrerununchanged/assertionweaken"
+    },
+    "45e_late_metadata_checkpoint": {
+      "utc": "2026-10-15T07:54:54.793395+00:00",
+      "attendanceUnit": "SUCCESS",
+      "attendanceIT": "SUCCESS",
+      "authIT": "SUCCESS",
+      "academicJob": 116305990701,
+      "academicOrdinary": "RUNNING",
+      "browserJob": 116305990553,
+      "browser": "boot11RUNNING",
+      "Coverage": "RUNNING",
+      "Security": "SUCCESS",
+      "OpenAPI": "SUCCESS",
+      "BFFOrdinary": "FAIL/actualofficialJSONadmitted",
+      "c80OwnReceipts": "current45e028Primary/currentCe943Primary fresh; noSourceedits/allreadchildrenreaped",
+      "CORS": "ce943joblogNOT_FOUNDwhilejobrunning; no additionalreaduntilterminal/availability"
+    },
+    "45e_Auth_diagnostic_Source_ready": {
+      "utc": "2026-10-15T07:55:50.934419+00:00",
+      "author": "c87",
+      "WT": "/tmp/rct-auth-f545-20261015",
+      "inventory": [
+        {
+          "path": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "preimage": "c23c1e7927c2067b13f79d8fad7b382fbc3cfa06625ee1c7f4a493cb4ea41a7f",
+          "postimage": "c86d622cc0152dd0afad0d48af69b6e12a009d64a5f736984070f7e079e177ff"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "preimage": "a2a5a0d0467eb7195c27b68beaed40038600ce0adf37c9ff817111a5d6d98d60",
+          "postimage": "427878da57f98284d56bd5a22b7e8e1fd08ae1aff65cbba6d67d88a4fd00590b"
+        },
+        {
+          "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+          "preimage": "261e577dcd79ff5d3e936e5eabf120cefe91298ecd843ca3f1f914a5c13e4da4",
+          "postimage": "63d43066e31921f16adbed387298c20a4c51fae68981cd359e0101e65bc35c16"
+        }
+      ],
+      "change": "exactnewAuthspec only publicSpecs admission; sameError/class/fixedmessage caller omission forrequireOwned; onebrowser-free exactfilename/syntheticmarker privacycontrol; schema/caps/stackbounds/sanitizer/status/othercases unchanged",
+      "checks": "all3inverseexact/Prettier/parser/canonicaltargetTSC0; oldallowlistexpectedONEFAIL/runner0/markerAbsent thenbyteexactfixedfullprivacycontrolsPASS normal+interrupt+missingguard/browserNOT_STARTED;43.200s/509.5MB/allownedreaped896343+896369; initial0testselectorFAILpreserved/notcredited; temporaryownWTdependencylinkremoved/PWinode413591unchanged",
+      "actualAuthFailureCause": "UNKNOWN; thisfixeslostcallsiteONLY",
+      "receipt": "/tmp/rct-auth-f545-20261015/outcome.safe.json#authCe943FailureFrameSourcePlan",
+      "review": "pendingc85 targetedadmission/privacy3hunks independent review",
+      "runtime": "NOT_RUN"
+    },
+    "45e_helper_cleanup_Source_GO": {
+      "utc": "2026-10-15T08:00:36.041624+00:00",
+      "author": "c84",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "preimage": "ab363e7f618b396b84718b86c86f23769516c1df1cb95b95022ee59109911147",
+      "actual": "ce943case468FAIL3092ms/final698 hardcleanupFailed guard; WHICHcleanupstatus/causeUNKNOWN; command/contractsSourceconsistentno confirmedproductbug",
+      "SourceDefect": "finallyhardassertcanreplaceoriginalbodythrow; genericdatasetHttpFailurelosesroute/status forDELETE/cancel",
+      "GO": "sameexisting5thcase only: keepallcleanupcommands/order/budgets andunconditionalcleanupsuccesscriterion but finalexpect.soft; each existingcleanupcatch recordsfixedsoftfailureatdistinctpublicSource line forstudentclear/assistantclear/cancel; no caughtvalues/rawbodies/IDs/statusclaim. Allattemptsrun; originalbodyexceptionpreserved, anycleanupfailurestilltestFAIL. No retries/extraAPI/schema/reportercapchange/skip/oracledeletion. One tinyactualold/newfinallycontrol oldmask/newpreserve/allattempts thenformat/parser/RootTSC+old4exactinverse, independentreview",
+      "setup": "temporaryASTfinderfailedbeforeexecutionduemissingcallarg guard; originalab363retained/allreaped/notruntimefailure",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#helperCleanupCe943"
+    },
+    "45e_BFF_stock_types_Source_ready": {
+      "utc": "2026-10-15T08:00:36.041624+00:00",
+      "author": "c79",
+      "WT": "/workspace/rct-worktrees/request-enum-874-20261014",
+      "schema": {
+        "path": "docs/openapi/mobile-bff.json",
+        "sha256": "d438812a43a332dbc11bd5fab92848b61e6cd7a3a722d512191875d59e32a139",
+        "bytes": 132374,
+        "originalOfficial45Source": true
+      },
+      "generated": {
+        "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        "preimage": "d885a2d08344e4575076091cd65b43d0e3ddadb8e928b510167582aaaedcd033",
+        "postimage": "e67cfe0698964cc6c79707b77538c8c3d3e3dc0e2de645e9f40a590b4f999d05"
+      },
+      "semanticDiff": "ONLY3reasonenumarrays appendUNIVERSITY_ORDER/SUMMONS; no path/schema/field removal/otherchanges. TS exactoldinverse afterschemaheaderhash+3unionadditions. Original13Java/proto/BFF/bot explicitmapping/compat independentlyc86APPROVED andactualREDrestoreGREEN; stockoutputmatchesit",
+      "checks": "stocknpm generate:types andcheckPASS/parserPASS/currentRootfoundationallconsumerRAMTSC0;2.270s236MB/2.261s227MB/11.131s699MB/allownedreaped",
+      "limitations": "nestedNode.spawnSyncnpmEPERMsetup(noapprovalorcontentrejection), SAMEstockcommandnormalexistingPythonownedguard directlaunch passed; supplementcontracttestcouldnotexecute sparseWT/importboundarysetup, NOT_EXECUTED/UNKNOWN/noSourceFAILclaim; nosetupcampaign",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#Q01_Q12_remaining_join.reasonCatalogSourcePlanF2a.officialBffSchemaTypes45e",
+      "next": "Rootverifyexact3enumsemanticdiff andstockTSinverse/integrate; no extra fullreviewofunchanged13 ornewruntimeproof fromgeneratedtypes"
+    },
+    "45e_Auth_diagnostic_Root_integration": {
+      "utc": "2026-10-15T08:06:00.621634+00:00",
+      "inventory": [
+        {
+          "path": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "preimage": "c23c1e7927c2067b13f79d8fad7b382fbc3cfa06625ee1c7f4a493cb4ea41a7f",
+          "postimage": "c86d622cc0152dd0afad0d48af69b6e12a009d64a5f736984070f7e079e177ff"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "preimage": "a2a5a0d0467eb7195c27b68beaed40038600ce0adf37c9ff817111a5d6d98d60",
+          "postimage": "427878da57f98284d56bd5a22b7e8e1fd08ae1aff65cbba6d67d88a4fd00590b"
+        },
+        {
+          "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+          "preimage": "261e577dcd79ff5d3e936e5eabf120cefe91298ecd843ca3f1f914a5c13e4da4",
+          "postimage": "63d43066e31921f16adbed387298c20a4c51fae68981cd359e0101e65bc35c16"
+        }
+      ],
+      "review": "c85 independent3hunk APPROVE0P1P2; exactinverse/allprivacybounds/status/schemas/body/oracles/cleanup/time unchanged",
+      "checks": "all3inverseexact/Prettier/parser/canonicaltargetTSC0; oldallowlistexpectedONEFAIL/runner0/markerAbsent thenbyteexactfixedfullprivacycontrolsPASS normal+interrupt+missingguard/browserNOT_STARTED;43.200s/509.5MB/allownedreaped896343+896369; initial0testselectorFAILpreserved/notcredited; temporaryownWTdependencylinkremoved/PWinode413591unchanged",
+      "state": "REVIEWED_EXACT_ROOT_WIP_NOT_PUSHED",
+      "actualAuthCause": "UNKNOWN/nativeNOT_RUN"
+    },
+    "45e_BFF_stock_types_Root_integration": {
+      "utc": "2026-10-15T08:06:00.621634+00:00",
+      "schema": {
+        "path": "docs/openapi/mobile-bff.json",
+        "sha256": "d438812a43a332dbc11bd5fab92848b61e6cd7a3a722d512191875d59e32a139",
+        "bytes": 132374,
+        "originalOfficial45Source": true
+      },
+      "generated": {
+        "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        "preimage": "d885a2d08344e4575076091cd65b43d0e3ddadb8e928b510167582aaaedcd033",
+        "postimage": "e67cfe0698964cc6c79707b77538c8c3d3e3dc0e2de645e9f40a590b4f999d05"
+      },
+      "semanticDiff": "Root independently recursively compared wholepublicJSON: EXACT3expected reason enums append2stablecodes, ALLotherkeys/values/arrays/fields identical; stockTS inverseheader+3unionchanges authorverified",
+      "review": "original13Java/proto/BFF/bot enumcontract c86APPROVE reused; actualexplicit6→7RED/exactrestore/GREEN +realMongo/signedHTTPgRPC; stockoutputonlysameexpected2codes, no newsemanticimplementation",
+      "checks": "stocknpm generate:types andcheckPASS/parserPASS/currentRootfoundationallconsumerRAMTSC0;2.270s236MB/2.261s227MB/11.131s699MB/allownedreaped",
+      "limitations": "nestedNode.spawnSyncnpmEPERMsetup(noapprovalorcontentrejection), SAMEstockcommandnormalexistingPythonownedguard directlaunch passed; supplementcontracttestcouldnotexecute sparseWT/importboundarysetup, NOT_EXECUTED/UNKNOWN/noSourceFAILclaim; nosetupcampaign",
+      "state": "EXACT_OFFICIAL_JSON_AND_STOCK_TS_ROOT_WIP_NOT_PUSHED"
+    },
+    "45e_helper_cleanup_Source_ready": {
+      "utc": "2026-10-15T08:07:46.510566+00:00",
+      "author": "c84",
+      "WT": "/workspace/rct-worktrees/lesson-493-fixture-20261014",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "preimage": "ab363e7f618b396b84718b86c86f23769516c1df1cb95b95022ee59109911147",
+      "postimage": "16afa3ca33bcaf6f063b6136c4d6ade2a7baedf6781c7d73b871c09babc15466",
+      "change": "only5thfinally threefixeddistinctsoftcleanup failures +finalcleanupsuccesssoft; body/commands/order/budgets/old4 byteunchanged. AnycleanupfailurestillFAIL; originalbodythrowpreserved; no rawcaughtvalues/statusclaim",
+      "checks": "fullinverseab363/old4+5thbodyexact; actualoldfinally masksbody; newpreservesbody/all3attempts/cleanuponly2softfailures/all-success0; formatter/parser/transpile/RootTSC0/3.703s/386MB/allreaped; initialASTfinderpre-mutationFAILretained/setup-only",
+      "actualBodyCleanupCause": "UNKNOWN",
+      "review": "pendingc85 targetedcoherentfinallyreview",
+      "receipt": "/workspace/rct-worktrees/lesson-493-fixture-20261014/.dashboard-daily-growth.safe.json#helperCleanupCe943"
+    },
+    "45e_reconciliation_initial_state_diagnostic_Source_GO": {
+      "utc": "2026-10-15T08:07:46.510566+00:00",
+      "author": "c79",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "preimage": "0c42d29cee5b715acac1ba1033cc72e76820ef3f802cbdf4060e6abbfe2e30b5",
+      "actual": "ce943initialguard1757FAIL/status/body/stateUNKNOWN; restorationTRUE/cleanupPASS; finallysnapshotnotearlyproof",
+      "Source": "controllerPENDING202/ERROR503/COMPLETED200; testadmits200202503thenrequiresPENDING. ValidretryableERRORcounterexample exists, but scenariofurtherrequiresstablePENDING/stateVersion/ACK_PENDING, so DO NOTRELAX phase/poll/barrier withoutactualstate/cause",
+      "GO": "minimalbeforeexistingunchangedPENDINGguard staticSource failure branches onlyforIDmissing /ERRORretryable /ERRORterminal /COMPLETED /UNKNOWN; no DTO/body/reasonvalue output/newfields/network/calls/caps. PreserveoriginalhardPENDINGguard/pollstateVersion/ACKreason/diagnostic.pendingBeforeReplay exactmeaning/allreplay/duplicate/cleanup/oracles. ExistingcaptureStackTrace-helperomit/publicframe carriesknownSourcecategory. Author sourcechecks/finitepurebranchcontrols thenoneboundedreview; no newframework or unchangednative retry.",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#lesson409F545Diagnosis.ce943Reconciliation1757SourceDiagnosis"
+    },
+    "45e_helper_cleanup_review_accepted": {
+      "utc": "2026-10-15T08:14:40.567602+00:00",
+      "reviewer": "c85",
+      "verdict": "APPROVE_SOURCE_ONLY/0P1P2",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "postimage": "16afa3ca33bcaf6f063b6136c4d6ade2a7baedf6781c7d73b871c09babc15466",
+      "evidence": "independent exactinverse +installedPlaywright expect.soft implementation; soft records _failWithError withoutthrow; max4cleanupsoft+body withinexisting8cap; allcleanupattempts andoriginalbodythrowpreserved; no rawcaughtvalues/newprivacyfields. ActualruntimecauseUNKNOWN."
+    },
+    "45e_reconciliation_initial_state_diagnostic_Source_ready": {
+      "utc": "2026-10-15T08:14:40.567602+00:00",
+      "author": "c79",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "preimage": "0c42d29cee5b715acac1ba1033cc72e76820ef3f802cbdf4060e6abbfe2e30b5",
+      "postimage": "a1181f42e2163c5a24be01ed1430e5fc4b10de7e85c52502cef8cd98579aae41",
+      "change": "15fixedcallerbranchlines beforeunchangedhardPENDING; IDmissing/ERRORretryabletrue/ERRORretryablefalse/COMPLETED/UNKNOWN; no rawvalues/status/reason/newrequests. Wholeoriginalinverseexact/allstablePENDINGversionACKreplayduplicatecleanupbudgetmeaningunchanged.",
+      "checks": "formatter/parser/8branchcontrols/canonicalRootoverlayTSC0;5.133s/444682240B/native0/reaped897211",
+      "receipt": "/workspace/scratch/rct-validation/q09_remaining_client_writer/schedule-current874.safe.json#lesson409F545Diagnosis.ce943Reconciliation1757SourceDiagnosis.initialStateDiagnosticImplementation",
+      "review": "c86 independentAPPROVE0/15lineinverseexact/no changes runtime",
+      "runtime": "NOT_RUN/actualinitialstateUNKNOWN",
+      "reviewUtc": "2026-10-15T08:15:53.645809+00:00"
+    },
+    "45e_helper_cleanup_Root_integration": {
+      "utc": "2026-10-15T08:15:11.484373+00:00",
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "preimage": "ab363e7f618b396b84718b86c86f23769516c1df1cb95b95022ee59109911147",
+      "postimage": "16afa3ca33bcaf6f063b6136c4d6ade2a7baedf6781c7d73b871c09babc15466",
+      "review": "c85 independentAPPROVE0; Sourceonly fivefinally correction",
+      "checks": "same reviewed exactbytes/authorformatter-parser-RAMfinallycontrols-canonicalRootTSC PASS; no redundant rerun",
+      "state": "EXACT_REVIEWED_ROOT_WIP_NOT_PUSHED",
+      "actualCause": "UNKNOWN"
+    },
+    "45e_reconciliation_diagnostic_Root_integration": {
+      "utc": "2026-10-15T08:15:53.645809+00:00",
+      "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+      "preimage": "0c42d29cee5b715acac1ba1033cc72e76820ef3f802cbdf4060e6abbfe2e30b5",
+      "postimage": "a1181f42e2163c5a24be01ed1430e5fc4b10de7e85c52502cef8cd98579aae41",
+      "review": "c86APPROVE0 targeted15lines/fullinverseexact",
+      "checks": "authorformatter/parser/8branchRAMcontrols/canonicalRootTSC0/5.133s/444682240B/allreaped",
+      "state": "EXACT_REVIEWED_ROOT_WIP_NOT_PUSHED",
+      "actualInitialStateCause": "UNKNOWN"
+    },
+    "45e_observer_new_availability": {
+      "utc": "2026-10-15T08:15:53.645809+00:00",
+      "AcademicOrdinary": "FAIL",
+      "AcademicOfficialGenerator19": "SUCCESS",
+      "AcademicUpload20": "SUCCESS",
+      "artifact": 11957180945,
+      "bytes": 28646,
+      "digest": "sha256:a2bca32872025103f84c8c758ff781910d1abaa61dd2ad002f10192d0d3546e8",
+      "body": "pendingstrictc80read",
+      "AcademicSafeArtifact": 11956791557,
+      "Coverage": "FAIL",
+      "Security": "SUCCESS",
+      "OpenAPI": "SUCCESS",
+      "browser": "earlyrecon41RUNNING/F3WKROLEhelperFAILmetadata",
+      "olderCe943CI": "terminalFAIL08:02, exactonefixedCORSprojection nownewlyavailable"
+    },
+    "45e_next_eight_reviewed_Source_publication_ready": {
+      "utc": "2026-10-15T08:17:42.956019+00:00",
+      "head": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+      "sourceInventory": [
+        {
+          "path": "docs/openapi/mobile-bff.json",
+          "sha256": "d438812a43a332dbc11bd5fab92848b61e6cd7a3a722d512191875d59e32a139"
+        },
+        {
+          "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "sha256": "e67cfe0698964cc6c79707b77538c8c3d3e3dc0e2de645e9f40a590b4f999d05"
+        },
+        {
+          "path": "tests/e2e/artifact-controls/privacy.control.spec.ts",
+          "sha256": "63d43066e31921f16adbed387298c20a4c51fae68981cd359e0101e65bc35c16"
+        },
+        {
+          "path": "tests/e2e/fixtures/artifact-privacy.ts",
+          "sha256": "427878da57f98284d56bd5a22b7e8e1fd08ae1aff65cbba6d67d88a4fd00590b"
+        },
+        {
+          "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "sha256": "a1181f42e2163c5a24be01ed1430e5fc4b10de7e85c52502cef8cd98579aae41"
+        },
+        {
+          "path": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+          "sha256": "c86d622cc0152dd0afad0d48af69b6e12a009d64a5f736984070f7e079e177ff"
+        },
+        {
+          "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+          "sha256": "16afa3ca33bcaf6f063b6136c4d6ade2a7baedf6781c7d73b871c09babc15466"
+        },
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "d925d72e3a458a8c2553f8f0b00ae522551b14319199d2b3919bdae58050afb4"
+        }
+      ],
+      "reviews": "c85 Auth/helper; c86 groupPNG/semester; original reason13review +whole official BFF3enums only/stockoutput equivalence",
+      "runtime": "NOT_RUN for changedbrowser witnesses; currentactualFAILs preserved",
+      "untouched": "Angular433baseline/modes; original25foreignuntracked; main; existingstanddata"
+    },
+    "45e_transfer_reason_history_actual_named_PASS": {
+      "utc": "2026-10-15T08:19:50.920620+00:00",
+      "observer": "c80",
+      "actual": {
+        "state": "EXACT_CURRENT_NAMED_SOURCE_METHODS",
+        "producer": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+        "checkoutSha": "9a6a71c6fc81371d4f41a671e99875ef0935079c",
+        "runId": 38700114152,
+        "jobId": 116305990701,
+        "artifactId": 11956791557,
+        "artifactBytes": 21935,
+        "artifactDigest": "sha256:d04e0c61412415137e9d8abd165fe54eb9d85998a9a0ccd1983f6afb36161ad3",
+        "metadata": {
+          "checkoutSha": "9a6a71c6fc81371d4f41a671e99875ef0935079c",
+          "prHeadSha": "45e028a3bfe00b3d0e68293ad882428a9d9b9c9b",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38700114152",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "failure"
+        },
+        "targets": [
+          {
+            "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+            "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+            "method": "serviceCreatedEnrollmentAndTransferAreDatedAndComplete",
+            "sourceSha256": "1baa8128bb266d629de3c3c79207e48af56a6f3c553fbdca0522bbd7853adf96",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          },
+          {
+            "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+            "classname": "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT",
+            "method": "apiDocsMatchesSnapshot",
+            "sourceSha256": "3d862567c6fb0b44e5bc0003515070e56ac7fa77a2654a13c5f9f81cf71c99bc",
+            "status": "FAILED",
+            "identity": "SOURCE_METHOD",
+            "uniqueNamedCase": true
+          }
+        ],
+        "xmlCaseSummaryConsistent": true,
+        "allDeclaredCountsConsistent": true,
+        "sourceMethodProof": "FQN_METHOD_SOURCE_HASH_UNIQUE_NO_ORDINAL_FALLBACK",
+        "rawXmlOrLogsRead": false,
+        "artifactOrPayloadWrittenToDisk": false,
+        "acceptance": "ONLY_EXACT_NAMED_NATIVE_RESULTS_NO_PRODUCT_FAMILY_PROMOTION"
+      },
+      "acceptance": "exact1baa named real PostgreSQL service->history reason/date/currentroles assertion PASS; independentprior12join required onlythismissing reason observation forJS-ADMIN-03; notwholejobPASS/newruntimeclaim",
+      "RootSourceCheck": "HistoricalMembershipIT179 suppliedreason->TransferStudentRequest;260-278 bothhistoryrows sameexactreason/dates; preserves live grant/closure assertions; originalc85independentreviewaccepted"
+    },
+    "45e_Academic_public_schema_Source_ready": {
+      "utc": "2026-10-15T08:19:50.920620+00:00",
+      "path": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/academic-generated-45e028.json",
+      "bytes": 449614,
+      "sha256": "5fe1a529b20203cf8657aa36e432d6df0015336e47b3a6a27b1fd9914ab723cb",
+      "artifactId": 11957180945,
+      "digest": "sha256:a2bca32872025103f84c8c758ff781910d1abaa61dd2ad002f10192d0d3546e8",
+      "proof": "strict16keys/current45producer/checkout9a6a/source3d862/frame73/ordinaryFAILpreserved/knownwrappermodeonly-c074; no sourceauthorityfromartifact",
+      "stockOwner": "c84",
+      "state": "ADMITTED_ORIGINAL_JSON_GENERATION_ACTIVE"
+    },
+    "45e_WebKit_exact_version_offline_Source_cause": {
+      "utc": "2026-10-15T08:19:50.920620+00:00",
+      "reader": "c86",
+      "scope": "bounded3officialtargets/no runtime or Sourceedit",
+      "primary": "https://github.com/microsoft/playwright/blob/v1.59.1/browser_patches/webkit/patches/bootstrap.diff#L18824-L18836",
+      "blob": "ea880670ea47f0783bd6c097e25bc156edd60e42",
+      "finding": "WebLoaderStrategy::scheduleLoad ifm_emulateOfflineState schedulesInternallyFailedLoad/returnsbeforelaternetwork; InspectorNetworkAgent setter3895-3899/loaderflag18975-18980 joinsinstalledPW1.59.1 WKBrowser272-275/WKPage694-707. ConcreteemulationhypothesisconsistentwitholdDocument/internalfailure, actualbranchunmeasured.",
+      "nonproof": "publicissue42775 author/independenceUNKNOWN/later1.63report/no maintainerconfirmation; notusedasruntimePASS; firsttesttarget404preservednotabsenceproof",
+      "state": "W1actualFAIL/UNKNOWN; no nativeSafariunsupportedclaim/no timeoutcacheoracleweakening/no automaticserveroutagesubstitution"
+    },
+    "ce943_CORS75_Source_column_parameter_correction": {
+      "utc": "2026-10-15T08:20:10.788739+00:00",
+      "source": "tests/e2e/specs/auth-token-lifecycle.spec.ts",
+      "sha256": "07b311fae656afb30bfae2070922638ecb6ab262ebc7b32227f04a23a01211a2",
+      "line": 75,
+      "column": 7,
+      "proof": "Root directlyreadfixedSource; twoindent+testfourchars thenopeningparen col7; currentPlaywrightV8 callsite column, prior3tokenstartwaswrongparameter. Exactsameproject/title/path/line/header9workers2/9nativeends/single9passed/no retries fail skip/caps preserved. No ordinal/fallback/schema/identityloosening/B015 bypass.",
+      "readState": "actualofficialterminalsmokelogavailable805150B/32MiBpostcap; correctedfixedprojectionpendingc80; no PASS yet"
     }
   }
 }

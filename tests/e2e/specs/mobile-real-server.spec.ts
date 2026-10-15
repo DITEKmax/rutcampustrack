@@ -927,158 +927,99 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       (response) =>
         new URL(response.url()).pathname === excusePath && response.request().method() === 'GET',
     );
-    const teacherPngOrigin = new URL(page.url()).origin;
-    const teacherPngRequests = new Set<Request>();
-    let teacherPngRequestOverflow = false;
-    const observeTeacherPngRequest = (request: Request) => {
-      if (request.method() !== 'GET') return;
-      const url = new URL(request.url());
-      if (url.origin !== teacherPngOrigin || url.pathname !== teacherAttachmentPath) return;
-      if (teacherPngRequests.has(request)) return;
-      if (teacherPngRequests.size < 8) teacherPngRequests.add(request);
-      else teacherPngRequestOverflow = true;
-    };
+    const teacherFileRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === teacherAttachmentPath &&
+        response.request().method() === 'GET',
+    );
+    await table
+      .getByRole('row')
+      .filter({ hasText: dataset.student.displayName })
+      .getByRole('button', { name: /Уважительная причина/ })
+      .click();
+    const excuseResponse = await excuseRead;
+    expect(excuseResponse.status()).toBe(200);
+    const excuse = await excuseResponse.json();
+    expect(excuse).toMatchObject({
+      id: approvedRequest!.id,
+      studentId: String(dataset.student.id),
+      studentName: dataset.student.displayName,
+      groupId: String(dataset.group.id),
+      status: 'approved',
+      excuseType: 'illness',
+      decisionBy: String(dataset.headman.id),
+      comment: 'Синтетическое заявление для журнала преподавателя',
+    });
+    expect(excuse.lessons.map((row: { id: string }) => row.id)).toEqual([
+      String(journalSeed.lessonId),
+    ]);
+    expect(
+      Number.isFinite(Date.parse(excuse.createdAt)) &&
+        Number.isFinite(Date.parse(excuse.decisionAt)),
+    ).toBe(true);
     const excuseMain = page.getByRole('main', { name: 'Причина отсутствия', exact: true });
-    page.on('request', observeTeacherPngRequest);
+    await expect(excuseMain).toContainText(dataset.student.displayName);
+    await expect(excuseMain).toContainText('Уважительная причина · Одобрена');
+    await expect(excuseMain).toContainText('Болезнь');
+    await expect(excuseMain).toContainText(excuse.comment);
+    const instants = await page.evaluate(
+      (values: string[]) =>
+        values.map((value) =>
+          new Intl.DateTimeFormat('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+          }).format(new Date(value)),
+        ),
+      [excuse.createdAt, excuse.decisionAt],
+    );
+    const details = excuseMain.locator('.teacher-screen__details > div');
+    await expect(
+      details.filter({ has: page.getByText('Подана', { exact: true }) }).locator('dd'),
+    ).toHaveText(instants[0]);
+    await expect(
+      details.filter({ has: page.getByText('Решение старосты', { exact: true }) }).locator('dd'),
+    ).toContainText(instants[1]);
+    await expect(
+      excuseMain.getByRole('button', { name: /Одобрить|Отклонить|Изменить отметку|Сохранить/ }),
+    ).toHaveCount(0);
+    const teacherFile = await teacherFileRead;
+    expect(teacherFile.status()).toBe(200);
+    expect(teacherFile.headers()['content-type']).toContain('image/png');
+    // The opened app Blob and direct API below verify bytes; Playwright captured this fetch empty.
+    const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
+    await expect(preview).toBeVisible();
+    await expect
+      .poll(() =>
+        preview.evaluate(
+          (element) =>
+            element instanceof HTMLImageElement &&
+            element.complete &&
+            element.naturalWidth === 1 &&
+            element.naturalHeight === 1,
+        ),
+      )
+      .toBe(true);
+    const teacherPopupOpened = page.context().waitForEvent('page');
+    await excuseMain
+      .getByRole('button', { name: 'Открыть teacher-journal.png', exact: true })
+      .click();
+    const teacherPopup = await teacherPopupOpened;
     try {
-      const teacherFileRead = page.waitForResponse(
-        (response) =>
-          new URL(response.url()).pathname === teacherAttachmentPath &&
-          response.request().method() === 'GET',
-      );
-      await table
-        .getByRole('row')
-        .filter({ hasText: dataset.student.displayName })
-        .getByRole('button', { name: /Уважительная причина/ })
-        .click();
-      const excuseResponse = await excuseRead;
-      expect(excuseResponse.status()).toBe(200);
-      const excuse = await excuseResponse.json();
-      expect(excuse).toMatchObject({
-        id: approvedRequest!.id,
-        studentId: String(dataset.student.id),
-        studentName: dataset.student.displayName,
-        groupId: String(dataset.group.id),
-        status: 'approved',
-        excuseType: 'illness',
-        decisionBy: String(dataset.headman.id),
-        comment: 'Синтетическое заявление для журнала преподавателя',
-      });
-      expect(excuse.lessons.map((row: { id: string }) => row.id)).toEqual([
-        String(journalSeed.lessonId),
-      ]);
+      await teacherPopup.waitForURL(/^blob:/);
       expect(
-        Number.isFinite(Date.parse(excuse.createdAt)) &&
-          Number.isFinite(Date.parse(excuse.decisionAt)),
+        await teacherPopup.evaluate(async (expected) => {
+          const response = await fetch(location.href);
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          return (
+            bytes.length === expected.length &&
+            bytes.every((byte, index) => byte === expected[index])
+          );
+        }, Array.from(journalSeed.png)),
       ).toBe(true);
-      await expect(excuseMain).toContainText(dataset.student.displayName);
-      await expect(excuseMain).toContainText('Уважительная причина · Одобрена');
-      await expect(excuseMain).toContainText('Болезнь');
-      await expect(excuseMain).toContainText(excuse.comment);
-      const instants = await page.evaluate(
-        (values: string[]) =>
-          values.map((value) =>
-            new Intl.DateTimeFormat('ru-RU', {
-              day: 'numeric',
-              month: 'long',
-              hour: '2-digit',
-              minute: '2-digit',
-            }).format(new Date(value)),
-          ),
-        [excuse.createdAt, excuse.decisionAt],
-      );
-      const details = excuseMain.locator('.teacher-screen__details > div');
-      await expect(
-        details.filter({ has: page.getByText('Подана', { exact: true }) }).locator('dd'),
-      ).toHaveText(instants[0]);
-      await expect(
-        details.filter({ has: page.getByText('Решение старосты', { exact: true }) }).locator('dd'),
-      ).toContainText(instants[1]);
-      await expect(
-        excuseMain.getByRole('button', { name: /Одобрить|Отклонить|Изменить отметку|Сохранить/ }),
-      ).toHaveCount(0);
-      const teacherFile = await teacherFileRead;
-      expect(teacherFile.status()).toBe(200);
-      expect(teacherFile.headers()['content-type']).toContain('image/png');
-      const teacherFileBytes = await teacherFile.body();
-      expect.soft(teacherFileBytes.equals(journalSeed.png)).toBe(true);
-      expect.soft(teacherFileBytes.length === 0, 'TEACHER_PNG_CAPTURE_EMPTY').toBe(false);
-      expect
-        .soft(
-          teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('latin1'), 'utf8')),
-          'TEACHER_PNG_CAPTURE_LATIN1_AS_UTF8',
-        )
-        .toBe(false);
-      expect
-        .soft(
-          teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('base64'), 'utf8')),
-          'TEACHER_PNG_CAPTURE_BASE64_AS_UTF8_TEXT',
-        )
-        .toBe(false);
-      expect
-        .soft(
-          teacherFileBytes.equals(Buffer.from(journalSeed.png.toString('utf8'), 'utf8')),
-          'TEACHER_PNG_CAPTURE_LOSSY_UTF8_ROUND_TRIP',
-        )
-        .toBe(false);
-      const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
-      await expect(preview).toBeVisible();
-      await expect
-        .poll(() =>
-          preview.evaluate(
-            (element) =>
-              element instanceof HTMLImageElement &&
-              element.complete &&
-              element.naturalWidth === 1 &&
-              element.naturalHeight === 1,
-          ),
-        )
-        .toBe(true);
-      const teacherPopupOpened = page.context().waitForEvent('page');
-      await excuseMain
-        .getByRole('button', { name: 'Открыть teacher-journal.png', exact: true })
-        .click();
-      const teacherPopup = await teacherPopupOpened;
-      try {
-        await teacherPopup.waitForURL(/^blob:/);
-        expect(
-          await teacherPopup.evaluate(async (expected) => {
-            const response = await fetch(location.href);
-            const bytes = new Uint8Array(await response.arrayBuffer());
-            return (
-              bytes.length === expected.length &&
-              bytes.every((byte, index) => byte === expected[index])
-            );
-          }, Array.from(journalSeed.png)),
-        ).toBe(true);
-      } finally {
-        await teacherPopup.close();
-      }
-      if (!teacherFileBytes.equals(journalSeed.png)) {
-        expect.soft(teacherPngRequestOverflow, 'TEACHER_PNG_REQUEST_OBSERVER_OVERFLOW').toBe(false);
-        expect
-          .soft(
-            !teacherPngRequestOverflow &&
-              teacherPngRequests.size === 1 &&
-              teacherPngRequests.has(teacherFile.request()),
-            'TEACHER_PNG_CAPTURED_REQUEST_IS_SOLE_MATCH',
-          )
-          .toBe(false);
-        expect
-          .soft(teacherFile.request().resourceType() === 'fetch', 'TEACHER_PNG_CAPTURED_FETCH')
-          .toBe(false);
-        expect
-          .soft(teacherFile.fromServiceWorker(), 'TEACHER_PNG_CAPTURED_FROM_SERVICE_WORKER')
-          .toBe(false);
-        expect
-          .soft(
-            teacherFile.headers()['content-length'] === String(journalSeed.png.length),
-            'TEACHER_PNG_CAPTURED_CONTENT_LENGTH_MATCHES_FIXTURE',
-          )
-          .toBe(false);
-      }
     } finally {
-      page.off('request', observeTeacherPngRequest);
+      await teacherPopup.close();
     }
     await excuseMain.getByRole('button', { name: 'Назад', exact: true }).click();
     await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
@@ -3215,6 +3156,174 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     await expect(
       group.locator('dl > div').filter({ hasText: 'Студентов' }).locator('dd'),
     ).toHaveText(String(draft.studentCount));
+
+    // One ready-client group creation; the existing domain checks cover all nine programme codes.
+    const ownAlphabeticCode = String(dataset.group.alphabeticCode);
+    const ownNumericCode = '211';
+    const ownGroupName = `${ownAlphabeticCode}-${ownNumericCode}`;
+    expect(/^[А-ЯЁ]{2,4}$/.test(ownAlphabeticCode)).toBe(true);
+    const ownRegistryFields = {
+      name: ownGroupName,
+      alphabeticCode: ownAlphabeticCode,
+      numericCode: ownNumericCode,
+      currentCourse: 2,
+      programTypeDigit: 1,
+      studyMode: 'FULL_TIME',
+      educationLevel: 'BACHELOR',
+      trainingDurationYears: 4,
+      durationStatus: 'KNOWN',
+      status: 'DRAFT',
+      studentCount: 0,
+      headmanFio: null,
+    };
+    const ownRegistry = async (status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED') => {
+      const result = await dataset.admin.call(
+        'GET',
+        `/api/academic/groups/registry?status=${status}&search=${encodeURIComponent(ownAlphabeticCode)}&size=100`,
+      );
+      expect(result.totalPages <= 1 && result.items.length === result.totalElements).toBe(true);
+      return result.items.filter(
+        (row: { alphabeticCode: string | null; numericCode: string | null; name: string }) =>
+          (row.alphabeticCode === ownAlphabeticCode && row.numericCode === ownNumericCode) ||
+          row.name === ownGroupName ||
+          row.name.startsWith(`${ownGroupName} (`),
+      );
+    };
+    for (const status of ['ACTIVE', 'DRAFT', 'ARCHIVED'] as const) {
+      const absent = await ownRegistry(status);
+      // Search includes archived names and split codes, so retained history is not ours to clean.
+      expect(absent.length === 0).toBe(true);
+    }
+    const assertOwnRegistry = (row: Record<string, unknown>, knownId: number | null) => {
+      expect(
+        Number.isSafeInteger(row.id) &&
+          Number(row.id) > 0 &&
+          Number(row.id) !== dataset.group.id &&
+          Number(row.id) !== dataset.otherGroup.id &&
+          (knownId === null || row.id === knownId),
+      ).toBe(true);
+      expect(Object.entries(ownRegistryFields).every(([key, value]) => row[key] === value)).toBe(
+        true,
+      );
+    };
+    let ownCreatedGroupId: number | null = null;
+    let ownGroupCreateAttempted = false;
+    let ownGroupFlowFailed = false;
+    try {
+      await groups.getByRole('button', { name: 'Создать группу', exact: true }).click();
+      const createForm = groups.getByRole('form', { name: 'Новая группа', exact: true });
+      await createForm.getByLabel('Буквенный код', { exact: true }).fill(ownAlphabeticCode);
+      await createForm.getByLabel('Цифровой код', { exact: true }).fill(ownNumericCode);
+      await createForm.getByLabel('Срок обучения, лет', { exact: true }).fill('4');
+      ownGroupCreateAttempted = true;
+      const [groupCreated] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/academic/groups/registry' &&
+            response.request().method() === 'POST',
+        ),
+        createForm.getByRole('button', { name: 'Создать группу', exact: true }).click(),
+      ]);
+      expect(groupCreated.status()).toBe(201);
+      const nativeCreatedGroup = await groupCreated.json();
+      if (Number.isSafeInteger(nativeCreatedGroup.id) && nativeCreatedGroup.id > 0)
+        ownCreatedGroupId = nativeCreatedGroup.id;
+      assertOwnRegistry(nativeCreatedGroup, ownCreatedGroupId);
+      expect(ownCreatedGroupId !== null).toBe(true);
+      await expect(
+        groups.getByText('Группа создана и добавлена в черновики.', { exact: true }),
+      ).toBeVisible();
+      await expect(groups.getByRole('tab', { name: /^Черновики/ })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      const nativeReadback = await dataset.admin.call(
+        'GET',
+        `/api/academic/groups/${ownCreatedGroupId}`,
+      );
+      expect(
+        nativeReadback.id === ownCreatedGroupId &&
+          nativeReadback.name === ownGroupName &&
+          nativeReadback.alphabeticCode === ownAlphabeticCode &&
+          nativeReadback.numericCode === ownNumericCode &&
+          nativeReadback.currentCourse === 2 &&
+          nativeReadback.trainingDurationYears === 4 &&
+          nativeReadback.durationStatus === 'KNOWN' &&
+          nativeReadback.active === true,
+      ).toBe(true);
+      const registryReadback = await ownRegistry('DRAFT');
+      expect(registryReadback.length === 1).toBe(true);
+      assertOwnRegistry(registryReadback[0], ownCreatedGroupId);
+      await groups.getByRole('searchbox', { name: 'Найти группу', exact: true }).fill(ownGroupName);
+      await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+      const ownGroupRow = groups.locator(`[data-group-id="${ownCreatedGroupId}"]`);
+      await ownGroupRow.locator('.admin-groups-item__trigger').click();
+      await expect(ownGroupRow.locator('strong')).toHaveText(ownGroupName);
+      for (const [label, value] of [
+        ['Курс', '2'],
+        ['Срок обучения', '4 лет'],
+        ['Студентов', '0'],
+        ['Староста', 'Не назначен'],
+      ] as const) {
+        await expect(
+          ownGroupRow
+            .locator('dl > div')
+            .filter({ has: page.getByText(label, { exact: true }) })
+            .locator('dd'),
+        ).toHaveText(value);
+      }
+    } catch (error) {
+      ownGroupFlowFailed = true;
+      throw error;
+    } finally {
+      if (ownGroupCreateAttempted) {
+        try {
+          const candidates = await ownRegistry('DRAFT');
+          expect(candidates.length <= 1).toBe(true);
+          if (candidates.length === 1) {
+            const candidate = candidates[0];
+            assertOwnRegistry(candidate, ownCreatedGroupId);
+            ownCreatedGroupId = candidate.id;
+            const ownPath = `/api/academic/groups/${ownCreatedGroupId}`;
+            const fresh = await dataset.admin.call('GET', ownPath);
+            expect(
+              fresh.id === ownCreatedGroupId &&
+                fresh.name === ownGroupName &&
+                fresh.alphabeticCode === ownAlphabeticCode &&
+                fresh.numericCode === ownNumericCode &&
+                fresh.currentCourse === 2 &&
+                fresh.trainingDurationYears === 4 &&
+                fresh.durationStatus === 'KNOWN' &&
+                fresh.active === true,
+            ).toBe(true);
+            const emptyRoster = await dataset.admin.call('GET', `${ownPath}/headman/roster`);
+            expect(
+              emptyRoster.currentHeadmanId === null &&
+                emptyRoster.activeAssistantCount === 0 &&
+                emptyRoster.candidates.length === 0,
+            ).toBe(true);
+            // Managed group history forbids DELETE, including for a newly created empty group.
+            await dataset.admin.call('PUT', ownPath, { name: ownGroupName, active: false });
+            const archivedOwnGroup = await dataset.admin.call('GET', ownPath);
+            expect(
+              archivedOwnGroup.id === ownCreatedGroupId &&
+                archivedOwnGroup.active === false &&
+                archivedOwnGroup.alphabeticCode === ownAlphabeticCode &&
+                archivedOwnGroup.numericCode === ownNumericCode &&
+                archivedOwnGroup.currentCourse === 2 &&
+                archivedOwnGroup.trainingDurationYears === 4 &&
+                archivedOwnGroup.durationStatus === 'KNOWN',
+            ).toBe(true);
+          } else {
+            expect(ownCreatedGroupId === null).toBe(true);
+          }
+        } catch (error) {
+          if (ownGroupFlowFailed)
+            expect.soft(false, 'ADMIN_OWN_GROUP_ARCHIVE_CLEANUP_FAILED').toBe(true);
+          else throw error;
+        }
+      }
+    }
   });
 
   // Q03: one live multirole authority transition and the ready client's logout-all.

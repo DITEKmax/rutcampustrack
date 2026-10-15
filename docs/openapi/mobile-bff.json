@@ -2719,7 +2719,7 @@
           "reason" : {
             "type" : "string",
             "nullable" : true,
-            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER", "UNIVERSITY_ORDER", "SUMMONS" ]
           },
           "comment" : {
             "type" : "string",
@@ -2855,7 +2855,7 @@
           },
           "reason" : {
             "type" : "string",
-            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER", "UNIVERSITY_ORDER", "SUMMONS" ]
           },
           "comment" : {
             "maxLength" : 1000,
@@ -4332,7 +4332,7 @@
         "properties" : {
           "code" : {
             "type" : "string",
-            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER", "UNIVERSITY_ORDER", "SUMMONS" ]
           },
           "label" : {
             "type" : "string"

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 169a08a4fbaff89d435212ac6a7450f735313c1ed49120565ffe68b6b9d2bc4e
+// Contract: JS-STUDENT-01-r1; SHA-256: d438812a43a332dbc11bd5fab92848b61e6cd7a3a722d512191875d59e32a139
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -905,7 +905,7 @@ export interface components {
             comment?: string;
             lessonIds: string[];
             /** @enum {string} */
-            reason: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER";
+            reason: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER" | "UNIVERSITY_ORDER" | "SUMMONS";
         };
         StudentHomework: {
             /** Format: date */
@@ -1042,7 +1042,7 @@ export interface components {
             decision: components["schemas"]["StudentRequestDecision"];
             decisionSelection?: components["schemas"]["DecisionSelection"];
             /** @enum {string|null} */
-            reason: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER" | null;
+            reason: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER" | "UNIVERSITY_ORDER" | "SUMMONS" | null;
             summary: components["schemas"]["StudentRequestSummary"];
         };
         StudentRequestFileLimits: {
@@ -1104,7 +1104,7 @@ export interface components {
         };
         StudentRequestReasonOption: {
             /** @enum {string} */
-            code: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER";
+            code: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER" | "UNIVERSITY_ORDER" | "SUMMONS";
             commentRequired: boolean;
             label: string;
         };

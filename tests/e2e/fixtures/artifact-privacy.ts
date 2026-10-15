@@ -94,6 +94,7 @@ const publicSpecs = [
   resolve(__dirname, '../specs/mobile-map-lifecycle.spec.ts'),
   resolve(__dirname, '../specs/cloud-accepted-registry-export.spec.ts'),
   resolve(__dirname, '../specs/cloud-accepted-helper-capabilities.spec.ts'),
+  resolve(__dirname, '../specs/cloud-accepted-auth-security.spec.ts'),
 ];
 
 /** An untrusted reported frame, never proof of a cause, operation or successful assertion. */

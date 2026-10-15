@@ -1754,6 +1754,21 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       [200, 202, 503],
       { 'Idempotency-Key': archiveKey },
     );
+    if (!operation.operationId) {
+      requireValue(false, 'Initial archive operation identity missing');
+    }
+    if (operation.operationState === 'ERROR' && operation.retryable === true) {
+      requireValue(false, 'Initial archive operation retryable error');
+    }
+    if (operation.operationState === 'ERROR' && operation.retryable === false) {
+      requireValue(false, 'Initial archive operation terminal error');
+    }
+    if (operation.operationState === 'COMPLETED') {
+      requireValue(false, 'Initial archive operation already completed');
+    }
+    if (operation.operationState !== 'PENDING') {
+      requireValue(false, 'Initial archive operation state unknown');
+    }
     requireValue(
       operation.operationId && operation.operationState === 'PENDING',
       'One pending archive operation required',

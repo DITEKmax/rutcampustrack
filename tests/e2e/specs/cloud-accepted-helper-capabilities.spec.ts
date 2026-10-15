@@ -684,6 +684,9 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
         );
       } catch {
         cleanupFailed = true;
+        if (mark.userId === dataset.student.id)
+          expect.soft(false, 'Owned student mark cleanup failed').toBe(true);
+        else expect.soft(false, 'Owned assistant mark cleanup failed').toBe(true);
       }
     }
     if (otherLessonId !== undefined) {
@@ -693,10 +696,11 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
         });
       } catch {
         cleanupFailed = true;
+        expect.soft(false, 'Owned other lesson cancellation cleanup failed').toBe(true);
       }
     }
-    expect(cleanupFailed, 'Only this read fixture is cleaned through guarded server commands').toBe(
-      false,
-    );
+    expect
+      .soft(cleanupFailed, 'Only this read fixture is cleaned through guarded server commands')
+      .toBe(false);
   }
 });

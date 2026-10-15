@@ -41,7 +41,11 @@ test.beforeEach(async ({}, info) => {
 });
 
 function requireOwned(value: unknown, message: string): asserts value {
-  if (!value) throw new Error(message);
+  if (!value) {
+    const error = new Error(message);
+    Error.captureStackTrace(error, requireOwned);
+    throw error;
+  }
 }
 
 /** A real event recipient in the same disposable network; never a product OTP endpoint. */

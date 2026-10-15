@@ -390,6 +390,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     'mobile-map-lifecycle.spec.ts',
     'cloud-accepted-registry-export.spec.ts',
     'cloud-accepted-helper-capabilities.spec.ts',
+    'cloud-accepted-auth-security.spec.ts',
   ]) {
     const publicSpec = resolve(__dirname, '../specs', filename);
     const publicError: Record<string, unknown> = {

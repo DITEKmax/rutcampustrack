@@ -222,7 +222,7 @@ test('ADMIN replaces a map while STUDENT downloads current PNG and SVG in Vue an
       name: 'Схема этажа. Плюс и минус — масштаб, стрелки — перемещение',
       exact: true,
     });
-    const scaleStatus = map.getByRole('status').filter({ hasText: /^Масштаб \d+%$/ });
+    const scaleStatus = map.getByRole('status').filter({ hasText: /^\s*Масштаб \d+%\s*$/ });
     // A new/replaced asset must not inherit the preceding plan's view or gesture.
     await expect(scaleStatus).toHaveText('Масштаб 100%');
     if (exerciseViewer) {

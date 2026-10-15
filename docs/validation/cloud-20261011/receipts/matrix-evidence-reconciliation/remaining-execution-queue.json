@@ -7316,5 +7316,720 @@
     ],
     "next_ready": "E13-C1 productioncache serializer realDTO/date/collection+benignforeign type refusal; independentSource-author/test scope next",
     "optional": "L05SQL/L06RPC performance, DBsplit/Saga/framework remainoptional; offsiteRPO/RTOdecisiondeferred. B013/B014FROZEN; Q012onlystandalone removal; no owneranswersinferred"
+  },
+  "current_finite_Q01_Q12_refinement": {
+    "utc": "2026-10-15T00:01:57.738560+00:00",
+    "source_revision": "6172eeab6651f8fab94b9bcd4a3c525933d422e6",
+    "meaning": "Existing50acceptedclauses compressed32residual entries; wholefamilyUNKNOWN retained, no newrequirements; useexistingproofandexactmissingaction",
+    "rows": [
+      {
+        "existingResidualIndex": 0,
+        "ids": [
+          "CLIENT-FE-STUDENT-05"
+        ],
+        "package": "Q09",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[0]",
+        "classification": "SOURCE_QUALIFIED_PROOF_GAP",
+        "existingCaseIds": [
+          "VC-CLIENT-PWA-HOMEWORK-COMPLETION-R2"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.JS_STUDENT_20_21_22_acceptance_review",
+          "current4065#6172_homework_family_independent_acceptance"
+        ],
+        "sufficientOrPartial": "Independentc75 Source-qualified fullCLIENT-FE-STUDENT-05 PASS; direct775/783/788/941+T013mobile inheritance; actual61df916+focusedexistingproofs,10inputsbyteidenticalthrough6172",
+        "missingAction": "NONE. Removeunsupportedgeneratedsearch/archiveUI wording; no acceptedcriterionexcluded. NativeD015/transfer576/Q015separate.",
+        "recommendedWholeResidualStatus": "PASS",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 1,
+        "ids": [
+          "CLIENT-FE-HEADMAN-01"
+        ],
+        "package": "Q01/Q02",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[1]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review"
+        ],
+        "sufficientOrPartial": "Chooser/manual clear/ABSENT are adequate; read-action history and live counters are not asserted by those results.",
+        "missingAction": "Bind existing real journal audit/counter readback to the accepted read action; if absent, observe the existing action and its exact durable history/count delta once.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 2,
+        "ids": [
+          "CLIENT-FE-HEADMAN-01",
+          "JS-HEADMAN-01"
+        ],
+        "package": "Q01/Q02",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[2]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "VC-JOURNAL-SEMESTER-LIVE-SQL-03-01",
+          "VC-CLIENT-JOURNAL-CHOOSER-FUTURE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.edb_journal_closure_review"
+        ],
+        "sufficientOrPartial": "Current SQL capability/foreign/revoke/archive/writeBlocked seams and future-readonly browser remain reused; neither proves every combined stale mark/CAS branch.",
+        "missingAction": "Join already saved exact archived/terminal/foreign/revoked mark and revision-conflict outcomes; retain only any exact absent refusal/no-effect branch, no repeat positive mark.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 3,
+        "ids": [
+          "CLIENT-FE-HEADMAN-06",
+          "JS-HEADMAN-14",
+          "JS-HEADMAN-15"
+        ],
+        "package": "Q01/Q02",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[3]",
+        "classification": "CURRENT_AUTHORED_PROOF_PENDING",
+        "existingCaseIds": [
+          "VC-HELPER-VIEW-STATS-LIVE-REVOKE-01",
+          "VC-HELPER-MANAGE-EXCUSES-LIVE-REVOKE-01",
+          "VC-REAL-HELPER-CANCEL-RESTORE-REVOKE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_partial_revocation_remaining",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_independent_review",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_helper_Root_integration"
+        ],
+        "sufficientOrPartial": "Existing singleton/full DELETE cases do not prove partial removal. Reviewed source016f now carries the exact partial phase; current actual is not read here. UPDATE94 actual: case182wholePASS2667ms validates exactnewpartialphase; cases21/127alsoPASS. ExactSource016f/checkout6ea6423 joined.",
+        "missingAction": "Do notrerun/joinnewpartialphase again: actual94PASS nowstored. Retain onlyaccepted capability-choice UI/self/foreign/stale/retry branch withno adequateexistingproof; selective newpartialrule sensitivity remains SourcePLAN_ONLY. No capabilitycrossproduct.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 4,
+        "ids": [
+          "CLIENT-FE-TEACHER-01"
+        ],
+        "package": "Q06",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[4]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "VC-REAL-ASSIGNMENT-CLOSE-ADOPT-REPLACE-HISTORY-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_actual_browser_finite_join"
+        ],
+        "sufficientOrPartial": "API teacher historical read/write denial and attachment slices do not establish Today/catalog/detail/excuse navigation.",
+        "missingAction": "Bind saved ready TEACHER carrier results to Today/catalog/journal/detail/excuse and own/current-assignment/foreign attachment scope; perform only the single accepted navigation/scope action with no adequate saved result.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 5,
+        "ids": [
+          "CLIENT-FE-ADMIN-07"
+        ],
+        "package": "Q04",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[5]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "CASE-SAQ-ADMIN-LAST-FULL-AND-DOWNGRADE-RACE",
+          "CASE-SAQ-ADMIN-LIMITED-CATALOGUE",
+          "VC-CLIENT-LIMITED-REGISTRY-CREATE-DENY-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.874_finite_matrix_reconciliation"
+        ],
+        "sufficientOrPartial": "Server catalogue/dependencies/last-FULL race and registry create-denial are adequate; not a whole rights-editor client proof.",
+        "missingAction": "Bind exact existing LIMITED assign/update/revoke UI result and stale-version/invalid/self/outage presentation. Do not rerun server catalogue/last-FULL races or invent a permission.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 6,
+        "ids": [
+          "JS-ADMIN-26"
+        ],
+        "package": "Q03/Q04",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[6]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "CASE-CI232-ADMIN-EXPLICIT-SELECTION"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_terminal_role_source_priority_correction"
+        ],
+        "sufficientOrPartial": "Explicit ADMIN admission is proved; absence of student/headman/teacher routes/requests while ADMIN is not proved by selection alone.",
+        "missingAction": "Qualify an existing selected-ADMIN client result showing only its own routes and no foreign-role request before explicit role switch; no new auth policy.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 7,
+        "ids": [
+          "CLIENT-FE-AUTH-01"
+        ],
+        "package": "Q03",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[7]",
+        "classification": "CHECKPOINT_SUFFICIENT_CURRENT_INPUT_JOIN_GAP",
+        "existingCaseIds": [
+          "CASE-CI232-WRONG-PASSWORD",
+          "CASE-CI232-STUDENT-LOGIN-COOKIE"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.S2_current_named_existing_proof"
+        ],
+        "sufficientOrPartial": "Checkpoint232 explicitly proves the full stated wrong-password/cookie/storage clause. Current auth spec868b differs from testedfda9 and helper changed6172; no byte-equivalent current proof claimed. SameSiteCookieContractIT method identity remains unresolved and is not substituted.",
+        "missingAction": "Reuse checkpoint clause with its exact source qualifications; bind current relevant login/cookie consumer inputs or existing current result before promoting current6172. No login-rate/IP exercise or B014 equivalent.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 8,
+        "ids": [
+          "CLIENT-FE-AUTH-02"
+        ],
+        "package": "Q03",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[8]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "CASE-CI232-STUDENT-ADMIN-DENIAL",
+          "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.S2_current_named_existing_proof",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_terminal_role_source_priority_correction"
+        ],
+        "sufficientOrPartial": "Ungranted role denied and server refresh CAS are adequate separately; stale expectedSessionVersion and owner-data client convergence not wholly joined.",
+        "missingAction": "Join exact current role-version refusal plus unchanged selected role/owner-data result; preserve ACTIVE-only source priority and existing ungranted403 rather than repeat login/refresh.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 9,
+        "ids": [
+          "CLIENT-FE-AUTH-04"
+        ],
+        "package": "Q03",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[9]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "CASE-CI232-LOGOUT-REVOKE",
+          "VC-REAL-MULTIROLE-LOGOUT-ALL-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.94ffb_role_logout_Root_integration"
+        ],
+        "sufficientOrPartial": "Successful logout/logout-all are adequate; fixture6172 corrects teacher logout selector but does not prove failed logout latch/late response.",
+        "missingAction": "Bind saved unconfirmed network-failed logout with latched owner clear and delayed callback refusal. If no saved case, exercise this one failure/recovery sequence in the existing owner/session carrier; do not infer it from successful204.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 10,
+        "ids": [
+          "BOUNDARY-01",
+          "JS-SYSTEM-14"
+        ],
+        "package": "Q03",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[10]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+          "CASE-HOST-V5-ADMIN-ADMISSION-REGISTRY"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.S2_current_named_existing_proof"
+        ],
+        "sufficientOrPartial": "Neutral bootstrap/explicit selection and login/session/profile200 are adequate; canonical required payload fields/active-semester shape need exact field assertions.",
+        "missingAction": "Join already saved login/profile/active-semester field assertions to current canonical payload; retain only absent field contract, no neutral-login repeat.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 11,
+        "ids": [
+          "BOUNDARY-03",
+          "JS-ADMIN-02"
+        ],
+        "package": "Q03",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[11]",
+        "classification": "STALE_SOURCE_WORDING_CORRECTED_PARTIAL_PROOF",
+        "existingCaseIds": [
+          "VC-REAL-MULTIROLE-LOGOUT-ALL-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_terminal_role_source_priority_correction",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.S2_current_named_existing_proof"
+        ],
+        "sufficientOrPartial": "Canonical JS-ADMIN-02 ACTIVE-only selection supersedes older selectable-terminal R-6 text. Terminal STUDENT history DATA persists; no inferred selectable history UI. Exact PG terminal visibility/readOnly/nonselectability and separate signed BFF readOnly defense are adequate as recorded.",
+        "missingAction": "Replace old terminal self-selection/read requirement with same-account terminal STUDENT+ACTIVE TEACHER authentic admission/terminal-select403/usable TEACHER and preserved dated historical DATA. Join existing named HTTP/data outcomes first; do not alter Auth to grant terminal selection or label account-security-history as Student attendance history.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 12,
+        "ids": [
+          "BOUNDARY-11",
+          "JS-ADMIN-01",
+          "JS-ADMIN-19"
+        ],
+        "package": "Q04",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[12]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "VC-REAL-ADMIN-CREATE-REPLACE-ARCHIVE-RESTORE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.874_finite_matrix_reconciliation"
+        ],
+        "sufficientOrPartial": "Same ID successful create/add-role is adequate; duplicate identity/collision/invalid role fields are separate.",
+        "missingAction": "Bind exact existing duplicate-identity existing-account/add-role result with one durable account and no partial mutation on collision/invalid role input; source-only method names alone are insufficient.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 13,
+        "ids": [
+          "JS-ADMIN-01"
+        ],
+        "package": "Q04",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[13]",
+        "classification": "PARTIAL_CREDENTIAL_LIFECYCLE_PROOF",
+        "existingCaseIds": [
+          "CASE-NP01-BR-01",
+          "CASE-NP01-BR-03",
+          "CASE-NP01-BR-05"
+        ],
+        "rootReceiptKeys": [],
+        "sufficientOrPartial": "NP01 proves exact own-card credential invalidation/cleanup/redelivery/rebind safety; not automatically the initial bot-first-start creation path. D015 does not exclude credential logic.",
+        "missingAction": "Bind the saved synthetic first-start/current-binding own initial-card delivery result to this clause before any new provider run. If absent, use only existing synthetic first-start carrier and assert accepted own initial response/current authority; no private bot.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 14,
+        "ids": [
+          "JS-ADMIN-04"
+        ],
+        "package": "Q04",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[14]",
+        "classification": "EXACT_CURRENT_NORMAL_METHOD_JOIN_PENDING",
+        "existingCaseIds": [
+          "CASE-SAQ-USER-ARCHIVE-RESTORE-ROLLBACK",
+          "VC-REAL-ADMIN-CREATE-REPLACE-ARCHIVE-RESTORE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.6172_Q04_actual_join_and_quality_plan"
+        ],
+        "sufficientOrPartial": "Source209 captures one nonempty homework/completion tuple and compares exact data after archive/restore/replay.94ff Academic job success is not method evidence; c69 exact current join and c71 data-only sensitivity own this.",
+        "missingAction": "Root/c69 join artifact11936582917 unique SOURCE_METHOD/PASSED/source209 and official checkout; then existing assigned data-only timestamp+1s RED/exact restore/same-method GREEN. No second full stack/ticket-kind matrix, no B013 rights sensitivity.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 15,
+        "ids": [
+          "CLIENT-FE-TMA-01",
+          "BOUNDARY-49"
+        ],
+        "package": "E14-H1",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[15]",
+        "classification": "CURRENT_CORRECTED_CARRIER_PENDING",
+        "existingCaseIds": [
+          "CASE-CI232-TMA-TEACHER-HOST-BACK",
+          "VC-CLIENT-TMA-REUSE-LIVE-SUSPEND-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_D015_TMA_logic_finite_join",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.94ffb_role_logout_Root_integration"
+        ],
+        "sufficientOrPartial": "Teacher Back/no persisted token and D003 shared target/download are adequate. Signed HEADMAN actual61df950 failed role-action wait;6172 readiness fixture correction awaits genuine current result.",
+        "missingAction": "Use Root current6172 result for signedHEADMAN one shared action/readback and existing D002 signedSTUDENT case. Reuse teacher Back/storage/download; native host remains D015 owner manual.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 16,
+        "ids": [
+          "CLIENT-FE-TMA-02"
+        ],
+        "package": "E14-H1",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[16]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "CASE-SD01-TMA-SERVER",
+          "CASE-CI232-TMA-TAMPERED",
+          "VC-CLIENT-TMA-REUSE-LIVE-SUSPEND-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_D015_TMA_logic_finite_join",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.S2_current_named_existing_proof"
+        ],
+        "sufficientOrPartial": "Signed parser/age-window core and live unbind/grant changes already have accepted exact proof. Duplicate-key last-value parser is source-coherent, no accepted reject-all policy. Client invalid/expired/future states remain exact carrier qualifications.",
+        "missingAction": "Join existing client error-state results only for malformed/expired/future/revoked binding/account. Reuse server24h/live checks; no new duplicate rejection policy or parser campaign.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 17,
+        "ids": [
+          "JS-STUDENT-10",
+          "CLIENT-FE-OFFLINE-01",
+          "BOUNDARY-47"
+        ],
+        "package": "E14-O1",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[17]",
+        "classification": "CURRENT_CORRECTED_CARRIER_PENDING",
+        "existingCaseIds": [
+          "VC-CLIENT-D002-OFFLINE-RECONNECT-CACHE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.94ffb_role_logout_Root_integration"
+        ],
+        "sufficientOrPartial": "Homework offline read/revoke/logout checkpoint adequate; cached schedule/Moscow rollover/no attachments/no role switch remain distinct. Current D002 teacher logout failure has reviewed selector correction6172.",
+        "missingAction": "Root join current existing D002 case through unchanged late-owner tail; bind cached schedule/rollover and attachment/write/role boundaries only where actually asserted, not merely earlier homework snapshot.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 18,
+        "ids": [
+          "CLIENT-FE-OFFLINE-02"
+        ],
+        "package": "E14-O1",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[18]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "VC-CLIENT-D002-OFFLINE-RECONNECT-CACHE-01"
+        ],
+        "rootReceiptKeys": [],
+        "sufficientOrPartial": "Explicit revocation is not actual absolute security-session expiry. Educational clock advance cannot establish expiry.",
+        "missingAction": "Find saved actual server-session-expiry/offline-reload result; if absent retain this single security-lifetime witness with D002 read-only and online admission, no teaching-clock substitute.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 19,
+        "ids": [
+          "CLIENT-FE-OFFLINE-03",
+          "BOUNDARY-47"
+        ],
+        "package": "E14-O1",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[19]",
+        "classification": "CURRENT_CORRECTED_CARRIER_PENDING",
+        "existingCaseIds": [
+          "VC-CLIENT-D002-OFFLINE-RECONNECT-CACHE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.94ffb_role_logout_Root_integration"
+        ],
+        "sufficientOrPartial": "Late-feed/current-owner authored case remains;61df failed at teacher logout before final isolation tail. Source correction6172 is not PASS.",
+        "missingAction": "Join Root current6172 same fullcase owner/token/late-response assertions after corrected teacher logout; no separate synthetic owner framework.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 20,
+        "ids": [
+          "CLIENT-FE-OFFLINE-04",
+          "BOUNDARY-47",
+          "BOUNDARY-49"
+        ],
+        "package": "E14-H1/O1",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[20]",
+        "classification": "CURRENT_CORRECTED_ORACLE_PENDING",
+        "existingCaseIds": [],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_TMA_offline_oracle_technical_correction",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint"
+        ],
+        "sufficientOrPartial": "Native TMA offline is not promised; current online-only guard may remove/unmount content. Approved oracle accepts no authorized TMA slider/command, not cached PWA hydration.61df TMA1756 failed old completionDisabled branch.",
+        "missingAction": "Bind current6172 existing TMA offline/reload result to no durable PWA hydration and no write; do not reintroduce PWA-style offline TMA capability.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 21,
+        "ids": [
+          "BOUNDARY-48"
+        ],
+        "package": "E14-I1/H2",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[21]",
+        "classification": "PARTIAL_CLOUD_LOGIC_OWNER_NATIVE_PENDING",
+        "existingCaseIds": [],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_D017_existing_icon_acceptance",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_worker_webkit_finite_reconciliation",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_D015_TMA_logic_finite_join"
+        ],
+        "sufficientOrPartial": "D017 exact icons/build and production SW update/install-decision finite cases adequate. D015 native OS/Telegram/WebPush is OWNER_MANUAL_PENDING, no Cloud capability block or native PASS.",
+        "missingAction": "Reuse existing owner checklist for actual native install/standalone/background push. Bind any retained Cloud opt-out/unsupported/iOS decision logic to existing finite proof; no native device/framework acquisition.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 22,
+        "ids": [
+          "B26"
+        ],
+        "package": "Q08",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[22]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "VC-Q08-CHECKIN-MONGO-D005-RECEIPTS-01",
+          "VC-Q08-REAL-PWA-GEO-D005-01"
+        ],
+        "rootReceiptKeys": [],
+        "sufficientOrPartial": "Geo/D005/replay/current Mongo receipts do not by themselves prove timed scheduler close.",
+        "missingAction": "Join saved exact inclusive boundary and end+5 scheduler→event→Mongo result: blank oneABSENT, explicit marks retained, duplicate inert; if absent execute only that existing clock/event carrier.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 23,
+        "ids": [
+          "B27",
+          "B28"
+        ],
+        "package": "Q08",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[23]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "VC-REAL-AUTO-REQUEST-N-INCREASE-PREFIX-01",
+          "VC-HEADMAN-N-MONGO-DATA-SENSITIVITY-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.d106_lesson_requests_actual"
+        ],
+        "sufficientOrPartial": "Immediate AUTO/exhaustion/N5→7/new manual consumption already sufficient; late approval/no-expiry/retry and same-lesson paid repeat remain separate.",
+        "missingAction": "Join saved AUTO durable retry/days-later approval with no manual charge and paid resubmission quota delta; retain only exact missing existing request operation, not repeat N increase.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 24,
+        "ids": [
+          "B31",
+          "B33"
+        ],
+        "package": "Q08",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[24]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [],
+        "rootReceiptKeys": [],
+        "sufficientOrPartial": "Do not infer historical teacher scoped ticket/statistics/file after replay or explicit Schedule unavailable from a happy read.",
+        "missingAction": "Bind existing actual historical teacher journal/ticket plus matching post-mutation statistics/file and Schedule outage explicit-unavailable result. Only absent accepted operation remains executable.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 25,
+        "ids": [
+          "B34"
+        ],
+        "package": "Q08/Q04",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[25]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [],
+        "rootReceiptKeys": [],
+        "sufficientOrPartial": "DASHBOARD_VIEW grants and active counts do not establish cross-service values/Moscow activity or partial-source unavailable presentation.",
+        "missingAction": "Bind actual known-count/dashboard payload for today/yesterday/alltime and one unavailable dependency response; no invented activity window or zero-as-unavailable tolerance.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 26,
+        "ids": [
+          "B41",
+          "JS-SYSTEM-09",
+          "JS-SYSTEM-10",
+          "JS-STUDENT-WEB-06"
+        ],
+        "package": "Q10",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[26]",
+        "classification": "BASE_GENUINE_CLIENT_CHAIN_SUFFICIENT_MEMBERSHIP_CHANGE_RESIDUAL",
+        "existingCaseIds": [
+          "VC-REAL-HOMEWORK-HELPER-EDIT-COMPLETION-REVOKE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_official_actual_checkout_join"
+        ],
+        "sufficientOrPartial": "Whole61df HW26 PASS5235ms now reaches actual edited/published events→own Vue inbox/read/target→durable read reload→foreign404/revoked401. This supersedes old generic missing command→audience→inbox target. It does not include audience change before membership/headman/helper mutation or prejoin history exclusion.",
+        "missingAction": "Remove generic basic inbox-target action. Join existing dated membership/headman/helper-change/retry audience results for old personal history/new-group prejoin/foreign exclusion; retain only these distinct change-dependent audience clauses.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 27,
+        "ids": [
+          "B42",
+          "JS-SYSTEM-11"
+        ],
+        "package": "Q10",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[27]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "CASE-NP01-BR-03",
+          "CASE-NP01-BR-05"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.Q10_finite_existing_proof_join"
+        ],
+        "sufficientOrPartial": "Credential-card rebind/recovery proof is different from ordinary delivery honouring current disabled/muted preferences.",
+        "missingAction": "Join saved pending ordinary event across actual authority outage/recovery and Telegram unbind/rebind with same durable disabled/muted settings; no real provider/private bot.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 28,
+        "ids": [
+          "B41",
+          "JS-SYSTEM-09",
+          "JS-SYSTEM-11"
+        ],
+        "package": "Q10",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[28]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "VC-NOTIFICATION-ACK-REDELIVERY-READSTATE-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.493_current_selected_read"
+        ],
+        "sufficientOrPartial": "Real consumer preACK loss proof adequate for durable dedup/read state; not a client channel failing while another delivers.",
+        "missingAction": "Bind one accepted event with one existing channel failed and the other delivered; verify retry retains one history row and no loss. Do not repeat ordinary consumer ACK-loss drill.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 29,
+        "ids": [
+          "JS-ADMIN-13",
+          "D006",
+          "D007"
+        ],
+        "package": "Q11",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[29]",
+        "classification": "PARTIAL_EXISTING_PROOF",
+        "existingCaseIds": [
+          "VC-REGISTRY-DIRECT-FILE-FIELDS-PRIVACY-01",
+          "VC-REGISTRY-NATIVE-PDF-FIELDS-ORDER-AUDIT-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.Q11_finite_existing_proof_join"
+        ],
+        "sufficientOrPartial": "One-row fields/privacy and native PDF selected ordering are adequate; complete DOCX/XLSX ordinary column/value/multirow ordering not inferred.",
+        "missingAction": "Join existing native DOCX/XLSX actual user-registry model rows/columns/values/order. Generic converter capability is sufficient separately; no renderer campaign.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 30,
+        "ids": [
+          "JS-ADMIN-13",
+          "BOUNDARY-46",
+          "D006",
+          "D007"
+        ],
+        "package": "Q11",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[30]",
+        "classification": "PROOF_GAP",
+        "existingCaseIds": [
+          "VC-REGISTRY-NATIVE-PDF-FIELDS-ORDER-AUDIT-01"
+        ],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.Q11_finite_existing_proof_join"
+        ],
+        "sufficientOrPartial": "User-registry PDF/PNG does not prove group-registry binary model.",
+        "missingAction": "Bind saved group-registry native filtered multirow model fields/order and actual PDF/PNG payload through renderer; execute only the unsupported exact group model if no adequate existing receipt.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      },
+      {
+        "existingResidualIndex": 31,
+        "ids": [
+          "JS-ADMIN-13",
+          "BOUNDARY-46",
+          "D006",
+          "D007"
+        ],
+        "package": "Q11",
+        "sourcePointer": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.eee6c_bounded_Q01_Q12_existing_evidence_accounting.fullStillAcceptedRemainder.retainedDistinctExistingClauses[31]",
+        "classification": "PNG_CONTENT_SUFFICIENT_AUDIT_ATTRIBUTION_REMAINS",
+        "existingCaseIds": [],
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_registry_PNG_mode_neutral_actual_acceptance"
+        ],
+        "sufficientOrPartial": "Unconditional real202→READY→ticket/zip200→page ordering→decode→same-page PDF table pixels are already sufficient62df. No FULL/LIMITED attribution is recovered. PDF audit does not prove pngJob audit.",
+        "missingAction": "Remove generic PNG readable/ordered payload action. Bind actor/time/kind/rowCount for this PNG job/file from existing saved audit result if present; otherwise retain only that audit action. Keep mode-specific identity UNRESOLVED/B015 frozen, no ordinal fallback.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "compatibility6172": "Historical producer remains explicit in evidenceCatalog/root receipt. No current wholecriterion PASS inferred; see exactCurrentInputPins and focusedCurrentBindings."
+      }
+    ],
+    "existing_action_corrections": [
+      {
+        "package": "Q05",
+        "id": "VC-REAL-SEMESTER-ARCHIVE-RESTORE-REPLAY-01",
+        "recommendedFiniteStatus": "PASS_AT_EXACT_PRODUCER_REUSE",
+        "rootReceiptKey": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_semester_actual_current_primary",
+        "producer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+        "run": 38649468413,
+        "artifact": 11936066113,
+        "operation": "RealFULL archive/restore through all3participants, replay and cleanup",
+        "sufficient": "Exact362 PASSED80122ms/0errors; RESTORE COMPLETED/all3RELEASED/no pending/writeBlocked; cleanupCOMPLETED/clockPASSED/disposePASSED; officialcheckout4f273f/tree96d648. Current exact test pin9852 matches.",
+        "missingAction": "NONE for this finite archive/restore action. Remove old generic currentACK diagnosis from executable queue; keep old62df cause UNKNOWN in history and current6172 whole gates separate.",
+        "classification": "OLD_FAILURE_RETAINED_LATER_SUFFICIENT_SUCCESS"
+      },
+      {
+        "package": "Q06",
+        "ids": [
+          "VC-REAL-ASSIGNMENT-CLOSE-ADOPT-REPLACE-HISTORY-01"
+        ],
+        "rootReceiptKey": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_actual_browser_finite_join",
+        "operation": "Already accepted interrupted close/replay/adopt/next-date teacher replacement; readyHEADMAN UI carrier distinct",
+        "sufficient": "Existing c3ff/0648 genuine API phases/oldhistory plus62df assignment artifact11931675692 remain; no missing protocol/restart drill.",
+        "missingAction": "Only bind accepted readyHEADMAN assignment/replacement UI to same operation; no existing exact Vue result was established by the allowed receipt set.",
+        "recommendedWholeResidualStatus": "UNKNOWN",
+        "classification": "PROOF_GAP_CLIENT_CARRIER"
+      },
+      {
+        "package": "Q12",
+        "id": "VC-MAP-RETRY-FINAL-DELETE-HISTORY-ISOLATION-01",
+        "rootReceiptKey": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.62df_map_extended_actual_acceptance",
+        "producer": "62df260302fb6a63d60e04b72d1db664f3e1e799",
+        "operation": "Actual map preview/download/version retention/retry/final-floor API delete/replay/sibling-history isolation/PWA empty readback",
+        "recommendedFiniteStatus": "PASS_AT_EXACT_PRODUCER_REUSE",
+        "sufficient": "Exact96 PASSED6461ms/0errors/art11930427375; official9f3a/treefd497. All reviewed extended lifecycle assertions reached.",
+        "missingAction": "NONE for this finite extended action; remove stale existing-result join. Currentzoom/pan authored94 ordinary result remains Root; positive usage-count telemetry and final-delete UI are NOT inferred. Do not make physical-store outage/newUI mandatory without existing accepted provenance.",
+        "classification": "LATER_EXACT_EXISTING_SUCCESS"
+      }
+    ],
+    "newly_useful_closures": [
+      {
+        "operation": "Q09/Q10 basic genuine edit→real audience→ownVue inbox/read→typed authorized target→durable read state/foreign/logout guard",
+        "recommendedFiniteStatus": "PASS_AT_EXACT_PRODUCER_REUSE",
+        "producer": "61dfb19fc1b50fd6889810f0c4ce9903582e851c",
+        "run": 38649468413,
+        "artifact": 11934813694,
+        "bytes": 533,
+        "digest": "sha256:b06c846039ad4c5627a8f6f17de045b29ed2527693f1b8acfd768e5204280f44",
+        "exactCase": "mobile-homework-lifecycle.spec.ts:26 chromium PASSED5235ms/0errors",
+        "sourceSha256": "35769785f9b246f60c1f0f3b6dcd0c70f0724c1d39a722835c885de67dbdae67",
+        "rootReceiptKeys": [
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_actual_closed_browser_primary_checkpoint",
+          "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.61dfb_official_actual_checkout_join"
+        ],
+        "observedOracle": "Current same pinned body215–431 demands actual HOMEWORK_UPDATED/PUBLISHED own rows, readPUT200/exact revision, typedGET200/exact completion, reload exact read row, differentHEADMAN own recipient/foreignread404, revokedinbox/read401 and UI clear. Wholecase PASSED, no inference from successful prefix.",
+        "remaining": "Distinct Q10 membership/headman/helper audience-change/prejoin-history and partial-channel failures remain; Q09 line576 actual login429 before transfer/archive carrier is separate, not basic edit/inbox gap."
+      }
+    ],
+    "rootReceipt": "current4065#6172_existing_finite_acceptance_reconciliation"
   }
 }

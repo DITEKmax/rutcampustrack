@@ -250,7 +250,7 @@ jobs:
           retention-days: 7
 
       - name: Verify changed data regressions reject their counterexamples
-        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service'
+        if: matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service'
         timeout-minutes: 8
         env:
           RCT_CI_SERVICE: ${{ matrix.service.name }}
@@ -262,7 +262,7 @@ jobs:
           import xml.etree.ElementTree as ET
 
           service = os.environ['RCT_CI_SERVICE']
-          assert service in {'schedule-service', 'attendance-service'}
+          assert service in {'schedule-service', 'attendance-service', 'academic-service'}
           app = pathlib.Path('services') / service / (service.removesuffix('-service') + '-app')
           private = pathlib.Path(tempfile.mkdtemp(prefix='changed-domain-red-', dir=os.environ['RUNNER_TEMP']))
           results = app / 'build/test-results/integrationTest'
@@ -293,6 +293,34 @@ jobs:
                       replacements[path] = old
                   proof['counterexample'] = 'PREVIOUS_ROOM_PROJECTION'
                   proof['previousRevision'] = previous
+              elif service == 'academic-service':
+                  package = 'ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT'
+                  method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
+                  test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java'
+                  source = test_source.read_bytes()
+                  assert hashlib.sha256(source).hexdigest() == '209a71d2411132ba4cfaf46e03e595f1e027f1ff1da0723e48a82db3e47e4d8a'
+                  archive = b'        service.archive(target, request);\n'
+                  oracle = (b'        assertThat(\n'
+                            b'                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)\n'
+                            b'                                .equals(retainedHomework))\n'
+                            b'                .isTrue();\n')
+                  anchor = archive + oracle
+                  assert source.count(anchor) == 1
+                  update = b'''        assertThat(
+                                  jdbc.update(
+                                          "UPDATE homework_completions SET completed_at=completed_at+INTERVAL '1 second' WHERE id=? AND homework_id=? AND student_id=?",
+                                          completion,
+                                          homework,
+                                          target))
+                          .isEqualTo(1);
+          '''
+                  negative = source.replace(anchor, archive + update + oracle)
+                  assert hashlib.sha256(negative).hexdigest() == 'f48f723ef14a1434161da4030bba27e1e69c180a3dee67a01849e50c4b9a69b6'
+                  assert negative.count(archive + update + oracle) == 1
+                  rule_line = negative[:negative.index(archive + update + oracle)].count(b'\n') + len((archive + update + oracle).splitlines())
+                  replacements = {test_source: negative}
+                  proof.update(counterexample='CHANGED_RETAINED_COMPLETION_TIMESTAMP',
+                               ruleFrame=package + '.' + method + '(UserArchiveLifecycleIT.java:' + str(rule_line) + ')')
               else:
                   package = 'ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT'
                   method = 'headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt'
@@ -327,7 +355,8 @@ jobs:
               assert result.is_file() and result.stat().st_size <= 33554432
               data = result.read_bytes()
               assert b'<!DOCTYPE' not in data.upper() and b'<!ENTITY' not in data.upper()
-              cases = ET.fromstring(data).findall('testcase')
+              suite = ET.fromstring(data)
+              cases = suite.findall('testcase')
               assert len(cases) == 1 and cases[0].get('name') == method + '()'
               case = cases[0]
               assert not case.findall('error') and not case.findall('skipped') and len(case.findall('failure')) == 1
@@ -342,6 +371,14 @@ jobs:
                   line_number = next(i for i, line in enumerate(lines, 1) if target in line)
                   assert 'assertRoomProjection(LessonRoomChangeIT.java:' + str(line_number) + ')' in (failure.text or '')
                   proof.update(expectedPreviousRoomPresent=True, observedPreviousRoomPresent=False)
+              elif service == 'academic-service':
+                  assert suite.tag == 'testsuite' and suite.get('name') == package
+                  assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  assert case.get('classname') == package
+                  assert re.fullmatch(r'\s*Expecting value to be true but was false\s*', message)
+                  assert re.search(r'(?m)^\s*at ' + re.escape(proof['ruleFrame']) + r'\s*$', failure.text or '')
+                  proof.update(affectedRows=1, expectedRetentionEqual=True, observedRetentionEqual=False)
               else:
                   assert '[headman budget increased limit]' in message
                   assert re.search(r'expected:\s*7\s+but was:\s*5(?:\s|$)', message)
@@ -352,6 +389,10 @@ jobs:
               for path, content in current.items():
                   path.write_bytes(content)
                   assert path.read_bytes() == content
+              if service == 'academic-service' and current:
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '209a71d2411132ba4cfaf46e03e595f1e027f1ff1da0723e48a82db3e47e4d8a'
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(test_source)]) == b''
+                  proof['sourceRestoredExact'] = True
               for source, name in [(results, 'red-results'), (reports, 'red-reports')]:
                   if source.exists():
                       shutil.move(source, private / name)
@@ -362,7 +403,7 @@ jobs:
           PY_DOMAIN_RED
 
       - name: Upload safe changed-domain regression proof
-        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service')
+        if: always() && (matrix.service.name == 'schedule-service' || matrix.service.name == 'attendance-service' || matrix.service.name == 'academic-service')
         uses: actions/upload-artifact@v4
         with:
           name: changed-domain-regression-safe-${{ matrix.service.name }}-${{ github.run_attempt }}

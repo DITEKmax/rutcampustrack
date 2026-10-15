@@ -121,23 +121,38 @@ function seedPastHomework(dataset: MobileDataset, lesson: PhysicalLesson, itemId
       throw new Error('Historical homework fixture command failed');
     }
   }
+  // Application recovery leaves the original databases stopped and replaces
+  // their service aliases with this run's explicitly disposable targets.
+  const recoveryProject = process.env.RCT_APP_RECOVERY_PROJECT;
+  const project = recoveryProject ?? 'rct-e2e';
+  if (recoveryProject !== undefined) {
+    const runId = process.env.GITHUB_RUN_ID;
+    const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
+    if (
+      process.env.GITHUB_ACTIONS !== 'true' ||
+      !/^rct-recovery-[1-9][0-9]*-[1-9][0-9]*-dst$/.test(recoveryProject) ||
+      recoveryProject !== `rct-recovery-${runId}-${runAttempt}-dst`
+    )
+      throw new Error('Historical homework fixture recovery project invalid');
+  }
   type Service = 'postgres-academic' | 'postgres-schedule';
   const containers = new Map<Service, string>();
   function inspect(service: Service, id: string) {
     const observed = docker([
       'inspect',
       '--format',
-      '{{.Id}}|{{.State.Running}}|{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.service"}}',
+      '{{.Id}}|{{.State.Running}}|{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.service"}}|{{index .Config.Labels "io.rutcampustrack.recovery"}}',
       id,
     ]);
     const fields = observed.split('|');
     if (
-      fields.length !== 4 ||
+      fields.length !== 5 ||
       !/^[a-f0-9]{64}$/.test(fields[0]) ||
       !fields[0].startsWith(id) ||
       fields[1] !== 'true' ||
-      fields[2] !== 'rct-e2e' ||
-      fields[3] !== service
+      fields[2] !== project ||
+      fields[3] !== service ||
+      (recoveryProject !== undefined && fields[4] !== 'disposable')
     )
       throw new Error('Historical homework fixture container invalid');
     return fields[0];
@@ -149,9 +164,12 @@ function seedPastHomework(dataset: MobileDataset, lesson: PhysicalLesson, itemId
       '--filter',
       'status=running',
       '--filter',
-      'label=com.docker.compose.project=rct-e2e',
+      `label=com.docker.compose.project=${project}`,
       '--filter',
       `label=com.docker.compose.service=${service}`,
+      ...(recoveryProject !== undefined
+        ? ['--filter', 'label=io.rutcampustrack.recovery=disposable']
+        : []),
     ]);
     if (!/^[a-f0-9]{12,64}$/.test(id))
       throw new Error('Historical homework fixture container missing');

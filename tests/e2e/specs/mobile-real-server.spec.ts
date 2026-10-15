@@ -1410,6 +1410,9 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
       await context.setOffline(true);
       try {
+        await page.evaluate(() => {
+          Object.defineProperty(window, '__rctD002WarmOfflineReloadOldWindow', { value: true });
+        });
         try {
           await page.reload();
         } catch (error) {
@@ -1467,6 +1470,16 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
               expect.soft(false, 'D002 reload OTHER').toBe(true);
               break;
           }
+          const oldDocument = await page
+            .evaluate(
+              () =>
+                Object.getOwnPropertyDescriptor(window, '__rctD002WarmOfflineReloadOldWindow')
+                  ?.value === true,
+            )
+            .catch(() => null);
+          if (oldDocument === true) expect.soft(false, 'D002 reload OLD_DOCUMENT').toBe(true);
+          else if (oldDocument === false) expect.soft(false, 'D002 reload NEW_DOCUMENT').toBe(true);
+          else expect.soft(false, 'D002 reload DOCUMENT_UNAVAILABLE').toBe(true);
           throw error;
         }
         await expect(
@@ -1681,7 +1694,14 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     await page.route(path, holdOldFeed);
     try {
       await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
-      await expect.poll(() => fetchedOwnResponse).toBe(true);
+      try {
+        await expect.poll(() => fetchedOwnResponse).toBe(true);
+      } catch (error) {
+        if (!held) expect.soft(false, 'D002 old feed NOT_INTERCEPTED').toBe(true);
+        else if (routeFailed) expect.soft(false, 'D002 old feed FETCH_FAILED').toBe(true);
+        else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
+        throw error;
+      }
       await logoutPwa(page);
       // Keep this document alive: loginPwa.goto would destroy the delayed callback.
       await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
@@ -1705,9 +1725,10 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         true,
       );
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
-      await expect(
-        page.getByText('Новые задания появятся здесь после публикации.', { exact: true }),
-      ).toBeVisible();
+      const emptyDay = page.locator('.homework-empty-day');
+      await expect(emptyDay).toHaveText('На этот день заданий нет.');
+      await expect(emptyDay).toBeVisible();
+      await expect(page.locator('.homework-card')).toHaveCount(0);
       ownerReady = true;
       const delivered = page.waitForResponse((item) => {
         const url = new URL(item.url());

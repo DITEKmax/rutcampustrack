@@ -7338,7 +7338,13 @@
       }
     ],
     "next_ready": "E13-C1 productioncache serializer realDTO/date/collection+benignforeign type refusal; independentSource-author/test scope next",
-    "optional": "L05SQL/L06RPC performance, DBsplit/Saga/framework remainoptional; offsiteRPO/RTOdecisiondeferred. B013/B014FROZEN; Q012onlystandalone removal; no owneranswersinferred"
+    "optional": "L05SQL/L06RPC performance, DBsplit/Saga/framework remainoptional; offsiteRPO/RTOdecisiondeferred. B013/B014FROZEN; Q012onlystandalone removal; no owneranswersinferred",
+    "independentCurrentReconciliation": {
+      "utc": "2026-10-15T07:22:26.903722+00:00",
+      "actualRows": 15,
+      "receipt": "receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ce943_Q13_Q15_independent_finite_join",
+      "meaning": "authoritative currentfinite disposition; historical row text retained, do not reopenclosedrows or imply allmandatoryscopePASS"
+    }
   },
   "current_finite_Q01_Q12_refinement": {
     "utc": "2026-10-15T06:10:34.831089+00:00",

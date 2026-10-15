@@ -921,7 +921,27 @@ jobs:
               + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
           if named_lines != [str(expected_line)]:
               raise SystemExit(0)
-          assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']) == b''
+          wrapper = pathlib.Path('gradlew')
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', 'gradlew']) == b'100644\n'
+          wrapper_head = subprocess.check_output(['git', 'show', 'HEAD:gradlew'])
+          wrapper_sha = hashlib.sha256(wrapper_head).hexdigest()
+          assert wrapper_sha == 'c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0'
+          wrapper_mode = wrapper.stat().st_mode & 0o7777
+          assert wrapper_mode in {0o644, 0o755}
+
+          def verify_wrapper():
+              assert wrapper.is_file() and not wrapper.is_symlink()
+              assert wrapper.stat().st_mode & 0o7777 == wrapper_mode
+              assert 0 < wrapper.stat().st_size <= 1048576
+              assert hashlib.sha256(wrapper.read_bytes()).hexdigest() == wrapper_sha
+
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          baseline = {path for path in subprocess.check_output(
+              ['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0') if path}
+          assert baseline in (set(), {b'gradlew'})
+          if baseline:
+              assert wrapper_mode == 0o755
           subprocess.run(
               ['./gradlew', ':services:academic-service:academic-app:integrationTest', '--no-daemon',
                '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
@@ -938,7 +958,12 @@ jobs:
                   and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
                   and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
           changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
-          assert {path for path in changed if path} == {b'docs/openapi/academic.json'}
+          assert {path for path in changed if path} == baseline | {b'docs/openapi/academic.json'}
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', snapshot.as_posix()]) == b'100644\n'
+          assert snapshot.stat().st_mode & 0o7777 == 0o644
+          assert payload != subprocess.check_output(['git', 'show', 'HEAD:' + snapshot.as_posix()])
           output = pathlib.Path('build/ci-test-outcomes/academic-service/openapi-generated')
           output.mkdir(mode=0o700, parents=True, exist_ok=False)
           shutil.copyfile(snapshot, output / 'academic.json')
@@ -948,7 +973,9 @@ jobs:
                    'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
                    'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
                    'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
-                   'trackedChanges': ['docs/openapi/academic.json'], 'ordinaryFailurePreserved': True}
+                   'trackedChanges': sorted(path.decode('ascii') for path in changed if path),
+                   'preexistingWrapperModeChange': baseline == {b'gradlew'}, 'wrapperSourceSha256': wrapper_sha,
+                   'ordinaryFailurePreserved': True}
           (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
               target_output.write('generated=true\n')
@@ -1053,7 +1080,27 @@ jobs:
               + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
           if named_lines != [str(expected_line)]:
               raise SystemExit(0)
-          assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']) == b''
+          wrapper = pathlib.Path('gradlew')
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', 'gradlew']) == b'100644\n'
+          wrapper_head = subprocess.check_output(['git', 'show', 'HEAD:gradlew'])
+          wrapper_sha = hashlib.sha256(wrapper_head).hexdigest()
+          assert wrapper_sha == 'c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0'
+          wrapper_mode = wrapper.stat().st_mode & 0o7777
+          assert wrapper_mode in {0o644, 0o755}
+
+          def verify_wrapper():
+              assert wrapper.is_file() and not wrapper.is_symlink()
+              assert wrapper.stat().st_mode & 0o7777 == wrapper_mode
+              assert 0 < wrapper.stat().st_size <= 1048576
+              assert hashlib.sha256(wrapper.read_bytes()).hexdigest() == wrapper_sha
+
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          baseline = {path for path in subprocess.check_output(
+              ['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0') if path}
+          assert baseline in (set(), {b'gradlew'})
+          if baseline:
+              assert wrapper_mode == 0o755
           subprocess.run(
               ['./gradlew', ':services:mobile-bff:mobile-bff-app:integrationTest', '--no-daemon',
                '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
@@ -1071,7 +1118,12 @@ jobs:
                   and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
                   and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
           changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
-          assert {path for path in changed if path} == {b'docs/openapi/mobile-bff.json'}
+          assert {path for path in changed if path} == baseline | {b'docs/openapi/mobile-bff.json'}
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', snapshot.as_posix()]) == b'100644\n'
+          assert snapshot.stat().st_mode & 0o7777 == 0o644
+          assert payload != subprocess.check_output(['git', 'show', 'HEAD:' + snapshot.as_posix()])
           output = pathlib.Path('build/ci-test-outcomes/mobile-bff/openapi-generated')
           output.mkdir(mode=0o700, parents=True, exist_ok=False)
           shutil.copyfile(snapshot, output / 'mobile-bff.json')
@@ -1081,7 +1133,9 @@ jobs:
                    'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
                    'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
                    'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
-                   'trackedChanges': ['docs/openapi/mobile-bff.json'], 'ordinaryFailurePreserved': True}
+                   'trackedChanges': sorted(path.decode('ascii') for path in changed if path),
+                   'preexistingWrapperModeChange': baseline == {b'gradlew'}, 'wrapperSourceSha256': wrapper_sha,
+                   'ordinaryFailurePreserved': True}
           (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
               target_output.write('generated=true\n')

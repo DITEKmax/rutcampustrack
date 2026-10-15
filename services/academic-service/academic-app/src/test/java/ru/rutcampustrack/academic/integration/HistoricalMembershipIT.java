@@ -176,9 +176,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(historicalMembershipService.readMemberUserIds(source.getId(), semesterStart))
                 .containsExactly(student.getId());
 
+        String transferReason = "historical test transfer";
         userService.transferStudent(
-                student.getId(),
-                new TransferStudentRequest(destination.getId(), "historical test transfer"));
+                student.getId(), new TransferStudentRequest(destination.getId(), transferReason));
 
         LocalDate transferDate = LocalDate.now(MOSCOW);
         assertThat(
@@ -261,6 +261,7 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 historyRepository.findByUserIdOrderByJoinedAtDesc(student.getId());
         assertThat(history).hasSize(2);
         assertThat(history).allSatisfy(row -> assertThat(row.getJoinedAt()).isNotNull());
+        assertThat(history).extracting(StudentGroupHistory::getReason).containsOnly(transferReason);
         assertThat(
                         history.stream()
                                 .filter(row -> row.getGroupId().equals(source.getId()))

@@ -368,3 +368,9 @@ CHECK-AUTH-OTP-CLEANUP-DEADLINE-001 CLOSED_SOURCE_REVIEWED: spec c23c1e79 awaite
 ## DF-PWA-ONGOING-UNKNOWN-EMPTY-001 — P2 / independent review of new ongoing summary
 
 2026-10-15T06:46:39.225982+00:00: c85 confirms Home8fdb:430–432 filters current=true/statusUNSUPPORTED then says «Сейчас пары нет». Current typed adapter uses UNSUPPORTED for unknown/missing status, so state must be unavailable. Sameauthorc84 minimalguard+onecomponentcontrol assigned, thenindependenttargetedrecheck; knownempty/PLANNED andoriginalselectedUI preserved. No runtimefalseabsence claimed beforeactualbrowser. Evidence current4065#f2a258_ongoing_summary_Source_review.
+
+DF-PWA-ONGOING-UNKNOWN-EMPTY-001 CLOSED_SOURCE_REVIEWED: corrected Home428fe rejects unknown-current status as unavailable; actual old8fdb semanticRED/newaffected2GREEN, independentc85 targetedAPPROVE. Publishedce943, newrealbrowser pending.
+
+GAP-STUDENT-EXCUSE-REASON-CATALOG-001 FIXED_SERVER_CURRENT: ce943 realMongo catalog/legacy7/comment, explicitwire and signedHTTP/gRPC namedPASS; semantic6→7RED/exactrestore/sameGREEN accepted. Newdropdownbrowser/stockpublicschema+types/currentwholegates pending, notclosedfullclient. Evidence current4065#ce943_reason_enum_quality_actual.
+
+GAP-ADMIN-MAP-PARTIAL-CONSEQUENCE-001 SOURCE_GAP_FIXED_REVIEWED: acceptedJSADMIN24 requires missing-format consequence; existingtemplate hid absentstatus. Minimalexistinghelp now names missingSVG and unavailableSVG preview/download while acceptedPNGfallback remains. c86APPROVE/twofilechecksPASS, actualrealAdminMapScreen witnessNOT_RUN; RootWIP82aad/98831.

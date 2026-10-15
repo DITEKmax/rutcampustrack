@@ -476,7 +476,10 @@ function stateLabel(format: MapFormat): string {
   return {
     processing: 'Файл обрабатывается.',
     failed: 'Ошибка проверки файла.',
-    absent: 'Файл не загружен.',
+    absent:
+      format === 'svg'
+        ? 'SVG не загружен. Просмотр и скачивание SVG недоступны.'
+        : 'PNG не загружен. Скачивание PNG недоступно.',
     ready: 'Файл загружен.',
   }[floor.value?.currentPlan?.[format].state ?? 'absent'];
 }
@@ -681,8 +684,7 @@ function stateLabel(format: MapFormat): string {
               v-if="
                 !stagedUrls[format] &&
                   !assetUrls[format] &&
-                  floor?.currentPlan?.[format].state &&
-                  floor.currentPlan[format].state !== 'absent'
+                  floor?.currentPlan?.[format].state
               "
               class="admin-map-help"
               role="status"

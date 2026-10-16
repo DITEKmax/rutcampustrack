@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
 import ru.rutcampustrack.schedule.grpc.HomeworkEditReceipt;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /** Each method commits before a Schedule RPC is made; continuation replays only durable input. */
 @Service
@@ -43,6 +46,39 @@ public class HomeworkEditPersistence {
     private final ObjectMapper mapper;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final Clock instructionalClock;
+
+    @Autowired
+    public HomeworkEditPersistence(
+            HomeworkRepository homeworks,
+            HomeworkBindingArchiveCoordinator locks,
+            HomeworkBindingTransferCoordinator transfers,
+            AcademicSemesterArchiveBarrierTransaction barrier,
+            UserRoleGrantRepository grants,
+            HeadmanAssistantRepository assistants,
+            RequestContext context,
+            HomeworkEditHistory history,
+            JdbcTemplate jdbc,
+            ObjectMapper mapper,
+            ApplicationEventPublisher events,
+            Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this.homeworks = homeworks;
+        this.locks = locks;
+        this.transfers = transfers;
+        this.barrier = barrier;
+        this.grants = grants;
+        this.assistants = assistants;
+        this.context = context;
+        this.history = history;
+        this.jdbc = jdbc;
+        this.mapper = mapper;
+        this.events = events;
+        this.clock = clock;
+        EducationalTime instructionalTime =
+                educationalTime == null ? null : educationalTime.getIfAvailable();
+        this.instructionalClock = instructionalTime == null ? clock : instructionalTime.clock();
+    }
 
     public HomeworkEditPersistence(
             HomeworkRepository homeworks,
@@ -57,18 +93,20 @@ public class HomeworkEditPersistence {
             ObjectMapper mapper,
             ApplicationEventPublisher events,
             Clock clock) {
-        this.homeworks = homeworks;
-        this.locks = locks;
-        this.transfers = transfers;
-        this.barrier = barrier;
-        this.grants = grants;
-        this.assistants = assistants;
-        this.context = context;
-        this.history = history;
-        this.jdbc = jdbc;
-        this.mapper = mapper;
-        this.events = events;
-        this.clock = clock;
+        this(
+                homeworks,
+                locks,
+                transfers,
+                barrier,
+                grants,
+                assistants,
+                context,
+                history,
+                jdbc,
+                mapper,
+                events,
+                clock,
+                null);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -269,7 +307,7 @@ public class HomeworkEditPersistence {
                                         .lessonDate()
                                         .isBefore(
                                                 LocalDate.now(
-                                                        clock.withZone(
+                                                        instructionalClock.withZone(
                                                                 ZoneId.of("Europe/Moscow")))))
                         || locks.findMarker(
                                         current.getBindingId(),
@@ -389,7 +427,7 @@ public class HomeworkEditPersistence {
     }
 
     private boolean isExpired(Homework current) {
-        return new HomeworkLifecycle(clock).expiredDate(current);
+        return new HomeworkLifecycle(instructionalClock).expiredDate(current);
     }
 
     private void rejectOtherPending(long homework, UUID allowed) {

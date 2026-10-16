@@ -25,9 +25,18 @@ import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransac
  */
 @Service
 public class HomeworkBindingArchiveCoordinator {
-    @org.springframework.beans.factory.annotation.Autowired
     private java.time.Clock notificationClock =
             java.time.Clock.system(java.time.ZoneId.of("Europe/Moscow"));
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureInstructionalClock(
+            java.time.Clock realClock,
+            org.springframework.beans.factory.ObjectProvider<
+                            ru.rutcampustrack.shared.web.time.EducationalTime>
+                    educationalTime) {
+        var instructionalTime = educationalTime.getIfAvailable();
+        notificationClock = instructionalTime == null ? realClock : instructionalTime.clock();
+    }
 
     private final JdbcTemplate jdbcTemplate;
     private final EntityManager entityManager;

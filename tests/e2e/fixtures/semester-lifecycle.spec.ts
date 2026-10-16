@@ -4743,6 +4743,11 @@ function subjectCascadeReadback(deadline: number) {
     | 'COUNT'
     | 'CURSOR'
     | 'HISTORY'
+    | 'HISTORY_ORIGINAL_COUNT'
+    | 'HISTORY_EFFECTIVE_IDS'
+    | 'HISTORY_ADJUSTMENTS'
+    | 'HISTORY_REMOVED'
+    | 'HISTORY_REMAINING'
     | 'BUDGET'
     | 'OUTPUT'
     | 'UNKNOWN';
@@ -4797,7 +4802,7 @@ function subjectCascadeReadback(deadline: number) {
       const markers = lines.filter((line) => line.trim().startsWith('RCT_SUBJECT_READBACK_SITE:'));
       if (markers.length === 1) {
         const match =
-          /^RCT_SUBJECT_READBACK_SITE:(CONNECT|TICKET|EPOCH|COUNT|CURSOR|HISTORY|BUDGET|OUTPUT)$/.exec(
+          /^RCT_SUBJECT_READBACK_SITE:(CONNECT|TICKET|EPOCH|COUNT|CURSOR|HISTORY|HISTORY_ORIGINAL_COUNT|HISTORY_EFFECTIVE_IDS|HISTORY_ADJUSTMENTS|HISTORY_REMOVED|HISTORY_REMAINING|BUDGET|OUTPUT)$/.exec(
             markers[0],
           );
         if (match) site.value = match[1] as MongoFailureSite;
@@ -5052,8 +5057,8 @@ marks:count('attendances',{lesson_id:{$in:k.removed}}),
 sole:count('excuse_tickets',{_id:new ObjectId(k.sole)}),manual:count('late_checkin_requests',{_id:new ObjectId(k.manual)}),
 soleFiles:count('request_attachments',{request_id:k.sole}),mixedFiles:count('request_attachments',{request_id:k.mixed}),
 controlMarks:(rctSubjectReadbackSite='CURSOR',d.attendances.find({lesson_id:k.kept,user_id:k.student}).maxTimeMS(2000).limit(2).toArray()),
-originalCount:(rctSubjectReadbackSite='HISTORY',t?.lesson_snapshots?.length),effectiveIds:t?.effective_original_lesson_ids?.map(Number),
-history:h.map(x=>({operation:x.operation_id,subject:Number(x.subject_id),actor:Number(x.actor_id),removed:x.removed_lesson_ids.map(Number),remaining:x.remaining_lesson_ids.map(Number)})),
+originalCount:(rctSubjectReadbackSite='HISTORY_ORIGINAL_COUNT',t?.lesson_snapshots?.length),effectiveIds:(rctSubjectReadbackSite='HISTORY_EFFECTIVE_IDS',t?.effective_original_lesson_ids?.map(Number)),
+history:(rctSubjectReadbackSite='HISTORY_ADJUSTMENTS',h.map(x=>({operation:x.operation_id,subject:Number(x.subject_id),actor:Number(x.actor_id),removed:(rctSubjectReadbackSite='HISTORY_REMOVED',x.removed_lesson_ids.map(Number)),remaining:(rctSubjectReadbackSite='HISTORY_REMAINING',x.remaining_lesson_ids.map(Number))}))),
 budget:(rctSubjectReadbackSite='BUDGET',d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:k.semester},{_id:0,limit:1,used:1})),
 ...(rctSubjectReadbackSite='OUTPUT',{})}));
 } catch(error) {
@@ -5162,6 +5167,25 @@ throw error;
                   break;
                 case 'HISTORY':
                   expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY').toBe(true);
+                  break;
+                case 'HISTORY_ORIGINAL_COUNT':
+                  expect
+                    .soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY_ORIGINAL_COUNT')
+                    .toBe(true);
+                  break;
+                case 'HISTORY_EFFECTIVE_IDS':
+                  expect
+                    .soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY_EFFECTIVE_IDS')
+                    .toBe(true);
+                  break;
+                case 'HISTORY_ADJUSTMENTS':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY_ADJUSTMENTS').toBe(true);
+                  break;
+                case 'HISTORY_REMOVED':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY_REMOVED').toBe(true);
+                  break;
+                case 'HISTORY_REMAINING':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY_REMAINING').toBe(true);
                   break;
                 case 'BUDGET':
                   expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_BUDGET').toBe(true);

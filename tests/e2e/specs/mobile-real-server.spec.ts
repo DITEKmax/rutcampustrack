@@ -2738,7 +2738,52 @@ test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
     expect(
       String(session.userId) === String(dataset.headman.id) && session.activeRole === 'HEADMAN',
     ).toBe(true);
-    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    const journalPath = `/api/schedule/groups/${dataset.group.id}/lessons`;
+    const [initialDay] = await Promise.all([
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === journalPath &&
+          url.searchParams.get('dateFrom') === url.searchParams.get('dateTo')
+        );
+      }),
+      page.getByRole('button', { name: 'Посещаемость', exact: true }).click(),
+    ]);
+    expect(initialDay.status()).toBe(200);
+    let selectedDate = new URL(initialDay.url()).searchParams.get('dateFrom')!;
+    const dayDistance =
+      (Date.parse(`${dataset.today}T12:00:00Z`) - Date.parse(`${selectedDate}T12:00:00Z`)) /
+      86400000;
+    expect(Number.isInteger(dayDistance)).toBe(true);
+    // Security time keeps advancing; choose the owned lesson's educational date in the real UI.
+    const direction = Math.sign(dayDistance);
+    for (let remaining = Math.abs(dayDistance); remaining > 0; remaining--) {
+      const nextDate = new Date(Date.parse(`${selectedDate}T12:00:00Z`) + direction * 86400000)
+        .toISOString()
+        .slice(0, 10);
+      const [nextDay] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === journalPath &&
+            url.searchParams.get('dateFrom') === nextDate &&
+            url.searchParams.get('dateTo') === nextDate
+          );
+        }),
+        page
+          .getByRole('navigation', { name: 'Выбор даты', exact: true })
+          .getByRole('button', {
+            name: direction < 0 ? 'Предыдущая пара или день' : 'Следующая пара или день',
+            exact: true,
+          })
+          .click(),
+      ]);
+      expect(nextDay.status()).toBe(200);
+      selectedDate = nextDate;
+    }
+    expect(selectedDate).toBe(dataset.today);
     const marked = page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname ===
@@ -4277,11 +4322,17 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }).formatToParts(new Date());
     const part = (name: string) => archiveDate.find((value) => value.type === name)!.value;
     const realToday = `${part('year')}-${part('month')}-${part('day')}`;
-    const yesterday = new Date(Date.parse(`${realToday}T12:00:00Z`) - 86400000)
+    const realYesterday = new Date(Date.parse(`${realToday}T12:00:00Z`) - 86400000)
       .toISOString()
       .slice(0, 10);
-    // Account archival closes membership at real Moscow today, not synthetic teaching Today.
-    expect(yesterday >= dataset.semester.dateFrom).toBe(true);
+    const teachingYesterday = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+      .toISOString()
+      .slice(0, 10);
+    const yesterday = realYesterday < teachingYesterday ? realYesterday : teachingYesterday;
+    // Retained history precedes both account archival's real cutoff and the owned seed date.
+    expect(
+      yesterday >= dataset.semester.dateFrom && yesterday < dataset.today && yesterday < realToday,
+    ).toBe(true);
     await loginPwa(page, administrator);
     await selectPwaRole(page, 'Администратор');
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();

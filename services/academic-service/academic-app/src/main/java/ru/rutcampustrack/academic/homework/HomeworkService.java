@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -47,6 +48,7 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingState;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 @Service
 public class HomeworkService {
@@ -58,6 +60,7 @@ public class HomeworkService {
     private final ApplicationEventPublisher eventPublisher;
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final Clock clock;
+    private final Clock instructionalClock;
     private final HomeworkPublicationPersistence publicationPersistence;
     private final HomeworkBindingArchiveCoordinator archiveCoordinator;
     private final UserRoleGrantRepository grantRepository;
@@ -82,7 +85,8 @@ public class HomeworkService {
             HomeworkEditHistory editHistory,
             HomeworkScopeValidator scopeValidator,
             HomeworkEditCoordinator editCoordinator,
-            TeacherAssignmentReadAuthority teacherReadAuthority) {
+            TeacherAssignmentReadAuthority teacherReadAuthority,
+            ObjectProvider<EducationalTime> educationalTime) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.assistantRepository = assistantRepository;
@@ -90,6 +94,9 @@ public class HomeworkService {
         this.eventPublisher = eventPublisher;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.clock = clock;
+        EducationalTime instructionalTime =
+                educationalTime == null ? null : educationalTime.getIfAvailable();
+        this.instructionalClock = instructionalTime == null ? clock : instructionalTime.clock();
         this.publicationPersistence = publicationPersistence;
         this.archiveCoordinator = archiveCoordinator;
         this.grantRepository = grantRepository;
@@ -97,6 +104,40 @@ public class HomeworkService {
         this.scopeValidator = scopeValidator;
         this.editCoordinator = editCoordinator;
         this.teacherReadAuthority = teacherReadAuthority;
+    }
+
+    /** Source-compatible constructor with an explicit instructional clock. */
+    public HomeworkService(
+            HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository,
+            HeadmanAssistantRepository assistantRepository,
+            RequestContext requestContext,
+            ApplicationEventPublisher eventPublisher,
+            ScheduleGrpcClient scheduleGrpcClient,
+            Clock clock,
+            HomeworkPublicationPersistence publicationPersistence,
+            HomeworkBindingArchiveCoordinator archiveCoordinator,
+            UserRoleGrantRepository grantRepository,
+            HomeworkEditHistory editHistory,
+            HomeworkScopeValidator scopeValidator,
+            HomeworkEditCoordinator editCoordinator,
+            TeacherAssignmentReadAuthority teacherReadAuthority) {
+        this(
+                homeworkRepository,
+                completionRepository,
+                assistantRepository,
+                requestContext,
+                eventPublisher,
+                scheduleGrpcClient,
+                clock,
+                publicationPersistence,
+                archiveCoordinator,
+                grantRepository,
+                editHistory,
+                scopeValidator,
+                editCoordinator,
+                teacherReadAuthority,
+                null);
     }
 
     /** Source-compatible constructor; without live authority teacher reads fail closed. */
@@ -284,7 +325,11 @@ public class HomeworkService {
         }
 
         // D-03: дата пары не в прошлом (Moscow day, см. ClockConfig)
-        if (request.lessonDate().isBefore(LocalDate.now(clock))) {
+        if (request.lessonDate()
+                .isBefore(
+                        LocalDate.now(
+                                instructionalClock.withZone(
+                                        java.time.ZoneId.of("Europe/Moscow"))))) {
             throw new BadRequestException("lessonDate", "Нельзя создать ДЗ на прошедшую дату");
         }
 
@@ -571,7 +616,7 @@ public class HomeworkService {
         if (!sameRequest(current, request)) {
             throw new ConflictException("idempotency key resolves to another homework payload");
         }
-        if (new HomeworkLifecycle(clock).archived(current)) {
+        if (new HomeworkLifecycle(instructionalClock).archived(current)) {
             throw new ConflictException("archived homework cannot be recreated");
         }
         if (current.getPublicationState() == HomeworkPublicationState.ACTIVE) {
@@ -599,7 +644,7 @@ public class HomeworkService {
     }
 
     private Homework requireNotArchived(Homework homework) {
-        if (new HomeworkLifecycle(clock).archived(homework)) {
+        if (new HomeworkLifecycle(instructionalClock).archived(homework)) {
             throw new ConflictException("archived homework cannot be activated");
         }
         return homework;
@@ -800,7 +845,7 @@ public class HomeworkService {
                         .findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
         if (archived
-                ? !new HomeworkLifecycle(clock).archived(homework)
+                ? !new HomeworkLifecycle(instructionalClock).archived(homework)
                         || homework.getPublicationState() == HomeworkPublicationState.PENDING
                         || !Objects.equals(homework.getGroupId(), requestContext.getGroupId())
                 : homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
@@ -844,7 +889,8 @@ public class HomeworkService {
             return homeworkRepository.findArchive(
                     groupId,
                     semesterId,
-                    LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow"))),
+                    LocalDate.now(
+                            instructionalClock.withZone(java.time.ZoneId.of("Europe/Moscow"))),
                     org.springframework.data.domain.PageRequest.of(
                             pageable.getPageNumber(), Math.min(pageable.getPageSize(), 100)));
         }
@@ -1025,7 +1071,7 @@ public class HomeworkService {
         if (archiveCoordinator != null) {
             archiveCoordinator.lockAndRefresh(homework);
         }
-        if (new HomeworkLifecycle(clock).archived(homework))
+        if (new HomeworkLifecycle(instructionalClock).archived(homework))
             throw new ConflictException("Архивное ДЗ доступно только для чтения");
         Long studentId = requestContext.getUserId();
         if (completionRepository.existsByHomeworkIdAndStudentId(homeworkId, studentId)) {
@@ -1042,7 +1088,7 @@ public class HomeworkService {
         if (archiveCoordinator != null) {
             archiveCoordinator.lockAndRefresh(homework);
         }
-        if (new HomeworkLifecycle(clock).archived(homework))
+        if (new HomeworkLifecycle(instructionalClock).archived(homework))
             throw new ConflictException("Архивное ДЗ доступно только для чтения");
         Long studentId = requestContext.getUserId();
         HomeworkCompletion completion =

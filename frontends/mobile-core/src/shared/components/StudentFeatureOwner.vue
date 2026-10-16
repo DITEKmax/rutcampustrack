@@ -1151,7 +1151,7 @@ const requestAmbiguous = computed(() => {
 });
 
 function requestErrorText(value: unknown): string {
-  return value instanceof Error && value.message
+  return value instanceof Error && !(value instanceof TypeError) && value.message
     ? value.message
     : 'Не удалось выполнить действие с заявкой.';
 }

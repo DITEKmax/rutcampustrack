@@ -557,20 +557,46 @@ async function ownedHistoricalPromotion(
       throw new Error('Owned promotion JSON is invalid');
     }
   };
-  const ids = native([
-    'compose',
-    '--env-file',
-    envFile,
-    '-p',
-    'rct-e2e',
-    '-f',
-    join(root, 'docker-compose.e2e.yml'),
-    '-f',
-    join(root, 'tests/e2e/infra/docker-compose.clock-fixture.yml'),
-    'ps',
-    '-q',
-    'postgres-academic',
-  ])
+  // Successful application recovery leaves the original databases stopped.
+  const recoveryProject = process.env.RCT_APP_RECOVERY_PROJECT;
+  const project = recoveryProject ?? 'rct-e2e';
+  if (recoveryProject !== undefined) {
+    const runId = process.env.GITHUB_RUN_ID;
+    const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
+    requireValue(
+      process.env.GITHUB_ACTIONS === 'true' &&
+        /^rct-recovery-[1-9][0-9]*-[1-9][0-9]*-dst$/.test(recoveryProject) &&
+        recoveryProject === `rct-recovery-${runId}-${runAttempt}-dst`,
+      'Owned promotion recovery project is invalid',
+    );
+  }
+  const ids = native(
+    recoveryProject === undefined
+      ? [
+          'compose',
+          '--env-file',
+          envFile,
+          '-p',
+          project,
+          '-f',
+          join(root, 'docker-compose.e2e.yml'),
+          '-f',
+          join(root, 'tests/e2e/infra/docker-compose.clock-fixture.yml'),
+          'ps',
+          '-q',
+          'postgres-academic',
+        ]
+      : [
+          'ps',
+          '-q',
+          '--filter',
+          `label=com.docker.compose.project=${project}`,
+          '--filter',
+          'label=com.docker.compose.service=postgres-academic',
+          '--filter',
+          'label=io.rutcampustrack.recovery=disposable',
+        ],
+  )
     .trim()
     .split(/\s+/);
   requireValue(
@@ -588,7 +614,11 @@ async function ownedHistoricalPromotion(
     );
   const pin = inspect();
   requireValue(
-    pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+    /^[0-9a-f]{64}$/.test(pin.id) &&
+      pin.id.startsWith(ids[0]) &&
+      pin.labels?.['com.docker.compose.project'] === project &&
+      (recoveryProject === undefined ||
+        pin.labels?.['io.rutcampustrack.recovery'] === 'disposable') &&
       pin.labels?.['com.docker.compose.service'] === 'postgres-academic' &&
       pin.configuredImage === 'postgres:16' &&
       pin.running === true &&

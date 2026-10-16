@@ -1,4 +1,4 @@
-import type { Request, Response } from '@playwright/test';
+import type { Request, Response, Route } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
@@ -314,6 +314,54 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   await expect(excuseForm.getByRole('list', { name: 'Выбранные вложения' })).toHaveCount(0);
   await fileInput.setInputFiles(file);
   await expect(preview).toBeVisible();
+  // One controlled upload transport failure occurs before delivery; keep the genuine success below.
+  const uploadOrigin = new URL(page.url()).origin;
+  const uploadRoute = (url: URL) =>
+    url.origin === uploadOrigin && url.pathname === '/api/v1/student/requests/excuse';
+  let uploadAborted = false;
+  const abortOwnUpload = async (route: Route) => {
+    if (!uploadAborted && route.request().method() === 'POST') {
+      uploadAborted = true;
+      await route.abort('failed');
+    } else {
+      await route.fallback();
+    }
+  };
+  await page.route(uploadRoute, abortOwnUpload);
+  try {
+    const submitUpload = excuseForm.getByRole('button', { name: 'Отправить заявку', exact: true });
+    await submitUpload.click();
+    await expect(excuseForm.getByRole('alert')).toContainText('Не удалось отправить заявку');
+    await expect(excuseForm.getByRole('alert')).toContainText(
+      'Не удалось выполнить действие с заявкой.',
+    );
+    expect(uploadAborted).toBe(true);
+    await expect(excuseForm).toBeVisible();
+    await expect(submitUpload).toBeDisabled();
+    await expect(excuseForm.getByRole('list', { name: 'Выбранные вложения' })).toContainText(
+      file.name,
+    );
+    await expect(preview).toBeVisible();
+    const abandonUpload = excuseForm.getByRole('button', {
+      name: 'Отказаться от неподтверждённой отправки',
+      exact: true,
+    });
+    await abandonUpload.click();
+    await expect(excuseForm.getByRole('alert')).toHaveCount(0);
+    await expect(abandonUpload).toHaveCount(0);
+    await expect(submitUpload).toBeEnabled();
+    await expect(excuseForm.getByRole('list', { name: 'Выбранные вложения' })).toContainText(
+      file.name,
+    );
+    await expect(preview).toBeVisible();
+  } finally {
+    try {
+      await page.unroute(uploadRoute, abortOwnUpload);
+    } catch {
+      expect.soft(false, 'Owned upload fault route cleanup failed').toBe(true);
+    }
+  }
+  // End controlled transport failure; the original successful submission and its oracles follow.
   const submitting = await excuseForm.evaluateHandle((form) => {
     let seen = false;
     const observer = new MutationObserver(() => {
@@ -606,7 +654,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   await page.getByRole('button', { name: 'Заявки', exact: true }).click();
   // D019: this existing HEADMAN session approves the whole two-lesson ticket once.
   const multipleDetailPath = `/api/attendance/requests/${multipleExcuseId}`;
-  const multipleQueueCard = page.locator(`[data-request-id="${multipleExcuseId}"]`);
+  const multipleQueueCard = page.locator(`[data-request-id="${multipleExcuseId}"]`).first();
   const coverageLabel = new Intl.DateTimeFormat('ru-RU', {
     day: 'numeric',
     month: 'long',
@@ -620,7 +668,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
       (item) =>
         new URL(item.url()).pathname === multipleDetailPath && item.request().method() === 'GET',
     ),
-    page.locator(`[data-request-id="${multipleExcuseId}"]`).click(),
+    multipleQueueCard.click(),
   ]);
   expect(multipleDetailReply.status()).toBe(200);
   const multipleDetail = await multipleDetailReply.json();
@@ -803,6 +851,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   const archiveMain = page.locator('main.headman-requests[data-request-view="archive"]');
   await expect(archiveMain).toBeVisible();
   await page.getByRole('button', { name: 'Поиск и период', exact: true }).click();
+  await page.getByLabel('Тип заявки', { exact: true }).selectOption('EXCUSE');
   await page.getByLabel('ФИО', { exact: true }).fill(dataset.student.displayName);
   await page.getByLabel('Период от', { exact: true }).fill(yesterday);
   await page.getByLabel('Период до', { exact: true }).fill(yesterday);
@@ -813,6 +862,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
         reply.request().method() === 'GET' &&
         url.pathname === '/api/attendance/requests' &&
         url.searchParams.get('bucket') === 'ARCHIVE' &&
+        url.searchParams.get('type') === 'EXCUSE' &&
         url.searchParams.get('studentName') === dataset.student.displayName &&
         url.searchParams.get('coverageDateFrom') === yesterday &&
         url.searchParams.get('coverageDateTo') === yesterday &&
@@ -847,8 +897,36 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
         .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-request-id')).sort()),
     ) === JSON.stringify(expectedArchiveIds),
   ).toBe(true);
+  // The same archive scope contains EXCUSE tickets, so a different type must exclude them.
+  await page.getByRole('button', { name: 'Поиск и период', exact: true }).click();
+  await page.getByLabel('Тип заявки', { exact: true }).selectOption('LATE_CHECKIN');
+  const [lateArchiveReply] = await Promise.all([
+    page.waitForResponse((reply) => {
+      const url = new URL(reply.url());
+      return (
+        reply.request().method() === 'GET' &&
+        url.pathname === '/api/attendance/requests' &&
+        url.searchParams.get('bucket') === 'ARCHIVE' &&
+        url.searchParams.get('type') === 'LATE_CHECKIN' &&
+        url.searchParams.get('studentName') === dataset.student.displayName &&
+        url.searchParams.get('coverageDateFrom') === yesterday &&
+        url.searchParams.get('coverageDateTo') === yesterday &&
+        url.searchParams.get('page') === '0' &&
+        url.searchParams.get('size') === '20'
+      );
+    }),
+    page.getByRole('button', { name: 'Применить', exact: true }).click(),
+  ]);
+  expect(lateArchiveReply.status()).toBe(200);
+  const lateArchive = await lateArchiveReply.json();
+  expect(lateArchive.page).toBe(0);
+  expect(lateArchive.totalElements).toBe(0);
+  expect(lateArchive.content).toEqual([]);
+  await expect(archiveMain.locator('[data-request-id]')).toHaveCount(0);
+  await expect(archiveMain.getByText('В архиве пока нет заявок.', { exact: true })).toBeVisible();
   // Restore the original queue context before its unchanged logout and student archive assertions.
   await page.getByRole('button', { name: 'Поиск и период', exact: true }).click();
+  await page.getByLabel('Тип заявки', { exact: true }).selectOption('');
   await page.getByLabel('ФИО', { exact: true }).fill('');
   await page.getByLabel('Период от', { exact: true }).fill('');
   await page.getByLabel('Период до', { exact: true }).fill('');

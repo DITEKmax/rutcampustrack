@@ -284,7 +284,7 @@ function toRequestOptions(value: StudentRequestOptions): RequestOptions {
 
 function errorMessage(value: unknown, fallback: string): string {
   if (value instanceof StudentApiError) return value.problem?.detail || value.message || fallback
-  if (value instanceof Error && value.message) return value.message
+  if (value instanceof Error && !(value instanceof TypeError) && value.message) return value.message
   return fallback
 }
 
@@ -397,6 +397,7 @@ export function validateLateCheckinPayload(
 export class RequestsController {
   readonly view: RequestsControllerView
   private readonly commands = new Map<RequestKind, CommandRecord>()
+  private mutationErrorCommand: CommandRecord | null = null
   private readonly keyFactory: () => string
   private contextGeneration = 0
   private readonly bucketGenerations: Record<RequestBucket, number> = { open: 0, archive: 0 }
@@ -425,6 +426,7 @@ export class RequestsController {
     this.bucketGenerations.archive += 1
     this.optionsGeneration += 1
     this.commands.clear()
+    this.mutationErrorCommand = null
     this.view.command = null
     this.view.mutation = 'idle'
     this.view.mutationError = null
@@ -558,6 +560,7 @@ export class RequestsController {
 
     this.view.mutation = 'cancelling'
     this.view.mutationError = null
+    this.mutationErrorCommand = null
     try {
       const refreshed = await port.cancelRequest(id)
       if (!this.isCurrentContext(identity, contextGeneration)) {
@@ -580,6 +583,7 @@ export class RequestsController {
         throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
       }
       this.view.mutationError = errorMessage(error, 'Не удалось отменить заявку.')
+      this.mutationErrorCommand = null
       throw error
     } finally {
       if (this.isCurrentContext(identity, contextGeneration)) this.view.mutation = 'idle'
@@ -774,7 +778,17 @@ export class RequestsController {
     const command = this.commands.get(kind)
     if (!command || command.status !== 'ambiguous') return
     this.commands.delete(kind)
-    if (this.view.command?.kind === kind) this.view.command = null
+    if (
+      this.view.command?.kind === kind &&
+      this.view.command.status === 'ambiguous' &&
+      this.view.command.idempotencyKey === command.idempotencyKey
+    ) {
+      this.view.command = null
+      if (this.mutationErrorCommand === command) {
+        this.view.mutationError = null
+        this.mutationErrorCommand = null
+      }
+    }
   }
 
   /** Explicit reconciliation releases the ambiguous command after the caller
@@ -860,6 +874,7 @@ export class RequestsController {
     this.publishCommand(record)
     this.view.mutation = 'submitting'
     this.view.mutationError = null
+    this.mutationErrorCommand = null
     const commandIdentity = this.identity()
     const promise = send()
       .then(async (value) => {
@@ -888,6 +903,7 @@ export class RequestsController {
         this.publishCommand(record)
         this.view.mutation = 'idle'
         this.view.mutationError = record.error
+        this.mutationErrorCommand = record
         throw error
       })
     record.promise = promise
@@ -922,6 +938,7 @@ export class RequestsController {
     const requestBucket = bucket
     this.view.mutation = 'cancelling'
     this.view.mutationError = null
+    this.mutationErrorCommand = null
     const commandIdentity = this.identity()
     try {
       await this.options.port()!.cancelRequest(id)
@@ -936,6 +953,7 @@ export class RequestsController {
         await this.loadBucket(requestBucket, 0).catch(() => undefined)
       }
       this.view.mutationError = errorMessage(error, 'Не удалось отменить заявку.')
+      this.mutationErrorCommand = null
       throw error
     } finally {
       if (!commandIdentity || this.isCurrentIdentity(commandIdentity)) this.view.mutation = 'idle'
@@ -965,6 +983,7 @@ export class RequestsController {
     this.bucketGenerations.archive += 1
     this.optionsGeneration += 1
     this.commands.clear()
+    this.mutationErrorCommand = null
   }
 
   private findBucket(id: string): RequestBucket | null {

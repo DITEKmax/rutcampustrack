@@ -407,7 +407,7 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
                             item.setGroupId(10L);
                             item.setSubjectId(subject);
                             item.setSemesterId(semester);
-                            item.setDayOfWeek((short) 0);
+                            item.setDayOfWeek((short) 1);
                             item.setLessonNumber((short) slot);
                             item.setWeekType(WeekType.ALL);
                             item = saveFixtureScheduleItem(item);

@@ -840,13 +840,39 @@ describe('RequestsController', () => {
     await expect(
       value.submitExcuse({ ...payload, comment: 'Изменённый текст' }),
     ).rejects.toMatchObject({ code: 'AMBIGUOUS' })
+    expect(value.view.mutationError).toBe('Результат отправки не подтверждён.')
     value.abandonCommand('EXCUSE')
+    expect(value.view.mutationError).toBeNull()
     await expect(
       value.submitExcuse({ ...payload, comment: 'Изменённый текст' }),
     ).resolves.toBeTruthy()
     expect(sent[2]?.key).toBe('request-key-0002')
     expect(receivedFiles).toHaveLength(3)
     for (const files of receivedFiles) expect(files[0]).toBe(upload)
+
+    // An unrelated cancellation can own the shared error while command A remains ambiguous.
+    const cancellationError = 'Не удалось отменить другую заявку.'
+    const other = controller({
+      port: port({
+        listRequests: async () => page([summary('cancel-B')]),
+        submitExcuse: async () => {
+          throw new TypeError('command A response lost')
+        },
+        cancelRequest: async () => {
+          throw new Error(cancellationError)
+        },
+      }),
+    }).value
+    other.view.options = options()
+    await other.loadBucket('open', 0)
+    await expect(other.submitExcuse(payload)).rejects.toThrow('command A response lost')
+    const commandA = other.view.command
+    await expect(other.cancelRequest('cancel-B')).rejects.toThrow(cancellationError)
+    expect(other.view.command).toEqual(commandA)
+    expect(other.view.mutationError).toBe(cancellationError)
+    other.abandonCommand('EXCUSE')
+    expect(other.view.command).toBeNull()
+    expect(other.view.mutationError).toBe(cancellationError)
   })
 })
 

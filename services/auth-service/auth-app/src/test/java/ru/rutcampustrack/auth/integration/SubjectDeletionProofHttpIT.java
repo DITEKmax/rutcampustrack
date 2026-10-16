@@ -260,7 +260,11 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
 
     private void assertPrivate(ResponseEntity<String> response, int expected) {
         assertThat(response.getStatusCode().value()).isEqualTo(expected);
-        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(response.getHeaders().getValuesAsList(HttpHeaders.CACHE_CONTROL))
+                .containsOnly("no-store");
+        assertThat(response.getHeaders().get(HttpHeaders.CACHE_CONTROL))
+                .isNotEmpty()
+                .allSatisfy(value -> assertThat(value).doesNotContain("\""));
     }
 
     private long ownEvents(long telegram, String type) {

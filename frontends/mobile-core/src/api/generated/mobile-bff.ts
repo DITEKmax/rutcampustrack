@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 1726565aea7a18bd576ce77a9e836081958729968d5d0bf87aa3137014f4251d
+// Contract: JS-STUDENT-01-r1; SHA-256: 67c9cc911fd173bb838b3f23b64370a1feffd94cc2f02a0cd856f740b9af062e
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -790,6 +790,7 @@ export interface components {
             serverNow: string;
             subjects: components["schemas"]["StudentAttendanceSubject"][];
             terminalReadOnly: boolean;
+            weeks: components["schemas"]["StudentAttendanceWeek"][];
         };
         StudentAttendanceDay: {
             /** Format: date */
@@ -900,6 +901,17 @@ export interface components {
             metrics: components["schemas"]["StudentAttendanceMetricSet"];
             /** @enum {string} */
             type: "LECTURE" | "PRACTICE" | "LAB";
+        };
+        StudentAttendanceWeek: {
+            /** Format: date */
+            dateFrom: string;
+            /** Format: date */
+            dateTo: string;
+            parityLabel: string;
+            /** Format: int32 */
+            parityNumber: number;
+            /** Format: int32 */
+            weekOfSemester: number;
         };
         StudentCheckinAck: {
             _links: {

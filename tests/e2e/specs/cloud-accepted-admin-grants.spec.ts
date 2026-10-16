@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import type { Request, Response, TestInfo } from '@playwright/test';
 import {
   test,
@@ -640,8 +641,8 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     await users.getByRole('button', { name: 'Найти', exact: true }).click();
     await users.locator(`[data-user-id="${target.id}"]`).click();
     const unchangedTeacher = (user: typeof targetBefore) =>
-      JSON.stringify(user.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT')) ===
-      JSON.stringify(
+      isDeepStrictEqual(
+        user.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT'),
         targetBefore.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT'),
       );
     for (const status of ['SUSPENDED', 'ACTIVE'] as const) {
@@ -669,20 +670,38 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       ).toBe(true);
       const updated = await response.json();
       const persisted = await dataset.admin.call('GET', targetPath);
-      for (const user of [updated, persisted])
+      for (const user of [updated, persisted]) {
+        expect(user.id === targetBefore.id, 'Status response/readback preserves own user id').toBe(
+          true,
+        );
         expect(
-          user.id === targetBefore.id &&
-            user.login === targetBefore.login &&
-            user.telegramId === targetBefore.telegramId &&
-            user.employeeNumber === targetBefore.employeeNumber &&
-            user.groupId === targetBefore.groupId &&
-            user.roles.some(
-              (grant: { role: string; status: string }) =>
-                grant.role === 'STUDENT' && grant.status === status,
-            ) &&
-            unchangedTeacher(user),
-          'Only the own student role changes; the independent teacher role is retained',
+          user.login === targetBefore.login,
+          'Status response/readback preserves own login',
         ).toBe(true);
+        expect(
+          user.telegramId === targetBefore.telegramId,
+          'Status response/readback preserves own Telegram id',
+        ).toBe(true);
+        expect(
+          user.employeeNumber === targetBefore.employeeNumber,
+          'Status response/readback preserves own employee number',
+        ).toBe(true);
+        expect(
+          user.groupId === targetBefore.groupId,
+          'Status response/readback preserves own group',
+        ).toBe(true);
+        expect(
+          user.roles.some(
+            (grant: { role: string; status: string }) =>
+              grant.role === 'STUDENT' && grant.status === status,
+          ),
+          'Status response/readback contains the requested student role status',
+        ).toBe(true);
+        expect(
+          unchangedTeacher(user),
+          'Status response/readback preserves all independent role fields',
+        ).toBe(true);
+      }
       await expect(users.getByText('Роль сохранена.', { exact: true })).toBeVisible();
     }
     await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();

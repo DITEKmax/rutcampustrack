@@ -587,6 +587,18 @@ defineExpose({ back, openNotificationRequest });
       class="headman-requests__filters"
       @submit.prevent="apply"
     >
+      <label
+        v-if="bucket === 'ARCHIVE'"
+        for="headman-archive-request-type"
+      ><span id="headman-archive-request-type-label">Тип заявки</span><select
+        id="headman-archive-request-type"
+        v-model="kind"
+        aria-labelledby="headman-archive-request-type-label"
+      >
+        <option value="">Все типы</option>
+        <option value="EXCUSE">Уважительные причины</option>
+        <option value="LATE_CHECKIN">Забыл отметиться</option>
+      </select></label>
       <label>ФИО<input
         v-model="studentName"
         type="search"

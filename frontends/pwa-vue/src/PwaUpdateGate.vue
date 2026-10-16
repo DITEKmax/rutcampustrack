@@ -69,8 +69,11 @@ async function requestUpdate(): Promise<void> {
       return;
     }
 
-    await registration.update();
-    const waiting = await waitForWaitingWorker(registration);
+    let waiting = registration.waiting;
+    if (!waiting) {
+      await registration.update();
+      waiting = await waitForWaitingWorker(registration);
+    }
     if (!waiting) {
       // Reloading while the old worker still controls the page can reopen the
       // stale shell. Keep the hard block and let the user retry after a

@@ -158,9 +158,26 @@ interface SelectionNode {
   props: Record<string, unknown>
   children: SelectionNode[]
   parent: SelectionNode | null
+  value: string
+  selected?: boolean
+  readonly options: SelectionNode[]
+  addEventListener: (name: string, listener: (event: Event) => void) => void
 }
 function selectionNode(tag: string, text = ''): SelectionNode {
-  return { tag, text, props: {}, children: [], parent: null }
+  return {
+    tag,
+    text,
+    props: {},
+    children: [],
+    parent: null,
+    value: '',
+    get options() {
+      return this.children.filter((child) => child.tag === 'option')
+    },
+    addEventListener(name, listener) {
+      this.props[`native:${name}`] = listener
+    },
+  }
 }
 const selectionRenderer = createRenderer<SelectionNode, SelectionNode>({
   createElement: selectionNode,
@@ -175,6 +192,7 @@ const selectionRenderer = createRenderer<SelectionNode, SelectionNode>({
   },
   patchProp: (node, key, _before, value) => {
     node.props[key] = value
+    if (key === 'value' && typeof value === 'string') node.value = value
   },
   insert(node, parent, anchor) {
     if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
@@ -370,6 +388,145 @@ describe('headman request coverage and predecision summary', () => {
       await settle()
       expect(text(root)).toContain('3 из 5 пар уже отмечены')
       expect(text(root)).toContain('Подтверждённое присутствие сохранится')
+    } finally {
+      app.unmount()
+    }
+  })
+})
+
+describe('headman archive type filter', () => {
+  it('applies an archive type with the existing name and period, shows filtered empty and resets', async () => {
+    const summary = {
+      id: 'bbbbbbbbbbbbbbbbbbbbbbbb',
+      kind: 'EXCUSE',
+      status: 'APPROVED',
+      studentId: 1,
+      studentName: 'Тестовый студент',
+      reason: 'ILLNESS',
+      comment: null,
+      coverageStart: '2026-09-02',
+      coverageEnd: '2026-09-07',
+      lessonCount: 2,
+      alreadyMarkedCount: 0,
+      hasAttachments: false,
+    }
+    const queries: URLSearchParams[] = []
+    const api = new HeadmanRequestsApi({
+      accessToken: () => 'synthetic-local-test',
+      fetcher: async (input) => {
+        const url = new URL(String(input), 'https://synthetic.invalid')
+        if (!url.search) {
+          return new Response(JSON.stringify({ summary, lessons: [], attachments: [] }), {
+            status: 200,
+          })
+        }
+        queries.push(url.searchParams)
+        const content =
+          url.searchParams.get('bucket') === 'ARCHIVE' &&
+          url.searchParams.get('type') !== 'LATE_CHECKIN'
+            ? [summary]
+            : []
+        return new Response(
+          JSON.stringify({
+            content,
+            page: 0,
+            size: 20,
+            totalElements: content.length,
+            totalPages: 1,
+          }),
+          { status: 200 },
+        )
+      },
+    })
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp(HeadmanRequestsScreen, { api })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const text = (node: SelectionNode) =>
+      selectionNodes(node)
+        .map((item) => item.text)
+        .join(' ')
+    const settle = async () => {
+      for (let i = 0; i < 30; i++) {
+        await Promise.resolve()
+        await nextTick()
+      }
+    }
+    const openFilters = async () => {
+      const button = nodes().find((node) => node.props['aria-label'] === 'Поиск и период')!
+      ;(button.props.onClick as () => void)()
+      await nextTick()
+    }
+    const selectType = (value: string) => {
+      const select = nodes().find((node) => node.tag === 'select')!
+      expect(select).toBeDefined()
+      for (const option of select.options) option.selected = option.value === value
+      ;(select.props['native:change'] as (event: unknown) => void)({ target: select })
+    }
+    const fill = (label: string, value: string) => {
+      const input = nodes().find(
+        (node) => node.tag === 'input' && node.parent && text(node.parent).trim() === label,
+      )!
+      input.value = value
+      ;(input.props['native:input'] as (event: unknown) => void)({ target: input })
+    }
+    const apply = async () => {
+      const form = nodes().find((node) => node.tag === 'form')!
+      ;(form.props.onSubmit as (event: unknown) => void)({ preventDefault() {} })
+      await settle()
+    }
+    const lastArchive = () => queries.filter((query) => query.get('bucket') === 'ARCHIVE').at(-1)!
+    try {
+      await settle()
+      expect(nodes().some((node) => node.tag === 'select')).toBe(false)
+      const archive = nodes().find((node) => node.tag === 'button' && text(node).includes('Архив'))!
+      ;(archive.props.onClick as () => void)()
+      await settle()
+      await openFilters()
+      const select = nodes().find((node) => node.tag === 'select')!
+      expect(select).toBeDefined()
+      expect(select.parent?.props.for).toBe(select.props.id)
+      expect(text(select.parent!)).toContain('Тип заявки')
+      const caption = nodes().find((node) => node.props.id === select.props['aria-labelledby'])
+      expect(caption?.text).toBe('Тип заявки')
+      const beforeDraft = queries.length
+      selectType('EXCUSE')
+      fill('ФИО', 'Тестовый студент')
+      fill('Период от', '2026-09-02')
+      fill('Период до', '2026-09-07')
+      expect(queries).toHaveLength(beforeDraft)
+      await apply()
+      expect(Object.fromEntries(lastArchive())).toEqual({
+        bucket: 'ARCHIVE',
+        page: '0',
+        size: '20',
+        type: 'EXCUSE',
+        studentName: 'Тестовый студент',
+        coverageDateFrom: '2026-09-02',
+        coverageDateTo: '2026-09-07',
+      })
+      expect(nodes().filter((node) => node.props['data-request-id'] === summary.id)).toHaveLength(1)
+      await openFilters()
+      selectType('LATE_CHECKIN')
+      await apply()
+      expect(lastArchive().get('type')).toBe('LATE_CHECKIN')
+      expect(lastArchive().get('studentName')).toBe('Тестовый студент')
+      expect(lastArchive().get('coverageDateFrom')).toBe('2026-09-02')
+      expect(lastArchive().get('coverageDateTo')).toBe('2026-09-07')
+      expect(nodes().some((node) => node.props['data-request-id'] === summary.id)).toBe(false)
+      expect(text(root)).toContain('В архиве пока нет заявок.')
+      await openFilters()
+      selectType('')
+      fill('ФИО', '')
+      fill('Период от', '')
+      fill('Период до', '')
+      await apply()
+      expect(Object.fromEntries(lastArchive())).toEqual({
+        bucket: 'ARCHIVE',
+        page: '0',
+        size: '20',
+      })
+      expect(nodes().filter((node) => node.props['data-request-id'] === summary.id)).toHaveLength(1)
     } finally {
       app.unmount()
     }

@@ -338,12 +338,38 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
     };
     await showWeek(weeks[currentWeekIndex]!);
     const direction = currentWeekIndex + 1 < weeks.length ? 1 : -1;
-    await page
-      .getByRole('button', {
-        name: direction === 1 ? 'Следующая неделя' : 'Предыдущая неделя',
-        exact: true,
-      })
-      .click();
+    try {
+      await page
+        .getByRole('button', {
+          name: direction === 1 ? 'Следующая неделя' : 'Предыдущая неделя',
+          exact: true,
+        })
+        .click();
+    } catch (error) {
+      // Classify in RAM only; never report the private Playwright text.
+      const message = error instanceof Error ? error.message : '';
+      if (/strict mode violation/i.test(message))
+        expect.soft(false, 'LESSON_WEEK_CLICK_STRICT').toBe(true);
+      else if (/intercepts pointer events/i.test(message))
+        expect.soft(false, 'LESSON_WEEK_CLICK_POINTER_INTERCEPT').toBe(true);
+      else if (/element is not visible/i.test(message))
+        expect.soft(false, 'LESSON_WEEK_CLICK_NOT_VISIBLE').toBe(true);
+      else if (/element is not enabled|element is disabled/i.test(message))
+        expect.soft(false, 'LESSON_WEEK_CLICK_NOT_ENABLED').toBe(true);
+      else if (/element is outside of the viewport/i.test(message))
+        expect.soft(false, 'LESSON_WEEK_CLICK_OUTSIDE_VIEWPORT').toBe(true);
+      else if (
+        /element was detached|element is not attached|not attached to the DOM/i.test(message)
+      )
+        expect.soft(false, 'LESSON_WEEK_CLICK_DETACHED').toBe(true);
+      else if (
+        (error instanceof Error && error.name === 'TimeoutError') ||
+        /Timeout [0-9]+ms exceeded/i.test(message)
+      )
+        expect.soft(false, 'LESSON_WEEK_CLICK_TIMEOUT').toBe(true);
+      else expect.soft(false, 'LESSON_WEEK_CLICK_UNKNOWN').toBe(true);
+      throw error;
+    }
     await showWeek(weeks[currentWeekIndex + direction]!);
     await page
       .getByRole('button', {

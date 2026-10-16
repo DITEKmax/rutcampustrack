@@ -4698,7 +4698,7 @@
         }
       },
       "StudentAttendance" : {
-        "required" : [ "_links", "dateFrom", "dateTo", "days", "graph", "metrics", "ownRank", "semester", "serverNow", "subjects", "terminalReadOnly" ],
+        "required" : [ "_links", "dateFrom", "dateTo", "days", "graph", "metrics", "ownRank", "semester", "serverNow", "subjects", "terminalReadOnly", "weeks" ],
         "type" : "object",
         "properties" : {
           "semester" : {
@@ -4715,6 +4715,12 @@
           "serverNow" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "weeks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceWeek"
+            }
           },
           "terminalReadOnly" : {
             "type" : "boolean"
@@ -4910,6 +4916,31 @@
             "items" : {
               "$ref" : "#/components/schemas/StudentAttendanceSeriesPoint"
             }
+          }
+        }
+      },
+      "StudentAttendanceWeek" : {
+        "required" : [ "dateFrom", "dateTo", "parityLabel", "parityNumber", "weekOfSemester" ],
+        "type" : "object",
+        "properties" : {
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekOfSemester" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "parityNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "parityLabel" : {
+            "type" : "string"
           }
         }
       }

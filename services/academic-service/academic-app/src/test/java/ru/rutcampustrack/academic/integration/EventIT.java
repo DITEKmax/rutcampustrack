@@ -196,21 +196,9 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         testSemester = semesterRepository.save(testSemester);
 
         when(requestContext.getUserId()).thenReturn(null);
-        testSemester = semesterService.activateSemester(testSemester.getId());
-
-        // Create the subject and its canonical lesson type atomically through
-        // the managed writer; the database requires every subject to retain a
-        // corresponding subject_lesson_types row.
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getGroupId()).thenReturn(groupA.getId());
-        testSubject =
-                subjectService.createSubject(
-                        new CreateSubjectRequest(
-                                "Test Subject " + System.nanoTime(),
-                                SubjectType.LECTURE,
-                                List.of(SubjectType.LECTURE),
-                                List.of()));
 
         // Create the student through UserService so enrollment history is
         // written atomically with the user row.
@@ -233,6 +221,19 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                         + "VALUES (?,'headman','active',?,NOW(),NOW())",
                 testUser.getId(),
                 groupA.getId());
+
+        testSemester = semesterService.activateSemester(testSemester.getId());
+
+        // Create the subject and its canonical lesson type atomically through
+        // the managed writer; the database requires every subject to retain a
+        // corresponding subject_lesson_types row.
+        testSubject =
+                subjectService.createSubject(
+                        new CreateSubjectRequest(
+                                "Test Subject " + System.nanoTime(),
+                                SubjectType.LECTURE,
+                                List.of(SubjectType.LECTURE),
+                                List.of()));
 
         // Stub RequestContext mock for homework permission checks
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);

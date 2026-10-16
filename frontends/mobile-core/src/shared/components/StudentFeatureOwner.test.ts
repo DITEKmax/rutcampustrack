@@ -331,10 +331,26 @@ vi.mock('../../features/requests/ExcuseRequestScreen.vue', () => ({
       files: { type: Array as PropType<RequestFileRef[]>, default: () => [] },
       lessonIds: { type: Array as PropType<string[]>, default: () => [] },
       reason: { type: String as PropType<string | null>, default: null },
+      submitError: { type: String as PropType<string | null>, default: null },
+      ambiguous: { type: Boolean, default: false },
     },
-    emits: ['back', 'update:files', 'update:lesson-ids', 'update:reason'],
+    emits: [
+      'back',
+      'update:files',
+      'update:lesson-ids',
+      'update:reason',
+      'update:comment',
+      'submit',
+      'abandon',
+    ],
     setup(
-      props: { files: RequestFileRef[]; lessonIds: string[]; reason: string | null },
+      props: {
+        files: RequestFileRef[]
+        lessonIds: string[]
+        reason: string | null
+        submitError: string | null
+        ambiguous: boolean
+      },
       { emit }: SetupContext,
     ) {
       function pickFile(): void {
@@ -353,6 +369,43 @@ vi.mock('../../features/requests/ExcuseRequestScreen.vue', () => ({
           ),
           h('output', { class: 'test-request-lessons' }, props.lessonIds.join(',')),
           h('output', { class: 'test-request-reason' }, props.reason ?? ''),
+          h('output', { class: 'test-request-submit-error' }, props.submitError ?? ''),
+          h(
+            'button',
+            { class: 'test-clear-request-reason', onClick: () => emit('update:reason', null) },
+            'Убрать причину',
+          ),
+          h(
+            'button',
+            {
+              class: 'test-edit-request-comment',
+              onClick: () => emit('update:comment', 'Изменённый комментарий'),
+            },
+            'Изменить комментарий',
+          ),
+          h('output', { class: 'test-request-ambiguous' }, String(props.ambiguous)),
+          h(
+            'button',
+            {
+              class: 'test-submit-request',
+              disabled: props.ambiguous,
+              onClick: () =>
+                emit('submit', {
+                  lessonIds: props.lessonIds,
+                  reason: props.reason,
+                  comment: 'Есть пояснение',
+                  files: props.files,
+                }),
+            },
+            'Отправить заявку',
+          ),
+          props.ambiguous
+            ? h(
+                'button',
+                { class: 'test-abandon-request', onClick: () => emit('abandon') },
+                'Отказаться от неподтверждённой отправки',
+              )
+            : null,
           h(
             'button',
             { class: 'test-pick-request-file', type: 'button', onClick: pickFile },
@@ -1444,6 +1497,61 @@ describe('StudentFeatureOwner requests route', () => {
 
     expect(api.cancelRequest).toHaveBeenCalledWith('request-1')
     expect(refreshToday).toHaveBeenCalledWith(scope)
+  })
+
+  it('localizes a request port network failure and clears only its error on explicit abandon', async () => {
+    ownerQueryData.realShell = true
+    const submitExcuse = vi.fn(() => Promise.reject(new TypeError('Failed to fetch')))
+    const api = {
+      getRequestOptions: async () => multiRequestOptions(),
+      listRequests: async () => emptyRequestPage(),
+      submitExcuse,
+    } as unknown as StudentApi
+    const root = mountOwnerTest(api)
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-requests')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'requests-primary-action')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-select-request-lessons')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-continue-selection')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-select-request-reason')
+    clickOwnerTestButton(root, 'test-pick-request-file')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-submit-request')
+    await vi.waitFor(() => expect(submitExcuse).toHaveBeenCalledOnce())
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe(
+      'Не удалось выполнить действие с заявкой.',
+    )
+    expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('true')
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    clickOwnerTestButton(root, 'test-clear-request-reason')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe(
+      'Результат отправки не подтверждён.',
+    )
+    expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('true')
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    clickOwnerTestButton(root, 'test-edit-request-comment')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe(
+      'Результат отправки не подтверждён.',
+    )
+    expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('true')
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    clickOwnerTestButton(root, 'test-abandon-request')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe('')
+    expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('false')
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    expect(submitExcuse).toHaveBeenCalledOnce()
   })
 
   it('loads request options once when the real owner opens a request form', async () => {

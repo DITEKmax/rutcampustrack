@@ -1005,25 +1005,321 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
       expect(assignment !== undefined, 'Complementary type has its genuine own assignment').toBe(
         true,
       );
-      const created = await dataset.headmanActor.call(
-        'POST',
-        '/api/schedule/one-off-lessons',
-        {
-          groupId: dataset.group.id,
-          subjectId: savedSubjectId,
-          assignmentId: assignment.id,
-          date: dataset.tomorrow,
-          lessonNumber,
-          classroom: 'Синтетическая статистика',
-        },
-        [200, 201],
-        { 'Idempotency-Key': randomUUID() },
-      );
+      let created: Awaited<ReturnType<Actor['call']>>;
+      if (type === 'LAB') {
+        created = await dataset.headmanActor.call(
+          'POST',
+          '/api/schedule/one-off-lessons',
+          {
+            groupId: dataset.group.id,
+            subjectId: savedSubjectId,
+            assignmentId: assignment.id,
+            date: dataset.tomorrow,
+            lessonNumber,
+            classroom: 'Синтетическая статистика',
+          },
+          [200, 201],
+          { 'Idempotency-Key': randomUUID() },
+        );
+      } else {
+        // The existing future lecture also witnesses the three ready HEADMAN forms.
+        await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+        const initialWeekLoaded = http(page, '/api/schedule/academic-week-policy', 'GET');
+        await page.getByRole('button', { name: 'Управление парами', exact: true }).click();
+        const initialWeekResponse = await initialWeekLoaded;
+        expect(initialWeekResponse.status()).toBe(200);
+        const initialWeek = await initialWeekResponse.json();
+        const management = page.locator('main.lesson-management');
+        await expect(management).toHaveAttribute('data-management-view', 'agenda');
+        await expect(management).toHaveAttribute('aria-busy', 'false');
+        const weekOffset = Math.floor(
+          (Date.parse(`${dataset.tomorrow}T00:00:00Z`) -
+            Date.parse(`${initialWeek.weekStart}T00:00:00Z`)) /
+            (7 * 86400000),
+        );
+        expect(Number.isSafeInteger(weekOffset)).toBe(true);
+        for (let index = 0; index < Math.abs(weekOffset); index++) {
+          const nextWeek = http(page, '/api/schedule/academic-week-policy', 'GET');
+          await management
+            .getByRole('button', {
+              name: weekOffset > 0 ? 'Следующая неделя' : 'Предыдущая неделя',
+              exact: true,
+            })
+            .click();
+          expect((await nextWeek).status()).toBe(200);
+          await expect(management).toHaveAttribute('aria-busy', 'false');
+        }
+        const tomorrowLabel = new Date(`${dataset.tomorrow}T00:00:00Z`).toLocaleDateString(
+          'ru-RU',
+          {
+            timeZone: 'UTC',
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          },
+        );
+        await management
+          .locator('.lesson-management__weekdays')
+          .getByRole('button', { name: tomorrowLabel, exact: true })
+          .click();
+        await expect(management).toHaveAttribute('aria-busy', 'false');
+        await management.getByRole('switch', { name: 'Добавление пары', exact: true }).click();
+        await management.locator('.lesson-management__free[data-slot="2"]').click();
+        await expect(management).toHaveAttribute('data-management-view', 'oneoff');
+        await management
+          .locator('label.lesson-management__field')
+          .filter({ hasText: /^Дата пары/ })
+          .getByRole('button')
+          .click();
+        await management
+          .locator('.lesson-management__calendar-grid button[data-outside="false"]')
+          .filter({ hasText: new RegExp(`^${Number(dataset.tomorrow.slice(8))}$`) })
+          .click();
+        await management
+          .locator('label.lesson-management__field')
+          .filter({ hasText: /^Предмет/ })
+          .locator('select')
+          .selectOption(String(savedSubjectId));
+        await management
+          .locator('label.lesson-management__field')
+          .filter({ hasText: /^Тип занятия/ })
+          .locator('select')
+          .selectOption(String(assignment.id));
+        await management
+          .locator('label.lesson-management__field')
+          .filter({ hasText: /^Номер пары/ })
+          .locator('select')
+          .selectOption('2');
+        await management.getByLabel('Аудитория', { exact: true }).fill('Синтетическая статистика');
+        const oneOffCreated = http(page, '/api/schedule/one-off-lessons', 'POST');
+        await management.getByRole('button', { name: 'Создать разовую пару', exact: true }).click();
+        const oneOffResponse = await oneOffCreated;
+        expect([200, 201].includes(oneOffResponse.status())).toBe(true);
+        created = await oneOffResponse.json();
+        expect(Number.isSafeInteger(created.physicalLessonId) && created.physicalLessonId > 0).toBe(
+          true,
+        );
+        // Track the real identity immediately, including failures after a successful create.
+        statisticsLessonIds.push(created.physicalLessonId);
+        const sourceId = created.physicalLessonId;
+        const oneOffInput = oneOffResponse.request().postDataJSON();
+        expect(
+          oneOffInput.groupId === dataset.group.id &&
+            oneOffInput.subjectId === savedSubjectId &&
+            oneOffInput.assignmentId === assignment.id &&
+            oneOffInput.date === dataset.tomorrow &&
+            oneOffInput.lessonNumber === 2 &&
+            oneOffInput.classroom === 'Синтетическая статистика',
+          'Genuine free-cell form submits the existing complementary lecture',
+        ).toBe(true);
+        const sourceCard = management.locator(
+          `.lesson-management__card[data-lesson-id="${sourceId}"]`,
+        );
+        await expect(
+          management.getByRole('status').filter({ hasText: 'Разовая пара создана.' }),
+        ).toBeVisible();
+        await expect(sourceCard).toContainText(subjectName);
+        await expect(sourceCard).toContainText('Лекция');
+        await expect(sourceCard).toContainText('Синтетическая статистика');
+        type FutureLesson = PhysicalLesson & {
+          groupId: number;
+          subjectId: number;
+          lessonNumber: number;
+          lessonType: string;
+        };
+        const futurePath = `/api/schedule/groups/${dataset.group.id}/lessons?${new URLSearchParams({
+          dateFrom: dataset.tomorrow,
+          dateTo: dataset.tomorrow,
+          size: '100',
+        })}&status=PLANNED&status=TRANSFERRED`;
+        const futureRows = async (): Promise<FutureLesson[]> =>
+          (await dataset.headmanActor.call('GET', futurePath))._embedded?.lessonResponseList ?? [];
+        const beforeRoom = (await futureRows()).find((row) => row.id === sourceId);
+        expect(
+          beforeRoom?.current &&
+            beforeRoom.status === 'PLANNED' &&
+            beforeRoom.groupId === dataset.group.id &&
+            beforeRoom.subjectId === savedSubjectId &&
+            beforeRoom.date === dataset.tomorrow &&
+            beforeRoom.lessonNumber === 2 &&
+            beforeRoom.lessonType === 'LECTURE' &&
+            beforeRoom.room === 'Синтетическая статистика',
+          'Visible created lecture is the authoritative current free-slot lesson',
+        ).toBe(true);
+        await sourceCard.click();
+        await management.getByRole('button', { name: 'Изменить аудиторию', exact: true }).click();
+        await expect(management).toHaveAttribute('data-management-view', 'room');
+        const changedRoom = 'Синтетическая новая аудитория статистики';
+        await management.getByLabel('Аудитория', { exact: true }).fill(changedRoom);
+        const roomChanged = http(page, `/api/schedule/lessons/${sourceId}/room`, 'PATCH');
+        await management.getByRole('button', { name: 'Сохранить аудиторию', exact: true }).click();
+        const roomResponse = await roomChanged;
+        expect(roomResponse.status()).toBe(200);
+        const roomReceipt = await roomResponse.json();
+        const afterRoom = (await futureRows()).find((row) => row.id === sourceId);
+        expect(
+          roomResponse.request().postDataJSON().expectedRevision ===
+            String(beforeRoom!.occurrenceRevision) &&
+            roomReceipt.lessonId === String(sourceId) &&
+            roomReceipt.occurrenceId === String(beforeRoom!.occurrenceId) &&
+            afterRoom?.current &&
+            afterRoom.status === 'PLANNED' &&
+            afterRoom.id === beforeRoom!.id &&
+            afterRoom.occurrenceId === beforeRoom!.occurrenceId &&
+            afterRoom.generation === beforeRoom!.generation &&
+            afterRoom.date === beforeRoom!.date &&
+            afterRoom.lessonNumber === beforeRoom!.lessonNumber &&
+            afterRoom.room === changedRoom &&
+            afterRoom.occurrenceRevision > beforeRoom!.occurrenceRevision,
+          'Room form updates the same physical generation without cancellation or recreation',
+        ).toBe(true);
+        await expect(
+          management.getByRole('status').filter({ hasText: 'Аудитория пары изменена.' }),
+        ).toBeVisible();
+        await expect(sourceCard).toContainText(changedRoom);
+        await sourceCard.click();
+        await management.getByRole('button', { name: 'Перенести пару', exact: true }).click();
+        await expect(management).toHaveAttribute('data-management-view', 'transfer');
+        await management
+          .locator('label.lesson-management__field')
+          .filter({ hasText: /^Номер пары/ })
+          .locator('select')
+          .selectOption('4');
+        await expect(management.getByLabel('Новая аудитория', { exact: true })).toHaveValue(
+          changedRoom,
+        );
+        await expect(management.locator('.lesson-management__preview')).toContainText(
+          `${tomorrowLabel} · 4 пара`,
+        );
+        type TransferReceipt = Awaited<ReturnType<Actor['call']>>;
+        const observedTransfer: {
+          active: boolean;
+          operationId: string | null;
+          terminal: TransferReceipt | null;
+        } = { active: true, operationId: null, terminal: null };
+        let completeTransfer!: (receipt: TransferReceipt) => void;
+        let failTransfer!: (error: Error) => void;
+        let observationTimer: ReturnType<typeof setTimeout> | undefined;
+        const terminalObserved = new Promise<TransferReceipt>((resolve, reject) => {
+          completeTransfer = resolve;
+          failTransfer = reject;
+        });
+        const observeTransfer = (response: Response) => {
+          const path = new URL(response.url()).pathname;
+          if (
+            response.request().method() !== 'GET' ||
+            response.status() !== 200 ||
+            !/^\/api\/schedule\/lesson-transfers\/[0-9a-f-]{36}$/.test(path)
+          )
+            return;
+          void response
+            .json()
+            .then((receipt: TransferReceipt) => {
+              if (
+                !observedTransfer.active ||
+                receipt.state !== 'COMPLETED' ||
+                receipt.sourceLessonId !== String(sourceId) ||
+                receipt.occurrenceId !== String(afterRoom!.occurrenceId) ||
+                path !== `/api/schedule/lesson-transfers/${receipt.operationId}`
+              )
+                return;
+              // Retain at most one own-source completion if Node has not read POST yet.
+              observedTransfer.terminal = receipt;
+              if (receipt.operationId === observedTransfer.operationId) completeTransfer(receipt);
+            })
+            .catch(() => undefined);
+        };
+        page.on('response', observeTransfer);
+        let transferResponse: Response;
+        let transferReceipt: TransferReceipt;
+        let terminalTransfer: TransferReceipt;
+        try {
+          const transferred = http(page, `/api/schedule/lessons/${sourceId}/transfer`, 'POST');
+          await management.getByRole('button', { name: 'Перенести пару', exact: true }).click();
+          transferResponse = await transferred;
+          expect([200, 202].includes(transferResponse.status())).toBe(true);
+          transferReceipt = await transferResponse.json();
+          created = { physicalLessonId: Number(transferReceipt.targetLessonId) };
+          expect(
+            Number.isSafeInteger(created.physicalLessonId) &&
+              created.physicalLessonId > 0 &&
+              created.physicalLessonId !== sourceId,
+          ).toBe(true);
+          // Both accepted states already identify the target; never clean up immutable source.
+          statisticsLessonIds[statisticsLessonIds.indexOf(sourceId)] = created.physicalLessonId;
+          observedTransfer.operationId = transferReceipt.operationId;
+          if (observedTransfer.terminal?.operationId === observedTransfer.operationId)
+            completeTransfer(observedTransfer.terminal);
+          terminalTransfer = transferReceipt;
+          if (transferReceipt.state === 'PENDING') {
+            // Preserve the existing response-wait bound after POST is known.
+            observationTimer = setTimeout(
+              () => failTransfer(new Error('Own transfer completion was not observed.')),
+              info.project.use.actionTimeout ?? 30000,
+            );
+            terminalTransfer = await terminalObserved;
+          }
+        } finally {
+          clearTimeout(observationTimer);
+          observedTransfer.active = false;
+          page.off('response', observeTransfer);
+        }
+        expect(
+          terminalTransfer.state === 'COMPLETED' &&
+            terminalTransfer.operationId === transferReceipt.operationId &&
+            terminalTransfer.sourceLessonId === String(sourceId) &&
+            terminalTransfer.targetLessonId === String(created.physicalLessonId) &&
+            terminalTransfer.occurrenceId === String(afterRoom!.occurrenceId) &&
+            terminalTransfer.targetDate === dataset.tomorrow,
+          'The same real form operation completes for its original source and target',
+        ).toBe(true);
+        const transferInput = transferResponse.request().postDataJSON();
+        const transferredRows = await futureRows();
+        const sourceAfter = transferredRows.find((row) => row.id === sourceId);
+        const targetAfter = transferredRows.find((row) => row.id === created.physicalLessonId);
+        expect(
+          transferInput.targetDate === dataset.tomorrow &&
+            transferInput.targetLessonNumber === 4 &&
+            transferInput.targetRoom === changedRoom &&
+            transferInput.expectedRevision === String(afterRoom!.occurrenceRevision) &&
+            transferReceipt.sourceLessonId === String(sourceId) &&
+            transferReceipt.occurrenceId === String(afterRoom!.occurrenceId) &&
+            sourceAfter?.status === 'TRANSFERRED' &&
+            sourceAfter.current === false &&
+            targetAfter?.current &&
+            targetAfter.status === 'PLANNED' &&
+            targetAfter.id !== sourceId &&
+            targetAfter.occurrenceId === afterRoom!.occurrenceId &&
+            targetAfter.generation > afterRoom!.generation &&
+            targetAfter.occurrenceRevision > afterRoom!.occurrenceRevision &&
+            targetAfter.date === dataset.tomorrow &&
+            targetAfter.lessonNumber === 4 &&
+            targetAfter.room === changedRoom,
+          'One transfer command moves the same occurrence to a new current physical position',
+        ).toBe(true);
+        await expect(
+          management.getByRole('status').filter({ hasText: 'Пара перенесена. История сохранена.' }),
+        ).toBeVisible();
+        await expect(sourceCard).toHaveCount(0);
+        const targetCard = management
+          .locator('.lesson-management__row')
+          .nth(3)
+          .locator(`.lesson-management__card[data-lesson-id="${created.physicalLessonId}"]`);
+        await expect(targetCard).toContainText(subjectName);
+        await expect(targetCard).toContainText(changedRoom);
+        await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+        await page.getByRole('button', { name: 'Конструктор расписания', exact: true }).click();
+        await page.getByRole('tab', { name: dayLabel, exact: true }).click();
+        await page
+          .locator('.headman-schedule__weeks')
+          .getByRole('button', { name: weeks[0]!.label, exact: true })
+          .click();
+      }
       expect(
         Number.isSafeInteger(created.physicalLessonId) && created.physicalLessonId > 0,
         'Complementary lesson has an owned physical identity',
       ).toBe(true);
-      statisticsLessonIds.push(created.physicalLessonId);
+      if (type === 'LAB') statisticsLessonIds.push(created.physicalLessonId);
     }
     const studentPage = await studentContext.newPage();
     if (

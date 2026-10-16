@@ -575,3 +575,7 @@ Revision f148b9f2a9f1d70368715e9c3882188c9d85cec6 / actual checkout13afce8fd3668
 ## GAP-LATE-INITIAL-MEMBERSHIP-BACKFILL
 
 2026-10-16T11:57:32.419988+00:00 — S2 accepted missing function, supported Source counterexample; native NOT_RUN. After first historical close commits, initial enrollment writes semester-start membership but triggers no Attendance backfill; replay correctly stops at existing receipt. A late member lacks stored AUTO_ABSENT, while old explicit marks remain. Source/decision/pins and sole-author plan: central `current7d4df8bcPublication.lateInitialMembershipBackfillGap`. B13 and late-member clauses JS-HEADMAN03/SYSTEM07 reopened GAP; ordinary close evidence retained. Do not remove the dedup fence or invent unknown membership history.
+
+## DEF-ADMIN-SEMESTER-HIDDEN-CALENDAR-BACK
+
+2026-10-16T12:16:26.127250+00:00 — S2 Source counterexample in AdminSemesterScreen successful-save path: form hides while calendarField remains; next Back consumes invisible calendar state. Published7d genuineAdminUI2351 failed waitingMore852, exactinternalfield notcaptured/uniquecauseUNKNOWN. Test-only manualpickerclose was rejected/undone; originalUIflow retained. c86 sole minimalproductfix afterdesignskill; nativeafter NOT_RUN. Exactscope/pin/review in central `current7d4df8bcPublication.adminSemesterHiddenCalendarProductFixGO`.

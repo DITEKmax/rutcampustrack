@@ -3352,8 +3352,13 @@ jobs:
               'java.lang.NullPointerException': 'NULL_POINTER',
               'org.springframework.dao.DataIntegrityViolationException': 'DATA_INTEGRITY',
               'org.springframework.http.converter.HttpMessageNotWritableException': 'HTTP_SERIALIZATION',
+              'org.springframework.web.server.ResponseStatusException': 'HTTP_STATUS',
+              'reactor.netty.http.client.PrematureCloseException': 'UPSTREAM_CLOSED',
           }
           HTTP500_STAGES = {'ATTENDANCE_LESSON_REPORT', 'SCHEDULE_ONEOFF_LESSON_CREATE'}
+          ORIGINS = {'attendance-service': 'ATTENDANCE_MVC', 'schedule-service': 'SCHEDULE_MVC',
+                     'api-gateway': 'GATEWAY_WEBFLUX'}
+          GATEWAY_LOGGER = 'org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler'
           OWN_FRAME_SOURCES = {
               'ATTENDANCE_REPORT_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportService',
                   'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java',
@@ -3382,6 +3387,12 @@ jobs:
               'SCHEDULE_ONEOFF_CONTROLLER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonController',
                   'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java',
                   '31dbb34318391172689f937046e4aed7e63b239e45be371fa9b04271d6b53417', 59),
+              'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
+                  '695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c', 608),
+              'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
+                  '1e7a444198c7c585bb835fde12d79c59ef4ff8ac9bc73d115ec67083f5dfc42f', 474),
           }
           PROJECTION_KINDS = {
               'INVALID_OCCURRENCE', 'DUPLICATE_OCCURRENCE', 'UNSUPPORTED_ATTENDANCE_STATUS',
@@ -3412,16 +3423,18 @@ jobs:
               return json.loads(raw, object_pairs_hook=pairs,
                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
 
-          def output(state, stage, category='UNKNOWN', chain=None, own_frame=None):
+          def output(state, stage, category='UNKNOWN', chain=None, own_frame=None,
+                     origin='UNKNOWN', class_chain=None):
               value = {'state': state, 'exceptionCategory': category, 'sourceStage': stage}
               if stage in HTTP500_STAGES:
                   value.update(reportedExceptionChain=[] if chain is None else chain,
-                               reportedOwnFrame=own_frame)
+                               reportedOwnFrame=own_frame, reportedOrigin=origin,
+                               reportedExceptionClassChain=[] if class_chain is None else class_chain)
               return value
 
           def verify_http_sources(config):
               for service, _, source, digest, lines in OWN_FRAME_SOURCES.values():
-                  if service != config[5]:
+                  if service not in {config[5], 'api-gateway'}:
                       continue
                   path = Path(source)
                   info = path.lstat()
@@ -3431,10 +3444,10 @@ jobs:
                   if hashlib.sha256(raw).hexdigest() != digest or len(raw.splitlines()) != lines:
                       raise ValueError('Reported frame source changed')
 
-          def reported_own_frame(stack, config):
+          def reported_own_frame(stack, config, captured_service=None):
               matches = []
               for symbol, (service, clazz, source, _, line_bound) in OWN_FRAME_SOURCES.items():
-                  if service != config[5]:
+                  if service != (config[5] if captured_service is None else captured_service):
                       continue
                   pattern = (r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
                              + re.escape(clazz) + r'\.[A-Za-z_$<>][A-Za-z0-9_$<>]*\('
@@ -3539,8 +3552,13 @@ jobs:
               return (output('UNIQUE', stage + '_' + distinct[0][1], 'REPORTED_' + distinct[0][0])
                       if distinct else output('ABSENT', stage))
 
-          def classify(payload, config):
+          def classify(payload, config, captured_service=None):
               stage = config[6]
+              captured_service = config[5] if captured_service is None else captured_service
+              if captured_service not in {config[5], 'api-gateway'}:
+                  return output('UNAVAILABLE_SERVICE_OWNERSHIP', stage)
+              gateway = captured_service == 'api-gateway'
+              origin = ORIGINS[captured_service]
               if len(payload) > LIMIT or len(payload.splitlines()) > 200:
                   return output('UNAVAILABLE_LOG_FORMAT' if config[4] == 'STUDENT_STATS_HTTP503'
                                 else 'UNAVAILABLE_LOG_LIMIT', stage)
@@ -3572,8 +3590,9 @@ jobs:
                   if type(record) is not dict:
                       unusable = True
                       continue
-                  if (record.get('logger') != 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
-                          or record.get('level') != 'ERROR'):
+                  expected_logger = GATEWAY_LOGGER if gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
+                  if (record.get('logger') != expected_logger or record.get('level') != 'ERROR'
+                          or (gateway and record.get('service') != 'api-gateway')):
                       continue
                   stack = record.get('stack')
                   try:
@@ -3585,9 +3604,17 @@ jobs:
                       continue
                   frames = frame.findall(stack)
                   suppressed = bool(re.search(r'(?m)^[ \t]*Suppressed:', stack))
+                  # Reactor assembly checkpoints are metadata, not an additional causal exception.
+                  # This allowance is only for reported Gateway hints, never exact-controller UNIQUE.
+                  if gateway and suppressed:
+                      suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
+                      suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
+                      suppressed = (len(suppressed_types) != suppressed_count
+                                    or any(kind != 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
+                                           for kind in suppressed_types))
                   kinds = throwable.findall(stack)
                   chain_kinds = reported_header.findall(stack)
-                  if frames:
+                  if frames and not gateway:
                       controller_seen = True
                       if len(frames) != 1 or suppressed:
                           return output('AMBIGUOUS', stage)
@@ -3597,7 +3624,8 @@ jobs:
                       chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
                       # Retain the pre-existing exact-controller leaf-category meaning.
                       category = CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN'
-                      matches.append((category, chain, reported_own_frame(stack, config)))
+                      class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
+                      matches.append((category, chain, reported_own_frame(stack, config), class_chain))
                       continue
                   if suppressed:
                       fallback_ambiguous = True
@@ -3607,24 +3635,53 @@ jobs:
                       unusable = invalid_stack = True
                       continue
                   chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
-                  fallback.append((chain[-1], chain, reported_own_frame(stack, config)))
+                  class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
+                  fallback.append((chain[-1], chain, reported_own_frame(stack, config, captured_service), class_chain))
               if matches:
                   if len(matches) != 1:
                       return output('AMBIGUOUS', stage)
-                  category, chain, own_frame = matches[0]
+                  category, chain, own_frame, class_chain = matches[0]
                   return output('REPORTED_PARTIAL_LOG_FORMAT' if unusable else 'UNIQUE',
-                                stage, category, chain, own_frame)
+                                stage, category, chain, own_frame, origin, class_chain)
               if controller_seen:
                   return output('UNAVAILABLE_EXCEPTION_STACK', stage)
               # No request correlation is inferred from a Global-handler ERROR alone.
               if fallback_ambiguous or len(fallback) > 1:
                   return output('AMBIGUOUS', stage)
               if fallback:
-                  category, chain, own_frame = fallback[0]
+                  category, chain, own_frame, class_chain = fallback[0]
+                  if gateway:
+                      return output('REPORTED_GATEWAY_PARTIAL_LOG_FORMAT' if unusable else 'REPORTED_GATEWAY',
+                                    stage, category, chain, own_frame, origin, class_chain)
                   return output('REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER' if unusable
-                                else 'REPORTED_NO_CONTROLLER', stage, category, chain, own_frame)
+                                else 'REPORTED_NO_CONTROLLER', stage, category, chain, own_frame, origin, class_chain)
+              if gateway and unusable and not invalid_stack and not line_limit:
+                  return output('UNAVAILABLE_LOG_FORMAT', stage)
               return output('UNAVAILABLE_EXCEPTION_STACK' if invalid_stack else
                             'UNAVAILABLE_LOG_LIMIT' if line_limit else 'UNAVAILABLE_NO_ERROR_RECORD', stage)
+
+
+          def combine(domain, gateway, config):
+              # No correlation key is collected: a second eligible origin defeats any unique hint.
+              def candidate(value):
+                  return (value['reportedOrigin'] != 'UNKNOWN'
+                          or value['state'] in {'AMBIGUOUS', 'UNAVAILABLE_EXCEPTION_STACK'})
+              selected = [value for value in (domain, gateway) if candidate(value)]
+              if len(selected) > 1:
+                  return output('AMBIGUOUS', config[6])
+              if selected:
+                  value = selected[0]
+                  other = gateway if value is domain else domain
+                  if other['state'] != 'UNAVAILABLE_NO_ERROR_RECORD':
+                      partial = {'UNIQUE': 'REPORTED_PARTIAL_LOG_FORMAT',
+                                 'REPORTED_NO_CONTROLLER': 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER',
+                                 'REPORTED_GATEWAY': 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT'}
+                      value = dict(value, state=partial.get(value['state'], value['state']))
+                  return value
+              for state in ('UNAVAILABLE_LOG_LIMIT', 'UNAVAILABLE_LOG_FORMAT'):
+                  if any(value['state'] == state for value in (domain, gateway)):
+                      return output(state, config[6])
+              return domain
 
           def load_failure(config):
               if (os.environ.get('GITHUB_ACTIONS') != 'true'
@@ -3699,19 +3756,23 @@ jobs:
                   return bytes(payload)
               compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
                          '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
-              cid = call([*compose, 'ps', '-q', config[5]]).decode().strip()
-              if not re.fullmatch('[0-9a-f]{64}', cid):
-                  raise ValueError('Owned service unavailable')
-              template = '[{{json .Id}},{{json (index .Config.Labels "com.docker.compose.project")}},{{json (index .Config.Labels "com.docker.compose.service")}},{{json .State.Running}}]'
-              def verify():
-                  if decode(call(['docker', 'inspect', '--format', template, cid])) != [cid, 'rct-e2e', config[5], True]:
-                      raise ValueError('Owned service changed')
-              verify()
-              result = output('UNAVAILABLE_LOG_CAPTURE', config[6])
-              payload = call(['docker', 'logs', '--since', '180s', '--tail', '200', cid], True)
-              result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
-              verify()
-              return payload
+              services = (config[5],) if config[4] == 'STUDENT_STATS_HTTP503' else (config[5], 'api-gateway')
+              payloads = {}
+              for service in services:
+                  cid = call([*compose, 'ps', '-q', service]).decode().strip()
+                  if not re.fullmatch('[0-9a-f]{64}', cid):
+                      raise ValueError('Owned service unavailable')
+                  template = '[{{json .Id}},{{json (index .Config.Labels "com.docker.compose.project")}},{{json (index .Config.Labels "com.docker.compose.service")}},{{json .State.Running}}]'
+                  def verify():
+                      if decode(call(['docker', 'inspect', '--format', template, cid])) != [cid, 'rct-e2e', service, True]:
+                          raise ValueError('Owned service changed')
+                  verify()
+                  result = output('UNAVAILABLE_LOG_CAPTURE', config[6])
+                  payload = call(['docker', 'logs', '--since', '180s', '--tail', '200', cid], True)
+                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
+                  verify()
+                  payloads[service] = payload
+              return payloads
 
           result = output('UNAVAILABLE_PRIVATE_INPUT', 'UNKNOWN')
           try:
@@ -3721,9 +3782,13 @@ jobs:
               result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
               if is_target_failure(failure, config):
                   result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
-                  payload = collect(config)
+                  payloads = collect(config)
                   result = output('UNAVAILABLE_LOG_FORMAT', config[6])
-                  result = classify(payload, config)
+                  if config[4] == 'STUDENT_STATS_HTTP503':
+                      result = classify(payloads[config[5]], config)
+                  else:
+                      result = combine(classify(payloads[config[5]], config),
+                                       classify(payloads['api-gateway'], config, 'api-gateway'), config)
           except Exception:
               pass
           print(json.dumps(result, sort_keys=True))

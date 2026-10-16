@@ -76074,7 +76074,7 @@
       "currentPins": [
         {
           "sourceRef": ".github/workflows/ci.yml",
-          "sha256": "28971283f8f3304d5518ff05a869a6681a9a40377ba53e9694784cecfdbab3c8"
+          "sha256": "d99ce29d20bde6347359af72a7e460ab932ed3c1ec5d19107743f930bb51e2d2"
         },
         {
           "sourceRef": "docker-compose.e2e.yml",
@@ -77307,6 +77307,10 @@
         {
           "sourceRef": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
           "sha256": "9b86eb52b1b5111ba7f4243289a70c61bd92d1e64a87c1599ea366cdb4615123"
+        },
+        {
+          "sourceRef": "frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue",
+          "sha256": "649f39063a9bea2a53241a0122ef3a2bca3e71603b77e2c42dbdcc6d67cc1d03"
         }
       ],
       "pendingIntegration": "Mechanical7only01b28421localunpublished; exactweek14+prior4+Academic3+unit2+Admin1=24semanticWIP. Recon31linereview/HeadmanStatsClock2authorpending; official261terminalCI/CovFAIL/cleanupSUCCESS. Rootintegratedchecks/normalhooks/coherentcommit/pushnext, thennewordinarygates/BFFofficialstock.",
@@ -151007,58 +151011,338 @@
                   "status": "CLOSED"
                 }
               }
-            },
-            "diagnosticSchema": {
-              "artifacts/safe-results.json": [
-                {
-                  "caseCode": "FULL admin reconciles one exact stranded close before archive completion",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                }
-              ],
-              "reconciliation.safe.json": "EXACT_PUBLISHED_CLOSED_V3_NO_PRIVATE_FIELDS"
-            },
-            "sourcePins": [
-              {
-                "path": ".github/workflows/ci.yml",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d105fbf83d7cf67d516800521ff5a90eea92626e4732fdae85e50e190336057f"
+            }
+          },
+          "currentAssignment": {
+            "state": "EXACT_STRICT_PRIMARY_READ",
+            "producer": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "run": 38892148135,
+            "artifact": 12044490649,
+            "digest": "sha256:6aa1964ba03aff7a38ceeb3a496483b5c666aafd00e2e13df0964fddd3b325f7",
+            "bytes": 1108,
+            "members": {
+              "pending/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 1014,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 398,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
               },
-              {
-                "path": "tests/e2e/fixtures/artifact-privacy.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+              "prepare/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 1014,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 20369,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
               },
-              {
-                "path": "tests/e2e/fixtures/safe-reporter.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
-              },
-              {
-                "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce"
-              },
-              {
-                "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d4415c84ffc439989ede663a679e8cc550b71322cf2552622bc3f20e5c5e0930"
+              "resume/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 1014,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 13955,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
               }
-            ],
-            "exactDeclarations": [
-              {
-                "sourcePath": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
-                "file": "semester-lifecycle.spec.ts",
-                "title": "FULL admin reconciles one exact stranded close before archive completion",
-                "project": "chromium",
-                "line": 2627,
-                "call": "test"
+            }
+          },
+          "currentLesson": {
+            "state": "EXACT_STRICT_PRIMARY_READ",
+            "producer": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "run": 38892148135,
+            "artifact": 12043714529,
+            "digest": "sha256:983136b93e36dd8867dfe53e5f6de8449f70a61643b0c1373f6c49139b7f3611",
+            "bytes": 435,
+            "members": {
+              "safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "mobile-attendance-requests.spec.ts",
+                    "line": 9,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 56725,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  },
+                  {
+                    "file": "mobile-lesson-lifecycle.spec.ts",
+                    "line": 20,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 43548,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  },
+                  {
+                    "file": "mobile-schedule-lifecycle.spec.ts",
+                    "line": 390,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 69801,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  },
+                  {
+                    "file": "mobile-schedule-lifecycle.spec.ts",
+                    "line": 1833,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 40761,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
               }
-            ],
-            "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/semester-three-member/strict-browser-schema.py",
-            "schemaOriginalSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
-            "schemaSpecializedSha256": "931ca2ce0281f449cde311923deaeac251f02afd3990b5136a31764da71ea025",
-            "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
-            "cause": "UNKNOWN"
+            }
+          },
+          "currentRecovery": {
+            "state": "EXACT_STRICT_PRIMARY_READ",
+            "producer": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "run": 38892148135,
+            "artifact": 12044970567,
+            "digest": "sha256:ecf409efb1f99629ca5d3070ec342735348e89fe20015df9ef7a6e5b05966775",
+            "bytes": 1456,
+            "members": {
+              "admit/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "application-recovery.spec.ts",
+                    "line": 527,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 1980,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              },
+              "pending/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "application-recovery.spec.ts",
+                    "line": 527,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 289,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              },
+              "attachment/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "application-recovery.spec.ts",
+                    "line": 527,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 119,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              },
+              "seed/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "application-recovery.spec.ts",
+                    "line": 527,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 51972,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              }
+            }
+          },
+          "currentSemester": {
+            "state": "EXACT_STRICT_PRIMARY_READ",
+            "producer": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "run": 38892148135,
+            "artifact": 12044761250,
+            "digest": "sha256:30eef4998c4fc2336e6061a072130a36d1b9084d7448e8f48d48b28643243bd1",
+            "bytes": 758,
+            "members": {
+              "artifacts/safe-results.json": {
+                "status": "passed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "semester-lifecycle.spec.ts",
+                    "line": 1578,
+                    "project": "chromium",
+                    "status": "passed",
+                    "expectedStatus": "passed",
+                    "durationMs": 61627,
+                    "errorCount": 0,
+                    "diagnostics": [],
+                    "errorLocations": []
+                  }
+                ]
+              },
+              "lifecycle.safe.json": {
+                "schema": "semester-lifecycle.v1",
+                "primary": {
+                  "stage": "COMPLETED",
+                  "action": "RESTORE",
+                  "operationState": "COMPLETED",
+                  "academic": "RELEASED",
+                  "schedule": "RELEASED",
+                  "attendance": "RELEASED",
+                  "retryable": false,
+                  "transition": "NONE",
+                  "active": false,
+                  "archived": false,
+                  "releasePending": false,
+                  "writeBlocked": false,
+                  "reasonCode": "NONE"
+                },
+                "cleanup": {
+                  "stage": "COMPLETED",
+                  "action": "NONE",
+                  "operationState": "COMPLETED",
+                  "academic": "RELEASED",
+                  "schedule": "RELEASED",
+                  "attendance": "RELEASED",
+                  "retryable": false,
+                  "transition": "NONE",
+                  "active": true,
+                  "archived": false,
+                  "releasePending": false,
+                  "writeBlocked": false,
+                  "reasonCode": "NONE"
+                },
+                "primaryFailure": false,
+                "cleanupOutcome": "COMPLETED",
+                "clockOutcome": "PASSED",
+                "disposeOutcome": "PASSED"
+              }
+            }
+          },
+          "currentAdminSemesterUI": {
+            "state": "EXACT_STRICT_PRIMARY_READ",
+            "producer": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "run": 38892148135,
+            "artifact": 12044104891,
+            "digest": "sha256:3436a64ee0733f5264c1a794a22a81cbae60e71c23b825001685e468a39588a8",
+            "bytes": 419,
+            "members": {
+              "safe-results.json": {
+                "status": "failed",
+                "runnerErrors": 0,
+                "unsafeArtifact": false,
+                "suppressedStdoutBytes": 0,
+                "suppressedStderrBytes": 0,
+                "results": [
+                  {
+                    "file": "semester-lifecycle.spec.ts",
+                    "line": 2351,
+                    "project": "chromium",
+                    "status": "failed",
+                    "expectedStatus": "passed",
+                    "durationMs": 24798,
+                    "errorCount": 1,
+                    "diagnostics": [
+                      {
+                        "stage": "UNKNOWN",
+                        "cause": "UNKNOWN",
+                        "httpStatus": 0
+                      }
+                    ],
+                    "errorLocations": [
+                      {
+                        "file": "semester-lifecycle.spec.ts",
+                        "line": 852
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
           }
         },
         "readerGuardRuns": {
@@ -151189,8 +151473,8 @@
             "SDKAllocationUnmeasured": true
           }
         },
-        "publicationSafePoint": false,
-        "updatedAt": "2026-10-16T11:50:27.352110+00:00",
+        "publicationSafePoint": true,
+        "updatedAt": "2026-10-16T12:04:05.196738+00:00",
         "browserExactSourcePlans": [
           {
             "artifactName": "first3-safe-1",
@@ -153278,6 +153562,58 @@
           "state": "FIRST_PR_PAYLOAD_PENDING_UNCHANGED_ALL_PREFLIGHT_PREDICATES",
           "pushAttempt": "current7d4df8bcPushPrimary.reports.attendanceTeacherTicketCurrentNamed REJECTED_UNKNOWN",
           "utc": "2026-10-16T11:36:40.594203+00:00"
+        },
+        "finalGatesAndCleanup": {
+          "utc": "2026-10-16 12:05:02 UTC",
+          "head": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+          "event": "pull_request",
+          "run": 38892148135,
+          "allFiveRunsTerminal": true,
+          "CI": "FAILURE",
+          "Coverage": "SUCCESS",
+          "Security": "SUCCESS",
+          "OpenAPI": "SUCCESS",
+          "completedJobs": 21,
+          "totalJobs": 21,
+          "browserFailures": [
+            23,
+            27,
+            35,
+            55
+          ],
+          "skippedDependentGroups": [
+            57,
+            59
+          ],
+          "ownedRecoveryCleanup": "SUCCESS",
+          "chromiumTrustCleanup": "SUCCESS",
+          "webkitTrustCleanup": "SUCCESS",
+          "stopOwnedContainers": "SUCCESS",
+          "allOwnedReadersReaped": true,
+          "eventPublicationSafePoint": true,
+          "globalPublicationSafePoint": true,
+          "qualification": "Safe publication checkpoint only; currentbothCIremainFAIL, globalacceptanceNOTPASS."
+        },
+        "finalCurrentSemanticMilestone": {
+          "currentStrictPASSED": [
+            "attendanceTeacherTicketCurrentNamed",
+            "Reconciliation2627 v3 fullreplay+duplicate",
+            "Assignment1014 prepare/pending/resume",
+            "Lesson Request9+Lesson20+recurring390+warm1833",
+            "Recovery527 seed/admit/attachment/pending",
+            "originalSemester1578 archive/restore/cleanup"
+          ],
+          "currentStrictFAILED": [
+            "PRWorker2842 update",
+            "PRSUSPENDED4676 structuralandJSONretaineddata",
+            "PRRegistry1009 reserve1069",
+            "PRAdminSemesterUI2351 visibility852"
+          ],
+          "currentSKIPPED": [
+            "Subject4571",
+            "TodayQuickRequest168"
+          ],
+          "pushFailures": "Reconreport500/AssignmentCreate500/LessonsetupCreate500/RecoveryseedCreate500 retained eventseparately; bothapprovedhintsNO_ERROR_RECORD, causeUNKNOWN."
         }
       },
       "currentPushPrimary": {
@@ -154019,58 +154355,7 @@
                   "status": "CLOSED"
                 }
               }
-            },
-            "diagnosticSchema": {
-              "artifacts/safe-results.json": [
-                {
-                  "caseCode": "FULL admin reconciles one exact stranded close before archive completion",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                }
-              ],
-              "reconciliation.safe.json": "EXACT_PUBLISHED_CLOSED_V3_NO_PRIVATE_FIELDS"
-            },
-            "sourcePins": [
-              {
-                "path": ".github/workflows/ci.yml",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d105fbf83d7cf67d516800521ff5a90eea92626e4732fdae85e50e190336057f"
-              },
-              {
-                "path": "tests/e2e/fixtures/artifact-privacy.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
-              },
-              {
-                "path": "tests/e2e/fixtures/safe-reporter.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
-              },
-              {
-                "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce"
-              },
-              {
-                "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d4415c84ffc439989ede663a679e8cc550b71322cf2552622bc3f20e5c5e0930"
-              }
-            ],
-            "exactDeclarations": [
-              {
-                "sourcePath": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
-                "file": "semester-lifecycle.spec.ts",
-                "title": "FULL admin reconciles one exact stranded close before archive completion",
-                "project": "chromium",
-                "line": 2627,
-                "call": "test"
-              }
-            ],
-            "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/semester-three-member/strict-browser-schema.py",
-            "schemaOriginalSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
-            "schemaSpecializedSha256": "931ca2ce0281f449cde311923deaeac251f02afd3990b5136a31764da71ea025",
-            "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
-            "cause": "UNKNOWN"
+            }
           },
           "currentAssignment": {
             "state": "EXACT_STRICT_PRIMARY_READ",
@@ -154121,57 +154406,7 @@
                   }
                 ]
               }
-            },
-            "diagnosticSchema": {
-              "prepare/safe-results.json": [
-                {
-                  "caseCode": "assignment lifecycle API phase",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                }
-              ]
-            },
-            "sourcePins": [
-              {
-                "path": ".github/workflows/ci.yml",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d105fbf83d7cf67d516800521ff5a90eea92626e4732fdae85e50e190336057f"
-              },
-              {
-                "path": "tests/e2e/fixtures/artifact-privacy.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
-              },
-              {
-                "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "a265cc995c5f90301c07c9e4e1ccd645d9cc67ed51e1c33db0d62579245b0937"
-              },
-              {
-                "path": "tests/e2e/fixtures/safe-reporter.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
-              },
-              {
-                "path": "tests/e2e/playwright.assignment-lifecycle.config.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "cfa219188cde95192b0208aa68094f38f1f2ca537a44f9533803d7c94c941f25"
-              }
-            ],
-            "exactDeclarations": [
-              {
-                "file": "assignment-lifecycle.spec.ts",
-                "line": 1014,
-                "title": "assignment lifecycle API phase",
-                "project": "chromium",
-                "call": "test",
-                "sourcePath": "tests/e2e/fixtures/assignment-lifecycle.spec.ts"
-              }
-            ],
-            "schemaSource": "/workspace/scratch/rct-validation/ci_c3ff_closed_read/assignment/strict-browser-schema.py",
-            "schemaOriginalSha256": "fe4176c0d223777bfdddd76421f5ddd0e9908d4f2db9785c58c863743e9bfd31",
-            "schemaSpecializedSha256": "f54e69c168da75fc2632e6084122c2f5afd2619eb466f2e071bfe1ef81ac9ac2",
-            "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
-            "cause": "UNKNOWN"
+            }
           },
           "currentLesson": {
             "state": "EXACT_STRICT_PRIMARY_READ",
@@ -154318,108 +154553,7 @@
                   }
                 ]
               }
-            },
-            "diagnosticSchema": {
-              "safe-results.json": [
-                {
-                  "caseCode": "exhausted manual budget still permits a failed-geo AUTO request that the headman approves",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                },
-                {
-                  "caseCode": "HEADMAN cancels a marked lesson and restores its journal without reviving homework @real-mobile",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                },
-                {
-                  "caseCode": "HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                },
-                {
-                  "caseCode": "STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                }
-              ]
-            },
-            "sourcePins": [
-              {
-                "path": ".github/workflows/ci.yml",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d105fbf83d7cf67d516800521ff5a90eea92626e4732fdae85e50e190336057f"
-              },
-              {
-                "path": "tests/e2e/playwright.lesson-lifecycle.config.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "902b728094d881a9940ce7dae13b2986adf77b2c9e8839c4a2daa946f018899c"
-              },
-              {
-                "path": "tests/e2e/fixtures/safe-reporter.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
-              },
-              {
-                "path": "tests/e2e/fixtures/artifact-privacy.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
-              },
-              {
-                "path": "tests/e2e/fixtures/pwa-auth.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "befccc5d5075ec6845bc1db98f9e4fddc114fce363a43049aa58403fde7e23d6"
-              },
-              {
-                "path": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "398474d7054fa48066476bb28d51fdcf5a758ba2d6c41db5293118788050094e"
-              },
-              {
-                "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "bbc225fdcd6bc8f1288a1c08a186fef2cd54b1785500330fb79038b066e2cb49"
-              },
-              {
-                "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "c712de4566077ea8136f0f3e256076036fe3e9d3e237ac61a1435bbfaa92f917"
-              }
-            ],
-            "exactDeclarations": [
-              {
-                "file": "mobile-lesson-lifecycle.spec.ts",
-                "sourcePath": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
-                "line": 20,
-                "title": "HEADMAN cancels a marked lesson and restores its journal without reviving homework @real-mobile",
-                "call": "test",
-                "project": "chromium"
-              },
-              {
-                "file": "mobile-schedule-lifecycle.spec.ts",
-                "sourcePath": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
-                "line": 390,
-                "title": "HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile",
-                "call": "test",
-                "project": "chromium"
-              },
-              {
-                "file": "mobile-schedule-lifecycle.spec.ts",
-                "sourcePath": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
-                "line": 1833,
-                "title": "STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile",
-                "call": "test",
-                "project": "chromium"
-              },
-              {
-                "file": "mobile-attendance-requests.spec.ts",
-                "sourcePath": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
-                "line": 9,
-                "title": "exhausted manual budget still permits a failed-geo AUTO request that the headman approves",
-                "call": "test",
-                "project": "chromium"
-              }
-            ],
-            "schemaSource": "/workspace/scratch/rct-validation/ci_edb_closed_read/lesson/strict-browser-schema.py",
-            "schemaOriginalSha256": "f58f9968e09af8968d9f09429cee3a1f816e74ff99742c41b4c2d0dddcde9565",
-            "schemaSpecializedSha256": "5c6a5f8dbfe488f15db07caa232e583751f36f3421d87fbd001ab67f27f4ca05",
-            "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
-            "cause": "UNKNOWN"
+            }
           },
           "currentClosed500Hints": {
             "jobId": 116943932525,
@@ -154515,57 +154649,7 @@
                   }
                 ]
               }
-            },
-            "diagnosticSchema": {
-              "seed/safe-results.json": [
-                {
-                  "caseCode": "application recovery API phase",
-                  "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
-                }
-              ]
-            },
-            "sourcePins": [
-              {
-                "path": ".github/workflows/ci.yml",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "d105fbf83d7cf67d516800521ff5a90eea92626e4732fdae85e50e190336057f"
-              },
-              {
-                "path": "tests/e2e/fixtures/artifact-privacy.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
-              },
-              {
-                "path": "tests/e2e/fixtures/safe-reporter.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
-              },
-              {
-                "path": "tests/e2e/fixtures/application-recovery.spec.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "cd19fb174b422b4ced91f64fbce6a8a538803192f684bee1d9b5d3ba57268389"
-              },
-              {
-                "path": "tests/e2e/playwright.application-recovery.config.ts",
-                "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
-                "sha256": "5b910f7f71fafdb9f04cfcdba5899217e6e1e1d0ec8f8aa2ddaad33384d6ab9c"
-              }
-            ],
-            "exactDeclarations": [
-              {
-                "sourcePath": "tests/e2e/fixtures/application-recovery.spec.ts",
-                "file": "application-recovery.spec.ts",
-                "line": 527,
-                "title": "application recovery API phase",
-                "call": "test",
-                "project": "chromium"
-              }
-            ],
-            "schemaSource": "/workspace/scratch/rct-validation/ci_edb_closed_read/recovery/strict-browser-schema.py",
-            "schemaOriginalSha256": "bfc324d3531199a09006a5f7a6ec9ec93f3e0452de859ce633b412d70dccd797",
-            "schemaSpecializedSha256": "d0d436115ac01311da4c1bcba496e35707aa603da89bab7d40e52428fdcc0a80",
-            "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
-            "cause": "UNKNOWN"
+            }
           }
         },
         "readerGuardRuns": {
@@ -154717,7 +154801,7 @@
             "SDKAllocationUnmeasured": true
           }
         },
-        "publicationSafePoint": false,
+        "publicationSafePoint": true,
         "updatedAt": "2026-10-16T11:47:29.998684+00:00",
         "browserExactSourcePlans": [
           {
@@ -156915,8 +156999,15 @@
           }
         },
         "finalGatesAndCleanup": {
-          "utc": "2026-10-16 11:48:18 UTC",
-          "pushCI": "FAILURE",
+          "utc": "2026-10-16 12:05:02 UTC",
+          "head": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+          "event": "push",
+          "run": 38892139634,
+          "allFiveRunsTerminal": true,
+          "CI": "FAILURE",
+          "Coverage": "SUCCESS",
+          "Security": "SUCCESS",
+          "OpenAPI": "SUCCESS",
           "completedJobs": 21,
           "totalJobs": 21,
           "browserFailures": [
@@ -156937,12 +157028,12 @@
           "stopOwnedContainers": "SUCCESS",
           "allOwnedReadersReaped": true,
           "eventPublicationSafePoint": true,
-          "globalPublicationSafePoint": false,
-          "globalReason": "PR38892148135 browser stilluseful39active"
+          "globalPublicationSafePoint": true,
+          "qualification": "Safe publication checkpoint only; currentbothCIremainFAIL, globalacceptanceNOTPASS."
         }
       },
       "currentObserverCheckpoint": {
-        "utc": "2026-10-16T11:51:12.601035+00:00",
+        "utc": "2026-10-16T12:11:05.291679+00:00",
         "PRCI": 38892148135,
         "pushCI": 38892139634,
         "Coverage": {
@@ -156957,12 +157048,15 @@
           "run": 38892148293,
           "conclusion": "success"
         },
-        "publicationSafePoint": false,
+        "publicationSafePoint": true,
         "browser": "Useful ongoing; push HW sensitivity39; PR registry35 at last metadata. No rerun/cancel. c80 sole Actions reader; immutableGit7d.",
         "latestBrowser": "Push Recon/Assignment/Lesson/Recovery FAIL; OriginalSemester/AdminUI/Subject/Today skipped; cleanup61–63success/64active. PRHelper37active. Primaries notyetclassified; c80 reading newRecon first.",
         "pushConclusion": "failure",
         "pushCleanup": "all61–64success/allreaderreaped",
-        "PRBrowser": "ReconwholePASS101.636s allDUPLICATE businessguards+restore/clock/cleanup; Assignment44 active"
+        "PRBrowser": "ReconwholePASS101.636s allDUPLICATE businessguards+restore/clock/cleanup; Assignment44 active",
+        "all5officialRuns": "terminal; bothCI21/21FAILbrowseronly; Coverage/Sec/OpenAPISUCCESS",
+        "cleanupBoth": "61–64SUCCESS/readersallreaped",
+        "PRSemantics": "ReconPASS101.636/Assignment3PASS/Lesson4PASS/Recovery4PASS/originalSemesterPASS61.627. AdminUIFAIL24.798 frame852 main.admin-more afterBack; Subject/TodaySKIPPED. Push500notresolvedcause."
       },
       "fourAcceptedServerBoundaryChecksGO": {
         "utc": "2026-10-16T11:26:59.184810+00:00",
@@ -158099,7 +158193,195 @@
           "base": "7d4df8bc currentproduction9pins; Rootfourtests integrated only, no conflictingproductionedits",
           "goal": "After committed initial supported enrollment, authoritative durable trigger reaches existing dated missingmark core; originalclose receipt remains, explicit/cancelled/deleted/foreign history preserved, retry/concurrency no duplicateeffects. Implement missingaccepted operation without newproductrules.",
           "scope": "Academic initial enrollment producer/domain event + Attendance consumer/backfill core + minimum meaningful existing-domain tests. Soleowner of needed common privateevent contract/brokerbindings; no otherAPI/proto/schema/CIwriters. Before dependentSourceedit return minimalconcrete plan/pathlist withcanonicaleventidentity/routing/datedauthority/transaction/retry/deleted-semester guards; existingpatterns first. NewpublicAPI/proto/migration requires concreteRootscope review, no destructive/production operations.",
-          "verification": "ExactSourcecounterexamplebefore, genuineordinaryCI realAcademic→Attendance late-after-first-close witness with explicitmark/replay/cancellation/foreignstate guards; meaningful selectivefault sensitivity +independentreview by risk. Localcachedformat/parser only; no localnative/Gradle/DB/Docker. c89soleCI, c86soleclient spec, Rootsoleintegration/docs/pins."
+          "verification": "ExactSourcecounterexamplebefore, genuineordinaryCI realAcademic→Attendance late-after-first-close witness with explicitmark/replay/cancellation/foreignstate guards; meaningful selectivefault sensitivity +independentreview by risk. Localcachedformat/parser only; no localnative/Gradle/DB/Docker. c89soleCI, c86soleclient spec, Rootsoleintegration/docs/pins.",
+          "utc": "2026-10-16T12:26:19.859844+00:00",
+          "state": "GO_IMPLEMENT_EXACT_SCOPED_PLAN",
+          "plan": {
+            "utc": "2026-10-16T12:12:26.874504+00:00",
+            "state": "BOUNDED_CONCRETE_PLAN_READY_BEFORE_DEPENDENT_SOURCE_EDITS",
+            "gap": "GAP-LATE-INITIAL-MEMBERSHIP-BACKFILL",
+            "publishedBase": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "selectedModel": "gpt-6.1-sol/high",
+            "actualModel": "UNKNOWN",
+            "choice": "One new minimal private initial-membership event +durable Academic pending-work record +Attendance atomic effect/receipt/ACK. Existing group.updated is not reused for identity-bearing work. Reuse current outbox/fanout/admission/dated roster/closed lesson/setOnInsert code and ordinary CI; no public endpoint/proto/job framework.",
+            "whyExistingEventInsufficient": "GroupUpdatedEvent carries only group_id and also means rename/archive/transfer. It cannot bind one supported initial-history row/student/canonical semester and would retrigger arbitrary legacy groups. No credential-bearing creation/bot event is read/reused.",
+            "privateContract": {
+              "requestType": "student.initial-membership.recorded v1, sourceacademic-service; existing standard envelope with fixed event_id assigned before publication",
+              "requestPayload": [
+                "history_id",
+                "student_id",
+                "group_id",
+                "semester_id",
+                "joined_on (exact canonical saved DATE)"
+              ],
+              "excluded": "No login/password/hash/initial password/TG/OTP/token/name/roster/credential DTO; no private credential access expansion.",
+              "ackType": "student.initial-membership.attendance-backfilled v1, sourceattendance-service",
+              "ackPayload": [
+                "source_event_id",
+                "history_id",
+                "semester_id",
+                "payload_hash (canonical request payload)",
+                "result=APPLIED"
+              ],
+              "identity": "history_id unique logical initial-work key and event_id immutable transport/effect identity. Producer verifies saved history tuple; consumer treats history_id as producer identity/replay binding, not a newly inferred RPC field. Fresh dated GetGroupMembers confirms target membership for each eligible lesson. No new RPC field/method. Changed same-event payload is rejected before any dedup skip."
+            },
+            "producer": {
+              "writePoints": [
+                "createUser: after actual student history save and existing grant synchronization",
+                "updateRoleGrant: only newly created initial-enrollment history (not role-reassignment/reactivation/transfer); publish after corresponding STUDENT grant succeeds, preserve current dates"
+              ],
+              "transaction": "Use existing ApplicationEventPublisher, preserving all UserService constructors. New narrow synchronous @EventListener for typed event requires active PG transaction, verifies persisted history/semester tuple, acquires existing AcademicSemesterArchiveBarrierTransaction.lockOrdinaryWrite, inserts PENDING work identity/hash. Existing DomainEventListener BEFORE_COMMIT then inserts same typed envelope into academic_outbox. All user/grants/history/work/outbox rollback together; no AFTER_COMMIT direct broker call. Event_id assigned in typed constructor is preserved by fillDefaults.",
+              "fenceRace": "Admission and archive install serialize on existing canonical semester advisory lock. If archive already won, registration rejects and entire new enrollment rolls back. If registration won, committed PENDING record is visible before archive readiness can pass. No new actor/group lock scheme, no bypass of archive/reassign history guard."
+            },
+            "transport": {
+              "request": "Existing RabbitOutboxEventSender confirms immutable envelope to persistent rut-uit.events fanout, empty routing key; existing attendance-service.events queue/EventConsumer consumes new type. Generic sender/publisher semantics unchanged.",
+              "ack": "Attendance existing transactional Mongo OutboxStorage emits private ACK through same fanout. Add dedicated Academic ACK queue+DLQ (cannot share a queue with a different competing consumer). Existing listener retry/backoff, broker confirms/outbox pending behavior and private artifact policy unchanged.",
+              "durability": "A broker SENT row alone never marks work APPLIED. Academic exact ACK matches known event/history/semester/hash against locked PENDING work; same ACK is idempotent, altered tuple refused. Durable work remains pending across delivery/DLQ/outbox cleanup until acknowledged; no new retry daemon."
+            },
+            "consumer": {
+              "prepareOutsideMongoTransaction": "Validate exact source/type/version/UUID/positive IDs/date; check exact prior own receipt before RPC. Existing ScheduleGrpcClient.getLessonsByGroup(group,semester,semester-start,end) supplies complete finite semester lessons; fresh Academic getSemesterState and dated GetGroupMembers use existing APIs. Select actual closed physical lessons with correct group/semester/date and target student in authoritative historical roster; exclude planned/active/transferred/cancelled/deleted. Share dated roster per date within preparation, no persistent cache/unknown-history inference.",
+              "reuseCore": "Expose a narrow prepared snapshot/target-student application in LessonEventService so existing lesson scope/cancellation/deletion checks and setOnInsert ABSENT/AUTO_SCHEDULER/revision/audit are reused. Original ordinary close still uses full dated roster. Avoid calling compatibility processLessonClosed as the feature or inventing new close event IDs.",
+              "atomicApply": "New own Mongo receipt keyed source_event_id, exact canonical payload hash+history/semester/user/group. Existing semester fence→sorted lesson operation locks→target pair locks; reuse prepared-effect admission while PREPARING, reject SEALED/deleted scopes. Inside one Mongo transaction recheck preflight, target-only upserts, actions for actually inserted marks, global claim if used, durable own APPLIED receipt and ACK outbox. Explicit marks and other students/groups/semesters remain unchanged.",
+              "replayAndFailure": "Exact own receipt replays ACK before external calls, no extra mark/audit. Payload changed under same ID fails closed. RPC/transaction failure leaves no claim/receipt/partial effect and uses existing retry/DLQ. Pair/lesson/cancellation locks serialize concurrent ordinary close/cancel; one stored target record, no cancellation resurrection.",
+              "controlPlaneRetention": "New receipt follows existing semester control-plane receipts, outside business deletion counts/digest. Do not broaden AttendanceSemesterDeletionData or purge receipt fences; no changes to Q10 Schedule close receipt logic."
+            },
+            "archiveDrain": {
+              "required": "A pending Academic work identity must block both archive and final-delete readiness until exact Attendance APPLIED ACK. New event-only handler without this drain would deadlock/lose accepted work if delayed behind Mongo SEAL.",
+              "reuseVerifiedOrder": "Existing SemesterArchiveCoordinator.advanceArchive357–410 requires Academic READY before enqueueing Attendance SEAL; existing delete readiness similarly precedes seal progression. Add pending-backfill predicate to AcademicSemesterArchiveBarrierTransaction readiness checks, no Coordinator protocol rewrite. Attendance accepts only previously admitted private work while PREPARING under existing semester/lesson fences, never after SEALED.",
+              "existingTableNotRepurposed": "academic_semester_archive_effect_receipts is constrained event_type=homework.binding.archived and positive binding_id. Do NOT stuff history_id into binding_id, widen old Schedule receipt identity, or hijack homework publication admissions."
+            },
+            "rootOwnedMigrationProposal": {
+              "status": "ONE_ADDITIVE_SQL_SCOPE_REVIEW_REQUIRED_BEFORE_WRITES",
+              "proposedPath": "services/academic-service/academic-app/src/main/resources/db/migration/V61__initial_membership_attendance_backfill.sql (Root assigns final free version/path)",
+              "table": "academic_initial_membership_backfills",
+              "minimumColumns": [
+                "event_id UUID PRIMARY KEY",
+                "history_id BIGINT UNIQUE",
+                "student_id BIGINT",
+                "group_id BIGINT",
+                "semester_id BIGINT",
+                "joined_on DATE",
+                "payload_hash BYTEA length32",
+                "state PENDING|APPLIED",
+                "created_at",
+                "applied_at"
+              ],
+              "purpose": "Durable pending-work identity independent of transient broker outbox retention, exact ACK replay, archive/delete drain. Mirror existing control-plane receipt retention and typed positive-ID/hash/state constraints; no new domain scope/DB split. Root migration owner reviews relation/retention/deletion compatibility; no migration edit by c91 before assignment.",
+              "fixtureCompatibility": "AcademicFixtureResetListener has a closed application-table inventory: add exactly this table so ordinary native PG tests retain deterministic complete owned reset. No guessed empty fixture tables."
+            },
+            "pathInventory": {
+              "existingAssignedProposal": [
+                {
+                  "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+                  "preimageSha256": "1822f15ace09e70b46ae0008284710060b21266eb96e2615fd57de2a8079db39",
+                  "purpose": "publish private event at two existing initial-history write paths"
+                },
+                {
+                  "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitConfig.java",
+                  "preimageSha256": "64ab51187feb13d63dfa7a332c59ed5e8959c8b1a423195605affcb8081f5eee",
+                  "purpose": "one private ACK queue/DLQ/fanout binding, existing retry factory"
+                },
+                {
+                  "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/AcademicSemesterArchiveBarrierTransaction.java",
+                  "preimageSha256": "c77a5ed3d8705670f766db5044183e46714c40bd21ce37ac3f4f3487ab18d1e1",
+                  "purpose": "pending-work drain check in existing archive/delete readiness, reuse lockOrdinaryWrite"
+                },
+                {
+                  "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java",
+                  "preimageSha256": "5501458801fab5f710a9ddfba59bd78f8eba3b1387d6cb7f60f22a627ed9582e",
+                  "purpose": "route new trusted event into external-preparation/transactional-backfill handler"
+                },
+                {
+                  "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java",
+                  "preimageSha256": "af0132e2702f0dae54ece7c1c096341f25419f821cb50f1681b8de750bffeee0",
+                  "purpose": "narrow reuse of dated closure snapshot validation and target-only setOnInsert application"
+                },
+                {
+                  "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+                  "preimageSha256": "8b977d0b457cc475beb44c50ecae67fd2c4861f1bf2d7f3ab8dd428e597d2530",
+                  "purpose": "add exactly new ledger to closed existing application-table inventory/reset"
+                },
+                {
+                  "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+                  "preimageSha256": "1baa8128bb266d629de3c3c79207e48af56a6f3c553fbdca0522bbd7853adf96",
+                  "purpose": "existing realPG producer transaction/event/ledger/admission rollback controls"
+                },
+                {
+                  "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+                  "preimageSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8",
+                  "purpose": "existing realMongo after-close receipt, new separate request, replay/cancel/foreign/rollback controls"
+                }
+              ],
+              "newPrivateProposal": [
+                "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/StudentInitialMembershipRecordedEvent.java",
+                "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/InitialMembershipAttendanceBackfillWorkService.java",
+                "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/InitialMembershipAttendanceBackfillAcknowledgementConsumer.java",
+                "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java",
+                "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillReceiptDocument.java",
+                "event-schemas/student.initial-membership.recorded.json",
+                "event-schemas/student.initial-membership.attendance-backfilled.json"
+              ],
+              "commonRootReview": [
+                "new additive SQL migration above"
+              ],
+              "readOnlyReused": [
+                "academic/event/DomainEventListener.java",
+                "academic/event/RabbitOutboxEventSender.java",
+                "attendance/grpc/ScheduleGrpcClient.java",
+                "attendance/grpc/AcademicGrpcClient.java",
+                "attendance/student/PairWriteCoordinator.java",
+                "attendance/event/SemesterArchiveFence.java",
+                "academic/semester/SemesterArchiveCoordinator.java"
+              ],
+              "nativeCarrierSeparateOwner": "tests/e2e/fixtures/semester-lifecycle.spec.ts existing owned API/RPC/Mongo/Rabbit carrier, c86 sole owner; no c91 edit. Root chooses exact bounded insertion/selection with c86/c89; existing caps/helpers/cleanup unchanged."
+            },
+            "verification": {
+              "local": "Only cached actual configured formatter/parser and source/inverse/static contract validation; no Gradle/native/PG/Mongo/Docker/browser/network/install. No local product mutation.",
+              "ordinaryServer": "Extend existing HistoricalMembershipIT for real PG initial create+equivalent role-add work/outbox atomicity and admission rollback; extend existing EventConsumerIT real Mongo after-old-close receipt for separate backfill/target write/explicit mark preservation/exact replay/changed tuple/cancel/foreign/rollback. These retain their mocked remote-boundary qualification.",
+              "requiredGenuineBridge": "Within existing c86-owned private semester lifecycle carrier: actually close owned oldL and commit original receipt with oldA explicit mark; create eligible initialB through real Academic user API AFTER that receipt; await actual stored B AUTO_SCHEDULER ABSENT/revision/record-present on oldL (not stats default). Assert A identity/revision unchanged, original close receipt unchanged, one own work→Mongo receipt→ACK association; replay exact owned private envelope using existing Rabbit helper, one record/audit; cancelled ownL remains cancelled and foreign control unchanged. Existing exact cleanup/privacy/clock caps retained. No manually invoking processLessonClosed or mocked Academic bridge as full acceptance.",
+              "riskSensitivityProposal": "After coherent S3 review selects narrow actual new handler write-site, existing c89 selective server RED→canonical restore→ordinary same-method GREEN may omit only target missing-mark application; must fail stored target ABSENT assertion after already-closed receipt, not setup/compile/infra. One genuine ordinary Academic→Attendance bridge GREEN remains independently mandatory. No B013/T008/B014/B015 guard mutation, no new runner/campaign.",
+              "nativeState": "NOT_RUN; no acceptance promotion from plan/Source/unit-only proof"
+            },
+            "frozenSourcesPreserved": {
+              "SubjectDeletionProofHttpIT": "bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42",
+              "AdminAccessAuthorityIT": "317409764e7692bfd7148e0b57c02157ac3f9727aab05b45aa6737e88e7169d8"
+            },
+            "effects": "Only this compact plan in existing own receipt; no Source edits, new tests, migration, public API/proto/config/CI/Git/sharedDocs/runtime/Actions/network. Root scope review of private contract/path list +single additive migration needed before dependent implementation."
+          },
+          "independentPlanReview": {
+            "reviewer": "c92 independent read-only",
+            "verdict": "APPROVE_SCOPED_PLAN",
+            "source8Pins": "allpersonallyverified",
+            "criticalConditions": "SamePGtx admission+work+outbox; dedicated minimalprivateevent/ACK (no credentialevent reuse); exactsource/version/tuple/hash before replay; originalclose receipt unchanged; targetonlydatedsetOnInsert+ownreceipt+ACKoutbox sameMongoTx, PGAPPLIED only exactmatchedACK. Alreadyadmitted work drainsPREPARING beforeAcademicREADY/AttendanceSEAL; no newadmissionafterfence. ReplayfreshACKwithoutRPC/marksevenafterseal. Preserveexplicit/cancel/subject+semester tombstones/unknownsnapshotfailclosed/sortedfences. Technicalreceiptretention no domaincascade/TTL/FKpurge thatdestroysreplay/blockslegaldeletion.",
+            "migrationRestore": "AddexactoneFixtureReset table; recovery.py dynamicPGtables/Mongocollections alreadyincludesnewrecords. ActualFlywayadditivebeforeafter/restore andgenuinecrossservicewitness stillrequired, no runtimeapproval."
+          },
+          "reservedMigration": {
+            "path": "services/academic-service/academic-app/src/main/resources/db/migration/V61__initial_membership_attendance_backfill.sql",
+            "soleWriter": "c91 assigned isolatedWT",
+            "status": "RESERVED_NO_CURRENTFILE",
+            "scope": "Addonly private academic_initial_membership_backfills workledger stablepositiveIDs/hash/date/PENDING/APPLIEDcodes/retention; no historicalmigrationrewrite/production/deletion. Rootsoleintegrator, no othermigrationwriter."
+          },
+          "sourceScope": "Exact8existing+7newprivatepaths+V61 inplan; no publicAPI/proto/CI/sharedDocs changes. Returnscopevariationbeforedependentedit; sameauthorimplementation/corrections, independentactualdelta review mandatory.",
+          "privateBoundTechnicalAddendum": {
+            "utc": "2026-10-16T12:37:46.409108+00:00",
+            "decision": "Private unreleasedv1 request/ledger/schema/hash/ACK includescanonicalsemester_ends_on fromstored date_to under SAMEPGadmissionlock, joined_on semesterstart. End>=joinedOn, uncachedsemesterstate/tombstones, no9999bounds/studentprojection orpublic/proto change. c91solewriter; actualdeltareviewpending."
+          },
+          "genuineWitnessDecomposition": {
+            "writer": "c86 sameoriginalfixture",
+            "decision": "API-only after actualclosed persistedAUTO mark (status/source/revision), AexplicitPRESENT, realAcademicinitialB→BpersistedABSENT/AUTO+history/Aunchanged beforeoriginalsnapshots. Existingrealarchivecompletion witnessesACKdrain. Technicalreceipt/hash/replay/cancel/atomicity asserted separately inactualPG/Mongocoretests; noE2Edirectreceiptquery/brokerreplayclaim. ReportService NULLmissing versusstoredauto_scheduler confirmedSource. No150linebridge/newresource/framework/caps."
+          }
+        },
+        "apiOnlyWitnessFrozen": {
+          "utc": "2026-10-16T12:43:33.677645+00:00",
+          "writer": "c86",
+          "worktree": "/workspace/rct-worktrees/q09-client-remaining-20261014",
+          "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "preimageSha256": "d4415c84ffc439989ede663a679e8cc550b71322cf2552622bc3f20e5c5e0930",
+          "sha256": "8af954d635250bf7bb91a2835227e2f69bc9279a8808e1c383ded6cb7ad8f213",
+          "scope": "75 lines plus stored AUTO source assertion; real API late-create B after original closed lesson, own report and history, unchanged explicit PRESENT at A",
+          "checks": "cached formatter/parser/scoped TSC/15 extracted controls PASS",
+          "native": "NOT_RUN",
+          "state": "FROZEN_NOT_INTEGRATED_PENDING_BACKEND_AND_COHERENT_REVIEW"
         }
       },
       "current500ReadOnlySourceRCA": {
@@ -158292,7 +158574,7 @@
       "nextLocalCommitCheckpoint": {
         "utc": "2026-10-16T12:09:45.436893+00:00",
         "originalUnpublishedCommit": "44adec36126db6a81efe087ba4ffcbed770c451e",
-        "state": "OWN_UNPUBLISHED_COMMIT_AMEND_PENDING_METADATA_ONLY",
+        "state": "OWN_UNPUBLISHED_AMEND_COMPLETE_RANGE_PASS",
         "productSource": "Six reviewedSourcefiles exact acceptedpins; no productrules change",
         "rangeScan": {
           "state": "FAIL2_CONFIRMED_SOURCE_HASH_METADATA_FALSE_POSITIVES",
@@ -158308,7 +158590,732 @@
             "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java"
           ]
         },
-        "next": "Amend only ownunpublished44 commit metadata; rerun exact7d..amendedHEADrangeGitleaks. No forcepush/foreignhistory reset."
+        "next": "Amend only ownunpublished44 commit metadata; rerun exact7d..amendedHEADrangeGitleaks. No forcepush/foreignhistory reset.",
+        "localHead": "ad0b785a8ca1921795b8dfafb1deb1b60704e927",
+        "remoteAndPRHead": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+        "rangeCorrected": {
+          "session": 77150,
+          "start": "dfbe7b",
+          "completion": "b373ab",
+          "exit": 0,
+          "bytesScanned": 696193,
+          "commits": 1,
+          "result": "NO_LEAKS"
+        }
+      },
+      "groupPromotionOnceOnlyQualification": {
+        "reviewer": "c92 independent read-only",
+        "currentSource": {
+          "GroupPromotionCycleIT": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc",
+          "GroupPromotionService": "36fb5ffd1da101012ee658eae86b6a0e8bc589e2683fa73c37cc664be250da23",
+          "V36": "820122792ba33fdcbe5cc3fb57cc53e37f9ce79436eb8bbdfd7afb2711e3f987"
+        },
+        "acceptedProof": "Existing actualPG serial manual→mass/manual→automaticcatchup/replay plus immutable transactional SAME semester PESSIMISTIC_WRITE bothentries92/131 (101/140), grouplocks/ledger atomic save+flush443–496 and UNIQUE(cycle_semester_id,group_id). Sufficient qualifiedonce-only composition, no actual2threadrace claim/newrace test needed.",
+        "remaining": "GenuineVue row/mass/graduation case currentlystopsbeforeGroupnavigation; explicitmanual beforeSpringcompletion typed409/no group-ledger-outbox delta notyetactual. Codeguard176–200, existingAug18 unitpolicy isdifferentbranch."
+      },
+      "adminNavigationCheckingGO": {
+        "utc": "2026-10-16T12:11:05.291679+00:00",
+        "writer": "c86 sameq09WT",
+        "base": "localad0b785a/published7d; exactfixturepreimageunchanged",
+        "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+        "sha256": "d4415c84ffc439989ede663a679e8cc550b71322cf2552622bc3f20e5c5e0930",
+        "scope": "First diagnose actual native AdminUI852 afterlistBack expects main.admin-more; actualSource navigation entry/destination. Correct only confirmedcheckingoracle/preparation using realexistingUIclick, preservepromotions/helper330/270/210/150/120 and420/cleanupcaps. Add onlyminimalalreadyaccepted pre-end manual409/no group-ledger-outbox change and B35readygroupfilter/sort/reset→filteredHTMLexport witness using existing2ownedgroups/currentreadycontrols IFsmallinsideexistingcase/budget/no newsetup/framework. Otherwise freeze navigationfixfirst, reportprecisemissingcarrier; do notdelayfixforgenericexpansion. DesktopURL rule excludedTASK§3/D010, no PWAnewURLfeature.",
+        "ownership": "PriorOneOff9b86/mobile8d44 frozenintegratedad0, no overlap c89soleCI/c91solebackfillprod; RootsoleGit/docs/pins. c85 independent coherentSource review; cachedchecks/RootstockTSC then nativeordinaryCI. No budgetraise/forced route/directDBmutationforUI proof ornative local.",
+        "sourceDiagnosis": {
+          "utc": "2026-10-16T12:16:26.127250+00:00",
+          "verdict": "CONFIRMED_UI_SOURCE_COUNTEREXAMPLE_NOT_ORACLE_DESTINATION_BUG",
+          "finding": "Successfulsave539 hidesform withoutcalendarFieldclear; back221 firstclearsanycalendarFieldandreturns, includinginvisiblepicker. Otherclosepaths alreadyclear. Existingdatepick/saveuserflow+singleBackcanstallcorrectmain.admin-more expectation852. Actual7d internalfieldnotcaptured, so uniquehistoricalcause notasserted.",
+          "fixture": "Authorundidtest-onlyclosepicker6lineworkaround; exactd441preserved. OriginalUIflow/oracles remain regressionwitness."
+        }
+      },
+      "gateway500CollectorCorrectionGO": {
+        "utc": "2026-10-16T12:11:05.291679+00:00",
+        "writer": "c89 existingWT soleCI",
+        "plan": {
+          "status": "READ_ONLY_PROPOSAL_NO_IMPLEMENTATION",
+          "sourcePins": {
+            ".github/workflows/ci.yml": "28971283f8f3304d5518ff05a869a6681a9a40377ba53e9694784cecfdbab3c8",
+            "services/api-gateway/src/main/resources/logback-spring.xml": "b3838f2a1439bb197ca587c665357d14f4c841f88b0b33293c98ec33466457cb",
+            "services/shared/shared-logback/src/main/resources/shared/logback-base.xml": "a3d516e0cbd97ce2a12d238576c8fafde5b1b66c6f86195a96e242404134cc99",
+            "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/SharedWebAutoConfiguration.java": "5c419c399db0df5305b490acedc55a92a6c8a38b7c3f412115e61156eb3f17b8",
+            "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java": "d0f0b20c46abe615c6983faa678f772bc04dde344d4dd9c6f47e4c991e28fc6f",
+            "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java": "695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c",
+            "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java": "1e7a444198c7c585bb835fde12d79c59ef4ff8ac9bc73d115ec67083f5dfc42f",
+            "tests/e2e/fixtures/mobile-dataset.ts": "7d76b3f9a520136d94e60a305804c13d2a5bb279aee28ed78a58422474c9bf75"
+          },
+          "actual": "PR7d Recon+Assignment+Lesson4wholePASS separately; sameSourcepush reports actual500 and both existingdomain-onlyclosedhints NO_ERROR_RECORD; exactorigin/exceptioncause UNKNOWN. No rawlog reread/newrun here.",
+          "counterexample": "WebFluxGateway excludes SERVLET SharedWebAutoConfiguration/GlobalExceptionHandler. SameJSON GatewayBootERROR+stack would be discarded by currentGlobalExceptionHandler-only classifier; collect also neverreads ownedGatewaycontainer. InternalJwtIssuerFilter unwraps downstream failures into reactiveerrorchain outside servletMVC.",
+          "producerProof": {
+            "framework": "Actualcached org.springframework.boot:spring-boot-autoconfigure:3.5.16",
+            "jarSha256": "0198331231e9bf872a135741d59c6d1f9e9007ff207a1ca910179c550bb12bfc",
+            "class": "org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler",
+            "evidence": "Read-only javap -c -p exactcachedclass: staticlogger viaHttpLogging.forLogName(AbstractErrorWebExceptionHandler.class); logError calls Log.error(message,Throwable) onlyif responseHTTP500",
+            "json": "Gatewaylogback includes shared/logback-base.xml → fixed service api-gateway and fields logger/level/stack; msg/trace/user/URLs neverneeded/output"
+          },
+          "minimalProducerScope": ".github/workflows/ci.yml existing PY_HTTP500_DIAGNOSTIC ONLY initially; no ProductSource/loggingframework/SDK/newstep/artifact. c80 existing strictconsumer updated afteragreedproducerpin.",
+          "proposal": {
+            "capture": "Onlyafter samealreadyvalidated target500; exacttwo ownedcontainers (targetdomain + api-gateway), same existing ps/fullID/project/service/running inspection before+after; one sharedmonotonic15s and8MiB budget acrossALLcommands/captures, existing180s window/tail200 perfixedcontainer/128KiB record, no fanout/capraise. Reuse call/kill/reap.",
+            "eligibility": "KeepoldDOMAIN GlobalExceptionHandlerERROR rule; GATEWAY only exact owned api-gateway container + JSONservice api-gateway +ERROR +Boot AbstractErrorWebExceptionHandler logger. No generic arbitraryERROR admission.",
+            "origin": "Add fixed reportedOrigin enum UNKNOWN|ATTENDANCE_MVC|SCHEDULE_MVC|GATEWAY_WEBFLUX. sourceStage remainsrequestedoperationtarget; neverlabelGatewayrecord domain-owned.",
+            "classes": "Keepcurrentleaf exceptionCategory meaning and categorychain; add reportedExceptionClassChain max16 fromexactfiniteCLASSES FQNs orUNKNOWN, no arbitraryclass/header/message serialization. This retains knownouter+unknownleaf withoutguessingrootcause. Two source-justified optional finite mappings ResponseStatusException→HTTP_STATUS and reactor.netty.http.client.PrematureCloseException→UPSTREAM_CLOSED, no broad exceptiontaxonomy.",
+            "frames": "Reuse reportedOwnFrame shape {symbol,line}; allowonlytwo immediateGatewaySourcepins InternalJwtIssuerFilter/Client withstaticclass+file+hash/linebounds. NullifnoSourceownedframe; no dependency/runtimeclassbody reflection needed.",
+            "states": "Oldexactdomaincontroller UNIQUE remainsonlywhen oneeligibleDOMAINcandidate andnoeligibleGatewaycandidate. Gatewayalone always reported-only REPORTED_GATEWAY[_PARTIAL_LOG_FORMAT], neverUNIQUE oractualrequestcausality. Multipleeligibleorigins/records→AMBIGUOUS+originUNKNOWN/nochosenclass/frame; noarbitraryfirstcandidate. Missing/invalidrecords remain closedUNAVAILABLE.",
+            "privacy": "AllrawJSON/stacks RAMonly; discardmsg/trace/request/URL/IDs/credentials; no originalexception/rawheaders/body output. SameexistingCIclosedstdoutrecord only."
+          },
+          "consumerCompatibility": {
+            "owner": "c80 only reader",
+            "source": "c80-f6b2-primary.safe.json#currentF148b9f2Primary.two500ConsumerAlignmentSourcePlan.consumerSourceText",
+            "currentSourceSha256": "3d7e2d0ae3278e12a1d9fca2f5ce617067dd84c0d1a79e12c3dd2df48f8e370b",
+            "change": "Current exact5field contract→newproducer exact7fields (reportedOrigin+reportedExceptionClassChain), fixednewstate/origin/class/symbolenums; preserveimmutablehistorical5field andseparateStudent5033field purposes/sourcebindings/caps. No broadschemaunion or reportedhint→PASS."
+          },
+          "verificationPlan": [
+            "Actualexistingclassifier extractedRAM: oldrejects knownBootGatewayERROR/newadmitsreportedGateway withfiniteorigin/class/ownedframe, preservesexistingdomainexactcontrollercase.",
+            "Knownouter/unknownleaf andknownNettyupstreamclass/nullownframe controls; no arbitraryclass output.",
+            "Wrongownedservice/logger/level, private-marker message/stack, malformedJSON/stack, multipleorigins, oversize/sharedbyte/deadline andownership-recheck failures reject/closedUNKNOWN withoutmarker.",
+            "Exact allcaps/privateinput guards/original500assertion+stepgates inverse; PythonAST/YAMLformatter; c80 exactnewcloseddecoder valid/invalid controls andoneindependentreview coherentproducer+consumer. No localnative."
+          ],
+          "safeLimit": "Collector can expose commonGateway500 otherwisecurrentlydiscarded; cannot guarantee cause ifMVC ErrorResponseException/ResponseStatusException returns500withoutERROR or500producedoutsidecapturedwindow. Such result must remainUNKNOWN. Existing Actor.call onlyhasstatus andAPIResponse hasno boundedstream reader. Publicgenericproblemshape alone cannotproveexceptionorigin; do notintroduce raw/unboundedbodycapture. Iflaterneeded, finite same-response Content-Type/problem-kind fingerprint underexplicitsmallbyte/deadline guard couldhelpclassifyproducer butnotreplaceexceptionevidence, andwouldneedseparateActor/safeReporterclosedcontractscope.",
+          "promotionProofOptional": "No exactnamedPGmanual+automatic promotionconcurrency method/run retained in my existingfiniteledger; onlyexistingbackendcycle/replay/exclusion aggregate refs. No newaudit and no substitution of semesteractivation concurrency or Vuepreparedrow/massSource foractualPGpromotion proof.",
+          "effects": "Onlythisexistingreceiptkey changed; no Source/tests/CI/docs/Git/native/network/DB/Actionswrites orrawlogs read; priorfiveSourcesfrozen."
+        },
+        "decision": "GO_MINIMAL_EXISTING_PRODUCER_AND_C80_EXISTING_CONSUMER_CORRECTION",
+        "scope": "Only existing PY_HTTP500_DIAGNOSTIC ownedtargetdomain+ownedapi-gateway captures under SAMEglobal15s/8MiB/180s/tail200/identity+no-follow guards. Explicit reportedOrigin/finite allowlistedFQN classchain<=16+oldcategorychain/frame; Gatewayreportedonly/no domainmislabel; ambiguouscrossorigins staysambiguous. PreservepriorDomain exactcontroller claims onlysupported; all rawmessages/URLs/details/trace/IDs/unknownclassnames omitted. No Actorbodycapture/newframework/runner/wrapper/capraise. c80 sole existingreader strict7field/newenums admission +historical5/Student5033 preservedseparate, no oldpayloadreread.",
+        "verification": "BeforeSourcecounterexample existingcollector rejects actualcachedBoot500logger; actualAST controls positive+negative logger/service/level/multipleorigins/privacy/identity/byte/deadline/cleanup. Oneindependentreviewproducer+consumer; nativecurrent500causeUNKNOWN untilnewactualevidence. Preservecritical4testCI289semantics/RootacceptedSource, changeonlythisdiagnosticsection.",
+        "producerSourceOutcome": {
+          "utc": "2026-10-16T12:20:20.889438+00:00",
+          "sha256": "d99ce29d20bde6347359af72a7e460ab932ed3c1ec5d19107743f930bb51e2d2",
+          "preSha256": "28971283f8f3304d5518ff05a869a6681a9a40377ba53e9694784cecfdbab3c8",
+          "changes": "ONLYPY_HTTP500_DIAGNOSTIC; exactoneprograminverse→289 entireotherworkflow/fourcriticalRED-GREEN unchanged",
+          "checks": "ActualAST oldGatewayrecordrejected/newreportedpositive +wronglogger/service/level/privacy/unknownleaf/unknownsuppression/crossorigins/identity/caps/deadline/kill-reap controls +all21PythonAST/actualPrettiercanonical0 PASS",
+          "qualification": "Native/Actions/current500causeNOT_RUN/UNKNOWN; c80strict7consumerSourcependingfinal; RootnotintegratednewCIyet"
+        },
+        "reviewAssignment": {
+          "reviewer": "fresh c93 independent readonly planned",
+          "rationale": "Bounded producer+existingconsumer privacy/provenance review parallel to c92 separate S3 latebackfill plan; no authoroverlap/native/resources",
+          "state": "APPROVE_SOURCE_ONLY_COMPLETE",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "actual": "UNKNOWN"
+        },
+        "independentReview": {
+          "utc": "2026-10-16T12:24:15.616995+00:00",
+          "reviewer": "c93 independent read-only",
+          "requestedModel": "gpt-6.1-sol",
+          "requestedEffort": "high",
+          "actualMetadata": "UNKNOWN",
+          "outcome": "APPROVE_SOURCE_ONLY",
+          "importantFindings": [],
+          "pins": {
+            "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+            "publishedHead": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+            "rootPreIntegration": "ad0b785a8ca1921795b8dfafb1deb1b60704e927",
+            "rulesSha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+            "producerPath": "/tmp/rct-headman-hw-intent-6cdce-20261015/.github/workflows/ci.yml",
+            "producerSha256": "d99ce29d20bde6347359af72a7e460ab932ed3c1ec5d19107743f930bb51e2d2",
+            "producerPreSha256": "28971283f8f3304d5518ff05a869a6681a9a40377ba53e9694784cecfdbab3c8",
+            "producerScriptStrippedSha256": "420dbdc893c1967731e59f20fbe83d216a70298b629af652845b0d38b5913d4b",
+            "consumerReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current7d4df8bcPrimary.gateway500ConsumerAlignmentSourcePlan.consumerSourceText",
+            "consumerSha256": "b031b4154be40b79f04c4e8513e16c3fbd69220c3e3f0e85926f257455a6151e",
+            "historicalFiveFieldSha256": "3d7e2d0ae3278e12a1d9fca2f5ce617067dd84c0d1a79e12c3dd2df48f8e370b",
+            "bootJarSha256": "0198331231e9bf872a135741d59c6d1f9e9007ff207a1ca910179c550bb12bfc"
+          },
+          "independentReview": [
+            "Opened actual producer and consumer bytes; independently recomputed exact workflow/stripped-script/consumer/historical-five-field hashes.",
+            "Read actual Gateway/shared logback config, SERVLET-only shared advice and GlobalExceptionHandler catch-all; independently javap inspected exact cached Boot3.5.16 static logger and HTTP500 Log.error(Object,Throwable).",
+            "All11 source-owned frame hashes and line bounds independently match Root Source; Gateway filter downstream unwrap remains reactive and outside Servlet advice.",
+            "Producer3323-3795 and consumer lines1-95 agree on exact7fields, <=16 class/category chains, elementwise finite mapping, UNKNOWN redaction, origin+stage+frame relation and closed defaults.",
+            "Gateway hints always reported-only; multiple origins/records ambiguous; malformed/uncertain other origin prevents Domain UNIQUE; exact Domain controller leaf semantics retained.",
+            "Only exact FluxOnAssembly$OnAssemblyException suppression accepted on Gateway reported path; unknown/unparseable suppression ambiguous; raw messages/checkpoints not serialized.",
+            "Same fixed target-domain+Gateway containers; shared15s/8MiB across ps/inspect/logs calls;180s/tail200 per fixed container; no cap increase; before/after fullID/project/service/running checks; kill+reap retained.",
+            "Private input O_NOFOLLOW/inode/owner/mode/size/run-attempt binding and exact Source guards retained; no raw log persistence or output outside fixed fields.",
+            "Inspected producer actual-AST controls incl old-reject/new-admit counterexample, wrong logger/service/level, unknown leaf/suppression, cross origins, private markers, caps/deadline/identity and cleanup; inspected exact whole-workflow inverse assertion and critical RED/restore/GREEN guards.",
+            "Inspected consumer95-control source; embedded decoder exactly matches frozen source; tests cover class/origin/frame relations, malformed/duplicate/escaped-key/privacy vetoes, multi-record refusal, bounds and historical separation."
+          ],
+          "verificationQualification": "Source and existing author verification review. No unchanged author controls rerun merely for receipt count. New local operations only read/hash/AST extraction/static javap; no Git, native/build/browser/Gradle/Docker/DB/network/Actions/rawlogs/deps/source changes.",
+          "historicalConsumers": "Historical5field3d7 source independently hash-matched; separateStudent5033field behavior and single-container capture retained. No schema union or legacy rewrite.",
+          "residual": "Live purpose UNBOUND until coherent review + publication + exact actual checkout binding. New ordinary real CI/native evidence still required; actual existing product500 origin/cause UNKNOWN. No product fix, flaky claim, native PASS, matrix/family PASS or completion inferred.",
+          "writes": [
+            "This own compact safe review receipt only"
+          ]
+        },
+        "frozenExistingConsumer": {
+          "utc": "2026-10-16T12:12:31.873582+00:00",
+          "state": "SOURCE_READY",
+          "historicalFiveFieldSourceRef": "currentF148b9f2Primary.two500ConsumerAlignmentSourcePlan.consumerSourceText",
+          "historicalFiveFieldSha256": "3d7e2d0ae3278e12a1d9fca2f5ce617067dd84c0d1a79e12c3dd2df48f8e370b",
+          "changeScope": "Existing projectClosedHints function only; exactnew7field schema includesreportedOrigin+finiteFQNreportedExceptionClassChain. No broadschemaunion.",
+          "requiredValidation": [
+            "exact7keys/type/duplicateescapedkeyveto",
+            "fixedstates/origins/categories/FQNUNKNOWNallowlist",
+            "orderedcategory/classchains<=16/source-definedrelations",
+            "perstage/peroriginexactframeenum+Sourcebound",
+            "reportedGatewayneverUNIQUE/domainsnevermislabelled",
+            "noncandidate/ambiguousdefaults",
+            "wholeSDK32MiB/record128KiBunchanged",
+            "multiple/invalidstagecandidateveto/noarbitrarychoice",
+            "private/unknownclassnames/messages/extra-keyreject"
+          ],
+          "producerSourceHash": "d99ce29d20bde6347359af72a7e460ab932ed3c1ec5d19107743f930bb51e2d2",
+          "livePurpose": "UNBOUND_SOURCE_ONLY_BEFORE_COHERENT_REVIEW_PUBLICATION_AND_EXACT_ACTUALCHECKOUT",
+          "historicalFiveFieldUnchanged": true,
+          "Student503ThreeFieldUnchanged": true,
+          "noNewFileFrameworkTransportCaps": true,
+          "sourceOnly": true,
+          "draftConsumerSourceText": "function projectClosedHints(raw) {\n  'use strict';\n  const contract = __FROZEN_CONTRACT__;\n  const stages = contract.stages;\n  const states = new Set(contract.states);\n  const categories = new Set(contract.categories);\n  const origins = new Set(contract.origins);\n  const classNames = new Set([...Object.keys(contract.classes), 'UNKNOWN']);\n  if (typeof raw !== 'string') throw new Error('CLOSED_LOG_INPUT');\n  const receivedBytes = encodeURIComponent(raw).replace(/%[A-F\\d]{2}/gi, 'x').length;\n  if (receivedBytes > 33554432) throw new Error('POST_RESPONSE_LOG_CAP');\n  const by = Object.fromEntries(stages.map(stage => [stage, []]));\n  const rejected = Object.fromEntries(stages.map(stage => [stage, 0]));\n  let invalidClosedCandidateCount = 0;\n  let unknownStageCount = 0;\n  const exactKeys = (value, expected) => value !== null && typeof value === 'object'\n    && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify(expected);\n  const topKeys = ['exceptionCategory', 'reportedExceptionChain', 'reportedExceptionClassChain', 'reportedOrigin', 'reportedOwnFrame', 'sourceStage', 'state'];\n  for (const line of raw.split('\\n')) {\n    const textLine = line.replace(/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?Z\\s+/, '').trim();\n    if (!textLine.startsWith('{')) continue;\n    const potentialStages = stages.filter(stage => textLine.includes('\"' + stage + '\"'));\n    let value;\n    try { value = JSON.parse(textLine); } catch {\n      if (potentialStages.length) {\n        invalidClosedCandidateCount++;\n        for (const stage of potentialStages) rejected[stage]++;\n      }\n      continue;\n    }\n    if (value === null || typeof value !== 'object' || Array.isArray(value)) continue;\n    const target = stages.includes(value.sourceStage);\n    if (!target && !potentialStages.length && value.sourceStage !== 'UNKNOWN') continue;\n    // Every allowed string is a fixed ASCII enum: escapes cannot be needed by this contract.\n    const keys = [...textLine.matchAll(/\"([^\"\\\\]*)\"\\s*:/g)].map(match => match[1]);\n    let valid = textLine.length <= 131072 && !textLine.includes('\\\\')\n      && exactKeys(value, topKeys)\n      && states.has(value.state) && categories.has(value.exceptionCategory)\n      && Array.isArray(value.reportedExceptionChain) && value.reportedExceptionChain.length <= 16\n      && value.reportedExceptionChain.every(category => typeof category === 'string' && categories.has(category))\n      && origins.has(value.reportedOrigin)\n      && Array.isArray(value.reportedExceptionClassChain)\n      && value.reportedExceptionClassChain.length === value.reportedExceptionChain.length\n      && value.reportedExceptionClassChain.every((name, index) => typeof name === 'string'\n        && classNames.has(name)\n        && value.reportedExceptionChain[index] === (name === 'UNKNOWN' ? 'UNKNOWN' : contract.classes[name]));\n    const frame = value.reportedOwnFrame;\n    if (valid && frame !== null) {\n      const spec = frame !== null && typeof frame === 'object'\n        && Object.prototype.hasOwnProperty.call(contract.frames, frame.symbol)\n        ? contract.frames[frame.symbol] : null;\n      valid = exactKeys(frame, ['line', 'symbol']) && spec !== null\n        && spec.stages.includes(value.sourceStage) && spec.origin === value.reportedOrigin\n        && Number.isSafeInteger(frame.line) && frame.line >= 1 && frame.line <= spec.maxLine;\n    }\n    const controllerState = value.state === 'UNIQUE' || value.state === 'REPORTED_PARTIAL_LOG_FORMAT';\n    const fallbackState = value.state === 'REPORTED_NO_CONTROLLER'\n      || value.state === 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER';\n    const gatewayState = value.state === 'REPORTED_GATEWAY'\n      || value.state === 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT';\n    if (valid && controllerState) {\n      valid = value.reportedOrigin === contract.stageOrigins[value.sourceStage];\n    } else if (valid && (fallbackState || gatewayState)) {\n      valid = value.reportedOrigin === (gatewayState\n        ? 'GATEWAY_WEBFLUX' : contract.stageOrigins[value.sourceStage])\n        && value.reportedExceptionChain.length >= 1\n        && value.exceptionCategory === value.reportedExceptionChain[value.reportedExceptionChain.length - 1];\n    } else if (valid) {\n      valid = value.reportedOrigin === 'UNKNOWN'\n        && value.exceptionCategory === 'UNKNOWN' && value.reportedExceptionChain.length === 0\n        && value.reportedExceptionClassChain.length === 0 && frame === null;\n    }\n    const expectedKeys = frame === null ? topKeys : [...topKeys, 'line', 'symbol'];\n    valid = valid && keys.length === expectedKeys.length\n      && expectedKeys.every(key => keys.filter(observed => observed === key).length === 1);\n    if (!valid || (target && (potentialStages.length !== 1 || potentialStages[0] !== value.sourceStage))) {\n      if (target || potentialStages.length) {\n        invalidClosedCandidateCount++;\n        for (const stage of new Set([...potentialStages, ...(target ? [value.sourceStage] : [])])) rejected[stage]++;\n      }\n      continue;\n    }\n    if (value.sourceStage === 'UNKNOWN') { unknownStageCount++; continue; }\n    if (target) by[value.sourceStage].push(value);\n  }\n  return {\n    records: stages.map(sourceStage => ({\n      sourceStage,\n      count: by[sourceStage].length,\n      outcome: by[sourceStage].length === 1 && rejected[sourceStage] === 0 ? by[sourceStage][0] : null,\n    })),\n    invalidClosedCandidateCount,\n    unknownStageCount,\n  };\n}",
+          "draftSha256": "0a9ac827c4a55b0a653d3d0aa6d41e51780a7a360a2e6551fef8b2d55cfa2959",
+          "draftParseExit": 0,
+          "unchangedParserAndVeto": "Original32MiB/128KiB/decodedtarget+backslash+duplicatekey+invalidcandidate+multi-record veto retained byteexact exceptdeclared7field andneworigin/FQN/frame clauses.",
+          "controlsSourceTemplate": "\nconst assert=require('node:assert/strict');\nconst crypto=require('node:crypto');\nconst contract=__CONTRACT_JSON__;\nconst source=__SOURCE_JSON__;\nconst project=eval('('+source+')');\nlet count=0;const labels=[];\nconst json=JSON.stringify,a=contract.stages[0],s=contract.stages[1];\nfunction test(name,f){f();count++;labels.push(name);}\nconst serializeClass=Object.keys(contract.classes).find(x=>contract.classes[x]==='HTTP_SERIALIZATION');\nassert.ok(serializeClass);assert.equal(contract.classes['org.springframework.web.server.ResponseStatusException'],'HTTP_STATUS');\nconst rec=(p={})=>({state:'REPORTED_NO_CONTROLLER',sourceStage:a,exceptionCategory:'HTTP_SERIALIZATION',reportedExceptionChain:['HTTP_SERIALIZATION'],reportedOwnFrame:null,reportedOrigin:contract.stageOrigins[a],reportedExceptionClassChain:[serializeClass],...p});\nconst gw=(p={})=>rec({state:'REPORTED_GATEWAY',exceptionCategory:'HTTP_STATUS',reportedExceptionChain:['HTTP_STATUS'],reportedExceptionClassChain:['org.springframework.web.server.ResponseStatusException'],reportedOrigin:'GATEWAY_WEBFLUX',...p});\nconst read=v=>project(json(v));\nconst out=v=>read(v).records.find(x=>x.sourceStage===v.sourceStage).outcome;\nfunction reject(name,v){test(name,()=>{const r=read(v);assert.equal(r.records.find(x=>x.sourceStage===v.sourceStage).outcome,null);assert.equal(r.invalidClosedCandidateCount,1);assert.ok(!json(r).includes('PRIVATE_SECRET_SENTINEL'));});}\nfunction rawReject(name,raw){test(name,()=>{const r=project(raw);assert.equal(r.records[0].outcome,null);assert.ok(r.invalidClosedCandidateCount>=1);assert.ok(!json(r).includes('PRIVATE_SECRET_SENTINEL'));});}\nfor(const stage of contract.stages){\n for(const state of ['UNIQUE','REPORTED_PARTIAL_LOG_FORMAT','REPORTED_NO_CONTROLLER','REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER']){\n  const r=rec({sourceStage:stage,reportedOrigin:contract.stageOrigins[stage],state});test(stage+'_'+state,()=>assert.deepEqual(out(r),r));\n }\n for(const state of ['REPORTED_GATEWAY','REPORTED_GATEWAY_PARTIAL_LOG_FORMAT']){\n  const r=gw({sourceStage:stage,state});test(stage+'_'+state,()=>assert.deepEqual(out(r),r));\n }\n}\nfor(const [name,category] of Object.entries(contract.classes)){\n const r=gw({exceptionCategory:category,reportedExceptionChain:[category],reportedExceptionClassChain:[name]});test('finiteClass_'+name,()=>assert.deepEqual(out(r),r));\n}\ntest('knownOuterUnknownLeaf',()=>{const r=gw({exceptionCategory:'UNKNOWN',reportedExceptionChain:['HTTP_STATUS','UNKNOWN'],reportedExceptionClassChain:['org.springframework.web.server.ResponseStatusException','UNKNOWN']});assert.deepEqual(out(r),r);});\nfor(const state of ['UNIQUE','REPORTED_PARTIAL_LOG_FORMAT']){\n test(state+'_legacyEmptyChain',()=>{const r=rec({state,reportedExceptionChain:[],reportedExceptionClassChain:[]});assert.deepEqual(out(r),r);});\n test(state+'_legacyCategoryNotLast',()=>{const r=rec({state,reportedExceptionChain:['UNKNOWN'],reportedExceptionClassChain:['UNKNOWN']});assert.deepEqual(out(r),r);});\n}\nfor(const state of contract.states.filter(x=>!['UNIQUE','REPORTED_PARTIAL_LOG_FORMAT','REPORTED_NO_CONTROLLER','REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER','REPORTED_GATEWAY','REPORTED_GATEWAY_PARTIAL_LOG_FORMAT'].includes(x))){\n const r=rec({state,reportedOrigin:'UNKNOWN',exceptionCategory:'UNKNOWN',reportedExceptionChain:[],reportedExceptionClassChain:[]});test(state+'_exactDefault',()=>assert.deepEqual(out(r),r));\n if(state==='AMBIGUOUS'){reject(state+'_rejectOrigin',{...r,reportedOrigin:'GATEWAY_WEBFLUX'});reject(state+'_rejectClass',{...r,reportedExceptionClassChain:['UNKNOWN']});}\n}\nfor(const [symbol,spec] of Object.entries(contract.frames).filter(([,spec])=>spec.origin==='GATEWAY_WEBFLUX')){\n for(const stage of spec.stages)for(const line of [1,spec.maxLine]){\n  const r=spec.origin==='GATEWAY_WEBFLUX'?gw({sourceStage:stage,reportedOwnFrame:{symbol,line}}):rec({sourceStage:stage,reportedOrigin:spec.origin,reportedOwnFrame:{symbol,line}});\n  test(symbol+'_'+stage+'_'+line,()=>assert.deepEqual(out(r),r));\n }\n const stage=spec.stages[0],r=spec.origin==='GATEWAY_WEBFLUX'?gw({sourceStage:stage}):rec({sourceStage:stage,reportedOrigin:spec.origin});\n reject(symbol+'_overBound',{...r,reportedOwnFrame:{symbol,line:spec.maxLine+1}});\n reject(symbol+'_wrongOrigin',{...r,reportedOrigin:spec.origin==='GATEWAY_WEBFLUX'?contract.stageOrigins[stage]:'GATEWAY_WEBFLUX',reportedOwnFrame:{symbol,line:1}});\n}\nfor(const stage of contract.stages){\n const [symbol,spec]=Object.entries(contract.frames).find(([,spec])=>spec.origin===contract.stageOrigins[stage]);\n const r=rec({sourceStage:stage,reportedOrigin:spec.origin,reportedOwnFrame:{symbol,line:spec.maxLine}});\n test('domainFrameOrigin_'+stage,()=>assert.deepEqual(out(r),r));\n reject('domainFrameCannotBeGateway_'+stage,{...r,reportedOrigin:'GATEWAY_WEBFLUX'});\n}\nfor(const [name,patch] of Object.entries({\n missingOrigin:{reportedOrigin:undefined},missingClasses:{reportedExceptionClassChain:undefined},\n arbitraryOrigin:{reportedOrigin:'PRIVATE_SECRET_SENTINEL'},originArray:{reportedOrigin:['GATEWAY_WEBFLUX']},\n arbitraryClass:{reportedExceptionClassChain:['PRIVATE_SECRET_SENTINEL']},unlistedPublicClass:{reportedExceptionClassChain:['java.lang.String']},\n classesNull:{reportedExceptionClassChain:null},classesObject:{reportedExceptionClassChain:{0:'UNKNOWN'}},classNotString:{reportedExceptionClassChain:[true]},\n class17:{reportedExceptionClassChain:Array(17).fill('UNKNOWN'),reportedExceptionChain:Array(17).fill('UNKNOWN'),exceptionCategory:'UNKNOWN'},\n unequalChainLengths:{reportedExceptionClassChain:[]},wrongCategoryMap:{reportedExceptionChain:['CONNECT'],exceptionCategory:'CONNECT'},\n classCategoryUnknownMismatch:{reportedExceptionClassChain:['UNKNOWN']},\n gatewayEmptyChain:{reportedExceptionClassChain:[],reportedExceptionChain:[]},gatewayLeafMismatch:{exceptionCategory:'CONNECT'},\n gatewayNeverUnique:{state:'UNIQUE'},gatewayCannotBeDomainFallback:{state:'REPORTED_NO_CONTROLLER'},\n frameBoolLine:{reportedOwnFrame:{symbol:'INTERNAL_JWT_ISSUER_FILTER',line:true}},frameZero:{reportedOwnFrame:{symbol:'INTERNAL_JWT_ISSUER_FILTER',line:0}},\n frameUnknown:{reportedOwnFrame:{symbol:'PRIVATE_SECRET_SENTINEL',line:1}},frameExtra:{reportedOwnFrame:{symbol:'INTERNAL_JWT_ISSUER_FILTER',line:1,path:'PRIVATE_SECRET_SENTINEL'}},\n privateExtra:{message:'PRIVATE_SECRET_SENTINEL'}\n}))reject(name,gw(patch));\nreject('domainCannotClaimGateway',rec({state:'REPORTED_GATEWAY'}));\nreject('wrongDomainForStage',rec({reportedOrigin:contract.stageOrigins[s]}));\nreject('historicalFiveFieldRejected',(({reportedOrigin,reportedExceptionClassChain,...r})=>r)(rec()));\ntest('chain16Accepted',()=>{const r=gw({exceptionCategory:'UNKNOWN',reportedExceptionChain:Array(16).fill('UNKNOWN'),reportedExceptionClassChain:Array(16).fill('UNKNOWN')});assert.deepEqual(out(r),r);});\nconst base=json(gw());\nrawReject('duplicateNewOriginKey',base.replace('\"reportedOrigin\":','\"reportedOrigin\":\"UNKNOWN\",\"reportedOrigin\":'));\nrawReject('duplicateNewClassChainKey',base.replace('\"reportedExceptionClassChain\":','\"reportedExceptionClassChain\":[],\"reportedExceptionClassChain\":'));\nrawReject('validPlusEscapedSourceStageKeyVeto',base+'\\n'+base.replace('\"sourceStage\":','\"source\\\\u0053tage\":'));\nrawReject('validPlusEscapedNewOriginKeyVeto',base+'\\n'+base.replace('\"reportedOrigin\":','\"reported\\\\u004frigin\":'));\nrawReject('malformedKnownStageVeto',base+'\\n'+base.slice(0,-1));\nrawReject('privacyInvalidKnownStageVeto',base+'\\n'+json(gw({reportedExceptionClassChain:['PRIVATE_SECRET_SENTINEL']})));\ntest('identicalDuplicateRecordsNoSelection',()=>{const r=project(base+'\\n'+base);assert.equal(r.records[0].count,2);assert.equal(r.records[0].outcome,null);});\ntest('crossOriginRecordsNoSelection',()=>{const r=project(base+'\\n'+json(rec()));assert.equal(r.records[0].count,2);assert.equal(r.records[0].outcome,null);});\ntest('historicalStudentThreeFieldIgnored',()=>{const r=project(json({state:'UNIQUE',sourceStage:'ATTENDANCE_STUDENT_PROJECTION',exceptionCategory:'INVALID_METRICS'})+'\\n'+base);assert.deepEqual(r.records[0].outcome,gw());assert.equal(r.invalidClosedCandidateCount,0);});\ntest('timestampPrefixSameFormat',()=>assert.deepEqual(project('2026-10-16T12:00:00.123Z '+base).records[0].outcome,gw()));\ntest('recordCapStill128KiB',()=>assert.equal(project(base.slice(0,-1)+' '.repeat(131073)+'}').records[0].outcome,null));\ntest('inputTypeGuardUnchanged',()=>assert.throws(()=>project(null),{message:'CLOSED_LOG_INPUT'}));\ntest('missingRecordNeverCause',()=>assert.ok(project('PRIVATE_SECRET_SENTINEL').records.every(x=>x.outcome===null)));\nconsole.log(json({state:'PASS',count,labels,consumerSourceSha256:crypto.createHash('sha256').update(source).digest('hex')}));\n",
+          "controlScope": "Targeted new7field/origin/FQN/2Gatewayframe/legacySEMANTICS/escaped-keyprivacy checks only; do notrerunhistorical130/fullworkflow/native.",
+          "producerPath": "/tmp/rct-headman-hw-intent-6cdce-20261015/.github/workflows/ci.yml",
+          "producerScriptSha256": "420dbdc893c1967731e59f20fbe83d216a70298b629af652845b0d38b5913d4b",
+          "producerSourceFramePins": {
+            "ATTENDANCE_REPORT_SERVICE": [
+              "attendance-service",
+              "ru.rutcampustrack.attendance.report.ReportService",
+              "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+              "8ba6b4eea45e27b10d31b9daa010898cac4db68daaa4bfc46c08e71010f730d1",
+              1812
+            ],
+            "ATTENDANCE_READ_PORT": [
+              "attendance-service",
+              "ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl",
+              "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/checkin/AttendanceReadPortImpl.java",
+              "eac7f0c10408548f82bf2043e601cf84f796ce2369994a1698a9f3f54b1322f6",
+              128
+            ],
+            "HEADMAN_APPROVED_TICKET_RESOLVER": [
+              "attendance-service",
+              "ru.rutcampustrack.attendance.report.HeadmanApprovedTicketResolver",
+              "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanApprovedTicketResolver.java",
+              "7ccf99773d14f56d7ec70a54ca869033c04bcb2b58adbb674cb0e818696847f7",
+              96
+            ],
+            "ATTENDANCE_REPORT_CONTROLLER": [
+              "attendance-service",
+              "ru.rutcampustrack.attendance.report.ReportController",
+              "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+              "9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4",
+              303
+            ],
+            "SCHEDULE_ONEOFF_SERVICE": [
+              "schedule-service",
+              "ru.rutcampustrack.schedule.oneoff.OneOffLessonService",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java",
+              "01cef7d1734a2c850a89b37a164dc5f2fc55ac5ba2771a48ec98c42c53448c46",
+              75
+            ],
+            "SCHEDULE_ONEOFF_COORDINATOR": [
+              "schedule-service",
+              "ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java",
+              "ce21e00634da8326fd8386be27f0bc89e5f8e1d610ecfa3bcf0717223c648205",
+              181
+            ],
+            "SCHEDULE_ONEOFF_WRITER": [
+              "schedule-service",
+              "ru.rutcampustrack.schedule.oneoff.OneOffLessonWriter",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java",
+              "4f3bf7ba2033ae7b03e162544a1f8a4788b44eb49fba8b73695baa050defab79",
+              856
+            ],
+            "SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE": [
+              "schedule-service",
+              "ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java",
+              "38ec1cb6f70cd2af052648ac645491ee3166db9549adcde77199735d1628b597",
+              265
+            ],
+            "SCHEDULE_ONEOFF_CONTROLLER": [
+              "schedule-service",
+              "ru.rutcampustrack.schedule.oneoff.OneOffLessonController",
+              "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java",
+              "31dbb34318391172689f937046e4aed7e63b239e45be371fa9b04271d6b53417",
+              59
+            ],
+            "INTERNAL_JWT_ISSUER_FILTER": [
+              "api-gateway",
+              "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter",
+              "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java",
+              "695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c",
+              608
+            ],
+            "INTERNAL_JWT_ISSUER_CLIENT": [
+              "api-gateway",
+              "ru.rutcampustrack.gateway.security.InternalJwtIssuerClient",
+              "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java",
+              "1e7a444198c7c585bb835fde12d79c59ef4ff8ac9bc73d115ec67083f5dfc42f",
+              474
+            ]
+          },
+          "producerExceptionClasses": {
+            "io.grpc.StatusRuntimeException": "GRPC_STATUS",
+            "io.grpc.StatusException": "GRPC_STATUS",
+            "org.postgresql.util.PSQLException": "POSTGRESQL",
+            "javax.net.ssl.SSLHandshakeException": "TLS_HANDSHAKE",
+            "java.net.ConnectException": "CONNECT",
+            "java.lang.IllegalStateException": "ILLEGAL_STATE",
+            "java.lang.IllegalArgumentException": "ILLEGAL_ARGUMENT",
+            "java.lang.NullPointerException": "NULL_POINTER",
+            "org.springframework.dao.DataIntegrityViolationException": "DATA_INTEGRITY",
+            "org.springframework.http.converter.HttpMessageNotWritableException": "HTTP_SERIALIZATION",
+            "org.springframework.web.server.ResponseStatusException": "HTTP_STATUS",
+            "reactor.netty.http.client.PrematureCloseException": "UPSTREAM_CLOSED"
+          },
+          "closedContract": {
+            "stages": [
+              "ATTENDANCE_LESSON_REPORT",
+              "SCHEDULE_ONEOFF_LESSON_CREATE"
+            ],
+            "states": [
+              "UNIQUE",
+              "AMBIGUOUS",
+              "REPORTED_PARTIAL_LOG_FORMAT",
+              "REPORTED_NO_CONTROLLER",
+              "REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER",
+              "UNAVAILABLE_PRIVATE_INPUT",
+              "UNAVAILABLE_TARGET_SIGNATURE",
+              "UNAVAILABLE_SERVICE_OWNERSHIP",
+              "UNAVAILABLE_LOG_CAPTURE",
+              "UNAVAILABLE_LOG_FORMAT",
+              "UNAVAILABLE_LOG_LIMIT",
+              "UNAVAILABLE_EXCEPTION_STACK",
+              "UNAVAILABLE_NO_ERROR_RECORD",
+              "REPORTED_GATEWAY",
+              "REPORTED_GATEWAY_PARTIAL_LOG_FORMAT"
+            ],
+            "categories": [
+              "UNKNOWN",
+              "GRPC_STATUS",
+              "POSTGRESQL",
+              "TLS_HANDSHAKE",
+              "CONNECT",
+              "ILLEGAL_STATE",
+              "ILLEGAL_ARGUMENT",
+              "NULL_POINTER",
+              "DATA_INTEGRITY",
+              "HTTP_SERIALIZATION",
+              "HTTP_STATUS",
+              "UPSTREAM_CLOSED"
+            ],
+            "origins": [
+              "UNKNOWN",
+              "ATTENDANCE_MVC",
+              "SCHEDULE_MVC",
+              "GATEWAY_WEBFLUX"
+            ],
+            "classes": {
+              "io.grpc.StatusRuntimeException": "GRPC_STATUS",
+              "io.grpc.StatusException": "GRPC_STATUS",
+              "org.postgresql.util.PSQLException": "POSTGRESQL",
+              "javax.net.ssl.SSLHandshakeException": "TLS_HANDSHAKE",
+              "java.net.ConnectException": "CONNECT",
+              "java.lang.IllegalStateException": "ILLEGAL_STATE",
+              "java.lang.IllegalArgumentException": "ILLEGAL_ARGUMENT",
+              "java.lang.NullPointerException": "NULL_POINTER",
+              "org.springframework.dao.DataIntegrityViolationException": "DATA_INTEGRITY",
+              "org.springframework.http.converter.HttpMessageNotWritableException": "HTTP_SERIALIZATION",
+              "org.springframework.web.server.ResponseStatusException": "HTTP_STATUS",
+              "reactor.netty.http.client.PrematureCloseException": "UPSTREAM_CLOSED"
+            },
+            "stageOrigins": {
+              "ATTENDANCE_LESSON_REPORT": "ATTENDANCE_MVC",
+              "SCHEDULE_ONEOFF_LESSON_CREATE": "SCHEDULE_MVC"
+            },
+            "frames": {
+              "ATTENDANCE_REPORT_SERVICE": {
+                "origin": "ATTENDANCE_MVC",
+                "stages": [
+                  "ATTENDANCE_LESSON_REPORT"
+                ],
+                "maxLine": 1812
+              },
+              "ATTENDANCE_READ_PORT": {
+                "origin": "ATTENDANCE_MVC",
+                "stages": [
+                  "ATTENDANCE_LESSON_REPORT"
+                ],
+                "maxLine": 128
+              },
+              "HEADMAN_APPROVED_TICKET_RESOLVER": {
+                "origin": "ATTENDANCE_MVC",
+                "stages": [
+                  "ATTENDANCE_LESSON_REPORT"
+                ],
+                "maxLine": 96
+              },
+              "ATTENDANCE_REPORT_CONTROLLER": {
+                "origin": "ATTENDANCE_MVC",
+                "stages": [
+                  "ATTENDANCE_LESSON_REPORT"
+                ],
+                "maxLine": 303
+              },
+              "SCHEDULE_ONEOFF_SERVICE": {
+                "origin": "SCHEDULE_MVC",
+                "stages": [
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 75
+              },
+              "SCHEDULE_ONEOFF_COORDINATOR": {
+                "origin": "SCHEDULE_MVC",
+                "stages": [
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 181
+              },
+              "SCHEDULE_ONEOFF_WRITER": {
+                "origin": "SCHEDULE_MVC",
+                "stages": [
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 856
+              },
+              "SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE": {
+                "origin": "SCHEDULE_MVC",
+                "stages": [
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 265
+              },
+              "SCHEDULE_ONEOFF_CONTROLLER": {
+                "origin": "SCHEDULE_MVC",
+                "stages": [
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 59
+              },
+              "INTERNAL_JWT_ISSUER_FILTER": {
+                "origin": "GATEWAY_WEBFLUX",
+                "stages": [
+                  "ATTENDANCE_LESSON_REPORT",
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 608
+              },
+              "INTERNAL_JWT_ISSUER_CLIENT": {
+                "origin": "GATEWAY_WEBFLUX",
+                "stages": [
+                  "ATTENDANCE_LESSON_REPORT",
+                  "SCHEDULE_ONEOFF_LESSON_CREATE"
+                ],
+                "maxLine": 474
+              }
+            }
+          },
+          "consumerSourceText": "function projectClosedHints(raw) {\n  'use strict';\n  const contract = {\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"states\":[\"UNIQUE\",\"AMBIGUOUS\",\"REPORTED_PARTIAL_LOG_FORMAT\",\"REPORTED_NO_CONTROLLER\",\"REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER\",\"UNAVAILABLE_PRIVATE_INPUT\",\"UNAVAILABLE_TARGET_SIGNATURE\",\"UNAVAILABLE_SERVICE_OWNERSHIP\",\"UNAVAILABLE_LOG_CAPTURE\",\"UNAVAILABLE_LOG_FORMAT\",\"UNAVAILABLE_LOG_LIMIT\",\"UNAVAILABLE_EXCEPTION_STACK\",\"UNAVAILABLE_NO_ERROR_RECORD\",\"REPORTED_GATEWAY\",\"REPORTED_GATEWAY_PARTIAL_LOG_FORMAT\"],\"categories\":[\"UNKNOWN\",\"GRPC_STATUS\",\"POSTGRESQL\",\"TLS_HANDSHAKE\",\"CONNECT\",\"ILLEGAL_STATE\",\"ILLEGAL_ARGUMENT\",\"NULL_POINTER\",\"DATA_INTEGRITY\",\"HTTP_SERIALIZATION\",\"HTTP_STATUS\",\"UPSTREAM_CLOSED\"],\"origins\":[\"UNKNOWN\",\"ATTENDANCE_MVC\",\"SCHEDULE_MVC\",\"GATEWAY_WEBFLUX\"],\"classes\":{\"io.grpc.StatusRuntimeException\":\"GRPC_STATUS\",\"io.grpc.StatusException\":\"GRPC_STATUS\",\"org.postgresql.util.PSQLException\":\"POSTGRESQL\",\"javax.net.ssl.SSLHandshakeException\":\"TLS_HANDSHAKE\",\"java.net.ConnectException\":\"CONNECT\",\"java.lang.IllegalStateException\":\"ILLEGAL_STATE\",\"java.lang.IllegalArgumentException\":\"ILLEGAL_ARGUMENT\",\"java.lang.NullPointerException\":\"NULL_POINTER\",\"org.springframework.dao.DataIntegrityViolationException\":\"DATA_INTEGRITY\",\"org.springframework.http.converter.HttpMessageNotWritableException\":\"HTTP_SERIALIZATION\",\"org.springframework.web.server.ResponseStatusException\":\"HTTP_STATUS\",\"reactor.netty.http.client.PrematureCloseException\":\"UPSTREAM_CLOSED\"},\"stageOrigins\":{\"ATTENDANCE_LESSON_REPORT\":\"ATTENDANCE_MVC\",\"SCHEDULE_ONEOFF_LESSON_CREATE\":\"SCHEDULE_MVC\"},\"frames\":{\"ATTENDANCE_REPORT_SERVICE\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":1812},\"ATTENDANCE_READ_PORT\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":128},\"HEADMAN_APPROVED_TICKET_RESOLVER\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":96},\"ATTENDANCE_REPORT_CONTROLLER\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":303},\"SCHEDULE_ONEOFF_SERVICE\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":75},\"SCHEDULE_ONEOFF_COORDINATOR\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":181},\"SCHEDULE_ONEOFF_WRITER\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":856},\"SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":265},\"SCHEDULE_ONEOFF_CONTROLLER\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":59},\"INTERNAL_JWT_ISSUER_FILTER\":{\"origin\":\"GATEWAY_WEBFLUX\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":608},\"INTERNAL_JWT_ISSUER_CLIENT\":{\"origin\":\"GATEWAY_WEBFLUX\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":474}}};\n  const stages = contract.stages;\n  const states = new Set(contract.states);\n  const categories = new Set(contract.categories);\n  const origins = new Set(contract.origins);\n  const classNames = new Set([...Object.keys(contract.classes), 'UNKNOWN']);\n  if (typeof raw !== 'string') throw new Error('CLOSED_LOG_INPUT');\n  const receivedBytes = encodeURIComponent(raw).replace(/%[A-F\\d]{2}/gi, 'x').length;\n  if (receivedBytes > 33554432) throw new Error('POST_RESPONSE_LOG_CAP');\n  const by = Object.fromEntries(stages.map(stage => [stage, []]));\n  const rejected = Object.fromEntries(stages.map(stage => [stage, 0]));\n  let invalidClosedCandidateCount = 0;\n  let unknownStageCount = 0;\n  const exactKeys = (value, expected) => value !== null && typeof value === 'object'\n    && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify(expected);\n  const topKeys = ['exceptionCategory', 'reportedExceptionChain', 'reportedExceptionClassChain', 'reportedOrigin', 'reportedOwnFrame', 'sourceStage', 'state'];\n  for (const line of raw.split('\\n')) {\n    const textLine = line.replace(/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?Z\\s+/, '').trim();\n    if (!textLine.startsWith('{')) continue;\n    const potentialStages = stages.filter(stage => textLine.includes('\"' + stage + '\"'));\n    let value;\n    try { value = JSON.parse(textLine); } catch {\n      if (potentialStages.length) {\n        invalidClosedCandidateCount++;\n        for (const stage of potentialStages) rejected[stage]++;\n      }\n      continue;\n    }\n    if (value === null || typeof value !== 'object' || Array.isArray(value)) continue;\n    const target = stages.includes(value.sourceStage);\n    if (!target && !potentialStages.length && value.sourceStage !== 'UNKNOWN') continue;\n    // Every allowed string is a fixed ASCII enum: escapes cannot be needed by this contract.\n    const keys = [...textLine.matchAll(/\"([^\"\\\\]*)\"\\s*:/g)].map(match => match[1]);\n    let valid = textLine.length <= 131072 && !textLine.includes('\\\\')\n      && exactKeys(value, topKeys)\n      && states.has(value.state) && categories.has(value.exceptionCategory)\n      && Array.isArray(value.reportedExceptionChain) && value.reportedExceptionChain.length <= 16\n      && value.reportedExceptionChain.every(category => typeof category === 'string' && categories.has(category))\n      && origins.has(value.reportedOrigin)\n      && Array.isArray(value.reportedExceptionClassChain)\n      && value.reportedExceptionClassChain.length === value.reportedExceptionChain.length\n      && value.reportedExceptionClassChain.every((name, index) => typeof name === 'string'\n        && classNames.has(name)\n        && value.reportedExceptionChain[index] === (name === 'UNKNOWN' ? 'UNKNOWN' : contract.classes[name]));\n    const frame = value.reportedOwnFrame;\n    if (valid && frame !== null) {\n      const spec = frame !== null && typeof frame === 'object'\n        && Object.prototype.hasOwnProperty.call(contract.frames, frame.symbol)\n        ? contract.frames[frame.symbol] : null;\n      valid = exactKeys(frame, ['line', 'symbol']) && spec !== null\n        && spec.stages.includes(value.sourceStage) && spec.origin === value.reportedOrigin\n        && Number.isSafeInteger(frame.line) && frame.line >= 1 && frame.line <= spec.maxLine;\n    }\n    const controllerState = value.state === 'UNIQUE' || value.state === 'REPORTED_PARTIAL_LOG_FORMAT';\n    const fallbackState = value.state === 'REPORTED_NO_CONTROLLER'\n      || value.state === 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER';\n    const gatewayState = value.state === 'REPORTED_GATEWAY'\n      || value.state === 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT';\n    if (valid && controllerState) {\n      valid = value.reportedOrigin === contract.stageOrigins[value.sourceStage];\n    } else if (valid && (fallbackState || gatewayState)) {\n      valid = value.reportedOrigin === (gatewayState\n        ? 'GATEWAY_WEBFLUX' : contract.stageOrigins[value.sourceStage])\n        && value.reportedExceptionChain.length >= 1\n        && value.exceptionCategory === value.reportedExceptionChain[value.reportedExceptionChain.length - 1];\n    } else if (valid) {\n      valid = value.reportedOrigin === 'UNKNOWN'\n        && value.exceptionCategory === 'UNKNOWN' && value.reportedExceptionChain.length === 0\n        && value.reportedExceptionClassChain.length === 0 && frame === null;\n    }\n    const expectedKeys = frame === null ? topKeys : [...topKeys, 'line', 'symbol'];\n    valid = valid && keys.length === expectedKeys.length\n      && expectedKeys.every(key => keys.filter(observed => observed === key).length === 1);\n    if (!valid || (target && (potentialStages.length !== 1 || potentialStages[0] !== value.sourceStage))) {\n      if (target || potentialStages.length) {\n        invalidClosedCandidateCount++;\n        for (const stage of new Set([...potentialStages, ...(target ? [value.sourceStage] : [])])) rejected[stage]++;\n      }\n      continue;\n    }\n    if (value.sourceStage === 'UNKNOWN') { unknownStageCount++; continue; }\n    if (target) by[value.sourceStage].push(value);\n  }\n  return {\n    records: stages.map(sourceStage => ({\n      sourceStage,\n      count: by[sourceStage].length,\n      outcome: by[sourceStage].length === 1 && rejected[sourceStage] === 0 ? by[sourceStage][0] : null,\n    })),\n    invalidClosedCandidateCount,\n    unknownStageCount,\n  };\n}",
+          "consumerSourceSha256": "b031b4154be40b79f04c4e8513e16c3fbd69220c3e3f0e85926f257455a6151e",
+          "controlsSourceText": "\nconst assert=require('node:assert/strict');\nconst crypto=require('node:crypto');\nconst contract={\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"states\":[\"UNIQUE\",\"AMBIGUOUS\",\"REPORTED_PARTIAL_LOG_FORMAT\",\"REPORTED_NO_CONTROLLER\",\"REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER\",\"UNAVAILABLE_PRIVATE_INPUT\",\"UNAVAILABLE_TARGET_SIGNATURE\",\"UNAVAILABLE_SERVICE_OWNERSHIP\",\"UNAVAILABLE_LOG_CAPTURE\",\"UNAVAILABLE_LOG_FORMAT\",\"UNAVAILABLE_LOG_LIMIT\",\"UNAVAILABLE_EXCEPTION_STACK\",\"UNAVAILABLE_NO_ERROR_RECORD\",\"REPORTED_GATEWAY\",\"REPORTED_GATEWAY_PARTIAL_LOG_FORMAT\"],\"categories\":[\"UNKNOWN\",\"GRPC_STATUS\",\"POSTGRESQL\",\"TLS_HANDSHAKE\",\"CONNECT\",\"ILLEGAL_STATE\",\"ILLEGAL_ARGUMENT\",\"NULL_POINTER\",\"DATA_INTEGRITY\",\"HTTP_SERIALIZATION\",\"HTTP_STATUS\",\"UPSTREAM_CLOSED\"],\"origins\":[\"UNKNOWN\",\"ATTENDANCE_MVC\",\"SCHEDULE_MVC\",\"GATEWAY_WEBFLUX\"],\"classes\":{\"io.grpc.StatusRuntimeException\":\"GRPC_STATUS\",\"io.grpc.StatusException\":\"GRPC_STATUS\",\"org.postgresql.util.PSQLException\":\"POSTGRESQL\",\"javax.net.ssl.SSLHandshakeException\":\"TLS_HANDSHAKE\",\"java.net.ConnectException\":\"CONNECT\",\"java.lang.IllegalStateException\":\"ILLEGAL_STATE\",\"java.lang.IllegalArgumentException\":\"ILLEGAL_ARGUMENT\",\"java.lang.NullPointerException\":\"NULL_POINTER\",\"org.springframework.dao.DataIntegrityViolationException\":\"DATA_INTEGRITY\",\"org.springframework.http.converter.HttpMessageNotWritableException\":\"HTTP_SERIALIZATION\",\"org.springframework.web.server.ResponseStatusException\":\"HTTP_STATUS\",\"reactor.netty.http.client.PrematureCloseException\":\"UPSTREAM_CLOSED\"},\"stageOrigins\":{\"ATTENDANCE_LESSON_REPORT\":\"ATTENDANCE_MVC\",\"SCHEDULE_ONEOFF_LESSON_CREATE\":\"SCHEDULE_MVC\"},\"frames\":{\"ATTENDANCE_REPORT_SERVICE\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":1812},\"ATTENDANCE_READ_PORT\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":128},\"HEADMAN_APPROVED_TICKET_RESOLVER\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":96},\"ATTENDANCE_REPORT_CONTROLLER\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":303},\"SCHEDULE_ONEOFF_SERVICE\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":75},\"SCHEDULE_ONEOFF_COORDINATOR\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":181},\"SCHEDULE_ONEOFF_WRITER\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":856},\"SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":265},\"SCHEDULE_ONEOFF_CONTROLLER\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":59},\"INTERNAL_JWT_ISSUER_FILTER\":{\"origin\":\"GATEWAY_WEBFLUX\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":608},\"INTERNAL_JWT_ISSUER_CLIENT\":{\"origin\":\"GATEWAY_WEBFLUX\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":474}}};\nconst source=\"function projectClosedHints(raw) {\\n  'use strict';\\n  const contract = {\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\",\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"states\\\":[\\\"UNIQUE\\\",\\\"AMBIGUOUS\\\",\\\"REPORTED_PARTIAL_LOG_FORMAT\\\",\\\"REPORTED_NO_CONTROLLER\\\",\\\"REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER\\\",\\\"UNAVAILABLE_PRIVATE_INPUT\\\",\\\"UNAVAILABLE_TARGET_SIGNATURE\\\",\\\"UNAVAILABLE_SERVICE_OWNERSHIP\\\",\\\"UNAVAILABLE_LOG_CAPTURE\\\",\\\"UNAVAILABLE_LOG_FORMAT\\\",\\\"UNAVAILABLE_LOG_LIMIT\\\",\\\"UNAVAILABLE_EXCEPTION_STACK\\\",\\\"UNAVAILABLE_NO_ERROR_RECORD\\\",\\\"REPORTED_GATEWAY\\\",\\\"REPORTED_GATEWAY_PARTIAL_LOG_FORMAT\\\"],\\\"categories\\\":[\\\"UNKNOWN\\\",\\\"GRPC_STATUS\\\",\\\"POSTGRESQL\\\",\\\"TLS_HANDSHAKE\\\",\\\"CONNECT\\\",\\\"ILLEGAL_STATE\\\",\\\"ILLEGAL_ARGUMENT\\\",\\\"NULL_POINTER\\\",\\\"DATA_INTEGRITY\\\",\\\"HTTP_SERIALIZATION\\\",\\\"HTTP_STATUS\\\",\\\"UPSTREAM_CLOSED\\\"],\\\"origins\\\":[\\\"UNKNOWN\\\",\\\"ATTENDANCE_MVC\\\",\\\"SCHEDULE_MVC\\\",\\\"GATEWAY_WEBFLUX\\\"],\\\"classes\\\":{\\\"io.grpc.StatusRuntimeException\\\":\\\"GRPC_STATUS\\\",\\\"io.grpc.StatusException\\\":\\\"GRPC_STATUS\\\",\\\"org.postgresql.util.PSQLException\\\":\\\"POSTGRESQL\\\",\\\"javax.net.ssl.SSLHandshakeException\\\":\\\"TLS_HANDSHAKE\\\",\\\"java.net.ConnectException\\\":\\\"CONNECT\\\",\\\"java.lang.IllegalStateException\\\":\\\"ILLEGAL_STATE\\\",\\\"java.lang.IllegalArgumentException\\\":\\\"ILLEGAL_ARGUMENT\\\",\\\"java.lang.NullPointerException\\\":\\\"NULL_POINTER\\\",\\\"org.springframework.dao.DataIntegrityViolationException\\\":\\\"DATA_INTEGRITY\\\",\\\"org.springframework.http.converter.HttpMessageNotWritableException\\\":\\\"HTTP_SERIALIZATION\\\",\\\"org.springframework.web.server.ResponseStatusException\\\":\\\"HTTP_STATUS\\\",\\\"reactor.netty.http.client.PrematureCloseException\\\":\\\"UPSTREAM_CLOSED\\\"},\\\"stageOrigins\\\":{\\\"ATTENDANCE_LESSON_REPORT\\\":\\\"ATTENDANCE_MVC\\\",\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\":\\\"SCHEDULE_MVC\\\"},\\\"frames\\\":{\\\"ATTENDANCE_REPORT_SERVICE\\\":{\\\"origin\\\":\\\"ATTENDANCE_MVC\\\",\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\"],\\\"maxLine\\\":1812},\\\"ATTENDANCE_READ_PORT\\\":{\\\"origin\\\":\\\"ATTENDANCE_MVC\\\",\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\"],\\\"maxLine\\\":128},\\\"HEADMAN_APPROVED_TICKET_RESOLVER\\\":{\\\"origin\\\":\\\"ATTENDANCE_MVC\\\",\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\"],\\\"maxLine\\\":96},\\\"ATTENDANCE_REPORT_CONTROLLER\\\":{\\\"origin\\\":\\\"ATTENDANCE_MVC\\\",\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\"],\\\"maxLine\\\":303},\\\"SCHEDULE_ONEOFF_SERVICE\\\":{\\\"origin\\\":\\\"SCHEDULE_MVC\\\",\\\"stages\\\":[\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":75},\\\"SCHEDULE_ONEOFF_COORDINATOR\\\":{\\\"origin\\\":\\\"SCHEDULE_MVC\\\",\\\"stages\\\":[\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":181},\\\"SCHEDULE_ONEOFF_WRITER\\\":{\\\"origin\\\":\\\"SCHEDULE_MVC\\\",\\\"stages\\\":[\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":856},\\\"SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE\\\":{\\\"origin\\\":\\\"SCHEDULE_MVC\\\",\\\"stages\\\":[\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":265},\\\"SCHEDULE_ONEOFF_CONTROLLER\\\":{\\\"origin\\\":\\\"SCHEDULE_MVC\\\",\\\"stages\\\":[\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":59},\\\"INTERNAL_JWT_ISSUER_FILTER\\\":{\\\"origin\\\":\\\"GATEWAY_WEBFLUX\\\",\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\",\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":608},\\\"INTERNAL_JWT_ISSUER_CLIENT\\\":{\\\"origin\\\":\\\"GATEWAY_WEBFLUX\\\",\\\"stages\\\":[\\\"ATTENDANCE_LESSON_REPORT\\\",\\\"SCHEDULE_ONEOFF_LESSON_CREATE\\\"],\\\"maxLine\\\":474}}};\\n  const stages = contract.stages;\\n  const states = new Set(contract.states);\\n  const categories = new Set(contract.categories);\\n  const origins = new Set(contract.origins);\\n  const classNames = new Set([...Object.keys(contract.classes), 'UNKNOWN']);\\n  if (typeof raw !== 'string') throw new Error('CLOSED_LOG_INPUT');\\n  const receivedBytes = encodeURIComponent(raw).replace(/%[A-F\\\\d]{2}/gi, 'x').length;\\n  if (receivedBytes > 33554432) throw new Error('POST_RESPONSE_LOG_CAP');\\n  const by = Object.fromEntries(stages.map(stage => [stage, []]));\\n  const rejected = Object.fromEntries(stages.map(stage => [stage, 0]));\\n  let invalidClosedCandidateCount = 0;\\n  let unknownStageCount = 0;\\n  const exactKeys = (value, expected) => value !== null && typeof value === 'object'\\n    && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify(expected);\\n  const topKeys = ['exceptionCategory', 'reportedExceptionChain', 'reportedExceptionClassChain', 'reportedOrigin', 'reportedOwnFrame', 'sourceStage', 'state'];\\n  for (const line of raw.split('\\\\n')) {\\n    const textLine = line.replace(/^\\\\d{4}-\\\\d\\\\d-\\\\d\\\\dT\\\\d\\\\d:\\\\d\\\\d:\\\\d\\\\d(?:\\\\.\\\\d+)?Z\\\\s+/, '').trim();\\n    if (!textLine.startsWith('{')) continue;\\n    const potentialStages = stages.filter(stage => textLine.includes('\\\"' + stage + '\\\"'));\\n    let value;\\n    try { value = JSON.parse(textLine); } catch {\\n      if (potentialStages.length) {\\n        invalidClosedCandidateCount++;\\n        for (const stage of potentialStages) rejected[stage]++;\\n      }\\n      continue;\\n    }\\n    if (value === null || typeof value !== 'object' || Array.isArray(value)) continue;\\n    const target = stages.includes(value.sourceStage);\\n    if (!target && !potentialStages.length && value.sourceStage !== 'UNKNOWN') continue;\\n    // Every allowed string is a fixed ASCII enum: escapes cannot be needed by this contract.\\n    const keys = [...textLine.matchAll(/\\\"([^\\\"\\\\\\\\]*)\\\"\\\\s*:/g)].map(match => match[1]);\\n    let valid = textLine.length <= 131072 && !textLine.includes('\\\\\\\\')\\n      && exactKeys(value, topKeys)\\n      && states.has(value.state) && categories.has(value.exceptionCategory)\\n      && Array.isArray(value.reportedExceptionChain) && value.reportedExceptionChain.length <= 16\\n      && value.reportedExceptionChain.every(category => typeof category === 'string' && categories.has(category))\\n      && origins.has(value.reportedOrigin)\\n      && Array.isArray(value.reportedExceptionClassChain)\\n      && value.reportedExceptionClassChain.length === value.reportedExceptionChain.length\\n      && value.reportedExceptionClassChain.every((name, index) => typeof name === 'string'\\n        && classNames.has(name)\\n        && value.reportedExceptionChain[index] === (name === 'UNKNOWN' ? 'UNKNOWN' : contract.classes[name]));\\n    const frame = value.reportedOwnFrame;\\n    if (valid && frame !== null) {\\n      const spec = frame !== null && typeof frame === 'object'\\n        && Object.prototype.hasOwnProperty.call(contract.frames, frame.symbol)\\n        ? contract.frames[frame.symbol] : null;\\n      valid = exactKeys(frame, ['line', 'symbol']) && spec !== null\\n        && spec.stages.includes(value.sourceStage) && spec.origin === value.reportedOrigin\\n        && Number.isSafeInteger(frame.line) && frame.line >= 1 && frame.line <= spec.maxLine;\\n    }\\n    const controllerState = value.state === 'UNIQUE' || value.state === 'REPORTED_PARTIAL_LOG_FORMAT';\\n    const fallbackState = value.state === 'REPORTED_NO_CONTROLLER'\\n      || value.state === 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER';\\n    const gatewayState = value.state === 'REPORTED_GATEWAY'\\n      || value.state === 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT';\\n    if (valid && controllerState) {\\n      valid = value.reportedOrigin === contract.stageOrigins[value.sourceStage];\\n    } else if (valid && (fallbackState || gatewayState)) {\\n      valid = value.reportedOrigin === (gatewayState\\n        ? 'GATEWAY_WEBFLUX' : contract.stageOrigins[value.sourceStage])\\n        && value.reportedExceptionChain.length >= 1\\n        && value.exceptionCategory === value.reportedExceptionChain[value.reportedExceptionChain.length - 1];\\n    } else if (valid) {\\n      valid = value.reportedOrigin === 'UNKNOWN'\\n        && value.exceptionCategory === 'UNKNOWN' && value.reportedExceptionChain.length === 0\\n        && value.reportedExceptionClassChain.length === 0 && frame === null;\\n    }\\n    const expectedKeys = frame === null ? topKeys : [...topKeys, 'line', 'symbol'];\\n    valid = valid && keys.length === expectedKeys.length\\n      && expectedKeys.every(key => keys.filter(observed => observed === key).length === 1);\\n    if (!valid || (target && (potentialStages.length !== 1 || potentialStages[0] !== value.sourceStage))) {\\n      if (target || potentialStages.length) {\\n        invalidClosedCandidateCount++;\\n        for (const stage of new Set([...potentialStages, ...(target ? [value.sourceStage] : [])])) rejected[stage]++;\\n      }\\n      continue;\\n    }\\n    if (value.sourceStage === 'UNKNOWN') { unknownStageCount++; continue; }\\n    if (target) by[value.sourceStage].push(value);\\n  }\\n  return {\\n    records: stages.map(sourceStage => ({\\n      sourceStage,\\n      count: by[sourceStage].length,\\n      outcome: by[sourceStage].length === 1 && rejected[sourceStage] === 0 ? by[sourceStage][0] : null,\\n    })),\\n    invalidClosedCandidateCount,\\n    unknownStageCount,\\n  };\\n}\";\nconst project=eval('('+source+')');\nlet count=0;const labels=[];\nconst json=JSON.stringify,a=contract.stages[0],s=contract.stages[1];\nfunction test(name,f){try{f();count++;labels.push(name);}catch(e){console.log(JSON.stringify({state:'FAIL',label:name,error:e.name}));process.exit(2);}}\nconst serializeClass=Object.keys(contract.classes).find(x=>contract.classes[x]==='HTTP_SERIALIZATION');\nassert.ok(serializeClass);assert.equal(contract.classes['org.springframework.web.server.ResponseStatusException'],'HTTP_STATUS');\nconst rec=(p={})=>({state:'REPORTED_NO_CONTROLLER',sourceStage:a,exceptionCategory:'HTTP_SERIALIZATION',reportedExceptionChain:['HTTP_SERIALIZATION'],reportedOwnFrame:null,reportedOrigin:contract.stageOrigins[a],reportedExceptionClassChain:[serializeClass],...p});\nconst gw=(p={})=>rec({state:'REPORTED_GATEWAY',exceptionCategory:'HTTP_STATUS',reportedExceptionChain:['HTTP_STATUS'],reportedExceptionClassChain:['org.springframework.web.server.ResponseStatusException'],reportedOrigin:'GATEWAY_WEBFLUX',...p});\nconst read=v=>project(json(v));\nconst out=v=>read(v).records.find(x=>x.sourceStage===v.sourceStage).outcome;\nfunction reject(name,v){test(name,()=>{const r=read(v);assert.equal(r.records.find(x=>x.sourceStage===v.sourceStage).outcome,null);assert.equal(r.invalidClosedCandidateCount,1);assert.ok(!json(r).includes('PRIVATE_SECRET_SENTINEL'));});}\nfunction rawReject(name,raw){test(name,()=>{const r=project(raw);assert.equal(r.records[0].outcome,null);assert.ok(r.invalidClosedCandidateCount>=1);assert.ok(!json(r).includes('PRIVATE_SECRET_SENTINEL'));});}\nfor(const stage of contract.stages){\n for(const state of ['UNIQUE','REPORTED_PARTIAL_LOG_FORMAT','REPORTED_NO_CONTROLLER','REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER']){\n  const r=rec({sourceStage:stage,reportedOrigin:contract.stageOrigins[stage],state});test(stage+'_'+state,()=>assert.deepEqual(out(r),r));\n }\n for(const state of ['REPORTED_GATEWAY','REPORTED_GATEWAY_PARTIAL_LOG_FORMAT']){\n  const r=gw({sourceStage:stage,state});test(stage+'_'+state,()=>assert.deepEqual(out(r),r));\n }\n}\nfor(const [name,category] of Object.entries(contract.classes)){\n const r=gw({exceptionCategory:category,reportedExceptionChain:[category],reportedExceptionClassChain:[name]});test('finiteClass_'+name,()=>assert.deepEqual(out(r),r));\n}\ntest('knownOuterUnknownLeaf',()=>{const r=gw({exceptionCategory:'UNKNOWN',reportedExceptionChain:['HTTP_STATUS','UNKNOWN'],reportedExceptionClassChain:['org.springframework.web.server.ResponseStatusException','UNKNOWN']});assert.deepEqual(out(r),r);});\nfor(const state of ['UNIQUE','REPORTED_PARTIAL_LOG_FORMAT']){\n test(state+'_legacyEmptyChain',()=>{const r=rec({state,reportedExceptionChain:[],reportedExceptionClassChain:[]});assert.deepEqual(out(r),r);});\n test(state+'_legacyCategoryNotLast',()=>{const r=rec({state,reportedExceptionChain:['UNKNOWN'],reportedExceptionClassChain:['UNKNOWN']});assert.deepEqual(out(r),r);});\n}\nfor(const state of contract.states.filter(x=>!['UNIQUE','REPORTED_PARTIAL_LOG_FORMAT','REPORTED_NO_CONTROLLER','REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER','REPORTED_GATEWAY','REPORTED_GATEWAY_PARTIAL_LOG_FORMAT'].includes(x))){\n const r=rec({state,reportedOrigin:'UNKNOWN',exceptionCategory:'UNKNOWN',reportedExceptionChain:[],reportedExceptionClassChain:[]});test(state+'_exactDefault',()=>assert.deepEqual(out(r),r));\n if(state==='AMBIGUOUS'){reject(state+'_rejectOrigin',{...r,reportedOrigin:'GATEWAY_WEBFLUX'});reject(state+'_rejectClass',{...r,reportedExceptionClassChain:['UNKNOWN']});}\n}\nfor(const [symbol,spec] of Object.entries(contract.frames).filter(([,spec])=>spec.origin==='GATEWAY_WEBFLUX')){\n for(const stage of spec.stages)for(const line of [1,spec.maxLine]){\n  const r=spec.origin==='GATEWAY_WEBFLUX'?gw({sourceStage:stage,reportedOwnFrame:{symbol,line}}):rec({sourceStage:stage,reportedOrigin:spec.origin,reportedOwnFrame:{symbol,line}});\n  test(symbol+'_'+stage+'_'+line,()=>assert.deepEqual(out(r),r));\n }\n const stage=spec.stages[0],r=spec.origin==='GATEWAY_WEBFLUX'?gw({sourceStage:stage}):rec({sourceStage:stage,reportedOrigin:spec.origin});\n reject(symbol+'_overBound',{...r,reportedOwnFrame:{symbol,line:spec.maxLine+1}});\n reject(symbol+'_wrongOrigin',{...r,reportedOrigin:spec.origin==='GATEWAY_WEBFLUX'?contract.stageOrigins[stage]:'GATEWAY_WEBFLUX',reportedOwnFrame:{symbol,line:1}});\n}\nfor(const stage of contract.stages){\n const [symbol,spec]=Object.entries(contract.frames).find(([,spec])=>spec.origin===contract.stageOrigins[stage]);\n const r=rec({sourceStage:stage,reportedOrigin:spec.origin,reportedOwnFrame:{symbol,line:spec.maxLine}});\n test('domainFrameOrigin_'+stage,()=>assert.deepEqual(out(r),r));\n reject('domainFrameCannotBeGateway_'+stage,{...r,reportedOrigin:'GATEWAY_WEBFLUX'});\n}\nfor(const [name,patch] of Object.entries({\n missingOrigin:{reportedOrigin:undefined},missingClasses:{reportedExceptionClassChain:undefined},\n arbitraryOrigin:{reportedOrigin:'PRIVATE_SECRET_SENTINEL'},originArray:{reportedOrigin:['GATEWAY_WEBFLUX']},\n arbitraryClass:{reportedExceptionClassChain:['PRIVATE_SECRET_SENTINEL']},unlistedPublicClass:{reportedExceptionClassChain:['java.lang.String']},\n classesNull:{reportedExceptionClassChain:null},classesObject:{reportedExceptionClassChain:{0:'UNKNOWN'}},classNotString:{reportedExceptionClassChain:[true]},\n class17:{reportedExceptionClassChain:Array(17).fill('UNKNOWN'),reportedExceptionChain:Array(17).fill('UNKNOWN'),exceptionCategory:'UNKNOWN'},\n unequalChainLengths:{reportedExceptionClassChain:[]},wrongCategoryMap:{reportedExceptionChain:['CONNECT'],exceptionCategory:'CONNECT'},\n classCategoryUnknownMismatch:{reportedExceptionClassChain:['UNKNOWN']},\n gatewayEmptyChain:{reportedExceptionClassChain:[],reportedExceptionChain:[]},gatewayLeafMismatch:{exceptionCategory:'CONNECT'},\n gatewayNeverUnique:{state:'UNIQUE'},gatewayCannotBeDomainFallback:{state:'REPORTED_NO_CONTROLLER'},\n frameBoolLine:{reportedOwnFrame:{symbol:'INTERNAL_JWT_ISSUER_FILTER',line:true}},frameZero:{reportedOwnFrame:{symbol:'INTERNAL_JWT_ISSUER_FILTER',line:0}},\n frameUnknown:{reportedOwnFrame:{symbol:'PRIVATE_SECRET_SENTINEL',line:1}},frameExtra:{reportedOwnFrame:{symbol:'INTERNAL_JWT_ISSUER_FILTER',line:1,path:'PRIVATE_SECRET_SENTINEL'}},\n privateExtra:{message:'PRIVATE_SECRET_SENTINEL'}\n}))reject(name,gw(patch));\nreject('domainCannotClaimGateway',rec({state:'REPORTED_GATEWAY'}));\nreject('wrongDomainForStage',rec({reportedOrigin:contract.stageOrigins[s]}));\nreject('historicalFiveFieldRejected',(({reportedOrigin,reportedExceptionClassChain,...r})=>r)(rec()));\ntest('chain16Accepted',()=>{const r=gw({exceptionCategory:'UNKNOWN',reportedExceptionChain:Array(16).fill('UNKNOWN'),reportedExceptionClassChain:Array(16).fill('UNKNOWN')});assert.deepEqual(out(r),r);});\nconst base=json(gw());\nrawReject('duplicateNewOriginKey',base.replace('\"reportedOrigin\":','\"reportedOrigin\":\"UNKNOWN\",\"reportedOrigin\":'));\nrawReject('duplicateNewClassChainKey',base.replace('\"reportedExceptionClassChain\":','\"reportedExceptionClassChain\":[],\"reportedExceptionClassChain\":'));\nrawReject('validPlusEscapedSourceStageKeyVeto',base+'\\n'+base.replace('\"sourceStage\":','\"source\\\\u0053tage\":'));\nrawReject('validPlusEscapedNewOriginKeyVeto',base+'\\n'+base.replace('\"reportedOrigin\":','\"reported\\\\u004frigin\":'));\nrawReject('malformedKnownStageVeto',base+'\\n'+base.slice(0,-1));\nrawReject('privacyInvalidKnownStageVeto',base+'\\n'+json(gw({reportedExceptionClassChain:['PRIVATE_SECRET_SENTINEL']})));\ntest('identicalDuplicateRecordsNoSelection',()=>{const r=project(base+'\\n'+base);assert.equal(r.records[0].count,2);assert.equal(r.records[0].outcome,null);});\ntest('crossOriginRecordsNoSelection',()=>{const r=project(base+'\\n'+json(rec()));assert.equal(r.records[0].count,2);assert.equal(r.records[0].outcome,null);});\ntest('historicalStudentThreeFieldIgnored',()=>{const r=project(json({state:'UNIQUE',sourceStage:'ATTENDANCE_STUDENT_PROJECTION',exceptionCategory:'INVALID_METRICS'})+'\\n'+base);assert.deepEqual(r.records[0].outcome,gw());assert.equal(r.invalidClosedCandidateCount,0);});\ntest('timestampPrefixSameFormat',()=>assert.deepEqual(project('2026-10-16T12:00:00.123Z '+base).records[0].outcome,gw()));\ntest('recordCapStill128KiB',()=>assert.equal(project(base.slice(0,-1)+' '.repeat(131073)+'}').records[0].outcome,null));\ntest('inputTypeGuardUnchanged',()=>assert.throws(()=>project(null),{message:'CLOSED_LOG_INPUT'}));\ntest('missingRecordNeverCause',()=>assert.ok(project('PRIVATE_SECRET_SENTINEL').records.every(x=>x.outcome===null)));\nconsole.log(json({state:'PASS',count,labels,consumerSourceSha256:crypto.createHash('sha256').update(source).digest('hex')}));\n",
+          "controls": {
+            "state": "PASS",
+            "count": 95,
+            "labels": [
+              "ATTENDANCE_LESSON_REPORT_UNIQUE",
+              "ATTENDANCE_LESSON_REPORT_REPORTED_PARTIAL_LOG_FORMAT",
+              "ATTENDANCE_LESSON_REPORT_REPORTED_NO_CONTROLLER",
+              "ATTENDANCE_LESSON_REPORT_REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER",
+              "ATTENDANCE_LESSON_REPORT_REPORTED_GATEWAY",
+              "ATTENDANCE_LESSON_REPORT_REPORTED_GATEWAY_PARTIAL_LOG_FORMAT",
+              "SCHEDULE_ONEOFF_LESSON_CREATE_UNIQUE",
+              "SCHEDULE_ONEOFF_LESSON_CREATE_REPORTED_PARTIAL_LOG_FORMAT",
+              "SCHEDULE_ONEOFF_LESSON_CREATE_REPORTED_NO_CONTROLLER",
+              "SCHEDULE_ONEOFF_LESSON_CREATE_REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER",
+              "SCHEDULE_ONEOFF_LESSON_CREATE_REPORTED_GATEWAY",
+              "SCHEDULE_ONEOFF_LESSON_CREATE_REPORTED_GATEWAY_PARTIAL_LOG_FORMAT",
+              "finiteClass_io.grpc.StatusRuntimeException",
+              "finiteClass_io.grpc.StatusException",
+              "finiteClass_org.postgresql.util.PSQLException",
+              "finiteClass_javax.net.ssl.SSLHandshakeException",
+              "finiteClass_java.net.ConnectException",
+              "finiteClass_java.lang.IllegalStateException",
+              "finiteClass_java.lang.IllegalArgumentException",
+              "finiteClass_java.lang.NullPointerException",
+              "finiteClass_org.springframework.dao.DataIntegrityViolationException",
+              "finiteClass_org.springframework.http.converter.HttpMessageNotWritableException",
+              "finiteClass_org.springframework.web.server.ResponseStatusException",
+              "finiteClass_reactor.netty.http.client.PrematureCloseException",
+              "knownOuterUnknownLeaf",
+              "UNIQUE_legacyEmptyChain",
+              "UNIQUE_legacyCategoryNotLast",
+              "REPORTED_PARTIAL_LOG_FORMAT_legacyEmptyChain",
+              "REPORTED_PARTIAL_LOG_FORMAT_legacyCategoryNotLast",
+              "AMBIGUOUS_exactDefault",
+              "AMBIGUOUS_rejectOrigin",
+              "AMBIGUOUS_rejectClass",
+              "UNAVAILABLE_PRIVATE_INPUT_exactDefault",
+              "UNAVAILABLE_TARGET_SIGNATURE_exactDefault",
+              "UNAVAILABLE_SERVICE_OWNERSHIP_exactDefault",
+              "UNAVAILABLE_LOG_CAPTURE_exactDefault",
+              "UNAVAILABLE_LOG_FORMAT_exactDefault",
+              "UNAVAILABLE_LOG_LIMIT_exactDefault",
+              "UNAVAILABLE_EXCEPTION_STACK_exactDefault",
+              "UNAVAILABLE_NO_ERROR_RECORD_exactDefault",
+              "INTERNAL_JWT_ISSUER_FILTER_ATTENDANCE_LESSON_REPORT_1",
+              "INTERNAL_JWT_ISSUER_FILTER_ATTENDANCE_LESSON_REPORT_608",
+              "INTERNAL_JWT_ISSUER_FILTER_SCHEDULE_ONEOFF_LESSON_CREATE_1",
+              "INTERNAL_JWT_ISSUER_FILTER_SCHEDULE_ONEOFF_LESSON_CREATE_608",
+              "INTERNAL_JWT_ISSUER_FILTER_overBound",
+              "INTERNAL_JWT_ISSUER_FILTER_wrongOrigin",
+              "INTERNAL_JWT_ISSUER_CLIENT_ATTENDANCE_LESSON_REPORT_1",
+              "INTERNAL_JWT_ISSUER_CLIENT_ATTENDANCE_LESSON_REPORT_474",
+              "INTERNAL_JWT_ISSUER_CLIENT_SCHEDULE_ONEOFF_LESSON_CREATE_1",
+              "INTERNAL_JWT_ISSUER_CLIENT_SCHEDULE_ONEOFF_LESSON_CREATE_474",
+              "INTERNAL_JWT_ISSUER_CLIENT_overBound",
+              "INTERNAL_JWT_ISSUER_CLIENT_wrongOrigin",
+              "domainFrameOrigin_ATTENDANCE_LESSON_REPORT",
+              "domainFrameCannotBeGateway_ATTENDANCE_LESSON_REPORT",
+              "domainFrameOrigin_SCHEDULE_ONEOFF_LESSON_CREATE",
+              "domainFrameCannotBeGateway_SCHEDULE_ONEOFF_LESSON_CREATE",
+              "missingOrigin",
+              "missingClasses",
+              "arbitraryOrigin",
+              "originArray",
+              "arbitraryClass",
+              "unlistedPublicClass",
+              "classesNull",
+              "classesObject",
+              "classNotString",
+              "class17",
+              "unequalChainLengths",
+              "wrongCategoryMap",
+              "classCategoryUnknownMismatch",
+              "gatewayEmptyChain",
+              "gatewayLeafMismatch",
+              "gatewayNeverUnique",
+              "gatewayCannotBeDomainFallback",
+              "frameBoolLine",
+              "frameZero",
+              "frameUnknown",
+              "frameExtra",
+              "privateExtra",
+              "domainCannotClaimGateway",
+              "wrongDomainForStage",
+              "historicalFiveFieldRejected",
+              "chain16Accepted",
+              "duplicateNewOriginKey",
+              "duplicateNewClassChainKey",
+              "validPlusEscapedSourceStageKeyVeto",
+              "validPlusEscapedNewOriginKeyVeto",
+              "malformedKnownStageVeto",
+              "privacyInvalidKnownStageVeto",
+              "identicalDuplicateRecordsNoSelection",
+              "crossOriginRecordsNoSelection",
+              "historicalStudentThreeFieldIgnored",
+              "timestampPrefixSameFormat",
+              "recordCapStill128KiB",
+              "inputTypeGuardUnchanged",
+              "missingRecordNeverCause"
+            ],
+            "consumerSourceSha256": "b031b4154be40b79f04c4e8513e16c3fbd69220c3e3f0e85926f257455a6151e",
+            "nodeExit": 0,
+            "wallSeconds": 0.148285,
+            "allProcessesReaped": true
+          },
+          "frozenUtc": "2026-10-16T12:20:17.778754+00:00",
+          "producerBindingChecks": {
+            "workflowFrozenHash": true,
+            "all3HeredocDecodedBytesIdentical": true,
+            "all11SourceFrameHashesAndBoundsMatchCanonical": true,
+            "exactCLASSES_ORIGINS_STAGES_OWN_FRAME_SOURCES_fromASTOnly": true
+          },
+          "minimalDelta": "Only existingfunction contract/7keys/origin+classchain+map/frame+Gatewaystates constraints; oldparse/duplicateescapedkeyveto/caps/multi-recordselection unchanged.",
+          "resourceSample": {
+            "workspaceFreeBytes": 4369489920,
+            "cgroupMemoryBytes": 7896256512
+          },
+          "minimalSourceDiff": [
+            "--- historical-five-field-3d7",
+            "+++ new-seven-field-consumer",
+            "@@ -1,9 +1,11 @@",
+            " function projectClosedHints(raw) {",
+            "   'use strict';",
+            "-  const contract = {\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"states\":[\"UNIQUE\",\"AMBIGUOUS\",\"REPORTED_PARTIAL_LOG_FORMAT\",\"REPORTED_NO_CONTROLLER\",\"REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER\",\"UNAVAILABLE_PRIVATE_INPUT\",\"UNAVAILABLE_TARGET_SIGNATURE\",\"UNAVAILABLE_SERVICE_OWNERSHIP\",\"UNAVAILABLE_LOG_CAPTURE\",\"UNAVAILABLE_LOG_FORMAT\",\"UNAVAILABLE_LOG_LIMIT\",\"UNAVAILABLE_EXCEPTION_STACK\",\"UNAVAILABLE_NO_ERROR_RECORD\"],\"categories\":[\"UNKNOWN\",\"GRPC_STATUS\",\"POSTGRESQL\",\"TLS_HANDSHAKE\",\"CONNECT\",\"ILLEGAL_STATE\",\"ILLEGAL_ARGUMENT\",\"NULL_POINTER\",\"DATA_INTEGRITY\",\"HTTP_SERIALIZATION\"],\"frames\":{\"ATTENDANCE_REPORT_SERVICE\":{\"stage\":\"ATTENDANCE_LESSON_REPORT\",\"maxLine\":1812},\"ATTENDANCE_READ_PORT\":{\"stage\":\"ATTENDANCE_LESSON_REPORT\",\"maxLine\":128},\"HEADMAN_APPROVED_TICKET_RESOLVER\":{\"stage\":\"ATTENDANCE_LESSON_REPORT\",\"maxLine\":96},\"ATTENDANCE_REPORT_CONTROLLER\":{\"stage\":\"ATTENDANCE_LESSON_REPORT\",\"maxLine\":303},\"SCHEDULE_ONEOFF_SERVICE\":{\"stage\":\"SCHEDULE_ONEOFF_LESSON_CREATE\",\"maxLine\":75},\"SCHEDULE_ONEOFF_COORDINATOR\":{\"stage\":\"SCHEDULE_ONEOFF_LESSON_CREATE\",\"maxLine\":181},\"SCHEDULE_ONEOFF_WRITER\":{\"stage\":\"SCHEDULE_ONEOFF_LESSON_CREATE\",\"maxLine\":856},\"SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE\":{\"stage\":\"SCHEDULE_ONEOFF_LESSON_CREATE\",\"maxLine\":265},\"SCHEDULE_ONEOFF_CONTROLLER\":{\"stage\":\"SCHEDULE_ONEOFF_LESSON_CREATE\",\"maxLine\":59}}};",
+            "+  const contract = {\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"states\":[\"UNIQUE\",\"AMBIGUOUS\",\"REPORTED_PARTIAL_LOG_FORMAT\",\"REPORTED_NO_CONTROLLER\",\"REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER\",\"UNAVAILABLE_PRIVATE_INPUT\",\"UNAVAILABLE_TARGET_SIGNATURE\",\"UNAVAILABLE_SERVICE_OWNERSHIP\",\"UNAVAILABLE_LOG_CAPTURE\",\"UNAVAILABLE_LOG_FORMAT\",\"UNAVAILABLE_LOG_LIMIT\",\"UNAVAILABLE_EXCEPTION_STACK\",\"UNAVAILABLE_NO_ERROR_RECORD\",\"REPORTED_GATEWAY\",\"REPORTED_GATEWAY_PARTIAL_LOG_FORMAT\"],\"categories\":[\"UNKNOWN\",\"GRPC_STATUS\",\"POSTGRESQL\",\"TLS_HANDSHAKE\",\"CONNECT\",\"ILLEGAL_STATE\",\"ILLEGAL_ARGUMENT\",\"NULL_POINTER\",\"DATA_INTEGRITY\",\"HTTP_SERIALIZATION\",\"HTTP_STATUS\",\"UPSTREAM_CLOSED\"],\"origins\":[\"UNKNOWN\",\"ATTENDANCE_MVC\",\"SCHEDULE_MVC\",\"GATEWAY_WEBFLUX\"],\"classes\":{\"io.grpc.StatusRuntimeException\":\"GRPC_STATUS\",\"io.grpc.StatusException\":\"GRPC_STATUS\",\"org.postgresql.util.PSQLException\":\"POSTGRESQL\",\"javax.net.ssl.SSLHandshakeException\":\"TLS_HANDSHAKE\",\"java.net.ConnectException\":\"CONNECT\",\"java.lang.IllegalStateException\":\"ILLEGAL_STATE\",\"java.lang.IllegalArgumentException\":\"ILLEGAL_ARGUMENT\",\"java.lang.NullPointerException\":\"NULL_POINTER\",\"org.springframework.dao.DataIntegrityViolationException\":\"DATA_INTEGRITY\",\"org.springframework.http.converter.HttpMessageNotWritableException\":\"HTTP_SERIALIZATION\",\"org.springframework.web.server.ResponseStatusException\":\"HTTP_STATUS\",\"reactor.netty.http.client.PrematureCloseException\":\"UPSTREAM_CLOSED\"},\"stageOrigins\":{\"ATTENDANCE_LESSON_REPORT\":\"ATTENDANCE_MVC\",\"SCHEDULE_ONEOFF_LESSON_CREATE\":\"SCHEDULE_MVC\"},\"frames\":{\"ATTENDANCE_REPORT_SERVICE\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":1812},\"ATTENDANCE_READ_PORT\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":128},\"HEADMAN_APPROVED_TICKET_RESOLVER\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":96},\"ATTENDANCE_REPORT_CONTROLLER\":{\"origin\":\"ATTENDANCE_MVC\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\"],\"maxLine\":303},\"SCHEDULE_ONEOFF_SERVICE\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":75},\"SCHEDULE_ONEOFF_COORDINATOR\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":181},\"SCHEDULE_ONEOFF_WRITER\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":856},\"SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":265},\"SCHEDULE_ONEOFF_CONTROLLER\":{\"origin\":\"SCHEDULE_MVC\",\"stages\":[\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":59},\"INTERNAL_JWT_ISSUER_FILTER\":{\"origin\":\"GATEWAY_WEBFLUX\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":608},\"INTERNAL_JWT_ISSUER_CLIENT\":{\"origin\":\"GATEWAY_WEBFLUX\",\"stages\":[\"ATTENDANCE_LESSON_REPORT\",\"SCHEDULE_ONEOFF_LESSON_CREATE\"],\"maxLine\":474}}};",
+            "   const stages = contract.stages;",
+            "   const states = new Set(contract.states);",
+            "   const categories = new Set(contract.categories);",
+            "+  const origins = new Set(contract.origins);",
+            "+  const classNames = new Set([...Object.keys(contract.classes), 'UNKNOWN']);",
+            "   if (typeof raw !== 'string') throw new Error('CLOSED_LOG_INPUT');",
+            "   const receivedBytes = encodeURIComponent(raw).replace(/%[A-F\\d]{2}/gi, 'x').length;",
+            "   if (receivedBytes > 33554432) throw new Error('POST_RESPONSE_LOG_CAP');",
+            "@@ -13,7 +15,7 @@",
+            "   let unknownStageCount = 0;",
+            "   const exactKeys = (value, expected) => value !== null && typeof value === 'object'",
+            "     && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify(expected);",
+            "-  const topKeys = ['exceptionCategory', 'reportedExceptionChain', 'reportedOwnFrame', 'sourceStage', 'state'];",
+            "+  const topKeys = ['exceptionCategory', 'reportedExceptionChain', 'reportedExceptionClassChain', 'reportedOrigin', 'reportedOwnFrame', 'sourceStage', 'state'];",
+            "   for (const line of raw.split('\\n')) {",
+            "     const textLine = line.replace(/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?Z\\s+/, '').trim();",
+            "     if (!textLine.startsWith('{')) continue;",
+            "@@ -35,25 +37,38 @@",
+            "       && exactKeys(value, topKeys)",
+            "       && states.has(value.state) && categories.has(value.exceptionCategory)",
+            "       && Array.isArray(value.reportedExceptionChain) && value.reportedExceptionChain.length <= 16",
+            "-      && value.reportedExceptionChain.every(category => typeof category === 'string' && categories.has(category));",
+            "+      && value.reportedExceptionChain.every(category => typeof category === 'string' && categories.has(category))",
+            "+      && origins.has(value.reportedOrigin)",
+            "+      && Array.isArray(value.reportedExceptionClassChain)",
+            "+      && value.reportedExceptionClassChain.length === value.reportedExceptionChain.length",
+            "+      && value.reportedExceptionClassChain.every((name, index) => typeof name === 'string'",
+            "+        && classNames.has(name)",
+            "+        && value.reportedExceptionChain[index] === (name === 'UNKNOWN' ? 'UNKNOWN' : contract.classes[name]));",
+            "     const frame = value.reportedOwnFrame;",
+            "     if (valid && frame !== null) {",
+            "       const spec = frame !== null && typeof frame === 'object'",
+            "         && Object.prototype.hasOwnProperty.call(contract.frames, frame.symbol)",
+            "         ? contract.frames[frame.symbol] : null;",
+            "       valid = exactKeys(frame, ['line', 'symbol']) && spec !== null",
+            "-        && spec.stage === value.sourceStage",
+            "+        && spec.stages.includes(value.sourceStage) && spec.origin === value.reportedOrigin",
+            "         && Number.isSafeInteger(frame.line) && frame.line >= 1 && frame.line <= spec.maxLine;",
+            "     }",
+            "     const controllerState = value.state === 'UNIQUE' || value.state === 'REPORTED_PARTIAL_LOG_FORMAT';",
+            "     const fallbackState = value.state === 'REPORTED_NO_CONTROLLER'",
+            "       || value.state === 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER';",
+            "-    if (valid && fallbackState) {",
+            "-      valid = value.reportedExceptionChain.length >= 1",
+            "+    const gatewayState = value.state === 'REPORTED_GATEWAY'",
+            "+      || value.state === 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT';",
+            "+    if (valid && controllerState) {",
+            "+      valid = value.reportedOrigin === contract.stageOrigins[value.sourceStage];",
+            "+    } else if (valid && (fallbackState || gatewayState)) {",
+            "+      valid = value.reportedOrigin === (gatewayState",
+            "+        ? 'GATEWAY_WEBFLUX' : contract.stageOrigins[value.sourceStage])",
+            "+        && value.reportedExceptionChain.length >= 1",
+            "         && value.exceptionCategory === value.reportedExceptionChain[value.reportedExceptionChain.length - 1];",
+            "-    } else if (valid && !controllerState) {",
+            "-      valid = value.exceptionCategory === 'UNKNOWN' && value.reportedExceptionChain.length === 0",
+            "-        && frame === null;",
+            "+    } else if (valid) {",
+            "+      valid = value.reportedOrigin === 'UNKNOWN'",
+            "+        && value.exceptionCategory === 'UNKNOWN' && value.reportedExceptionChain.length === 0",
+            "+        && value.reportedExceptionClassChain.length === 0 && frame === null;",
+            "     }",
+            "     const expectedKeys = frame === null ? topKeys : [...topKeys, 'line', 'symbol'];",
+            "     valid = valid && keys.length === expectedKeys.length"
+          ]
+        }
+      },
+      "adminSemesterHiddenCalendarProductFixGO": {
+        "utc": "2026-10-16T12:16:26.127250+00:00",
+        "id": "DEF-ADMIN-SEMESTER-HIDDEN-CALENDAR-BACK",
+        "severity": "S2",
+        "writer": "c86 sameq09WT soleproductUIwriter",
+        "path": "frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue",
+        "preSha256": "b62e52690f1d17c4fb7f7cae9e9fec4452e65ec7f5927c68fbaa27356dd3f927",
+        "scope": "Applycurrentrutcampustrack-design beforeUIedit. Minimal successful-save lifecycle correction clearcalendarField adjacentformhide, consistentexistingcloseForm/clientwatch/authoritywatch; no design/chooseDate/datevalidation/API/authority changes. Preservefailedsave form/error behavior. ExistingunchangedAdminUIcase2351/nativeframe852 isregressioncarrier, no newUItestframework/forcednavigation/test-onlymanualpickerclose.",
+        "verification": "CachedVueformat/parser/applicabletypecheck; independentc85Source review; Rootexactcopy/typecheck andordinarygenuineAdminUI scenario samepath. NativebeforeFAIL7d retained; afterNOT_RUN untilactual. B35/B15separateproofgaps notholdingminimalfix.",
+        "ownership": "Onlythiscomponent authorizednewUIpath; RootGit/sharedDocs/pins, c89soleCI, c91solebackfillprivatecontract/migrationplan. No Angular/newweb/Figmawrite/production/localnative/Gradle/DB/browser/newdeps.",
+        "sourceOutcome": {
+          "utc": "2026-10-16T12:20:20.889438+00:00",
+          "sha256": "649f39063a9bea2a53241a0122ef3a2bca3e71603b77e2c42dbdcc6d67cc1d03",
+          "change": "ExactlycalendarField.value=null539 beforeformVisible=false successfulsave; inverseexactb62. Existingfixtured441 unchanged.",
+          "checks": "Actualdesignskill/currentreferencesread; projectactualVueformatter wholeapply/check0+SFCparse;9actualextractedSFCcontrols oldsave/back counterexample→newcreate/editback+failed/error/denied/overlap/cancel/chooseDate invariants. ActualstrictVueTSC oneSFC RAMoverlay currentRootconfigPASS3.746s, nativeNOT_RUN. Initialwrongstandaloneformatterexperimentundone; exact1linefinal.",
+          "review": "c85 independentonehunkpending"
+        },
+        "independentReview": {
+          "verdict": "APPROVE_SOURCE_ONLY",
+          "P1": [],
+          "P2": [],
+          "selectedModelEffort": "gpt-6.1-sol/high",
+          "actualModelEffort": "UNKNOWN",
+          "sourcePins": [
+            {
+              "path": "/workspace/rct-worktrees/q09-client-remaining-20261014/frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue",
+              "sourceRef": "c86-frozen-successful-save-lifecycle-correction",
+              "sha256": "649f39063a9bea2a53241a0122ef3a2bca3e71603b77e2c42dbdcc6d67cc1d03"
+            },
+            {
+              "path": "frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue",
+              "sourceRef": "7d4df8bc1f17d9d85c5153a61697ca7ade96a519",
+              "sha256": "b62e52690f1d17c4fb7f7cae9e9fec4452e65ec7f5927c68fbaa27356dd3f927"
+            }
+          ],
+          "findingClosure": {
+            "id": "DEF-ADMIN-SEMESTER-HIDDEN-CALENDAR-BACK",
+            "line": 539,
+            "cause": "chooseCalendarDate249 retains inline selected calendar; successful save used to hide form without clearing calendarField, so back221 consumed an invisible task instead of emitting parent navigation246.",
+            "change": "Successful current-owner create/update clears calendarField adjacent to formVisible=false; consistent with closeForm369, openCreate351/openEdit380, client watcher278 and authority watcher2123.",
+            "failureBehavior": "Validation/denied/overlap/failed mutation branches return or throw before this one line; visible form/picker/input/error/retry stay unchanged. Disposed/stale authority/client callback guard524-530 remains before clearing state. No picker-selection/template/API/style/rights or reset-on-failure change."
+          },
+          "design": {
+            "skill": "/workspace/rct-cloud-skills-20261011/project/rutcampustrack-design/SKILL.md",
+            "sources": [
+              "docs/wireframes/admin/134-admin-semesters.md:33/84/109",
+              "docs/design/COMPONENT_REGISTRY.md mobile shell/task and Admin mobile addenda",
+              "docs/design/brandbook-v2.md",
+              "docs/design/tokens-v2.json",
+              "docs/product/reference-rutcampustrack-design/BRAND_DIRECTION.md",
+              "docs/product/reference-rutcampustrack-design/A11Y_REQUIREMENTS.md"
+            ],
+            "qualification": "Retains accepted inline form/calendar and shell Back state ownership; no new visuals/components/tokens or desktop-only restriction applied to mobile."
+          },
+          "checks": {
+            "reviewer": "Read-only candidate hash + exact one-line diff vs immutable7d + save/back/choose/closeForm/template + targeted design source and author control implementation inspected. No reviewer execution.",
+            "authorReported": "9 actual extracted-SFC controls old counterexample/new create+edit first Back and failure/overlap/denied/invalid/choose/cancel; project Vue formatter/parser and stock strict one-SFC overlay VueTSC PASS. These are Source/component controls, not genuine browser acceptance.",
+            "fixtureSha256": "d4415c84ffc439989ede663a679e8cc550b71322cf2552622bc3f20e5c5e0930",
+            "newRuntime": "NOT_RUN",
+            "existingNativeFailure": "Original7d AdminUI2351 FAIL frame852 retained. Latent calendar is a valid Source counterexample; unique actual old failure cause not captured.",
+            "actualAfter": "NOT_RUN",
+            "B013_B014_B015": "FROZEN_UNCHANGED"
+          }
+        }
+      },
+      "nextProductAndDiagnosticLocalIntegration": {
+        "utc": "2026-10-16T12:26:56.362097+00:00",
+        "parent": "ad0b785a8ca1921795b8dfafb1deb1b60704e927",
+        "state": "LOCAL_SOURCE_REVIEWED_CHECKED_READY_TO_COMMIT_PUSH",
+        "files": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue",
+            "sha256": "649f39063a9bea2a53241a0122ef3a2bca3e71603b77e2c42dbdcc6d67cc1d03"
+          },
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha256": "d99ce29d20bde6347359af72a7e460ab932ed3c1ec5d19107743f930bb51e2d2"
+          }
+        ],
+        "independent": "c85UI/c93producer+consumer APPROVE_SOURCE_ONLY",
+        "canonicalPins": 310,
+        "allMatch": true,
+        "RootChecks": {
+          "utc": "2026-10-16T12:43:33.677645+00:00",
+          "scopedActualDiskVueTsc": {
+            "session": 46279,
+            "start": "1630f3",
+            "completion": "d1861c",
+            "exit": 0,
+            "config": "/tmp/rct-root-admin-calendar-vue-tsconfig.json",
+            "scope": "actual AdminSemesterScreen.vue and transitive imports; no Source overlay; noEmit; 512MiB"
+          },
+          "configuredHooks": {
+            "session": 42570,
+            "start": "7c8834",
+            "completion": "951695",
+            "exit": 0,
+            "scope": "two Source files and seven owned task documents",
+            "checks": [
+              "Gitleaks",
+              "YAML",
+              "JSON",
+              "large files",
+              "EOF",
+              "trailing whitespace"
+            ]
+          }
+        },
+        "qualification": "Firstpost-copyregistryassert assumedunchangedUIalreadyamong309; itwasnot. AddedexplicitnewlymodifiedUIpath to310, existingCIpinupdated; noProductSourcefailure/rollback/foreignchange. Review/planpersistedbeforecopy.",
+        "next": "Commit/push reviewedUI+Gatewaydiag tip aftercachedchecks; ad0fourcriticaltests+mobile included. c91independentWTbackfillGO/V61reserved; no native local or publicationdelay.",
+        "RootPwaFullTypecheckAttempt": {
+          "session": 10552,
+          "start": "2efc0f",
+          "completion": "c5510f",
+          "exit": 134,
+          "result": "NODE_768MiB_HEAP_OOM_AFTER29s_NO_TS_DIAGNOSTIC",
+          "qualification": "NoEmit/ulimitcore0; 768MiB full-project attempt exhausted its Node heap without TS diagnostic. Subsequent actual disk scoped SFC and transitive imports check passed, session46279/d1861c. Full ordinary frontend CI gates remain mandatory."
+        }
       }
     }
   }

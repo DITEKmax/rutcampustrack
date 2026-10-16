@@ -536,6 +536,7 @@ async function saveSemester(): Promise<void> {
     academicYearTouched.value = false;
     dateFrom.value = '';
     dateTo.value = '';
+    calendarField.value = null;
     formVisible.value = false;
     formMode.value = 'create';
     notice.value = wasEditing ? 'Изменения семестра сохранены.' : 'Семестр создан.';

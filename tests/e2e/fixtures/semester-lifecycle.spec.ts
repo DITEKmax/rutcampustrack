@@ -4614,8 +4614,92 @@ function subjectCascadeReadback(deadline: number) {
     wanted.every((name) => secret[name]),
     'Subject deletion CI credentials are required',
   );
+  type MongoFailureFamily =
+    | 'AUTH'
+    | 'MONGO_SELECTION'
+    | 'MONGO_NETWORK'
+    | 'MONGO_PARSE'
+    | 'MONGO_SERVER'
+    | 'JS_REFERENCE'
+    | 'JS_TYPE'
+    | 'JS_SYNTAX'
+    | 'DOCKER_EXEC'
+    | 'AMBIGUOUS'
+    | 'UNKNOWN';
+  const mongoFailureFamily = (error: unknown): MongoFailureFamily => {
+    try {
+      if (error === null || typeof error !== 'object') return 'UNKNOWN';
+      const text: string[] = [];
+      let bytes = 0;
+      const byteLength = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(Uint8Array.prototype),
+        'byteLength',
+      )?.get;
+      for (const name of ['stdout', 'stderr']) {
+        const descriptor = Object.getOwnPropertyDescriptor(error, name);
+        if (!descriptor || !('value' in descriptor)) return 'UNKNOWN';
+        const value: unknown = descriptor.value;
+        if (typeof value === 'string') {
+          bytes += Buffer.byteLength(value, 'utf8');
+          if (bytes > 65536) return 'UNKNOWN';
+          text.push(value);
+        } else if (Buffer.isBuffer(value) && byteLength) {
+          const length: unknown = Reflect.apply(byteLength, value, []);
+          if (typeof length !== 'number' || !Number.isSafeInteger(length) || length < 0)
+            return 'UNKNOWN';
+          bytes += length;
+          if (bytes > 65536) return 'UNKNOWN';
+          text.push(
+            new TextDecoder('utf-8', { fatal: true }).decode(value as Uint8Array<ArrayBuffer>),
+          );
+        } else return 'UNKNOWN';
+      }
+      const lines = text.join('\n').split(/\r?\n/);
+      if (
+        lines.length > 200 ||
+        text.some((value) => {
+          for (const character of value) {
+            const code = character.charCodeAt(0);
+            if (
+              (code < 32 && code !== 9 && code !== 10 && code !== 13) ||
+              code === 127 ||
+              code === 65533
+            )
+              return true;
+          }
+          return false;
+        })
+      )
+        return 'UNKNOWN';
+      const families = new Set<MongoFailureFamily>();
+      let bareServerParent = false;
+      for (const entry of lines) {
+        const line = entry.trim();
+        if (/^MongoServerError: Authentication failed\.?$/.test(line)) families.add('AUTH');
+        else if (/^MongoServerSelectionError:/.test(line)) families.add('MONGO_SELECTION');
+        else if (/^MongoNetwork(?:Timeout)?Error:/.test(line)) families.add('MONGO_NETWORK');
+        else if (/^MongoParseError:/.test(line)) families.add('MONGO_PARSE');
+        else if (/^MongoServerError:?$/.test(line)) bareServerParent = true;
+        else if (/^MongoServerError:/.test(line)) families.add('MONGO_SERVER');
+        else if (/^ReferenceError:/.test(line)) families.add('JS_REFERENCE');
+        else if (/^TypeError:/.test(line)) families.add('JS_TYPE');
+        else if (/^SyntaxError:/.test(line)) families.add('JS_SYNTAX');
+        else if (/^(?:OCI runtime exec failed:|Error response from daemon:)/.test(line))
+          families.add('DOCKER_EXEC');
+      }
+      if (bareServerParent && !families.has('AUTH')) families.add('MONGO_SERVER');
+      if (families.size > 1) return 'AMBIGUOUS';
+      return families.values().next().value ?? 'UNKNOWN';
+    } catch {
+      return 'UNKNOWN';
+    }
+  };
   let readbackNativeFailure:
-    | { error: Error; reason: 'TIMEOUT' | 'OUTPUT_BOUND' | 'EXIT_NONZERO' | 'UNKNOWN' }
+    | {
+        error: Error;
+        reason: 'TIMEOUT' | 'OUTPUT_BOUND' | 'EXIT_NONZERO' | 'UNKNOWN';
+        family: MongoFailureFamily;
+      }
     | undefined;
   const docker = (args: string[], input?: string, extra: Record<string, string> = {}) => {
     const remaining = Math.floor(deadline - performance.now());
@@ -4642,19 +4726,38 @@ function subjectCascadeReadback(deadline: number) {
         // Uninspectable errors stay UNKNOWN; never read native output or accessors.
       }
       const failure = new Error('Subject deletion owned readback failed');
+      const reason =
+        code === 'ETIMEDOUT'
+          ? 'TIMEOUT'
+          : code === 'ENOBUFS'
+            ? 'OUTPUT_BOUND'
+            : typeof status === 'number' &&
+                Number.isSafeInteger(status) &&
+                status > 0 &&
+                status <= 255
+              ? 'EXIT_NONZERO'
+              : 'UNKNOWN';
+      const selectedMongo = [
+        'exec',
+        '-i',
+        '-e',
+        'RCT_MONGO_PASSWORD',
+        pins['mongo-attendance']?.id,
+        'mongosh',
+        '--quiet',
+        '--nodb',
+        '--file',
+        '/dev/stdin',
+      ];
       readbackNativeFailure = {
         error: failure,
-        reason:
-          code === 'ETIMEDOUT'
-            ? 'TIMEOUT'
-            : code === 'ENOBUFS'
-              ? 'OUTPUT_BOUND'
-              : typeof status === 'number' &&
-                  Number.isSafeInteger(status) &&
-                  status > 0 &&
-                  status <= 255
-                ? 'EXIT_NONZERO'
-                : 'UNKNOWN',
+        reason,
+        family:
+          reason === 'EXIT_NONZERO' &&
+          args.length === selectedMongo.length &&
+          args.every((value, index) => value === selectedMongo[index])
+            ? mongoFailureFamily(error)
+            : 'UNKNOWN',
       };
       throw failure;
     }
@@ -4838,6 +4941,7 @@ budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:
       attendance = JSON.parse(raw);
     } catch (error) {
       let failure: Error;
+      let family: MongoFailureFamily | undefined;
       if (mongoStage === 'IDENTITY') {
         failure = new Error('Subject deletion Mongo projection is invalid');
       } else if (mongoStage === 'PARSE') {
@@ -4859,6 +4963,7 @@ budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:
         readbackNativeFailure.error === error &&
         readbackNativeFailure.reason === 'EXIT_NONZERO'
       ) {
+        family = readbackNativeFailure.family;
         failure = new Error('Subject deletion Mongo projection is invalid');
       } else {
         failure = new Error('Subject deletion Mongo projection is invalid');
@@ -4870,6 +4975,43 @@ budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:
           expect.soft(false, 'SUBJECT_MONGO_AFTER').toBe(true);
         } else if (phase === 'REPLAY') {
           expect.soft(false, 'SUBJECT_MONGO_REPLAY').toBe(true);
+        }
+        if (family !== undefined) {
+          switch (family) {
+            case 'AUTH':
+              expect.soft(false, 'SUBJECT_MONGO_AUTH').toBe(true);
+              break;
+            case 'MONGO_SELECTION':
+              expect.soft(false, 'SUBJECT_MONGO_SELECTION').toBe(true);
+              break;
+            case 'MONGO_NETWORK':
+              expect.soft(false, 'SUBJECT_MONGO_NETWORK').toBe(true);
+              break;
+            case 'MONGO_PARSE':
+              expect.soft(false, 'SUBJECT_MONGO_URI_PARSE').toBe(true);
+              break;
+            case 'MONGO_SERVER':
+              expect.soft(false, 'SUBJECT_MONGO_SERVER').toBe(true);
+              break;
+            case 'JS_REFERENCE':
+              expect.soft(false, 'SUBJECT_MONGO_JS_REFERENCE').toBe(true);
+              break;
+            case 'JS_TYPE':
+              expect.soft(false, 'SUBJECT_MONGO_JS_TYPE').toBe(true);
+              break;
+            case 'JS_SYNTAX':
+              expect.soft(false, 'SUBJECT_MONGO_JS_SYNTAX').toBe(true);
+              break;
+            case 'DOCKER_EXEC':
+              expect.soft(false, 'SUBJECT_MONGO_DOCKER_EXEC').toBe(true);
+              break;
+            case 'AMBIGUOUS':
+              expect.soft(false, 'SUBJECT_MONGO_FAMILY_AMBIGUOUS').toBe(true);
+              break;
+            case 'UNKNOWN':
+              expect.soft(false, 'SUBJECT_MONGO_FAMILY_UNKNOWN').toBe(true);
+              break;
+          }
         }
       } catch {
         // Diagnostic failure cannot replace this same fixed primary error.

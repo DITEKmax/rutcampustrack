@@ -234,6 +234,7 @@ test('student uses Today quick request after the genuine first lesson closes @cl
       expect(own.length).toBe(1);
       return own[0];
     };
+    let beforeRequest: Awaited<ReturnType<typeof mark>>;
     await expect
       .poll(
         async () => {
@@ -249,11 +250,22 @@ test('student uses Today quick request after the genuine first lesson closes @cl
           const own = options.lessons.filter(
             (option: { lesson: { id: string } }) => option.lesson.id === lessonId,
           );
+          if (
+            !(
+              own.length === 1 &&
+              own[0].lateCheckinEligible === true &&
+              Array.isArray(own[0].pendingRequests) &&
+              own[0].pendingRequests.length === 0
+            )
+          )
+            return false;
+          beforeRequest = await mark();
           return (
-            own.length === 1 &&
-            own[0].lateCheckinEligible === true &&
-            Array.isArray(own[0].pendingRequests) &&
-            own[0].pendingRequests.length === 0
+            beforeRequest.status === 'absent' &&
+            beforeRequest.source === 'auto_scheduler' &&
+            typeof beforeRequest.markRevision === 'string' &&
+            beforeRequest.markRevision.length > 0 &&
+            beforeRequest.markRevision !== 'EMPTY'
           );
         },
         {
@@ -263,7 +275,6 @@ test('student uses Today quick request after the genuine first lesson closes @cl
         },
       )
       .toBe(true);
-    const beforeRequest = await mark();
     expect(beforeRequest.status).toBe('absent');
     expect(beforeRequest.source).toBe('auto_scheduler');
     expect(

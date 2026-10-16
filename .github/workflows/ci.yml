@@ -2683,7 +2683,7 @@ jobs:
           printf 'RCT_E2E_GEO_RUN=%s\n' "$RCT_E2E_GEO_RUN" >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_E2E_GEO_RUN"
           mkdir -m 700 -- "$RCT_E2E_GEO_RUN/artifacts"
-          npx playwright test --config playwright.teaching-clock.config.ts --project=chromium
+          npx playwright test --config playwright.teaching-clock.config.ts --project=chromium --grep 'real geolocation confirms fresh student, then D005 manual absence rejects the blocked attempt$'
 
       - name: Upload closed student geolocation outcome
         if: always() && steps.student-geo.outcome != 'skipped'
@@ -3248,6 +3248,10 @@ jobs:
                   kinds = throwable.findall(stack)
                   matches.append(CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN')
               if unusable:
+                  if len(matches) == 1:
+                      return output('REPORTED_PARTIAL_LOG_FORMAT', stage, matches[0])
+                  if matches:
+                      return output('AMBIGUOUS', stage)
                   return output('UNAVAILABLE_LOG_FORMAT', stage)
               if len(matches) > 1:
                   return output('AMBIGUOUS', stage)
@@ -3369,8 +3373,9 @@ jobs:
         run: |
           umask 077
           printf 'RCT_ASSIGNMENT_LIFECYCLE_RUN=%s\n' "$RCT_ASSIGNMENT_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          printf 'restorationSucceeded=false\n' >> "$GITHUB_OUTPUT"
           python3 - <<'PY_ASSIGNMENT'
-          import datetime, json, os, re, selectors, subprocess, time
+          import datetime, json, os, re, selectors, stat, subprocess, time
           from pathlib import Path
 
           root = Path.cwd()
@@ -3393,10 +3398,44 @@ jobs:
           def inspect(cid):
               info = json.loads(call(['docker', 'inspect', cid], seconds=15))[0]
               labels = info['Config']['Labels']
-              if (labels.get('com.docker.compose.project') != 'rct-e2e'
+              if (info['Id'] != cid or labels.get('com.docker.compose.project') != 'rct-e2e'
                       or labels.get('com.docker.compose.service') != 'schedule-service'):
                   raise RuntimeError('Schedule ownership mismatch')
               return info
+
+          def clock_snapshot():
+              directory = Path(os.environ['RCT_E2E_TEACHING_CLOCK_DIR'])
+              expected = Path(os.environ['RUNNER_TEMP']) / ('rct-first3-clock-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+              info = directory.lstat()
+              if (directory != expected or not stat.S_ISDIR(info.st_mode) or directory.is_symlink()
+                      or info.st_uid != os.getuid()):
+                  raise RuntimeError('Assignment clock directory ownership mismatch')
+              directory_identity = (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid)
+              def read_owned(name, limit):
+                  path = directory / name
+                  before = path.lstat()
+                  with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                      info = os.fstat(stream.fileno())
+                      if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                              or stat.S_IMODE(info.st_mode) != 0o644 or not 0 < info.st_size <= limit
+                              or (before.st_dev, before.st_ino) != (info.st_dev, info.st_ino)):
+                          raise RuntimeError('Assignment clock file ownership mismatch')
+                      value = stream.read(limit + 1)
+                      identity = (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+                                  info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+                      after = os.fstat(stream.fileno())
+                      if (len(value) != info.st_size
+                              or identity != (after.st_dev, after.st_ino, after.st_mode, after.st_uid,
+                                              after.st_gid, after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
+                          raise RuntimeError('Assignment clock file changed while reading')
+                      return value, identity
+              marker = read_owned('disposable-target', 64)
+              if marker[0] != b'RCT_E2E_DISPOSABLE\n':
+                  raise RuntimeError('Assignment clock disposable marker mismatch')
+              clock = read_owned('current-instant', 128)
+              if not re.fullmatch(rb'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z\n?', clock[0]):
+                  raise RuntimeError('Assignment clock input mismatch')
+              return directory_identity, marker, clock
 
           def api(phase, restart_ready_until_ms=None):
               env = {**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase}
@@ -3485,11 +3524,12 @@ jobs:
                                 'singleOperation': len(operations) == 1, 'warnings': warnings[-4:]}))
 
           cid = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
-          if not cid:
+          if not re.fullmatch('[0-9a-f]{64}', cid):
               raise SystemExit('Owned Schedule is missing')
           original = inspect(cid)
           if not original['State']['Running'] or original['State'].get('Health', {}).get('Status') != 'healthy':
               raise SystemExit('Owned Schedule is not ready')
+          original_clock = clock_snapshot()
           restart_needed = False
           stage = 'prepare'
           resume_since = None
@@ -3532,6 +3572,15 @@ jobs:
           finally:
               if restart_needed:
                   restart()
+              current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
+              info = inspect(current)
+              if (current != cid or info['Image'] != original['Image']
+                      or not info['State']['Running']
+                      or info['State'].get('Health', {}).get('Status') != 'healthy'
+                      or clock_snapshot() != original_clock):
+                  raise RuntimeError('Assignment restoration could not be verified')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+                  output.write('restorationSucceeded=true\n')
           PY_ASSIGNMENT
 
       - name: Upload closed assignment lifecycle outcomes
@@ -3554,7 +3603,7 @@ jobs:
       - name: Verify real Vue schedule lifecycle and attendance requests
         id: lesson-lifecycle
         timeout-minutes: 17
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3650,7 +3699,7 @@ jobs:
       - name: Restore a real application checkpoint into fresh disposable databases
         id: application-recovery
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -4040,6 +4089,35 @@ jobs:
         with:
           name: subject-deletion-safe-${{ github.run_attempt }}
           path: ${{ env.RCT_SUBJECT_DELETE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Verify Today quick request after the genuine first lesson closes
+        id: student-today-quick-request
+        timeout-minutes: 4
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.application-recovery.outcome == 'success' && steps.semester-lifecycle.outcome == 'success' && steps.subject-deletion-cascade.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_GEO_RUN: ${{ runner.temp }}/rct-student-today-quick-request-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_STUDENT_TODAY_RUN=%s\n' "$RCT_E2E_GEO_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_E2E_GEO_RUN"
+          mkdir -m 700 -- "$RCT_E2E_GEO_RUN/artifacts"
+          npx playwright test --config playwright.teaching-clock.config.ts --project=chromium --grep 'student uses Today quick request after the genuine first lesson closes @cloud-accepted$'
+
+      - name: Upload closed Today quick request outcome
+        if: always() && steps.student-today-quick-request.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-today-quick-request-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_STUDENT_TODAY_RUN }}/artifacts/safe-results.json
           if-no-files-found: error
           retention-days: 7
 

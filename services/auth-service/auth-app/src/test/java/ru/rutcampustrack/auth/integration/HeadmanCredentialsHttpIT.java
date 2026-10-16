@@ -682,11 +682,19 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
             if (first != null) first.cancel(true);
             if (second != null) second.cancel(true);
             executor.shutdownNow();
+            long cleanupDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
             boolean reaped = false;
             try {
-                reaped =
-                        executor.awaitTermination(15, TimeUnit.SECONDS)
-                                && owned.stream().noneMatch(Thread::isAlive);
+                boolean terminated =
+                        executor.awaitTermination(
+                                Math.max(0, cleanupDeadline - System.nanoTime()),
+                                TimeUnit.NANOSECONDS);
+                for (Thread thread : List.copyOf(owned)) {
+                    long remaining = cleanupDeadline - System.nanoTime();
+                    if (remaining <= 0) break;
+                    TimeUnit.NANOSECONDS.timedJoin(thread, remaining);
+                }
+                reaped = terminated && owned.stream().noneMatch(Thread::isAlive);
             } catch (InterruptedException failure) {
                 Thread.currentThread().interrupt();
             }

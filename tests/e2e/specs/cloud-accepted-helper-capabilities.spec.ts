@@ -211,7 +211,7 @@ test('VIEW_STATS renders own group but grants neither marking, roster export nor
   expect(typeof htmlFormat?.label === 'string' && htmlFormat.label.length > 0).toBe(true);
   await page.getByRole('button', { name: 'Скачать состав группы', exact: true }).click();
   const rosterSheet = page.getByRole('dialog', { name: 'Состав группы', exact: true });
-  await rosterSheet.getByLabel('Формат файла', { exact: true }).selectOption('html');
+  await rosterSheet.getByLabel(/^Формат файла/).selectOption('html');
   const uiDateBefore = realMoscowDate.format(new Date());
   const created = http(page, '/api/auth/export-jobs', 'POST');
   const issued = page.waitForResponse(
@@ -343,10 +343,13 @@ test('MANAGE_HOMEWORK edits another author through Vue and revoked edit has no e
 test('CANCEL_LESSONS confirms a real cancellation and revoked restore cannot resurrect it @cloud-accepted', async ({
   page,
   dataset,
-}) => {
+}, info) => {
+  const cutoff =
+    (retryStartedAt.get(info) ?? performance.now()) + Math.min(info.timeout, 120000) - 30000;
+  const retryUntilMs = Date.now() + Math.max(0, cutoff - performance.now());
   const { user, grant } = await singleCapability(dataset, 'CANCEL_LESSONS');
   const lesson = await oneOff(dataset, dataset.today, 8);
-  const { accessToken } = await loginPwa(page, user);
+  const { accessToken } = await loginPwa(page, user, { retryUntilMs });
   await openAssistant(page, 'Посещаемость и журнал');
   // An early next click during loadLessons() advances the date while lessons is empty.
   await expect(page.locator('.headman-journal__date-nav output')).toContainText('1 пара');

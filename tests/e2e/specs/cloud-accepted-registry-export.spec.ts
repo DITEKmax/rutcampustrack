@@ -248,7 +248,11 @@ async function registryBrowserDownloadBytes(download: Download): Promise<Buffer>
 }
 
 function registryRequire(value: unknown, code: string): asserts value {
-  if (!value) throw new Error(`Registry PDF check: ${code}`);
+  if (!value) {
+    const error = new Error(`Registry PDF check: ${code}`);
+    Error.captureStackTrace(error, registryRequire);
+    throw error;
+  }
 }
 
 // All callers below use fixed Docker/Poppler/psql arguments, never a shell.

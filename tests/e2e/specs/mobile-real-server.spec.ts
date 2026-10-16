@@ -2904,15 +2904,52 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         'activated',
       );
       expect(await page.evaluate(() => caches.keys())).toContain('rct-student-pwa-v3-0.0.0');
+      const policyOrigin = new URL(page.url()).origin;
+      let firstPolicyWorkerRequest: Request | undefined;
+      let policyWorkerRequests = 0;
+      let restoringPolicyNetwork = false;
+      let workerDisconnectedDuringRestore = false;
+      const onPolicyWorkerRequest = (request: Request) => {
+        try {
+          const url = new URL(request.url());
+          if (
+            request.method() === 'GET' &&
+            request.serviceWorker() !== null &&
+            url.origin === policyOrigin &&
+            url.pathname === '/app/version.json'
+          ) {
+            policyWorkerRequests++;
+            firstPolicyWorkerRequest ??= request;
+          }
+        } catch {
+          // Observation must not change the native request or its failure.
+        }
+      };
+      const onPolicyWorkerFailure = (request: Request) => {
+        try {
+          if (
+            request === firstPolicyWorkerRequest &&
+            restoringPolicyNetwork &&
+            request.failure()?.errorText === 'net::ERR_INTERNET_DISCONNECTED'
+          ) {
+            // Callback ordering is observed here, not an engine failure timestamp.
+            workerDisconnectedDuringRestore = true;
+          }
+        } catch {
+          // Keep unknown diagnostics from replacing the original error.
+        }
+      };
       const policyObserver = await page.evaluateHandle(() => {
         const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
         if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable) {
-          return { read: () => null, restore: () => {} };
+          return { read: () => null, matchesFirstRead: () => false, restore: () => {} };
         }
         const originalFetch = descriptor.value as typeof fetch;
         let offlineSeen = false;
         let onlineSeen = false;
         let visibleAtOnline = false;
+        let policyCalls = 0;
+        let firstPolicyUrl: string | undefined;
         let outcome: 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED' = 'NOT_CALLED';
         const offline = () => {
           offlineSeen = true;
@@ -2929,15 +2966,15 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
             const method = init?.method ?? request?.method ?? 'GET';
             const address =
               typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
-            if (
-              outcome === 'NOT_CALLED' &&
-              method.toUpperCase() === 'GET' &&
-              typeof address === 'string'
-            ) {
+            if (method.toUpperCase() === 'GET' && typeof address === 'string') {
               const url = new URL(address, location.href);
               if (url.origin === location.origin && url.pathname === '/app/version.json') {
-                firstMatch = true;
-                outcome = 'PENDING';
+                policyCalls++;
+                if (outcome === 'NOT_CALLED') {
+                  firstMatch = true;
+                  firstPolicyUrl = url.href;
+                  outcome = 'PENDING';
+                }
               }
             }
           } catch {
@@ -2967,6 +3004,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         addEventListener('online', online);
         return {
           read: () => ({ offlineSeen, onlineSeen, visibleAtOnline, outcome }),
+          matchesFirstRead: (address: string) => policyCalls === 1 && firstPolicyUrl === address,
           restore: () => {
             removeEventListener('offline', offline);
             removeEventListener('online', online);
@@ -2974,6 +3012,8 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           },
         };
       });
+      context.on('request', onPolicyWorkerRequest);
+      context.on('requestfailed', onPolicyWorkerFailure);
       let policyObserverRestored = false;
       let policyRead!: ReturnType<Page['waitForResponse']>;
       try {
@@ -2982,7 +3022,12 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         );
         // Genuine network transitions invoke the existing production policy reader.
         await context.setOffline(true);
-        await context.setOffline(false);
+        restoringPolicyNetwork = true;
+        try {
+          await context.setOffline(false);
+        } finally {
+          restoringPolicyNetwork = false;
+        }
         try {
           await policyRead;
         } catch (error) {
@@ -3006,11 +3051,34 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
               expect.soft(false, 'PWA policy FETCH_PENDING').toBe(true);
             else if (observed.outcome === 'FULFILLED')
               expect.soft(false, 'PWA policy FETCH_FULFILLED').toBe(true);
-            else expect.soft(false, 'PWA policy FETCH_REJECTED').toBe(true);
+            else {
+              expect.soft(false, 'PWA policy FETCH_REJECTED').toBe(true);
+              // Exact single page read + single SW request; duplicate reads remain unknown.
+              let sameFirstRead = false;
+              try {
+                sameFirstRead =
+                  workerDisconnectedDuringRestore &&
+                  policyWorkerRequests === 1 &&
+                  firstPolicyWorkerRequest !== undefined &&
+                  (await policyObserver
+                    .evaluate(
+                      (value, address) => value.matchesFirstRead(address),
+                      firstPolicyWorkerRequest.url(),
+                    )
+                    .catch(() => false));
+              } catch {
+                // Even an observation access failure preserves the original timeout below.
+              }
+              if (sameFirstRead)
+                expect.soft(false, 'PWA policy SW_DISCONNECTED_WHILE_RESTORE_PENDING').toBe(true);
+              else expect.soft(false, 'PWA policy SW_DISCONNECT_NOT_CONFIRMED').toBe(true);
+            }
           }
           throw error;
         }
       } finally {
+        context.off('request', onPolicyWorkerRequest);
+        context.off('requestfailed', onPolicyWorkerFailure);
         try {
           await policyObserver.evaluate((value) => value.restore());
           policyObserverRestored = true;

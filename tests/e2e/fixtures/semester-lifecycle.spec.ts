@@ -1042,6 +1042,529 @@ async function ownedHistoricalPromotion(
   }
 }
 
+async function ownedSemesterMetadataAndDeletion(
+  page: import('@playwright/test').Page,
+  admin: Actor,
+  caseEnd: number,
+  currentSemesterId: number,
+  teachingInstant: Date,
+): Promise<void> {
+  // Keep the existing promotion's main work and original recovery reserve untouched.
+  requireValue(
+    caseEnd - performance.now() >= 330000,
+    'Semester UI witness requires its main and owned cleanup reserve',
+  );
+  const mainEnd = Math.min(performance.now() + 60000, caseEnd - 270000);
+  let cleaning = false,
+    cleanupEnd = 0;
+  const budget = (cap = 10000) => {
+    const remaining = Math.floor((cleaning ? cleanupEnd : mainEnd) - performance.now());
+    requireValue(remaining > 0, 'Owned semester UI deadline exhausted');
+    return Math.min(cap, remaining);
+  };
+  const call = async (
+    method: 'GET' | 'DELETE',
+    path: string,
+    data?: unknown,
+    statuses = [200],
+    headers: Record<string, string> = {},
+  ): Promise<Row> => {
+    const response = await admin.request.fetch(path, {
+      method,
+      data,
+      headers: { ...admin.headers(), ...headers },
+      timeout: budget(3000),
+    });
+    try {
+      requireValue(
+        statuses.includes(response.status()),
+        'Owned semester protocol response rejected',
+      );
+      return response.status() === 404 ? {} : await response.json();
+    } finally {
+      await response.dispose();
+    }
+  };
+  const inventory = async (): Promise<Row[]> => {
+    const rows: Row[] = [];
+    let total: number | undefined;
+    for (let number = 0; number < 5; number++) {
+      const body = await call('GET', `/api/academic/semesters?page=${number}&size=200&sort=id,asc`);
+      const part = body._embedded?.semesterResponseList ?? [];
+      requireValue(
+        Array.isArray(part) &&
+          part.length <= 200 &&
+          body.page?.number === number &&
+          Number.isSafeInteger(body.page.totalElements) &&
+          body.page.totalElements >= 0 &&
+          body.page.totalElements <= 1000,
+        'Owned semester inventory must remain bounded',
+      );
+      total ??= body.page.totalElements;
+      requireValue(
+        total === body.page.totalElements,
+        'Owned semester inventory changed while reading',
+      );
+      rows.push(...part);
+      if (rows.length === total) break;
+    }
+    requireValue(
+      rows.length === total &&
+        new Set(rows.map((row) => row.id)).size === rows.length &&
+        rows.every(
+          (row) =>
+            Number.isSafeInteger(row.id) &&
+            row.id > 0 &&
+            /^\d{4}-\d{2}-\d{2}$/.test(row.dateFrom) &&
+            /^\d{4}-\d{2}-\d{2}$/.test(row.dateTo) &&
+            row.dateFrom <= row.dateTo,
+        ),
+      'Owned semester inventory identities or dates changed',
+    );
+    return rows;
+  };
+  const before = await inventory();
+  const previousIds = new Set(before.map((row) => row.id));
+  requireValue(
+    before.filter((row) => row.active).length === 1 &&
+      before.find((row) => row.id === currentSemesterId)?.active === true,
+    'Known original semester must remain current',
+  );
+  const today = (date: Date) => date.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+  const browserToday = await page.evaluate(() =>
+    new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' }),
+  );
+  const laterToday = [today(teachingInstant), browserToday].sort()[1]!;
+  let from = shift(laterToday, 1);
+  for (const occupied of [...before].sort((a, b) => a.dateFrom.localeCompare(b.dateFrom))) {
+    if (occupied.dateTo >= from && occupied.dateFrom <= shift(from, 1))
+      from = shift(occupied.dateTo, 1);
+  }
+  const to = shift(from, 1);
+  const type = Number(from.slice(5, 7)) >= 7 ? 'AUTUMN' : 'SPRING';
+  const year = Number(from.slice(0, 4)) - (type === 'SPRING' ? 1 : 0);
+  const expected = {
+    name: `${type === 'AUTUMN' ? 'Осенний' : 'Весенний'} ${year}/${year + 1}`,
+    dateFrom: from,
+    dateTo: to,
+    semesterType: type,
+    academicYear: year,
+  };
+  const monthDistance = (initial: string, target: string) =>
+    (Number(target.slice(0, 4)) - Number(initial.slice(0, 4))) * 12 +
+    Number(target.slice(5, 7)) -
+    Number(initial.slice(5, 7));
+  const formYear = Number(browserToday.slice(0, 4));
+  requireValue(
+    year >= 1 &&
+      year <= 9998 &&
+      from >= '0001-01-01' &&
+      to <= '9999-12-31' &&
+      before.every((row) => row.dateTo < from || row.dateFrom > to) &&
+      [from, to].every(
+        (date) =>
+          Math.abs(monthDistance(`${formYear}-09`, date)) <= 24 &&
+          Math.abs(monthDistance(`${formYear + 1}-01`, date)) <= 24,
+      ),
+    'Owned semester needs a bounded non-overlapping calendar window',
+  );
+  const metadata = Object.keys(expected) as (keyof typeof expected)[];
+  const owns = (row: Row) =>
+    Number.isSafeInteger(row.id) &&
+    row.id > 0 &&
+    !previousIds.has(row.id) &&
+    metadata.every((key) => row[key] === expected[key]) &&
+    row.active === false &&
+    row.archived === false &&
+    row.activationScheduled === false;
+  const countItems = [
+    ['scheduleTemplates', 'Шаблоны расписания'],
+    ['oneOffLessons', 'Разовые занятия'],
+    ['lessons', 'Занятия'],
+    ['assignments', 'Задания'],
+    ['homeworks', 'Домашние работы'],
+    ['attendanceMarks', 'Отметки посещаемости'],
+    ['studentRequests', 'Заявки студентов'],
+  ] as const;
+  const validCounts = (counts: Row) =>
+    counts && countItems.every(([key]) => Number.isSafeInteger(counts[key]) && counts[key] >= 0);
+  const emptyCounts = (counts: Row) =>
+    validCounts(counts) && countItems.every(([key]) => counts[key] === 0);
+  const validPreview = (preview: Row, id: number) =>
+    preview.semesterId === id &&
+    Number.isSafeInteger(preview.stateVersion) &&
+    preview.stateVersion >= 0 &&
+    /^[0-9a-f]{64}$/.test(preview.previewDigest) &&
+    validCounts(preview.counts);
+  const screen = page.locator('main.admin-semester-screen');
+  let ownId: number | undefined,
+    createSent = false,
+    createdReply: Response | undefined;
+  let ownPreview: Row | undefined,
+    deleteKey: string | undefined,
+    deletionSubmitted = false;
+  let foreignDelete = false,
+    deleted = false;
+  const observeRequest = (request: import('@playwright/test').Request) => {
+    const path = new URL(request.url()).pathname;
+    if (request.method() === 'POST' && path === '/api/academic/semesters') createSent = true;
+    if (request.method() === 'DELETE' && /^\/api\/academic\/semesters\/[1-9]\d*$/.test(path)) {
+      if (ownId === undefined || path !== `/api/academic/semesters/${ownId}`) foreignDelete = true;
+      else {
+        deletionSubmitted = true;
+        deleteKey = request.headers()['idempotency-key'];
+      }
+    }
+  };
+  const observeCreate = (response: Response) => {
+    if (
+      response.request().method() === 'POST' &&
+      new URL(response.url()).pathname === '/api/academic/semesters'
+    )
+      createdReply ??= response;
+  };
+  const browserBody = async (response: Response): Promise<Row> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        response.json(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error('Owned semester browser body deadline exhausted')),
+            budget(5000),
+          );
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+  const uiReply = async (path: string, method: string, action: () => Promise<unknown>) => {
+    const response = page.waitForResponse(
+      (reply) => reply.request().method() === method && new URL(reply.url()).pathname === path,
+      { timeout: budget() },
+    );
+    const [reply] = await Promise.all([response, action()]);
+    return reply;
+  };
+  const visibleCounts = async (preview: Row) => {
+    const form = screen.getByRole('group', { name: 'Проверь последствия удаления', exact: true });
+    await expect(form.locator('.admin-semester-deletion-counts > div')).toHaveCount(7, {
+      timeout: budget(),
+    });
+    for (const [key, label] of countItems) {
+      const item = form
+        .locator('.admin-semester-deletion-counts > div')
+        .filter({ has: page.getByText(label, { exact: true }) });
+      await expect(item.locator('dd')).toHaveText(String(preview.counts[key]), {
+        timeout: budget(),
+      });
+    }
+  };
+  const previewInUi = async (id: number) => {
+    const reply = await uiReply(`/api/academic/semesters/${id}/delete-preview`, 'GET', () =>
+      screen
+        .locator(`[data-semester-id="${id}"]`)
+        .getByRole('button', { name: 'Удалить', exact: true })
+        .click({ timeout: budget() }),
+    );
+    requireValue(reply.status() === 200, 'Vue numeric deletion preview must succeed');
+    const preview = await browserBody(reply);
+    requireValue(validPreview(preview, id), 'Vue numeric preview must bind its exact semester');
+    await visibleCounts(preview);
+    return preview;
+  };
+  page.on('request', observeRequest);
+  page.on('response', observeCreate);
+  let primaryFailure: { error: unknown } | undefined;
+  let cleanupFailure: { error: unknown } | undefined;
+  let createBodyReadAttempted = false;
+  try {
+    const known = await previewInUi(currentSemesterId);
+    requireValue(
+      known.priorState === 'ACTIVE' &&
+        known.stateVersion === before.find((row) => row.id === currentSemesterId)!.stateVersion &&
+        countItems.some(([key]) => known.counts[key] > 0),
+      'Known semester preview must show genuine nonzero consequences',
+    );
+    await screen
+      .getByRole('button', { name: 'Закрыть предпросмотр', exact: true })
+      .click({ timeout: budget() });
+    await expect(screen).toHaveAttribute('data-admin-semester-view', 'list', { timeout: budget() });
+    requireValue(!foreignDelete, 'Read-only known preview must never issue deletion');
+    // No create request may begin unless its failure cleanup still leaves promotion's reserve.
+    requireValue(
+      caseEnd - performance.now() >= 270000 && budget() > 0,
+      'Owned creation must retain all recovery time',
+    );
+    await screen
+      .getByRole('button', { name: 'Добавить семестр', exact: true })
+      .click({ timeout: budget() });
+    const form = screen.getByRole('form', { name: 'Параметры семестра', exact: true });
+    await form
+      .getByRole('radio', { name: type === 'AUTUMN' ? 'Осенний' : 'Весенний', exact: true })
+      .check({ timeout: budget() });
+    await form.getByLabel('Учебный год', { exact: true }).fill(String(year), { timeout: budget() });
+    for (const [label, target] of [
+      ['Начало', from],
+      ['Окончание', to],
+    ] as const) {
+      await form
+        .getByRole('button', { name: label === 'Начало' ? /^Начало / : /^Окончание / })
+        .click({ timeout: budget() });
+      const calendar = form.getByRole('region', { name: `${label}: выбор даты`, exact: true });
+      const firstDay = await calendar
+        .locator('button[data-outside="false"]')
+        .first()
+        .getAttribute('data-date', { timeout: budget() });
+      requireValue(
+        firstDay && /^\d{4}-\d{2}-\d{2}$/.test(firstDay),
+        'Vue semester calendar must expose its real month',
+      );
+      const distance = monthDistance(firstDay, target);
+      requireValue(
+        Number.isSafeInteger(distance) && Math.abs(distance) <= 24,
+        'Vue semester calendar travel must be bounded',
+      );
+      for (let index = 0; index < Math.abs(distance); index++)
+        await calendar
+          .getByRole('button', {
+            name: distance > 0 ? 'Следующий месяц' : 'Предыдущий месяц',
+            exact: true,
+          })
+          .click({ timeout: budget() });
+      await calendar
+        .locator(`button[data-date="${target}"][data-outside="false"]`)
+        .click({ timeout: budget() });
+    }
+    const created = await uiReply('/api/academic/semesters', 'POST', () =>
+      form
+        .getByRole('button', { name: 'Добавить семестр', exact: true })
+        .click({ timeout: budget() }),
+    );
+    requireValue(created.status() === 201, 'Vue semester metadata creation must succeed once');
+    createBodyReadAttempted = true;
+    const saved = await browserBody(created);
+    requireValue(
+      owns(saved),
+      'Only the exact new inactive semester may become the deletion target',
+    );
+    ownId = saved.id;
+    const persisted = await call('GET', `/api/academic/semesters/${ownId}`);
+    requireValue(
+      owns(persisted) && persisted.id === ownId,
+      'Vue-created semester metadata must persist exactly',
+    );
+    await expect(screen.locator(`[data-semester-id="${ownId}"]`)).toContainText(expected.name, {
+      timeout: budget(),
+    });
+    const emptyPreview: Row = await previewInUi(ownId!);
+    ownPreview = emptyPreview;
+    requireValue(
+      emptyPreview.priorState === 'INACTIVE' && emptyCounts(emptyPreview.counts),
+      'Only the newly owned empty semester may be deleted',
+    );
+    await screen
+      .getByLabel('Пароль администратора', { exact: true })
+      .fill(TEST_USERS.admin.password, { timeout: budget() });
+    const removed = await uiReply(`/api/academic/semesters/${ownId}`, 'DELETE', () =>
+      screen
+        .getByRole('button', { name: 'Удалить семестр безвозвратно', exact: true })
+        .click({ timeout: budget() }),
+    );
+    requireValue(
+      [200, 202].includes(removed.status()) &&
+        deleteKey &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(deleteKey),
+      'Vue final deletion must carry its one owned idempotency key',
+    );
+    const body = removed.request().postDataJSON();
+    requireValue(
+      body.previewDigest === emptyPreview.previewDigest &&
+        body.password === TEST_USERS.admin.password,
+      'Vue password confirmation must bind the exact displayed digest',
+    );
+    const operation = await browserBody(removed);
+    requireValue(
+      operation.semesterId === ownId &&
+        operation.operationId === deleteKey &&
+        emptyCounts(operation.counts),
+      'Vue deletion operation must remain bound to the empty owned semester',
+    );
+    const progress = screen.getByRole('region', { name: 'Удаление семестра', exact: true });
+    await expect(progress.getByText('Удаление завершено.', { exact: true })).toBeVisible({
+      timeout: budget(30000),
+    });
+    const terminal = await call('GET', `/api/academic/semester-deletions/${deleteKey}`);
+    requireValue(
+      terminal.phase === 'COMPLETED' &&
+        terminal.semesterId === ownId &&
+        terminal.operationId === deleteKey &&
+        emptyCounts(terminal.counts),
+      'Final semester deletion must complete its own operation',
+    );
+    await call('GET', `/api/academic/semesters/${ownId}`, undefined, [404]);
+    deleted = true;
+    await progress
+      .getByRole('button', { name: 'Закрыть результат', exact: true })
+      .click({ timeout: budget() });
+    await expect(screen).toHaveAttribute('data-admin-semester-view', 'list', { timeout: budget() });
+    await expect(screen.locator(`[data-semester-id="${ownId}"]`)).toHaveCount(0, {
+      timeout: budget(),
+    });
+    const unchangedPreview = await call(
+      'GET',
+      `/api/academic/semesters/${currentSemesterId}/delete-preview`,
+    );
+    requireValue(
+      unchangedPreview.previewDigest === known.previewDigest &&
+        unchangedPreview.stateVersion === known.stateVersion,
+      'Owned empty deletion must preserve every original semester consequence',
+    );
+  } catch (error) {
+    primaryFailure = { error };
+  } finally {
+    cleaning = true;
+    cleanupEnd = Math.min(performance.now() + 60000, caseEnd - 210000);
+    try {
+      if (createSent && ownId === undefined) {
+        // A lost response never licenses repeating POST or assuming that nothing committed.
+        await expect
+          .poll(
+            async () => {
+              if (createdReply?.status() === 201 && !createBodyReadAttempted) {
+                createBodyReadAttempted = true;
+                try {
+                  const candidate = await browserBody(createdReply);
+                  if (owns(candidate)) ownId = candidate.id;
+                } catch {
+                  // A bounded unavailable body still permits exact inventory reconciliation.
+                }
+              }
+              if (ownId === undefined) {
+                const matches = (await inventory()).filter(owns);
+                requireValue(
+                  matches.length <= 1,
+                  'Ambiguous created semester ownership must fail closed',
+                );
+                ownId = matches[0]?.id;
+              }
+              return (
+                ownId !== undefined || (createdReply !== undefined && createdReply.status() >= 400)
+              );
+            },
+            {
+              timeout: budget(10000),
+              message: 'Owned create outcome must reconcile before cleanup',
+            },
+          )
+          .toBe(true);
+      }
+      if (ownId !== undefined && !deleted) {
+        requireValue(!previousIds.has(ownId), 'Cleanup must never target a preexisting semester');
+        let operation: Row | undefined;
+        if (deletionSubmitted) {
+          requireValue(
+            deleteKey &&
+              ownPreview &&
+              validPreview(ownPreview, ownId) &&
+              emptyCounts(ownPreview.counts),
+            'Uncertain deletion cleanup requires its exact original command',
+          );
+          operation = await call(
+            'GET',
+            `/api/academic/semester-deletions/${deleteKey}`,
+            undefined,
+            [200, 404],
+          );
+        }
+        if (!operation?.operationId) {
+          const candidate = await call('GET', `/api/academic/semesters/${ownId}`);
+          requireValue(
+            owns(candidate) && candidate.id === ownId,
+            'Cleanup owns only its exact inactive metadata tuple',
+          );
+          const preview = await call('GET', `/api/academic/semesters/${ownId}/delete-preview`);
+          requireValue(
+            validPreview(preview, ownId) &&
+              preview.priorState === 'INACTIVE' &&
+              emptyCounts(preview.counts),
+            'Cleanup may delete only its still-empty owned semester',
+          );
+          if (deletionSubmitted)
+            requireValue(
+              preview.previewDigest === ownPreview!.previewDigest,
+              'Uncertain command cleanup cannot replace the shown digest',
+            );
+          else {
+            ownPreview = preview;
+            deleteKey = randomUUID();
+          }
+          operation = await call(
+            'DELETE',
+            `/api/academic/semesters/${ownId}`,
+            { previewDigest: ownPreview!.previewDigest, password: TEST_USERS.admin.password },
+            [200, 202],
+            { 'Idempotency-Key': deleteKey! },
+          );
+        }
+        requireValue(
+          operation.semesterId === ownId &&
+            operation.operationId === deleteKey &&
+            emptyCounts(operation.counts),
+          'Cleanup deletion must retain its original empty target and key',
+        );
+        await expect
+          .poll(
+            async () => {
+              const current = await call('GET', `/api/academic/semester-deletions/${deleteKey}`);
+              requireValue(
+                current.semesterId === ownId &&
+                  current.operationId === deleteKey &&
+                  emptyCounts(current.counts),
+                'Cleanup operation scope changed',
+              );
+              requireValue(current.phase !== 'CANCELLED', 'Owned empty deletion was cancelled');
+              return current.phase;
+            },
+            { timeout: budget(30000), message: 'Owned empty semester deletion cleanup completes' },
+          )
+          .toBe('COMPLETED');
+        await call('GET', `/api/academic/semesters/${ownId}`, undefined, [404]);
+      }
+      requireValue(!foreignDelete, 'Semester witness must not issue any foreign deletion');
+      const after = await inventory();
+      const retained = [
+        'id',
+        'name',
+        'dateFrom',
+        'dateTo',
+        'semesterType',
+        'academicYear',
+        'active',
+        'archived',
+        'activationScheduled',
+        'stateVersion',
+      ];
+      equal(
+        after.map((row) => fields(row, retained)),
+        before.map((row) => fields(row, retained)),
+        'Owned semester witness changed the original semester registry',
+      );
+    } catch (error) {
+      cleanupFailure ??= { error };
+    } finally {
+      page.off('request', observeRequest);
+      page.off('response', observeCreate);
+    }
+  }
+  expect
+    .soft(cleanupFailure === undefined, 'Owned empty semester cleanup must complete')
+    .toBe(true);
+  if (primaryFailure) throw primaryFailure.error;
+  if (cleanupFailure) throw cleanupFailure.error;
+}
+
 test('FULL admin archives and restores the disposable CI semester through real participants', async ({
   playwright,
   page,
@@ -1564,6 +2087,13 @@ test('FULL admin archives and restores the disposable CI semester through real p
       history(await student.call('GET', historyPath)),
       beforeHistory,
       'Permitted homework edit changed attendance history',
+    );
+    await ownedSemesterMetadataAndDeletion(
+      page,
+      admin,
+      promotionCaseEnd,
+      ownSemesterId,
+      clock.instant,
     );
     await ownedHistoricalPromotion(page, request, admin, promotionCaseEnd, ownSemesterId);
     diagnostic.primary.stage = 'COMPLETED';
